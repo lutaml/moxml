@@ -14,7 +14,7 @@ module Moxml
     end
 
     def validate_name(name)
-      unless name.is_a?(String) && name.match?(/^[a-zA-Z_][\w\-\.]*$/)
+      unless name.is_a?(String) && name.match?(/^[a-zA-Z_][\w\-\.:]*$/)
         raise ValidationError, "Invalid XML name: #{name}"
       end
     end

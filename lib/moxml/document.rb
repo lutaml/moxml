@@ -9,6 +9,12 @@ require_relative "namespace"
 
 module Moxml
   class Document < Node
+
+    def add_declaration(version:, encoding:)
+      @version = version
+      @encoding = encoding
+    end
+
     def root=(element)
       adapter.set_root(@native, element.native)
     end
