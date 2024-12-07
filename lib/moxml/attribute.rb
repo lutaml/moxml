@@ -1,33 +1,37 @@
 # lib/moxml/attribute.rb
 module Moxml
   class Attribute < Node
-    attr_reader :name, :value
-
-    def initialize(name, value, context)
-      @name = name
-      @value = value
-      @context = context
-      # No @native needed for attributes since they're handled differently
+    def name
+      @native.name
     end
 
     def name=(new_name)
-      @name = new_name
+      @native.name = new_name
+    end
+
+    def value
+      @native.value
     end
 
     def value=(new_value)
-      @value = normalize_xml_value(new_value)
+      @native.value = normalize_xml_value(new_value)
     end
 
     def namespace
-      nil # Implement namespace handling if needed
+      ns = adapter.namespace(@native)
+      ns && Namespace.new(ns, context)
     end
 
     def namespace=(ns)
-      # Implement namespace setting if needed
+      adapter.set_namespace(@native, ns&.native)
+    end
+
+    def element
+      adapter.attribute_element(@native)
     end
 
     def remove
-      # Remove from parent element if needed
+      adapter.remove_attribute(element, name)
       self
     end
 

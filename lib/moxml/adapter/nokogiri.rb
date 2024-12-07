@@ -1,4 +1,5 @@
 require_relative "base"
+require "nokogiri"
 
 module Moxml
   module Adapter
@@ -50,12 +51,11 @@ module Moxml
         end
 
         def create_native_declaration(version, encoding, standalone)
-          decl = ::Nokogiri::XML::ProcessingInstruction.new(
+          ::Nokogiri::XML::ProcessingInstruction.new(
             ::Nokogiri::XML::Document.new,
             "xml",
             build_declaration_attrs(version, encoding, standalone)
           )
-          decl
         end
 
         def set_namespace(element, ns)
@@ -66,7 +66,7 @@ module Moxml
           element.namespace
         end
 
-        def self.processing_instruction_target(node)
+        def processing_instruction_target(node)
           node.name
         end
 
@@ -101,6 +101,11 @@ module Moxml
           end
         end
 
+        def replace_children(node, new_children)
+          node.children.unlink
+          new_children.each { |child| add_child(node, child) }
+        end
+
         def parent(node)
           node.parent
         end
@@ -121,8 +126,12 @@ module Moxml
           document.root
         end
 
+        def attribute_element(attr)
+          attr.parent
+        end
+
         def attributes(element)
-          element.attributes.transform_values(&:value)
+          element.attributes.values
         end
 
         def set_attribute(element, name, value)
@@ -130,7 +139,7 @@ module Moxml
         end
 
         def get_attribute(element, name)
-          element[name.to_s]
+          element.attributes[name.to_s]
         end
 
         def remove_attribute(element, name)
@@ -198,7 +207,7 @@ module Moxml
         end
 
         def namespace_definitions(node)
-          node.namespace_definitions.map { |ns| [ns.prefix, ns.href] }
+          node.namespace_definitions
         end
 
         def xpath(node, expression, namespaces = {})
@@ -217,7 +226,7 @@ module Moxml
           save_options = ::Nokogiri::XML::Node::SaveOptions::AS_XML
 
           # Don't force expand empty elements if they're really empty
-          save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS unless options[:expand_empty]
+          save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS if options[:expand_empty]
           save_options |= ::Nokogiri::XML::Node::SaveOptions::FORMAT if options[:indent].to_i > 0
 
           node.to_xml(

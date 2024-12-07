@@ -60,9 +60,10 @@ RSpec.describe "Moxml errors" do
 
     it "raises NamespaceError for invalid namespace" do
       doc = context.parse("<root/>")
+
       expect {
-        doc.root.add_namespace("xml", "http://invalid")
-      }.to raise_error(Moxml::NamespaceError)
+        doc.root.add_namespace("xml", "http//invalid.com")
+      }.to raise_error(Moxml::NamespaceError, "Invalid URI: http//invalid.com")
     end
   end
 end

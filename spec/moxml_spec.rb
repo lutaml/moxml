@@ -18,4 +18,39 @@ RSpec.describe Moxml do
       expect { Moxml.new(:invalid) }.to raise_error(ArgumentError)
     end
   end
+
+  describe ".configure" do
+    around(:example) do |example|
+      original_default = Moxml::Config.default.dup
+
+      example.run
+
+      # reset configuration, otherwise it will impact other specs
+      Moxml.configure do |config|
+        config.adapter = original_default.adapter_name
+        config.strict_parsing = original_default.strict_parsing
+        config.default_encoding = original_default.strict_parsing
+      end
+    end
+
+    it "sets default values without a block" do
+      Moxml.configure
+
+      context = Moxml.new
+      expect(context.config.adapter_name).to eq(:nokogiri)
+    end
+
+    it "uses configured options from the block" do
+      Moxml.configure do |config|
+        config.adapter = :oga
+        config.strict_parsing = false
+        config.default_encoding = "US-ASCII"
+      end
+
+      context = Moxml.new
+      expect(context.config.adapter_name).to eq(:oga)
+      expect(context.config.strict_parsing).to eq(false)
+      expect(context.config.default_encoding).to eq("US-ASCII")
+    end
+  end
 end

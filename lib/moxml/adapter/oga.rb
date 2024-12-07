@@ -1,4 +1,6 @@
 require_relative "base"
+require_relative "customized_oga/xml_generator"
+require "oga"
 
 module Moxml
   module Adapter
@@ -51,17 +53,27 @@ module Moxml
         end
 
         def create_native_namespace(element, prefix, uri)
-          ns = ::Oga::XML::Namespace.new(name: prefix, uri: uri)
-          element.namespaces << ns
-          ns
+          ns = element.available_namespaces[prefix]
+          return ns unless ns.nil?
+
+          element.register_namespace(prefix, uri)
+          ::Oga::XML::Namespace.new(name: prefix, uri: uri)
         end
 
         def set_namespace(element, ns)
-          element.namespace = ns
+          return if element.available_namespaces.include?(ns.name)
+
+          element.register_namespace(ns.name, ns.uri)
         end
 
         def namespace(element)
-          element.namespace
+          ns = element.respond_to?(:namespaces) && element.namespaces.values.last
+          ns ||= element.respond_to?(:namespace) && element.namespace
+          ns
+        rescue NoMethodError
+          # Oga attributes fail with NoMethodError:
+          # undefined method `available_namespaces' for nil:NilClass
+          nil
         end
 
         def processing_instruction_target(node)
@@ -98,7 +110,7 @@ module Moxml
         end
 
         def parent(node)
-          node.parent
+          node.parent if node.respond_to?(:parent)
         end
 
         def next_sibling(node)
@@ -110,27 +122,42 @@ module Moxml
         end
 
         def document(node)
-          node.document
+          current = node
+          while parent(current)
+            current = current.parent
+          end
+
+          current
         end
 
         def root(document)
           document.children.find { |node| node.is_a?(::Oga::XML::Element) }
         end
 
+        def attribute_element(attr)
+          attr.element
+        end
+
         def attributes(element)
-          return {} unless element.respond_to?(:attributes)
-          element.attributes.to_h do |attr|
-            [attr.name, attr.value]
-          end
+          element.respond_to?(:attributes) ? element.attributes : []
         end
 
         def set_attribute(element, name, value)
-          attr = ::Oga::XML::Attribute.new(name: name.to_s, value: value.to_s)
-          element.attributes << attr
+          namespace_name = nil
+          if name.to_s.include?(':')
+            namespace_name, name = name.to_s.split(':', 2)
+          end
+
+          attr = ::Oga::XML::Attribute.new(
+            name: name.to_s,
+            namespace_name: namespace_name,
+            value: value.to_s
+          )
+          element.add_attribute(attr)
         end
 
         def get_attribute(element, name)
-          element.attribute(name.to_s)&.value
+          element.attribute(name.to_s)
         end
 
         def remove_attribute(element, name)
@@ -158,12 +185,17 @@ module Moxml
           node.replace(new_node)
         end
 
+        def replace_children(node, new_children)
+          node.inner_text = ""
+          new_children.each { |child| add_child(node, child) }
+        end
+
         def text_content(node)
           node.text
         end
 
         def set_text_content(node, content)
-          node.text = content
+          node.inner_text = content
         end
 
         def cdata_content(node)
@@ -200,7 +232,7 @@ module Moxml
 
         def namespace_definitions(node)
           return [] unless node.respond_to?(:namespaces)
-          node.namespaces.map { |ns| [ns.name, ns.uri] }
+          node.namespaces
         end
 
         def xpath(node, expression, namespaces = {})
@@ -216,7 +248,13 @@ module Moxml
         end
 
         def serialize(node, options = {})
-          node.to_xml(indent: options[:indent] || 0)
+          if options[:expand_empty]
+            # Expand empty tags with a custom generator
+            ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
+          else
+            # Use the native generator
+            node.to_xml
+          end
         end
       end
     end

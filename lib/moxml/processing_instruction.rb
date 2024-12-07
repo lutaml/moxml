@@ -5,7 +5,7 @@ module Moxml
     end
 
     def target=(new_target)
-      adapter.set_processing_instruction_target(@native, new_target)
+      adapter.set_node_name(@native, new_target.to_s)
       self
     end
 

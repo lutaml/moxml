@@ -34,7 +34,7 @@ RSpec.describe "Moxml Integration" do
       root.add_child(item)
 
       # Verify structure
-      expect(doc.to_xml).to include(
+      expected_xml = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<?xml-stylesheet type="text/xsl" href="style.xsl"?>',
         '<root xmlns="http://example.org" xmlns:xs="http://www.w3.org/2001/XMLSchema">',
@@ -42,7 +42,11 @@ RSpec.describe "Moxml Integration" do
         "<text>Some text <![CDATA[<with><markup/>]]> and more text</text>",
         '<item id="123" xs:type="custom"/>',
         "</root>"
-      )
+      ]
+      puts doc.to_xml
+      puts '*' * 30
+      puts expected_aml
+      expect(doc.to_xml).to include(expected_xml)
 
       # Test XPath queries
       expect(doc.xpath("//item[@id='123']")).not_to be_empty

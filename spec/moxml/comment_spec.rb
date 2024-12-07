@@ -29,11 +29,9 @@ RSpec.describe Moxml::Comment do
       expect(comment.to_xml(pretty: false)).to eq("<!--test comment-->")
     end
 
-    it "escapes double hyphens" do
-      comment.content = "test -- comment"
-      serialized = comment.to_xml(pretty: false)
-      expect(serialized).not_to include("--")
-      expect(serialized).to include("test - - comment")
+    it "raises an error on double hyphens" do
+      expect { comment.content = "test -- comment" }
+        .to raise_error(Moxml::ValidationError, "XML comment cannot contain double hyphens (--)")
     end
 
     it "handles special characters" do

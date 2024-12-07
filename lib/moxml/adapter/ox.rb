@@ -1,24 +1,26 @@
 require_relative "base"
+require "ox"
 
 module Moxml
   module Adapter
     class Ox < Base
       class << self
         def set_root(doc, element)
-          doc.nodes = [element]  # Replace all nodes with just the root element
+          replace_children(doc, [element])
         end
 
         def parse(xml, options = {})
           native_doc = begin
-              doc = ::Ox::Document.new
-              parse_options = {
-                mode: :generic,
-                effort: options[:strict] ? :strict : :tolerant,
-                smart: true,
-              }
-              result = ::Ox.parse(xml)  # Remove second argument - Ox.parse only takes the XML string
-              doc << result
-              doc
+              result = ::Ox.parse(xml)
+
+              # result can be either Document or Element
+              if result.is_a?(::Ox::Document)
+                result
+              else
+                doc = ::Ox::Document.new
+                doc << result
+                doc
+              end
             rescue ::Ox::ParseError => e
               raise Moxml::ParseError.new(e.message)
             end
@@ -28,12 +30,6 @@ module Moxml
 
         def create_document
           ::Ox::Document.new
-        end
-
-        def create_native_declaration(version, encoding, standalone)
-          inst = ::Ox::Instruction.new("xml")
-          inst.value = build_declaration_attrs(version, encoding, standalone)
-          inst
         end
 
         def create_native_element(name)
@@ -57,6 +53,13 @@ module Moxml
         def create_native_processing_instruction(target, content)
           inst = ::Ox::Instruction.new(target)
           inst.value = content
+          inst
+        end
+
+        # TODO: compare  to create_native_declaration
+        def create_native_declaration2(version, encoding, standalone)
+          inst = ::Ox::Instruct.new("xml")
+          inst.value = build_declaration_attrs(version, encoding, standalone)
           inst
         end
 
@@ -96,12 +99,12 @@ module Moxml
 
         def node_type(node)
           case node
-          when ::Ox::Element then :element
+          when ::Ox::Document then :document
           when String then :text
           when ::Ox::CData then :cdata
           when ::Ox::Comment then :comment
-          when ::Ox::Instruction then :processing_instruction
-          when ::Ox::Document then :document
+          when ::Ox::Instruct then :processing_instruction
+          when ::Ox::Element then :element
           else :unknown
           end
         end
@@ -121,18 +124,20 @@ module Moxml
         end
 
         def parent(node)
-          node.respond_to?(:parent) ? node.parent : nil
+          node.parent if node.respond_to?(:parent)
         end
 
         def next_sibling(node)
-          return nil unless parent = node.parent
+          return unless parent = parent(node)
+
           siblings = parent.nodes
           idx = siblings.index(node)
           idx ? siblings[idx + 1] : nil
         end
 
         def previous_sibling(node)
-          return nil unless parent = node.parent
+          return unless parent = parent(node)
+
           siblings = parent.nodes
           idx = siblings.index(node)
           idx && idx > 0 ? siblings[idx - 1] : nil
@@ -140,8 +145,8 @@ module Moxml
 
         def document(node)
           current = node
-          while current && current.respond_to?(:parent) && current.parent
-            current = current.parent
+          while parent(current)
+            current = parent(current)
           end
           current
         end
@@ -172,30 +177,41 @@ module Moxml
 
         def add_child(element, child)
           element.nodes ||= []
+          puts "Add child #{child} for #{element.name}: #{element.nodes.count}"
           element.nodes << child
         end
 
         def add_previous_sibling(node, sibling)
-          return unless node.parent
+          return unless parent(node)
+
           idx = node.parent.nodes.index(node)
           node.parent.nodes.insert(idx, sibling) if idx
         end
 
         def add_next_sibling(node, sibling)
-          return unless node.parent
+          return unless parent(node)
+
           idx = node.parent.nodes.index(node)
           node.parent.nodes.insert(idx + 1, sibling) if idx
         end
 
         def remove(node)
-          return unless node.parent
+          return unless parent(node)
+
           node.parent.nodes.delete(node)
         end
 
         def replace(node, new_node)
-          return unless node.parent
+          return unless parent(node)
+
           idx = node.parent.nodes.index(node)
           node.parent.nodes[idx] = new_node if idx
+        end
+
+        def replace_children(node, new_children)
+          node.remove_children_by_path("*")
+          new_children.each { |child| node << child }
+          node
         end
 
         def text_content(node)

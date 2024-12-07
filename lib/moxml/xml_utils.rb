@@ -1,16 +1,10 @@
 # lib/moxml/xml_utils.rb
+require_relative "xml_utils/encoder"
+
 module Moxml
   module XmlUtils
-    def encode_entities(text, attr = false)
-      text.to_s.gsub(/[&<>'"]/) do |match|
-        case match
-        when "&" then "&amp;"
-        when "<" then "&lt;"
-        when ">" then "&gt;"
-        when "'" then attr ? "&apos;" : "'"
-        when '"' then attr ? "&quot;" : '"'
-        end
-      end
+    def encode_entities(text, mode = nil)
+      Encoder.new(text, mode).call
     end
 
     def validate_name(name)
@@ -20,7 +14,7 @@ module Moxml
     end
 
     def validate_uri(uri)
-      unless uri.empty? || uri.match?(/\A[a-zA-Z][a-zA-Z0-9+\-.]*:|#\w+\z/)
+      unless uri.empty? || uri.match?(/\A#{::URI::DEFAULT_PARSER.make_regexp}\z/)
         raise ValidationError, "Invalid URI: #{uri}"
       end
     end

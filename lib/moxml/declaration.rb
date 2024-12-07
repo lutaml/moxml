@@ -70,7 +70,7 @@ module Moxml
     end
 
     def update_content(attrs)
-      @native.content = attrs.map { |k, v| %{#{k}="#{v}"} }.join(" ")
+      @native.native_content = attrs.map { |k, v| %{#{k}="#{v}"} }.join(" ")
     end
   end
 end

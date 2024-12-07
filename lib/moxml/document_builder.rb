@@ -9,7 +9,7 @@ module Moxml
     end
 
     def build(native_doc)
-      @current_doc = Document.new(native_doc, context)
+      @current_doc = context.create_document
       visit_node(native_doc)
       @current_doc
     end
@@ -17,6 +17,7 @@ module Moxml
     private
 
     def visit_node(node)
+      node_name = node.respond_to?(:name) ? node.name : node
       method_name = "visit_#{node_type(node)}"
       if respond_to?(method_name, true)
         send(method_name, node)
@@ -60,7 +61,10 @@ module Moxml
     end
 
     def visit_children(node)
-      children(node).each { |child| visit_node(child) }
+      node_children = children(node).dup
+      node_children.each_with_index do |child, index|
+        visit_node(child)
+      end
     end
 
     def node_type(node)

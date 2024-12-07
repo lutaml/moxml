@@ -30,9 +30,14 @@ RSpec.describe Moxml::Text do
   end
 
   describe "special characters" do
-    it "encodes XML entities" do
+    it "encodes basic XML entities" do
       text.content = "< > & \" '"
-      expect(text.to_xml).to eq("&lt; &gt; &amp; &quot; &apos;")
+      expect(text.to_xml).to eq("&lt; &gt; &amp; \" '")
+    end
+
+    it "encodes all XML entities" do
+      text.content = "< > & \" '"
+      expect(text.to_xml(encode_mode: :extended)).to eq("&lt; &gt; &amp; &quot; &apos;")
     end
 
     it "preserves whitespace" do

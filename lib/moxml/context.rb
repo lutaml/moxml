@@ -2,7 +2,7 @@ module Moxml
   class Context
     attr_reader :config
 
-    def initialize(adapter = Config::DEFAULT_ADAPTER)
+    def initialize(adapter = nil)
       @config = Config.new(adapter)
     end
 

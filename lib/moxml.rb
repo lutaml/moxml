@@ -1,7 +1,7 @@
 # lib/moxml.rb
 module Moxml
   class << self
-    def new(adapter = :nokogiri, &block)
+    def new(adapter = nil, &block)
       context = Context.new(adapter)
       context.config.instance_eval(&block) if block_given?
       context
