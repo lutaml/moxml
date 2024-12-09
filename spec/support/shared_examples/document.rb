@@ -1,5 +1,4 @@
-# spec/moxml/document_spec.rb
-RSpec.describe Moxml::Document do
+RSpec.shared_examples 'Moxml::Document' do
   let(:context) { Moxml.new }
   let(:xml) do
     <<~XML
@@ -21,7 +20,7 @@ RSpec.describe Moxml::Document do
     let(:doc) { context.parse(xml) }
 
     it "parses XML string" do
-      expect(doc).to be_a(described_class)
+      expect(doc).to be_a(Moxml::Document)
       expect(doc.root.name).to eq("root")
     end
 

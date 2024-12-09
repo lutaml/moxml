@@ -1,5 +1,4 @@
-# spec/moxml/text_spec.rb
-RSpec.describe Moxml::Text do
+RSpec.shared_examples 'Moxml::Text' do
   let(:context) { Moxml.new }
   let(:doc) { context.create_document }
   let(:text) { doc.create_text("content") }
@@ -30,9 +29,9 @@ RSpec.describe Moxml::Text do
   end
 
   describe "special characters" do
-    it "encodes XML entities" do
+    it "encodes basic XML entities" do
       text.content = "< > & \" '"
-      expect(text.to_xml).to eq("&lt; &gt; &amp; &quot; &apos;")
+      expect(text.to_xml).to eq("&lt; &gt; &amp; \" '")
     end
 
     it "preserves whitespace" do

@@ -1,6 +1,6 @@
-RSpec.describe Moxml::Builder do
+RSpec.shared_examples 'Moxml::Builder' do
   let(:context) { Moxml.new }
-  let(:builder) { described_class.new(context) }
+  let(:builder) { Moxml::Builder.new(context) }
 
   describe "#document" do
     it "creates a well-formed document" do

@@ -87,6 +87,8 @@ module Moxml
         when :comment then Comment
         when :processing_instruction then ProcessingInstruction
         when :document then Document
+        when :declaration then Declaration
+        when :doctype then Doctype
         else self
         end
 
@@ -118,6 +120,11 @@ module Moxml
       {
         encoding: context.config.default_encoding,
         indent: context.config.default_indent,
+        # The short format of empty tags in Oga and Nokogiri isn't configurable
+        # Oga: <empty /> (with a space)
+        # Nokogiri: <empty/> (without a space)
+        # The expanded format is enforced to avoid this conflict
+        expand_empty: true
       }
     end
   end

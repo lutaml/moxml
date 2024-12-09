@@ -8,6 +8,7 @@ module Moxml
         when :comment then Comment
         when :processing_instruction then ProcessingInstruction
         when :declaration then Declaration
+        when :doctype then Doctype
         else
           raise ArgumentError, "Unknown node type: #{type}"
         end

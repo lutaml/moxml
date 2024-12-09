@@ -38,15 +38,19 @@ module Moxml
           create_native_comment(normalize_xml_value(content))
         end
 
+        def create_doctype(name, external_id, system_id)
+          create_native_doctype(name, external_id, system_id)
+        end
+
         def create_processing_instruction(target, content)
           validate_name(target)
           create_native_processing_instruction(target, normalize_xml_value(content))
         end
 
         def create_declaration(version = "1.0", encoding = "UTF-8", standalone = nil)
-          validate_version(version)
-          validate_encoding(encoding)
-          validate_standalone(standalone)
+          validate_declaration_version(version)
+          validate_declaration_encoding(encoding)
+          validate_declaration_standalone(standalone)
           create_native_declaration(version, encoding, standalone)
         end
 
@@ -54,6 +58,28 @@ module Moxml
           validate_prefix(prefix) if prefix
           validate_uri(uri)
           create_native_namespace(element, prefix, uri)
+        end
+
+        def validate_declaration_version(version)
+          unless ::Moxml::Declaration::ALLOWED_VERSIONS.include?(version)
+            raise ValidationError, "Invalid XML version: #{version}"
+          end
+        end
+
+        def validate_declaration_encoding(encoding)
+          return if encoding.nil?
+          begin
+            Encoding.find(encoding)
+          rescue ArgumentError
+            raise ValidationError, "Invalid encoding: #{encoding}"
+          end
+        end
+
+        def validate_declaration_standalone(standalone)
+          return if standalone.nil?
+          unless ::Moxml::Declaration::ALLOWED_STANDALONE.include?(standalone)
+            raise ValidationError, "Invalid standalone value: #{standalone}"
+          end
         end
 
         protected
@@ -74,6 +100,10 @@ module Moxml
           raise NotImplementedError
         end
 
+        def create_native_doctype(name, external_id, system_id)
+          raise NotImplementedError
+        end
+
         def create_native_processing_instruction(target, content)
           raise NotImplementedError
         end
@@ -87,28 +117,6 @@ module Moxml
         end
 
         private
-
-        def validate_version(version)
-          unless ["1.0", "1.1"].include?(version)
-            raise ValidationError, "Invalid XML version: #{version}"
-          end
-        end
-
-        def validate_encoding(encoding)
-          return if encoding.nil?
-          begin
-            Encoding.find(encoding)
-          rescue ArgumentError
-            raise ValidationError, "Invalid encoding: #{encoding}"
-          end
-        end
-
-        def validate_standalone(standalone)
-          return if standalone.nil?
-          unless ["yes", "no"].include?(standalone)
-            raise ValidationError, "Invalid standalone value: #{standalone}"
-          end
-        end
 
         def validate_prefix(prefix)
           unless prefix.match?(/\A[a-zA-Z_][\w\-]*\z/)

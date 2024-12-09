@@ -1,4 +1,5 @@
 require_relative "base"
+require "nokogiri"
 
 module Moxml
   module Adapter
@@ -41,6 +42,12 @@ module Moxml
           ::Nokogiri::XML::Comment.new(::Nokogiri::XML::Document.new, content)
         end
 
+        def create_native_doctype(name, external_id, system_id)
+          ::Nokogiri::XML::Document.new.create_internal_subset(
+            name, external_id, system_id
+          )
+        end
+
         def create_native_processing_instruction(target, content)
           ::Nokogiri::XML::ProcessingInstruction.new(
             ::Nokogiri::XML::Document.new,
@@ -50,12 +57,30 @@ module Moxml
         end
 
         def create_native_declaration(version, encoding, standalone)
-          decl = ::Nokogiri::XML::ProcessingInstruction.new(
+          ::Nokogiri::XML::ProcessingInstruction.new(
             ::Nokogiri::XML::Document.new,
             "xml",
             build_declaration_attrs(version, encoding, standalone)
           )
-          decl
+        end
+
+        def declaration_attribute(declaration, attr_name)
+          return nil unless declaration.content
+
+          match = declaration.content.match(/#{attr_name}="([^"]*)"/)
+          match && match[1]
+        end
+
+        def set_declaration_attribute(declaration, attr_name, value)
+          attrs = current_declaration_attributes(declaration)
+          if value.nil?
+            attrs.delete(attr_name)
+          else
+            attrs[attr_name] = value
+          end
+
+          declaration.native_content =
+            attrs.map { |k, v| %{#{k}="#{v}"} }.join(" ")
         end
 
         def set_namespace(element, ns)
@@ -66,7 +91,7 @@ module Moxml
           element.namespace
         end
 
-        def self.processing_instruction_target(node)
+        def processing_instruction_target(node)
           node.name
         end
 
@@ -82,6 +107,7 @@ module Moxml
           when ::Nokogiri::XML::Comment then :comment
           when ::Nokogiri::XML::ProcessingInstruction then :processing_instruction
           when ::Nokogiri::XML::Document then :document
+          when ::Nokogiri::XML::DTD then :doctype
           else :unknown
           end
         end
@@ -99,6 +125,11 @@ module Moxml
             child.text? && child.content.strip.empty? &&
               !(child.previous_sibling.nil? && child.next_sibling.nil?)
           end
+        end
+
+        def replace_children(node, new_children)
+          node.children.unlink
+          new_children.each { |child| add_child(node, child) }
         end
 
         def parent(node)
@@ -121,8 +152,12 @@ module Moxml
           document.root
         end
 
+        def attribute_element(attr)
+          attr.parent
+        end
+
         def attributes(element)
-          element.attributes.transform_values(&:value)
+          element.attributes.values
         end
 
         def set_attribute(element, name, value)
@@ -130,7 +165,7 @@ module Moxml
         end
 
         def get_attribute(element, name)
-          element[name.to_s]
+          element.attributes[name.to_s]
         end
 
         def remove_attribute(element, name)
@@ -138,7 +173,14 @@ module Moxml
         end
 
         def add_child(element, child)
-          element.add_child(child)
+          if node_type(child) == :doctype
+            # avoid exceptions: cannot reparent Nokogiri::XML::DTD there
+            element.create_internal_subset(
+              child.name, child.external_id, child.system_id
+            )
+          else
+            element.add_child(child)
+          end
         end
 
         def add_previous_sibling(node, sibling)
@@ -162,7 +204,7 @@ module Moxml
         end
 
         def set_text_content(node, content)
-          node.content = content
+          node.native_content = content
         end
 
         def cdata_content(node)
@@ -178,7 +220,7 @@ module Moxml
         end
 
         def set_comment_content(node, content)
-          node.content = content
+          node.native_content = content
         end
 
         def processing_instruction_content(node)
@@ -186,7 +228,7 @@ module Moxml
         end
 
         def set_processing_instruction_content(node, content)
-          node.content = content
+          node.native_content = content
         end
 
         def namespace_prefix(namespace)
@@ -198,7 +240,7 @@ module Moxml
         end
 
         def namespace_definitions(node)
-          node.namespace_definitions.map { |ns| [ns.prefix, ns.href] }
+          node.namespace_definitions
         end
 
         def xpath(node, expression, namespaces = {})
@@ -217,7 +259,7 @@ module Moxml
           save_options = ::Nokogiri::XML::Node::SaveOptions::AS_XML
 
           # Don't force expand empty elements if they're really empty
-          save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS unless options[:expand_empty]
+          save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS if options[:expand_empty]
           save_options |= ::Nokogiri::XML::Node::SaveOptions::FORMAT if options[:indent].to_i > 0
 
           node.to_xml(
@@ -234,6 +276,15 @@ module Moxml
           attrs["encoding"] = encoding if encoding
           attrs["standalone"] = standalone if standalone
           attrs.map { |k, v| %{#{k}="#{v}"} }.join(" ")
+        end
+
+        def current_declaration_attributes(declaration)
+          ::Moxml::Declaration::ALLOWED_ATTRIBUTES.inject({}) do |hsh, attr_name|
+            value = declaration_attribute(declaration, attr_name)
+            next hsh if value.nil?
+
+            hsh.merge(attr_name => value)
+          end
         end
       end
     end

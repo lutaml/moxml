@@ -1,5 +1,4 @@
-# spec/moxml/cdata_spec.rb
-RSpec.describe Moxml::Cdata do
+RSpec.shared_examples 'Moxml::Cdata' do
   let(:context) { Moxml.new }
   let(:doc) { context.create_document }
   let(:cdata) { doc.create_cdata("<content>") }
@@ -32,6 +31,11 @@ RSpec.describe Moxml::Cdata do
     it "escapes CDATA end marker" do
       cdata.content = "content]]>more"
       expect(cdata.to_xml).to eq("<![CDATA[content]]]]><![CDATA[>more]]>")
+    end
+
+    it "handles special characters" do
+      cdata.content = "< > & \" '"
+      expect(cdata.to_xml).to include("< > & \" '")
     end
 
     it "preserves whitespace" do

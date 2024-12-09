@@ -6,6 +6,7 @@ require_relative "comment"
 require_relative "processing_instruction"
 require_relative "declaration"
 require_relative "namespace"
+require_relative "doctype"
 
 module Moxml
   class Document < Node
@@ -32,6 +33,13 @@ module Moxml
 
     def create_comment(content)
       Comment.new(adapter.create_comment(content), context)
+    end
+
+    def create_doctype(name, external_id, system_id)
+      Doctype.new(
+        adapter.create_doctype(name, external_id, system_id),
+        context
+      )
     end
 
     def create_processing_instruction(target, content)
@@ -65,26 +73,13 @@ module Moxml
 
     def xpath(expression, namespaces = {})
       native_nodes = adapter.xpath(@native, expression, namespaces)
-      native_nodes.map { |native_node| find_moxml_node(native_node) }
+      NodeSet.new(native_nodes, context)
     end
 
     def at_xpath(expression, namespaces = {})
       if native_node = adapter.at_xpath(@native, expression, namespaces)
-        find_moxml_node(native_node)
+        Node.wrap(native_node, context)
       end
-    end
-
-    private
-
-    def find_moxml_node(native_node)
-      @node_registry ||= {}
-      @node_registry[native_node.object_id] || create_moxml_node(native_node)
-    end
-
-    def create_moxml_node(native_node)
-      node = Node.wrap(native_node, context)
-      @node_registry[native_node.object_id] = node
-      node
     end
   end
 end

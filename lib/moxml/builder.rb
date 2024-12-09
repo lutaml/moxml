@@ -12,13 +12,13 @@ module Moxml
     end
 
     def declaration(version: "1.0", encoding: "UTF-8", standalone: nil)
-      @document.add_child(
-        NodeFactory.create(:declaration, @context, version, encoding, standalone)
+      @current.add_child(
+        @document.create_declaration(version, encoding, standalone)
       )
     end
 
     def element(name, attributes = {}, &block)
-      el = NodeFactory.create(:element, @context, name)
+      el = @document.create_element(name)
 
       attributes.each do |key, value|
         el[key] = value
@@ -37,20 +37,20 @@ module Moxml
     end
 
     def text(content)
-      @current.add_child(NodeFactory.create(:text, @context, content))
+      @current.add_child(@document.create_text(content))
     end
 
     def cdata(content)
-      @current.add_child(NodeFactory.create(:cdata, @context, content))
+      @current.add_child(@document.create_cdata(content))
     end
 
     def comment(content)
-      @current.add_child(NodeFactory.create(:comment, @context, content))
+      @current.add_child(@document.create_comment(content))
     end
 
     def processing_instruction(target, content)
       @current.add_child(
-        NodeFactory.create(:processing_instruction, @context, target, content)
+        @document.create_processing_instruction(target, content)
       )
     end
 

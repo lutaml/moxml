@@ -1,5 +1,4 @@
-# spec/moxml/processing_instruction_spec.rb
-RSpec.describe Moxml::ProcessingInstruction do
+RSpec.shared_examples 'Moxml::ProcessingInstruction' do
   let(:context) { Moxml.new }
   let(:doc) { context.create_document }
   let(:pi) { doc.create_processing_instruction("xml-stylesheet", 'href="style.xsl" type="text/xsl"') }
@@ -47,7 +46,7 @@ RSpec.describe Moxml::ProcessingInstruction do
 
     it "handles special characters" do
       pi.content = '< > & " \''
-      expect(pi.to_xml).to match(/\?>[^<]*</)
+      expect(pi.to_xml).to include('< > & " \'')
     end
   end
 
