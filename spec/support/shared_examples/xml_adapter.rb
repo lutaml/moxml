@@ -80,7 +80,9 @@ RSpec.shared_examples "xml adapter" do
       expect(children.length).to eq(3)
     end
 
-    it "gets siblings", skip: "Oga includes text nodes into siblings" do
+    it "gets siblings" do
+      pending("Oga includes text nodes into siblings") if described_class.name.include?("Oga")
+
       children = described_class.children(root)
       first = children[0]
       second = children[1]
@@ -156,7 +158,10 @@ RSpec.shared_examples "xml adapter" do
       expect(result).to include("</root>")
     end
 
-    it "respects indentation settings", skip: "Indent cannot be negative, and zero indent doesn't remove newlines" do
+    it "respects indentation settings" do
+      # skip: "Indent cannot be negative, and zero indent doesn't remove newlines"
+      pending("Oga does not support indentation settings") if described_class.name.include?("Oga")
+
       unindented = described_class.serialize(doc, indent: 0)
       indented = described_class.serialize(doc, indent: 2)
 
