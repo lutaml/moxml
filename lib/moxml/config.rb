@@ -6,8 +6,14 @@ module Moxml
     DEFAULT_ADAPTER = VALID_ADAPTERS.first
 
     class << self
+      attr_writer :default_adapter
+
       def default
-        @default ||= new(DEFAULT_ADAPTER, true, "UTF-8")
+        @default ||= new(default_adapter, true, "UTF-8")
+      end
+
+      def default_adapter
+        @default_adapter ||= DEFAULT_ADAPTER
       end
     end
 
@@ -38,7 +44,10 @@ module Moxml
       adapter
     end
 
-    alias default_adapter= adapter=
+    def default_adapter=(name)
+      self.adapter = name
+      self.class.default_adapter = name
+    end
 
     def adapter
       @adapter ||= Adapter.load(@adapter_name)

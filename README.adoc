@@ -458,6 +458,8 @@ end
 
 Moxml can be configured globally or per instance:
 
+NOTE: If you want to use an adapter other than `nokogiri` as the default, set it before processing any input using the syntax `Moxml::Config.default_adapter = <adapter-name>`.
+
 [source,ruby]
 ----
 # Global configuration
