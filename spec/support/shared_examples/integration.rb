@@ -53,7 +53,7 @@ RSpec.shared_examples "Moxml Integration" do
       end
     end
 
-    it "handles xpath queries" do
+    it "handles xpath queries", focus: true do
       # Test XPath queries
       #
       # XPath with a default namespace is a problem

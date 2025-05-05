@@ -55,7 +55,7 @@ RSpec.shared_examples "Moxml::Element" do
       end
 
       it "sets namespace" do
-        ns = element.add_namespace("x", "http://example.org").namespace
+        ns = element.add_namespace("x", "http://example.org").namespaces.first
         element.namespace = ns
         expect(element.namespace).to eq(ns)
       end

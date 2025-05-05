@@ -15,7 +15,7 @@ module Moxml
     end
 
     def to_s
-      if prefix
+      if prefix && prefix != 'xmlns'
         %(xmlns:#{prefix}="#{uri}")
       else
         %(xmlns="#{uri}")

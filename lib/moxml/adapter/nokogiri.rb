@@ -221,7 +221,7 @@ module Moxml
         end
 
         def text_content(node)
-          node.content
+          node.text
         end
 
         def inner_text(node)

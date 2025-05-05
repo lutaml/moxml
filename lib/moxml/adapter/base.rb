@@ -63,6 +63,14 @@ module Moxml
           create_native_namespace(element, prefix, uri)
         end
 
+        def set_attribute_name(attribute, name)
+          attribute.name = name
+        end
+
+        def set_attribute_value(attribute, value)
+          attribute.value = value
+        end
+
         protected
 
         def create_native_element(name)
