@@ -28,9 +28,9 @@ RSpec.describe "Test all shared examples" do
     "Thread Safety Examples"
   ]
 
-  Moxml::Adapter::AVALIABLE_ADAPTERS.each do |adapter_name|
-    # [:nokogiri].each do |adapter_name|
-    # [:oga].each do |adapter_name|
+  # Moxml::Adapter::AVALIABLE_ADAPTERS.each do |adapter_name|
+  [:rexml, :oga, :nokogiri].each do |adapter_name|
+  # [:rexml].each do |adapter_name|
     context "with #{adapter_name}" do
       around do |example|
         Moxml.with_config(adapter_name) do

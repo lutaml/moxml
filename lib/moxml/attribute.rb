@@ -7,7 +7,7 @@ module Moxml
     end
 
     def name=(new_name)
-      @native.name = new_name
+      adapter.set_attribute_name(@native, new_name)
     end
 
     def value
@@ -15,7 +15,7 @@ module Moxml
     end
 
     def value=(new_value)
-      @native.value = normalize_xml_value(new_value)
+      adapter.set_attribute_value(@native, new_value)
     end
 
     def namespace
