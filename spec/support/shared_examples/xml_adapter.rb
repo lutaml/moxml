@@ -127,7 +127,6 @@ RSpec.shared_examples "xml adapter" do
     end
 
     it "handles special characters in attributes" do
-      # pending("Oga does not support indentation settings") if described_class.name.include?("Oga")
       described_class.set_attribute(element, "special", '< > & " \'')
       # a workaround for Rexml until we convert tests to work with Moxml wrappers
       attr = described_class.get_attribute(element, "special")
