@@ -87,8 +87,8 @@ module Moxml
       adapter.inner_xml(@native)
     end
 
-    def inner_xml=(html)
-      doc = context.parse("<root>#{html}</root>")
+    def inner_xml=(xml)
+      doc = context.parse("<root>#{xml}</root>")
       adapter.replace_children(@native, doc.root.children.map(&:native))
     end
 

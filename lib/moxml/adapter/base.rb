@@ -71,6 +71,10 @@ module Moxml
           attribute.value = value
         end
 
+        def duplicate_node(node)
+          node.dup
+        end
+
         protected
 
         def create_native_element(name)

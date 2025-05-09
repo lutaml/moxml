@@ -18,7 +18,6 @@ module Moxml
     private
 
     def visit_node(node)
-      node.respond_to?(:name) ? node.name : node
       method_name = "visit_#{node_type(node)}"
       return unless respond_to?(method_name, true)
 
@@ -28,41 +27,38 @@ module Moxml
     def visit_document(doc)
       @node_stack.push(@current_doc)
       visit_children(doc)
-      @node_stack.pop
+      @node_stack.clear
     end
 
     def visit_element(node)
-      element = Element.new(node, context)
-      if @node_stack.empty?
-        # For root element, we need to set it directly
-        adapter.set_root(@current_doc.native, element.native)
-      else
-        @node_stack.last.add_child(element)
-      end
-      @node_stack.push(element)
+      childless_node = adapter.duplicate_node(node)
+      adapter.replace_children(childless_node, [])
+      element = Element.new(childless_node, context)
+      @node_stack.last.add_child(element)
+
+      @node_stack.push(element) # add a parent for its children
       visit_children(node)
-      @node_stack.pop
-      element
+      @node_stack.pop # remove the parent
     end
 
     def visit_text(node)
-      @node_stack.last.add_child(Text.new(node, context)) if @node_stack.any?
+      @node_stack.last&.add_child(Text.new(node, context))
     end
 
     def visit_cdata(node)
-      @node_stack.last.add_child(Cdata.new(node, context)) if @node_stack.any?
+      @node_stack.last&.add_child(Cdata.new(node, context))
     end
 
     def visit_comment(node)
-      @node_stack.last.add_child(Comment.new(node, context)) if @node_stack.any?
+      @node_stack.last&.add_child(Comment.new(node, context))
     end
 
     def visit_processing_instruction(node)
-      @node_stack.last.add_child(ProcessingInstruction.new(node, context)) if @node_stack.any?
+      @node_stack.last&.add_child(ProcessingInstruction.new(node, context))
     end
 
     def visit_doctype(node)
-      @node_stack.last.add_child(Doctype.new(node, context)) if @node_stack.any?
+      @node_stack.last&.add_child(Doctype.new(node, context))
     end
 
     def visit_children(node)

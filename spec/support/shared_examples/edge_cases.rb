@@ -86,7 +86,7 @@ RSpec.shared_examples "Moxml Edge Cases" do
 
       doc = context.parse(xml)
       grandchild = doc.at_xpath("//xmlns:grandchild", "xmlns" => "")
-      expect(grandchild.namespace.uri).to eq("")
+      expect(grandchild.namespaces.first.uri).to eq("")
     end
 
     it "handles recursive namespace definitions" do
