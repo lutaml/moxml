@@ -14,11 +14,9 @@ module Moxml
           native_doc = begin
             ::REXML::Document.new(xml)
           rescue ::REXML::ParseException => e
-            if options[:strict]
-              raise Moxml::ParseError.new(e.message, line: e.line)
-            else
-              create_document
-            end
+            raise Moxml::ParseError.new(e.message, line: e.line) if options[:strict]
+
+            create_document
           end
           DocumentBuilder.new(Context.new(:rexml)).build(native_doc)
         end
@@ -62,7 +60,7 @@ module Moxml
           elsif system_id
             parts.concat(["SYSTEM", %("#{system_id}")])
           end
-          
+
           ::REXML::DocType.new(parts.join(" "))
         end
 
@@ -98,11 +96,9 @@ module Moxml
           when ::REXML::Element, ::REXML::DocType
             node.name
           when ::REXML::XMLDecl
-            'xml'
+            "xml"
           when ::REXML::Instruction
             node.target
-          else
-            nil
           end
         end
 
@@ -114,14 +110,14 @@ module Moxml
 
         def children(node)
           return [] unless node.respond_to?(:children)
-          
+
           # Get all children and filter out empty text nodes between elements
           result = node.children.reject do |child|
-            child.is_a?(::REXML::Text) && 
-            child.to_s.strip.empty? && 
-            !(child.next_sibling.nil? && child.previous_sibling.nil?)
+            child.is_a?(::REXML::Text) &&
+              child.to_s.strip.empty? &&
+              !(child.next_sibling.nil? && child.previous_sibling.nil?)
           end
-          
+
           # Ensure uniqueness by object_id to prevent duplicates
           result.uniq(&:object_id)
         end
@@ -132,7 +128,7 @@ module Moxml
 
         def next_sibling(node)
           current = node.next_sibling
-          
+
           # Skip empty text nodes and duplicates
           seen = Set.new
           while current
@@ -140,23 +136,23 @@ module Moxml
               current = current.next_sibling
               next
             end
-            
+
             # Check for duplicates
             if seen.include?(current.object_id)
               current = current.next_sibling
               next
             end
-            
+
             seen.add(current.object_id)
             break
           end
-          
+
           current
         end
 
         def previous_sibling(node)
           current = node.previous_sibling
-          
+
           # Skip empty text nodes and duplicates
           seen = Set.new
           while current
@@ -164,17 +160,17 @@ module Moxml
               current = current.previous_sibling
               next
             end
-            
+
             # Check for duplicates
             if seen.include?(current.object_id)
               current = current.previous_sibling
               next
             end
-            
+
             seen.add(current.object_id)
             break
           end
-          
+
           current
         end
 
@@ -188,9 +184,10 @@ module Moxml
 
         def attributes(element)
           return [] unless element.respond_to?(:attributes)
+
           # Only return non-namespace attributes
           element.attributes.values
-            .reject { |attr| attr.prefix.to_s.start_with?("xmlns") }
+                 .reject { |attr| attr.prefix.to_s.start_with?("xmlns") }
         end
 
         def attribute_element(attribute)
@@ -328,8 +325,8 @@ module Moxml
         def inner_text(node)
           # Get direct text children only, filter duplicates
           text_children = node.children
-            .select { |c| c.is_a?(::REXML::Text) }
-            .uniq(&:object_id)
+                              .select { |c| c.is_a?(::REXML::Text) }
+                              .uniq(&:object_id)
           text_children.map(&:value).join
         end
 
@@ -353,7 +350,7 @@ module Moxml
 
         # add a namespace prefix to the element name AND a namespace definition
         def set_namespace(element, ns)
-          prefix = ns.name.to_s.empty? ? 'xmlns' : ns.name.to_s
+          prefix = ns.name.to_s.empty? ? "xmlns" : ns.name.to_s
           element.add_namespace(prefix, ns.value) if element.respond_to?(:add_namespace)
           element.name = "#{prefix}:#{element.name}"
           owner = element.is_a?(::REXML::Attribute) ? element.element : element
@@ -361,7 +358,7 @@ module Moxml
         end
 
         def namespace_prefix(node)
-          node.name unless node.name == 'xmlns'
+          node.name unless node.name == "xmlns"
         end
 
         def namespace_uri(node)
@@ -385,23 +382,23 @@ module Moxml
 
         def prepare_xpath_namespaces(node)
           ns = {}
-          
+
           # Get all namespace definitions in scope
           all_ns = namespace_definitions(node)
-          
+
           # Convert to XPath-friendly format
           all_ns.each do |prefix, uri|
             if prefix.to_s.empty?
-              ns['xmlns'] = uri
+              ns["xmlns"] = uri
             else
               ns[prefix] = uri
             end
           end
-          
+
           ns
         end
 
-        def xpath(node, expression, namespaces = {})
+        def xpath(node, expression, _namespaces = {})
           node.get_elements(expression).to_a
         rescue ::REXML::ParseException => e
           raise Moxml::XPathError, e.message
@@ -414,25 +411,23 @@ module Moxml
 
         def serialize(node, options = {})
           output = String.new
-          
+
           if node.is_a?(::REXML::Document)
             # Always include XML declaration
             decl = node.xml_decl || ::REXML::XMLDecl.new("1.0", options[:encoding] || "UTF-8")
-            if options[:encoding]
-              decl.encoding = options[:encoding]
-            end
+            decl.encoding = options[:encoding] if options[:encoding]
             output << "<?xml"
             output << %( version="#{decl.version}") if decl.version
             output << %( encoding="#{decl.encoding}") if decl.encoding
             output << %( standalone="#{decl.standalone}") if decl.standalone
             output << "?>"
             # output << "\n"
-            
+
             if node.doctype
               node.doctype.write(output)
               # output << "\n"
             end
-            
+
             # Write processing instructions
             node.children.each do |child|
               if child.is_a?(::REXML::Instruction)
@@ -440,14 +435,12 @@ module Moxml
                 # output << "\n"
               end
             end
-            
-            if node.root
-              write_with_formatter(node.root, output, options[:indent] || 2)
-            end
+
+            write_with_formatter(node.root, output, options[:indent] || 2) if node.root
           else
             write_with_formatter(node, output, options[:indent] || 2)
           end
-          
+
           output.strip
         end
 

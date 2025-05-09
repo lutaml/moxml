@@ -221,31 +221,31 @@ RSpec.shared_examples "xml adapter" do
         pending("Rexml does not respect ZPath namespaces") if described_class.name.include?("Rexml")
         # Parse original XML
         doc = described_class.parse(xml).native
-        
+
         # Test namespace preservation in serialization
         result = described_class.serialize(doc)
         expect(result).to include('xmlns="http://www.w3.org/2000/svg"')
         expect(result).to include('xmlns:xlink="http://www.w3.org/1999/xlink"')
-        
+
         # Test xpath with namespaces
         namespaces = {
-          'svg' => 'http://www.w3.org/2000/svg',
-          'xlink' => 'http://www.w3.org/1999/xlink'
+          "svg" => "http://www.w3.org/2000/svg",
+          "xlink" => "http://www.w3.org/1999/xlink"
         }
-        
+
         # Find use element and verify xlink:href attribute
         use_elem = described_class.at_xpath(doc, "//svg:use", namespaces)
         expect(use_elem).not_to be_nil
-        expect(described_class.get_attribute_value(use_elem, 'xlink:href')).to eq('#myCircle')
-        
+        expect(described_class.get_attribute_value(use_elem, "xlink:href")).to eq("#myCircle")
+
         # Verify circle element exists in defs
         circle = described_class.at_xpath(doc, "//svg:defs/svg:circle", namespaces)
         expect(circle).not_to be_nil
-        expect(described_class.get_attribute_value(circle, 'id')).to eq('myCircle')
-        
+        expect(described_class.get_attribute_value(circle, "id")).to eq("myCircle")
+
         # Test default SVG namespace
         text = described_class.at_xpath(doc, "//svg:text", namespaces)
-        expect(described_class.text_content(text)).to eq('SVG')
+        expect(described_class.text_content(text)).to eq("SVG")
       end
     end
 
@@ -253,7 +253,7 @@ RSpec.shared_examples "xml adapter" do
       let(:xml) do
         <<~XML
           <?xml version="1.0" encoding="UTF-8"?>
-          <rss version="2.0" 
+          <rss version="2.0"#{" "}
             xmlns:atom="http://www.w3.org/2005/Atom"
             xmlns:dc="http://purl.org/dc/elements/1.1/"
             xmlns:content="http://purl.org/rss/1.0/modules/content/">
@@ -273,32 +273,32 @@ RSpec.shared_examples "xml adapter" do
       it "preserves and correctly handles multiple namespaces" do
         # Parse original XML
         doc = described_class.parse(xml).native
-        
+
         # Test namespace preservation in serialization
         result = described_class.serialize(doc)
         expect(result).to include('xmlns:atom="http://www.w3.org/2005/Atom"')
         expect(result).to include('xmlns:dc="http://purl.org/dc/elements/1.1/"')
         expect(result).to include('xmlns:content="http://purl.org/rss/1.0/modules/content/"')
-        
+
         # Test xpath with namespaces
         namespaces = {
-          'atom' => 'http://www.w3.org/2005/Atom',
-          'dc' => 'http://purl.org/dc/elements/1.1/',
-          'content' => 'http://purl.org/rss/1.0/modules/content/'
+          "atom" => "http://www.w3.org/2005/Atom",
+          "dc" => "http://purl.org/dc/elements/1.1/",
+          "content" => "http://purl.org/rss/1.0/modules/content/"
         }
-        
+
         # Find creator using namespaced xpath
         creator = described_class.at_xpath(doc, "//dc:creator", namespaces)
-        expect(described_class.text_content(creator)).to eq('John Doe')
-        
+        expect(described_class.text_content(creator)).to eq("John Doe")
+
         # Verify atom:link exists
         link = described_class.at_xpath(doc, "//atom:link", namespaces)
         expect(link).not_to be_nil
-        expect(described_class.get_attribute_value(link, 'href')).to eq('http://example.com/feed')
-        
+        expect(described_class.get_attribute_value(link, "href")).to eq("http://example.com/feed")
+
         # Verify CDATA in content:encoded
         content = described_class.at_xpath(doc, "//content:encoded", namespaces)
-        expect(described_class.text_content(content)).to eq('<p>Post content</p>')
+        expect(described_class.text_content(content)).to eq("<p>Post content</p>")
       end
     end
 
@@ -306,7 +306,7 @@ RSpec.shared_examples "xml adapter" do
       let(:xml) do
         <<~XML
           <?xml version="1.0" encoding="UTF-8"?>
-          <soap:Envelope 
+          <soap:Envelope#{" "}
             xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:ns="urn:example:namespace">
@@ -325,29 +325,29 @@ RSpec.shared_examples "xml adapter" do
       it "preserves and correctly handles multiple namespaces" do
         # Parse original XML
         doc = described_class.parse(xml).native
-        
+
         # Test namespace preservation in serialization
         result = described_class.serialize(doc)
         expect(result).to include('xmlns:soap="http://www.w3.org/2003/05/soap-envelope"')
         expect(result).to include('xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
         expect(result).to include('xmlns:ns="urn:example:namespace"')
-        
+
         # Test xpath with namespaces
         namespaces = {
-          'soap' => 'http://www.w3.org/2003/05/soap-envelope',
-          'ns' => 'urn:example:namespace'
+          "soap" => "http://www.w3.org/2003/05/soap-envelope",
+          "ns" => "urn:example:namespace"
         }
-        
+
         # Find user ID using namespaced xpath
         user_id = described_class.at_xpath(doc, "//ns:UserId", namespaces)
-        expect(described_class.text_content(user_id)).to eq('user123')
-        
+        expect(described_class.text_content(user_id)).to eq("user123")
+
         # Verify soap:Body exists
         body = described_class.at_xpath(doc, "//soap:Body", namespaces)
         expect(body).not_to be_nil
-        
+
         # Verify attribute with namespace
-        expect(described_class.get_attribute_value(user_id, 'xsi:type')).to eq('xsi:string')
+        expect(described_class.get_attribute_value(user_id, "xsi:type")).to eq("xsi:string")
       end
     end
   end
