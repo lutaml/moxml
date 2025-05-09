@@ -456,7 +456,9 @@ end
 
 == Configuration
 
-Moxml can be configured globally or per instance:
+=== General
+
+Moxml can be configured globally or per instance.
 
 [source,ruby]
 ----
@@ -473,6 +475,26 @@ moxml = Moxml.new do |config|
   config.strict = false
 end
 ----
+
+=== Default adapter selection
+
+To use an adapter other than `:nokogiri` as the global default, set it before
+processing any input using the following option.
+
+[source,ruby]
+----
+Moxml::Config.default_adapter = <adapter-symbol>
+----
+
+Moxml supports the following adapters:
+
+`:nokogiri`:: (default) https://github.com/sparklemotion/nokogiri[Nokogiri], a
+wrapper around the https://github.com/GNOME/libxml2[libxml2] C library
+
+`:oga`:: https://github.com/yorickpeterse/oga[Oga], a pure Ruby XML parser
+
+`:ox`:: https://github.com/ohler55/ox[Ox], a fast XML parser (not yet supported)
+
 
 == Thread safety
 
@@ -567,11 +589,11 @@ end
 
 == Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin feature/my-new-feature`)
-5. Create a new Pull Request
+. Fork the repository
+. Create your feature branch (`git checkout -b feature/my-new-feature`)
+. Commit your changes (`git commit -am 'Add some feature'`)
+. Push to the branch (`git push origin feature/my-new-feature`)
+. Create a new Pull Request
 
 == License
 

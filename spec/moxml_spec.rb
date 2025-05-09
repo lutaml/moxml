@@ -36,7 +36,7 @@ RSpec.describe Moxml do
 
     it "uses configured options from the block" do
       Moxml.configure do |config|
-        config.adapter = :oga
+        config.default_adapter = :oga
         config.strict_parsing = false
         config.default_encoding = "US-ASCII"
       end
