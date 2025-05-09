@@ -4,19 +4,19 @@ module Moxml
       # Wrapper to provide .native method expected by tests
       class Wrapper
         attr_reader :native
-        
+
         def initialize(native_obj)
           @native = native_obj
         end
-        
+
         def method_missing(method, *args, &block)
           if method == :text && @native.is_a?(::REXML::Text)
-            @native.value #.strip
+            @native.value # .strip
           elsif method == :to_xml
             if @native.is_a?(::REXML::Attribute)
               value = escape_attribute_value(@native.value.to_s)
               prefix = @native.prefix ? "#{@native.prefix}:" : ""
-              %{#{prefix}#{@native.name}="#{value}"}
+              %(#{prefix}#{@native.name}="#{value}")
             elsif @native.is_a?(String)
               escape_attribute_value(@native.to_s)
             else
@@ -34,10 +34,10 @@ module Moxml
             name = @native.expanded_name
             prefix = @native.prefix
             value = args.first.to_s
-            
+
             # Remove old attribute
             @native.remove
-            
+
             if prefix
               # Find namespace URI in current scope
               current = element
@@ -56,7 +56,7 @@ module Moxml
                 current = current.parent
               end
               # If no namespace found, create without namespace
-              if !current
+              unless current
                 element.add_attribute(name, value)
                 @native = element.attributes[name]
               end
@@ -69,7 +69,7 @@ module Moxml
             @native.send(method, *args, &block)
           end
         end
-        
+
         def respond_to_missing?(method, include_private = false)
           if method == :text && @native.is_a?(::REXML::Text)
             true
@@ -86,6 +86,7 @@ module Moxml
 
         def ==(other)
           return false unless other.is_a?(Wrapper) || other.is_a?(::REXML::Element)
+
           if @native.is_a?(::REXML::Attribute) && other.respond_to?(:native) && other.native.is_a?(::REXML::Attribute)
             @native.value == other.native.value && @native.name == other.native.name
           else
@@ -99,11 +100,11 @@ module Moxml
         def escape_attribute_value(value)
           value.to_s.gsub(/[<>&"']/) do |match|
             case match
-            when '<' then '&lt;'
-            when '>' then '&gt;'
-            when '&' then '&amp;'
-            when '"' then '&quot;'
-            when "'" then '&apos;'
+            when "<" then "&lt;"
+            when ">" then "&gt;"
+            when "&" then "&amp;"
+            when '"' then "&quot;"
+            when "'" then "&apos;"
             end
           end
         end
