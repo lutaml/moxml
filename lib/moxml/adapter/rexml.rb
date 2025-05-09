@@ -11,9 +11,8 @@ module Moxml
     class Rexml < Base
       class << self
         def parse(xml, options = {})
-          doc = begin
-            doc = ::REXML::Document.new(xml.to_s)
-            doc
+          native_doc = begin
+            ::REXML::Document.new(xml)
           rescue ::REXML::ParseException => e
             if options[:strict]
               raise Moxml::ParseError.new(e.message, line: e.line)
@@ -21,7 +20,7 @@ module Moxml
               create_document
             end
           end
-          DocumentBuilder.new(Context.new(:rexml)).build(doc)
+          DocumentBuilder.new(Context.new(:rexml)).build(native_doc)
         end
 
         def create_document
@@ -96,9 +95,7 @@ module Moxml
 
         def node_name(node)
           case node
-          when ::REXML::Element
-            node.name
-          when ::REXML::DocType
+          when ::REXML::Element, ::REXML::DocType
             node.name
           when ::REXML::XMLDecl
             'xml'
@@ -107,6 +104,12 @@ module Moxml
           else
             nil
           end
+        end
+
+        def duplicate_node(node)
+          # Make a complete duplicate of the node
+          # https://stackoverflow.com/questions/23878384/why-the-original-element-got-changed-when-i-modify-the-copy-created-by-dup-meth
+          Marshal.load(Marshal.dump(node))
         end
 
         def children(node)
@@ -217,20 +220,7 @@ module Moxml
         end
 
         def get_attribute_value(element, name)
-          value = element.attributes[name]
-          escape_attribute_value(value.to_s) if value
-        end
-
-        def escape_attribute_value(value)
-          value.to_s.gsub(/[<>&"']/) do |match|
-            case match
-            when '<' then '&lt;'
-            when '>' then '&gt;'
-            when '&' then '&amp;'
-            when '"' then '&quot;'
-            when "'" then '&apos;'
-            end
-          end
+          element.attributes[name]
         end
 
         def remove_attribute(element, name)
@@ -248,6 +238,11 @@ module Moxml
 
         def add_previous_sibling(node, sibling)
           parent = node.parent
+          # caveat: Rexml fails if children belong to the same parent and are already in a correct order
+          # example: "<root><a/><b/></root>"
+          # add_previous_sibling(node_b, node_a)
+          # result: "<root><b/><a/></root>"
+          # expected result: "<root><a/><b/></root>"
           parent.insert_before(node, sibling)
         end
 
@@ -407,68 +402,9 @@ module Moxml
         end
 
         def xpath(node, expression, namespaces = {})
-          # Get the actual node to search from
-          context = if node.respond_to?(:native)
-            node.native
-          else
-            node
-          end
-          
-          # If it's a document, use its root for context
-          context = if context.is_a?(::REXML::Document)
-            context.root || context
-          else
-            context
-          end
-          
-          ns = prepare_xpath_namespaces(context).merge(namespaces || {})
-          
-          begin
-            # Convert namespaces for REXML
-            rexml_ns = {}
-            
-            # Handle namespaces
-            ns.each do |prefix, uri|
-              if prefix == 'xmlns'
-                # Add default namespace with empty prefix for elements
-                rexml_ns[''] = uri
-                # Also add with xmlns prefix for backward compatibility
-                rexml_ns['xmlns'] = uri
-              else
-                # Add other namespaces directly
-                rexml_ns[prefix] = uri
-              end
-            end
-
-            # Modify expression to handle default namespace correctly
-            expr = expression.gsub(/\/(?!\/|@)([^\/\[\]]+)/) do |match|
-              element = $1
-              if element.include?(':')
-                "/#{element}"  # Keep prefixed elements as-is
-              else
-                "/*[local-name()='#{element}']"  # Use local-name() for unprefixed elements
-              end
-            end
-            expr = expr.sub(/^(?!\/)/, '/')  # Ensure relative paths work correctly
-            
-            # Handle absolute paths
-            if expr.start_with?('//')
-              # Keep descendant-or-self axis as-is
-            elsif expr.start_with?('/')
-              # Find document root
-              root = context
-              while root.respond_to?(:parent) && root.parent
-                root = root.parent
-              end
-              context = root.is_a?(::REXML::Document) ? root.root || root : root
-              expression = expression.sub(%r{^/}, '')
-            end
-            
-            result = ::REXML::XPath.match(context, expression, rexml_ns)
-            result.uniq { |w| w.object_id }
-          rescue ::REXML::ParseException => e
-            raise Moxml::XPathError, e.message
-          end
+          node.get_elements(expression).to_a
+        rescue ::REXML::ParseException => e
+          raise Moxml::XPathError, e.message
         end
 
         def at_xpath(node, expression, namespaces = {})

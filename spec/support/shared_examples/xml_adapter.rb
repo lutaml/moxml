@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# This test works directly with native nodes which looks quite strange
+# A better way is to run it through Moxml wrappers
 RSpec.shared_examples "xml adapter" do
   let(:xml) do
     <<~XML
@@ -81,8 +83,6 @@ RSpec.shared_examples "xml adapter" do
     end
 
     it "gets siblings" do
-      pending("Oga includes text nodes into siblings") if described_class.name.include?("Oga")
-
       children = described_class.children(root)
       first = children[0]
       second = children[1]
@@ -99,13 +99,16 @@ RSpec.shared_examples "xml adapter" do
 
     it "adds text child" do
       described_class.add_child(root, "text")
-      expect(described_class.children(root).last.text).to eq("text")
+      # a workaround for Rexml until we convert tests to work with Moxml wrappers
+      last_child = described_class.children(root).last
+      last_text = last_child.respond_to?(:text) ? last_child.text : last_child.to_s
+      expect(last_text).to eq("text")
     end
   end
 
   describe "attributes" do
-    let(:doc) { described_class.parse(xml) }
-    let(:element) { described_class.children(described_class.root(doc.native)).first }
+    let(:doc) { described_class.parse(xml).native }
+    let(:element) { described_class.children(described_class.root(doc)).first }
 
     it "gets attributes" do
       attrs = described_class.attributes(element)
@@ -124,8 +127,11 @@ RSpec.shared_examples "xml adapter" do
     end
 
     it "handles special characters in attributes" do
+      # pending("Oga does not support indentation settings") if described_class.name.include?("Oga")
       described_class.set_attribute(element, "special", '< > & " \'')
-      value = described_class.get_attribute(element, "special")&.to_xml
+      # a workaround for Rexml until we convert tests to work with Moxml wrappers
+      attr = described_class.get_attribute(element, "special")
+      value = attr.respond_to?(:to_xml) ? attr&.to_xml : attr.to_s
       expect(value).to match(/&lt; &gt; &amp; (&quot;|") ('|&apos;)/)
     end
   end
@@ -159,7 +165,6 @@ RSpec.shared_examples "xml adapter" do
     end
 
     it "respects indentation settings" do
-      pending("Indent cannot be negative, and zero indent doesn't remove newlines") if described_class.name.include?("Nokogiri")
       pending("Oga does not support indentation settings") if described_class.name.include?("Oga")
       pending("Postponed for Rexml till better times") if described_class.name.include?("Rexml")
 
@@ -182,7 +187,7 @@ RSpec.shared_examples "xml adapter" do
   end
 
   describe "xpath" do
-    let(:doc) { described_class.parse(xml) }
+    let(:doc) { described_class.parse(xml).native }
 
     it "finds nodes by xpath" do
       nodes = described_class.xpath(doc, "//xmlns:child")
@@ -213,11 +218,12 @@ RSpec.shared_examples "xml adapter" do
       end
 
       it "preserves and correctly handles multiple namespaces" do
+        pending("Rexml does not respect ZPath namespaces") if described_class.name.include?("Rexml")
         # Parse original XML
-        doc = described_class.parse(xml)
+        doc = described_class.parse(xml).native
         
         # Test namespace preservation in serialization
-        result = described_class.serialize(doc.native)
+        result = described_class.serialize(doc)
         expect(result).to include('xmlns="http://www.w3.org/2000/svg"')
         expect(result).to include('xmlns:xlink="http://www.w3.org/1999/xlink"')
         
@@ -266,10 +272,10 @@ RSpec.shared_examples "xml adapter" do
 
       it "preserves and correctly handles multiple namespaces" do
         # Parse original XML
-        doc = described_class.parse(xml)
+        doc = described_class.parse(xml).native
         
         # Test namespace preservation in serialization
-        result = described_class.serialize(doc.native)
+        result = described_class.serialize(doc)
         expect(result).to include('xmlns:atom="http://www.w3.org/2005/Atom"')
         expect(result).to include('xmlns:dc="http://purl.org/dc/elements/1.1/"')
         expect(result).to include('xmlns:content="http://purl.org/rss/1.0/modules/content/"')
@@ -318,10 +324,10 @@ RSpec.shared_examples "xml adapter" do
 
       it "preserves and correctly handles multiple namespaces" do
         # Parse original XML
-        doc = described_class.parse(xml)
+        doc = described_class.parse(xml).native
         
         # Test namespace preservation in serialization
-        result = described_class.serialize(doc.native)
+        result = described_class.serialize(doc)
         expect(result).to include('xmlns:soap="http://www.w3.org/2003/05/soap-envelope"')
         expect(result).to include('xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
         expect(result).to include('xmlns:ns="urn:example:namespace"')

@@ -157,6 +157,7 @@ module Moxml
           # First write namespace declarations
           node.attributes.each do |name, attr|
             if name.to_s.start_with?('xmlns:') || name.to_s == 'xmlns'
+              name = 'xmlns' if name.to_s == 'xmlns:' # convert the default namespace
               value = attr.respond_to?(:value) ? attr.value : attr
               output << " #{name}=\"#{value}\""
             end

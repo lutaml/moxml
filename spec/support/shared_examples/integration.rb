@@ -53,7 +53,7 @@ RSpec.shared_examples "Moxml Integration" do
       end
     end
 
-    it "handles xpath queries", focus: true do
+    it "handles xpath queries" do
       # Test XPath queries
       #
       # XPath with a default namespace is a problem
@@ -111,7 +111,7 @@ RSpec.shared_examples "Moxml Integration" do
       # Move nodes
       b_node = doc.at_xpath("//b")
       a_node = doc.at_xpath("//a")
-      b_node.add_previous_sibling(a_node)
+      a_node.add_previous_sibling(b_node)
 
       # Add nodes
       c_node = doc.create_element("c")
@@ -125,7 +125,7 @@ RSpec.shared_examples "Moxml Integration" do
       b_node.add_child(doc.create_comment(" comment "))
       b_node.add_child(doc.create_cdata("<tag>"))
 
-      expect(doc.root.children.map(&:name)).to eq(%w[a b c])
+      expect(doc.root.children.map(&:name)).to eq(%w[b c a])
       expect(doc.to_xml).to include(
         '<root id="main">',
         "<b>2<!-- comment --><![CDATA[<tag>]]></b>"

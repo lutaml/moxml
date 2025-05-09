@@ -213,11 +213,25 @@ module Moxml
         end
 
         def add_previous_sibling(node, sibling)
-          node.before(sibling)
+          if node.parent == sibling.parent
+            # Oga doesn't manipulate children of the same parent
+            dup_sibling = node.node_set.delete(sibling)
+            index = node.node_set.index(node)
+            node.node_set.insert(index, dup_sibling)
+          else
+            node.before(sibling)
+          end
         end
 
         def add_next_sibling(node, sibling)
-          node.after(sibling)
+          if node.parent == sibling.parent
+            # Oga doesn't manipulate children of the same parent
+            dup_sibling = node.node_set.delete(sibling)
+            index = node.node_set.index(node) + 1
+            node.node_set.insert(index, dup_sibling)
+          else
+            node.after(sibling)
+          end
         end
 
         def remove(node)
@@ -229,7 +243,7 @@ module Moxml
         end
 
         def replace_children(node, new_children)
-          node.inner_text = ""
+          node.children = []
           new_children.each { |child| add_child(node, child) }
         end
 
@@ -296,14 +310,14 @@ module Moxml
           node.namespaces.values
         end
 
-        def xpath(node, expression, _namespaces = {})
-          node.xpath(expression).to_a
+        def xpath(node, expression, namespaces = nil)
+          node.xpath(expression, {}, namespaces: namespaces&.transform_keys(&:to_s)).to_a
         rescue ::LL::ParserError => e
           raise Moxml::XPathError, e.message
         end
 
-        def at_xpath(node, expression, _namespaces = {})
-          node.at_xpath(expression)
+        def at_xpath(node, expression, namespaces = nil)
+          node.at_xpath(expression, namespaces: namespaces)
         rescue ::Oga::XPath::Error => e
           raise Moxml::XPathError, e.message
         end
