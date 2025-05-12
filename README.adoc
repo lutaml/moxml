@@ -24,7 +24,27 @@ Key features:
 * Easy switching between XML processing engines
 * Clean separation between interface and implementation
 
+== Supported XML libraries
+
+Moxml supports the following XML libraries:
+
+REXML:: (default) https://github.com/ruby/rexml[REXML], a pure Ruby XML parser
+distributed with standard Ruby. Not the fastest, but always available.
+
+Nokogiri:: (recommended) https://github.com/sparklemotion/nokogiri[Nokogiri], a
+widely used implementation which wraps around the performant
+https://github.com/GNOME/libxml2[libxml2] C library.
+
+Oga:: https://github.com/yorickpeterse/oga[Oga], a pure Ruby XML parser.
+Recommended when you need a pure Ruby solution say for
+https://github.com/opal/opal[Opal].
+
+Ox:: https://github.com/ohler55/ox[Ox], a fast XML parser (to be supported)
+
+
 == Getting started
+
+=== Installation
 
 Install the gem and at least one supported XML library:
 
@@ -32,7 +52,7 @@ Install the gem and at least one supported XML library:
 ----
 # In your Gemfile
 gem 'moxml'
-gem 'nokogiri'  # Or 'oga', or 'ox' when it is integrated, or 'rexml'
+gem 'nokogiri'  # Or 'oga', 'rexml', or 'ox' when it is integrated
 ----
 
 === Basic document creation
@@ -478,24 +498,24 @@ end
 
 === Default adapter selection
 
-To use an adapter other than `:nokogiri` as the global default, set it before
-processing any input using the following option.
+To select a non-default adapter, set it before processing any input using the
+following syntax.
 
 [source,ruby]
 ----
 Moxml::Config.default_adapter = <adapter-symbol>
 ----
 
-Moxml supports the following adapters:
+Where, `<adapter-symbol>` is one of the following:
 
-`:nokogiri`:: (default) https://github.com/sparklemotion/nokogiri[Nokogiri], a
-wrapper around the https://github.com/GNOME/libxml2[libxml2] C library
+`:rexml`:: REXML (default)
 
-`:oga`:: https://github.com/yorickpeterse/oga[Oga], a pure Ruby XML parser
+`:nokogiri`:: Nokogiri
 
-`:ox`:: https://github.com/ohler55/ox[Ox], a fast XML parser (not yet supported)
+`:oga`:: Oga
 
-`:rexml`:: https://github.com/ruby/rexml[REXML], a pure Ruby XML parser included in the Ruby standard library
+`:ox`:: Ox (not yet supported)
+
 
 == Thread safety
 
@@ -598,7 +618,8 @@ end
 
 == License
 
-Copyright (c) 2024 Ribose Inc.
+Copyright (c) Ribose Inc.
 
-This project is licensed under the BSD-2-Clause License. See the LICENSE file for details.
+This project is licensed under the BSD-2-Clause License. See the
+link:LICENSE.md[] file for details.
 
