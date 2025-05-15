@@ -27,10 +27,10 @@ RSpec.shared_examples "Moxml::Builder" do
     it "creates the same document through direct manipulation" do
       doc2 = context.create_document
       doc2.add_child(doc2.create_declaration("1.0", "UTF-8"))
-      root = doc2.create_element('root')
-      child = doc2.create_element('child')
+      root = doc2.create_element("root")
+      child = doc2.create_element("child")
       child["id"] = "1"
-      text = doc2.create_text('content')
+      text = doc2.create_text("content")
 
       child.add_child(text)
       root.add_child(child)

@@ -53,8 +53,8 @@ module Moxml
       self.class.new(nodes + other.nodes, context)
     end
 
-    def ==(other)
-      @nodes == self.nodes
+    def ==(_other)
+      @nodes == nodes
     end
 
     def text

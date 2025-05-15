@@ -39,18 +39,18 @@ RSpec.shared_examples "XPath Examples" do
 
     it "finds nested attributes efficiently" do
       # More efficient - specific path
-      titles1 = doc.xpath('//book/title')
+      titles1 = doc.xpath("//book/title")
 
       # Less efficient - requires full document scan
-      titles2 = doc.xpath('//title')
+      titles2 = doc.xpath("//title")
 
       # Most efficient - direct child access
-      titles3 = doc.xpath('./title')
+      titles3 = doc.xpath("./title")
 
       # Chain queries
-      titles4 = doc.xpath('//book').map do |book|
+      titles4 = doc.xpath("//book").map do |book|
         # Each book is a mapped Moxml::Element
-        book.at_xpath('.//title')
+        book.at_xpath(".//title")
       end
 
       expect(titles1).to eq(titles2)

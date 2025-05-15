@@ -45,14 +45,14 @@ RSpec.shared_examples "Moxml::Namespace" do
       it "renders the same xml - a readme example" do
         # chainable operations
         element
-          .add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
-          .add_child(doc.create_text('content'))
+          .add_namespace("dc", "http://purl.org/dc/elements/1.1/")
+          .add_child(doc.create_text("content"))
 
         # clear node type checking
         node = doc.create_element("test")
         if node.element?
-          node.add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
-          node.add_child(doc.create_text('content'))
+          node.add_namespace("dc", "http://purl.org/dc/elements/1.1/")
+          node.add_child(doc.create_text("content"))
         end
 
         expect(element.to_xml).to eq(node.to_xml)
