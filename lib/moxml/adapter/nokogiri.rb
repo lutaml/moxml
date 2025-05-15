@@ -120,6 +120,8 @@ module Moxml
           when ::Nokogiri::XML::CDATA then :cdata
           when ::Nokogiri::XML::Text then :text
           when ::Nokogiri::XML::Comment then :comment
+          when ::Nokogiri::XML::Attr then :attribute
+          when ::Nokogiri::XML::Namespace then :namespace
           when ::Nokogiri::XML::ProcessingInstruction then :processing_instruction
           when ::Nokogiri::XML::Document, ::Nokogiri::XML::DocumentFragment then :document
           when ::Nokogiri::XML::DTD then :doctype

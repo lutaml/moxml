@@ -53,6 +53,10 @@ module Moxml
       self.class.new(nodes + other.nodes, context)
     end
 
+    def ==(other)
+      @nodes == self.nodes
+    end
+
     def text
       map(&:text).join
     end

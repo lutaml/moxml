@@ -32,8 +32,30 @@ RSpec.shared_examples "XPath Examples" do
     it "finds nodes by attributes" do
       book = doc.at_xpath('//book[@id="2"]')
       expect(book).not_to be_nil
-      expect(book.at_xpath(".//dc:title",
-                           "dc" => "http://purl.org/dc/elements/1.1/").text).to eq("Second")
+      title = book.at_xpath(".//dc:title",
+                            "dc" => "http://purl.org/dc/elements/1.1/")
+      expect(title.text).to eq("Second")
+    end
+
+    it "finds nested attributes efficiently" do
+      # More efficient - specific path
+      titles1 = doc.xpath('//book/title')
+
+      # Less efficient - requires full document scan
+      titles2 = doc.xpath('//title')
+
+      # Most efficient - direct child access
+      titles3 = doc.xpath('./title')
+
+      # Chain queries
+      titles4 = doc.xpath('//book').map do |book|
+        # Each book is a mapped Moxml::Element
+        book.at_xpath('.//title')
+      end
+
+      expect(titles1).to eq(titles2)
+      expect(titles1).to eq(titles3)
+      expect(titles1).to eq(titles4)
     end
   end
 end

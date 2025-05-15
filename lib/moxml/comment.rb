@@ -11,9 +11,5 @@ module Moxml
       adapter.validate_comment_content(text)
       adapter.set_comment_content(@native, text)
     end
-
-    def comment?
-      true
-    end
   end
 end
