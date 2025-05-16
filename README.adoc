@@ -563,7 +563,7 @@ doc.xpath('//book/title')
 doc.xpath('//title')
 
 # Most efficient - direct child access
-root.xpath('./title')
+root.xpath('./*/title')
 ----
 
 == Best practices
