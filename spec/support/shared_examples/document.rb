@@ -106,5 +106,15 @@ RSpec.shared_examples "Moxml::Document" do
         "</root>"
       )
     end
+
+    it "prevents multiple roots" do
+      xml =
+        <<~XML
+          <?xml version="1.0" encoding="UTF-8"?>
+          <root/><another_root/>
+        XML
+
+      expect { context.parse(xml) }.to raise_error(Moxml::Error)
+    end
   end
 end
