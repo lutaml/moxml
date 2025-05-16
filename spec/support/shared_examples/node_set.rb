@@ -40,6 +40,10 @@ RSpec.shared_examples "Moxml::NodeSet" do
         expect(selected.size).to eq(2)
         expect(selected.map(&:text)).to eq(%w[First Third])
       end
+
+      it "compares nodes" do
+        expect(doc.xpath("//child")).to eq(doc.root.children)
+      end
     end
 
     describe "access methods" do

@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
 module Moxml
-  class Doctype < Node
-    def doctype?
-      true
-    end
-  end
+  class Doctype < Node; end
 end

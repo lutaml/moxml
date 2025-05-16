@@ -9,9 +9,5 @@ module Moxml
     def content=(text)
       adapter.set_cdata_content(@native, normalize_xml_value(text))
     end
-
-    def cdata?
-      true
-    end
   end
 end

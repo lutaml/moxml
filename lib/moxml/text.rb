@@ -9,9 +9,5 @@ module Moxml
     def content=(text)
       adapter.set_text_content(@native, normalize_xml_value(text))
     end
-
-    def text?
-      true
-    end
   end
 end

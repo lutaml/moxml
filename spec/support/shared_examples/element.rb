@@ -6,6 +6,10 @@ RSpec.shared_examples "Moxml::Element" do
     let(:doc) { context.create_document }
     let(:element) { doc.create_element("test") }
 
+    it "identifies as element node" do
+      expect(element).to be_element
+    end
+
     describe "name handling" do
       it "gets name" do
         expect(element.name).to eq("test")

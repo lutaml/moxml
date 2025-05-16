@@ -111,6 +111,8 @@ module Moxml
           when ::Oga::XML::Text then :text
           when ::Oga::XML::Cdata then :cdata
           when ::Oga::XML::Comment then :comment
+          when ::Oga::XML::Attribute then :attribute
+          when ::Oga::XML::Namespace then :namespace
           when ::Oga::XML::ProcessingInstruction then :processing_instruction
           when ::Oga::XML::Document then :document
           when ::Oga::XML::Doctype then :doctype

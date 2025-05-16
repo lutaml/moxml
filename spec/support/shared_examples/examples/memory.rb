@@ -29,6 +29,27 @@ RSpec.shared_examples "Memory Usage Examples" do
       expect(doc.xpath("//large-node")).to be_empty
     end
 
+    it "handles deeply nested nodes" do
+      doc = context.create_document
+      parent = doc
+
+      1000.times do |i|
+        node = doc.create_element("el_#{i}")
+        node.add_child(doc.create_text("Content #{i}"))
+        parent.add_child(node)
+        parent = node
+      end
+
+      # Process and remove nodes
+      memory_before = GetProcessMem.new.bytes
+      doc = nil
+      GC.start # Oga fails without it
+      memory_after = GetProcessMem.new.bytes
+
+      expect(memory_after).to be <= memory_before
+      expect(doc).to be_nil
+    end
+
     it "handles streaming processing" do
       # Create temp file
       file = Tempfile.new(["test", ".xml"])
