@@ -29,7 +29,8 @@ module Moxml
         end
 
         def create_text(content)
-          create_native_text(normalize_xml_value(content))
+          # Ox freezes the content, so we need to dup it
+          create_native_text(normalize_xml_value(content).dup)
         end
 
         def create_cdata(content)
@@ -73,6 +74,11 @@ module Moxml
 
         def duplicate_node(node)
           node.dup
+        end
+
+        def patch_node(node, parent = nil)
+          # monkey-patch the native node if necessary
+          node
         end
 
         protected

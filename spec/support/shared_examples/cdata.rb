@@ -23,26 +23,34 @@ RSpec.shared_examples "Moxml::Cdata" do
       cdata.content = nil
       expect(cdata.content).to eq("")
     end
-  end
-
-  describe "serialization" do
-    it "wraps content in CDATA section" do
-      expect(cdata.to_xml).to eq("<![CDATA[<content>]]>")
-    end
-
-    it "escapes CDATA end marker" do
-      cdata.content = "content]]>more"
-      expect(cdata.to_xml).to eq("<![CDATA[content]]]]><![CDATA[>more]]>")
-    end
-
-    it "handles special characters" do
-      cdata.content = "< > & \" '"
-      expect(cdata.to_xml).to include("< > & \" '")
-    end
 
     it "preserves whitespace" do
       cdata.content = "  spaced  content\n\t"
       expect(cdata.content).to eq("  spaced  content\n\t")
+    end
+  end
+
+  describe "serialization" do
+    before do
+      # Ox cannot dump a standalone CDATA node properly
+      # https://github.com/ohler55/ox/issues/376
+      doc.add_child(cdata)
+    end
+
+    it "wraps content in CDATA section" do
+      expect(doc.to_xml.strip).to end_with("<![CDATA[<content>]]>")
+    end
+
+    it "escapes CDATA end marker" do
+      # pending for Ox: https://github.com/ohler55/ox/issues/377
+      pending "Ox doesn't escape the end token" if context.config.adapter_name == :ox
+      cdata.content = "content]]>more"
+      expect(doc.to_xml.strip).to end_with("<![CDATA[content]]]]><![CDATA[>more]]>")
+    end
+
+    it "handles special characters" do
+      cdata.content = "< > & \" '"
+      expect(doc.to_xml).to include("< > & \" '")
     end
   end
 

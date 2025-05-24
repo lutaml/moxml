@@ -31,7 +31,7 @@ module Moxml
           DocumentBuilder.new(Context.new(:nokogiri)).build(native_doc)
         end
 
-        def create_document
+        def create_document(native_doc = nil)
           ::Nokogiri::XML::Document.new
         end
 

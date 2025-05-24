@@ -33,7 +33,8 @@ RSpec.shared_examples "Moxml::Text" do
   describe "special characters" do
     it "encodes basic XML entities" do
       text.content = "< > & \" '"
-      expect(text.to_xml).to eq("&lt; &gt; &amp; \" '")
+      doc.add_child(text)
+      expect(doc.to_xml.strip).to end_with("&lt; &gt; &amp; \" '")
     end
 
     it "preserves whitespace" do

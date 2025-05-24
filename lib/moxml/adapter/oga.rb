@@ -24,7 +24,7 @@ module Moxml
           DocumentBuilder.new(Context.new(:oga)).build(native_doc)
         end
 
-        def create_document
+        def create_document(native_doc = nil)
           ::Oga::XML::Document.new
         end
 
@@ -261,7 +261,7 @@ module Moxml
         end
 
         def set_text_content(node, content)
-          if node.respond_to?(:inner_text)
+          if node.respond_to?(:inner_text=)
             node.inner_text = content
           else
             # Oga::XML::Text node for example
