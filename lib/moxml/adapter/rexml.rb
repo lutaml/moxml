@@ -21,7 +21,7 @@ module Moxml
           DocumentBuilder.new(Context.new(:rexml)).build(native_doc)
         end
 
-        def create_document(native_doc = nil)
+        def create_document(_native_doc = nil)
           ::REXML::Document.new
         end
 

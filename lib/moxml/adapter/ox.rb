@@ -98,7 +98,7 @@ module Moxml
           prefix = ns.prefix
           # attributes don't have attributes but can have a namespace prefix
           set_attribute(element, ns.expanded_prefix, ns.uri) if element.respond_to?(:attributes)
-          element.name = [prefix, element.name.delete_prefix('xmlns:')].compact.join(":")
+          element.name = [prefix, element.name.delete_prefix("xmlns:")].compact.join(":")
           namespace(element)
         end
 
@@ -107,17 +107,19 @@ module Moxml
             if element.respond_to?(:prefix)
               # attribute
               element.prefix
-            elsif element.name.include?(':')
-              element.name.split(':').first
+            elsif element.name.include?(":")
+              element.name.split(":").first
             end
-          attr_name = ['xmlns', prefix].compact.join(':')
+          attr_name = ["xmlns", prefix].compact.join(":")
 
           ([element] + ancestors(element)).each do |node|
             next unless node.respond_to?(:attributes) && node.attributes
 
-            return ::Moxml::Adapter::CustomizedOx::Namespace.new(
-              prefix, node[attr_name], element
-            ) if node[attr_name]
+            if node[attr_name]
+              return ::Moxml::Adapter::CustomizedOx::Namespace.new(
+                prefix, node[attr_name], element
+              )
+            end
           end
 
           nil
@@ -278,7 +280,7 @@ module Moxml
 
         def get_attribute(element, name)
           return unless element.respond_to?(:attributes) && element.attributes
-          return unless (element.attributes.key?(name.to_s) || element.attributes.key?(name.to_s.to_sym))
+          return unless element.attributes.key?(name.to_s) || element.attributes.key?(name.to_s.to_sym)
 
           ::Moxml::Adapter::CustomizedOx::Attribute.new(
             name.to_s, element.attributes[name], element
@@ -367,6 +369,7 @@ module Moxml
 
         def inner_text(node)
           return "" unless node.respond_to?(:nodes)
+
           node.nodes.select { _1.is_a?(String) }.join
         end
 
@@ -396,7 +399,7 @@ module Moxml
         end
 
         def processing_instruction_content(node)
-          node.content.to_s.sub(' ', '')
+          node.content.to_s.sub(" ", "")
         end
 
         def set_processing_instruction_content(node, content)

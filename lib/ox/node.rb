@@ -1,4 +1,4 @@
-require 'ox/node'
+require "ox/node"
 
 module Ox
   class Node

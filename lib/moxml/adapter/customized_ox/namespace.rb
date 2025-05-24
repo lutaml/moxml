@@ -13,12 +13,13 @@ module Moxml
         end
 
         def prefix
-          return if @prefix == 'xmlns' || @prefix.nil?
-          @prefix.to_s.delete_prefix('xmlns:')
+          return if @prefix == "xmlns" || @prefix.nil?
+
+          @prefix.to_s.delete_prefix("xmlns:")
         end
 
         def expanded_prefix
-          ['xmlns', prefix].compact.join(':')
+          ["xmlns", prefix].compact.join(":")
         end
 
         def default?

@@ -13,15 +13,13 @@ module Moxml
         end
 
         def name=(new_name)
-          if new_name.to_s.include?(':')
-            @prefix, new_name = new_name.to_s.split(':', 2)
-          end
+          @prefix, new_name = new_name.to_s.split(":", 2) if new_name.to_s.include?(":")
 
           @name = new_name
         end
 
         def expanded_name
-          [prefix, name].compact.join(':')
+          [prefix, name].compact.join(":")
         end
       end
     end

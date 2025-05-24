@@ -33,7 +33,7 @@ RSpec.shared_examples "Memory Usage Examples" do
       pending "Ox has a load_file method, but nothing about a stream" if context.config.adapter_name == :ox
       # Process file
       doc = nil
-      File.open('spec/fixtures/small.xml') do |f|
+      File.open("spec/fixtures/small.xml") do |f|
         doc = context.parse(f)
         expect(doc.at_xpath("//item").text).to eq("data")
         doc = nil
