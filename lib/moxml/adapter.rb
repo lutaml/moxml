@@ -4,7 +4,7 @@ require_relative "adapter/base"
 
 module Moxml
   module Adapter
-    AVALIABLE_ADAPTERS = %i[nokogiri oga rexml].freeze # ox to be added later
+    AVALIABLE_ADAPTERS = %i[nokogiri oga rexml ox].freeze
 
     class << self
       def load(name)

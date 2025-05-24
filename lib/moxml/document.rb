@@ -63,7 +63,7 @@ module Moxml
         if children.empty?
           adapter.add_child(@native, node.native)
         else
-          adapter.add_previous_sibling(children.first.native, node.native)
+          adapter.add_previous_sibling(adapter.children(@native).first, node.native)
         end
       elsif root && !node.is_a?(ProcessingInstruction) && !node.is_a?(Comment)
         raise Error, "Document already has a root element"

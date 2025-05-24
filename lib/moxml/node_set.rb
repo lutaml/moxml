@@ -42,7 +42,6 @@ module Moxml
     def size
       nodes.size
     end
-
     alias length size
 
     def to_a

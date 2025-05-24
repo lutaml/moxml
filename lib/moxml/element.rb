@@ -52,7 +52,8 @@ module Moxml
       ns && Namespace.new(ns, context)
     end
 
-    # it does NOT change the list of namespace definitions
+    # add the prefix to the element name
+    # and add the namespace to the list of namespace definitions
     def namespace=(ns_or_hash)
       if ns_or_hash.is_a?(Hash)
         adapter.set_namespace(
