@@ -126,7 +126,7 @@ module Moxml
         end
 
         def ancestors(node)
-          return [] unless parent = parent(node)
+          return [] unless (parent = parent(node))
 
           [parent] + ancestors(parent)
         end
@@ -305,7 +305,7 @@ module Moxml
         end
 
         def add_previous_sibling(node, sibling)
-          return unless parent = parent(node)
+          return unless (parent = parent(node))
 
           if sibling.respond_to?(:parent)
             sibling.parent&.nodes&.delete(sibling)
@@ -316,7 +316,7 @@ module Moxml
         end
 
         def add_next_sibling(node, sibling)
-          return unless parent = parent(node)
+          return unless (parent = parent(node))
 
           if sibling.respond_to?(:parent)
             sibling.parent&.nodes&.delete(sibling)
@@ -340,7 +340,7 @@ module Moxml
           # when node is a String and new_node isn't
           # when node isn't a String, and new_node is a String
 
-          return unless parent = parent(node)
+          return unless (parent = parent(node))
 
           new_node.parent = parent if new_node.respond_to?(:parent)
           idx = parent.nodes.index(node)
@@ -405,7 +405,7 @@ module Moxml
         def set_processing_instruction_content(node, content)
           # Add a space until this Ox issue is fixed:
           # https://github.com/ohler55/ox/issues/379
-          node.content = content.to_s.length > 0 ? " #{content}" : ""
+          node.content = content.to_s.length.positive? ? " #{content}" : ""
         end
 
         def namespace_prefix(namespace)

@@ -1,10 +1,13 @@
+# frozen_string_literal: true
+
 require_relative "../../../ox/node"
 
 module Moxml
   module Adapter
     module CustomizedOx
       class Namespace
-        attr_accessor :prefix, :uri, :parent
+        attr_accessor :uri, :parent
+        attr_writer :prefix
 
         def initialize(prefix, uri, parent = nil)
           @prefix = prefix
