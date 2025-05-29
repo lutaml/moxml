@@ -8,8 +8,8 @@ module Moxml
       @config = Config.new(adapter)
     end
 
-    def create_document
-      Document.new(config.adapter.create_document, self)
+    def create_document(native_doc = nil)
+      Document.new(config.adapter.create_document(native_doc), self)
     end
 
     def parse(xml, options = {})

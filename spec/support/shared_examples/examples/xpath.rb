@@ -20,7 +20,7 @@ RSpec.shared_examples "XPath Examples" do
     it "finds nodes by XPath" do
       books = doc.xpath("//book")
       expect(books.size).to eq(2)
-      expect(books.map { |b| b["id"] }).to eq(%w[1 2])
+      expect(books.map { _1["id"] }).to eq(%w[1 2])
     end
 
     it "finds nodes with namespaces" do
@@ -38,6 +38,7 @@ RSpec.shared_examples "XPath Examples" do
     end
 
     it "finds nested attributes efficiently" do
+      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
       # More efficient - specific path
       titles1 = doc.xpath("//book/dc:title")
 

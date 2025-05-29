@@ -19,7 +19,7 @@ module Moxml
           raise NotImplementedError
         end
 
-        def create_document
+        def create_document(native_doc = nil)
           raise NotImplementedError
         end
 
@@ -29,7 +29,8 @@ module Moxml
         end
 
         def create_text(content)
-          create_native_text(normalize_xml_value(content))
+          # Ox freezes the content, so we need to dup it
+          create_native_text(normalize_xml_value(content).dup)
         end
 
         def create_cdata(content)
@@ -73,6 +74,11 @@ module Moxml
 
         def duplicate_node(node)
           node.dup
+        end
+
+        def patch_node(node, _parent = nil)
+          # monkey-patch the native node if necessary
+          node
         end
 
         protected

@@ -101,9 +101,9 @@ module Moxml
 
         def write_cdata(node, output)
           # output << ' ' * @level
-          output << "<![CDATA["
-          output << node.to_s.gsub("]]>", "]]]]><![CDATA[>")
-          output << "]]>"
+          output << ::REXML::CData::START
+          output << node.to_s.gsub(::REXML::CData::STOP, "]]]]><![CDATA[>")
+          output << ::REXML::CData::STOP
           # output << "\n"
         end
 

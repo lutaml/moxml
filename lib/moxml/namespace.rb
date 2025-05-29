@@ -22,6 +22,10 @@ module Moxml
       end
     end
 
+    def default?
+      prefix.nil? || prefix.to_s == "xmlns"
+    end
+
     def namespace?
       true
     end

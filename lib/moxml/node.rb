@@ -15,8 +15,9 @@ module Moxml
     attr_reader :native, :context
 
     def initialize(native, context)
-      @native = native
       @context = context
+      # @native = adapter.patch_node(native)
+      @native = native
     end
 
     def document
@@ -28,7 +29,10 @@ module Moxml
     end
 
     def children
-      NodeSet.new(adapter.children(@native), context)
+      NodeSet.new(
+        adapter.children(@native).map { adapter.patch_node(_1, @native) },
+        context
+      )
     end
 
     def next_sibling

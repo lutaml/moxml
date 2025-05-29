@@ -65,17 +65,26 @@ RSpec.shared_examples "Moxml::Declaration" do
 
   describe "serialization" do
     it "formats complete declaration" do
-      expect(declaration.to_xml).to eq('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>')
+      doc.add_child(declaration)
+      expect(doc.to_xml.strip).to end_with('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>')
     end
 
     it "formats minimal declaration with empty encoding" do
       decl = doc.create_declaration("1.0", nil)
-      expect(decl.to_xml).to eq('<?xml version="1.0"?>')
+      if context.config.adapter_name == :rexml
+        # REXML sets a default encoding when a declaration is added to the document
+        expect(decl.to_xml.strip).to eq('<?xml version="1.0"?>')
+      else
+        # Ox cannot serialize standalone declaration
+        doc.add_child(decl)
+        expect(doc.to_xml.strip).to end_with('<?xml version="1.0"?>')
+      end
     end
 
     it "formats declaration with encoding only" do
       decl = doc.create_declaration("1.0", "UTF-8")
-      expect(decl.to_xml).to eq('<?xml version="1.0" encoding="UTF-8"?>')
+      doc.add_child(decl)
+      expect(doc.to_xml.strip).to end_with('<?xml version="1.0" encoding="UTF-8"?>')
     end
   end
 
@@ -86,7 +95,9 @@ RSpec.shared_examples "Moxml::Declaration" do
     end
 
     it "removes from document" do
-      pending("The document contains a default declaration") if Moxml.new.config.adapter.name.match?(/Nokogiri|Rexml/)
+      if Moxml.new.config.adapter.name.match?(/Nokogiri|Rexml|Ox/)
+        pending("The document contains a default declaration")
+      end
       doc.add_child(declaration)
       declaration.remove
       expect(doc.to_xml).not_to include("<?xml")

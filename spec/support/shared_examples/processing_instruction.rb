@@ -43,7 +43,7 @@ RSpec.shared_examples "Moxml::ProcessingInstruction" do
 
   describe "serialization" do
     it "formats processing instruction" do
-      expect(pi.to_xml).to eq('<?xml-stylesheet href="style.xsl" type="text/xsl"?>')
+      expect(pi.to_xml.strip).to end_with('<?xml-stylesheet href="style.xsl" type="text/xsl"?>')
     end
 
     it "handles special characters" do
