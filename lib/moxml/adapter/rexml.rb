@@ -75,6 +75,8 @@ module Moxml
           when ::REXML::CData then :cdata
           when ::REXML::Text then :text
           when ::REXML::Comment then :comment
+          when ::REXML::Attribute then :attribute # but in fact it may be a namespace as well
+          when ::REXML::Namespace then :namespace # we don't use this one
           when ::REXML::Instruction then :processing_instruction
           when ::REXML::DocType then :doctype
           when ::REXML::XMLDecl then :declaration

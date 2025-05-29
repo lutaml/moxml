@@ -17,9 +17,5 @@ module Moxml
     def content=(new_content)
       adapter.set_processing_instruction_content(@native, new_content.to_s)
     end
-
-    def processing_instruction?
-      true
-    end
   end
 end

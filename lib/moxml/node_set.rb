@@ -52,6 +52,14 @@ module Moxml
       self.class.new(nodes + other.nodes, context)
     end
 
+    def ==(other)
+      self.class == other.class &&
+        length == other.length &&
+        nodes.each_with_index.all? do |node, index|
+          Node.wrap(node, context) == other[index]
+        end
+    end
+
     def text
       map(&:text).join
     end

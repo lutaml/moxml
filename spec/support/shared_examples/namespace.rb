@@ -41,6 +41,22 @@ RSpec.shared_examples "Moxml::Namespace" do
         element.add_namespace(nil, "http://example.org")
         expect(element.namespaces.first.to_s).to eq('xmlns="http://example.org"')
       end
+
+      it "renders the same xml - a readme example" do
+        # chainable operations
+        element
+          .add_namespace("dc", "http://purl.org/dc/elements/1.1/")
+          .add_child(doc.create_text("content"))
+
+        # clear node type checking
+        node = doc.create_element("test")
+        if node.element?
+          node.add_namespace("dc", "http://purl.org/dc/elements/1.1/")
+          node.add_child(doc.create_text("content"))
+        end
+
+        expect(element.to_xml).to eq(node.to_xml)
+      end
     end
 
     describe "equality" do

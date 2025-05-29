@@ -146,6 +146,10 @@ RSpec.shared_examples "README Examples" do
         def process(xml)
           @mutex.synchronize do
             doc = @context.parse(xml)
+            # Modify document
+            element = doc.create_element("test")
+            doc.root.add_child(element)
+            doc.root.children.first.remove
             doc.to_xml
           end
         end
