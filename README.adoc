@@ -28,10 +28,10 @@ Key features:
 
 Moxml supports the following XML libraries:
 
-REXML:: (default) https://github.com/ruby/rexml[REXML], a pure Ruby XML parser
+REXML:: https://github.com/ruby/rexml[REXML], a pure Ruby XML parser
 distributed with standard Ruby. Not the fastest, but always available.
 
-Nokogiri:: (recommended) https://github.com/sparklemotion/nokogiri[Nokogiri], a
+Nokogiri:: (default) https://github.com/sparklemotion/nokogiri[Nokogiri], a
 widely used implementation which wraps around the performant
 https://github.com/GNOME/libxml2[libxml2] C library.
 
@@ -248,7 +248,7 @@ text.text?              # Returns true
 
 # Structure
 text.parent             # Get parent node
-text.remove            # Remove from document
+text.remove             # Remove from document
 text.replace(node)      # Replace with another node
 ----
 
@@ -270,7 +270,7 @@ cdata.cdata?           # Returns true
 
 # Structure
 cdata.parent           # Get parent node
-cdata.remove          # Remove from document
+cdata.remove           # Remove from document
 cdata.replace(node)    # Replace with another node
 ----
 
@@ -309,7 +309,7 @@ pi = doc.create_processing_instruction("xml-stylesheet",
 # PI properties
 pi.target              # Get PI target
 pi.target = "new"      # Set PI target
-pi.content            # Get PI content
+pi.content             # Get PI content
 pi.content = "new"     # Set PI content
 
 # Node type checking
@@ -317,7 +317,7 @@ pi.processing_instruction? # Returns true
 
 # Structure
 pi.parent             # Get parent node
-pi.remove            # Remove from document
+pi.remove             # Remove from document
 pi.replace(node)      # Replace with another node
 ----
 
@@ -364,15 +364,13 @@ Each node type provides methods for traversing the document structure:
 
 [source,ruby]
 ----
-node.parent               # Get parent node
+node.parent              # Get parent node
 node.children            # Get child nodes
 node.next_sibling        # Get next sibling
 node.previous_sibling    # Get previous sibling
-node.ancestors           # Get all ancestor nodes
-node.descendants         # Get all descendant nodes
 
 # Type checking
-node.element?           # Is it an element?
+node.element?          # Is it an element?
 node.text?             # Is it a text node?
 node.cdata?            # Is it a CDATA section?
 node.comment?          # Is it a comment?
@@ -382,8 +380,6 @@ node.namespace?        # Is it a namespace?
 
 # Node information
 node.document          # Get owning document
-node.path              # Get XPath to node
-node.line_number       # Get source line number (if available)
 ----
 
 == Advanced features
@@ -508,9 +504,9 @@ Moxml::Config.default_adapter = <adapter-symbol>
 
 Where, `<adapter-symbol>` is one of the following:
 
-`:rexml`:: REXML (default)
+`:rexml`:: REXML
 
-`:nokogiri`:: Nokogiri
+`:nokogiri`:: Nokogiri (default)
 
 `:oga`:: Oga
 
@@ -567,7 +563,7 @@ doc.xpath('//book/title')
 doc.xpath('//title')
 
 # Most efficient - direct child access
-root.xpath('./title')
+root.xpath('./*/title')
 ----
 
 == Best practices
@@ -577,7 +573,7 @@ root.xpath('./title')
 [source,ruby]
 ----
 # Preferred - using builder pattern
-doc = Moxml.new.build do
+doc = Moxml::Builder.new(Moxml.new).build do
   declaration version: "1.0", encoding: "UTF-8"
   element 'root' do
     element 'child' do
@@ -588,7 +584,7 @@ end
 
 # Alternative - direct manipulation
 doc = Moxml.new.create_document
-doc.add_declaration(version: "1.0", encoding: "UTF-8")
+doc.add_child(doc.create_declaration("1.0", "UTF-8"))
 root = doc.create_element('root')
 doc.add_child(root)
 ----
@@ -604,6 +600,7 @@ element
 
 # Preferred - clear node type checking
 if node.element?
+  node.add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
   node.add_child(doc.create_text('content'))
 end
 ----

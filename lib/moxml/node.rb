@@ -7,6 +7,11 @@ module Moxml
   class Node
     include XmlUtils
 
+    TYPES = %i[
+      element text cdata comment processing_instruction document
+      declaration doctype namespace attribute unknown
+    ].freeze
+
     attr_reader :native, :context
 
     def initialize(native, context)
@@ -77,6 +82,12 @@ module Moxml
 
     def ==(other)
       self.class == other.class && @native == other.native
+    end
+
+    TYPES.each do |node_type|
+      define_method "#{node_type}?" do
+        adapter.node_type(native) == node_type
+      end
     end
 
     def self.wrap(node, context)
