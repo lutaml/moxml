@@ -19,7 +19,7 @@ module Moxml
           raise NotImplementedError
         end
 
-        def create_document
+        def create_document(native_doc = nil)
           raise NotImplementedError
         end
 
@@ -76,7 +76,7 @@ module Moxml
           node.dup
         end
 
-        def patch_node(node, _parent = nil)
+        def patch_node(node, parent = nil)
           # monkey-patch the native node if necessary
           node
         end

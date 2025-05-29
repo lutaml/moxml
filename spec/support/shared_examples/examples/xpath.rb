@@ -38,6 +38,7 @@ RSpec.shared_examples "XPath Examples" do
     end
 
     it "finds nested attributes efficiently" do
+      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
       # More efficient - specific path
       titles1 = doc.xpath("//book/dc:title")
 
