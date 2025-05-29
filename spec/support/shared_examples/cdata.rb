@@ -31,26 +31,20 @@ RSpec.shared_examples "Moxml::Cdata" do
   end
 
   describe "serialization" do
-    before do
-      # Ox cannot dump a standalone CDATA node properly
-      # https://github.com/ohler55/ox/issues/376
-      doc.add_child(cdata)
-    end
-
     it "wraps content in CDATA section" do
-      expect(doc.to_xml.strip).to end_with("<![CDATA[<content>]]>")
+      expect(cdata.to_xml).to eq("<![CDATA[<content>]]>")
     end
 
     it "escapes CDATA end marker" do
       # pending for Ox: https://github.com/ohler55/ox/issues/377
       pending "Ox doesn't escape the end token" if context.config.adapter_name == :ox
       cdata.content = "content]]>more"
-      expect(doc.to_xml.strip).to end_with("<![CDATA[content]]]]><![CDATA[>more]]>")
+      expect(cdata.to_xml).to eq("<![CDATA[content]]]]><![CDATA[>more]]>")
     end
 
     it "handles special characters" do
       cdata.content = "< > & \" '"
-      expect(doc.to_xml).to include("< > & \" '")
+      expect(cdata.to_xml).to include("< > & \" '")
     end
   end
 

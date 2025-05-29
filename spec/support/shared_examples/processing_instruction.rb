@@ -43,14 +43,12 @@ RSpec.shared_examples "Moxml::ProcessingInstruction" do
 
   describe "serialization" do
     it "formats processing instruction" do
-      doc.add_child(pi)
-      expect(doc.to_xml.strip).to end_with('<?xml-stylesheet href="style.xsl" type="text/xsl"?>')
+      expect(pi.to_xml.strip).to end_with('<?xml-stylesheet href="style.xsl" type="text/xsl"?>')
     end
 
     it "handles special characters" do
       pi.content = '< > & " \''
-      doc.add_child(pi)
-      expect(doc.to_xml).to include('< > & " \'')
+      expect(pi.to_xml).to include('< > & " \'')
     end
   end
 
@@ -79,14 +77,12 @@ RSpec.shared_examples "Moxml::ProcessingInstruction" do
   describe "common use cases" do
     it "creates stylesheet instruction" do
       pi = doc.create_processing_instruction("xml-stylesheet", 'type="text/xsl" href="style.xsl"')
-      doc.add_child(pi)
-      expect(doc.to_xml.strip).to end_with('<?xml-stylesheet type="text/xsl" href="style.xsl"?>')
+      expect(pi.to_xml).to eq('<?xml-stylesheet type="text/xsl" href="style.xsl"?>')
     end
 
     it "creates PHP instruction" do
       pi = doc.create_processing_instruction("php", 'echo "Hello";')
-      doc.add_child(pi)
-      expect(doc.to_xml.strip).to end_with('<?php echo "Hello";?>')
+      expect(pi.to_xml).to eq('<?php echo "Hello";?>')
     end
   end
 end

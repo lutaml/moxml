@@ -399,13 +399,11 @@ module Moxml
         end
 
         def processing_instruction_content(node)
-          node.content.to_s.sub(" ", "")
+          node.content.to_s
         end
 
         def set_processing_instruction_content(node, content)
-          # Add a space until this Ox issue is fixed:
-          # https://github.com/ohler55/ox/issues/379
-          node.content = content.to_s.length.positive? ? " #{content}" : ""
+          node.content = content.to_s
         end
 
         def namespace_prefix(namespace)
@@ -462,9 +460,6 @@ module Moxml
             no_empty: options[:expand_empty]
           }
           output += ::Ox.dump(node, ox_options)
-          # remove extra spaces from comments until this issue is fixed:
-          # https://github.com/ohler55/ox/issues/378
-          output.gsub("<!-- ", "<!--").gsub(" -->", "-->")
         end
 
         private
