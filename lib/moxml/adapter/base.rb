@@ -76,7 +76,7 @@ module Moxml
           node.dup
         end
 
-        def patch_node(node, parent = nil)
+        def patch_node(node, _parent = nil)
           # monkey-patch the native node if necessary
           node
         end

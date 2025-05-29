@@ -459,7 +459,7 @@ module Moxml
             encoding: options[:encoding],
             no_empty: options[:expand_empty]
           }
-          output += ::Ox.dump(node, ox_options)
+          output + ::Ox.dump(node, ox_options)
         end
 
         private
