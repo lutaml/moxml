@@ -20,6 +20,8 @@ RSpec.shared_examples "Thread Safety Examples" do
     end
 
     it "handles concurrent processing" do
+      pending "Ox doesn't have a native XPath" if Moxml.new.config.adapter_name == :ox
+
       processor = processor_class.new
       threads = []
       results = Queue.new

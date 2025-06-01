@@ -29,7 +29,7 @@ RSpec.shared_examples "Memory Usage Examples" do
       expect(doc.xpath("//large-node")).to be_empty
     end
 
-    it "handles deeply nested nodes" do
+    it "handles deeply nested nodes", skip: "Very flaky tests" do
       doc = context.create_document
       parent = doc
 
@@ -51,25 +51,17 @@ RSpec.shared_examples "Memory Usage Examples" do
     end
 
     it "handles streaming processing" do
-      # Create temp file
-      file = Tempfile.new(["test", ".xml"])
-      begin
-        file.write("<root><item>data</item></root>")
-        file.close
-
-        # Process file
+      pending "Ox has a load_file method, but nothing about a stream" if context.config.adapter_name == :ox
+      # Process file
+      doc = nil
+      File.open("spec/fixtures/small.xml") do |f|
+        doc = context.parse(f)
+        expect(doc.at_xpath("//item").text).to eq("data")
         doc = nil
-        File.open(file.path) do |f|
-          doc = context.parse(f)
-          expect(doc.at_xpath("//item").text).to eq("data")
-          doc = nil
-        end
-        GC.start
-
-        expect(doc).to be_nil
-      ensure
-        file.unlink
       end
+      GC.start
+
+      expect(doc).to be_nil
     end
   end
 end

@@ -54,6 +54,7 @@ RSpec.shared_examples "Moxml Integration" do
     end
 
     it "handles xpath queries" do
+      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
       # Test XPath queries
       #
       # XPath with a default namespace is a problem
@@ -68,6 +69,7 @@ RSpec.shared_examples "Moxml Integration" do
 
   describe "namespace handling" do
     it "handles complex namespace scenarios" do
+      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
       xml = <<~XML
         <root xmlns="http://default.org" xmlns:a="http://a.org" xmlns:b="http://b.org">
           <child>
@@ -108,6 +110,8 @@ RSpec.shared_examples "Moxml Integration" do
     let(:doc) { context.parse("<root><a>1</a><b>2</b></root>") }
 
     it "handles complex modifications" do
+      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+
       # Move nodes
       b_node = doc.at_xpath("//b")
       a_node = doc.at_xpath("//a")

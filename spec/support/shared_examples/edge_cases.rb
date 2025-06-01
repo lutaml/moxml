@@ -31,6 +31,7 @@ RSpec.shared_examples "Moxml Edge Cases" do
 
   describe "malformed content handling" do
     it "handles CDATA with nested markers" do
+      pending "Ox doesn't escape the end token" if context.config.adapter_name == :ox
       cdata_text = "]]>]]>]]>"
       doc = context.create_document
       cdata = doc.create_cdata(cdata_text)
@@ -76,6 +77,7 @@ RSpec.shared_examples "Moxml Edge Cases" do
 
   describe "namespace edge cases" do
     it "handles default namespace changes" do
+      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
       xml = <<~XML
         <root xmlns="http://default1.org">
           <child xmlns="http://default2.org">
@@ -90,6 +92,8 @@ RSpec.shared_examples "Moxml Edge Cases" do
     end
 
     it "handles recursive namespace definitions" do
+      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+
       xml = <<~XML
         <root xmlns:a="http://a.org">
           <a:child xmlns:a="http://b.org">
@@ -106,6 +110,8 @@ RSpec.shared_examples "Moxml Edge Cases" do
 
   describe "attribute edge cases" do
     it "handles attributes with same local name but different namespaces" do
+      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+
       xml = <<~XML
         <root xmlns:a="http://a.org" xmlns:b="http://b.org">
           <element a:id="1" b:id="2"/>

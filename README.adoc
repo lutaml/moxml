@@ -386,6 +386,8 @@ node.document          # Get owning document
 
 === XPath querying and node mapping
 
+==== Nokogiri, Oga, REXML
+
 Moxml provides efficient XPath querying by leveraging the native XML library's
 implementation while maintaining consistent node mapping:
 
@@ -409,6 +411,10 @@ doc.xpath('//book').each do |book|
   puts "#{book['id']}: #{title.text}"
 end
 ----
+
+==== Ox
+
+The native Ox's query method [locate](https://www.ohler.com/ox/Ox/Element.html#method-i-locate) resembles XPath but has a different syntax.
 
 === Namespace handling
 

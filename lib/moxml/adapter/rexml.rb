@@ -21,7 +21,7 @@ module Moxml
           DocumentBuilder.new(Context.new(:rexml)).build(native_doc)
         end
 
-        def create_document
+        def create_document(_native_doc = nil)
           ::REXML::Document.new
         end
 
@@ -327,7 +327,7 @@ module Moxml
         def inner_text(node)
           # Get direct text children only, filter duplicates
           text_children = node.children
-                              .select { |c| c.is_a?(::REXML::Text) }
+                              .select { _1.is_a?(::REXML::Text) }
                               .uniq(&:object_id)
           text_children.map(&:value).join
         end
@@ -382,6 +382,8 @@ module Moxml
           end
         end
 
+        # not used at the moment
+        # but may be useful when the xpath is upgraded to work with namespaces
         def prepare_xpath_namespaces(node)
           ns = {}
 
@@ -432,10 +434,10 @@ module Moxml
 
             # Write processing instructions
             node.children.each do |child|
-              if child.is_a?(::REXML::Instruction)
-                child.write(output)
-                # output << "\n"
-              end
+              next unless [::REXML::Instruction, ::REXML::CData, ::REXML::Comment, ::REXML::Text].include?(child.class)
+
+              write_with_formatter(child, output, options[:indent] || 2)
+              # output << "\n"
             end
 
             write_with_formatter(node.root, output, options[:indent] || 2) if node.root
