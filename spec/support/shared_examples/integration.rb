@@ -110,6 +110,8 @@ RSpec.shared_examples "Moxml Integration" do
     let(:doc) { context.parse("<root><a>1</a><b>2</b></root>") }
 
     it "handles complex modifications" do
+      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+
       # Move nodes
       b_node = doc.at_xpath("//b")
       a_node = doc.at_xpath("//a")

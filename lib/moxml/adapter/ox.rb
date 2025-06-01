@@ -428,20 +428,13 @@ module Moxml
           end.values
         end
 
-        def xpath(node, expression, namespaces = {})
-          # Ox doesn't support XPath, implement basic path matching
-          results = []
-          traverse(node) do |n|
-            results << n if matches_xpath?(n, expression, namespaces)
-          end
-          results
+        def xpath(node, expression, _namespaces = {})
+          # locate has a different syntax
+          node.locate(expression)
         end
 
         def at_xpath(node, expression, namespaces = {})
-          traverse(node) do |n|
-            return n if matches_xpath?(n, expression, namespaces)
-          end
-          nil
+          xpath(node, expression, namespaces)&.first
         end
 
         def serialize(node, options = {})
@@ -471,20 +464,6 @@ module Moxml
           return unless node.respond_to?(:nodes)
 
           node.nodes&.each { |child| traverse(child, &block) }
-        end
-
-        def matches_xpath?(node, expression, _namespaces = {})
-          case expression
-          when %r{\.?//([\w:]+)\[@(\w+)=['|"]([^'"]+)['|"]\]}
-            node.is_a?(::Ox::Element) &&
-              node.name == ::Regexp.last_match(1) &&
-              node.attributes &&
-              node[::Regexp.last_match(2)] == ::Regexp.last_match(3)
-          when %r{\.?//([\w:]+)}
-            node.is_a?(::Ox::Element) && node.name == ::Regexp.last_match(1)
-          else
-            false
-          end
         end
       end
     end

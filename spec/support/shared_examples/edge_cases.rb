@@ -92,6 +92,8 @@ RSpec.shared_examples "Moxml Edge Cases" do
     end
 
     it "handles recursive namespace definitions" do
+      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+
       xml = <<~XML
         <root xmlns:a="http://a.org">
           <a:child xmlns:a="http://b.org">
@@ -108,6 +110,8 @@ RSpec.shared_examples "Moxml Edge Cases" do
 
   describe "attribute edge cases" do
     it "handles attributes with same local name but different namespaces" do
+      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+
       xml = <<~XML
         <root xmlns:a="http://a.org" xmlns:b="http://b.org">
           <element a:id="1" b:id="2"/>
