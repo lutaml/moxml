@@ -39,8 +39,38 @@ Oga:: https://github.com/yorickpeterse/oga[Oga], a pure Ruby XML parser.
 Recommended when you need a pure Ruby solution say for
 https://github.com/opal/opal[Opal].
 
-Ox:: https://github.com/ohler55/ox[Ox], a fast XML parser (to be supported)
+Ox:: https://github.com/ohler55/ox[Ox], a fast XML parser.
 
+=== Feature table
+
+[cols="1,1,1,1,1"]
+|===
+|Feature |Nokogiri |Oga |REXML |Ox
+
+|Parsing, serializing
+|* [x]
+|* [x]
+|* [x]
+|* [x]
+
+|Node manipulation
+|* [x]
+|* [x]
+|* [x]
+|* [x]footnote:[May have issues, especially when manipulating Text nodes]
+
+|Basic XPath
+|* [x]
+|* [x]
+|* [x]
+|locatefootnote:locate[OThe native Ox method `locate` is similar to XPath but has a different syntax.]
+
+|XPath with namespaces
+|* [x]
+|* [x]
+|
+|locatefootnote:locate[]
+|===
 
 == Getting started
 
@@ -52,7 +82,7 @@ Install the gem and at least one supported XML library:
 ----
 # In your Gemfile
 gem 'moxml'
-gem 'nokogiri'  # Or 'oga', 'rexml', or 'ox' when it is integrated
+gem 'nokogiri'  # Or 'oga', 'rexml', or 'ox'
 ----
 
 === Basic document creation
@@ -516,7 +546,7 @@ Where, `<adapter-symbol>` is one of the following:
 
 `:oga`:: Oga
 
-`:ox`:: Ox (not yet supported)
+`:ox`:: Ox
 
 
 == Thread safety
