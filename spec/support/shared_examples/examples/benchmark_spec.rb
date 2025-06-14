@@ -16,8 +16,6 @@ RSpec.shared_examples "Performance Examples" do
   end
 
   it "measures parsing performance", focus: true do
-    # pending "Run it on CI only" unless ENV['CI']
-
     doc = nil
 
     report = Benchmark.ips do |x|
@@ -36,10 +34,10 @@ RSpec.shared_examples "Performance Examples" do
 
     # first - parser, second - serializer
     thresholds = {
-      nokogiri: [10, 10],
-      oga: [10, 10],
-      rexml: [10, 10],
-      ox: [10, 10],
+      nokogiri: [20, 1200],
+      oga: [12, 120],
+      rexml: [0.01, 60],
+      ox: [2, 2000],
     }
 
     report.entries.each_with_index do |entry, index|
