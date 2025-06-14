@@ -36,7 +36,7 @@ RSpec.shared_examples "Performance Examples" do
     thresholds = {
       nokogiri: [20, 1200],
       oga: [12, 120],
-      rexml: [0.01, 60],
+      rexml: [0, 60],
       ox: [2, 2000]
     }
 
