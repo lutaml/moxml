@@ -37,14 +37,15 @@ RSpec.shared_examples "Performance Examples" do
       nokogiri: [20, 1200],
       oga: [12, 120],
       rexml: [0.01, 60],
-      ox: [2, 2000],
+      ox: [2, 2000]
     }
 
     report.entries.each_with_index do |entry, index|
       puts "#{entry.label} performance: #{entry.ips.round(2)} ips"
       threshold = thresholds[context.config.adapter_name][index]
-      expect(entry.ips).to be >= threshold,
-                           "#{entry.label} performance below threshold: got #{entry.ips.round(2)} ips, expected >= #{threshold} ips"
+      message = "#{entry.label} performance below threshold: " \
+                "got #{entry.ips.round(2)} ips, expected >= #{threshold} ips"
+      expect(entry.ips).to be >= threshold, message
     end
   end
 end
