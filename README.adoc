@@ -48,26 +48,26 @@ Ox:: https://github.com/ohler55/ox[Ox], a fast XML parser.
 |Feature |Nokogiri |Oga |REXML |Ox
 
 |Parsing, serializing
-| * [x]
-| * [x]
-| * [x]
-| * [x]
+a|* [x]
+a|* [x]
+a|* [x]
+a|* [x]
 
 |Node manipulation
-| * [x]
-| * [x]
-| * [x]
-| * [x]footnote:[May have issues, especially when manipulating Text nodes]
+a|* [x]
+a|* [x]
+a|* [x]
+a|* [x]footnote:[May have issues, especially when manipulating Text nodes]
 
 |Basic XPath
-| * [x]
-| * [x]
-| * [x]
+a|* [x]
+a|* [x]
+a|* [x]
 |locatefootnote:locate[The native Ox method `locate` is similar to XPath but has a different syntax.]
 
 |XPath with namespaces
-| * [x]
-| * [x]
+a|* [x]
+a|* [x]
 |
 |locatefootnote:locate[]
 |===
