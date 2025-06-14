@@ -25,7 +25,8 @@ RSpec.describe "Test all shared examples" do
     "README Examples",
     "XPath Examples",
     "Memory Usage Examples",
-    "Thread Safety Examples"
+    "Thread Safety Examples",
+    "Performance Examples"
   ]
 
   Moxml::Adapter::AVALIABLE_ADAPTERS.each do |adapter_name|

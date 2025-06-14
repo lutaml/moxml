@@ -15,6 +15,8 @@ gem "rexml"
 gem "rspec", "~> 3.0"
 gem "rubocop", "~> 1.21"
 gem "tempfile", "~> 0.3"
+#  Provides iteration per second benchmarking for Ruby
+gem "benchmark-ips"
 
 # Needed by get_process_mem on Windows
 gem "sys-proctable" if Gem.win_platform?
