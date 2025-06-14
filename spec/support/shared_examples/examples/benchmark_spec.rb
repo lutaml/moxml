@@ -15,7 +15,7 @@ RSpec.shared_examples "Performance Examples" do
     xml
   end
 
-  it "measures parsing performance", focus: true do
+  it "measures parsing performance" do
     doc = nil
 
     report = Benchmark.ips do |x|
