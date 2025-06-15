@@ -9,13 +9,10 @@ on:
   pull_request:
 
 jobs:
-  ruby-ll-config:
-    runs-on: windows-latest
-    steps:
-      - if: ${{ matrix.ruby.version }} == '3.1'
-        run: bundle config build.ruby-ll --with-cflags="-std=gnu17"
   rake:
-    needs: ruby-ll-config
-    uses: metanorma/ci/.github/workflows/generic-rake.yml@main
-    secrets:
+    - name: ruby-ll-config
+      run: bundle config build.ruby-ll --with-cflags="-std=gnu17"
+      if: matrix.ruby.version == '3.4' && matrix.os == 'windows-latest'
+    - uses: metanorma/ci/.github/workflows/generic-rake.yml@main
+    - secrets:
       pat_token: ${{ secrets.LUTAML_CI_PAT_TOKEN }}
