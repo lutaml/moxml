@@ -10,6 +10,7 @@ on:
 
 jobs:
   ruby-ll-config:
+    runs-on: windows-latest
     steps:
       - run: bundle config build.ruby-ll --with-cflags="-std=gnu17"
   rake:
