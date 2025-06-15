@@ -43,34 +43,49 @@ Ox:: https://github.com/ohler55/ox[Ox], a fast XML parser.
 
 === Feature table
 
-[cols="1,1,1,1,1"]
+Moxml exercises its best effort to provide a consistent interface across basic
+XML features, various XML libraries have different features and capabilities.
+
+The following table summarizes the features supported by each library.
+
+NOTE: The checkmarks indicate support for the feature, while the footnotes
+provide additional context for specific features.
+
+[cols="1,1,1,1,3"]
 |===
 |Feature |Nokogiri |Oga |REXML |Ox
 
 |Parsing, serializing
-a|* [x]
-a|* [x]
-a|* [x]
-a|* [x]
+| ✅
+| ✅
+| ✅
+| ✅
 
 |Node manipulation
-a|* [x]
-a|* [x]
-a|* [x]
-a|* [x]footnote:[May have issues, especially when manipulating Text nodes]
+| ✅
+| ✅
+| ✅
+| ✅ See NOTE 1.
 
 |Basic XPath
-a|* [x]
-a|* [x]
-a|* [x]
-|locatefootnote:locate[The native Ox method `locate` is similar to XPath but has a different syntax.]
+| ✅
+| ✅
+| ✅
+a|
+Uses `locate`. See NOTE 2.
 
 |XPath with namespaces
-a|* [x]
-a|* [x]
-|
-|locatefootnote:locate[]
+| ✅
+| ✅
+| ❌
+a|
+Uses `locate`. See NOTE 2.
+
 |===
+
+NOTE: Ox's node manipulation may have issues, especially when manipulating Text nodes.
+
+NOTE: The native Ox method `locate` is similar to XPath but has a different syntax.
 
 == Getting started
 
@@ -444,7 +459,9 @@ end
 
 ==== Ox
 
-The native Ox's query method [locate](https://www.ohler.com/ox/Ox/Element.html#method-i-locate) resembles XPath but has a different syntax.
+The native Ox's query method
+https://www.ohler.com/ox/Ox/Element.html#method-i-locate[`locate`] resembles
+XPath but has a different syntax.
 
 === Namespace handling
 
@@ -651,7 +668,7 @@ end
 
 == License
 
-Copyright (c) Ribose Inc.
+Copyright Ribose.
 
 This project is licensed under the BSD-2-Clause License. See the
 link:LICENSE.md[] file for details.
