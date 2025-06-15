@@ -12,7 +12,8 @@ jobs:
   ruby-ll-config:
     runs-on: windows-latest
     steps:
-      - run: bundle config build.ruby-ll --with-cflags="-std=gnu17"
+      - if: ${{ matrix.ruby.version }} == '3.1'
+        run: bundle config build.ruby-ll --with-cflags="-std=gnu17"
   rake:
     needs: ruby-ll-config
     uses: metanorma/ci/.github/workflows/generic-rake.yml@main
