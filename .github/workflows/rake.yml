@@ -9,7 +9,11 @@ on:
   pull_request:
 
 jobs:
+  ruby-ll-config:
+    steps:
+      - run: bundle config build.ruby-ll --with-cflags="-std=gnu17"
   rake:
+    needs: ruby-ll-config
     uses: metanorma/ci/.github/workflows/generic-rake.yml@main
     secrets:
       pat_token: ${{ secrets.LUTAML_CI_PAT_TOKEN }}

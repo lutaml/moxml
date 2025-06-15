@@ -83,9 +83,9 @@ Uses `locate`. See NOTE 2.
 
 |===
 
-NOTE: Ox's node manipulation may have issues, especially when manipulating Text nodes.
+NOTE 1: Ox's node manipulation may have issues, especially when manipulating Text nodes.
 
-NOTE: The native Ox method `locate` is similar to XPath but has a different syntax.
+NOTE 2: The native Ox method `locate` is similar to XPath but has a different syntax.
 
 == Getting started
 
