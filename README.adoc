@@ -39,8 +39,53 @@ Oga:: https://github.com/yorickpeterse/oga[Oga], a pure Ruby XML parser.
 Recommended when you need a pure Ruby solution say for
 https://github.com/opal/opal[Opal].
 
-Ox:: https://github.com/ohler55/ox[Ox], a fast XML parser (to be supported)
+Ox:: https://github.com/ohler55/ox[Ox], a fast XML parser.
 
+=== Feature table
+
+Moxml exercises its best effort to provide a consistent interface across basic
+XML features, various XML libraries have different features and capabilities.
+
+The following table summarizes the features supported by each library.
+
+NOTE: The checkmarks indicate support for the feature, while the footnotes
+provide additional context for specific features.
+
+[cols="1,1,1,1,3"]
+|===
+|Feature |Nokogiri |Oga |REXML |Ox
+
+|Parsing, serializing
+| ✅
+| ✅
+| ✅
+| ✅
+
+|Node manipulation
+| ✅
+| ✅
+| ✅
+| ✅ See NOTE 1.
+
+|Basic XPath
+| ✅
+| ✅
+| ✅
+a|
+Uses `locate`. See NOTE 2.
+
+|XPath with namespaces
+| ✅
+| ✅
+| ❌
+a|
+Uses `locate`. See NOTE 2.
+
+|===
+
+NOTE 1: Ox's node manipulation may have issues, especially when manipulating Text nodes.
+
+NOTE 2: The native Ox method `locate` is similar to XPath but has a different syntax.
 
 == Getting started
 
@@ -52,7 +97,7 @@ Install the gem and at least one supported XML library:
 ----
 # In your Gemfile
 gem 'moxml'
-gem 'nokogiri'  # Or 'oga', 'rexml', or 'ox' when it is integrated
+gem 'nokogiri'  # Or 'oga', 'rexml', or 'ox'
 ----
 
 === Basic document creation
@@ -414,7 +459,9 @@ end
 
 ==== Ox
 
-The native Ox's query method [locate](https://www.ohler.com/ox/Ox/Element.html#method-i-locate) resembles XPath but has a different syntax.
+The native Ox's query method
+https://www.ohler.com/ox/Ox/Element.html#method-i-locate[`locate`] resembles
+XPath but has a different syntax.
 
 === Namespace handling
 
@@ -516,7 +563,7 @@ Where, `<adapter-symbol>` is one of the following:
 
 `:oga`:: Oga
 
-`:ox`:: Ox (not yet supported)
+`:ox`:: Ox
 
 
 == Thread safety
@@ -621,7 +668,7 @@ end
 
 == License
 
-Copyright (c) Ribose Inc.
+Copyright Ribose.
 
 This project is licensed under the BSD-2-Clause License. See the
 link:LICENSE.md[] file for details.
