@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require_relative "base"
-# before ox so that all Ox classes inherit the monkey-patched Node
-require_relative "../../ox/node"
 require "ox"
 require_relative "customized_ox/text"
 require_relative "customized_ox/attribute"
 require_relative "customized_ox/namespace"
 
+# insert :parent methods to all Ox classes inherit the Node class
+::Ox::Node.attr_accessor :parent
 module Moxml
   module Adapter
     class Ox < Base
