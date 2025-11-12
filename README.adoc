@@ -903,6 +903,19 @@ node.children            # Get child nodes
 node.next_sibling        # Get next sibling
 node.previous_sibling    # Get previous sibling
 
+# Convenience accessors
+node.first_child         # Get first child
+node.last_child          # Get last child
+node.has_children?       # Check if node has children
+
+# Node manipulation
+node.clone              # Deep copy of node
+node.dup                # Alias for clone
+
+# Query methods
+node.find(xpath)        # Alias for at_xpath
+node.find_all(xpath)    # Returns array of matching elements
+
 # Type checking
 node.element?          # Is it an element?
 node.text?             # Is it a text node?
