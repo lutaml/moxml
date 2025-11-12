@@ -525,7 +525,8 @@ module Moxml
           end
 
           # Remove any remaining namespace prefixes
-          expr = expr.gsub(/[\w-]+:/, "")
+          # Use possessive quantifier to prevent ReDoS
+          expr = expr.gsub(/[a-zA-Z_][\w-]*+:/, "")
 
           # Remove attribute predicates for now - we'll filter manually
           # Save the attribute name if present

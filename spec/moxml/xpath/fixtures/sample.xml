@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library>
+  <book id="1" category="fiction">
+    <title lang="en">The Great Gatsby</title>
+    <author>F. Scott Fitzgerald</author>
+    <year>1925</year>
+    <price currency="USD">10.99</price>
+  </book>
+  <book id="2" category="fiction">
+    <title lang="en">To Kill a Mockingbird</title>
+    <author>Harper Lee</author>
+    <year>1960</year>
+    <price currency="USD">12.99</price>
+  </book>
+  <book id="3" category="non-fiction">
+    <title lang="en">Sapiens</title>
+    <author>Yuval Noah Harari</author>
+    <year>2011</year>
+    <price currency="USD">15.99</price>
+  </book>
+  <magazine id="4">
+    <title>Scientific American</title>
+    <issue number="12">December 2023</issue>
+  </magazine>
+</library>
