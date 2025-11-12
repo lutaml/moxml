@@ -14,7 +14,7 @@ module Moxml
 
       # Transfer DOCTYPE from parsed document if it exists
       if native_doc.respond_to?(:instance_variable_get) &&
-         native_doc.instance_variable_defined?(:@moxml_doctype)
+          native_doc.instance_variable_defined?(:@moxml_doctype)
         doctype = native_doc.instance_variable_get(:@moxml_doctype)
         if doctype
           @current_doc.native.instance_variable_set(:@moxml_doctype,
@@ -47,7 +47,7 @@ module Moxml
       # Prepare node for new document (LibXML needs this)
       childless_node = adapter.prepare_for_new_document(
         childless_node,
-        @current_doc.native
+        @current_doc.native,
       )
       element = Element.new(childless_node, context)
       @node_stack.last.add_child(element)

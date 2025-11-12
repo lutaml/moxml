@@ -72,7 +72,7 @@ module Moxml
                 e.message,
                 line: line,
                 column: nil,
-                source: xml_string[0..100]
+                source: xml_string[0..100],
               )
             end
             # Return empty document for non-strict mode
@@ -89,7 +89,7 @@ module Moxml
               native_doc,
               name,
               external_id,
-              system_id
+              system_id,
             )
             native_doc.instance_variable_set(:@moxml_doctype, doctype_wrapper)
           end
@@ -253,7 +253,7 @@ module Moxml
                 native_node,
                 dtd.name,
                 dtd.external_id,
-                dtd.system_id
+                dtd.system_id,
               )
               result << doctype_wrapper
             end
@@ -391,10 +391,10 @@ module Moxml
           # Extend the attribute with to_xml method for proper escaping
           attr.define_singleton_method(:to_xml) do
             escaped = value.to_s
-                           .gsub("&", "&amp;")
-                           .gsub("<", "&lt;")
-                           .gsub(">", "&gt;")
-                           .gsub("\"", "&quot;")
+              .gsub("&", "&amp;")
+              .gsub("<", "&lt;")
+              .gsub(">", "&gt;")
+              .gsub("\"", "&quot;")
             "#{name} = #{escaped}"
           end
           attr
@@ -471,8 +471,8 @@ module Moxml
           # explicitly set the child's namespace to match the parent's for XPath compatibility
           # NOTE: Prefixed namespaces are NOT inherited, only default namespaces
           if native_elem.respond_to?(:namespaces) && native_elem.namespaces&.namespace &&
-             native_child.respond_to?(:namespaces) && native_child.element? &&
-             (!native_child.namespaces.namespace || native_child.namespaces.namespace.href.to_s.empty?)
+              native_child.respond_to?(:namespaces) && native_child.element? &&
+              (!native_child.namespaces.namespace || native_child.namespaces.namespace.href.to_s.empty?)
 
             parent_ns = native_elem.namespaces.namespace
             # Only set child's namespace if parent's namespace is DEFAULT (nil or empty prefix)
@@ -535,7 +535,7 @@ module Moxml
           # Special handling for document-level processing instructions
           # When adding a PI as sibling to root element, store it on document
           if sibling.is_a?(CustomizedLibxml::ProcessingInstruction) &&
-             native_node.respond_to?(:doc) && native_node.doc
+              native_node.respond_to?(:doc) && native_node.doc
             doc = native_node.doc
             pis = doc.instance_variable_get(:@moxml_pis) || []
             pis << sibling
@@ -661,10 +661,10 @@ module Moxml
           return nil unless content
 
           content.gsub("&quot;", '"')
-                 .gsub("&apos;", "'")
-                 .gsub("&lt;", "<")
-                 .gsub("&gt;", ">")
-                 .gsub("&amp;", "&")
+            .gsub("&apos;", "'")
+            .gsub("&lt;", "<")
+            .gsub("&gt;", ">")
+            .gsub("&amp;", "&")
         end
 
         def set_cdata_content(node, content)
@@ -695,10 +695,10 @@ module Moxml
           return nil unless content
 
           content.gsub("&quot;", '"')
-                 .gsub("&apos;", "'")
-                 .gsub("&lt;", "<")
-                 .gsub("&gt;", ">")
-                 .gsub("&amp;", "&")
+            .gsub("&apos;", "'")
+            .gsub("&lt;", "<")
+            .gsub("&gt;", ">")
+            .gsub("&amp;", "&")
         end
 
         def set_processing_instruction_content(node, content)
@@ -714,7 +714,7 @@ module Moxml
           ns = ::LibXML::XML::Namespace.new(
             native_elem,
             prefix.to_s.empty? ? nil : prefix.to_s,
-            uri.to_s
+            uri.to_s,
           )
 
           # For default namespace (nil/empty prefix), set it as the element's namespace
@@ -779,7 +779,7 @@ module Moxml
             e.message,
             expression: expression,
             adapter: "LibXML",
-            node: node
+            node: node,
           )
         end
 
@@ -796,7 +796,7 @@ module Moxml
 
             # Other wrappers - check they're not native LibXML nodes
             unless node.is_a?(::LibXML::XML::Node) ||
-                   node.is_a?(::LibXML::XML::Document)
+                node.is_a?(::LibXML::XML::Document)
               return node.to_xml
             end
           end
@@ -805,7 +805,7 @@ module Moxml
           return "" unless native_node
 
           if native_node.is_a?(::LibXML::XML::Document)
-            output = String.new
+            output = +""
 
             unless options[:no_declaration]
               # Check if declaration was explicitly managed
@@ -819,15 +819,15 @@ module Moxml
                 # No declaration stored - create default
                 version = native_node.version || "1.0"
                 encoding_val = options[:encoding] ||
-                               encoding_to_string(native_node.encoding) ||
-                               "UTF-8"
+                  encoding_to_string(native_node.encoding) ||
+                  "UTF-8"
 
                 # Don't add standalone="yes" by default - only if explicitly set
                 decl = CustomizedLibxml::Declaration.new(
                   native_node,
                   version,
                   encoding_val,
-                  nil # No standalone by default
+                  nil, # No standalone by default
                 )
                 native_node.instance_variable_set(:@moxml_declaration, decl)
                 output << decl.to_xml
@@ -869,7 +869,7 @@ module Moxml
               # Use our custom serializer to control namespace output
               root_output = serialize_element_with_namespaces(
                 native_node.root,
-                true
+                true,
               )
 
               # Apply indentation if requested
@@ -932,8 +932,8 @@ module Moxml
 
             # Increase level for opening tags (but not self-closing or special tags)
             next unless line.start_with?("<") && !line.start_with?("</") &&
-                        !line.end_with?("/>") && !line.start_with?("<?") &&
-                        !line.start_with?("<!") && !line.include?("</")
+              !line.end_with?("/>") && !line.start_with?("<?") &&
+              !line.start_with?("<!") && !line.include?("</")
 
             level += 1
           end
@@ -958,7 +958,7 @@ module Moxml
                 create_document,
                 node.name,
                 node.external_id,
-                node.system_id
+                node.system_id,
               )
             else
               # Should not happen, but handle gracefully
@@ -974,7 +974,7 @@ module Moxml
                 ::LibXML::XML::Namespace.new(
                   new_node,
                   ns.prefix,
-                  ns.href
+                  ns.href,
                 )
               end
 
@@ -1122,10 +1122,10 @@ module Moxml
         def serialize_node(node)
           # Check if node is a wrapper with to_xml method
           if node.respond_to?(:to_xml) &&
-             (node.is_a?(CustomizedLibxml::ProcessingInstruction) ||
-              node.is_a?(CustomizedLibxml::Comment) ||
-              node.is_a?(CustomizedLibxml::Cdata) ||
-              node.is_a?(CustomizedLibxml::Text))
+              (node.is_a?(CustomizedLibxml::ProcessingInstruction) ||
+               node.is_a?(CustomizedLibxml::Comment) ||
+               node.is_a?(CustomizedLibxml::Cdata) ||
+               node.is_a?(CustomizedLibxml::Text))
             return node.to_xml
           end
 
@@ -1147,25 +1147,25 @@ module Moxml
 
         def escape_text(text)
           text.to_s
-              .gsub("&", "&amp;")
-              .gsub("<", "&lt;")
-              .gsub(">", "&gt;")
+            .gsub("&", "&amp;")
+            .gsub("<", "&lt;")
+            .gsub(">", "&gt;")
         end
 
         def escape_xml(text)
           text.to_s
-              .gsub("&", "&amp;")
-              .gsub("<", "&lt;")
-              .gsub(">", "&gt;")
-              .gsub("\"", "&quot;")
+            .gsub("&", "&amp;")
+            .gsub("<", "&lt;")
+            .gsub(">", "&gt;")
+            .gsub("\"", "&quot;")
         end
 
         def escape_attribute_value(value)
           escaped = value.to_s
-                         .gsub("&", "&amp;")
-                         .gsub("<", "&lt;")
-                         .gsub(">", "&gt;")
-                         .gsub("\"", "&quot;")
+            .gsub("&", "&amp;")
+            .gsub("<", "&lt;")
+            .gsub(">", "&gt;")
+            .gsub("\"", "&quot;")
           escaped.to_s
         end
 
@@ -1264,7 +1264,7 @@ module Moxml
               # 1. This is root element (include_ns = true), OR
               # 2. This namespace overrides a parent namespace (different URI for same prefix)
               should_output = include_ns ||
-                              (parent_ns_defs.key?(prefix) && parent_ns_defs[prefix] != uri)
+                (parent_ns_defs.key?(prefix) && parent_ns_defs[prefix] != uri)
 
               next unless should_output
 
@@ -1302,7 +1302,7 @@ module Moxml
               # Wrap the child and serialize
               wrapped_child = patch_node(child)
               output << if wrapped_child.respond_to?(:to_xml) &&
-                           !wrapped_child.is_a?(::LibXML::XML::Node)
+                  !wrapped_child.is_a?(::LibXML::XML::Node)
                           # Use wrapper's to_xml for proper serialization
                           wrapped_child.to_xml
                         elsif child.element?

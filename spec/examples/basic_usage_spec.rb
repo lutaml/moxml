@@ -20,7 +20,7 @@ RSpec.shared_examples "Basic Usage Examples" do
 
       expect(doc.to_xml).to include(
         '<?xml version="1.0" encoding="UTF-8"?>',
-        "<book></book>"
+        "<book></book>",
       )
     end
 
@@ -33,7 +33,7 @@ RSpec.shared_examples "Basic Usage Examples" do
 
       expect(doc.to_xml).to include(
         '<?xml-stylesheet type="text/xsl" href="style.xsl"?>',
-        "<root></root>"
+        "<root></root>",
       )
     end
   end

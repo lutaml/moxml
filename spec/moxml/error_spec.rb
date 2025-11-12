@@ -4,13 +4,13 @@
 RSpec.describe "Moxml errors" do
   describe Moxml::Error do
     it "is a StandardError" do
-      expect(Moxml::Error.new).to be_a(StandardError)
+      expect(described_class.new).to be_a(StandardError)
     end
   end
 
   describe Moxml::ParseError do
     it "includes line and column information" do
-      error = Moxml::ParseError.new("Invalid XML", line: 5, column: 10)
+      error = described_class.new("Invalid XML", line: 5, column: 10)
       expect(error.line).to eq(5)
       expect(error.column).to eq(10)
       # The base message should be unchanged
@@ -18,18 +18,18 @@ RSpec.describe "Moxml errors" do
     end
 
     it "works without line and column" do
-      error = Moxml::ParseError.new("Invalid XML")
+      error = described_class.new("Invalid XML")
       expect(error.line).to be_nil
       expect(error.column).to be_nil
     end
 
     it "includes source context" do
-      error = Moxml::ParseError.new("Invalid XML", source: "<invalid>")
+      error = described_class.new("Invalid XML", source: "<invalid>")
       expect(error.source).to eq("<invalid>")
     end
 
     it "provides helpful error message with context" do
-      error = Moxml::ParseError.new("Invalid XML", line: 5, column: 10)
+      error = described_class.new("Invalid XML", line: 5, column: 10)
       message = error.to_s
       expect(message).to include("Invalid XML")
       expect(message).to include("Line: 5")
@@ -40,20 +40,20 @@ RSpec.describe "Moxml errors" do
 
   describe Moxml::XPathError do
     it "includes expression and adapter information" do
-      error = Moxml::XPathError.new(
+      error = described_class.new(
         "Invalid XPath",
         expression: "//invalid[",
-        adapter: "Nokogiri"
+        adapter: "Nokogiri",
       )
       expect(error.expression).to eq("//invalid[")
       expect(error.adapter).to eq("Nokogiri")
     end
 
     it "provides helpful error message" do
-      error = Moxml::XPathError.new(
+      error = described_class.new(
         "Invalid XPath",
         expression: "//test",
-        adapter: "REXML"
+        adapter: "REXML",
       )
       message = error.to_s
       expect(message).to include("Invalid XPath")
@@ -65,20 +65,20 @@ RSpec.describe "Moxml errors" do
 
   describe Moxml::ValidationError do
     it "includes node, constraint, and value information" do
-      error = Moxml::ValidationError.new(
+      error = described_class.new(
         "Invalid version",
         constraint: "version",
-        value: "2.0"
+        value: "2.0",
       )
       expect(error.constraint).to eq("version")
       expect(error.value).to eq("2.0")
     end
 
     it "provides helpful error message" do
-      error = Moxml::ValidationError.new(
+      error = described_class.new(
         "Invalid encoding",
         constraint: "encoding",
-        value: "INVALID"
+        value: "INVALID",
       )
       message = error.to_s
       expect(message).to include("Invalid encoding")
@@ -90,10 +90,10 @@ RSpec.describe "Moxml errors" do
 
   describe Moxml::NamespaceError do
     it "includes prefix, uri, and element information" do
-      error = Moxml::NamespaceError.new(
+      error = described_class.new(
         "Invalid namespace",
         prefix: "ns",
-        uri: "http://example.com"
+        uri: "http://example.com",
       )
       expect(error.prefix).to eq("ns")
       expect(error.uri).to eq("http://example.com")
@@ -101,10 +101,10 @@ RSpec.describe "Moxml errors" do
     end
 
     it "provides access to error attributes" do
-      error = Moxml::NamespaceError.new(
+      error = described_class.new(
         "Invalid namespace",
         prefix: "ns",
-        uri: "invalid-uri"
+        uri: "invalid-uri",
       )
       expect(error.message).to include("Invalid namespace")
       expect(error.prefix).to eq("ns")
@@ -114,10 +114,10 @@ RSpec.describe "Moxml errors" do
 
   describe Moxml::AdapterError do
     it "includes adapter name and operation" do
-      error = Moxml::AdapterError.new(
+      error = described_class.new(
         "Failed to load adapter",
         adapter: "nokogiri",
-        operation: "load"
+        operation: "load",
       )
       expect(error.adapter_name).to eq("nokogiri")
       expect(error.operation).to eq("load")
@@ -125,21 +125,21 @@ RSpec.describe "Moxml errors" do
 
     it "includes native error information" do
       native_err = StandardError.new("Gem not found")
-      error = Moxml::AdapterError.new(
+      error = described_class.new(
         "Failed to load adapter",
         adapter: "nokogiri",
-        native_error: native_err
+        native_error: native_err,
       )
       expect(error.native_error).to eq(native_err)
     end
 
     it "provides helpful error message" do
       native_err = LoadError.new("cannot load such file")
-      error = Moxml::AdapterError.new(
+      error = described_class.new(
         "Failed to load adapter",
         adapter: "oga",
         operation: "require",
-        native_error: native_err
+        native_error: native_err,
       )
       message = error.to_s
       expect(message).to include("Failed to load adapter")
@@ -152,20 +152,20 @@ RSpec.describe "Moxml errors" do
 
   describe Moxml::SerializationError do
     it "includes node, adapter, and format information" do
-      error = Moxml::SerializationError.new(
+      error = described_class.new(
         "Failed to serialize",
         adapter: "LibXML",
-        format: "xml"
+        format: "xml",
       )
       expect(error.adapter).to eq("LibXML")
       expect(error.format).to eq("xml")
     end
 
     it "provides helpful error message" do
-      error = Moxml::SerializationError.new(
+      error = described_class.new(
         "Failed to serialize",
         adapter: "Ox",
-        format: "xml"
+        format: "xml",
       )
       message = error.to_s
       expect(message).to include("Failed to serialize")
@@ -177,20 +177,20 @@ RSpec.describe "Moxml errors" do
 
   describe Moxml::DocumentStructureError do
     it "includes attempted operation and state" do
-      error = Moxml::DocumentStructureError.new(
+      error = described_class.new(
         "Invalid operation",
         operation: "add_child",
-        state: "no_root"
+        state: "no_root",
       )
       expect(error.attempted_operation).to eq("add_child")
       expect(error.current_state).to eq("no_root")
     end
 
     it "provides helpful error message" do
-      error = Moxml::DocumentStructureError.new(
+      error = described_class.new(
         "Invalid operation",
         operation: "set_root",
-        state: "root_already_exists"
+        state: "root_already_exists",
       )
       message = error.to_s
       expect(message).to include("Invalid operation")
@@ -202,20 +202,20 @@ RSpec.describe "Moxml errors" do
 
   describe Moxml::AttributeError do
     it "includes attribute name, element, and value" do
-      error = Moxml::AttributeError.new(
+      error = described_class.new(
         "Invalid attribute",
         name: "id",
-        value: 123
+        value: 123,
       )
       expect(error.attribute_name).to eq("id")
       expect(error.value).to eq(123)
     end
 
     it "provides helpful error message" do
-      error = Moxml::AttributeError.new(
+      error = described_class.new(
         "Invalid attribute name",
         name: "123invalid",
-        value: "test"
+        value: "test",
       )
       message = error.to_s
       expect(message).to include("Invalid attribute name")
@@ -227,20 +227,20 @@ RSpec.describe "Moxml errors" do
 
   describe Moxml::NotImplementedError do
     it "includes feature and adapter information" do
-      error = Moxml::NotImplementedError.new(
+      error = described_class.new(
         "Feature not supported",
         feature: "xpath",
-        adapter: "CustomAdapter"
+        adapter: "CustomAdapter",
       )
       expect(error.feature).to eq("xpath")
       expect(error.adapter).to eq("CustomAdapter")
     end
 
     it "provides helpful error message" do
-      error = Moxml::NotImplementedError.new(
+      error = described_class.new(
         "Feature not supported",
         feature: "namespaces",
-        adapter: "MinimalAdapter"
+        adapter: "MinimalAdapter",
       )
       message = error.to_s
       expect(message).to include("Feature not supported")
@@ -250,7 +250,7 @@ RSpec.describe "Moxml errors" do
     end
 
     it "has a default message" do
-      error = Moxml::NotImplementedError.new
+      error = described_class.new
       expect(error.message).to include("Feature not implemented")
     end
   end

@@ -10,7 +10,8 @@ RSpec.describe Moxml::XPath::AST::Node do
       it "raises NotImplementedError" do
         context = double("context")
         expect { node.evaluate(context) }
-          .to raise_error(NotImplementedError, /must be implemented by subclass/)
+          .to raise_error(NotImplementedError,
+                          /must be implemented by subclass/)
       end
     end
 

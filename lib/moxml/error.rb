@@ -81,12 +81,6 @@ module Moxml
       @element = element
       super(message)
     end
-
-    def to_s
-      # Don't add extra formatting - keep message simple
-      # Attributes are available via attr_readers if needed
-      super
-    end
   end
 
   # Error raised when adapter operations fail

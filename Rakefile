@@ -17,7 +17,7 @@ namespace :spec do
 
   desc "Run adapter tests only"
   RSpec::Core::RakeTask.new(:adapter) do |t|
-    t.pattern = "spec/adapter/**/*_spec.rb"
+    t.pattern = "spec/moxml/adapter/**/*_spec.rb"
   end
 
   desc "Run integration tests only"
@@ -42,10 +42,11 @@ namespace :spec do
   end
 
   desc "Run unit + adapter + integration (fast feedback)"
-  task :fast => [:unit, :adapter, :integration]
+  task fast: %i[unit adapter integration]
 
   desc "Run everything including examples and performance"
-  task :all => [:unit, :adapter, :integration, :consistency, :examples, :performance]
+  task all: %i[unit adapter integration consistency examples
+               performance]
 end
 
 namespace :benchmark do

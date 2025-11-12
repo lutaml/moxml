@@ -8,42 +8,42 @@ RSpec.describe Moxml do
 
   describe ".new" do
     it "creates a new context" do
-      expect(Moxml.new).to be_a(Moxml::Context)
+      expect(described_class.new).to be_a(Moxml::Context)
     end
 
     it "accepts adapter specification" do
-      context = Moxml.new(:nokogiri)
+      context = described_class.new(:nokogiri)
       expect(context.config.adapter_name).to eq(:nokogiri)
     end
 
     it "raises error for invalid adapter" do
-      expect { Moxml.new(:invalid) }.to raise_error(Moxml::AdapterError)
+      expect { described_class.new(:invalid) }.to raise_error(Moxml::AdapterError)
     end
   end
 
   describe ".configure" do
     around do |example|
       # preserve the original config because it may be changed in examples
-      Moxml.with_config { example.run }
+      described_class.with_config { example.run }
     end
 
     it "sets default values without a block" do
-      Moxml.configure
+      described_class.configure
 
-      context = Moxml.new
+      context = described_class.new
       expect(context.config.adapter_name).to eq(:nokogiri)
     end
 
     it "uses configured options from the block" do
-      Moxml.configure do |config|
+      described_class.configure do |config|
         config.default_adapter = :oga
         config.strict_parsing = false
         config.default_encoding = "US-ASCII"
       end
 
-      context = Moxml.new
+      context = described_class.new
       expect(context.config.adapter_name).to eq(:oga)
-      expect(context.config.strict_parsing).to eq(false)
+      expect(context.config.strict_parsing).to be(false)
       expect(context.config.default_encoding).to eq("US-ASCII")
     end
   end

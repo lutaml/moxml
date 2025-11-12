@@ -40,7 +40,7 @@ module Moxml
           # document fragments are weird and should be used with caution:
           # https://github.com/sparklemotion/nokogiri/issues/572
           ::Nokogiri::XML::DocumentFragment.new(
-            ::Nokogiri::XML::Document.new
+            ::Nokogiri::XML::Document.new,
           )
         end
 
@@ -76,7 +76,7 @@ module Moxml
           ::Nokogiri::XML::ProcessingInstruction.new(
             create_document,
             "xml",
-            build_declaration_attrs(version, encoding, standalone)
+            build_declaration_attrs(version, encoding, standalone),
           )
         end
 
@@ -279,7 +279,7 @@ module Moxml
             e.message,
             expression: expression,
             adapter: "Nokogiri",
-            node: node
+            node: node,
           )
         end
 
@@ -290,7 +290,7 @@ module Moxml
             e.message,
             expression: expression,
             adapter: "Nokogiri",
-            node: node
+            node: node,
           )
         end
 
@@ -311,7 +311,7 @@ module Moxml
           node.to_xml(
             indent: options[:indent],
             encoding: options[:encoding],
-            save_with: save_options
+            save_with: save_options,
           )
         end
 

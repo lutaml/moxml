@@ -53,7 +53,8 @@ module Moxml
     def validate_pi_target(target)
       return if target.is_a?(String) && target.match?(/^[a-zA-Z_][\w\-.]*$/)
 
-      raise ValidationError, "Invalid XML processing instruction target: #{target}"
+      raise ValidationError,
+            "Invalid XML processing instruction target: #{target}"
     end
 
     def validate_uri(uri)

@@ -46,7 +46,8 @@ module Moxml
     class FunctionError < Error
       attr_reader :function_name, :argument_count
 
-      def initialize(message, expression: nil, function_name: nil, argument_count: nil)
+      def initialize(message, expression: nil, function_name: nil,
+argument_count: nil)
         @function_name = function_name
         @argument_count = argument_count
         super(message, expression: expression)

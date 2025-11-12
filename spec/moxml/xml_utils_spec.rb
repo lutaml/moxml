@@ -27,7 +27,9 @@ RSpec.describe Moxml::XmlUtils do
   describe "#validate_declaration_encoding" do
     it "validates encodings" do
       expect { utils.validate_declaration_encoding("UTF-8") }.not_to raise_error
-      expect { utils.validate_declaration_encoding("ISO-8859-1") }.not_to raise_error
+      expect do
+        utils.validate_declaration_encoding("ISO-8859-1")
+      end.not_to raise_error
     end
   end
 
@@ -40,7 +42,8 @@ RSpec.describe Moxml::XmlUtils do
     it "raises error for invalid names" do
       expect do
         utils.validate_element_name("123invalid")
-      end.to raise_error(Moxml::ValidationError, "Invalid XML element name: 123invalid")
+      end.to raise_error(Moxml::ValidationError,
+                         "Invalid XML element name: 123invalid")
     end
   end
 end

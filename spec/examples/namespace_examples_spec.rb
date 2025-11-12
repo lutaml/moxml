@@ -25,7 +25,7 @@ RSpec.shared_examples "Namespace Examples" do
 
       expect(doc.to_xml).to include(
         'xmlns:dc="http://purl.org/dc/elements/1.1/"',
-        "<dc:title>Test</dc:title>"
+        "<dc:title>Test</dc:title>",
       )
     end
 
@@ -42,7 +42,7 @@ RSpec.shared_examples "Namespace Examples" do
 
       expect(doc.to_xml).to include(
         "<ns:child>",
-        "<ns:grandchild>"
+        "<ns:grandchild>",
       )
     end
 
@@ -58,7 +58,7 @@ RSpec.shared_examples "Namespace Examples" do
 
       expect(doc.to_xml).to include(
         'xmlns:ns="http://example.org/1"',
-        'xmlns:ns="http://example.org/2"'
+        'xmlns:ns="http://example.org/2"',
       )
     end
   end

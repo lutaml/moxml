@@ -5,6 +5,7 @@ RSpec.shared_examples "Moxml Integration" do
 
   describe "complete document workflow" do
     let(:doc) { context.create_document }
+
     before do
       # Create document with declaration
       doc.add_child(doc.create_declaration("1.0", "UTF-8"))
@@ -45,7 +46,7 @@ RSpec.shared_examples "Moxml Integration" do
         "<!-- Mixed content example -->",
         "<text>Some text <![CDATA[<with><markup/>]]> and more text</text>",
         '<item id="123" xs:type="custom"></item>',
-        "</root>"
+        "</root>",
       ]
 
       expected_xml_tags.each do |expected_xml|
@@ -135,7 +136,7 @@ RSpec.shared_examples "Moxml Integration" do
       expect(doc.root.children.map(&:name)).to eq(%w[b c a])
       expect(doc.to_xml).to include(
         '<root id="main">',
-        "<b>2<!-- comment --><![CDATA[<tag>]]></b>"
+        "<b>2<!-- comment --><![CDATA[<tag>]]></b>",
       )
     end
   end

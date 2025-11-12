@@ -38,7 +38,7 @@ module Moxml
 
           # Check for mixed content
           has_text = node.children.any? { |c| c.is_a?(::REXML::Text) && !c.to_s.strip.empty? }
-          has_elements = node.children.any? { |c| c.is_a?(::REXML::Element) }
+          has_elements = node.children.any?(::REXML::Element)
           mixed = has_text && has_elements
 
           # Handle children based on content type
@@ -48,8 +48,8 @@ module Moxml
             node.children.each_with_index do |child, _index|
               # Skip insignificant whitespace
               next if child.is_a?(::REXML::Text) &&
-                      child.to_s.strip.empty? &&
-                      !(child.next_sibling.nil? && child.previous_sibling.nil?)
+                child.to_s.strip.empty? &&
+                !(child.next_sibling.nil? && child.previous_sibling.nil?)
 
               # Indent non-text nodes in non-mixed content
               # if !mixed && !child.is_a?(::REXML::Text)

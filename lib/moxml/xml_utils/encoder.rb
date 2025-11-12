@@ -10,19 +10,19 @@ module Moxml
         basic: {
           "<" => "&lt;",
           ">" => "&gt;",
-          "&" => "&amp;"
+          "&" => "&amp;",
         },
         quotes: {
           "'" => "&apos;",
-          '"' => "&quot;"
+          '"' => "&quot;",
         },
         full: {
           "<" => "&lt;",
           ">" => "&gt;",
           "'" => "&apos;",
           '"' => "&quot;",
-          "&" => "&amp;"
-        }
+          "&" => "&amp;",
+        },
       }.freeze
       MODES = MAPPINGS.keys.freeze
 

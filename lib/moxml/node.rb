@@ -31,7 +31,7 @@ module Moxml
     def children
       NodeSet.new(
         adapter.children(@native).map { adapter.patch_node(_1, @native) },
-        context
+        context,
       )
     end
 
@@ -161,7 +161,7 @@ module Moxml
         raise Moxml::DocumentStructureError.new(
           "Invalid node type: #{node.class}. Expected String or Moxml::Node",
           operation: "prepare_node",
-          state: "node_type: #{node.class}"
+          state: "node_type: #{node.class}",
         )
       end
     end
@@ -174,7 +174,7 @@ module Moxml
         # Oga: <empty /> (with a space)
         # Nokogiri: <empty/> (without a space)
         # The expanded format is enforced to avoid this conflict
-        expand_empty: true
+        expand_empty: true,
       }
     end
   end

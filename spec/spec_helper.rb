@@ -29,8 +29,14 @@ require "nokogiri"
 require "byebug"
 
 # Load shared examples from new locations
-Dir[File.expand_path("integration/shared_examples/**/*.rb", __dir__)].each { |f| require f }
-Dir[File.expand_path("adapter/shared_examples/**/*.rb", __dir__)].each { |f| require f }
+Dir[File.expand_path("integration/shared_examples/**/*.rb",
+                     __dir__)].each do |f|
+  require f
+end
+Dir[File.expand_path("moxml/adapter/shared_examples/**/*.rb",
+                     __dir__)].each do |f|
+  require f
+end
 Dir[File.expand_path("support/**/*.rb", __dir__)].each { |f| require f }
 
 RSpec.configure do |config|
@@ -49,10 +55,10 @@ RSpec.configure do |config|
   config.warnings = true
 
   # Configure to skip performance tests by default
-  config.filter_run_excluding performance: true unless ENV['RUN_PERFORMANCE']
+  config.filter_run_excluding performance: true unless ENV["RUN_PERFORMANCE"]
 
   # Configure to skip examples unless explicitly run
-  config.filter_run_excluding examples: true unless ENV['RUN_EXAMPLES']
+  config.filter_run_excluding examples: true unless ENV["RUN_EXAMPLES"]
 
   config.order = :random
   Kernel.srand config.seed

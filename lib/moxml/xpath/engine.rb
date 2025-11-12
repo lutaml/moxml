@@ -33,7 +33,8 @@ module Moxml
       # @raise [Moxml::XPath::SyntaxError] If expression syntax is invalid
       # @raise [Moxml::XPath::EvaluationError] If evaluation fails
       def evaluate(expression, context: nil)
-        raise ::NotImplementedError, "XPath engine implementation in progress (Phase 1.1+)"
+        raise ::NotImplementedError,
+              "XPath engine implementation in progress (Phase 1.1+)"
       end
 
       # Check if expression is valid XPath syntax

@@ -31,7 +31,7 @@ module Moxml
           rescue ::Ox::ParseError => e
             raise Moxml::ParseError.new(
               e.message,
-              source: xml.is_a?(String) ? xml[0..100] : nil
+              source: xml.is_a?(String) ? xml[0..100] : nil,
             )
           end
 
@@ -63,7 +63,7 @@ module Moxml
 
         def create_native_doctype(name, external_id, system_id)
           ::Ox::DocType.new(
-            "#{name} PUBLIC \"#{external_id}\" \"#{system_id}\""
+            "#{name} PUBLIC \"#{external_id}\" \"#{system_id}\"",
           )
         end
 
@@ -247,13 +247,13 @@ module Moxml
             return []
           end
 
-          element.attributes.map do |name, value|
+          element.attributes.filter_map do |name, value|
             next if name.start_with?("xmlns")
 
             ::Moxml::Adapter::CustomizedOx::Attribute.new(
               name, value, element
             )
-          end.compact
+          end
         end
 
         def attribute_element(attribute)
@@ -477,7 +477,7 @@ module Moxml
             "XPath translation failed: #{e.message}",
             expression: expression,
             adapter: "Ox",
-            node: node
+            node: node,
           )
         end
 
@@ -499,7 +499,7 @@ module Moxml
             # with_xml: true,
             with_instructions: true,
             encoding: options[:encoding],
-            no_empty: options[:expand_empty]
+            no_empty: options[:expand_empty],
           }
           output + ::Ox.dump(node, ox_options)
         end

@@ -20,7 +20,7 @@ module Moxml
           rescue LL::ParserError => e
             raise Moxml::ParseError.new(
               e.message,
-              source: xml.is_a?(String) ? xml[0..100] : nil
+              source: xml.is_a?(String) ? xml[0..100] : nil,
             )
           end
 
@@ -49,7 +49,7 @@ module Moxml
 
         def create_native_doctype(name, external_id, system_id)
           ::Oga::XML::Doctype.new(
-            name: name, public_id: external_id, system_id: system_id, type: "PUBLIC"
+            name: name, public_id: external_id, system_id: system_id, type: "PUBLIC",
           )
         end
 
@@ -61,7 +61,7 @@ module Moxml
           attrs = {
             version: version,
             encoding: encoding,
-            standalone: standalone
+            standalone: standalone,
           }.compact
           ::Moxml::Adapter::CustomizedOga::XmlDeclaration.new(attrs)
         end
@@ -199,7 +199,7 @@ module Moxml
           attr = ::Oga::XML::Attribute.new(
             name: name.to_s,
             namespace_name: namespace_name,
-            value: value.to_s
+            value: value.to_s,
           )
           element.add_attribute(attr)
         end
@@ -334,7 +334,7 @@ module Moxml
             e.message,
             expression: expression,
             adapter: "Oga",
-            node: node
+            node: node,
           )
         end
 
@@ -345,7 +345,7 @@ module Moxml
             e.message,
             expression: expression,
             adapter: "Oga",
-            node: node
+            node: node,
           )
         end
 
