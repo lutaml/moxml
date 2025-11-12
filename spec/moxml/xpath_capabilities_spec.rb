@@ -92,7 +92,7 @@ RSpec.describe "XPath Capabilities" do
           doc = Moxml.new.parse(xml_with_namespaces)
           namespaces = {
             "book" => "http://library.org/book",
-            "author" => "http://library.org/author"
+            "author" => "http://library.org/author",
           }
 
           items = doc.xpath("//book:item", namespaces)

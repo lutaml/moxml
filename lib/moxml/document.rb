@@ -40,14 +40,14 @@ module Moxml
     def create_doctype(name, external_id, system_id)
       Doctype.new(
         adapter.create_doctype(name, external_id, system_id),
-        context
+        context,
       )
     end
 
     def create_processing_instruction(target, content)
       ProcessingInstruction.new(
         adapter.create_processing_instruction(target, content),
-        context
+        context,
       )
     end
 

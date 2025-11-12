@@ -15,7 +15,7 @@ module Moxml
           "Could not load #{name} adapter. Please ensure the #{name} gem is installed",
           adapter: name,
           operation: "load",
-          native_error: e
+          native_error: e,
         )
       end
 
@@ -32,7 +32,7 @@ module Moxml
             "Failed to load #{name} adapter",
             adapter: name,
             operation: "require",
-            native_error: e
+            native_error: e,
           )
         end
       end

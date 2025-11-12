@@ -15,7 +15,7 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "set_root not implemented",
             feature: "set_root",
-            adapter: name
+            adapter: name,
           )
         end
 
@@ -23,7 +23,7 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "parse not implemented",
             feature: "parse",
-            adapter: name
+            adapter: name,
           )
         end
 
@@ -31,7 +31,7 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "create_document not implemented",
             feature: "create_document",
-            adapter: name
+            adapter: name,
           )
         end
 
@@ -108,7 +108,7 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "create_native_element not implemented",
             feature: "create_native_element",
-            adapter: name
+            adapter: name,
           )
         end
 
@@ -116,7 +116,7 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "create_native_text not implemented",
             feature: "create_native_text",
-            adapter: name
+            adapter: name,
           )
         end
 
@@ -124,7 +124,7 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "create_native_cdata not implemented",
             feature: "create_native_cdata",
-            adapter: name
+            adapter: name,
           )
         end
 
@@ -132,7 +132,7 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "create_native_comment not implemented",
             feature: "create_native_comment",
-            adapter: name
+            adapter: name,
           )
         end
 
@@ -140,7 +140,7 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "create_native_doctype not implemented",
             feature: "create_native_doctype",
-            adapter: name
+            adapter: name,
           )
         end
 
@@ -148,7 +148,7 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "create_native_processing_instruction not implemented",
             feature: "create_native_processing_instruction",
-            adapter: name
+            adapter: name,
           )
         end
 
@@ -156,7 +156,7 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "create_native_declaration not implemented",
             feature: "create_native_declaration",
-            adapter: name
+            adapter: name,
           )
         end
 
@@ -164,7 +164,7 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "create_native_namespace not implemented",
             feature: "create_native_namespace",
-            adapter: name
+            adapter: name,
           )
         end
       end

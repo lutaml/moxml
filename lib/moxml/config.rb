@@ -41,7 +41,7 @@ module Moxml
         raise Moxml::AdapterError.new(
           "Invalid adapter: #{name}",
           adapter: name,
-          operation: "set_adapter"
+          operation: "set_adapter",
         )
       end
 

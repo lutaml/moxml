@@ -11,11 +11,11 @@ module Moxml
         # LibXML auto-escapes content, we need to un-escape it
         def to_xml
           content = @native.content
-                           .gsub("&quot;", '"')
-                           .gsub("&apos;", "'")
-                           .gsub("&lt;", "<")
-                           .gsub("&gt;", ">")
-                           .gsub("&amp;", "&")
+            .gsub("&quot;", '"')
+            .gsub("&apos;", "'")
+            .gsub("&lt;", "<")
+            .gsub("&gt;", ">")
+            .gsub("&amp;", "&")
           "<!--#{content}-->"
         end
       end

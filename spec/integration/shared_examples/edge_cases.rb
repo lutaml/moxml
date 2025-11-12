@@ -39,7 +39,7 @@ RSpec.shared_examples "Moxml Edge Cases" do
       doc = context.create_document
       cdata = doc.create_cdata(cdata_text)
       expect(cdata.to_xml).to include(
-        "]]]]><![CDATA[>]]]]><![CDATA[>]]]]><![CDATA[>"
+        "]]]]><![CDATA[>]]]]><![CDATA[>]]]]><![CDATA[>",
       )
     end
 
@@ -144,7 +144,7 @@ RSpec.shared_examples "Moxml Edge Cases" do
         "space" => " ",
         "tabs_newlines" => "\t\n",
         "unicode" => "⚡",
-        "entities" => "<&>'\""
+        "entities" => "<&>'\"",
       }
 
       special_values.each do |name, value|

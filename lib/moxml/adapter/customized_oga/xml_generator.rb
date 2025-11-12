@@ -95,7 +95,7 @@ module Moxml
           input&.gsub(
             ::Oga::XML::Entities::ENCODE_ATTRIBUTE_REGEXP,
             # Keep apostrophes in attributes
-            ::Oga::XML::Entities::ENCODE_ATTRIBUTE_MAPPING.merge("'" => "'")
+            ::Oga::XML::Entities::ENCODE_ATTRIBUTE_MAPPING.merge("'" => "'"),
           )
         end
       end

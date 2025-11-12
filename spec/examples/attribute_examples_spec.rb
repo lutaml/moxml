@@ -27,7 +27,7 @@ RSpec.shared_examples "Attribute Examples" do
       element["special"] = '< > & " \''
 
       expect(element.to_xml).to include(
-        'special="&lt; &gt; &amp; &quot; \''
+        'special="&lt; &gt; &amp; &quot; \'',
       )
     end
 

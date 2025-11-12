@@ -19,7 +19,7 @@ RSpec.describe "Cross-adapter integration" do
     "Moxml::Builder",
     "Moxml::DocumentBuilder",
     "Moxml Integration",
-    "Moxml Edge Cases"
+    "Moxml Edge Cases",
   ]
 
   Moxml::Adapter::AVALIABLE_ADAPTERS.each do |adapter_name|

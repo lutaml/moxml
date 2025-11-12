@@ -104,25 +104,36 @@ class MoxmlBenchmarkReport
       end
 
       # Parsing benchmarks
-      @results[adapter_name][:parse_simple] = benchmark_parse(context, SIMPLE_XML)
-      @results[adapter_name][:parse_medium] = benchmark_parse(context, MEDIUM_XML)
+      @results[adapter_name][:parse_simple] =
+        benchmark_parse(context, SIMPLE_XML)
+      @results[adapter_name][:parse_medium] =
+        benchmark_parse(context, MEDIUM_XML)
       @results[adapter_name][:parse_large] = benchmark_parse(context, LARGE_XML)
-      @results[adapter_name][:parse_complex] = benchmark_parse(context, COMPLEX_NESTED_XML)
+      @results[adapter_name][:parse_complex] =
+        benchmark_parse(context, COMPLEX_NESTED_XML)
 
       # Serialization benchmarks
       context.parse(MEDIUM_XML)
-      @results[adapter_name][:serialize_simple] = benchmark_serialize(context, SIMPLE_XML)
-      @results[adapter_name][:serialize_medium] = benchmark_serialize(context, MEDIUM_XML)
-      @results[adapter_name][:serialize_large] = benchmark_serialize(context, LARGE_XML)
+      @results[adapter_name][:serialize_simple] =
+        benchmark_serialize(context, SIMPLE_XML)
+      @results[adapter_name][:serialize_medium] =
+        benchmark_serialize(context, MEDIUM_XML)
+      @results[adapter_name][:serialize_large] =
+        benchmark_serialize(context, LARGE_XML)
 
       # XPath benchmarks
-      @results[adapter_name][:xpath_simple] = benchmark_xpath_simple(context, MEDIUM_XML)
-      @results[adapter_name][:xpath_complex] = benchmark_xpath_complex(context, MEDIUM_XML)
-      @results[adapter_name][:xpath_namespace] = benchmark_xpath_namespace(context, MEDIUM_XML)
+      @results[adapter_name][:xpath_simple] =
+        benchmark_xpath_simple(context, MEDIUM_XML)
+      @results[adapter_name][:xpath_complex] =
+        benchmark_xpath_complex(context, MEDIUM_XML)
+      @results[adapter_name][:xpath_namespace] =
+        benchmark_xpath_namespace(context, MEDIUM_XML)
 
       # Memory benchmarks
-      @results[adapter_name][:memory_medium] = benchmark_memory(context, MEDIUM_XML)
-      @results[adapter_name][:memory_large] = benchmark_memory(context, LARGE_XML)
+      @results[adapter_name][:memory_medium] =
+        benchmark_memory(context, MEDIUM_XML)
+      @results[adapter_name][:memory_large] =
+        benchmark_memory(context, LARGE_XML)
 
       puts "  ✓ #{adapter_name} benchmarks completed"
     rescue StandardError => e
@@ -199,9 +210,9 @@ class MoxmlBenchmarkReport
 
   def get_memory_usage
     # Get memory usage in MB
-    if RUBY_PLATFORM =~ /darwin/
+    if RUBY_PLATFORM.include?("darwin")
       `ps -o rss= -p #{Process.pid}`.to_i / 1024.0
-    elsif RUBY_PLATFORM =~ /linux/
+    elsif RUBY_PLATFORM.include?("linux")
       `ps -o rss= -p #{Process.pid}`.to_i / 1024.0
     else
       0.0 # Not supported on this platform
@@ -257,7 +268,7 @@ class MoxmlBenchmarkReport
       write_errors(f) if @errors.values.any?(&:any?)
     end
 
-    puts "\n#{"=" * 80}"
+    puts "\n#{'=' * 80}"
     puts "Report generated: benchmarks/PERFORMANCE_REPORT.md"
     puts "=" * 80
   end
@@ -265,7 +276,7 @@ class MoxmlBenchmarkReport
   def write_header(f)
     f.puts "# Moxml Adapter Performance Benchmarks"
     f.puts ""
-    f.puts "Generated: #{@timestamp.strftime("%Y-%m-%d %H:%M:%S %Z")}"
+    f.puts "Generated: #{@timestamp.strftime('%Y-%m-%d %H:%M:%S %Z')}"
     f.puts ""
     f.puts "This report compares the performance of all Moxml adapters across various"
     f.puts "benchmarks including parsing, serialization, XPath queries, and memory usage."
@@ -307,7 +318,7 @@ class MoxmlBenchmarkReport
       next if @results[adapter].empty?
 
       r = @results[adapter]
-      f.puts "| #{adapter.to_s.capitalize} | #{r[:parse_simple]&.round(0) || "N/A"} ips | #{r[:parse_medium]&.round(0) || "N/A"} ips | #{r[:parse_large]&.round(0) || "N/A"} ips | #{r[:parse_complex]&.round(0) || "N/A"} ips |"
+      f.puts "| #{adapter.to_s.capitalize} | #{r[:parse_simple]&.round(0) || 'N/A'} ips | #{r[:parse_medium]&.round(0) || 'N/A'} ips | #{r[:parse_large]&.round(0) || 'N/A'} ips | #{r[:parse_complex]&.round(0) || 'N/A'} ips |"
     end
     f.puts ""
     f.puts "**Document Sizes:**"
@@ -326,7 +337,7 @@ class MoxmlBenchmarkReport
       next if @results[adapter].empty?
 
       r = @results[adapter]
-      f.puts "| #{adapter.to_s.capitalize} | #{r[:serialize_simple]&.round(0) || "N/A"} ips | #{r[:serialize_medium]&.round(0) || "N/A"} ips | #{r[:serialize_large]&.round(0) || "N/A"} ips |"
+      f.puts "| #{adapter.to_s.capitalize} | #{r[:serialize_simple]&.round(0) || 'N/A'} ips | #{r[:serialize_medium]&.round(0) || 'N/A'} ips | #{r[:serialize_large]&.round(0) || 'N/A'} ips |"
     end
     f.puts ""
 
@@ -339,7 +350,7 @@ class MoxmlBenchmarkReport
       next if @results[adapter].empty?
 
       r = @results[adapter]
-      f.puts "| #{adapter.to_s.capitalize} | #{r[:xpath_simple]&.round(0) || "N/A"} ips | #{r[:xpath_complex]&.round(0) || "N/A"} ips | #{r[:xpath_namespace]&.round(0) || "N/A"} ips |"
+      f.puts "| #{adapter.to_s.capitalize} | #{r[:xpath_simple]&.round(0) || 'N/A'} ips | #{r[:xpath_complex]&.round(0) || 'N/A'} ips | #{r[:xpath_namespace]&.round(0) || 'N/A'} ips |"
     end
     f.puts ""
     f.puts "**Query Types:**"
@@ -386,7 +397,7 @@ class MoxmlBenchmarkReport
 
       value = @results[adapter][:parse_medium] || 0
       bar_length = (value.to_f / max_parse * 50).to_i
-      f.puts "  #{adapter.to_s.capitalize.ljust(10)} #{"█" * bar_length} #{value.round(0)} ips"
+      f.puts "  #{adapter.to_s.capitalize.ljust(10)} #{'█' * bar_length} #{value.round(0)} ips"
     end
     f.puts ""
 
@@ -396,7 +407,7 @@ class MoxmlBenchmarkReport
 
       value = @results[adapter][:serialize_medium] || 0
       bar_length = (value.to_f / max_serialize * 50).to_i
-      f.puts "  #{adapter.to_s.capitalize.ljust(10)} #{"█" * bar_length} #{value.round(0)} ips"
+      f.puts "  #{adapter.to_s.capitalize.ljust(10)} #{'█' * bar_length} #{value.round(0)} ips"
     end
     f.puts ""
 
@@ -406,7 +417,7 @@ class MoxmlBenchmarkReport
 
       value = @results[adapter][:xpath_simple] || 0
       bar_length = (value.to_f / max_xpath * 50).to_i
-      f.puts "  #{adapter.to_s.capitalize.ljust(10)} #{"█" * bar_length} #{value.round(0)} ips"
+      f.puts "  #{adapter.to_s.capitalize.ljust(10)} #{'█' * bar_length} #{value.round(0)} ips"
     end
     f.puts "```"
     f.puts ""
@@ -474,10 +485,10 @@ class MoxmlBenchmarkReport
     f.puts ""
     f.puts "- **Ruby Version:** #{RUBY_VERSION}"
     f.puts "- **Ruby Platform:** #{RUBY_PLATFORM}"
-    f.puts "- **OS:** #{RbConfig::CONFIG["host_os"]}"
-    f.puts "- **Architecture:** #{RbConfig::CONFIG["host_cpu"]}"
+    f.puts "- **OS:** #{RbConfig::CONFIG['host_os']}"
+    f.puts "- **Architecture:** #{RbConfig::CONFIG['host_cpu']}"
     f.puts "- **Moxml Version:** #{Moxml::VERSION}"
-    f.puts "- **Benchmark Time:** #{@timestamp.strftime("%Y-%m-%d %H:%M:%S %Z")}"
+    f.puts "- **Benchmark Time:** #{@timestamp.strftime('%Y-%m-%d %H:%M:%S %Z')}"
     f.puts ""
     f.puts "### Gem Versions"
     f.puts ""

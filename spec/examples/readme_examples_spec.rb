@@ -22,7 +22,7 @@ RSpec.shared_examples "README Examples" do
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<book xmlns:dc="http://purl.org/dc/elements/1.1/">',
         "<dc:title>XML Processing with Ruby</dc:title>",
-        "</book>"
+        "</book>",
       )
     end
   end
@@ -57,7 +57,7 @@ RSpec.shared_examples "README Examples" do
         "<!--Publication details-->",
         '<published year="2024"></published>',
         "<![CDATA[<custom>metadata</custom>]]>",
-        "</book>"
+        "</book>",
       )
     end
   end
@@ -102,7 +102,7 @@ RSpec.shared_examples "README Examples" do
         "<dc:title>Ruby</dc:title>",
         "<![CDATA[About Ruby...]]>",
         "<dc:title>XML</dc:title>",
-        "<![CDATA[About XML...]]>"
+        "<![CDATA[About XML...]]>",
       )
     end
   end

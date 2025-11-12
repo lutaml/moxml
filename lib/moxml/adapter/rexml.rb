@@ -18,7 +18,7 @@ module Moxml
               raise Moxml::ParseError.new(
                 e.message,
                 line: e.line,
-                source: xml.is_a?(String) ? xml[0..100] : nil
+                source: xml.is_a?(String) ? xml[0..100] : nil,
               )
             end
             create_document
@@ -194,7 +194,7 @@ module Moxml
 
           # Only return non-namespace attributes
           element.attributes.values
-                 .reject { |attr| attr.prefix.to_s.start_with?("xmlns") }
+            .reject { |attr| attr.prefix.to_s.start_with?("xmlns") }
         end
 
         def attribute_element(attribute)
@@ -332,8 +332,8 @@ module Moxml
         def inner_text(node)
           # Get direct text children only, filter duplicates
           text_children = node.children
-                              .select { _1.is_a?(::REXML::Text) }
-                              .uniq(&:object_id)
+            .select { _1.is_a?(::REXML::Text) }
+            .uniq(&:object_id)
           text_children.map(&:value).join
         end
 
@@ -417,7 +417,7 @@ module Moxml
             e.message,
             expression: expression,
             adapter: "REXML",
-            node: node
+            node: node,
           )
         end
 
@@ -427,7 +427,7 @@ module Moxml
         end
 
         def serialize(node, options = {})
-          output = String.new
+          output = +""
 
           if node.is_a?(::REXML::Document)
             # Always include XML declaration
@@ -468,7 +468,7 @@ module Moxml
 
         def write_with_formatter(node, output, indent = 2)
           formatter = ::Moxml::Adapter::CustomizedRexml::Formatter.new(
-            indentation: indent, self_close_empty: false
+            indentation: indent, self_close_empty: false,
           )
           formatter.write(node, output)
         end

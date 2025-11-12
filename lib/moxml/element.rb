@@ -48,7 +48,7 @@ module Moxml
         e.message,
         prefix: prefix,
         uri: uri,
-        element: self
+        element: self,
       )
     end
     alias add_namespace_definition add_namespace
@@ -65,7 +65,7 @@ module Moxml
       if ns_or_hash.is_a?(Hash)
         adapter.set_namespace(
           @native,
-          adapter.create_namespace(@native, *ns_or_hash.to_a.first)
+          adapter.create_namespace(@native, *ns_or_hash.to_a.first),
         )
       else
         adapter.set_namespace(@native, ns_or_hash&.native)

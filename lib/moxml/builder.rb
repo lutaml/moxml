@@ -15,7 +15,7 @@ module Moxml
 
     def declaration(version: "1.0", encoding: "UTF-8", standalone: nil)
       @current.add_child(
-        @document.create_declaration(version, encoding, standalone)
+        @document.create_declaration(version, encoding, standalone),
       )
     end
 
@@ -38,7 +38,7 @@ module Moxml
 
       @current.add_child(el)
 
-      if block_given?
+      if block
         previous = @current
         @current = el
         instance_eval(&block)
@@ -62,7 +62,7 @@ module Moxml
 
     def processing_instruction(target, content)
       @current.add_child(
-        @document.create_processing_instruction(target, content)
+        @document.create_processing_instruction(target, content),
       )
     end
 
@@ -74,7 +74,7 @@ module Moxml
     # Convenience method for DOCTYPE
     def doctype(name, external_id = nil, system_id = nil)
       @current.add_child(
-        @document.create_doctype(name, external_id, system_id)
+        @document.create_doctype(name, external_id, system_id),
       )
     end
 

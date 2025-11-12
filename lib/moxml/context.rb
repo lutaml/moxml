@@ -22,7 +22,7 @@ module Moxml
       {
         encoding: config.default_encoding,
         strict: config.strict_parsing,
-        indent: config.default_indent
+        indent: config.default_indent,
       }
     end
   end

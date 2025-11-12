@@ -238,7 +238,7 @@ RSpec.shared_examples "xml adapter" do
         # Test xpath with namespaces
         namespaces = {
           "svg" => "http://www.w3.org/2000/svg",
-          "xlink" => "http://www.w3.org/1999/xlink"
+          "xlink" => "http://www.w3.org/1999/xlink",
         }
 
         # Find use element and verify xlink:href attribute
@@ -264,7 +264,7 @@ RSpec.shared_examples "xml adapter" do
       let(:xml) do
         <<~XML
           <?xml version="1.0" encoding="UTF-8"?>
-          <rss version="2.0"#{" "}
+          <rss version="2.0"#{' '}
             xmlns:atom="http://www.w3.org/2005/Atom"
             xmlns:dc="http://purl.org/dc/elements/1.1/"
             xmlns:content="http://purl.org/rss/1.0/modules/content/">
@@ -295,7 +295,7 @@ RSpec.shared_examples "xml adapter" do
         namespaces = {
           "atom" => "http://www.w3.org/2005/Atom",
           "dc" => "http://purl.org/dc/elements/1.1/",
-          "content" => "http://purl.org/rss/1.0/modules/content/"
+          "content" => "http://purl.org/rss/1.0/modules/content/",
         }
 
         # Find creator using namespaced xpath
@@ -317,7 +317,7 @@ RSpec.shared_examples "xml adapter" do
       let(:xml) do
         <<~XML
           <?xml version="1.0" encoding="UTF-8"?>
-          <soap:Envelope#{" "}
+          <soap:Envelope#{' '}
             xmlns:soap="http://www.w3.org/2003/05/soap-envelope"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xmlns:ns="urn:example:namespace">
@@ -346,7 +346,7 @@ RSpec.shared_examples "xml adapter" do
         # Test xpath with namespaces
         namespaces = {
           "soap" => "http://www.w3.org/2003/05/soap-envelope",
-          "ns" => "urn:example:namespace"
+          "ns" => "urn:example:namespace",
         }
 
         # Find user ID using namespaced xpath

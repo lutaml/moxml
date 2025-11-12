@@ -52,13 +52,13 @@ RSpec.describe "XPath Performance Benchmark" do
         "Simple descendant (//book)" => "//book",
         "Absolute path (/library/book)" => "/library/book",
         "Attribute predicate (//book[@id])" => "//book[@id]",
-        "Wildcard (//*/title)" => "//*/title"
+        "Wildcard (//*/title)" => "//*/title",
       }
     end
 
     describe "XPath query performance" do
       it "benchmarks XPath operations across all adapters" do
-        puts "\n#{"=" * 80}"
+        puts "\n#{'=' * 80}"
         puts "XPath Performance Benchmark - All Adapters"
         puts "=" * 80
 
@@ -92,7 +92,7 @@ RSpec.describe "XPath Performance Benchmark" do
       end
 
       it "generates detailed performance comparison table" do
-        puts "\n#{"=" * 80}"
+        puts "\n#{'=' * 80}"
         puts "Detailed XPath Performance Comparison"
         puts "=" * 80
 
@@ -135,7 +135,7 @@ RSpec.describe "XPath Performance Benchmark" do
           end
         end
 
-        puts "\n#{"=" * 80}"
+        puts "\n#{'=' * 80}"
         puts "Relative Performance (fastest = 1.0x baseline):"
         puts "-" * 80
 
@@ -169,7 +169,7 @@ RSpec.describe "XPath Performance Benchmark" do
           "metadata" => {
             "timestamp" => Time.now.utc.iso8601,
             "ruby_version" => RUBY_VERSION,
-            "ruby_platform" => RUBY_PLATFORM
+            "ruby_platform" => RUBY_PLATFORM,
           },
           "results" => {
             "absolute" => results_table.transform_values do |pattern_results|
@@ -181,13 +181,13 @@ RSpec.describe "XPath Performance Benchmark" do
               pattern_results.transform_values do |rel|
                 rel ? rel.round(3) : "not_supported"
               end
-            end
-          }
+            end,
+          },
         }
 
         File.write(output_file, YAML.dump(yaml_data))
 
-        puts "\n#{"=" * 80}"
+        puts "\n#{'=' * 80}"
         puts "Results saved to: #{output_file}"
         puts "=" * 80
         puts "Test complete - see output above for results"
@@ -215,12 +215,12 @@ RSpec.describe "XPath Performance Benchmark" do
           "Namespaced query (//ns:book)" =>
             ["//lib:book", { "lib" => "http://example.org/library" }],
           "Namespaced nested (//ns:book/ns:title)" =>
-            ["//lib:book/lib:title", { "lib" => "http://example.org/library" }]
+            ["//lib:book/lib:title", { "lib" => "http://example.org/library" }],
         }
       end
 
       it "benchmarks namespace-aware XPath" do
-        puts "\n#{"=" * 80}"
+        puts "\n#{'=' * 80}"
         puts "Namespace-Aware XPath Performance"
         puts "=" * 80
         puts "\nNote: REXML and Ox do not support namespace-aware XPath"

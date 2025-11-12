@@ -16,10 +16,10 @@ module Moxml
           # Un-escape LibXML's automatic escaping
           if content && !content.empty?
             unescaped = content.gsub("&quot;", '"')
-                               .gsub("&apos;", "'")
-                               .gsub("&lt;", "<")
-                               .gsub("&gt;", ">")
-                               .gsub("&amp;", "&")
+              .gsub("&apos;", "'")
+              .gsub("&lt;", "<")
+              .gsub("&gt;", ">")
+              .gsub("&amp;", "&")
             "<?#{target} #{unescaped}?>"
           else
             "<?#{target}?>"

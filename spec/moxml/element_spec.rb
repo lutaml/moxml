@@ -94,7 +94,7 @@ RSpec.describe Moxml::Element do
         doc = context.parse("<root><book id='1'/><book id='2'/></root>")
         result = doc.root.find_element(".//book")
 
-        expect(result).to be_a(Moxml::Element)
+        expect(result).to be_a(described_class)
         expect(result["id"]).to eq("1")
       end
 

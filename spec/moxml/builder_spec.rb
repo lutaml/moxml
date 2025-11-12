@@ -8,8 +8,8 @@ RSpec.describe Moxml::Builder do
   describe "#build" do
     it "builds a document with DSL" do
       doc = described_class.new(context).build do
-        element 'root' do
-          element 'child' do
+        element "root" do
+          element "child" do
             text "text"
           end
         end
@@ -21,9 +21,9 @@ RSpec.describe Moxml::Builder do
 
     it "creates nested elements" do
       doc = described_class.new(context).build do
-        element 'parent' do
-          element 'child1'
-          element 'child2'
+        element "parent" do
+          element "child1"
+          element "child2"
         end
       end
 
