@@ -52,6 +52,14 @@ module Moxml
       self.class.new(nodes + other.nodes, context)
     end
 
+    def <<(node)
+      # If it's a wrapped Moxml node, unwrap to native before storing
+      native_node = node.respond_to?(:native) ? node.native : node
+      @nodes << native_node
+      self
+    end
+    alias push <<
+
     def ==(other)
       self.class == other.class &&
         length == other.length &&

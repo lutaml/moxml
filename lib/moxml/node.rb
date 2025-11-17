@@ -107,6 +107,15 @@ module Moxml
       children.last
     end
 
+    # Recursively yield all descendant nodes
+    # Used by XPath descendant-or-self and descendant axes
+    def each_node(&block)
+      children.each do |child|
+        yield child
+        child.each_node(&block) if child.respond_to?(:each_node)
+      end
+    end
+
     # Clone the node (deep copy)
     def clone
       Node.wrap(adapter.dup(@native), context)
@@ -135,6 +144,7 @@ module Moxml
               when :document then Document
               when :declaration then Declaration
               when :doctype then Doctype
+              when :attribute then Attribute
               else self
               end
 

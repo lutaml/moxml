@@ -4,12 +4,19 @@ require_relative "adapter/base"
 
 module Moxml
   module Adapter
-    AVALIABLE_ADAPTERS = %i[nokogiri oga rexml ox libxml].freeze
+    AVALIABLE_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
 
     class << self
       def load(name)
         require_adapter(name)
-        const_get(name.to_s.capitalize)
+        # Handle special case for headed_ox -> HeadedOx
+        const_name = case name
+                     when :headed_ox
+                       'HeadedOx'
+                     else
+                       name.to_s.capitalize
+                     end
+        const_get(const_name)
       rescue LoadError => e
         raise Moxml::AdapterError.new(
           "Could not load #{name} adapter. Please ensure the #{name} gem is installed",

@@ -1,0 +1,6 @@
+# CustomizedLibxml wrapper classes are tested via:
+# spec/moxml/adapter/libxml_spec.rb
+#
+# Individual wrapper spec files removed to avoid redundant pending tests.
+# The wrapper classes (Element, Text, Cdata, Comment, etc.) are thoroughly
+# tested through the main LibXML adapter test suite.

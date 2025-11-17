@@ -76,8 +76,21 @@ module Moxml
     end
 
     def xpath(expression, namespaces = nil)
-      native_nodes = adapter.xpath(@native, expression, namespaces)
-      NodeSet.new(native_nodes, context)
+      result = adapter.xpath(@native, expression, namespaces)
+
+      # Handle different result types:
+      # - Scalar values (from functions): return directly
+      # - NodeSet: already wrapped, return directly
+      # - Array: wrap in NodeSet
+      case result
+      when NodeSet, Float, String, TrueClass, FalseClass, NilClass
+        result
+      when Array
+        NodeSet.new(result, context)
+      else
+        # For other types, try to wrap in NodeSet
+        NodeSet.new(result, context)
+      end
     end
 
     def at_xpath(expression, namespaces = nil)

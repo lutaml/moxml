@@ -9,6 +9,7 @@ module Moxml
         def initialize(attr_name, value, parent = nil)
           self.name = attr_name
           @parent = parent
+          @value = value  # Explicitly set @value
           super(value)
         end
 
@@ -23,6 +24,12 @@ module Moxml
 
         def expanded_name
           [prefix, name].compact.join(":")
+        end
+
+        # Expose the value stored in Ox::Node
+        # Ox stores attribute values using @value instance variable
+        def value
+          @value
         end
       end
     end

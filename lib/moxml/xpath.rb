@@ -13,6 +13,12 @@ module Moxml
   #
   module XPath
     autoload :Engine, "moxml/xpath/engine"
+    autoload :Compiler, "moxml/xpath/compiler"
+    autoload :Parser, "moxml/xpath/parser"
+    autoload :Lexer, "moxml/xpath/lexer"
+    autoload :Cache, "moxml/xpath/cache"
+    autoload :Context, "moxml/xpath/context"
+    autoload :Conversion, "moxml/xpath/conversion"
 
     # Require errors directly so classes are immediately available
     require_relative "xpath/errors"
@@ -20,6 +26,12 @@ module Moxml
     # AST nodes for expression representation
     module AST
       autoload :Node, "moxml/xpath/ast/node"
+    end
+
+    # Ruby AST nodes for code generation
+    module Ruby
+      autoload :Node, "moxml/xpath/ruby/node"
+      autoload :Generator, "moxml/xpath/ruby/generator"
     end
   end
 end

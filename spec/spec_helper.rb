@@ -39,6 +39,14 @@ Dir[File.expand_path("moxml/adapter/shared_examples/**/*.rb",
 end
 Dir[File.expand_path("support/**/*.rb", __dir__)].each { |f| require f }
 
+# Clear XPath caches before each test to ensure fresh compilation
+RSpec.configure do |config|
+  config.before(:each) do
+    Moxml::XPath::Compiler::CACHE.clear if defined?(Moxml::XPath::Compiler::CACHE)
+    Moxml::XPath::Parser::CACHE.clear if defined?(Moxml::XPath::Parser::CACHE)
+  end
+end
+
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
