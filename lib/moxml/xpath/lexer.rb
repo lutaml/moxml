@@ -204,23 +204,23 @@ module Moxml
             advance
             if @position < @length
               # Handle escape sequences
-              case current_char
-              when 't'
-                value += "\t"
-              when 'n'
-                value += "\n"
-              when 'r'
-                value += "\r"
-              when '\\'
-                value += "\\"
-              when '"'
-                value += '"'
-              when "'"
-                value += "'"
-              else
-                # Unknown escape - add literally
-                value += current_char
-              end
+              value += case current_char
+                       when "t"
+                         "\t"
+                       when "n"
+                         "\n"
+                       when "r"
+                         "\r"
+                       when "\\"
+                         "\\"
+                       when '"'
+                         '"'
+                       when "'"
+                         "'"
+                       else
+                         # Unknown escape - add literally
+                         current_char
+                       end
             end
           else
             value += current_char

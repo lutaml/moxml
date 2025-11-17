@@ -36,15 +36,15 @@ RSpec.describe "XPath Parser Integration" do
     it "parses function call" do
       ast = Moxml::XPath::Parser.parse("count(//item)")
 
-      expect(ast.type).to eq(:function)
-      expect(ast.value).to eq("count")
-      expect(ast.children.size).to eq(1)
+      expect(ast.type).to eq(:call)
+      expect(ast.children[0]).to eq("count")
+      expect(ast.children.size).to eq(2) # name + 1 argument
     end
 
     it "parses union expression" do
       ast = Moxml::XPath::Parser.parse("book | article | chapter")
 
-      expect(ast.type).to eq(:union)
+      expect(ast.type).to eq(:pipe)
       expect(ast.children.size).to eq(3)
     end
   end
@@ -61,11 +61,9 @@ RSpec.describe "XPath Parser Integration" do
     it "preserves operator precedence in AST" do
       ast = Moxml::XPath::Parser.parse("1 + 2 * 3")
 
-      expect(ast.type).to eq(:binary_op)
-      expect(ast.value).to eq(:plus)
+      expect(ast.type).to eq(:plus)
       # Right side should be multiplication
-      expect(ast.children[1].type).to eq(:binary_op)
-      expect(ast.children[1].value).to eq(:star)
+      expect(ast.children[1].type).to eq(:star)
     end
 
     it "correctly represents literals" do
@@ -140,9 +138,9 @@ RSpec.describe "XPath Parser Integration" do
       expr = "substring(title, 1, 10)"
       ast = Moxml::XPath::Parser.parse(expr)
 
-      expect(ast.type).to eq(:function)
-      expect(ast.value).to eq("substring")
-      expect(ast.children.size).to eq(3)
+      expect(ast.type).to eq(:call)
+      expect(ast.children[0]).to eq("substring")
+      expect(ast.children.size).to eq(4) # name + 3 arguments
     end
 
     it "parses arithmetic expression in predicate" do
@@ -156,7 +154,7 @@ RSpec.describe "XPath Parser Integration" do
       expr = '//book[@category="fiction"] | //article[@type="review"]'
       ast = Moxml::XPath::Parser.parse(expr)
 
-      expect(ast.type).to eq(:union)
+      expect(ast.type).to eq(:pipe)
       expect(ast.children.size).to eq(2)
     end
   end

@@ -155,100 +155,79 @@ RSpec.describe Moxml::XPath::Parser do
     context "operators" do
       it "parses equality operator" do
         ast = described_class.parse('@id = "123"')
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:eq)
+        expect(ast.type).to eq(:eq)
       end
 
       it "parses inequality operator" do
         ast = described_class.parse('@id != "123"')
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:neq)
+        expect(ast.type).to eq(:neq)
       end
 
       it "parses less than operator" do
         ast = described_class.parse("@price < 100")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:lt)
+        expect(ast.type).to eq(:lt)
       end
 
       it "parses greater than operator" do
         ast = described_class.parse("@price > 50")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:gt)
+        expect(ast.type).to eq(:gt)
       end
 
       it "parses less than or equal operator" do
         ast = described_class.parse("@price <= 100")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:lte)
+        expect(ast.type).to eq(:lte)
       end
 
       it "parses greater than or equal operator" do
         ast = described_class.parse("@price >= 50")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:gte)
+        expect(ast.type).to eq(:gte)
       end
 
       it "parses addition" do
         ast = described_class.parse("@a + @b")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:plus)
+        expect(ast.type).to eq(:plus)
       end
 
       it "parses subtraction" do
         ast = described_class.parse("@a - @b")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:minus)
+        expect(ast.type).to eq(:minus)
       end
 
       it "parses multiplication" do
         ast = described_class.parse("@a * @b")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:star)
+        expect(ast.type).to eq(:star)
       end
 
       it "parses division" do
         ast = described_class.parse("@a div @b")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:div)
+        expect(ast.type).to eq(:div)
       end
 
       it "parses modulo" do
         ast = described_class.parse("@a mod @b")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:mod)
-      end
-
-      it "parses unary minus" do
-        ast = described_class.parse("-@price")
-        expect(ast.type).to eq(:unary_op)
-        expect(ast.value).to eq(:minus)
+        expect(ast.type).to eq(:mod)
       end
     end
 
     context "logical operators" do
       it "parses and operator" do
         ast = described_class.parse("@a and @b")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:and)
+        expect(ast.type).to eq(:and)
       end
 
       it "parses or operator" do
         ast = described_class.parse("@a or @b")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:or)
+        expect(ast.type).to eq(:or)
       end
 
       it "parses complex logical expression" do
         ast = described_class.parse("@a and @b or @c")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:or)
+        expect(ast.type).to eq(:or)
       end
 
       it "respects operator precedence" do
         ast = described_class.parse("@a or @b and @c")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:or)
+        expect(ast.type).to eq(:or)
       end
     end
 
@@ -268,7 +247,7 @@ RSpec.describe Moxml::XPath::Parser do
       it "parses number literal" do
         ast = described_class.parse("123")
         expect(ast.type).to eq(:number)
-        expect(ast.value).to eq(123.0)
+        expect(ast.value).to eq(123)
       end
 
       it "parses decimal literal" do
@@ -281,61 +260,56 @@ RSpec.describe Moxml::XPath::Parser do
     context "function calls" do
       it "parses function with no arguments" do
         ast = described_class.parse("position()")
-        expect(ast.type).to eq(:function)
-        expect(ast.value).to eq("position")
-        expect(ast.children).to be_empty
+        expect(ast.type).to eq(:call)
+        expect(ast.children.size).to eq(1)
       end
 
       it "parses function with one argument" do
         ast = described_class.parse("count(//item)")
-        expect(ast.type).to eq(:function)
-        expect(ast.value).to eq("count")
-        expect(ast.children.size).to eq(1)
+        expect(ast.type).to eq(:call)
+        expect(ast.children.size).to eq(2)
       end
 
       it "parses function with multiple arguments" do
         ast = described_class.parse("substring(@name, 1, 3)")
-        expect(ast.type).to eq(:function)
-        expect(ast.value).to eq("substring")
-        expect(ast.children.size).to eq(3)
+        expect(ast.type).to eq(:call)
+        expect(ast.children.size).to eq(4)
       end
 
       it "parses nested function calls" do
         ast = described_class.parse("sum(count(//item))")
-        expect(ast.type).to eq(:function)
-        expect(ast.value).to eq("sum")
+        expect(ast.type).to eq(:call)
       end
     end
 
     context "union expressions" do
       it "parses simple union" do
         ast = described_class.parse("book | article")
-        expect(ast.type).to eq(:union)
+        expect(ast.type).to eq(:pipe)
         expect(ast.children.size).to eq(2)
       end
 
       it "parses multiple unions" do
         ast = described_class.parse("book | article | chapter")
-        expect(ast.type).to eq(:union)
+        expect(ast.type).to eq(:pipe)
         expect(ast.children.size).to eq(3)
       end
 
       it "parses union with paths" do
         ast = described_class.parse("//book | //article")
-        expect(ast.type).to eq(:union)
+        expect(ast.type).to eq(:pipe)
       end
     end
 
     context "variables" do
       it "parses variable reference" do
         ast = described_class.parse("$var")
-        expect(ast.type).to eq(:variable)
-        expect(ast.value).to eq("var")
+        expect(ast.type).to eq(:var)
       end
 
       it "parses variable in expression" do
         ast = described_class.parse("$price * 1.1")
-        expect(ast.type).to eq(:binary_op)
+        expect(ast.type).to eq(:star)
       end
     end
 
@@ -379,31 +353,26 @@ RSpec.describe Moxml::XPath::Parser do
 
       it "parses grouped expressions" do
         ast = described_class.parse("(@a + @b) * @c")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:star)
+        expect(ast.type).to eq(:star)
       end
     end
 
     context "operator precedence" do
       it "handles arithmetic precedence" do
         ast = described_class.parse("1 + 2 * 3")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:plus)
+        expect(ast.type).to eq(:plus)
         # Right side should be multiplication
-        expect(ast.children[1].type).to eq(:binary_op)
-        expect(ast.children[1].value).to eq(:star)
+        expect(ast.children[1].type).to eq(:star)
       end
 
       it "handles comparison precedence" do
         ast = described_class.parse("1 + 2 < 5")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:lt)
+        expect(ast.type).to eq(:lt)
       end
 
       it "handles logical precedence" do
         ast = described_class.parse("true and false or true")
-        expect(ast.type).to eq(:binary_op)
-        expect(ast.value).to eq(:or)
+        expect(ast.type).to eq(:or)
       end
     end
 

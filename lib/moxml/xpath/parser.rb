@@ -439,7 +439,9 @@ module Moxml
         elsif match?(:number)
           value = current_value
           advance
-          return AST::Node.number(value)
+          # Convert string to actual numeric value
+          numeric_value = value.include?(".") ? value.to_f : value.to_i
+          return AST::Node.number(numeric_value)
         elsif match?(:dollar)
           advance
           name = consume(:name, "Expected variable name after $")

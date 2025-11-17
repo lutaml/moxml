@@ -10,7 +10,9 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Unified XML manipulation library"
   spec.description = <<~DESCRIPTION
-    Moxml is a unified XML manipulation library that provides a common API.
+    Moxml is a unified XML manipulation library that provides a common API
+    for XML node navigation, manipulation, building and XPath querying
+    interface covering multiple parser implementations including Nokogiri, Oga, REXML, Ox, LibXML.
   DESCRIPTION
 
   spec.homepage = "https://github.com/lutaml/moxml"

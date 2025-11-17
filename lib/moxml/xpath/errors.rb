@@ -78,5 +78,24 @@ argument_count: nil)
         msg
       end
     end
+
+    # Error raised when an XPath function is called without required context
+    class InvalidContextError < Error
+      attr_reader :function_name, :required_context
+
+      def initialize(message, expression: nil, function_name: nil,
+required_context: nil)
+        @function_name = function_name
+        @required_context = required_context
+        super(message, expression: expression)
+      end
+
+      def to_s
+        msg = super
+        msg += "\n  Function: #{@function_name}" if @function_name
+        msg += "\n  Required context: #{@required_context}" if @required_context
+        msg
+      end
+    end
   end
 end

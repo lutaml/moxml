@@ -34,6 +34,7 @@ module Moxml
         def to_a
           @children
         end
+        alias to_ary to_a
 
         # Returns a "to_a" call node.
         #

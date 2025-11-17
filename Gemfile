@@ -7,7 +7,6 @@ gemspec
 
 # Provides iteration per second benchmarking for Ruby
 gem "benchmark-ips"
-gem "byebug"
 gem "get_process_mem"
 gem "libxml-ruby", "~> 5.0"
 gem "nokogiri", "~> 1.18"
@@ -18,9 +17,9 @@ gem "rake"
 gem "rexml"
 gem "rspec"
 gem "rubocop"
-gem "rubocop-performance"
-gem "rubocop-rake"
-gem "rubocop-rspec"
+gem "rubocop-performance", require: false
+gem "rubocop-rake", require: false
+gem "rubocop-rspec", require: false
 gem "simplecov", require: false
 gem "tempfile"
 

@@ -13,6 +13,27 @@ module Moxml
       adapter.set_node_name(@native, value)
     end
 
+    # Returns the expanded name including namespace prefix
+    def expanded_name
+      if namespace_prefix && !namespace_prefix.empty?
+        "#{namespace_prefix}:#{name}"
+      else
+        name
+      end
+    end
+
+    # Returns the namespace prefix of this element
+    def namespace_prefix
+      ns = namespace
+      ns&.prefix
+    end
+
+    # Returns the namespace URI of this element
+    def namespace_uri
+      ns = namespace
+      ns&.uri
+    end
+
     def []=(name, value)
       adapter.set_attribute(@native, name, normalize_xml_value(value))
     end
@@ -24,6 +45,16 @@ module Moxml
     def attribute(name)
       native_attr = adapter.get_attribute(@native, name)
       native_attr && Attribute.new(native_attr, context)
+    end
+
+    # Alias for attribute access
+    def get(attr_name)
+      attribute(attr_name)
+    end
+
+    # Alias for getting attribute value (used by XPath engine)
+    def get(attr_name)
+      self[attr_name]
     end
 
     def attributes
@@ -78,6 +109,11 @@ module Moxml
       end
     end
     alias namespace_definitions namespaces
+
+    # Returns the namespace URI of this element (alias for namespace_uri)
+    def namespace_name
+      namespace_uri
+    end
 
     def text
       adapter.text_content(@native)
@@ -135,6 +171,11 @@ module Moxml
 
     def find_all(xpath)
       xpath(xpath).to_a
+    end
+
+    # Alias for children (used by XPath engine)
+    def nodes
+      children
     end
   end
 end

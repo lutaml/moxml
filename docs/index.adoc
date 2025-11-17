@@ -1,0 +1,117 @@
+---
+title: Home
+nav_order: 1
+---
+:page-layout: home
+
+== Moxml: Modern XML processing for Ruby
+
+image:https://github.com/lutaml/moxml/workflows/rake/badge.svg["Build Status", link="https://github.com/lutaml/moxml/actions?workflow=rake"]
+image:https://img.shields.io/gem/v/moxml.svg["Gem Version", link="https://rubygems.org/gems/moxml"]
+
+Moxml provides a unified, modern XML processing interface for Ruby
+applications. It offers a consistent API that abstracts away the underlying
+XML implementation details while maintaining high performance through
+efficient node mapping and native XPath querying.
+
+== Key features
+
+* **Unified interface** - Consistent API across different XML libraries
+* **Multiple adapters** - Support for Nokogiri, LibXML, Oga, REXML, and Ox
+* **Full XPath support** - Native XPath querying with namespace handling
+* **Ruby-idiomatic** - Natural, expressive API for XML manipulation
+* **High performance** - Efficient node mapping and adapter optimization
+* **Thread-safe** - Safe for concurrent operations
+* **Complete node support** - Handle all XML node types
+
+== Quick example
+
+[source,ruby]
+----
+require 'moxml'
+
+# Parse XML
+doc = Moxml.new.parse('<library><book id="1">Ruby</book></library>')
+
+# Query with XPath
+books = doc.xpath('//book[@id="1"]')
+puts books.first.text  # => "Ruby"
+
+# Modify content
+books.first.text = 'Advanced Ruby'
+books.first['edition'] = '2nd'
+
+# Output formatted XML
+puts doc.to_xml(indent: 2)
+----
+
+== Getting started
+
+Choose your path:
+
+[.grid]
+--
+link:pages/installation[**Installation**]::
+Install Moxml and choose an XML adapter
+
+link:tutorials/[**Tutorials**]::
+Step-by-step guides to learn Moxml
+
+link:guides/[**Guides**]::
+Task-oriented documentation for common operations
+
+link:pages/adapters/[**Adapters**]::
+Learn about supported XML libraries
+--
+
+== Supported adapters
+
+[cols="2,3,1"]
+|===
+| Adapter | Best for | Performance
+
+| link:pages/adapters/nokogiri[Nokogiri]
+| Industry standard, wide compatibility
+| Fast
+
+| link:pages/adapters/libxml[LibXML]
+| Alternative to Nokogiri, full features
+| Very Fast
+
+| link:pages/adapters/oga[Oga]
+| Pure Ruby, no C extensions
+| Fast
+
+| link:pages/adapters/rexml[REXML]
+| Standard library, maximum portability
+| Medium
+
+| link:pages/adapters/ox[Ox]
+| Maximum speed, simple documents
+| Very Fast
+|===
+
+== Why Moxml?
+
+**Consistent API**:: Write once, run with any XML library. Switch adapters
+without changing your code.
+
+**Full XPath support**:: Powerful querying with namespace awareness across all
+adapters.
+
+**Modern design**:: Clean, Ruby-idiomatic interface that feels natural to use.
+
+**Production ready**:: Comprehensive error handling, thread safety, and
+performance optimization.
+
+== Community
+
+* link:https://github.com/lutaml/moxml[GitHub repository]
+* link:https://github.com/lutaml/moxml/issues[Issue tracker]
+* link:https://rubygems.org/gems/moxml[RubyGems page]
+
+== License
+
+Moxml is released under the BSD-2-Clause License.
+
+Copyright (c) 2025 Ribose Inc.

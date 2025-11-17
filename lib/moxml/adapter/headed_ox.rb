@@ -54,23 +54,36 @@ module Moxml
         # @param [Hash] namespaces Namespace prefix mappings
         # @return [Moxml::NodeSet, Object] Query results
         def xpath(node, expression, namespaces = {})
+          # If we receive a native node, wrap it first
+          # Document#xpath passes @native, but our compiled XPath needs Moxml nodes
+          unless node.is_a?(Moxml::Node)
+            # Determine the context from the node if possible
+            # For now, create a basic context for wrapped nodes
+            ctx = Context.new(:headed_ox)
+
+            # Wrap the native node - don't rebuild the whole document
+            node = Node.wrap(node, ctx)
+          end
+
           # Parse XPath expression to AST
           ast = XPath::Parser.parse(expression)
 
           # Compile AST to executable Proc using class method
           proc = XPath::Compiler.compile_with_cache(ast, namespaces: namespaces)
 
-          # Execute on the node - note that 'node' parameter is the native node,
-          # we need to wrap it in a Moxml node for the compiler
-          moxml_node = Node.wrap(node, Context.new(:headed_ox))
-          result = proc.call(moxml_node)
+          # Execute on the node (now guaranteed to be wrapped Moxml node)
+          result = proc.call(node)
 
           # Wrap Array results in NodeSet, return other types directly
           case result
           when Array
-            NodeSet.new(result, moxml_node.context)
+            # Deduplicate by native object identity to handle descendant-or-self
+            # which may yield the same native node multiple times
+            nodeset = NodeSet.new(result, node.context)
+            nodeset.uniq_by_native
           when NodeSet
-            result
+            # Deduplicate NodeSet results as well
+            result.uniq_by_native
           else
             # Scalar values (string, number, boolean) - return as-is
             result
@@ -110,15 +123,21 @@ module Moxml
         # @return [Hash] Capability flags
         def capabilities
           {
+            # Core adapter capabilities
+            parse: true,
+
             # Parsing capabilities (inherited from Ox)
             sax_parsing: true,
             namespace_aware: true,
+            namespace_support: :partial,
             dtd_support: true,
+            parsing_speed: :fast,
 
             # XPath capabilities (provided by Moxml's XPath engine)
+            xpath_support: :full,
             xpath_full: true,
-            xpath_axes: :all,
-            xpath_functions: :all,
+            xpath_axes: :partial, # 6 of 13 axes: child, descendant, descendant-or-self, self, attribute, parent
+            xpath_functions: :complete, # All 27 XPath 1.0 functions
             xpath_predicates: true,
             xpath_namespaces: true,
             xpath_variables: true,
@@ -129,7 +148,7 @@ module Moxml
 
             # Known limitations
             schema_validation: false,
-            xslt_support: false
+            xslt_support: false,
           }
         end
       end

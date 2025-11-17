@@ -107,6 +107,54 @@ module Moxml
       children.last
     end
 
+    # Returns the text content of this node
+    # For elements, returns concatenated text of all text children
+    # For text nodes, returns the content if available
+    def text
+      if respond_to?(:content)
+        content
+      elsif respond_to?(:children)
+        children.select { |c| c.is_a?(Text) }.map(&:content).join
+      else
+        ""
+      end
+    end
+
+    # Returns the text content of this node
+    # Subclasses should override this method
+    # Element and Text have their own implementations
+    def text
+      ""
+    end
+
+    # Attribute accessor - only works on Element nodes
+    # Returns nil for non-element nodes
+    def [](name)
+      return nil unless respond_to?(:attribute)
+
+      attr = attribute(name)
+      attr&.value if attr.respond_to?(:value)
+    end
+
+    # Returns the namespace of this node
+    # Only applicable to Element nodes, returns nil for others
+    def namespace
+      return nil unless element?
+
+      ns = adapter.namespace(@native)
+      ns && Namespace.new(ns, context)
+    end
+
+    # Returns all namespace definitions on this node
+    # Only applicable to Element nodes, returns empty array for others
+    def namespaces
+      return [] unless element?
+
+      adapter.namespace_definitions(@native).map do |ns|
+        Namespace.new(ns, context)
+      end
+    end
+
     # Recursively yield all descendant nodes
     # Used by XPath descendant-or-self and descendant axes
     def each_node(&block)

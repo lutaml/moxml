@@ -26,7 +26,6 @@ end
 
 require "moxml"
 require "nokogiri"
-require "byebug"
 
 # Load shared examples from new locations
 Dir[File.expand_path("integration/shared_examples/**/*.rb",
@@ -39,9 +38,18 @@ Dir[File.expand_path("moxml/adapter/shared_examples/**/*.rb",
 end
 Dir[File.expand_path("support/**/*.rb", __dir__)].each { |f| require f }
 
+# Clear XPath caches immediately to ensure fresh compilation
+# This is critical when code changes affect compiled XPath expressions
+if defined?(Moxml::XPath::Compiler::CACHE)
+  Moxml::XPath::Compiler::CACHE.clear
+end
+if defined?(Moxml::XPath::Parser::CACHE)
+  Moxml::XPath::Parser::CACHE.clear
+end
+
 # Clear XPath caches before each test to ensure fresh compilation
 RSpec.configure do |config|
-  config.before(:each) do
+  config.before do
     Moxml::XPath::Compiler::CACHE.clear if defined?(Moxml::XPath::Compiler::CACHE)
     Moxml::XPath::Parser::CACHE.clear if defined?(Moxml::XPath::Parser::CACHE)
   end
