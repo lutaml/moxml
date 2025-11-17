@@ -40,7 +40,7 @@ RSpec.shared_examples "Performance Examples" do
       # first - parser, second - serializer
       thresholds = {
         nokogiri: [18, 1200],
-        oga: [12, 110],
+        oga: [10, 100],
         rexml: [0, 60],
         ox: [2, 2000],
         libxml: [15, 50]  # LibXML serialization is slower (documented limitation)
