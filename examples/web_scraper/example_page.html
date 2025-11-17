@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Programming Language Statistics - 2024</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .stats-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .language-name {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Programming Language Statistics - 2024</h1>
+
+    <div class="stats-card" id="summary">
+        <h2>Summary</h2>
+        <p>Total languages tracked: <span class="stat-value">10</span></p>
+        <p>Data last updated: <span class="stat-value">October 30, 2024</span></p>
+    </div>
+
+    <h2>Most Popular Programming Languages</h2>
+    <table id="popularity-table">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Language</th>
+                <th>Category</th>
+                <th>Popularity Score</th>
+                <th>Year Created</th>
+                <th>Primary Use</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr data-language="python">
+                <td>1</td>
+                <td class="language-name">Python</td>
+                <td>Interpreted</td>
+                <td data-score="95.5">95.5%</td>
+                <td>1991</td>
+                <td>Data Science, Web, AI</td>
+            </tr>
+            <tr data-language="javascript">
+                <td>2</td>
+                <td class="language-name">JavaScript</td>
+                <td>Interpreted</td>
+                <td data-score="94.2">94.2%</td>
+                <td>1995</td>
+                <td>Web Development</td>
+            </tr>
+            <tr data-language="java">
+                <td>3</td>
+                <td class="language-name">Java</td>
+                <td>Compiled</td>
+                <td data-score="89.7">89.7%</td>
+                <td>1995</td>
+                <td>Enterprise, Android</td>
+            </tr>
+            <tr data-language="csharp">
+                <td>4</td>
+                <td class="language-name">C#</td>
+                <td>Compiled</td>
+                <td data-score="82.3">82.3%</td>
+                <td>2000</td>
+                <td>.NET, Games, Enterprise</td>
+            </tr>
+            <tr data-language="cpp">
+                <td>5</td>
+                <td class="language-name">C++</td>
+                <td>Compiled</td>
+                <td data-score="78.9">78.9%</td>
+                <td>1985</td>
+                <td>Systems, Games, Performance</td>
+            </tr>
+            <tr data-language="ruby">
+                <td>6</td>
+                <td class="language-name">Ruby</td>
+                <td>Interpreted</td>
+                <td data-score="65.4">65.4%</td>
+                <td>1995</td>
+                <td>Web Development, Scripting</td>
+            </tr>
+            <tr data-language="go">
+                <td>7</td>
+                <td class="language-name">Go</td>
+                <td>Compiled</td>
+                <td data-score="63.8">63.8%</td>
+                <td>2009</td>
+                <td>Cloud, Microservices</td>
+            </tr>
+            <tr data-language="rust">
+                <td>8</td>
+                <td class="language-name">Rust</td>
+                <td>Compiled</td>
+                <td data-score="61.2">61.2%</td>
+                <td>2010</td>
+                <td>Systems, WebAssembly</td>
+            </tr>
+            <tr data-language="swift">
+                <td>9</td>
+                <td class="language-name">Swift</td>
+                <td>Compiled</td>
+                <td data-score="58.7">58.7%</td>
+                <td>2014</td>
+                <td>iOS, macOS Development</td>
+            </tr>
+            <tr data-language="kotlin">
+                <td>10</td>
+                <td class="language-name">Kotlin</td>
+                <td>Compiled</td>
+                <td data-score="56.3">56.3%</td>
+                <td>2011</td>
+                <td>Android, JVM</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Language Statistics by Category</h2>
+    <table id="category-table">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Count</th>
+                <th>Average Score</th>
+                <th>Top Language</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Interpreted</td>
+                <td>3</td>
+                <td>85.0%</td>
+                <td>Python</td>
+            </tr>
+            <tr>
+                <td>Compiled</td>
+                <td>7</td>
+                <td>70.1%</td>
+                <td>Java</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Detailed Language Information</h2>
+    <div class="stats-card" data-language="python">
+        <h3 class="language-name">Python</h3>
+        <ul>
+            <li><strong>Paradigm:</strong> Multi-paradigm: object-oriented, procedural, functional</li>
+            <li><strong>Typing:</strong> Dynamic, strong</li>
+            <li><strong>Community:</strong> Very large and active</li>
+            <li><strong>Learning Curve:</strong> Beginner-friendly</li>
+        </ul>
+    </div>
+
+    <div class="stats-card" data-language="ruby">
+        <h3 class="language-name">Ruby</h3>
+        <ul>
+            <li><strong>Paradigm:</strong> Multi-paradigm: object-oriented, functional</li>
+            <li><strong>Typing:</strong> Dynamic, strong</li>
+            <li><strong>Community:</strong> Active, focused on web development</li>
+            <li><strong>Learning Curve:</strong> Beginner to intermediate</li>
+        </ul>
+    </div>
+
+    <footer>
+        <p><em>Data compiled from various programming language popularity indices</em></p>
+        <p>Contact: <a href="mailto:info@example.com">info@example.com</a></p>
+    </footer>
+</body>
+</html>
