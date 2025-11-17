@@ -2,6 +2,9 @@
 # See https://github.com/metanorma/cimas
 name: rake
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [ master, main ]
