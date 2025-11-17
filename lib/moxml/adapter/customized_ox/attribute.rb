@@ -9,7 +9,7 @@ module Moxml
         def initialize(attr_name, value, parent = nil)
           self.name = attr_name
           @parent = parent
-          @value = value  # Explicitly set @value
+          @value = value # Explicitly set @value
           super(value)
         end
 

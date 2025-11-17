@@ -12,7 +12,7 @@ module Moxml
         # Handle special case for headed_ox -> HeadedOx
         const_name = case name
                      when :headed_ox
-                       'HeadedOx'
+                       "HeadedOx"
                      else
                        name.to_s.capitalize
                      end

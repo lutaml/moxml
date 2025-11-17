@@ -161,10 +161,10 @@ module Moxml
           children = ast.to_a
           receiver = children[0]
           name = children[1]
-          args = children[2..-1] || []
+          args = children[2..] || []
 
           call = name
-          brackets = name == '[]'
+          brackets = name == "[]"
 
           unless args.empty?
             arg_strs = []
@@ -176,7 +176,7 @@ module Moxml
               end
               arg_strs << result
             end
-            arg_str = arg_strs.join(', ')
+            arg_str = arg_strs.join(", ")
             call = brackets ? "[#{arg_str}]" : "#{call}(#{arg_str})"
           end
 
