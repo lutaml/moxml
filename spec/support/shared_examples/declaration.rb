@@ -36,7 +36,9 @@ RSpec.shared_examples "Moxml::Declaration" do
     end
 
     it "normalizes encoding" do
-      pending("Rexml Encoding upcases the string") if Moxml.new.config.adapter.name.include?("Rexml")
+      if Moxml.new.config.adapter.name.include?("Rexml")
+        pending("Rexml Encoding upcases the string")
+      end
       declaration.encoding = "utf-8"
       expect(declaration.encoding).to eq("utf-8")
     end
@@ -54,7 +56,8 @@ RSpec.shared_examples "Moxml::Declaration" do
 
     it "validates standalone value" do
       expect { declaration.standalone = "maybe" }
-        .to raise_error(Moxml::ValidationError, "Invalid standalone value: maybe")
+        .to raise_error(Moxml::ValidationError,
+                        "Invalid standalone value: maybe")
     end
 
     it "allows nil standalone" do

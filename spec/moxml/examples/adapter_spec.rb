@@ -19,8 +19,8 @@ RSpec.describe "Adapter Examples" do
     def normalize_xml(xml)
       xml.gsub(/>\s+</, "><")
          .gsub(/\s+/, " ")
-         .gsub(/ >/, ">")
-         .gsub(/\?></, "?>\n<")
+         .gsub(" >", ">")
+         .gsub("?><", "?>\n<")
          .strip
     end
   end

@@ -1,5 +1,29 @@
 # frozen_string_literal: true
 
+# SimpleCov must be loaded before application code
+if ENV.fetch("COVERAGE", nil) == "true"
+  require "simplecov"
+
+  SimpleCov.start do
+    add_filter "/spec/"
+    add_filter "/vendor/"
+
+    add_group "Core", "lib/moxml/*.rb"
+    add_group "Adapters", "lib/moxml/adapter"
+    add_group "Utilities", "lib/moxml/xml_utils"
+
+    # Adapter-specific groups
+    add_group "Nokogiri Adapter", "lib/moxml/adapter/nokogiri.rb"
+    add_group "Oga Adapter", "lib/moxml/adapter/oga.rb"
+    add_group "REXML Adapter", "lib/moxml/adapter/rexml.rb"
+    add_group "LibXML Adapter", "lib/moxml/adapter/libxml.rb"
+    add_group "Ox Adapter", "lib/moxml/adapter/ox.rb"
+
+    minimum_coverage 90
+    minimum_coverage_by_file 80
+  end
+end
+
 require "moxml"
 require "nokogiri"
 require "byebug"

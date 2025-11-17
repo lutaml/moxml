@@ -18,15 +18,15 @@ RSpec.shared_examples "XPath Examples" do
     end
 
     it "finds nodes by XPath" do
-      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
-
       books = doc.xpath("//book")
       expect(books.size).to eq(2)
       expect(books.map { _1["id"] }).to eq(%w[1 2])
     end
 
     it "finds nodes with namespaces" do
-      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+      if context.config.adapter_name == :ox
+        pending "Ox doesn't have a native XPath"
+      end
 
       titles = doc.xpath("//dc:title",
                          "dc" => "http://purl.org/dc/elements/1.1/")
@@ -34,7 +34,9 @@ RSpec.shared_examples "XPath Examples" do
     end
 
     it "finds nodes by attributes" do
-      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+      if context.config.adapter_name == :ox
+        pending "Ox doesn't have a native XPath"
+      end
 
       book = doc.at_xpath('//book[@id="2"]')
       expect(book).not_to be_nil
@@ -44,7 +46,9 @@ RSpec.shared_examples "XPath Examples" do
     end
 
     it "finds nested attributes efficiently" do
-      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+      if context.config.adapter_name == :ox
+        pending "Ox doesn't have a native XPath"
+      end
       # More efficient - specific path
       titles1 = doc.xpath("//book/dc:title")
 
@@ -59,7 +63,7 @@ RSpec.shared_examples "XPath Examples" do
         # Each book is a mapped Moxml::Element
         book.at_xpath(".//dc:title", "dc" => "http://purl.org/dc/elements/1.1/").native
       end
-      titles4 = ::Moxml::NodeSet.new(nodes, doc.context)
+      titles4 = Moxml::NodeSet.new(nodes, doc.context)
 
       expect(titles1.count).to eq(2)
       expect(titles1).to eq(titles2)

@@ -12,7 +12,8 @@ module Moxml
       yield Config.default if block_given?
     end
 
-    def with_config(adapter_name = nil, strict_parsing = nil, default_encoding = nil)
+    def with_config(adapter_name = nil, strict_parsing = nil,
+                    default_encoding = nil)
       original_config = Config.default.dup
 
       configure do |config|

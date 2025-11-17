@@ -17,7 +17,7 @@ RSpec.describe Moxml do
     end
 
     it "raises error for invalid adapter" do
-      expect { Moxml.new(:invalid) }.to raise_error(ArgumentError)
+      expect { Moxml.new(:invalid) }.to raise_error(Moxml::AdapterError)
     end
   end
 

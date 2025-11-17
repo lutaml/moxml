@@ -18,7 +18,10 @@ module Moxml
           native_doc = begin
             ::Oga.parse_xml(xml, strict: options[:strict])
           rescue LL::ParserError => e
-            raise Moxml::ParseError, e.message
+            raise Moxml::ParseError.new(
+              e.message,
+              source: xml.is_a?(String) ? xml[0..100] : nil
+            )
           end
 
           DocumentBuilder.new(Context.new(:oga)).build(native_doc)
@@ -64,13 +67,17 @@ module Moxml
         end
 
         def declaration_attribute(declaration, attr_name)
-          return unless ::Moxml::Declaration::ALLOWED_ATTRIBUTES.include?(attr_name.to_s)
+          unless ::Moxml::Declaration::ALLOWED_ATTRIBUTES.include?(attr_name.to_s)
+            return
+          end
 
           declaration.public_send(attr_name)
         end
 
         def set_declaration_attribute(declaration, attr_name, value)
-          return unless ::Moxml::Declaration::ALLOWED_ATTRIBUTES.include?(attr_name.to_s)
+          unless ::Moxml::Declaration::ALLOWED_ATTRIBUTES.include?(attr_name.to_s)
+            return
+          end
 
           declaration.public_send("#{attr_name}=", value)
         end
@@ -80,7 +87,8 @@ module Moxml
           return ns unless ns.nil?
 
           # Oga creates an attribute and registers a namespace
-          set_attribute(element, [::Oga::XML::Element::XMLNS_PREFIX, prefix].compact.join(":"), uri)
+          set_attribute(element,
+                        [::Oga::XML::Element::XMLNS_PREFIX, prefix].compact.join(":"), uri)
           element.register_namespace(prefix, uri)
           ::Oga::XML::Namespace.new(name: prefix, uri: uri)
         end
@@ -131,7 +139,10 @@ module Moxml
         def children(node)
           all_children = []
 
-          all_children += [node.xml_declaration, node.doctype].compact if node.is_a?(::Oga::XML::Document)
+          if node.is_a?(::Oga::XML::Document)
+            all_children += [node.xml_declaration,
+                             node.doctype].compact
+          end
 
           return all_children unless node.respond_to?(:children)
 
@@ -180,7 +191,10 @@ module Moxml
 
         def set_attribute(element, name, value)
           namespace_name = nil
-          namespace_name, name = name.to_s.split(":", 2) if name.to_s.include?(":")
+          if name.to_s.include?(":")
+            namespace_name, name = name.to_s.split(":",
+                                                   2)
+          end
 
           attr = ::Oga::XML::Attribute.new(
             name: name.to_s,
@@ -313,15 +327,26 @@ module Moxml
         end
 
         def xpath(node, expression, namespaces = nil)
-          node.xpath(expression, {}, namespaces: namespaces&.transform_keys(&:to_s)).to_a
+          node.xpath(expression, {},
+                     namespaces: namespaces&.transform_keys(&:to_s)).to_a
         rescue ::LL::ParserError => e
-          raise Moxml::XPathError, e.message
+          raise Moxml::XPathError.new(
+            e.message,
+            expression: expression,
+            adapter: "Oga",
+            node: node
+          )
         end
 
         def at_xpath(node, expression, namespaces = nil)
           node.at_xpath(expression, namespaces: namespaces)
         rescue ::Oga::XPath::Error => e
-          raise Moxml::XPathError, e.message
+          raise Moxml::XPathError.new(
+            e.message,
+            expression: expression,
+            adapter: "Oga",
+            node: node
+          )
         end
 
         def serialize(node, _options = {})

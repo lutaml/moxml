@@ -37,7 +37,9 @@ RSpec.shared_examples "Moxml::Cdata" do
 
     it "escapes CDATA end marker" do
       # pending for Ox: https://github.com/ohler55/ox/issues/377
-      pending "Ox doesn't escape the end token" if context.config.adapter_name == :ox
+      if context.config.adapter_name == :ox
+        pending "Ox doesn't escape the end token"
+      end
       cdata.content = "content]]>more"
       expect(cdata.to_xml).to eq("<![CDATA[content]]]]><![CDATA[>more]]>")
     end

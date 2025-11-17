@@ -3,7 +3,10 @@
 RSpec.shared_examples "Moxml::ProcessingInstruction" do
   let(:context) { Moxml.new }
   let(:doc) { context.create_document }
-  let(:pi) { doc.create_processing_instruction("xml-stylesheet", 'href="style.xsl" type="text/xsl"') }
+  let(:pi) do
+    doc.create_processing_instruction("xml-stylesheet",
+                                      'href="style.xsl" type="text/xsl"')
+  end
 
   it "identifies as processing instruction node" do
     expect(pi).to be_processing_instruction
@@ -76,7 +79,8 @@ RSpec.shared_examples "Moxml::ProcessingInstruction" do
 
   describe "common use cases" do
     it "creates stylesheet instruction" do
-      pi = doc.create_processing_instruction("xml-stylesheet", 'type="text/xsl" href="style.xsl"')
+      pi = doc.create_processing_instruction("xml-stylesheet",
+                                             'type="text/xsl" href="style.xsl"')
       expect(pi.to_xml).to eq('<?xml-stylesheet type="text/xsl" href="style.xsl"?>')
     end
 

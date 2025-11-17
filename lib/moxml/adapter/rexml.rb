@@ -14,8 +14,13 @@ module Moxml
           native_doc = begin
             ::REXML::Document.new(xml)
           rescue ::REXML::ParseException => e
-            raise Moxml::ParseError.new(e.message, line: e.line) if options[:strict]
-
+            if options[:strict]
+              raise Moxml::ParseError.new(
+                e.message,
+                line: e.line,
+                source: xml.is_a?(String) ? xml[0..100] : nil
+              )
+            end
             create_document
           end
           DocumentBuilder.new(Context.new(:rexml)).build(native_doc)
@@ -55,10 +60,10 @@ module Moxml
 
           parts = [name]
           if external_id
-            parts.concat(["PUBLIC", %("#{external_id}")])
+            parts.push("PUBLIC", %("#{external_id}"))
             parts << %("#{system_id}") if system_id
           elsif system_id
-            parts.concat(["SYSTEM", %("#{system_id}")])
+            parts.push("SYSTEM", %("#{system_id}"))
           end
 
           ::REXML::DocType.new(parts.join(" "))
@@ -353,7 +358,10 @@ module Moxml
         # add a namespace prefix to the element name AND a namespace definition
         def set_namespace(element, ns)
           prefix = ns.name.to_s.empty? ? "xmlns" : ns.name.to_s
-          element.add_namespace(prefix, ns.value) if element.respond_to?(:add_namespace)
+          if element.respond_to?(:add_namespace)
+            element.add_namespace(prefix,
+                                  ns.value)
+          end
           element.name = "#{prefix}:#{element.name}"
           owner = element.is_a?(::REXML::Attribute) ? element.element : element
           ::REXML::Attribute.new(prefix, ns.value, owner)
@@ -405,7 +413,12 @@ module Moxml
         def xpath(node, expression, _namespaces = {})
           node.get_elements(expression).to_a
         rescue ::REXML::ParseException => e
-          raise Moxml::XPathError, e.message
+          raise Moxml::XPathError.new(
+            e.message,
+            expression: expression,
+            adapter: "REXML",
+            node: node
+          )
         end
 
         def at_xpath(node, expression, namespaces = {})
@@ -418,7 +431,8 @@ module Moxml
 
           if node.is_a?(::REXML::Document)
             # Always include XML declaration
-            decl = node.xml_decl || ::REXML::XMLDecl.new("1.0", options[:encoding] || "UTF-8")
+            decl = node.xml_decl || ::REXML::XMLDecl.new("1.0",
+                                                         options[:encoding] || "UTF-8")
             decl.encoding = options[:encoding] if options[:encoding]
             output << "<?xml"
             output << %( version="#{decl.version}") if decl.version
@@ -427,20 +441,22 @@ module Moxml
             output << "?>"
             # output << "\n"
 
-            if node.doctype
-              node.doctype.write(output)
-              # output << "\n"
-            end
+            # output << "\n"
+            node.doctype&.write(output)
 
             # Write processing instructions
             node.children.each do |child|
-              next unless [::REXML::Instruction, ::REXML::CData, ::REXML::Comment, ::REXML::Text].include?(child.class)
+              next unless [::REXML::Instruction, ::REXML::CData,
+                           ::REXML::Comment, ::REXML::Text].include?(child.class)
 
               write_with_formatter(child, output, options[:indent] || 2)
               # output << "\n"
             end
 
-            write_with_formatter(node.root, output, options[:indent] || 2) if node.root
+            if node.root
+              write_with_formatter(node.root, output,
+                                   options[:indent] || 2)
+            end
           else
             write_with_formatter(node, output, options[:indent] || 2)
           end

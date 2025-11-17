@@ -11,6 +11,17 @@ module Moxml
 
     def build(native_doc)
       @current_doc = context.create_document(native_doc)
+
+      # Transfer DOCTYPE from parsed document if it exists
+      if native_doc.respond_to?(:instance_variable_get) &&
+         native_doc.instance_variable_defined?(:@moxml_doctype)
+        doctype = native_doc.instance_variable_get(:@moxml_doctype)
+        if doctype
+          @current_doc.native.instance_variable_set(:@moxml_doctype,
+                                                    doctype)
+        end
+      end
+
       visit_node(native_doc)
       @current_doc
     end
@@ -33,6 +44,11 @@ module Moxml
     def visit_element(node)
       childless_node = adapter.duplicate_node(node)
       adapter.replace_children(childless_node, [])
+      # Prepare node for new document (LibXML needs this)
+      childless_node = adapter.prepare_for_new_document(
+        childless_node,
+        @current_doc.native
+      )
       element = Element.new(childless_node, context)
       @node_stack.last.add_child(element)
 
@@ -42,23 +58,29 @@ module Moxml
     end
 
     def visit_text(node)
-      @node_stack.last&.add_child(Text.new(node, context))
+      # Prepare node for new document before wrapping
+      prepared = adapter.prepare_for_new_document(node, @current_doc.native)
+      @node_stack.last&.add_child(Text.new(prepared, context))
     end
 
     def visit_cdata(node)
-      @node_stack.last&.add_child(Cdata.new(node, context))
+      prepared = adapter.prepare_for_new_document(node, @current_doc.native)
+      @node_stack.last&.add_child(Cdata.new(prepared, context))
     end
 
     def visit_comment(node)
-      @node_stack.last&.add_child(Comment.new(node, context))
+      prepared = adapter.prepare_for_new_document(node, @current_doc.native)
+      @node_stack.last&.add_child(Comment.new(prepared, context))
     end
 
     def visit_processing_instruction(node)
-      @node_stack.last&.add_child(ProcessingInstruction.new(node, context))
+      prepared = adapter.prepare_for_new_document(node, @current_doc.native)
+      @node_stack.last&.add_child(ProcessingInstruction.new(prepared, context))
     end
 
     def visit_doctype(node)
-      @node_stack.last&.add_child(Doctype.new(node, context))
+      prepared = adapter.prepare_for_new_document(node, @current_doc.native)
+      @node_stack.last&.add_child(Doctype.new(prepared, context))
     end
 
     def visit_children(node)

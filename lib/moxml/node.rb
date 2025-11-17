@@ -84,6 +84,35 @@ module Moxml
       Node.wrap(adapter.at_xpath(@native, expression, namespaces), context)
     end
 
+    # Convenience find methods (aliases for xpath methods)
+    def find(xpath_expression, namespaces = {})
+      at_xpath(xpath_expression, namespaces)
+    end
+
+    def find_all(xpath_expression, namespaces = {})
+      xpath(xpath_expression, namespaces).to_a
+    end
+
+    # Check if node has any children
+    def has_children?
+      !children.empty?
+    end
+
+    # Get first/last child
+    def first_child
+      children.first
+    end
+
+    def last_child
+      children.last
+    end
+
+    # Clone the node (deep copy)
+    def clone
+      Node.wrap(adapter.dup(@native), context)
+    end
+    alias dup clone
+
     def ==(other)
       self.class == other.class && @native == other.native
     end
@@ -129,7 +158,11 @@ module Moxml
       when String then Text.new(adapter.create_text(node), context)
       when Node then node
       else
-        raise ArgumentError, "Invalid node type: #{node.class}"
+        raise Moxml::DocumentStructureError.new(
+          "Invalid node type: #{node.class}. Expected String or Moxml::Node",
+          operation: "prepare_node",
+          state: "node_type: #{node.class}"
+        )
       end
     end
 

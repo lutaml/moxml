@@ -13,7 +13,10 @@ module Moxml
         end
 
         def name=(new_name)
-          @prefix, new_name = new_name.to_s.split(":", 2) if new_name.to_s.include?(":")
+          if new_name.to_s.include?(":")
+            @prefix, new_name = new_name.to_s.split(":",
+                                                    2)
+          end
 
           @name = new_name
         end

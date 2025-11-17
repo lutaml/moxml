@@ -42,7 +42,14 @@ module Moxml
       adapter.create_native_namespace(@native, prefix, uri)
       self
     rescue ValidationError => e
-      raise Moxml::NamespaceError, e.message
+      # Re-raise as NamespaceError, provide attributes for error context
+      # but the to_s will only add details if provided
+      raise Moxml::NamespaceError.new(
+        e.message,
+        prefix: prefix,
+        uri: uri,
+        element: self
+      )
     end
     alias add_namespace_definition add_namespace
 
@@ -107,6 +114,27 @@ module Moxml
     def with_text(content)
       self.text = content
       self
+    end
+
+    # Bulk attribute setting
+    def set_attributes(attributes_hash)
+      attributes_hash.each { |name, value| self[name] = value }
+      self
+    end
+
+    # Chainable child addition
+    def with_child(child)
+      add_child(child)
+      self
+    end
+
+    # Convenience find methods
+    def find_element(xpath)
+      at_xpath(xpath)
+    end
+
+    def find_all(xpath)
+      xpath(xpath).to_a
     end
   end
 end

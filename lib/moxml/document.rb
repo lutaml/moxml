@@ -51,7 +51,8 @@ module Moxml
       )
     end
 
-    def create_declaration(version = "1.0", encoding = "UTF-8", standalone = nil)
+    def create_declaration(version = "1.0", encoding = "UTF-8",
+                           standalone = nil)
       decl = adapter.create_declaration(version, encoding, standalone)
       Declaration.new(decl, context)
     end
@@ -63,7 +64,8 @@ module Moxml
         if children.empty?
           adapter.add_child(@native, node.native)
         else
-          adapter.add_previous_sibling(adapter.children(@native).first, node.native)
+          adapter.add_previous_sibling(adapter.children(@native).first,
+                                       node.native)
         end
       elsif root && !node.is_a?(ProcessingInstruction) && !node.is_a?(Comment)
         raise Error, "Document already has a root element"
@@ -82,6 +84,24 @@ module Moxml
       if (native_node = adapter.at_xpath(@native, expression, namespaces))
         Node.wrap(native_node, context)
       end
+    end
+
+    # Quick element creation and addition
+    def add_element(name, attributes = {}, &block)
+      elem = create_element(name)
+      attributes.each { |k, v| elem[k] = v }
+      add_child(elem)
+      block&.call(elem)
+      elem
+    end
+
+    # Convenience find methods
+    def find(xpath)
+      at_xpath(xpath)
+    end
+
+    def find_all(xpath)
+      xpath(xpath).to_a
     end
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rexml/formatters/pretty"
 
 module Moxml
@@ -95,7 +97,7 @@ module Moxml
         def find_significant_sibling(node, direction)
           method = direction == :next ? :next_sibling : :previous_sibling
           sibling = node.send(method)
-          sibling = sibling.send(method) while sibling && sibling.is_a?(::REXML::Text) && sibling.to_s.strip.empty?
+          sibling = sibling.send(method) while sibling.is_a?(::REXML::Text) && sibling.to_s.strip.empty?
           sibling
         end
 
@@ -144,7 +146,9 @@ module Moxml
         def write_declaration(node, output)
           output << "<?xml"
           output << %( version="#{node.version}") if node.version
-          output << %( encoding="#{node.encoding.to_s.upcase}") if node.writeencoding
+          if node.writeencoding
+            output << %( encoding="#{node.encoding.to_s.upcase}")
+          end
           output << %( standalone="#{node.standalone}") if node.standalone
           output << "?>"
           # output << "\n"
@@ -155,7 +159,8 @@ module Moxml
           node.attributes.each do |name, attr|
             next unless name.to_s.start_with?("xmlns:") || name.to_s == "xmlns"
 
-            name = "xmlns" if name.to_s == "xmlns:" # convert the default namespace
+            # convert the default namespace
+            name = "xmlns" if name.to_s == "xmlns:"
             value = attr.respond_to?(:value) ? attr.value : attr
             output << " #{name}=\"#{value}\""
           end

@@ -23,7 +23,17 @@ module Moxml
       el = @document.create_element(name)
 
       attributes.each do |key, value|
-        el[key] = value
+        if key.to_s == "xmlns"
+          # Handle default namespace
+          el.add_namespace(nil, value.to_s)
+        elsif key.to_s.start_with?("xmlns:")
+          # Handle prefixed namespace
+          prefix = key.to_s.sub("xmlns:", "")
+          el.add_namespace(prefix, value.to_s)
+        else
+          # Regular attribute
+          el[key] = value
+        end
       end
 
       @current.add_child(el)
@@ -59,6 +69,32 @@ module Moxml
     def namespace(prefix, uri)
       @current.add_namespace(prefix, uri)
       @namespaces[prefix] = uri
+    end
+
+    # Convenience method for DOCTYPE
+    def doctype(name, external_id = nil, system_id = nil)
+      @current.add_child(
+        @document.create_doctype(name, external_id, system_id)
+      )
+    end
+
+    # Batch element creation
+    def elements(element_specs)
+      element_specs.each do |name, content_or_attrs|
+        if content_or_attrs.is_a?(Hash)
+          element(name, content_or_attrs)
+        else
+          element(name) { text(content_or_attrs) }
+        end
+      end
+    end
+
+    # Helper for creating namespaced elements
+    def ns_element(namespace_uri, name, attributes = {}, &block)
+      el = element(name, attributes, &block)
+      prefix = @namespaces.key(namespace_uri)
+      el.namespace = { prefix => namespace_uri } if prefix
+      el
     end
   end
 end

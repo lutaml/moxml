@@ -32,7 +32,8 @@ RSpec.shared_examples "Moxml::Comment" do
 
     it "raises an error on double hyphens" do
       expect { comment.content = "test -- comment" }
-        .to raise_error(Moxml::ValidationError, "XML comment cannot contain double hyphens (--)")
+        .to raise_error(Moxml::ValidationError,
+                        "XML comment cannot contain double hyphens (--)")
     end
 
     it "handles special characters" do

@@ -11,3 +11,31 @@ Gemfile.lock
 # rspec failure tracking
 .rspec_status
 /spec/examples.txt
+
+# Temporary test files
+test_*.rb
+test_*.txt
+debug_*.rb
+
+# Temporary status and documentation files
+*_STATUS.md
+*_KNOWN_ISSUES.md
+libxml_*.txt
+*_failures.txt
+*_output.txt
+*_results.txt
+
+# Generated benchmark reports (machine-specific)
+/benchmarks/PERFORMANCE_REPORT.md
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Ruby version managers
+.ruby-version.lock
+.rvmrc

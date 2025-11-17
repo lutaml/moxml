@@ -21,18 +21,18 @@ RSpec.describe Moxml::Config do
     end
 
     it "raises error for invalid adapter" do
-      expect { config.adapter = :invalid }.to raise_error(ArgumentError)
+      expect { config.adapter = :invalid }.to raise_error(Moxml::AdapterError)
     end
 
     it "requires adapter gem" do
       expect { config.adapter = :oga }.not_to raise_error
 
-      expect(defined?(::Oga)).to be_truthy
+      expect(defined?(Oga)).to be_truthy
     end
 
     it "handles missing gems" do
       allow(Moxml::Adapter).to receive(:require).and_raise(LoadError)
-      expect { config.adapter = :nokogiri }.to raise_error(LoadError)
+      expect { config.adapter = :nokogiri }.to raise_error(Moxml::AdapterError)
     end
   end
 
