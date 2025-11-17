@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Header>
+    <AuthHeader xmlns="http://api.example.com/auth">
+      <SessionId>a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6</SessionId>
+      <Timestamp>2024-10-30T10:00:00Z</Timestamp>
+      <RequestId>req-12345</RequestId>
+    </AuthHeader>
+  </soap:Header>
+  <soap:Body>
+    <GetUserResponse xmlns="http://api.example.com/users">
+      <Status>
+        <Code>200</Code>
+        <Message>Success</Message>
+      </Status>
+      <Result>
+        <User>
+          <Id>1001</Id>
+          <Username>johndoe</Username>
+          <Email>john.doe@example.com</Email>
+          <FullName>John Doe</FullName>
+          <Role>Administrator</Role>
+          <Status>Active</Status>
+          <CreatedAt>2024-01-15T08:30:00Z</CreatedAt>
+          <LastLogin>2024-10-29T14:22:00Z</LastLogin>
+          <Permissions>
+            <Permission>users.read</Permission>
+            <Permission>users.write</Permission>
+            <Permission>admin.access</Permission>
+          </Permissions>
+          <Profile>
+            <Department>Engineering</Department>
+            <Title>Senior Developer</Title>
+            <Location>San Francisco, CA</Location>
+            <PhoneNumber>+1-555-0123</PhoneNumber>
+          </Profile>
+        </User>
+      </Result>
+      <Metadata>
+        <ResponseTime>45</ResponseTime>
+        <ServerVersion>2.1.0</ServerVersion>
+        <CacheHit>false</CacheHit>
+      </Metadata>
+    </GetUserResponse>
+  </soap:Body>
+</soap:Envelope>

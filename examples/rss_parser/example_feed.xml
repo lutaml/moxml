@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
+     xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Tech News Daily</title>
+    <link>https://technews.example.com</link>
+    <description>Your daily dose of technology news</description>
+    <language>en-us</language>
+    <pubDate>Wed, 30 Oct 2024 10:00:00 GMT</pubDate>
+    <lastBuildDate>Wed, 30 Oct 2024 10:00:00 GMT</lastBuildDate>
+    <atom:link href="https://technews.example.com/rss" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>Ruby 3.4 Released with Performance Improvements</title>
+      <link>https://technews.example.com/ruby-3-4-released</link>
+      <guid isPermaLink="true">https://technews.example.com/ruby-3-4-released</guid>
+      <description>Ruby 3.4 brings significant performance improvements and new features</description>
+      <content:encoded><![CDATA[
+        <p>The Ruby core team has announced the release of Ruby 3.4, featuring:</p>
+        <ul>
+          <li>30% faster execution for common patterns</li>
+          <li>Improved memory management</li>
+          <li>New standard library additions</li>
+        </ul>
+      ]]></content:encoded>
+      <dc:creator>Jane Smith</dc:creator>
+      <pubDate>Wed, 30 Oct 2024 09:00:00 GMT</pubDate>
+      <category>Programming</category>
+      <category>Ruby</category>
+    </item>
+
+    <item>
+      <title>XML Processing in Modern Applications</title>
+      <link>https://technews.example.com/xml-processing</link>
+      <guid isPermaLink="true">https://technews.example.com/xml-processing</guid>
+      <description>A comprehensive guide to XML processing in modern applications</description>
+      <content:encoded><![CDATA[
+        <p>Despite the rise of JSON, XML remains crucial for many applications:</p>
+        <ul>
+          <li>Document-oriented data structures</li>
+          <li>Complex namespace requirements</li>
+          <li>Legacy system integration</li>
+        </ul>
+      ]]></content:encoded>
+      <dc:creator>John Doe</dc:creator>
+      <pubDate>Wed, 30 Oct 2024 08:00:00 GMT</pubDate>
+      <category>Programming</category>
+      <category>XML</category>
+    </item>
+
+    <item>
+      <title>Best Practices for API Design</title>
+      <link>https://technews.example.com/api-design</link>
+      <guid isPermaLink="true">https://technews.example.com/api-design</guid>
+      <description>Learn the essential principles of modern API design</description>
+      <content:encoded><![CDATA[
+        <p>Key principles for designing robust APIs:</p>
+        <ol>
+          <li>Clear and consistent naming conventions</li>
+          <li>Proper error handling and messaging</li>
+          <li>Comprehensive documentation</li>
+          <li>Versioning strategy</li>
+        </ol>
+      ]]></content:encoded>
+      <dc:creator>Alice Johnson</dc:creator>
+      <pubDate>Tue, 29 Oct 2024 14:00:00 GMT</pubDate>
+      <category>API</category>
+      <category>Design</category>
+    </item>
+
+    <item>
+      <title>Introduction to XPath Queries</title>
+      <link>https://technews.example.com/xpath-intro</link>
+      <guid isPermaLink="true">https://technews.example.com/xpath-intro</guid>
+      <description>Master XPath for efficient XML data extraction</description>
+      <content:encoded><![CDATA[
+        <p>XPath is a powerful language for navigating XML documents:</p>
+        <ul>
+          <li>Select elements by path</li>
+          <li>Filter with predicates</li>
+          <li>Work with namespaces</li>
+          <li>Use built-in functions</li>
+        </ul>
+      ]]></content:encoded>
+      <dc:creator>Bob Williams</dc:creator>
+      <pubDate>Tue, 29 Oct 2024 10:00:00 GMT</pubDate>
+      <category>XML</category>
+      <category>XPath</category>
+    </item>
+  </channel>
+</rss>
