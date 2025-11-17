@@ -902,7 +902,7 @@ module Moxml
           end
 
           # Add newlines between elements (but not in CDATA)
-          with_newlines = protected.gsub(%r{(<[^>/]+>)(?=<(?!/))}, "\\1\n")
+          with_newlines = protected.gsub(%r{(<[^>]+?>)(?=<(?!/))}, "\\1\n")
 
           # Restore CDATA sections
           cdata_sections.each_with_index do |cdata, index|
@@ -1073,10 +1073,10 @@ module Moxml
           # Add namespace definitions (only on this element, not ancestors)
           if elem.respond_to?(:namespaces)
             seen_ns = {}
-            elem.namespaces.definitions.each do |ns|
+            elem.namespaces.each do |ns|
               prefix = ns.prefix
               uri = ns.href
-              next if seen_ns[prefix]
+              next if seen_ns.key?(prefix)
 
               seen_ns[prefix] = true
               output << if prefix.nil? || prefix.empty?
@@ -1256,7 +1256,7 @@ module Moxml
             elem.namespaces.definitions.each do |ns|
               prefix = ns.prefix
               uri = ns.href
-              next if seen_ns[prefix]
+              next if seen_ns.key?(prefix)
 
               # Output namespace if:
               # 1. This is root element (include_ns = true), OR
