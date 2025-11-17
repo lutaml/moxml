@@ -2,7 +2,7 @@
 
 module Moxml
   class Config
-    VALID_ADAPTERS = %i[nokogiri oga rexml ox libxml].freeze
+    VALID_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
     DEFAULT_ADAPTER = VALID_ADAPTERS.first
 
     class << self

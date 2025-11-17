@@ -18,6 +18,12 @@ module Moxml
       adapter.set_attribute_value(@native, new_value)
     end
 
+    # XPath conversion compatibility - attributes need .text method
+    # that returns their value for XPath comparisons
+    def text
+      value
+    end
+
     def namespace
       ns = adapter.namespace(@native)
       ns && Namespace.new(ns, context)

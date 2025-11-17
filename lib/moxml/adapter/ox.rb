@@ -248,10 +248,11 @@ module Moxml
           end
 
           element.attributes.filter_map do |name, value|
-            next if name.start_with?("xmlns")
+            next if name.to_s.start_with?("xmlns")
 
+            # Ensure value is passed correctly - Ox stores with symbol keys
             ::Moxml::Adapter::CustomizedOx::Attribute.new(
-              name, value, element
+              name.to_s, value, element
             )
           end
         end
@@ -299,8 +300,11 @@ module Moxml
             return
           end
 
+          # Ox stores attributes with symbol keys, so try both string and symbol
+          value = element.attributes[name.to_s] || element.attributes[name.to_s.to_sym]
+
           ::Moxml::Adapter::CustomizedOx::Attribute.new(
-            name.to_s, element.attributes[name], element
+            name.to_s, value, element
           )
         end
 
