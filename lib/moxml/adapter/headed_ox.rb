@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 require_relative "ox"
+require_relative "../xpath"
+# Force load XPath modules (autoload doesn't work well with relative requires in examples)
+require_relative "../xpath/parser"
+require_relative "../xpath/compiler"
 
 module Moxml
   module Adapter

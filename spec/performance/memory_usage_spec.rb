@@ -51,8 +51,8 @@ RSpec.shared_examples "Memory Usage Examples" do
     end
 
     it "handles streaming processing" do
-      if context.config.adapter_name == :ox
-        pending "Ox has a load_file method, but nothing about a stream"
+      if %i[ox headed_ox].include?(context.config.adapter_name)
+        pending "Ox/HeadedOx have load_file method but not stream parsing"
       end
       # Process file
       doc = nil
