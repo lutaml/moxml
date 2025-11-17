@@ -7,7 +7,7 @@ require_relative "customized_ox/attribute"
 require_relative "customized_ox/namespace"
 
 # insert :parent methods to all Ox classes inherit the Node class
-::Ox::Node.attr_accessor :parent
+Ox::Node.attr_accessor :parent
 module Moxml
   module Adapter
     class Ox < Base
@@ -29,7 +29,10 @@ module Moxml
               doc
             end
           rescue ::Ox::ParseError => e
-            raise Moxml::ParseError, e.message
+            raise Moxml::ParseError.new(
+              e.message,
+              source: xml.is_a?(String) ? xml[0..100] : nil
+            )
           end
 
           DocumentBuilder.new(Context.new(:ox)).build(native_doc)
@@ -87,7 +90,8 @@ module Moxml
         end
 
         def create_native_namespace(element, prefix, uri)
-          ns = ::Moxml::Adapter::CustomizedOx::Namespace.new(prefix, uri, element)
+          ns = ::Moxml::Adapter::CustomizedOx::Namespace.new(prefix, uri,
+                                                             element)
           set_attribute(element, ns.expanded_prefix, uri)
           ns
         end
@@ -97,8 +101,12 @@ module Moxml
 
           prefix = ns.prefix
           # attributes don't have attributes but can have a namespace prefix
-          set_attribute(element, ns.expanded_prefix, ns.uri) if element.respond_to?(:attributes)
-          element.name = [prefix, element.name.delete_prefix("xmlns:")].compact.join(":")
+          if element.respond_to?(:attributes)
+            set_attribute(element, ns.expanded_prefix,
+                          ns.uri)
+          end
+          element.name = [prefix,
+                          element.name.delete_prefix("xmlns:")].compact.join(":")
           namespace(element)
         end
 
@@ -172,8 +180,12 @@ module Moxml
           new_node =
             case node
             # it can be either attribute or namespace
-            when Array then ::Moxml::Adapter::CustomizedOx::Attribute.new(node.first, node.last)
-            when Hash then ::Moxml::Adapter::CustomizedOx::Attribute.new(node.keys.first, node.values.first)
+            when Array then ::Moxml::Adapter::CustomizedOx::Attribute.new(
+              node.first, node.last
+            )
+            when Hash then ::Moxml::Adapter::CustomizedOx::Attribute.new(
+              node.keys.first, node.values.first
+            )
             when String then ::Moxml::Adapter::CustomizedOx::Text.new(node)
             else node
             end
@@ -186,7 +198,8 @@ module Moxml
         def unpatch_node(node)
           case node
           # it can be either attribute or namespace
-          when ::Moxml::Adapter::CustomizedOx::Attribute then [node.name, node.value]
+          when ::Moxml::Adapter::CustomizedOx::Attribute then [node.name,
+                                                               node.value]
           # when ::Moxml::Adapter::CustomizedOx::Attribute then { node.name => node.value }
           when ::Moxml::Adapter::CustomizedOx::Text then node.value
           else node
@@ -230,7 +243,9 @@ module Moxml
         end
 
         def attributes(element)
-          return [] unless element.respond_to?(:attributes) && element.attributes
+          unless element.respond_to?(:attributes) && element.attributes
+            return []
+          end
 
           element.attributes.map do |name, value|
             next if name.start_with?("xmlns")
@@ -280,7 +295,9 @@ module Moxml
 
         def get_attribute(element, name)
           return unless element.respond_to?(:attributes) && element.attributes
-          return unless element.attributes.key?(name.to_s) || element.attributes.key?(name.to_s.to_sym)
+          unless element.attributes.key?(name.to_s) || element.attributes.key?(name.to_s.to_sym)
+            return
+          end
 
           ::Moxml::Adapter::CustomizedOx::Attribute.new(
             name.to_s, element.attributes[name], element
@@ -331,11 +348,13 @@ module Moxml
 
           return unless parent(node)
 
-          parent(node).nodes.delete(node)
+          parent(node).nodes.delete(unpatch_node(node))
         end
 
         def replace(node, new_node)
-          return node.replace(new_node) if node.is_a?(String) && new_node.is_a?(String)
+          if node.is_a?(String) && new_node.is_a?(String)
+            return node.replace(new_node)
+          end
           # There are other cases:
           # when node is a String and new_node isn't
           # when node isn't a String, and new_node is a String
@@ -428,9 +447,38 @@ module Moxml
           end.values
         end
 
-        def xpath(node, expression, _namespaces = {})
-          # locate has a different syntax
-          node.locate(expression)
+        def xpath(node, expression, namespaces = {})
+          # Translate common XPath patterns to Ox locate() syntax
+          locate_expr = translate_xpath_to_locate(expression, namespaces)
+
+          # Ox's locate() works differently on documents vs elements
+          # For relative descendant searches on elements, we need special handling
+          if expression.start_with?(".//") && node.is_a?(::Ox::Element)
+            # Manually search descendants for relative paths from elements
+            element_name = locate_expr.sub("?/", "")
+            results = []
+            traverse(node) do |n|
+              next unless n.is_a?(::Ox::Element)
+
+              results << n if n.name == element_name || element_name.empty?
+            end
+            return results.map do |n|
+              patch_node(n, find_parent_in_tree(n, node))
+            end
+          end
+
+          # Use Ox's locate method for other cases
+          results = node.locate(locate_expr)
+
+          # Wrap results and set their parents by finding them in the tree
+          results.map { |n| patch_node(n, find_parent_in_tree(n, node)) }
+        rescue StandardError => e
+          raise Moxml::XPathError.new(
+            "XPath translation failed: #{e.message}",
+            expression: expression,
+            adapter: "Ox",
+            node: node
+          )
         end
 
         def at_xpath(node, expression, namespaces = {})
@@ -441,7 +489,8 @@ module Moxml
           output = ""
           if node.is_a?(::Ox::Document)
             # add declaration
-            decl = create_native_declaration(node[:version], node[:encoding], node[:standalone])
+            decl = create_native_declaration(node[:version], node[:encoding],
+                                             node[:standalone])
             output = ::Ox.dump(::Ox::Document.new << decl).strip
           end
 
@@ -456,6 +505,68 @@ module Moxml
         end
 
         private
+
+        # Translate a subset of XPath to Ox locate() syntax
+        # Supports: //element, /path/to/element, .//element, element[@attr]
+        # Note: Ox locate() doesn't support namespace prefixes in the path
+        def translate_xpath_to_locate(xpath, namespaces = {})
+          expr = xpath.dup
+
+          # Strip namespace prefixes from element names
+          # XPath: //ns:element → locate: element
+          if namespaces && !namespaces.empty?
+            namespaces.each_key do |prefix|
+              expr = expr.gsub("/#{prefix}:", "/")
+              expr = expr.gsub("/*#{prefix}:", "/*")
+              expr = expr.gsub("//*#{prefix}:", "//")
+              expr = expr.gsub("//#{prefix}:", "//")
+              expr = expr.gsub("///#{prefix}:", "///")
+            end
+          end
+
+          # Remove any remaining namespace prefixes
+          expr = expr.gsub(/\w+:/, "")
+
+          # Remove attribute predicates for now - we'll filter manually
+          # Save the attribute name if present
+          expr = expr.gsub(/\[@(\w+)\]/, "")
+
+          # XPath: //element → locate: ?/element (any depth)
+          # Note: In Ox, ?/ means "any path"
+          expr = expr.sub(%r{^//}, "?/") if expr.start_with?("//")
+
+          # XPath: .//element → locate: ?/element (relative any depth)
+          # For relative paths from an element, we still use ?/ which searches
+          # descendants
+          expr = expr.sub(%r{^\.//}, "?/") if expr.start_with?(".//")
+
+          # XPath: /root/child → locate: root/child (absolute path)
+          # Remove leading / for Ox
+          expr = expr.sub(%r{^/}, "")
+
+          # XPath: ./element → locate: element (direct child, just remove ./)
+          expr.sub(%r{^\./}, "")
+        end
+
+        # Find the actual parent of a node by searching the tree
+        def find_parent_in_tree(target_node, search_root)
+          # Start from the document root if we have a document
+          root = search_root.is_a?(::Ox::Document) ? search_root : document(search_root)
+
+          result = nil
+          traverse(root) do |node|
+            next unless node.respond_to?(:nodes)
+
+            node.nodes&.each do |child|
+              if child.equal?(target_node)
+                result = node
+                break
+              end
+            end
+            break if result
+          end
+          result
+        end
 
         def traverse(node, &block)
           return unless node

@@ -164,8 +164,15 @@ RSpec.shared_examples "xml adapter" do
     end
 
     it "respects indentation settings" do
-      pending("Oga does not support indentation settings") if described_class.name.include?("Oga")
-      pending("Postponed for Rexml till better times") if described_class.name.include?("Rexml")
+      if described_class.name.include?("Oga")
+        pending("Oga does not support indentation settings")
+      end
+      if described_class.name.include?("Rexml")
+        pending("Postponed for Rexml till better times")
+      end
+      if described_class.name.include?("Libxml")
+        skip("LibXML serialization does not support indentation (documented limitation)")
+      end
 
       unindented = described_class.serialize(doc, indent: 0)
       indented = described_class.serialize(doc, indent: 2)
@@ -217,7 +224,9 @@ RSpec.shared_examples "xml adapter" do
       end
 
       it "preserves and correctly handles multiple namespaces" do
-        pending("Rexml does not respect ZPath namespaces") if described_class.name.include?("Rexml")
+        if described_class.name.include?("Rexml")
+          pending("Rexml does not respect ZPath namespaces")
+        end
         # Parse original XML
         doc = described_class.parse(xml).native
 
@@ -235,12 +244,15 @@ RSpec.shared_examples "xml adapter" do
         # Find use element and verify xlink:href attribute
         use_elem = described_class.at_xpath(doc, "//svg:use", namespaces)
         expect(use_elem).not_to be_nil
-        expect(described_class.get_attribute_value(use_elem, "xlink:href")).to eq("#myCircle")
+        expect(described_class.get_attribute_value(use_elem,
+                                                   "xlink:href")).to eq("#myCircle")
 
         # Verify circle element exists in defs
-        circle = described_class.at_xpath(doc, "//svg:defs/svg:circle", namespaces)
+        circle = described_class.at_xpath(doc, "//svg:defs/svg:circle",
+                                          namespaces)
         expect(circle).not_to be_nil
-        expect(described_class.get_attribute_value(circle, "id")).to eq("myCircle")
+        expect(described_class.get_attribute_value(circle,
+                                                   "id")).to eq("myCircle")
 
         # Test default SVG namespace
         text = described_class.at_xpath(doc, "//svg:text", namespaces)
@@ -346,7 +358,8 @@ RSpec.shared_examples "xml adapter" do
         expect(body).not_to be_nil
 
         # Verify attribute with namespace
-        expect(described_class.get_attribute_value(user_id, "xsi:type")).to eq("xsi:string")
+        expect(described_class.get_attribute_value(user_id,
+                                                   "xsi:type")).to eq("xsi:string")
       end
     end
   end

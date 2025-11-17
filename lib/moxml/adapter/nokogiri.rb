@@ -25,7 +25,8 @@ module Moxml
               end
             end
           rescue ::Nokogiri::XML::SyntaxError => e
-            raise Moxml::ParseError.new(e.message, line: e.line, column: e.column)
+            raise Moxml::ParseError.new(e.message, line: e.line,
+                                                   column: e.column)
           end
 
           DocumentBuilder.new(Context.new(:nokogiri)).build(native_doc)
@@ -274,22 +275,38 @@ module Moxml
         def xpath(node, expression, namespaces = nil)
           node.xpath(expression, namespaces).to_a
         rescue ::Nokogiri::XML::XPath::SyntaxError => e
-          raise Moxml::XPathError, e.message
+          raise Moxml::XPathError.new(
+            e.message,
+            expression: expression,
+            adapter: "Nokogiri",
+            node: node
+          )
         end
 
         def at_xpath(node, expression, namespaces = nil)
           node.at_xpath(expression, namespaces)
         rescue ::Nokogiri::XML::XPath::SyntaxError => e
-          raise Moxml::XPathError, e.message
+          raise Moxml::XPathError.new(
+            e.message,
+            expression: expression,
+            adapter: "Nokogiri",
+            node: node
+          )
         end
 
         def serialize(node, options = {})
           save_options = ::Nokogiri::XML::Node::SaveOptions::AS_XML
 
           # Don't force expand empty elements if they're really empty
-          save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS if options[:expand_empty]
-          save_options |= ::Nokogiri::XML::Node::SaveOptions::FORMAT if options[:indent].to_i.positive?
-          save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION if options[:no_declaration]
+          if options[:expand_empty]
+            save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_EMPTY_TAGS
+          end
+          if options[:indent].to_i.positive?
+            save_options |= ::Nokogiri::XML::Node::SaveOptions::FORMAT
+          end
+          if options[:no_declaration]
+            save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION
+          end
 
           node.to_xml(
             indent: options[:indent],

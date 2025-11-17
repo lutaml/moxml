@@ -1,0 +1,6 @@
+# Ignore benchmark result files (machine-specific)
+*.yml
+*.yaml
+
+# Keep directory structure
+!.gitignore

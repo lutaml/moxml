@@ -16,7 +16,8 @@ RSpec.shared_examples "Moxml::Context" do
       expect(doc.root.children.first.children.first).to be_a(Moxml::Text)
     end
 
-    it "maintains document structure", skip: "Nokogiri doesn't consider the declaration as a child node" do
+    it "maintains document structure",
+       skip: "Nokogiri doesn't consider the declaration as a child node" do
       xml = <<~XML
         <?xml version="1.0"?>
         <!-- comment -->

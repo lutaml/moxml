@@ -96,7 +96,9 @@ RSpec.shared_examples "Moxml::Node" do
       let(:doc) { context.parse("<root><a><b>1</b></a><a><b>2</b></a></root>") }
 
       it "finds nodes by xpath" do
-        pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+        if context.config.adapter_name == :ox
+          pending "Ox doesn't have a native XPath"
+        end
 
         nodes = doc.xpath("//b")
         expect(nodes.size).to eq(2)
@@ -104,7 +106,9 @@ RSpec.shared_examples "Moxml::Node" do
       end
 
       it "finds first node by xpath" do
-        pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+        if context.config.adapter_name == :ox
+          pending "Ox doesn't have a native XPath"
+        end
 
         node = doc.at_xpath("//b")
         expect(node.text).to eq("1")

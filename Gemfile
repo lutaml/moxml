@@ -6,15 +6,17 @@ source "https://rubygems.org"
 gemspec
 
 gem "byebug"
-gem "get_process_mem", "~> 1.0"
-gem "nokogiri", "~> 1.15"
+gem "get_process_mem"
+gem "libxml-ruby", "~> 5.0"
+gem "nokogiri", "~> 1.18"
 gem "oga", "~> 3.4"
 gem "ox", "~> 2.14"
-gem "rake", "~> 13"
+gem "rake"
 gem "rexml"
-gem "rspec", "~> 3.0"
-gem "rubocop", "~> 1.21"
-gem "tempfile", "~> 0.3"
+gem "rspec"
+gem "simplecov", require: false
+gem "rubocop"
+gem "tempfile"
 #  Provides iteration per second benchmarking for Ruby
 gem "benchmark-ips"
 

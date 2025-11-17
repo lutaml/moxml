@@ -110,7 +110,9 @@ RSpec.shared_examples "README Examples" do
   describe "Error handling example" do
     it "handles errors as shown in README" do
       context = Moxml.new
-      pending "Ox doesn't have a native XPath" if context.config.adapter_name == :ox
+      if context.config.adapter_name == :ox
+        pending "Ox doesn't have a native XPath"
+      end
 
       expect do
         context.parse("<invalid>")

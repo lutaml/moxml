@@ -22,6 +22,6 @@ RSpec::Matchers.define :have_xpath do |xpath, text|
   end
 
   failure_message do |_xml_node|
-    "expected to find xpath #{xpath} #{text ? "with text '#{text}'" : ""}"
+    "expected to find xpath #{xpath} #{"with text '#{text}'" if text}"
   end
 end

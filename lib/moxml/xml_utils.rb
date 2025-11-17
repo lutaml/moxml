@@ -3,7 +3,7 @@
 require_relative "xml_utils/encoder"
 
 # Ruby 3.3+ requires the URI module to be explicitly required
-require "uri" unless defined?(::URI)
+require "uri" unless defined?(URI)
 
 module Moxml
   module XmlUtils
@@ -47,17 +47,19 @@ module Moxml
     def validate_element_name(name)
       return if name.is_a?(String) && name.match?(/^[a-zA-Z_][\w\-.:]*$/)
 
-      raise ValidationError, "Invalid XML name: #{name}"
+      raise ValidationError, "Invalid XML element name: #{name}"
     end
 
     def validate_pi_target(target)
       return if target.is_a?(String) && target.match?(/^[a-zA-Z_][\w\-.]*$/)
 
-      raise ValidationError, "Invalid XML target: #{target}"
+      raise ValidationError, "Invalid XML processing instruction target: #{target}"
     end
 
     def validate_uri(uri)
-      return if uri.empty? || uri.match?(/\A#{::URI::DEFAULT_PARSER.make_regexp}\z/)
+      if uri.empty? || uri.match?(/\A#{::URI::DEFAULT_PARSER.make_regexp}\z/)
+        return
+      end
 
       raise ValidationError, "Invalid URI: #{uri}"
     end

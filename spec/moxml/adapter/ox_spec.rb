@@ -32,7 +32,9 @@ RSpec.describe Moxml::Adapter::Ox, skip: "Ox will be added later" do
   end
 
   describe "xpath support" do
-    let(:doc) { described_class.parse("<root><child id='1'>text</child></root>") }
+    let(:doc) do
+      described_class.parse("<root><child id='1'>text</child></root>")
+    end
 
     it "supports basic element matching" do
       nodes = described_class.xpath(doc, "//child")

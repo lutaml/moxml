@@ -2,9 +2,75 @@ inherit_from: .rubocop_todo.yml
 
 AllCops:
   TargetRubyVersion: 3.0
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'debug_*.rb'
+    - 'test_*.rb'
+    - 'vendor/**/*'
+    - 'tmp/**/*'
 
+# Line length limit per coding standards
+Layout/LineLength:
+  Max: 80
+  AllowedPatterns:
+    - '^\s*#'  # Allow long comments
+  Exclude:
+    - 'benchmarks/**/*'
+
+# Method length limits
+Metrics/MethodLength:
+  Max: 50
+  CountAsOne: ['array', 'hash', 'heredoc']
+
+# Class length limits - allow larger classes for adapters
+Metrics/ClassLength:
+  Max: 700
+  CountAsOne: ['array', 'hash', 'heredoc']
+  Exclude:
+    - 'spec/**/*'
+
+# Block length - allow longer blocks in specs
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - 'benchmarks/**/*'
+
+# Complexity metrics
+Metrics/AbcSize:
+  Max: 57
+  Exclude:
+    - 'spec/**/*'
+    - 'benchmarks/**/*'
+
+Metrics/CyclomaticComplexity:
+  Max: 24
+  Exclude:
+    - 'spec/**/*'
+
+Metrics/PerceivedComplexity:
+  Max: 28
+  Exclude:
+    - 'spec/**/*'
+
+# String literals - use double quotes
 Style/StringLiterals:
   EnforcedStyle: double_quotes
 
 Style/StringLiteralsInInterpolation:
   EnforcedStyle: double_quotes
+
+# Documentation - require for lib files only
+Style/Documentation:
+  Enabled: true
+  Exclude:
+    - 'spec/**/*'
+    - 'benchmarks/**/*'
+    - 'test/**/*'
+
+# Frozen string literals - enable for better performance
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  Exclude:
+    - 'spec/**/*'
+    - 'benchmarks/**/*'
