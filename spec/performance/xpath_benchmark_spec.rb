@@ -44,7 +44,7 @@ RSpec.describe "XPath Performance Benchmark" do
     end
 
     let(:adapters) do
-      %i[nokogiri libxml oga rexml ox]
+      %i[nokogiri libxml oga rexml ox headed_ox]
     end
 
     let(:xpath_patterns) do

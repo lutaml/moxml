@@ -7,7 +7,7 @@ require "rbconfig"
 
 # Benchmark Report Generator for Moxml Adapters
 class MoxmlBenchmarkReport
-  ADAPTERS = %i[nokogiri oga rexml libxml ox].freeze
+  ADAPTERS = %i[nokogiri oga rexml libxml ox headed_ox].freeze
 
   # Test XML documents of varying complexity
   SIMPLE_XML = <<~XML
@@ -477,6 +477,18 @@ class MoxmlBenchmarkReport
     f.puts ""
     f.puts "**CAUTION:** Ox's custom XPath engine supports common patterns but may not handle"
     f.puts "complex XPath expressions. Test thoroughly if advanced XPath is needed."
+    f.puts ""
+
+    f.puts "**Choose HeadedOx when:**"
+    f.puts "- Need Ox's fast parsing with comprehensive XPath support"
+    f.puts "- Require all 27 XPath 1.0 functions (count, sum, contains, etc.)"
+    f.puts "- Complex XPath predicates are essential"
+    f.puts "- Want pure Ruby XPath engine for debugging"
+    f.puts "- Basic namespace support is sufficient (6 of 13 axes)"
+    f.puts "- Can accept 99.20% pass rate (16 documented Ox limitations)"
+    f.puts ""
+    f.puts "**Note:** HeadedOx = Ox parsing speed + full XPath features."
+    f.puts "See docs/HEADED_OX_LIMITATIONS.md for complete details."
     f.puts ""
   end
 
