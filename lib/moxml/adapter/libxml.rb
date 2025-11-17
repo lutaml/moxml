@@ -1073,7 +1073,7 @@ module Moxml
           # Add namespace definitions (only on this element, not ancestors)
           if elem.respond_to?(:namespaces)
             seen_ns = {}
-            elem.namespaces.each do |ns|
+            elem.namespaces.definitions.each do |ns|
               prefix = ns.prefix
               uri = ns.href
               next if seen_ns.key?(prefix)
