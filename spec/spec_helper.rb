@@ -37,6 +37,8 @@ Dir[File.expand_path("moxml/adapter/shared_examples/**/*.rb",
   require f
 end
 Dir[File.expand_path("support/**/*.rb", __dir__)].each { |f| require f }
+Dir[File.expand_path("performance/*.rb", __dir__)].each { |f| require f }
+Dir[File.expand_path("examples/*.rb", __dir__)].each { |f| require f }
 
 # Clear XPath caches immediately to ensure fresh compilation
 # This is critical when code changes affect compiled XPath expressions

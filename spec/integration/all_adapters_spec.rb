@@ -20,6 +20,14 @@ RSpec.describe "Cross-adapter integration" do
     "Moxml::DocumentBuilder",
     "Moxml Integration",
     "Moxml Edge Cases",
+    "Attribute Examples",
+    "Basic Usage Examples",
+    "Namespace Examples",
+    "README Examples",
+    "XPath Examples",
+    "Memory Usage Examples",
+    "Thread Safety Examples",
+    "Performance Examples",
   ]
 
   Moxml::Adapter::AVALIABLE_ADAPTERS.each do |adapter_name|

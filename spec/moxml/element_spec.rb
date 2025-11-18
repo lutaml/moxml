@@ -85,7 +85,7 @@ RSpec.describe Moxml::Element do
 
         elem.with_child(child1).with_child(child2)
 
-        expect(elem.children.map(&:name)).to eq(["child1", "child2"])
+        expect(elem.children.map(&:name)).to eq(%w[child1 child2])
       end
     end
 
@@ -112,7 +112,7 @@ RSpec.describe Moxml::Element do
 
         expect(results).to be_an(Array)
         expect(results.length).to eq(2)
-        expect(results.map { |r| r["id"] }).to eq(["1", "2"])
+        expect(results.map { |r| r["id"] }).to eq(%w[1 2])
       end
 
       it "returns empty array when not found" do

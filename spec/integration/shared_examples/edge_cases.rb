@@ -135,6 +135,10 @@ RSpec.shared_examples "Moxml Edge Cases" do
       if context.config.adapter_name == :headed_ox
         skip "HeadedOx limitation: Namespace-prefixed attribute access needs Ox namespace API enhancement. See docs/HEADED_OX_LIMITATIONS.md"
       end
+      if context.config.adapter_name == :ox
+        skip "Ox doesn't have a native XPath"
+      end
+
       xml = <<~XML
         <root xmlns:a="http://a.org" xmlns:b="http://b.org">
           <element a:id="1" b:id="2"/>
