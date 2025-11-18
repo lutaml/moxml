@@ -53,7 +53,8 @@ RSpec.shared_examples "Performance Examples" do
           x.report("Serializer") { _ = doc.to_xml }
         end
 
-        threshold = thresholds.dig(context.config.adapter_name, :serializer) || 1
+        threshold = thresholds.dig(context.config.adapter_name,
+                                   :serializer) || 1
         ips = report.entries.first.ips
         message = "Serializer performance below threshold: got #{ips.round(2)} ips, expected >= #{threshold} ips"
         expect(ips).to be >= threshold, message

@@ -130,14 +130,14 @@ module Moxml
 
       # Dispatcher for generic binary operator nodes
       def on_binary_op(ast, input, &block)
-        operator = ast.value  # :eq, :lt, :add, :plus, :star, etc.
+        operator = ast.value # :eq, :lt, :add, :plus, :star, etc.
 
         # Map token names to handler method names
         method_name = case operator
                       when :plus then :add
                       when :minus then :sub
                       when :star then :mul
-                      else operator  # eq, lt, gt, div, mod, etc.
+                      else operator # eq, lt, gt, div, mod, etc.
                       end
 
         send(:"on_#{method_name}", ast, input, &block)
@@ -145,7 +145,7 @@ module Moxml
 
       # Dispatcher for generic unary operator nodes
       def on_unary_op(ast, input, &block)
-        operator = ast.value  # :minus
+        operator = ast.value # :minus
         send(:"on_#{operator}", ast, input, &block)
       end
 

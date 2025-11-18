@@ -159,9 +159,14 @@ module Moxml
         end
 
         def node_name(node)
-          node.value
-        rescue StandardError
-          node.name
+          name = begin
+            node.value
+          rescue StandardError
+            node.name
+          end
+
+          # Strip namespace prefix if present
+          name.to_s.split(':', 2).last
         end
 
         def set_node_name(node, name)
@@ -380,10 +385,14 @@ module Moxml
         end
 
         def text_content(node)
+          return "" if node.nil?
+
           case node
           when String then node.to_s
           when ::Moxml::Adapter::CustomizedOx::Text then node.value
           else
+            return "" unless node.respond_to?(:nodes)
+
             node.nodes.map do |n|
               text_content(n)
             end.join
@@ -493,8 +502,11 @@ module Moxml
           output = ""
           if node.is_a?(::Ox::Document)
             # add declaration
-            decl = create_native_declaration(node[:version], node[:encoding],
-                                             node[:standalone])
+            version = node[:version] || "1.0"
+            encoding = options[:encoding] || node[:encoding]
+            standalone = node[:standalone]
+
+            decl = create_native_declaration(version, encoding, standalone)
             output = ::Ox.dump(::Ox::Document.new << decl).strip
           end
 
