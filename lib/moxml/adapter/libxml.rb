@@ -895,15 +895,50 @@ module Moxml
           # And most importantly, don't add newlines inside CDATA sections
 
           # First, protect CDATA sections by replacing them with placeholders
+          # Manual scanning guarantees O(n) complexity with no backtracking (ReDoS-safe)
           cdata_sections = []
-          protected = xml_string.gsub(/<!\[CDATA\[((?:(?!\]\]>).)*)\]\]>/m) do |match|
-            cdata_sections << match
-            "__CDATA_PLACEHOLDER_#{cdata_sections.length - 1}__"
+          result = +""
+          pos = 0
+
+          loop do
+            # Find next CDATA start
+            cdata_start = xml_string.index("<![CDATA[", pos)
+
+            if cdata_start
+              # Copy everything before CDATA
+              result << xml_string[pos...cdata_start]
+
+              # Find CDATA end
+              cdata_content_start = cdata_start + 9  # Length of "<![CDATA["
+              cdata_end = xml_string.index("]]>", cdata_content_start)
+
+              if cdata_end
+                # Extract full CDATA including markers
+                full_cdata_end = cdata_end + 3  # Include "]]>"
+                cdata_section = xml_string[cdata_start...full_cdata_end]
+
+                # Store and add placeholder
+                cdata_sections << cdata_section
+                result << "__CDATA_PLACEHOLDER_#{cdata_sections.length - 1}__"
+
+                # Continue after this CDATA
+                pos = full_cdata_end
+              else
+                # Malformed CDATA (no closing "]]>") - copy as-is
+                result << xml_string[cdata_start..-1]
+                break
+              end
+            else
+              # No more CDATA sections - copy rest
+              result << xml_string[pos..-1]
+              break
+            end
           end
 
-          # Add newlines between elements (but not in CDATA)
-          # Simple approach: add newline after every closing tag (unless followed by closing tag)
-          with_newlines = protected.gsub(/>(<[^\/])/, ">\n\\1")
+          protected = result
+
+          # Add newlines between elements (but not in CDATA - already protected)
+          with_newlines = protected.gsub(%r{(<[^>]+)>(?=<(?!/))}, "\\1>\n")
 
           # Restore CDATA sections
           cdata_sections.each_with_index do |cdata, index|
