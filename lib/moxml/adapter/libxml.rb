@@ -895,16 +895,14 @@ module Moxml
           # And most importantly, don't add newlines inside CDATA sections
 
           # First, protect CDATA sections by replacing them with placeholders
-          # Use possessive quantifier to prevent ReDoS
           cdata_sections = []
-          protected = xml_string.gsub(/<!\[CDATA\[(?:[^\]]|\](?!\]>))+\]\]>/) do |match|
+          protected = xml_string.gsub(/<!\[CDATA\[((?:(?!\]\]>).)*)\]\]>/m) do |match|
             cdata_sections << match
             "__CDATA_PLACEHOLDER_#{cdata_sections.length - 1}__"
           end
 
           # Add newlines between elements (but not in CDATA)
-          # Simplified pattern to avoid ReDoS - just add newline after closing >
-          with_newlines = protected.gsub(/>(<[^\/])/, ">\n\\1")
+          with_newlines = protected.gsub(%r{(<[^>]+)>(?=<(?!/))}, "\\1>\n")
 
           # Restore CDATA sections
           cdata_sections.each_with_index do |cdata, index|

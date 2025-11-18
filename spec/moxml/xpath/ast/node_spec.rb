@@ -8,16 +8,17 @@ RSpec.describe Moxml::XPath::AST::Node do
 
     describe "#evaluate" do
       it "raises NotImplementedError" do
-        context = double("context")
-        expect { node.evaluate(context) }
-          .to raise_error(NotImplementedError,
-                          /must be implemented by subclass/)
+        context = Moxml::XPath::Context.new
+        expect { node.evaluate(context) }.to raise_error(
+          NotImplementedError,
+          /#{described_class}#evaluate must be implemented by subclass/,
+        )
       end
     end
 
     describe "#constant?" do
       it "returns false by default" do
-        expect(node.constant?).to be false
+        expect(node.constant?).to be(false)
       end
     end
 
@@ -29,7 +30,7 @@ RSpec.describe Moxml::XPath::AST::Node do
 
     describe "#inspect" do
       it "returns class name representation" do
-        expect(node.inspect).to match(/Moxml::XPath::AST::Node/)
+        expect(node.inspect).to match(/^#<#{Regexp.escape(described_class.name)} @type=/)
       end
     end
 
@@ -41,11 +42,15 @@ RSpec.describe Moxml::XPath::AST::Node do
   end
 
   describe "concrete implementation" do
-    # Example concrete node for testing
-    let(:concrete_class) do
+    # Create a test subclass to verify the interface works
+    let(:test_class) do
       Class.new(described_class) do
+        def initialize(value)
+          @value = value
+        end
+
         def evaluate(_context)
-          "concrete result"
+          @value
         end
 
         def constant?
@@ -58,19 +63,21 @@ RSpec.describe Moxml::XPath::AST::Node do
       end
     end
 
-    let(:concrete_node) { concrete_class.new }
-
     it "can be subclassed with custom evaluate" do
-      context = double("context")
-      expect(concrete_node.evaluate(context)).to eq("concrete result")
+      node = test_class.new("test_value")
+      context = Moxml::XPath::Context.new
+
+      expect(node.evaluate(context)).to eq("test_value")
     end
 
     it "can override constant?" do
-      expect(concrete_node.constant?).to be true
+      node = test_class.new("test")
+      expect(node.constant?).to be(true)
     end
 
     it "can override result_type" do
-      expect(concrete_node.result_type).to eq(:string)
+      node = test_class.new("test")
+      expect(node.result_type).to eq(:string)
     end
   end
 end

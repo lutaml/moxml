@@ -128,6 +128,32 @@ module Moxml
         send(:"on_#{ast.type}", ast, input, &block)
       end
 
+      # Dispatcher for generic binary operator nodes
+      def on_binary_op(ast, input, &block)
+        operator = ast.value  # :eq, :lt, :add, :plus, :star, etc.
+
+        # Map token names to handler method names
+        method_name = case operator
+                      when :plus then :add
+                      when :minus then :sub
+                      when :star then :mul
+                      else operator  # eq, lt, gt, div, mod, etc.
+                      end
+
+        send(:"on_#{method_name}", ast, input, &block)
+      end
+
+      # Dispatcher for generic unary operator nodes
+      def on_unary_op(ast, input, &block)
+        operator = ast.value  # :minus
+        send(:"on_#{operator}", ast, input, &block)
+      end
+
+      # Dispatcher for union nodes (parser creates :union, compiler uses :pipe)
+      def on_union(ast, input, &block)
+        on_pipe(ast, input, &block)
+      end
+
       private
 
       # Helper methods for creating Ruby AST nodes
@@ -907,12 +933,17 @@ module Moxml
 
       # XPath function dispatcher
       def on_call(ast, input, &block)
-        name, *args = ast.children
+        # Function name is stored in value field, not children
+        name = ast.value
+        args = ast.children
 
-        handler = name.gsub("-", "_")
+        handler = name.to_s.gsub("-", "_")
 
         send(:"on_call_#{handler}", input, *args, &block)
       end
+
+      # Alias for function nodes (parser creates :function, compiler uses on_call)
+      alias on_function on_call
 
       # 1. string() - Convert value to string
       def on_call_string(input, arg = nil)

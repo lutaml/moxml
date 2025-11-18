@@ -92,7 +92,7 @@ RSpec.describe Moxml::Document do
 
         expect(results).to be_an(Array)
         expect(results.length).to eq(2)
-        expect(results.map { |r| r["id"] }).to eq(["1", "2"])
+        expect(results.map { |r| r["id"] }).to eq(%w[1 2])
       end
 
       it "returns empty array when not found" do

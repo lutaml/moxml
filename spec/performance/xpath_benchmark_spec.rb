@@ -4,6 +4,7 @@ require "spec_helper"
 require "benchmark/ips"
 require "yaml"
 require "fileutils"
+require "time"
 
 RSpec.describe "XPath Performance Benchmark" do
   if ENV["SKIP_BENCHMARKS"]

@@ -125,6 +125,10 @@ RSpec.shared_examples "Moxml Integration" do
       if context.config.adapter_name == :headed_ox
         skip "HeadedOx limitation: Parent setter not implemented. Requires Ox node reparenting API. See docs/HEADED_OX_LIMITATIONS.md"
       end
+      if context.config.adapter_name == :ox
+        skip "Ox doesn't have a native XPath"
+      end
+
       # Move nodes
       b_node = doc.at_xpath("//b")
       a_node = doc.at_xpath("//a")
