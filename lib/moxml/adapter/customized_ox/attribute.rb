@@ -31,6 +31,23 @@ module Moxml
         def value
           @value
         end
+
+        # Serialize the attribute to XML format with proper escaping
+        def to_xml
+          escaped_value = @value.to_s
+            .gsub('&', '&amp;')
+            .gsub('<', '&lt;')
+            .gsub('>', '&gt;')
+            .gsub('"', '&quot;')
+            .gsub("'", '&apos;')
+
+          "#{expanded_name}=\"#{escaped_value}\""
+        end
+
+        # Support string conversion
+        def to_s
+          to_xml
+        end
       end
     end
   end

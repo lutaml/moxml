@@ -160,7 +160,8 @@ RSpec.describe Moxml::XPath::Parser do
       end
 
       it "parses all arithmetic operators without error" do
-        operators = { "+" => true, "-" => true, "*" => true, "div" => true, "mod" => true }
+        operators = { "+" => true, "-" => true, "*" => true, "div" => true,
+                      "mod" => true }
         operators.each_key do |op|
           expect { described_class.parse("@a #{op} @b") }.not_to raise_error
         end
@@ -205,16 +206,24 @@ RSpec.describe Moxml::XPath::Parser do
       it "parses functions with varying argument counts" do
         expect { described_class.parse("position()") }.not_to raise_error
         expect { described_class.parse("count(//item)") }.not_to raise_error
-        expect { described_class.parse("substring(@name, 1, 3)") }.not_to raise_error
-        expect { described_class.parse("sum(count(//item))") }.not_to raise_error
+        expect do
+          described_class.parse("substring(@name, 1, 3)")
+        end.not_to raise_error
+        expect do
+          described_class.parse("sum(count(//item))")
+        end.not_to raise_error
       end
     end
 
     context "union expressions" do
       it "parses union operators without error" do
         expect { described_class.parse("book | article") }.not_to raise_error
-        expect { described_class.parse("book | article | chapter") }.not_to raise_error
-        expect { described_class.parse("//book | //article") }.not_to raise_error
+        expect do
+          described_class.parse("book | article | chapter")
+        end.not_to raise_error
+        expect do
+          described_class.parse("//book | //article")
+        end.not_to raise_error
       end
     end
 

@@ -909,12 +909,12 @@ module Moxml
               result << xml_string[pos...cdata_start]
 
               # Find CDATA end
-              cdata_content_start = cdata_start + 9  # Length of "<![CDATA["
+              cdata_content_start = cdata_start + 9 # Length of "<![CDATA["
               cdata_end = xml_string.index("]]>", cdata_content_start)
 
               if cdata_end
                 # Extract full CDATA including markers
-                full_cdata_end = cdata_end + 3  # Include "]]>"
+                full_cdata_end = cdata_end + 3 # Include "]]>"
                 cdata_section = xml_string[cdata_start...full_cdata_end]
 
                 # Store and add placeholder
@@ -925,12 +925,12 @@ module Moxml
                 pos = full_cdata_end
               else
                 # Malformed CDATA (no closing "]]>") - copy as-is
-                result << xml_string[cdata_start..-1]
+                result << xml_string[cdata_start..]
                 break
               end
             else
               # No more CDATA sections - copy rest
-              result << xml_string[pos..-1]
+              result << xml_string[pos..]
               break
             end
           end

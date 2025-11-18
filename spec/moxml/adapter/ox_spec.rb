@@ -1,14 +1,11 @@
 # frozen_string_literal: true
 
-require "ox"
 require "moxml/adapter/ox"
 
-RSpec.describe Moxml::Adapter::Ox, skip: "Ox will be added later" do
-  before(:all) do
-    Moxml.configure do |config|
-      config.adapter = :ox
-      config.strict_parsing = true
-      config.default_encoding = "UTF-8"
+RSpec.describe Moxml::Adapter::Ox do
+  around do |example|
+    Moxml.with_config(:ox, true, "UTF-8") do
+      example.run
     end
   end
 
@@ -33,7 +30,7 @@ RSpec.describe Moxml::Adapter::Ox, skip: "Ox will be added later" do
 
   describe "xpath support" do
     let(:doc) do
-      described_class.parse("<root><child id='1'>text</child></root>")
+      described_class.parse("<root><child id='1'>text</child></root>").native
     end
 
     it "supports basic element matching" do
@@ -43,6 +40,8 @@ RSpec.describe Moxml::Adapter::Ox, skip: "Ox will be added later" do
     end
 
     it "supports attribute matching" do
+      pending("Ox does not support attribute value predicates in XPath (documented limitation)")
+
       nodes = described_class.xpath(doc, "//child[@id='1']")
       expect(nodes.size).to eq(1)
       expect(nodes.first.attributes["id"]).to eq("1")
