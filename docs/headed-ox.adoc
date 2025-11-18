@@ -4,7 +4,7 @@
 :toc-title: Contents
 :source-highlighter: highlight.js
 
-image:https://img.shields.io/badge/Pass_Rate-99.20%25-brightgreen[HeadedOx v1.2 Pass Rate]
+image:https://img.shields.io/badge/Pass_Rate-99.20%25-brightgreen[HeadedOx v0.2.0 Pass Rate]
 image:https://img.shields.io/badge/XPath_Functions-27%2F27-brightgreen[XPath Functions]
 image:https://img.shields.io/badge/XPath_Axes-6%2F13-yellow[XPath Axes]
 image:https://img.shields.io/badge/Status-Production_Ready-brightgreen[Status]
@@ -15,7 +15,7 @@ toc::[]
 
 HeadedOx is a hybrid XML adapter that combines the raw speed of https://github.com/ohler55/ox[Ox]'s C-based XML parsing with the comprehensive capabilities of Moxml's pure Ruby XPath 1.0 engine.
 
-**Version 1.2 Status:** 99.20% test pass rate (1,992/2,008 tests) - PRODUCTION READY
+**Version 0.2.0 Status:** 99.20% test pass rate (1,992/2,008 tests) - PRODUCTION READY
 
 === The name "HeadedOx"
 
@@ -652,7 +652,7 @@ following = items[current_index + 1..-1]
 
 == Testing and quality assurance
 
-=== Test coverage (v1.2)
+=== Test coverage (v0.2.0)
 
 [source]
 ----
@@ -784,7 +784,7 @@ HeadedOx supports most Nokogiri/Oga XPath patterns:
 ----
 # These work identically across all adapters:
 doc.xpath('//book[@price < 20]')     # ✅ Works
-doc.xpath('count(//book)')           # ✅ Works  
+doc.xpath('count(//book)')           # ✅ Works
 doc.xpath('//book[1]')               # ✅ Works
 
 # These require adapter change for HeadedOx:
@@ -1013,7 +1013,7 @@ Contributions are welcome! Areas for contribution:
 * link:HEADED_OX_LIMITATIONS.adoc[] - Comprehensive limitation reference (558 lines)
 * link:OX_ENHANCEMENT_PLAN.adoc[] - Roadmap for Ox gem enhancements (800+ lines)
 * link:OX_ENHANCEMENT_PROMPT.adoc[] - Implementation guide for Ox work (500+ lines)
-* link:RELEASE_NOTES_V1.2.adoc[] - Version 1.2 release notes (508 lines)
+* link:RELEASE_NOTES_V0.2.0.adoc[] - Version 0.2.0 release notes (508 lines)
 * link:../README.adoc[] - Main Moxml documentation
 
 == License
