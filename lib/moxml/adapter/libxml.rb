@@ -902,7 +902,8 @@ module Moxml
           end
 
           # Add newlines between elements (but not in CDATA)
-          with_newlines = protected.gsub(%r{(<[^>]+)>(?=<(?!/))}, "\\1>\n")
+          # Simple approach: add newline after every closing tag (unless followed by closing tag)
+          with_newlines = protected.gsub(/>(<[^\/])/, ">\n\\1")
 
           # Restore CDATA sections
           cdata_sections.each_with_index do |cdata, index|
