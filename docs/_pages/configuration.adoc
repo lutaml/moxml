@@ -1,0 +1,251 @@
+---
+title: Configuration
+parent: Overview
+nav_order: 7
+---
+
+== Configuration
+
+=== Purpose
+
+Learn how to configure Moxml for your application's requirements including
+adapter selection, parsing options, and encoding settings.
+
+=== Global configuration
+
+Configure Moxml globally for your application:
+
+[source,ruby]
+----
+# Set default adapter
+Moxml::Config.default_adapter = :nokogiri
+
+# Access global config
+config = Moxml::Config.new
+config.adapter = :libxml
+config.strict_parsing = true
+config.default_encoding = 'UTF-8'
+----
+
+=== Instance configuration
+
+Configure per Moxml instance:
+
+[source,ruby]
+----
+# During initialization
+context = Moxml.new do |config|
+  config.adapter = :oga
+  config.strict_parsing = false
+  config.default_encoding = 'ISO-8859-1'
+end
+
+# After creation
+context = Moxml.new
+context.config.adapter = :libxml
+context.config.strict_parsing = true
+----
+
+=== Configuration options
+
+==== Adapter selection
+
+Choose the XML processing library:
+
+[source,ruby]
+----
+context = Moxml.new
+context.config.adapter = :nokogiri  # or :libxml, :oga, :rexml, :ox
+----
+
+**Available adapters:**
+
+* `:nokogiri` - Default, full features
+* `:libxml` - Native performance
+* `:oga` - Pure Ruby
+* `:rexml` - Standard library
+* `:ox` - Maximum speed
+
+See link:adapters/[Adapters documentation] for details.
+
+==== Strict parsing
+
+Control error handling for malformed XML:
+
+[source,ruby]
+----
+# Strict mode (recommended for production)
+context.config.strict_parsing = true
+doc = context.parse(xml)  # Raises ParseError on malformed XML
+
+# Relaxed mode (attempt to parse malformed XML)
+context.config.strict_parsing = false
+doc = context.parse(xml)  # Attempts to recover from errors
+----
+
+**Default:** `true`
+
+==== Default encoding
+
+Set default character encoding:
+
+[source,ruby]
+----
+context.config.default_encoding = 'UTF-8'    # Default
+context.config.default_encoding = 'ISO-8859-1'
+context.config.default_encoding = 'UTF-16'
+----
+
+**Default:** `"UTF-8"`
+
+=== Context switching
+
+Use different configurations for different tasks:
+
+[source,ruby]
+----
+# High-performance context for simple docs
+fast_context = Moxml.new
+fast_context.config.adapter = :ox
+
+# Feature-rich context for complex docs
+full_context = Moxml.new
+full_context.config.adapter = :nokogiri
+
+# Process based on requirements
+if simple_document?(xml)
+  doc = fast_context.parse(xml)
+else
+  doc = full_context.parse(xml)
+end
+----
+
+=== Serialization options
+
+Control XML output format:
+
+[source,ruby]
+----
+xml = doc.to_xml(
+  indent: 2,                    # Indentation spaces
+  encoding: 'UTF-8',            # Output encoding
+  no_declaration: false,         # Include <?xml ...?>
+  expand_empty: false            # Expand empty tags <tag></tag>
+)
+----
+
+=== Adapter-specific configuration
+
+Some adapters support additional options:
+
+==== Nokogiri
+
+[source,ruby]
+----
+# Nokogiri parse options
+doc = context.parse(xml,
+  strict: true,
+  encoding: 'UTF-8',
+  recover: false  # Don't recover from errors
+)
+----
+
+==== LibXML
+
+[source,ruby]
+----
+# LibXML parse options
+doc = context.parse(xml,
+  strict: true,
+  encoding: 'UTF-8'
+)
+----
+
+==== Ox
+
+[source,ruby]
+----
+# Ox typically uses fewer options
+doc = context.parse(xml)
+----
+
+=== Configuration best practices
+
+. **Set adapter explicitly** in production for consistency
+. **Use strict parsing** to catch XML errors early
+. **Specify encoding** when working with non-UTF-8 documents
+. **Document configuration** in your application setup
+. **Test with target adapter** during development
+
+=== Environment-based configuration
+
+Configure based on environment:
+
+[source,ruby]
+----
+# config/initializers/moxml.rb
+case Rails.env
+when 'production'
+  Moxml::Config.default_adapter = :nokogiri
+  Moxml.new.config.strict_parsing = true
+when 'development'
+  Moxml::Config.default_adapter = :nokogiri
+  Moxml.new.config.strict_parsing = false
+when 'test'
+  Moxml::Config.default_adapter = :rexml  # No C extensions needed
+end
+----
+
+=== Runtime adapter switching
+
+Change adapters dynamically:
+
+[source,ruby]
+----
+def process_with_best_adapter(xml)
+  # Try fast adapter first
+  context = Moxml.new
+  context.config.adapter = :ox
+
+  doc = context.parse(xml)
+
+  # Check if complex operations needed
+  if needs_complex_xpath?(doc)
+    # Switch to full-featured adapter
+    context.config.adapter = :nokogiri
+    doc = context.parse(xml)
+  end
+
+  doc
+end
+----
+
+=== Configuration validation
+
+Verify configuration is correct:
+
+[source,ruby]
+----
+context = Moxml.new
+
+# Check adapter loaded
+puts context.config.adapter.name
+# => "Moxml::Adapter::Nokogiri"
+
+# Verify adapter available
+begin
+  context.config.adapter = :missing_adapter
+rescue Moxml::AdapterError => e
+  puts "Adapter not available: #{e.message}"
+end
+
+# Test parsing works
+test_doc = context.parse('<root/>')
+puts "Configuration valid" if test_doc.root
+----
+
+=== See also
+
+* link:adapters/[Adapters] - Adapter-specific documentation
+* link:installation[Installation] - Setting up adapters
+* link:../guides/adapter-switching[Adapter switching guide]

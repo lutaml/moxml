@@ -1,0 +1,293 @@
+---
+title: Modifying XML
+parent: Overview
+nav_order: 3
+---
+
+== Modifying XML
+
+=== Purpose
+
+Learn how to modify existing XML documents by adding, updating, and removing
+elements, attributes, and content.
+
+=== Modifying element content
+
+Update text content of elements:
+
+[source,ruby]
+----
+xml = '<library><book><title>Old Title</title></book></library>'
+doc = Moxml.new.parse(xml)
+
+# Find and update
+title = doc.at_xpath('//title')
+title.text = 'New Title'
+
+puts doc.to_xml
+# => <library><book><title>New Title</title></book></library>
+----
+
+=== Adding elements
+
+Add new elements to existing documents:
+
+[source,ruby]
+----
+xml = '<library><book id="1"><title>Ruby Basics</title></book></library>'
+doc = Moxml.new.parse(xml)
+
+book = doc.at_xpath('//book[@id="1"]')
+
+# Add author element
+author = doc.create_element('author')
+author.text = 'Jane Smith'
+book.add_child(author)
+
+# Add price element
+price = doc.create_element('price')
+price.text = '29.99'
+price['currency'] = 'USD'
+book.add_child(price)
+
+# Add ISBN element
+isbn = doc.create_element('isbn')
+isbn.text = '978-0-123456-78-9'
+book.add_child(isbn)
+
+puts doc.to_xml(indent: 2)
+----
+
+=== Removing elements
+
+Remove elements from documents:
+
+[source,ruby]
+----
+xml = <<~XML
+  <library>
+    <book id="1">
+      <title>Ruby Basics</title>
+      <author>Jane Smith</author>
+      <draft>true</draft>
+    </book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Find and remove element
+draft = doc.at_xpath('//draft')
+draft.remove
+
+# Remove by parent
+book = doc.at_xpath('//book')
+author = book.at_xpath('.//author')
+book.remove_child(author)
+
+puts doc.to_xml
+----
+
+=== Modifying attributes
+
+Update, add, and remove attributes:
+
+[source,ruby]
+----
+xml = '<book id="1" status="draft">Ruby Basics</book>'
+doc = Moxml.new.parse(xml)
+
+book = doc.root
+
+# Update existing attribute
+book['id'] = '100'
+
+# Add new attribute
+book['edition'] = '2nd'
+book['category'] = 'programming'
+
+# Remove attribute
+book.remove_attribute('status')
+
+# Get all attributes
+book.attributes.each do |attr|
+  puts "#{attr.name}=#{attr.value}"
+end
+# => id=100
+# => edition=2nd
+# => category=programming
+----
+
+=== Replacing nodes
+
+Replace elements with new content:
+
+[source,ruby]
+----
+xml = '<book><title>Old Title</title><author>Old Author</author></book>'
+doc = Moxml.new.parse(xml)
+
+# Replace title element
+old_title = doc.at_xpath('//title')
+new_title = doc.create_element('title')
+new_title.text = 'New Title'
+new_title['lang'] = 'en'
+
+old_title.replace(new_title)
+
+# Replace text node
+author = doc.at_xpath('//author')
+author.children.first.replace(doc.create_text('New Author'))
+
+puts doc.to_xml
+----
+
+=== Adding siblings
+
+Insert elements relative to existing nodes:
+
+[source,ruby]
+----
+xml = <<~XML
+  <book>
+    <title>Ruby Programming</title>
+    <price>29.99</price>
+  </book>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Add before price
+price = doc.at_xpath('//price')
+author = doc.create_element('author')
+author.text = 'Jane Smith'
+price.add_previous_sibling(author)
+
+# Add after title
+title = doc.at_xpath('//title')
+subtitle = doc.create_element('subtitle')
+subtitle.text = 'A Comprehensive Guide'
+title.add_next_sibling(subtitle)
+
+puts doc.to_xml(indent: 2)
+----
+
+Output:
+
+[source,xml]
+----
+<book>
+  <title>Ruby Programming</title>
+  <subtitle>A Comprehensive Guide</subtitle>
+  <author>Jane Smith</author>
+  <price>29.99</price>
+</book>
+----
+
+=== Batch modifications
+
+Update multiple elements at once:
+
+[source,ruby]
+----
+xml = <<~XML
+  <library>
+    <book><price currency="USD">29.99</price></book>
+    <book><price currency="USD">39.99</price></book>
+    <book><price currency="USD">19.99</price></book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Apply 10% discount to all books
+doc.xpath('//price').each do |price|
+  current = price.text.to_f
+  discounted = (current * 0.9).round(2)
+  price.text = discounted.to_s
+  price['original'] = current.to_s
+end
+
+puts doc.to_xml(indent: 2)
+----
+
+=== Preserving structure
+
+Maintain document structure during modifications:
+
+[source,ruby]
+----
+xml = <<~XML
+  <?xml version="1.0" encoding="UTF-8"?>
+  <library>
+    <book id="1">Ruby Basics</book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Modifications preserve declaration
+book = doc.at_xpath('//book')
+book['edition'] = '2nd'
+
+# Original structure maintained
+puts doc.to_xml(indent: 2)
+# => Still has <?xml ... ?> declaration
+----
+
+=== Common modification patterns
+
+==== Update or create pattern
+
+[source,ruby]
+----
+def ensure_element(parent, name, text)
+  elem = parent.at_xpath(".//#{name}")
+
+  if elem
+    # Update existing
+    elem.text = text
+  else
+    # Create new
+    elem = parent.document.create_element(name)
+    elem.text = text
+    parent.add_child(elem)
+  end
+
+  elem
+end
+
+book = doc.at_xpath('//book')
+ensure_element(book, 'author', 'Jane Smith')
+ensure_element(book, 'price', '29.99')
+----
+
+==== Conditional modification
+
+[source,ruby]
+----
+doc.xpath('//book').each do |book|
+  price = book.at_xpath('.//price')
+  next unless price
+
+  # Add discount for expensive books
+  if price.text.to_f > 30
+    book['discount'] = '10%'
+    price.text = (price.text.to_f * 0.9).to_s
+  end
+end
+----
+
+=== Best practices
+
+. **Find before modifying** - always locate elements first
+. **Check element exists** before calling methods on it
+. **Use transactions** for complex modifications if needed
+. **Validate structure** after major changes
+. **Preserve document metadata** (declarations, encoding)
+
+=== See also
+
+* link:creating-documents[Creating documents] - Build from scratch
+* link:../tutorials/basic-usage[Basic usage] - Fundamentals
+* link:../references/element-api[Element API] - Complete method reference

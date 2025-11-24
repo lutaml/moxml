@@ -1,0 +1,286 @@
+---
+title: LibXML adapter
+parent: Adapters
+grand_parent: Overview
+nav_order: 2
+---
+
+== LibXML adapter
+
+=== Purpose
+
+The LibXML adapter provides XML processing through the libxml-ruby library,
+offering excellent performance through native libxml2 bindings with full
+XPath 1.0 support.
+
+=== Overview
+
+link:https://github.com/xml4r/libxml-ruby[libxml-ruby] provides Ruby
+bindings to the libxml2 C library, offering similar performance
+characteristics to Nokogiri but as an alternative implementation. It's ideal
+when you need native performance with full XML features.
+
+=== Installation
+
+Add to your Gemfile:
+
+[source,ruby]
+----
+gem 'moxml'
+gem 'libxml-ruby'
+----
+
+Install:
+
+[source,shell]
+----
+bundle install
+----
+
+=== Configuration
+
+[source,ruby]
+----
+# Explicit selection
+context = Moxml.new
+context.config.adapter = :libxml
+
+# Global default
+Moxml::Config.default_adapter = :libxml
+----
+
+=== Features
+
+==== Full XPath 1.0 support
+
+Complete XPath 1.0 implementation through libxml2:
+
+[source,ruby]
+----
+doc = Moxml.new.parse(xml)
+
+# All XPath features work
+books = doc.xpath('//book[@price < 30]')
+count = doc.xpath('count(//book)')
+titles = doc.xpath('//book[position() < 3]/title')
+
+# Namespace-aware queries
+doc.xpath('//ns:element', 'ns' => 'http://example.org')
+
+# Complex predicates and functions
+doc.xpath('//book[author and price > 20]')
+doc.xpath('//chapter[last()]')
+----
+
+==== Complete namespace support
+
+Full namespace handling:
+
+[source,ruby]
+----
+# Create namespaced elements
+element.add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
+
+# Query with namespaces
+results = doc.xpath('//dc:creator',
+  'dc' => 'http://purl.org/dc/elements/1.1/')
+
+# Namespace inheritance works correctly
+----
+
+==== All node types
+
+Complete support for:
+
+* Elements with attributes
+* Text nodes
+* CDATA sections
+* Comments
+* Processing instructions
+* DOCTYPE declarations (with limitations)
+* XML declarations
+
+==== Performance
+
+* **Parsing speed**: Very fast (native libxml2)
+* **Serialization speed**: Very fast
+* **Memory usage**: Excellent
+* **XPath performance**: Excellent (native)
+
+=== Limitations
+
+Minor limitations compared to other adapters:
+
+**DOCTYPE handling:**
+
+* DOCTYPE parsing works correctly
+* DOCTYPE serialization is limited
+* Round-trip preservation of DOCTYPE may not work perfectly
+
+**Performance:**
+
+* Serialization slightly slower than Ox in some cases
+* Still very competitive with other adapters
+
+[source,ruby]
+----
+# DOCTYPE limitation example
+xml_with_doctype = <<~XML
+  <!DOCTYPE root SYSTEM "test.dtd">
+  <root/>
+XML
+
+doc = Moxml.new.parse(xml_with_doctype)
+# Parsing works fine
+
+# But re-serialization may not preserve DOCTYPE perfectly
+output = doc.to_xml
+# DOCTYPE may be formatted differently or missing
+----
+
+=== Performance characteristics
+
+Based on benchmarks:
+
+[cols="2,2,3"]
+|===
+| Operation | Performance | Notes
+
+| Parse medium XML
+| ~120 ips
+| Very fast native parsing
+
+| Serialize medium XML
+| ~1,200 ips
+| Fast serialization
+
+| XPath queries
+| ~50,000+ ips
+| Native libxml2 XPath
+
+| Memory usage
+| Excellent
+| Efficient memory management
+|===
+
+=== Best use cases
+
+**Choose LibXML when:**
+
+* You want an alternative to Nokogiri
+* Native C performance is important
+* Full XPath 1.0 support is required
+* Namespace handling is critical
+* You prefer libxml2 over libxml2-wrapped-by-Nokogiri
+
+**Avoid LibXML when:**
+
+* Pure Ruby is required (use link:oga[Oga])
+* DOCTYPE round-trip is essential
+* You need wider community/ecosystem (use link:nokogiri[Nokogiri])
+
+=== Example usage
+
+==== Basic operations
+
+[source,ruby]
+----
+require 'moxml'
+
+# Configure LibXML adapter
+context = Moxml.new
+context.config.adapter = :libxml
+
+xml = '<library><book id="1">Ruby Programming</book></library>'
+doc = context.parse(xml)
+
+# Query and modify
+book = doc.at_xpath('//book[@id="1"]')
+book.text = 'Advanced Ruby Programming'
+book['edition'] = '2nd'
+
+puts doc.to_xml(indent: 2)
+----
+
+==== Complex XPath
+
+[source,ruby]
+----
+# All XPath 1.0 features supported
+expensive_books = doc.xpath('//book[price > 30]')
+fiction_count = doc.xpath('count(//book[@category="fiction"])')
+last_chapter = doc.at_xpath('//chapter[last()]')
+----
+
+==== Namespace operations
+
+[source,ruby]
+----
+xml = <<~XML
+  <library xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <book>
+      <dc:title>Programming</dc:title>
+      <dc:creator>Smith</dc:creator>
+    </book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Query with namespaces
+ns = { 'dc' => 'http://purl.org/dc/elements/1.1/' }
+titles = doc.xpath('//dc:title', ns)
+creators = doc.xpath('//dc:creator', ns)
+
+puts "Title: #{titles.first.text}"
+puts "Creator: #{creators.first.text}"
+----
+
+=== Comparison with Nokogiri
+
+Both LibXML and Nokogiri use libxml2, but differ in their approach:
+
+[cols="2,2,2"]
+|===
+| Aspect | LibXML | Nokogiri
+
+| Underlying library
+| libxml2 directly
+| libxml2 via wrapper
+
+| Community size
+| Smaller
+| Very large
+
+| Performance
+| Excellent
+| Excellent
+
+| Feature completeness
+| Full (except DOCTYPE)
+| Full
+
+| Pure Ruby option
+| No
+| No
+
+| Cross-platform
+| Good
+| Excellent
+
+| Documentation
+| Good
+| Extensive
+|===
+
+=== References
+
+* link:https://github.com/xml4r/libxml-ruby[libxml-ruby on GitHub]
+* link:https://github.com/GNOME/libxml2[libxml2 C library]
+* link:https://libxml2.gitlab.io/[libxml2 documentation]
+
+=== See also
+
+* link:../compatibility[Compatibility matrix] - Feature comparison
+* link:nokogiri[Nokogiri adapter] - Similar performance
+* link:../../guides/adapter-switching[Adapter switching guide]

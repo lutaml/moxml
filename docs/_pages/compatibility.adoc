@@ -1,0 +1,468 @@
+---
+title: Compatibility
+parent: Overview
+nav_order: 6
+---
+
+== Compatibility
+
+=== Purpose
+
+This page provides a comprehensive comparison of features, performance, and
+capabilities across all supported XML adapters.
+
+=== Feature compatibility matrix
+
+[cols="3,1,1,1,1,1", options="header"]
+|===
+| Feature/Operation | Nokogiri | Oga | REXML | LibXML | Ox
+
+| **Core operations**
+|
+|
+|
+|
+|
+
+| Parse XML string
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+
+| Parse XML file/IO
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+
+| Serialize to XML
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+
+| **Element operations**
+|
+|
+|
+|
+|
+
+| Create elements
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+
+| Get/set attributes
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+
+| Add/remove children
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+
+| Replace nodes
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ⚠️ Limited^1^
+
+| **Namespace operations**
+|
+|
+|
+|
+|
+
+| Add namespaces
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+
+| Default namespaces
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ⚠️ Basic
+
+| Namespace inheritance
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ❌ None
+
+| Namespaced attributes
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ⚠️ Limited
+
+| **XPath queries**
+|
+|
+|
+|
+|
+
+| Basic paths (`//element`)
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+
+| Attribute predicates (`[@id]`)
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ⚠️ Name only^2^
+
+| Attribute values (`[@id='123']`)
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ❌ None^3^
+
+| Logical operators
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ❌ None
+
+| Position predicates
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ❌ None
+
+| Text predicates
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ❌ None
+
+| Namespace XPath
+| ✅ Full
+| ✅ Full
+| ❌ None
+| ✅ Full
+| ❌ None
+
+| Parent axis (`..`)
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ❌ None
+
+| Sibling axes
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ❌ None
+
+| XPath functions
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ❌ None
+
+| **Special content**
+|
+|
+|
+|
+|
+
+| CDATA sections
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+
+| Comments
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+
+| Processing instructions
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ✅ Full
+
+| DOCTYPE declarations
+| ✅ Full
+| ✅ Full
+| ✅ Full
+| ⚠️ Limited^4^
+| ✅ Full
+
+| **Performance**
+|
+|
+|
+|
+|
+
+| Parse speed
+| Fast
+| Fast
+| Medium
+| Very Fast
+| Very Fast
+
+| Serialize speed
+| Fast
+| Fast
+| Medium
+| Very Fast
+| Fastest
+
+| Memory usage
+| Good
+| Medium
+| Medium
+| Excellent
+| Best
+
+| Thread safety
+| ✅ Yes
+| ✅ Yes
+| ✅ Yes
+| ✅ Yes
+| ✅ Yes
+|===
+
+=== Legend
+
+✅ Full:: Complete support with no limitations
+⚠️ Limited:: Partial support with workarounds available
+❌ None:: Not supported
+
+=== Footnotes
+
+^1^ Ox: Text node replacement may fail in some cases due to internal node
+structure
+
+^2^ Ox: `//book[@id]` returns all book elements (doesn't filter by attribute
+existence)
+
+^3^ Ox: Use `.find { |el| el["id"] == "123" }` instead of XPath attribute
+value predicates
+
+^4^ LibXML: DOCTYPE parsing works, serialization is limited (no perfect
+round-trip)
+
+=== Performance comparison
+
+==== Parsing performance (medium 10KB XML)
+
+[source]
+----
+Ox         ████████████████████████████████████████████████ 289 ips
+LibXML     ███████████████████████████████████ 120 ips
+Nokogiri   █████████████████ 76 ips
+Oga        ███████████ 50 ips
+REXML      ████ 15 ips
+----
+
+==== Serialization performance
+
+[source]
+----
+Ox         ████████████████████████████████████████████████ 39,203 ips
+Nokogiri   █████████████████ 13,900 ips
+LibXML     ███████ 5,600 ips
+Oga        ████ 3,200 ips
+REXML      ██ 1,500 ips
+----
+
+==== XPath performance (simple queries)
+
+[source]
+----
+Nokogiri   ████████████████████████████████████████████████ 64,958 ips
+LibXML     ███████████████████████████████████████████████ 62,000 ips
+Oga        ███████████████████████ 28,000 ips
+REXML      ███████ 8,500 ips
+Ox         ███████ 9,640 ips
+----
+
+NOTE: Performance numbers are approximate and vary by system and document
+complexity.
+
+=== Memory usage comparison
+
+[cols="2,2,3"]
+|===
+| Adapter | Memory delta | Description
+
+| Ox
+| 0.0 MB
+| Best - minimal allocation
+
+| Nokogiri
+| -0.1 MB
+| Excellent efficiency
+
+| LibXML
+| +0.1 MB
+| Very good
+
+| Oga
+| +0.3 MB
+| Good for pure Ruby
+
+| REXML
+| +0.5 MB
+| Medium overhead
+|===
+
+=== XPath capability summary
+
+[cols="2,4"]
+|===
+| Capability level | Adapters
+
+| Full XPath 1.0
+| Nokogiri, LibXML, Oga
+
+| Basic XPath
+| REXML (no namespaces), Ox (no predicates)
+
+| Ruby workarounds needed
+| Ox, REXML (for complex queries)
+|===
+
+=== Adapter selection decision tree
+
+[source]
+----
+Need pure Ruby?
+├─ Yes
+│  ├─ Need full XPath? → Oga
+│  ├─ No external gems? → REXML
+│  └─ Basic XPath OK? → REXML
+└─ No (C extensions OK)
+   ├─ Need maximum speed? → Ox
+   ├─ Simple documents? → Ox
+   ├─ Complex XPath? → Nokogiri or LibXML
+   ├─ Industry standard? → Nokogiri
+   └─ Alternative to Nokogiri? → LibXML
+----
+
+=== Recommendations by use case
+
+[cols="2,2,3"]
+|===
+| Use case | Primary choice | Alternative
+
+| General XML processing
+| Nokogiri
+| LibXML
+
+| Maximum performance
+| Ox
+| LibXML
+
+| Pure Ruby requirement
+| Oga
+| REXML
+
+| No external dependencies
+| REXML
+| N/A
+
+| Complex XPath queries
+| Nokogiri
+| LibXML, Oga
+
+| High-throughput simple docs
+| Ox
+| LibXML
+
+| Namespace-heavy documents
+| Nokogiri
+| LibXML, Oga
+
+| Memory-constrained
+| Ox
+| Nokogiri
+|===
+
+=== Testing across adapters
+
+To ensure your code works across adapters:
+
+[source,ruby]
+----
+# Test with multiple adapters
+[:nokogiri, :libxml, :oga, :rexml, :ox].each do |adapter_name|
+  next unless adapter_available?(adapter_name)
+
+  context = Moxml.new
+  context.config.adapter = adapter_name
+
+  doc = context.parse(xml)
+
+  # Test your operations
+  results = doc.xpath('//book')
+  # Add assertions
+end
+----
+
+=== Migration guide
+
+**From Nokogiri to Ox:**
+
+* Replace complex XPath with Ruby filtering
+* Test namespace operations carefully
+* Verify text node replacements work
+
+**From REXML to Nokogiri/LibXML:**
+
+* No code changes needed
+* XPath queries will work better automatically
+* Performance will improve significantly
+
+**From Ox to Nokogiri:**
+
+* Complex XPath will work automatically
+* No workarounds needed
+* Performance may decrease for parsing
+
+=== See also
+
+* link:adapters/[Individual adapter documentation]
+* link:../guides/adapter-switching[Adapter switching guide]
+* link:../guides/performance-optimization[Performance optimization]

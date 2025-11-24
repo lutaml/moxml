@@ -1,0 +1,98 @@
+---
+title: Adapters
+parent: Overview
+nav_order: 5
+has_children: true
+---
+
+== Adapters
+
+=== Purpose
+
+This section describes the supported XML adapters, their capabilities, and
+how to choose the right adapter for your needs.
+
+=== What are adapters?
+
+Moxml uses an adapter pattern to provide a unified interface over different
+XML processing libraries. Each adapter wraps a specific XML library (Nokogiri,
+LibXML, Oga, REXML, or Ox) and provides consistent behavior through Moxml's
+API.
+
+=== Available adapters
+
+link:nokogiri[Nokogiri adapter]::
+Industry standard XML library with excellent performance and full XPath 1.0
+support. Recommended for most use cases.
+
+link:libxml[LibXML adapter]::
+Alternative to Nokogiri using native libxml2 bindings. Excellent performance
+with full feature support.
+
+link:oga[Oga adapter]::
+Pure Ruby XML parser with no C extensions. Ideal for JRuby, TruffleRuby, or
+environments where C extensions are not allowed.
+
+link:rexml[REXML adapter]::
+Ruby standard library XML parser. Always available, requiring no additional
+gems. Best for maximum portability.
+
+link:ox[Ox adapter]::
+Fastest XML parser with minimal memory footprint. Best for simple documents
+and high-throughput scenarios.
+
+=== Adapter comparison
+
+Refer to the link:../compatibility[Compatibility matrix] for detailed
+feature comparison across all adapters.
+
+=== Quick selection guide
+
+[cols="2,3"]
+|===
+| Use case | Recommended adapter
+
+| General XML processing
+| link:nokogiri[Nokogiri]
+
+| Maximum performance
+| link:ox[Ox] or link:libxml[LibXML]
+
+| Pure Ruby environment
+| link:oga[Oga]
+
+| No external dependencies
+| link:rexml[REXML]
+
+| Complex XPath queries
+| link:nokogiri[Nokogiri] or link:libxml[LibXML]
+
+| Simple documents, high speed
+| link:ox[Ox]
+|===
+
+=== Switching adapters
+
+Change adapters at runtime:
+
+[source,ruby]
+----
+# Global default
+Moxml::Config.default_adapter = :libxml
+
+# Per instance
+context = Moxml.new
+context.config.adapter = :oga
+
+# With configuration
+moxml = Moxml.new do |config|
+  config.adapter = :nokogiri
+  config.strict_parsing = true
+end
+----
+
+=== Next steps
+
+* Explore individual adapter pages for detailed capabilities
+* Review the link:../compatibility[Compatibility matrix]
+* Read link:../tutorials/adapter-switching[Adapter switching tutorial]

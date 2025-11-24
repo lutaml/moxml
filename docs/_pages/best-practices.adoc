@@ -1,0 +1,430 @@
+---
+title: Best practices
+parent: Overview
+nav_order: 9
+---
+
+== Best practices
+
+=== Purpose
+
+Recommended patterns and practices for using Moxml effectively in production
+applications.
+
+=== Document creation
+
+==== Use builder pattern for new documents
+
+[source,ruby]
+----
+# Preferred - clean and maintainable
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.declaration version: "1.0", encoding: "UTF-8"
+  xml.library do
+    xml.book "Content"
+  end
+end
+
+# Avoid - verbose and error-prone
+doc = Moxml.new.create_document
+doc.add_child(doc.create_declaration)
+root = doc.create_element('library')
+# ... many more lines
+----
+
+==== Use direct manipulation for modifications
+
+[source,ruby]
+----
+# Preferred for modifying existing documents
+doc = Moxml.new.parse(xml)
+book = doc.at_xpath('//book[@id="1"]')
+book['edition'] = '2nd'
+book.at_xpath('.//price').text = '24.99'
+----
+
+=== XPath queries
+
+==== Use specific paths
+
+[source,ruby]
+----
+# More efficient - specific path
+doc.xpath('/library/section/book')
+
+# Less efficient - requires full document scan
+doc.xpath('//book')
+
+# Most efficient - from known parent
+section.xpath('./book')
+----
+
+==== Cache query results
+
+[source,ruby]
+----
+# Inefficient - queries multiple times
+doc.xpath('//book').each do |book|
+  if doc.xpath('//book').length > 10
+    # ...
+  end
+end
+
+# Better - cache the result
+books = doc.xpath('//book')
+books.each do |book|
+  if books.length > 10
+    # ...
+  end
+end
+----
+
+==== Use at_xpath for single results
+
+[source,ruby]
+----
+# Preferred - when expecting single result
+book = doc.at_xpath('//book[@id="1"]')
+
+# Avoid - unnecessary array creation
+book = doc.xpath('//book[@id="1"]').first
+----
+
+=== Adapter selection
+
+==== Choose adapter explicitly in production
+
+[source,ruby]
+----
+# Good - explicit and predictable
+class XmlProcessor
+  def initialize
+    @context = Moxml.new
+    @context.config.adapter = :nokogiri
+  end
+end
+
+# Avoid - relies on gem load order
+class XmlProcessor
+  def initialize
+    @context = Moxml.new  # Uses whatever is available
+  end
+end
+----
+
+==== Match adapter to use case
+
+[source,ruby]
+----
+# High-throughput simple docs
+fast_context = Moxml.new
+fast_context.config.adapter = :ox
+
+# Complex XPath queries
+full_context = Moxml.new
+full_context.config.adapter = :nokogiri
+
+# Pure Ruby requirement
+pure_context = Moxml.new
+pure_context.config.adapter = :oga
+----
+
+=== Error handling
+
+==== Always use strict parsing in production
+
+[source,ruby]
+----
+# Production
+def parse_production(xml)
+  Moxml.new.parse(xml, strict: true)
+rescue Moxml::ParseError => e
+  logger.error("Invalid XML received: #{e.message}")
+  raise
+end
+
+# Development/testing only
+def parse_development(xml)
+  Moxml.new.parse(xml, strict: false)
+end
+----
+
+==== Catch specific errors
+
+[source,ruby]
+----
+# Good - targeted error handling
+begin
+  doc = Moxml.new.parse(xml)
+  process(doc)
+rescue Moxml::ParseError => e
+  handle_parse_error(e)
+rescue Moxml::XPathError => e
+  handle_xpath_error(e)
+end
+
+# Avoid - too broad
+begin
+  doc = Moxml.new.parse(xml)
+  process(doc)
+rescue StandardError => e
+  # Catches too much
+end
+----
+
+=== Namespace handling
+
+==== Define namespace mappings clearly
+
+[source,ruby]
+----
+# Good - clear and reusable
+NAMESPACES = {
+  'dc' => 'http://purl.org/dc/elements/1.1/',
+  'xhtml' => 'http://www.w3.org/1999/xhtml'
+}.freeze
+
+titles = doc.xpath('//dc:title', NAMESPACES)
+
+# Avoid - inline everywhere
+doc.xpath('//dc:title', { 'dc' => 'http://purl.org/dc/elements/1.1/' })
+doc.xpath('//dc:creator', { 'dc' => 'http://purl.org/dc/elements/1.1/' })
+----
+
+==== Check adapter namespace support
+
+[source,ruby]
+----
+def query_with_namespace(doc, expression, namespaces)
+  adapter = doc.context.config.adapter.name
+
+  if adapter.include?('Rexml') || adapter.include?('Ox')
+    # Fallback for limited namespace support
+    query_without_namespace(doc, expression)
+  else
+    doc.xpath(expression, namespaces)
+  end
+end
+----
+
+=== Memory management
+
+==== Release document references
+
+[source,ruby]
+----
+# Process large documents
+def process_large_xml(xml)
+  doc = Moxml.new.parse(xml)
+  result = extract_data(doc)
+  doc = nil  # Allow GC
+  result
+end
+
+# Batch processing
+xml_files.each do |file|
+  doc = Moxml.new.parse(File.read(file))
+  process(doc)
+  doc = nil  # Release before next iteration
+  GC.start if large_file?(file)
+end
+----
+
+==== Use streaming for very large files
+
+[source,ruby]
+----
+# For extremely large documents
+def process_huge_xml(filename)
+  # Process in chunks if possible
+  File.open(filename) do |file|
+    # Read and process incrementally
+  end
+end
+----
+
+=== Thread safety
+
+==== Use separate contexts per thread
+
+[source,ruby]
+----
+# Good - thread-safe
+class XmlProcessor
+  def process(xml)
+    context = Moxml.new  # New context per call
+    doc = context.parse(xml)
+    # Process...
+  end
+end
+
+# Avoid - shared state
+class XmlProcessor
+  def initialize
+    @context = Moxml.new
+  end
+
+  def process(xml)
+    # Multiple threads share @context
+    @context.parse(xml)  # Not thread-safe
+  end
+end
+----
+
+==== Protect shared resources
+
+[source,ruby]
+----
+class ThreadSafeProcessor
+  def initialize
+    @mutex = Mutex.new
+    @context = Moxml.new
+  end
+
+  def process(xml)
+    @mutex.synchronize do
+      doc = @context.parse(xml)
+      # Modify document safely
+      doc.to_xml
+    end
+  end
+end
+----
+
+=== Performance optimization
+
+==== Reuse context instances
+
+[source,ruby]
+----
+# Good - reuse context
+class DocumentProcessor
+  def initialize
+    @context = Moxml.new
+    @context.config.adapter = :nokogiri
+  end
+
+  def process_many(xml_documents)
+    xml_documents.map do |xml|
+      @context.parse(xml)  # Reuses same context
+    end
+  end
+end
+----
+
+==== Choose appropriate adapter
+
+[source,ruby]
+----
+# Match adapter to workload
+def select_adapter(xml)
+  if complex_xpath_needed?(xml)
+    :nokogiri  # Full XPath support
+  elsif simple_parsing?(xml)
+    :ox  # Maximum speed
+  else
+    :nokogiri  # Safe default
+  end
+end
+
+context = Moxml.new
+context.config.adapter = select_adapter(xml)
+----
+
+=== Code organization
+
+==== Extract XML operations into methods
+
+[source,ruby]
+----
+class BookProcessor
+  def initialize
+    @context = Moxml.new
+    @context.config.adapter = :nokogiri
+  end
+
+  def parse_catalog(xml)
+    @context.parse(xml)
+  end
+
+  def find_book(doc, id)
+    doc.at_xpath("//book[@id='#{id}']")
+  end
+
+  def update_price(book, new_price)
+    price_elem = book.at_xpath('.//price')
+    price_elem.text = new_price.to_s
+  end
+end
+----
+
+==== Use value objects for XML data
+
+[source,ruby]
+----
+class Book
+  attr_accessor :id, :title, :author, :price
+
+  def self.from_xml(element)
+    new.tap do |book|
+      book.id = element['id']
+      book.title = element.at_xpath('.//title')&.text
+      book.author = element.at_xpath('.//author')&.text
+      book.price = element.at_xpath('.//price')&.text&.to_f
+    end
+  end
+
+  def to_xml(doc)
+    doc.create_element('book').tap do |elem|
+      elem['id'] = id
+      elem.add_child(doc.create_element('title').tap { |e| e.text = title })
+      elem.add_child(doc.create_element('author').tap { |e| e.text = author })
+      elem.add_child(doc.create_element('price').tap { |e| e.text = price.to_s })
+    end
+  end
+end
+----
+
+=== Testing
+
+==== Test with multiple adapters
+
+[source,ruby]
+----
+RSpec.describe "XML Processing" do
+  [:nokogiri, :libxml, :oga].each do |adapter_name|
+    context "with #{adapter_name}" do
+      let(:context) do
+        Moxml.new.tap { |c| c.config.adapter = adapter_name }
+      end
+
+      it "processes correctly" do
+        doc = context.parse(xml)
+        # Test operations
+      end
+    end
+  end
+end
+----
+
+==== Use fixtures for test XML
+
+[source,ruby]
+----
+# spec/fixtures/sample.xml
+XML_FIXTURE = File.read('spec/fixtures/sample.xml')
+
+RSpec.describe "Processing" do
+  let(:doc) { Moxml.new.parse(XML_FIXTURE) }
+
+  it "extracts data" do
+    # Test with consistent fixture
+  end
+end
+----
+
+=== See also
+
+* link:configuration[Configuration] - Setup and options
+* link:error-handling[Error handling] - Error management
+* link:../guides/performance-optimization[Performance optimization]

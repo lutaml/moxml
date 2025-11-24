@@ -1,0 +1,165 @@
+---
+title: Development and testing
+parent: Guides
+nav_order: 10
+---
+
+
+== Development and testing
+
+=== Skipping benchmarks
+
+Benchmark tests can be slow and are not needed for regular test runs. To
+speed up local development, you can skip benchmark tests using the
+`SKIP_BENCHMARKS` environment variable.
+
+Syntax:
+
+[source,shell]
+----
+SKIP_BENCHMARKS=1 bundle exec rspec
+----
+
+This will skip all benchmark tests while running the regular test suite.
+
+To run benchmarks explicitly:
+
+[source,shell]
+----
+bundle exec rspec spec/moxml/examples/xpath_benchmark_spec.rb
+----
+
+Or use the rake task:
+
+[source,shell]
+----
+rake benchmark:xpath
+----
+
+NOTE: The `rake benchmark:xpath` task always runs benchmarks regardless of the
+`SKIP_BENCHMARKS` environment variable setting.
+
+=== Running tests with coverage
+
+To run the test suite with code coverage tracking:
+
+[source,shell]
+----
+COVERAGE=true bundle exec rspec
+----
+
+After running, view the coverage report:
+
+[source,shell]
+----
+open coverage/index.html
+----
+
+The coverage configuration includes:
+
+* Minimum overall coverage: 90%
+* Minimum per-file coverage: 80%
+* Organized groups for Core, Adapters, and Utilities
+* Filters for spec and vendor directories
+
+=== Generating performance benchmark reports
+
+Moxml provides a comprehensive benchmark reporting system that measures and
+compares all adapters across multiple dimensions.
+
+==== Running the benchmark report
+
+To generate a complete performance report for all adapters:
+
+[source,shell]
+----
+rake benchmark:report
+----
+
+Or run the script directly:
+
+[source,shell]
+----
+bundle exec ruby benchmarks/generate_report.rb
+----
+
+This will benchmark all available adapters and generate a detailed report at
+[`benchmarks/PERFORMANCE_REPORT.md`](benchmarks/PERFORMANCE_REPORT.md).
+
+==== Benchmark categories
+
+The report includes the following benchmark categories:
+
+**Parsing benchmarks:**
+
+* Simple XML (< 1KB)
+* Medium XML (10KB, 50 elements with namespaces)
+* Large XML (145KB, 500 elements)
+* Complex nested structures
+
+**Serialization benchmarks:**
+
+* Simple documents
+* Documents with namespaces
+* Documents with mixed content
+
+**XPath benchmarks:**
+
+* Simple queries (`//element`)
+* Complex queries with predicates (`//element[@attribute]`)
+* Namespace-aware queries (`//ns:element`)
+
+**Memory benchmarks:**
+
+* Memory usage per document parse
+* Memory usage for large documents
+
+==== Report contents
+
+The generated report includes:
+
+* Summary table comparing all adapters with grades
+* Detailed performance metrics for each benchmark
+* ASCII performance visualization charts
+* Adapter selection recommendations based on results
+* Complete test environment details (Ruby version, platform, gem versions)
+* Best performers for each category
+
+==== Viewing the report
+
+After generation, the report is available at:
+
+[source,shell]
+----
+cat benchmarks/PERFORMANCE_REPORT.md
+----
+
+Or open it in your preferred Markdown viewer.
+
+NOTE: The generated report is machine-specific and excluded from git via
+`.gitignore`. Results will vary based on your hardware, OS, and Ruby version.
+
+==== Example output
+
+The summary table shows comparative performance:
+
+[source,markdown]
+----
+| Adapter | Parse (ips) | Serialize (ips) | XPath (ips) | Memory (MB) | Grade |
+|---------|-------------|-----------------|-------------|-------------|-------|
+| Nokogiri | 76 | 13900 | 64958 | -0.1 ⭐ | A |
+| Ox | 289 | 39203 | 9640 | 0.0 ⭐⭐⭐⭐⭐ | A+ |
+...
+----
+
+Performance visualizations help quickly identify the best adapter for specific
+needs:
+
+[source]
+----
+Parsing (Medium XML):
+  Nokogiri   █████████████ 76 ips
+  Ox         ██████████████████████████████████████████████████ 289 ips
+...
+----
+

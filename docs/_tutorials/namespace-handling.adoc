@@ -1,0 +1,325 @@
+---
+title: Namespace handling
+parent: Overview
+nav_order: 4
+---
+
+== Namespace handling
+
+=== Purpose
+
+Learn how to work with XML namespaces in Moxml including creating namespaced
+elements, querying with namespace prefixes, and understanding namespace
+inheritance.
+
+=== Prerequisites
+
+* Understanding of XML namespace concepts
+* Moxml installed with an adapter supporting namespaces
+* Familiarity with link:xpath-queries[XPath queries]
+
+=== Step 1: Understanding XML namespaces
+
+XML namespaces prevent element name conflicts:
+
+[source,xml]
+----
+<!-- Without namespaces - ambiguous -->
+<title>Book Title</title>
+<title>Page Title</title>
+
+<!-- With namespaces - clear distinction -->
+<book:title xmlns:book="http://example.org/book">Book Title</book:title>
+<page:title xmlns:page="http://example.org/page">Page Title</page:title>
+----
+
+In Moxml:
+
+[source,ruby]
+----
+xml = <<~XML
+  <library xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <book>
+      <dc:title>Ruby Programming</dc:title>
+      <dc:creator>Jane Smith</dc:creator>
+    </book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Namespaces are preserved
+book = doc.at_xpath('//book')
+title = book.children.find { |n| n.name.include?('title') }
+
+# Access namespace
+puts title.namespace.uri if title.namespace
+# => "http://purl.org/dc/elements/1.1/"
+----
+
+=== Step 2: Create namespaced elements
+
+Add namespaces to elements:
+
+[source,ruby]
+----
+doc = Moxml.new.create_document
+
+# Create root with default namespace
+root = doc.create_element('library')
+root.add_namespace(nil, 'http://example.org/library')
+doc.add_child(root)
+
+# Create element with prefix namespace
+book = doc.create_element('book')
+book.add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
+root.add_child(book)
+
+# Create namespaced child elements
+title = doc.create_element('dc:title')
+title.text = 'Ruby Programming'
+book.add_child(title)
+
+creator = doc.create_element('dc:creator')
+creator.text = 'Jane Smith'
+book.add_child(creator)
+
+puts doc.to_xml(indent: 2)
+----
+
+Output:
+
+[source,xml]
+----
+<library xmlns="http://example.org/library">
+  <book xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Ruby Programming</dc:title>
+    <dc:creator>Jane Smith</dc:creator>
+  </book>
+</library>
+----
+
+=== Step 3: Query with namespaces
+
+Use namespace mappings in XPath queries:
+
+[source,ruby]
+----
+xml = <<~XML
+  <library xmlns="http://example.org/library"
+           xmlns:dc="http://purl.org/dc/elements/1.1/"
+           xmlns:isbn="http://example.org/isbn">
+    <book isbn:value="978-0-123456-78-9">
+      <dc:title>Ruby Programming</dc:title>
+      <dc:creator>Jane Smith</dc:creator>
+    </book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Define namespace prefixes for XPath
+namespaces = {
+  'lib' => 'http://example.org/library',
+  'dc' => 'http://purl.org/dc/elements/1.1/',
+  'isbn' => 'http://example.org/isbn'
+}
+
+# Query with namespace prefixes
+books = doc.xpath('//lib:book', namespaces)
+titles = doc.xpath('//dc:title', namespaces)
+creators = doc.xpath('//dc:creator', namespaces)
+
+puts books.length    # => 1
+puts titles.first.text   # => "Ruby Programming"
+puts creators.first.text # => "Jane Smith"
+
+# Query namespaced attributes
+book_with_isbn = doc.at_xpath('//lib:book[@isbn:value]', namespaces)
+puts book_with_isbn['isbn:value']  # => "978-0-123456-78-9"
+----
+
+=== Step 4: Default namespaces
+
+Handle default (unprefixed) namespaces:
+
+[source,ruby]
+----
+xml = <<~XML
+  <library xmlns="http://example.org/library">
+    <book>
+      <title>Ruby Programming</title>
+    </book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Map default namespace to a prefix for XPath
+namespaces = {
+  'lib' => 'http://example.org/library'
+}
+
+# Query elements in default namespace
+books = doc.xpath('//lib:book', namespaces)
+titles = doc.xpath('//lib:title', namespaces)
+
+puts books.length  # => 1
+puts titles.first.text  # => "Ruby Programming"
+----
+
+=== Step 5: Multiple namespaces
+
+Work with documents using multiple namespaces:
+
+[source,ruby]
+----
+xml = <<~XML
+  <rss xmlns:content="http://purl.org/rss/1.0/modules/content/"
+       xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <item>
+      <title>Article Title</title>
+      <dc:creator>Author Name</dc:creator>
+      <content:encoded><![CDATA[Article content]]></content:encoded>
+    </item>
+  </rss>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Map all namespaces
+ns = {
+  'content' => 'http://purl.org/rss/1.0/modules/content/',
+  'dc' => 'http://purl.org/dc/elements/1.1/'
+}
+
+# Query across namespaces
+items = doc.xpath('//item')
+creators = doc.xpath('//dc:creator', ns)
+content = doc.xpath('//content:encoded', ns)
+
+puts creators.first.text   # => "Author Name"
+puts content.first.text    # => "Article content"
+----
+
+=== Step 6: Namespace inheritance
+
+Child elements inherit parent namespaces:
+
+[source,ruby]
+----
+doc = Moxml.new.create_document
+
+# Parent with namespace
+parent = doc.create_element('parent')
+parent.add_namespace('ex', 'http://example.org')
+doc.add_child(parent)
+
+# Child inherits namespace
+child = doc.create_element('ex:child')
+child.text = 'Inherits ex namespace'
+parent.add_child(child)
+
+# Grandchild also inherits
+grandchild = doc.create_element('ex:grandchild')
+grandchild.text = 'Also inherits'
+child.add_child(grandchild)
+
+# Query with inherited namespace
+ns = { 'ex' => 'http://example.org' }
+descendants = doc.xpath('//ex:*', ns)
+puts descendants.length  # => 3 (parent, child, grandchild)
+----
+
+=== Step 7: Namespace scope and context
+
+Understand namespace scope:
+
+[source,ruby]
+----
+xml = <<~XML
+  <root xmlns:a="http://a.org">
+    <a:parent>
+      <a:child id="1"/>
+      <b:child xmlns:b="http://b.org" id="2"/>
+    </a:parent>
+  </root>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Query with appropriate namespace scope
+ns_a = { 'a' => 'http://a.org' }
+ns_b = { 'b' => 'http://b.org' }
+
+a_children = doc.xpath('//a:child', ns_a)
+b_children = doc.xpath('//b:child', ns_b)
+
+puts a_children.length  # => 1 (only <a:child>)
+puts b_children.length  # => 1 (only <b:child>)
+
+# Both namespaces in one query
+ns_both = ns_a.merge(ns_b)
+all_children = doc.xpath('//a:child | //b:child', ns_both)
+puts all_children.length  # => 2
+----
+
+=== Adapter compatibility
+
+**Full namespace support:**
+
+* link:../pages/adapters/nokogiri[Nokogiri] - ✅ All features
+* link:../pages/adapters/libxml[LibXML] - ✅ All features
+* link:../pages/adapters/oga[Oga] - ✅ All features
+
+**Limited namespace support:**
+
+* link:../pages/adapters/rexml[REXML] - ⚠️ No namespace XPath
+* link:../pages/adapters/ox[Ox] - ⚠️ Basic only, no XPath
+
+=== Troubleshooting
+
+**Namespace XPath not working:**
+
+[source,ruby]
+----
+# If namespace query returns nothing, check:
+
+# 1. Namespace mapping is correct
+puts doc.root.namespace.uri  # Verify actual URI
+
+# 2. Using correct prefix in XPath
+# Must match your mapping, not the document's prefix
+
+# 3. Adapter supports namespace XPath
+puts context.config.adapter.name
+# REXML and Ox have limited support
+----
+
+**Namespace not inherited:**
+
+[source,ruby]
+----
+# Ox doesn't support namespace inheritance
+# Workaround: explicitly set namespace on each element
+child.add_namespace('ex', 'http://example.org')
+----
+
+=== Best practices
+
+. **Always define namespace mappings** for XPath queries
+. **Use consistent prefix names** across your application
+. **Check adapter compatibility** for namespace features
+. **Test namespace operations** with your chosen adapter
+. **Document namespace URIs** used in your XML
+
+=== Next steps
+
+* link:builder-pattern[Builder pattern] - Create complex namespaced documents
+* link:../guides/namespace-management[Namespace management guide]
+* link:../references/namespace-api[Namespace API reference]
+
+=== See also
+
+* link:../pages/compatibility[Compatibility matrix] - Namespace support comparison
+* link:../guides/xpath-queries[XPath queries guide] - Advanced namespace queries

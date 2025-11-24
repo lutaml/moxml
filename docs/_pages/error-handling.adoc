@@ -1,0 +1,350 @@
+---
+title: Error handling
+parent: Overview
+nav_order: 8
+---
+
+== Error handling
+
+=== Purpose
+
+Comprehensive guide to handling errors in Moxml including error class
+hierarchy, error context, and best practices for debugging.
+
+=== Error class hierarchy
+
+All Moxml errors inherit from `Moxml::Error`:
+
+[source]
+----
+Moxml::Error (< StandardError)
+├── ParseError              # XML parsing failures
+├── XPathError              # XPath expression errors
+├── ValidationError         # XML validation failures
+├── NamespaceError          # Namespace-related errors
+├── AdapterError            # Adapter loading/operation errors
+├── SerializationError      # XML serialization failures
+├── DocumentStructureError  # Invalid document structure
+├── AttributeError          # Attribute operation errors
+└── NotImplementedError     # Unimplemented adapter features
+----
+
+=== ParseError
+
+Raised when XML parsing fails.
+
+[source,ruby]
+----
+begin
+  doc = Moxml.new.parse('<invalid><unclosed>', strict: true)
+rescue Moxml::ParseError => e
+  puts "Parse error at line #{e.line}, column #{e.column}"
+  puts "Source excerpt: #{e.source}"
+  puts e.to_s  # Includes helpful hint
+  # => "Hint: Check XML syntax and ensure all tags are properly closed"
+end
+----
+
+**Attributes:**
+
+* `line` - Line number where error occurred
+* `column` - Column number where error occurred
+* `source` - Excerpt of problematic XML
+
+=== XPathError
+
+Raised when XPath expression evaluation fails.
+
+[source,ruby]
+----
+begin
+  results = doc.xpath('//invalid[[[')
+rescue Moxml::XPathError => e
+  puts "Expression: #{e.expression}"
+  puts "Adapter: #{e.adapter}"
+  puts "Node: #{e.node.name}" if e.node
+  puts e.to_s
+  # => "Hint: Verify XPath syntax and ensure adapter supports the expression"
+end
+----
+
+**Attributes:**
+
+* `expression` - The XPath expression that failed
+* `adapter` - Adapter name
+* `node` - Context node (if available)
+
+=== ValidationError
+
+Raised when XML content violates XML specifications.
+
+[source,ruby]
+----
+begin
+  doc.version = '2.0'  # Invalid XML version
+rescue Moxml::ValidationError => e
+  puts "Constraint: #{e.constraint}"  # => "version"
+  puts "Value: #{e.value}"            # => "2.0"
+  puts "Allowed: #{e.allowed_values}" # => ["1.0", "1.1"]
+  puts e.to_s
+end
+----
+
+**Attributes:**
+
+* `constraint` - What was being validated
+* `value` - The invalid value
+* `allowed_values` - Valid options
+
+=== NamespaceError
+
+Raised when namespace operations fail.
+
+[source,ruby]
+----
+begin
+  element.add_namespace('invalid:prefix', 'http://example.org')
+rescue Moxml::NamespaceError => e
+  puts "Prefix: #{e.prefix}"
+  puts "URI: #{e.uri}"
+  puts "Element: #{e.element.name}"
+  puts e.to_s
+  # => "Hint: Check namespace registration and URI validity"
+end
+----
+
+**Attributes:**
+
+* `prefix` - Namespace prefix
+* `uri` - Namespace URI
+* `element` - Element where error occurred
+
+=== AdapterError
+
+Raised when adapter loading or operations fail.
+
+[source,ruby]
+----
+begin
+  context = Moxml.new
+  context.config.adapter = :nonexistent
+rescue Moxml::AdapterError => e
+  puts "Adapter: #{e.adapter_name}"      # => :nonexistent
+  puts "Operation: #{e.operation}"       # => "set_adapter"
+  puts "Native Error: #{e.native_error}" # Original error
+  puts e.to_s
+  # => "Hint: Ensure the adapter gem is properly installed"
+end
+----
+
+**Attributes:**
+
+* `adapter_name` - Name of adapter
+* `operation` - Operation that failed
+* `native_error` - Underlying error from adapter library
+
+=== Best practices
+
+==== Catch specific errors
+
+[source,ruby]
+----
+begin
+  doc = Moxml.new.parse(xml_string, strict: true)
+  results = doc.xpath('//book[@id="1"]')
+rescue Moxml::ParseError => e
+  # Handle parsing errors
+  logger.error("XML parsing failed: #{e.to_s}")
+rescue Moxml::XPathError => e
+  # Handle XPath errors
+  logger.error("XPath query failed: #{e.expression}")
+rescue Moxml::NamespaceError => e
+  # Handle namespace errors
+  logger.error("Namespace error: #{e.prefix}:#{e.uri}")
+rescue Moxml::Error => e
+  # Catch-all for other Moxml errors
+  logger.error("XML processing error: #{e.message}")
+end
+----
+
+==== Use error context
+
+[source,ruby]
+----
+begin
+  doc = Moxml.new.parse(xml)
+rescue Moxml::ParseError => e
+  # Log comprehensive error information
+  logger.error <<~ERROR
+    XML Parse Error:
+      Line: #{e.line}
+      Column: #{e.column}
+      Source: #{e.source}
+      Message: #{e.message}
+      Hint: #{e.to_s}
+  ERROR
+
+  # Re-raise or handle
+  raise unless development_mode?
+end
+----
+
+==== Validate before operations
+
+[source,ruby]
+----
+# Validate adapter available
+def ensure_adapter_available(adapter_name)
+  context = Moxml.new
+  context.config.adapter = adapter_name
+rescue Moxml::AdapterError => e
+  raise "Required adapter #{adapter_name} not available: #{e.message}"
+end
+
+# Validate document structure
+def validate_structure(doc)
+  required = ['title', 'author']
+  required.each do |elem|
+    unless doc.at_xpath("//#{elem}")
+      raise Moxml::ValidationError, "Missing required element: #{elem}"
+    end
+  end
+end
+----
+
+=== Error recovery strategies
+
+==== Graceful degradation
+
+[source,ruby]
+----
+def parse_with_fallback(xml)
+  # Try strict parsing first
+  begin
+    return Moxml.new.parse(xml, strict: true)
+  rescue Moxml::ParseError
+    logger.warn("Strict parsing failed, trying relaxed mode")
+  end
+
+  # Fall back to relaxed parsing
+  begin
+    return Moxml.new.parse(xml, strict: false)
+  rescue Moxml::ParseError => e
+    logger.error("Cannot parse XML: #{e.message}")
+    raise
+  end
+end
+----
+
+==== Adapter fallback
+
+[source,ruby]
+----
+def parse_with_adapter_fallback(xml)
+  adapters = [:nokogiri, :libxml, :oga, :rexml]
+
+  adapters.each do |adapter_name|
+    begin
+      context = Moxml.new
+      context.config.adapter = adapter_name
+      return context.parse(xml)
+    rescue Moxml::AdapterError
+      # Adapter not available, try next
+      next
+    rescue Moxml::ParseError => e
+      # Parsing failed with this adapter
+      logger.warn("#{adapter_name} failed: #{e.message}")
+      next
+    end
+  end
+
+  raise "Could not parse XML with any available adapter"
+end
+----
+
+=== Common error scenarios
+
+==== Malformed XML
+
+[source,ruby]
+----
+xml = '<root><unclosed>'
+
+begin
+  doc = Moxml.new.parse(xml, strict: true)
+rescue Moxml::ParseError => e
+  puts "Malformed XML detected"
+  puts "Error at line #{e.line}" if e.line
+  # Handle or fix the XML
+end
+----
+
+==== Invalid XPath
+
+[source,ruby]
+----
+begin
+  doc.xpath('//book[[[invalid]]]')
+rescue Moxml::XPathError => e
+  puts "Invalid XPath expression: #{e.expression}"
+  # Use corrected expression
+  doc.xpath('//book[@id]')
+end
+----
+
+==== Unsupported features
+
+[source,ruby]
+----
+# Ox doesn't support complex XPath
+context = Moxml.new
+context.config.adapter = :ox
+
+begin
+  doc.xpath('//book[price < 30]')
+rescue Moxml::NotImplementedError => e
+  puts "Feature not supported by #{e.adapter}: #{e.feature}"
+  # Use workaround
+  books = doc.xpath('//book')
+  cheap = books.select { |b| b.at_xpath('.//price').text.to_f < 30 }
+end
+----
+
+=== Debugging techniques
+
+==== Enable detailed errors
+
+[source,ruby]
+----
+# Error messages include hints
+begin
+  doc = Moxml.new.parse(invalid_xml)
+rescue Moxml::Error => e
+  puts e.to_s  # Full message with debugging hints
+  puts e.class.name  # Error type
+  puts e.backtrace.first(5)  # Stack trace
+end
+----
+
+==== Inspect error context
+
+[source,ruby]
+----
+begin
+  result = doc.xpath(expression)
+rescue Moxml::XPathError => e
+  # Debug XPath errors
+  puts "Failed expression: #{e.expression}"
+  puts "On node: #{e.node.name}" if e.node
+  puts "With adapter: #{e.adapter}"
+
+  # Try simpler expression
+  doc.xpath('//book')
+end
+----
+
+=== See also
+
+* link:../references/error-classes[Error classes reference] - Complete API
+* link:../guides/error-handling[Error handling guide] - Advanced patterns
+* link:adapters/[Adapters] - Adapter-specific error behaviors

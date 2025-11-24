@@ -1,0 +1,141 @@
+---
+title: Installation
+parent: Overview
+nav_order: 2
+---
+
+== Installation
+
+=== Purpose
+
+This guide covers how to install Moxml and set up your chosen XML adapter for
+Ruby applications.
+
+=== Requirements
+
+* Ruby >= 3.0.0
+* At least one supported XML library (Nokogiri, LibXML, Oga, REXML, or Ox)
+
+=== Basic installation
+
+Add Moxml and your chosen XML adapter to your Gemfile:
+
+[source,ruby]
+----
+# Gemfile
+gem 'moxml'
+
+# Choose one or more XML adapters:
+gem 'nokogiri'      # Recommended: Fast, widely used
+gem 'libxml-ruby'   # Alternative: Native performance
+gem 'oga'           # Pure Ruby: No C extensions
+gem 'ox'            # Fastest: Best for simple documents
+# REXML is included in Ruby standard library
+----
+
+Then install:
+
+[source,shell]
+----
+bundle install
+----
+
+=== Installing without Bundler
+
+Install directly using gem:
+
+[source,shell]
+----
+gem install moxml
+gem install nokogiri  # Or your preferred adapter
+----
+
+=== Adapter selection
+
+Moxml automatically detects and uses available XML libraries. The default
+adapter priority order is:
+
+. Nokogiri (if available)
+. LibXML (if available)
+. Oga (if available)
+. REXML (always available)
+. Ox (if available)
+
+You can override the default adapter in your application:
+
+[source,ruby]
+----
+# Set default adapter globally
+Moxml::Config.default_adapter = :libxml
+
+# Or configure per instance
+moxml = Moxml.new
+moxml.config.adapter = :oga
+----
+
+=== Verifying installation
+
+Test your installation:
+
+[source,ruby]
+----
+require 'moxml'
+
+# Check version
+puts Moxml::VERSION
+
+# Verify adapter loaded
+context = Moxml.new
+puts context.config.adapter.name
+# => "Moxml::Adapter::Nokogiri" (or your adapter)
+
+# Parse simple XML
+doc = context.parse('<root><child>test</child></root>')
+puts doc.root.name
+# => "root"
+----
+
+=== Troubleshooting
+
+**Gem not found:**
+
+Ensure bundler is using the correct gem source:
+
+[source,ruby]
+----
+# Add to top of Gemfile
+source 'https://rubygems.org'
+----
+
+**Adapter not loading:**
+
+If your chosen adapter isn't loading:
+
+. Verify the adapter gem is installed: `bundle list | grep nokogiri`
+. Check for version conflicts: `bundle update moxml`
+. Try explicitly requiring: `require 'nokogiri'` before `require 'moxml'`
+
+**C extension compilation errors:**
+
+If Nokogiri or LibXML fail to install on your system, consider using pure
+Ruby adapters:
+
+[source,ruby]
+----
+gem 'moxml'
+gem 'oga'  # Pure Ruby alternative
+----
+
+Or use REXML which requires no additional gems:
+
+[source,ruby]
+----
+gem 'moxml'
+# REXML is included in Ruby standard library
+----
+
+=== Next steps
+
+* link:../quick-start[Quick start guide] - Get started with basic usage
+* link:adapters/[Learn about adapters] - Understand adapter differences
+* link:../tutorials/[Tutorials] - Step-by-step learning paths

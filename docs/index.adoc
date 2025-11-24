@@ -17,8 +17,9 @@ efficient node mapping and native XPath querying.
 == Key features
 
 * **Unified interface** - Consistent API across different XML libraries
-* **Multiple adapters** - Support for Nokogiri, LibXML, Oga, REXML, and Ox
+* **Multiple adapters** - Support for Nokogiri, LibXML, Oga, REXML, Ox, and HeadedOx
 * **Full XPath support** - Native XPath querying with namespace handling
+* **SAX parsing** - Memory-efficient event-driven XML processing
 * **Ruby-idiomatic** - Natural, expressive API for XML manipulation
 * **High performance** - Efficient node mapping and adapter optimization
 * **Thread-safe** - Safe for concurrent operations
@@ -89,6 +90,10 @@ Learn about supported XML libraries
 | link:pages/adapters/ox[Ox]
 | Maximum speed, simple documents
 | Very Fast
+
+| link:pages/adapters/headed-ox[HeadedOx]
+| Fast parsing + comprehensive XPath 1.0 (99.20% pass rate)
+| Very Fast
 |===
 
 == Why Moxml?
@@ -112,6 +117,6 @@ performance optimization.
 
 == License
 
-Moxml is released under the BSD-2-Clause License.
+Moxml is released under the Ribose 3-Clause BSD License.
 
 Copyright (c) 2025 Ribose Inc.

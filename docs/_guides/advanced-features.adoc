@@ -1,0 +1,87 @@
+---
+title: Advanced features
+parent: Guides
+nav_order: 8
+---
+
+== Advanced features
+
+== Advanced features
+
+=== XPath querying and node mapping
+
+==== Nokogiri, Oga, REXML, LibXML
+
+Moxml provides efficient XPath querying by leveraging the native XML library's
+implementation while maintaining consistent node mapping:
+
+[source,ruby]
+----
+# Find all book elements
+books = doc.xpath('//book')
+# Returns Moxml::Element objects mapped to native nodes
+
+# Find with namespaces
+titles = doc.xpath('//dc:title',
+  'dc' => 'http://purl.org/dc/elements/1.1/')
+
+# Find first matching node
+first_book = doc.at_xpath('//book')
+
+# Chain queries
+doc.xpath('//book').each do |book|
+  # Each book is a mapped Moxml::Element
+  title = book.at_xpath('.//title')
+  puts "#{book['id']}: #{title.text}"
+end
+----
+
+==== Ox
+
+The native Ox's query method
+https://www.ohler.com/ox/Ox/Element.html#method-i-locate[`locate`] resembles
+XPath but has a different syntax.
+
+==== HeadedOx
+
+HeadedOx provides comprehensive (but not fully) XPath 1.0 support via a pure
+Ruby XPath engine layered on top of Ox.
+
+
+=== Namespace handling
+
+[source,ruby]
+----
+# Add namespace to element
+element.add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
+
+# Create element in namespace
+title = doc.create_element('dc:title')
+title.text = 'Document Title'
+
+# Query with namespaces
+doc.xpath('//dc:title',
+  'dc' => 'http://purl.org/dc/elements/1.1/')
+----
+
+=== Accessing native implementation
+
+While not typically needed, you can access the underlying XML library's nodes:
+
+[source,ruby]
+----
+# Get native node
+native_node = element.native
+
+# Get adapter being used
+adapter = element.context.config.adapter
+
+# Create from native node
+element = Moxml::Element.new(native_node, context)
+----
+
+
+See also:
+
+* link:../pages/compatibility[Adapter compatibility]
+* link:../pages/adapters/[Individual adapter documentation]

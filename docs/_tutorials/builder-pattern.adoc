@@ -1,0 +1,343 @@
+---
+title: Builder pattern
+parent: Overview
+nav_order: 5
+---
+
+== Builder pattern
+
+=== Purpose
+
+Learn how to use Moxml's builder pattern to create XML documents with a clean,
+Ruby-idiomatic DSL that makes complex XML structures easy to construct and
+maintain.
+
+=== Prerequisites
+
+* Moxml installed
+* Familiarity with link:basic-usage[basic XML operations]
+
+=== Step 1: Basic builder usage
+
+Create simple documents with the builder:
+
+[source,ruby]
+----
+require 'moxml'
+
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.library do
+    xml.book do
+      xml.title "Ruby Programming"
+      xml.author "Jane Smith"
+    end
+  end
+end
+
+puts doc.to_xml(indent: 2)
+----
+
+Output:
+
+[source,xml]
+----
+<library>
+  <book>
+    <title>Ruby Programming</title>
+    <author>Jane Smith</author>
+  </book>
+</library>
+----
+
+=== Step 2: Add XML declaration
+
+Include XML declaration:
+
+[source,ruby]
+----
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.declaration version: "1.0", encoding: "UTF-8"
+
+  xml.library do
+    xml.book "Ruby Programming"
+  end
+end
+----
+
+Output:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<library>
+  <book>Ruby Programming</book>
+</library>
+----
+
+=== Step 3: Add attributes
+
+Set element attributes in the builder:
+
+[source,ruby]
+----
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.library location: "Main", established: "2020" do
+    xml.book id: "1", category: "programming" do
+      xml.title "Ruby Basics"
+      xml.author "Jane Smith"
+      xml.price currency: "USD", "29.99"
+    end
+  end
+end
+----
+
+Output:
+
+[source,xml]
+----
+<library location="Main" established="2020">
+  <book id="1" category="programming">
+    <title>Ruby Basics</title>
+    <author>Jane Smith</author>
+    <price currency="USD">29.99</price>
+  </book>
+</library>
+----
+
+=== Step 4: Nested structures
+
+Create complex nested documents:
+
+[source,ruby]
+----
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.declaration version: "1.0", encoding: "UTF-8"
+
+  xml.library do
+    xml.section name: "programming" do
+      xml.book id: "1" do
+        xml.title "Ruby Basics"
+        xml.author "Jane Smith"
+        xml.chapters do
+          xml.chapter number: "1", "Introduction"
+          xml.chapter number: "2", "Getting Started"
+          xml.chapter number: "3", "Advanced Topics"
+        end
+      end
+    end
+
+    xml.section name: "fiction" do
+      xml.book id: "2" do
+        xml.title "Ruby Story"
+        xml.author "John Doe"
+      end
+    end
+  end
+end
+----
+
+=== Step 5: Add comments and special content
+
+Include comments, CDATA, and processing instructions:
+
+[source,ruby]
+----
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.declaration version: "1.0", encoding: "UTF-8"
+
+  # Add processing instruction
+  xml.processing_instruction "xml-stylesheet",
+    'type="text/xsl" href="style.xsl"'
+
+  xml.data do
+    # Add comment
+    xml.comment "This section contains book data"
+
+    xml.book do
+      xml.title "Ruby Programming"
+
+      # Add CDATA for raw content
+      xml.cdata "<raw>HTML content</raw>"
+
+      xml.description do
+        xml.cdata "Contains <em>emphasis</em> and other markup"
+      end
+    end
+  end
+end
+----
+
+=== Step 6: Builder with namespaces
+
+Create namespaced elements with the builder:
+
+[source,ruby]
+----
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.declaration version: "1.0", encoding: "UTF-8"
+
+  xml.element 'library',
+              'xmlns' => 'http://example.org/library',
+              'xmlns:dc' => 'http://purl.org/dc/elements/1.1/' do
+
+    xml.book do
+      xml.element 'dc:title', 'Ruby Programming'
+      xml.element 'dc:creator', 'Jane Smith'
+      xml.element 'dc:date', '2024'
+    end
+  end
+end
+----
+
+=== Step 7: Dynamic content generation
+
+Generate XML from data structures:
+
+[source,ruby]
+----
+books_data = [
+  { id: 1, title: 'Ruby Basics', author: 'Smith', price: 29.99 },
+  { id: 2, title: 'Advanced Ruby', author: 'Doe', price: 39.99 },
+  { id: 3, title: 'Ruby Patterns', author: 'Johnson', price: 34.99 }
+]
+
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.declaration version: "1.0", encoding: "UTF-8"
+
+  xml.library do
+    books_data.each do |book_data|
+      xml.book id: book_data[:id] do
+        xml.title book_data[:title]
+        xml.author book_data[:author]
+        xml.price book_data[:price].to_s
+      end
+    end
+  end
+end
+
+puts doc.to_xml(indent: 2)
+----
+
+=== Step 8: Conditional builder logic
+
+Add elements conditionally:
+
+[source,ruby]
+----
+book_data = {
+  title: 'Ruby Programming',
+  author: 'Jane Smith',
+  isbn: '978-0-123456-78-9',
+  edition: nil,  # Not set
+  price: 29.99
+}
+
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.book do
+    xml.title book_data[:title]
+    xml.author book_data[:author]
+
+    # Conditional elements
+    if book_data[:isbn]
+      xml.isbn book_data[:isbn]
+    end
+
+    if book_data[:edition]
+      xml.edition book_data[:edition]
+    end
+
+    xml.price book_data[:price].to_s
+  end
+end
+----
+
+=== Builder vs direct manipulation
+
+Compare the two approaches:
+
+**Using Builder (preferred for creation):**
+
+[source,ruby]
+----
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.library do
+    xml.book id: "1" do
+      xml.title "Ruby Programming"
+    end
+  end
+end
+----
+
+**Direct manipulation (preferred for modification):**
+
+[source,ruby]
+----
+doc = Moxml.new.create_document
+root = doc.create_element('library')
+doc.add_child(root)
+
+book = doc.create_element('book')
+book['id'] = '1'
+root.add_child(book)
+
+title = doc.create_element('title')
+title.text = 'Ruby Programming'
+book.add_child(title)
+----
+
+=== Best practices
+
+. **Use builder for new documents** - cleaner and more maintainable
+. **Use direct manipulation for modifications** - more control
+. **Extract complex builders** into methods for reusability
+. **Validate generated XML** after building
+. **Keep builders focused** - one logical structure per builder
+
+=== Common patterns
+
+==== Reusable builder methods
+
+[source,ruby]
+----
+def build_book(xml, book_data)
+  xml.book id: book_data[:id] do
+    xml.title book_data[:title]
+    xml.author book_data[:author]
+    xml.price book_data[:price].to_s
+  end
+end
+
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.library do
+    books_data.each { |book| build_book(xml, book) }
+  end
+end
+----
+
+==== Mixed content
+
+[source,ruby]
+----
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.article do
+    xml.title "Introduction"
+    xml.para do
+      xml.text "This is "
+      xml.emphasis "important"
+      xml.text " content."
+    end
+  end
+end
+----
+
+=== Next steps
+
+* link:../guides/creating-documents[Creating documents guide] - More document
+creation patterns
+* link:working-with-elements[Working with elements] - Element manipulation
+* link:../references/builder-api[Builder API reference]
+
+=== See also
+
+* link:../references/document-api[Document API] - Direct manipulation methods
+* link:namespace-handling[Namespace handling] - Namespaced builders

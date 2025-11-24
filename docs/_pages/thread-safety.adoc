@@ -1,0 +1,29 @@
+---
+title: Thread safety
+parent: Overview
+nav_order: 10
+---
+
+== Thread safety
+
+Moxml is thread-safe when used properly. Each instance maintains its own state
+and can be used safely in concurrent operations:
+
+[source,ruby]
+----
+class XmlProcessor
+  def initialize
+    @mutex = Mutex.new
+    @context = Moxml.new
+  end
+
+  def process(xml)
+    @mutex.synchronize do
+      doc = @context.parse(xml)
+      # Modify document
+      doc.to_xml
+    end
+  end
+end
+----
+
