@@ -25,8 +25,5 @@ gem "benchmark-ips"
 # Needed by get_process_mem on Windows
 gem "sys-proctable" if Gem.win_platform?
 
-if Gem.win_platform?
-  gem "libxml-ruby", "5.0.4"
-else
-  gem "libxml-ruby"
-end
+# Pin libxml-ruby to 5.0.4 to ensure consistent behavior across all platforms
+gem "libxml-ruby", "5.0.4"

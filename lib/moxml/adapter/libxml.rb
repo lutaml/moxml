@@ -1,6 +1,15 @@
 # frozen_string_literal: true
 
 require_relative "base"
+
+# On Windows, add the bundled DLLs directory to PATH before loading libxml
+if Gem.win_platform?
+  dll_path = File.expand_path("../../dlls", __dir__)
+  if File.directory?(dll_path)
+    ENV["PATH"] = "#{dll_path};#{ENV.fetch('PATH', nil)}"
+  end
+end
+
 require "libxml"
 require_relative "customized_libxml/node"
 require_relative "customized_libxml/element"
