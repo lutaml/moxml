@@ -35,7 +35,15 @@ libxml_*.txt
 *.swo
 *~
 .DS_Store
+/.kilocode
+/*.md
+
+.rubocop-https*
 
 # Ruby version managers
 .ruby-version.lock
 .rvmrc
+
+# Artifacts from static site generators
+/_site
+/docs/_site
