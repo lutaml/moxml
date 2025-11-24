@@ -98,9 +98,6 @@ RSpec.shared_examples "Moxml::Declaration" do
     end
 
     it "removes from document" do
-      if Moxml.new.config.adapter.name.match?(/Nokogiri|Rexml|Ox/)
-        pending("The document contains a default declaration")
-      end
       doc.add_child(declaration)
       declaration.remove
       expect(doc.to_xml).not_to include("<?xml")

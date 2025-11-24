@@ -73,7 +73,13 @@ module Moxml
     end
 
     def to_xml(options = {})
-      adapter.serialize(@native, default_options.merge(options))
+      # Determine if we should include XML declaration
+      # For Document nodes: check native then wrapper, unless explicitly overridden
+      # For other nodes: default to no declaration unless explicitly set
+      serialize_options = default_options.merge(options)
+      serialize_options[:no_declaration] = !should_include_declaration?(options)
+
+      adapter.serialize(@native, serialize_options)
     end
 
     def xpath(expression, namespaces = {})
@@ -234,6 +240,60 @@ module Moxml
         # The expanded format is enforced to avoid this conflict
         expand_empty: true,
       }
+    end
+
+    def should_include_declaration?(options)
+      return options[:declaration] if options.key?(:declaration)
+      return options.fetch(:declaration, false) unless is_a?(Document)
+
+      # For Document nodes, check both wrapper flag and native state
+      # Wrapper flag is set by Context.parse for parsed documents
+      # Native state reflects programmatic changes (e.g., add/remove)
+
+      adapter_name = adapter.to_s.split("::").last
+
+      case adapter_name
+      when "Nokogiri"
+        # Nokogiri: if @xml_decl is explicitly set, use that state
+        # Otherwise, trust wrapper flag (for parsed documents)
+        if native.respond_to?(:instance_variable_defined?) &&
+            native.instance_variable_defined?(:@xml_decl)
+          # Explicitly set (programmatically added) - check if nil
+          !native.instance_variable_get(:@xml_decl).nil?
+        else
+          # Not set (parsed document) - trust wrapper flag
+          has_xml_declaration
+        end
+      when "Rexml"
+        # REXML: check @xml_declaration instance variable
+        # If not defined (parsed doc), trust wrapper flag
+        if native.respond_to?(:instance_variable_defined?) &&
+            native.instance_variable_defined?(:@xml_declaration)
+          # Explicitly set - check if nil
+          !native.instance_variable_get(:@xml_declaration).nil?
+        else
+          # Not set (parsed document) - trust wrapper flag
+          has_xml_declaration
+        end
+      when "Oga"
+        native.respond_to?(:xml_declaration) && !native.xml_declaration.nil?
+      when "Ox", "HeadedOx"
+        # Ox stores declaration in document attributes
+        native[:version] || native[:encoding] || native[:standalone]
+      when "Libxml"
+        # LibXML stores declaration wrapper as instance variable
+        if native.respond_to?(:instance_variable_defined?) &&
+            native.instance_variable_defined?(:@moxml_declaration)
+          # Explicitly set - check if nil
+          !native.instance_variable_get(:@moxml_declaration).nil?
+        else
+          # Not set - trust wrapper flag
+          has_xml_declaration
+        end
+      else
+        # Fallback - trust wrapper flag
+        has_xml_declaration
+      end
     end
   end
 end

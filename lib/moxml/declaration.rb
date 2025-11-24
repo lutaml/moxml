@@ -33,6 +33,15 @@ module Moxml
       adapter.set_declaration_attribute(@native, "standalone", new_standalone)
     end
 
+    def remove
+      # Mark document as having no declaration when declaration is removed
+      # Store on native document so all wrappers see it
+      native_doc = adapter.document(@native)
+      native_doc&.instance_variable_set(:@moxml_has_declaration, false)
+
+      super
+    end
+
     def declaration?
       true
     end

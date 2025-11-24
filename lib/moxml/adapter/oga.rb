@@ -10,7 +10,10 @@ module Moxml
     class Oga < Base
       class << self
         def set_root(doc, element)
-          doc.children.clear # Clear any existing children
+          # Clear existing root element if any - Oga's NodeSet needs special handling
+          # We need to manually remove elements since NodeSet doesn't support clear or delete_if
+          elements_to_remove = doc.children.select { |child| child.is_a?(::Oga::XML::Element) }
+          elements_to_remove.each { |elem| doc.children.delete(elem) }
           doc.children << element
         end
 
@@ -247,6 +250,13 @@ module Moxml
               child_or_text
             end
 
+          # Special handling for declarations on Oga documents
+          if element.is_a?(::Oga::XML::Document) &&
+              child.is_a?(::Oga::XML::XmlDeclaration)
+            # Set as document's xml_declaration
+            element.instance_variable_set(:@xml_declaration, child)
+          end
+
           element.children << child
         end
 
@@ -273,6 +283,13 @@ module Moxml
         end
 
         def remove(node)
+          # Special handling for declarations on Oga documents
+          if node.is_a?(::Oga::XML::XmlDeclaration) &&
+              node.parent.is_a?(::Oga::XML::Document)
+            # Clear document's xml_declaration when removing declaration
+            node.parent.instance_variable_set(:@xml_declaration, nil)
+          end
+
           node.remove
         end
 
@@ -371,8 +388,55 @@ module Moxml
           )
         end
 
-        def serialize(node, _options = {})
-          # Expand empty tags, encode attributes, etc
+        def serialize(node, options = {})
+          # Oga's XmlGenerator doesn't support options directly
+          # We need to handle declaration options ourselves for Document nodes
+          if node.is_a?(::Oga::XML::Document)
+            # Check if we should include declaration
+            # Priority: explicit option > existence of xml_declaration node
+            should_include_decl = if options.key?(:no_declaration)
+                                    !options[:no_declaration]
+                                  elsif options.key?(:declaration)
+                                    options[:declaration]
+                                  else
+                                    # Default: include if document has xml_declaration node
+                                    node.xml_declaration ? true : false
+                                  end
+
+            if should_include_decl && !node.xml_declaration
+              # Need to add declaration - create default one
+              output = +""
+              output << '<?xml version="1.0" encoding="UTF-8"?>'
+              output << "\n"
+
+              # Serialize doctype if present
+              output << node.doctype.to_xml << "\n" if node.doctype
+
+              # Serialize children
+              node.children.each do |child|
+                output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
+              end
+
+              return output
+            elsif !should_include_decl
+              # Skip xml_declaration
+              output = +""
+
+              # Serialize doctype if present
+              output << node.doctype.to_xml << "\n" if node.doctype
+
+              # Serialize root and other children
+              node.children.each do |child|
+                next if child.is_a?(::Oga::XML::XmlDeclaration)
+
+                output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
+              end
+
+              return output
+            end
+          end
+
+          # Default: use XmlGenerator
           ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
         end
       end

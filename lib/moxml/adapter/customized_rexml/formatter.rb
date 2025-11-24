@@ -166,7 +166,7 @@ module Moxml
           end
 
           # Then write regular attributes
-          node.attributes.each do |name, attr|
+          node.attributes.each do |name, attr| # rubocop:disable Style/CombinableLoops
             next if name.to_s.start_with?("xmlns:") || name.to_s == "xmlns"
 
             output << " "
@@ -180,7 +180,7 @@ module Moxml
             value = attr.respond_to?(:value) ? attr.value : attr
             output << escape_attribute_value(value.to_s)
             output << "\""
-          end
+          end # rubocop:enable Style/CombinableLoops
         end
 
         def escape_attribute_value(value)
