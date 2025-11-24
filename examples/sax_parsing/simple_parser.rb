@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'bundler/setup'
-require 'moxml'
+require "bundler/setup"
+require "moxml"
 
-xml = File.read(File.join(__dir__, 'example.xml'))
+xml = File.read(File.join(__dir__, "example.xml"))
 
 puts "=== Example 1: Class-Based Handler ==="
 puts
@@ -15,7 +15,7 @@ class SimpleHandler < Moxml::SAX::Handler
     puts "Document started"
   end
 
-  def on_start_element(name, attributes = {}, namespaces = {})
+  def on_start_element(name, attributes = {}, _namespaces = {})
     attrs_str = attributes.map { |k, v| "#{k}=#{v}" }.join(", ")
     puts "  Start element: #{name}" + (attrs_str.empty? ? "" : " [#{attrs_str}]")
   end
@@ -46,7 +46,7 @@ element_count = 0
 context.sax_parse(xml) do
   start_document { puts "Document started" }
 
-  start_element do |name, attrs|
+  start_element do |name, _attrs|
     element_count += 1
     puts "  Element #{element_count}: #{name}"
   end

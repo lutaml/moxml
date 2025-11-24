@@ -32,7 +32,7 @@ module Moxml
       def initialize(&block)
         super()
         @handlers = {}
-        instance_eval(&block) if block_given?
+        instance_eval(&block) if block
       end
 
       # Define handler for document start event

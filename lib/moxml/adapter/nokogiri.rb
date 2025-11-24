@@ -51,7 +51,8 @@ module Moxml
             parser.parse(xml.to_s)
           end
         rescue ::Nokogiri::XML::SyntaxError => e
-          error = Moxml::ParseError.new(e.message, line: e.line, column: e.column)
+          error = Moxml::ParseError.new(e.message, line: e.line,
+                                                   column: e.column)
           handler.on_error(error)
         end
 

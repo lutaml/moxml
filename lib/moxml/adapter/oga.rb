@@ -44,7 +44,7 @@ module Moxml
 
           # Manually call end_document (Oga doesn't)
           handler.on_end_document
-        rescue => e
+        rescue StandardError => e
           error = Moxml::ParseError.new(e.message)
           handler.on_error(error)
         end
@@ -403,7 +403,13 @@ module Moxml
         # Oga delivers attributes as array of [name, value] pairs
         attributes.each do |attr_name, attr_value|
           if attr_name.to_s.start_with?("xmlns")
-            prefix = attr_name.to_s == "xmlns" ? nil : attr_name.to_s.sub("xmlns:", "")
+            prefix = if attr_name.to_s == "xmlns"
+                       nil
+                     else
+                       attr_name.to_s.sub(
+                         "xmlns:", ""
+                       )
+                     end
             ns_hash[prefix] = attr_value
           else
             attr_hash[attr_name.to_s] = attr_value

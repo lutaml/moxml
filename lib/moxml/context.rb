@@ -42,7 +42,7 @@ module Moxml
       require_relative "sax" unless defined?(Moxml::SAX)
 
       # Create block handler if block given
-      handler ||= SAX::BlockHandler.new(&block) if block_given?
+      handler ||= SAX::BlockHandler.new(&block) if block
 
       # Validate handler
       raise ArgumentError, "Handler or block required" unless handler

@@ -189,7 +189,7 @@ module Moxml
           end
 
           # Strip namespace prefix if present
-          name.to_s.split(':', 2).last
+          name.to_s.split(":", 2).last
         end
 
         def set_node_name(node, name)
@@ -702,14 +702,21 @@ module Moxml
         @pending_attrs.each do |attr_name, attr_value|
           if attr_name.to_s.start_with?("xmlns")
             # Namespace declaration
-            prefix = attr_name.to_s == "xmlns" ? nil : attr_name.to_s.sub("xmlns:", "")
+            prefix = if attr_name.to_s == "xmlns"
+                       nil
+                     else
+                       attr_name.to_s.sub(
+                         "xmlns:", ""
+                       )
+                     end
             namespaces_hash[prefix] = attr_value
           else
             attr_hash[attr_name.to_s] = attr_value
           end
         end
 
-        @handler.on_start_element(@pending_element_name, attr_hash, namespaces_hash)
+        @handler.on_start_element(@pending_element_name, attr_hash,
+                                  namespaces_hash)
 
         # Clear for next element
         @pending_attrs = {}

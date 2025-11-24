@@ -1503,7 +1503,13 @@ module Moxml
           attributes&.each do |attr_name, attr_value|
             if attr_name.to_s.start_with?("xmlns")
               # Namespace declaration
-              prefix = attr_name.to_s == "xmlns" ? nil : attr_name.to_s.sub("xmlns:", "")
+              prefix = if attr_name.to_s == "xmlns"
+                         nil
+                       else
+                         attr_name.to_s.sub(
+                           "xmlns:", ""
+                         )
+                       end
               ns_hash[prefix] = attr_value
             else
               attr_hash[attr_name.to_s] = attr_value
