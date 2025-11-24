@@ -4,9 +4,24 @@ require_relative "base"
 
 # On Windows, add the bundled DLLs directory to PATH before loading libxml
 if Gem.win_platform?
-  dll_path = File.expand_path("../../../dlls", __dir__)
-  if File.directory?(dll_path)
-    ENV["PATH"] = "#{dll_path}#{File::PATH_SEPARATOR}#{ENV.fetch('PATH', nil)}"
+  begin
+    # Find the moxml gem specification to locate the DLLs directory
+    require "rubygems"
+    spec = Gem::Specification.find_by_name("moxml")
+    dll_path = File.join(spec.full_gem_path, "dlls")
+    
+    if File.directory?(dll_path)
+      # Prepend DLL path to PATH so Windows can find libxml2-2.dll, zlib1.dll, libiconv-2.dll
+      ENV["PATH"] = "#{dll_path}#{File::PATH_SEPARATOR}#{ENV.fetch('PATH', nil)}"
+    end
+  rescue Gem::MissingSpecError
+    # In development mode, calculate relative to this file
+    gem_root = File.expand_path("../../..", __dir__)
+    dll_path = File.join(gem_root, "dlls")
+    
+    if File.directory?(dll_path)
+      ENV["PATH"] = "#{dll_path}#{File::PATH_SEPARATOR}#{ENV.fetch('PATH', nil)}"
+    end
   end
 end
 
