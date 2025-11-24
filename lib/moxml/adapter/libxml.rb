@@ -97,6 +97,30 @@ module Moxml
           DocumentBuilder.new(Context.new(:libxml)).build(native_doc)
         end
 
+        # SAX parsing implementation for LibXML
+        #
+        # @param xml [String, IO] XML to parse
+        # @param handler [Moxml::SAX::Handler] Moxml SAX handler
+        # @return [void]
+        def sax_parse(xml, handler)
+          # Create bridge that translates LibXML SAX to Moxml SAX
+          bridge = LibXMLSAXBridge.new(handler)
+
+          # Create LibXML SAX parser
+          parser = ::LibXML::XML::SaxParser.string(xml.to_s)
+
+          # Set callbacks
+          parser.callbacks = bridge
+
+          # Parse
+          parser.parse
+        rescue ::LibXML::XML::Error => e
+          line = e.respond_to?(:line) ? e.line : nil
+          column = e.respond_to?(:column) ? e.column : nil
+          error = Moxml::ParseError.new(e.message, line: line, column: column)
+          handler.on_error(error)
+        end
+
         def create_document(_native_doc = nil)
           ::LibXML::XML::Document.new
         end
@@ -1000,6 +1024,7 @@ module Moxml
             end
           when :element
             new_node = ::LibXML::XML::Node.new(native_node.name)
+            # new_node.line = node.line
 
             # Copy and set namespace definitions FIRST
             if native_node.respond_to?(:namespaces)
@@ -1445,6 +1470,71 @@ module Moxml
             current = current.respond_to?(:parent) ? current.parent : nil
           end
           nil
+        end
+      end
+
+      # Bridge between LibXML SAX and Moxml SAX
+      #
+      # Translates LibXML::XML::SaxParser events to Moxml::SAX::Handler events
+      #
+      # @private
+      class LibXMLSAXBridge
+        include ::LibXML::XML::SaxParser::Callbacks
+
+        def initialize(handler)
+          @handler = handler
+        end
+
+        # Map LibXML events to Moxml events
+
+        def on_start_document
+          @handler.on_start_document
+        end
+
+        def on_end_document
+          @handler.on_end_document
+        end
+
+        def on_start_element(name, attributes)
+          # Convert LibXML attributes hash to separate attrs and namespaces
+          attr_hash = {}
+          ns_hash = {}
+
+          attributes&.each do |attr_name, attr_value|
+            if attr_name.to_s.start_with?("xmlns")
+              # Namespace declaration
+              prefix = attr_name.to_s == "xmlns" ? nil : attr_name.to_s.sub("xmlns:", "")
+              ns_hash[prefix] = attr_value
+            else
+              attr_hash[attr_name.to_s] = attr_value
+            end
+          end
+
+          @handler.on_start_element(name.to_s, attr_hash, ns_hash)
+        end
+
+        def on_end_element(name)
+          @handler.on_end_element(name.to_s)
+        end
+
+        def on_characters(chars)
+          @handler.on_characters(chars)
+        end
+
+        def on_cdata_block(content)
+          @handler.on_cdata(content)
+        end
+
+        def on_comment(msg)
+          @handler.on_comment(msg)
+        end
+
+        def on_processing_instruction(target, data)
+          @handler.on_processing_instruction(target, data || "")
+        end
+
+        def on_error(msg)
+          @handler.on_error(Moxml::ParseError.new(msg))
         end
       end
     end

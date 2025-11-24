@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library>
+  <book id="1" category="programming">
+    <title>Ruby Programming</title>
+    <author>Jane Smith</author>
+    <price>29.99</price>
+    <isbn>978-0-123456-78-9</isbn>
+  </book>
+  <book id="2" category="fiction">
+    <title>The Great Novel</title>
+    <author>John Doe</author>
+    <price>19.99</price>
+    <isbn>978-0-987654-32-1</isbn>
+  </book>
+  <book id="3" category="programming">
+    <title>Advanced Ruby</title>
+    <author>Jane Smith</author>
+    <price>39.99</price>
+    <isbn>978-0-111111-11-1</isbn>
+  </book>
+</library>
