@@ -4,7 +4,7 @@ require_relative "base"
 
 # On Windows, add the bundled DLLs directory to PATH before loading libxml
 if Gem.win_platform?
-  dll_path = File.expand_path("../../dlls", __dir__)
+  dll_path = File.expand_path("../../../dlls", __dir__)
   if File.directory?(dll_path)
     ENV["PATH"] = "#{dll_path}#{File::PATH_SEPARATOR}#{ENV.fetch('PATH', nil)}"
   end
