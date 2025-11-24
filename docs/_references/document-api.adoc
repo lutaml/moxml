@@ -1,6 +1,5 @@
 ---
 title: Document API
-parent: Overview
 nav_order: 2
 ---
 

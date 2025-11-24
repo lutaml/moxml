@@ -1,9 +1,9 @@
 # Site settings
-title: Moxml
+title: "Moxml: Modern XML for Ruby"
 description: >-
   Modern XML processing for Ruby with unified adapter interface
 baseurl: "/moxml"
-url: "https://lutaml.github.io"
+url: "https://www.lutaml.org"
 
 # Theme
 theme: just-the-docs
@@ -43,7 +43,7 @@ back_to_top_text: "Back to top"
 # Footer content
 footer_content: >-
   Copyright &copy; 2025 Ribose. Distributed by a
-  <a href="https://github.com/lutaml/moxml/blob/main/LICENSE.md">BSD-2-Clause license</a>.
+  <a href="https://github.com/lutaml/moxml/blob/main/LICENSE.md">BSD-3-Clause license</a>.
 
 # Footer last edit timestamp
 last_edit_timestamp: true

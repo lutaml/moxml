@@ -1,6 +1,5 @@
 ---
 title: Basic usage
-parent: Overview
 nav_order: 2
 ---
 

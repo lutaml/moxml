@@ -1,12 +1,12 @@
 ---
-title: HeadedOx adapter
+title: HeadedOx
 parent: Adapters
 nav_order: 6
 ---
 
-=== HeadedOx adapter
+== HeadedOx adapter
 
-==== General
+=== General
 
 The HeadedOx adapter combines Ox's fast C-based XML parsing with Moxml's
 comprehensive pure Ruby XPath 1.0 engine.
@@ -39,7 +39,7 @@ cheap = doc.xpath('//book[@price <= sum(//book/@price) div count(//book)]')
 IMPORTANT: For complete XPath 1.0 specification with zero limitations today, use
 Nokogiri or Oga adapters.
 
-==== Features
+=== Features
 
 * Fast XML parsing (Ox C extension) - Same speed as standard Ox
 * 6 of 13 XPath axes (46% - covers 80% of common usage patterns)
@@ -48,7 +48,7 @@ Nokogiri or Oga adapters.
 * Expression compilation and caching (1000-entry LRU cache)
 * Document construction and serialization through Ox
 
-==== Architecture
+=== Architecture
 
 HeadedOx is a **hybrid adapter** that layers Moxml's pure Ruby XPath engine on
 top of Ox's fast C parser:
@@ -78,7 +78,7 @@ top of Ox's fast C parser:
              └─────────────────────────┘
 ----
 
-==== Known limitations
+=== Known limitations
 
 The following 16 test failures represent architectural boundaries in the Ox gem,
 not bugs in HeadedOx:
@@ -100,7 +100,7 @@ See link:docs/HEADED_OX_LIMITATIONS.md[HEADED_OX_LIMITATIONS.md] for:
 * When to use HeadedOx vs other adapters decision guide
 * Future roadmap if Ox adds namespace introspection API
 
-==== When to Use HeadedOx
+=== When to Use HeadedOx
 
 You can use HeadedOx instead of Ox for all XML parsing needs, except when
 certain advanced XPath features are required.
@@ -126,7 +126,7 @@ link:docs/headed-ox.adoc[HeadedOx Implementation Guide] and
 link:docs/HEADED_OX_LIMITATIONS.md[HeadedOx Limitations Documentation].
 
 
-==== XPath capabilities
+=== XPath capabilities
 
 [cols="1,1,4"]
 |===
@@ -169,7 +169,7 @@ operator predicates, complex nested expressions
 |===
 
 
-==== What XPath queries work in HeadedOx
+=== What XPath queries work in HeadedOx
 
 NOTE: This table is of v0.2.0.
 

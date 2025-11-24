@@ -77,6 +77,7 @@ all_attrs = books.flat_map { |book| book.attributes.values }
 ----
 
 **Test failures:**
+
 * `spec/moxml/xpath/compiler_spec.rb:189` - Attribute axis wildcards
 * `spec/moxml/xpath/axes_spec.rb:220` - Attribute + predicate combinations
 
@@ -85,6 +86,7 @@ all_attrs = books.flat_map { |book| book.attributes.values }
 **Status:** Not implemented in HeadedOx adapter
 
 **What's missing:**
+
 * `adapter.namespace(node)` - Get primary namespace of element
 * `adapter.namespace_definitions(node)` - Get all namespace definitions
 * `node.namespace` - Access element's namespace
@@ -114,6 +116,7 @@ end
 None. These operations require Ox enhancements.
 
 **Test failures:**
+
 * `spec/integration/shared_examples/edge_cases.rb:102` - Default namespace changes
 * `spec/integration/shared_examples/edge_cases.rb:120` - Recursive namespace definitions
 * `spec/integration/shared_examples/integration_workflows.rb:98` - Complex namespace scenarios
@@ -148,6 +151,7 @@ value = attr&.value
 ----
 
 **Test failures:**
+
 * `spec/integration/shared_examples/edge_cases.rb:134` - Attributes with same local name
 
 === 4. Parent Node Setter
@@ -189,6 +193,7 @@ new_parent.add_child(node)  # Add to new parent
 **Note:** This workaround is used internally where needed, but the getter/setter syntax is not supported.
 
 **Test failures:**
+
 * `spec/integration/shared_examples/integration_workflows.rb:122` - Complex modifications
 
 === 5. CDATA End Marker Escaping
@@ -224,6 +229,7 @@ doc.create_cdata(safe_content)
 ----
 
 **Test failures:**
+
 * `spec/integration/shared_examples/edge_cases.rb:41` - CDATA nested markers
 * `spec/integration/shared_examples/node_wrappers/cdata_behavior.rb:44` - CDATA escaping
 
@@ -263,6 +269,7 @@ second_title = titles[1].text  # Works correctly
 ----
 
 **Test failures:**
+
 * `spec/moxml/adapter/headed_ox_spec.rb:77` - String functions in predicates
 * `spec/moxml/adapter/headed_ox_spec.rb:84` - Position functions
 * `spec/moxml/adapter/headed_ox_spec.rb:304` - last() function
@@ -277,6 +284,7 @@ second_title = titles[1].text  # Works correctly
 **Why it fails:**
 
 When using `//*` to select all elements, HeadedOx returns 6 elements while Nokogiri returns 7+. This is likely due to differences in:
+
 * Document node counting
 * Text node inclusion/exclusion
 * Ox's internal DOM structure
@@ -297,6 +305,7 @@ result = doc.xpath("//*")
 Use specific element names instead of wildcards.
 
 **Test failures:**
+
 * `spec/moxml/xpath/compiler_spec.rb:160` - Descendant-or-self wildcards
 
 === 8. Namespace-Aware XPath with Predicates
@@ -340,6 +349,7 @@ result = items.select { |item| item['id'] == '123' }
 ----
 
 **Test failures:**
+
 * `spec/integration/shared_examples/integration_workflows.rb:69` - XPath queries
 
 == Ox Enhancement Requirements
@@ -477,6 +487,7 @@ Ensure element counting matches other parsers' conventions when using wildcard s
 === If Ox Adds Namespace API (v1.3)
 
 With namespace methods (`namespace()`, `namespace_definitions()`):
+
 * **Target:** 99.5% pass rate
 * **Adds:** 4 more passing tests
 * **Still limited:** Parent setter, CDATA escaping, attribute wildcards
@@ -484,6 +495,7 @@ With namespace methods (`namespace()`, `namespace_definitions()`):
 === If Ox Adds Reparenting API (v1.4)
 
 With `reparent(new_parent)` method:
+
 * **Target:** 99.6% pass rate
 * **Adds:** 1 more passing test
 * **Still limited:** CDATA escaping, attribute wildcards
@@ -491,6 +503,7 @@ With `reparent(new_parent)` method:
 === If Ox Fixes CDATA Escaping (v1.5)
 
 With proper `]]>` handling:
+
 * **Target:** 99.7% pass rate
 * **Adds:** 2 more passing tests
 * **Still limited:** Attribute wildcards
@@ -498,6 +511,7 @@ With proper `]]>` handling:
 === Full Feature Parity (v2.0)
 
 Would require:
+
 * All Ox enhancements above
 * XPath parser support for `@*` wildcard
 * Investigation and fixes for text content access
@@ -546,11 +560,13 @@ Total passing: **1,992 / 2,008** (99.20%)
 HeadedOx v1.2 successfully delivers on its core promise: **fast XML parsing with comprehensive XPath support**. The 99.20% pass rate demonstrates excellent compatibility with Moxml's test suite, with the 0.80% of failures representing clear architectural boundaries in the Ox gem rather than bugs in HeadedOx.
 
 **Use HeadedOx when:**
+
 - Speed + XPath coverage matter most
 - Basic namespace queries are sufficient
 - DOM is mostly read-only
 
 **Use Nokogiri/Oga when:**
+
 - Need full namespace API
 - Heavy DOM modifications required
 - 100% feature parity is critical

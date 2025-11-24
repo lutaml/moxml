@@ -1,6 +1,5 @@
 ---
 title: Node API reference
-parent: Overview
 nav_order: 5
 ---
 

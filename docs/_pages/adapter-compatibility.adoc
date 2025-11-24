@@ -1,4 +1,4 @@
-= Moxml adapter compatibility matrix
+= Adapter compatibility matrix
 :toc:
 :toc-placement!:
 
