@@ -225,8 +225,8 @@ module Moxml
         end
 
         def set_attribute(element, name, value)
-          element.attributes[name&.to_s] = value
-          ::REXML::Attribute.new(name&.to_s, value.to_s, element)
+          element.attributes[name&.to_s] = value&.to_s
+          element.attributes.get_attribute(name&.to_s)
         end
 
         def set_attribute_name(attribute, name)

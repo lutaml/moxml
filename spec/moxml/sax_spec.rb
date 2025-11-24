@@ -90,7 +90,7 @@ RSpec.describe Moxml::SAX do
       elements = []
 
       handler = Moxml::SAX::BlockHandler.new do
-        start_element { |name, attrs| elements << name }
+        start_element { |name, _attrs| elements << name }
       end
 
       handler.on_start_element("book", {}, {})
@@ -106,7 +106,9 @@ RSpec.describe Moxml::SAX do
         start_document { events << :start_doc }
         start_element { |name| events << [:start, name] }
         end_element { |name| events << [:end, name] }
-        characters { |text| events << [:text, text.strip] unless text.strip.empty? }
+        characters do |text|
+          events << [:text, text.strip] unless text.strip.empty?
+        end
         end_document { events << :end_doc }
       end
 
@@ -117,16 +119,16 @@ RSpec.describe Moxml::SAX do
       handler.on_end_document
 
       expect(events).to eq([
-        :start_doc,
-        [:start, "book"],
-        [:text, "Title"],
-        [:end, "book"],
-        :end_doc
-      ])
+                             :start_doc,
+                             [:start, "book"],
+                             [:text, "Title"],
+                             [:end, "book"],
+                             :end_doc,
+                           ])
     end
   end
 
-  describe "SAX parsing with Nokogiri adapter", :adapter => :nokogiri do
+  describe "SAX parsing with Nokogiri adapter", adapter: :nokogiri do
     let(:context) { Moxml.new(:nokogiri) }
 
     it "parses with class-based handler" do
@@ -145,9 +147,10 @@ RSpec.describe Moxml::SAX do
           super
           case name
           when "book"
-            @current_book = { id: attributes["id"], category: attributes["category"] }
+            @current_book = { id: attributes["id"],
+                              category: attributes["category"] }
           when "title", "author", "price"
-            @current_text = "".dup  # Use dup to create mutable string
+            @current_text = +"" # Use dup to create mutable string
           end
         end
 
@@ -181,7 +184,7 @@ RSpec.describe Moxml::SAX do
         category: "programming",
         title: "Ruby Programming",
         author: "Jane Smith",
-        price: 29.99
+        price: 29.99,
       )
 
       expect(handler.books[1]).to include(
@@ -189,7 +192,7 @@ RSpec.describe Moxml::SAX do
         category: "fiction",
         title: "The Great Novel",
         author: "John Doe",
-        price: 19.99
+        price: 19.99,
       )
     end
 
@@ -206,7 +209,7 @@ RSpec.describe Moxml::SAX do
             current_book = { id: attrs["id"] }
           when "title", "author", "price"
             current_field = name
-            current_text = "".dup  # Use dup to create mutable string
+            current_text = +"" # Use dup to create mutable string
           end
         end
 
@@ -217,10 +220,16 @@ RSpec.describe Moxml::SAX do
         end_element do |name|
           case name
           when "title", "author"
-            current_book[current_field.to_sym] = current_text.strip if current_book
+            if current_book
+              current_book[current_field.to_sym] =
+                current_text.strip
+            end
             current_field = nil
           when "price"
-            current_book[current_field.to_sym] = current_text.strip.to_f if current_book
+            if current_book
+              current_book[current_field.to_sym] =
+                current_text.strip.to_f
+            end
             current_field = nil
           when "book"
             books << current_book if current_book
@@ -260,7 +269,7 @@ RSpec.describe Moxml::SAX do
     end
   end
 
-  describe "SAX parsing with Ox adapter", :adapter => :ox do
+  describe "SAX parsing with Ox adapter", adapter: :ox do
     let(:context) { Moxml.new(:ox) }
 
     it "parses with class-based handler" do
@@ -279,9 +288,10 @@ RSpec.describe Moxml::SAX do
           super
           case name
           when "book"
-            @current_book = { id: attributes["id"], category: attributes["category"] }
+            @current_book = { id: attributes["id"],
+                              category: attributes["category"] }
           when "title", "author", "price"
-            @current_text = "".dup
+            @current_text = +""
           end
         end
 
@@ -315,7 +325,7 @@ RSpec.describe Moxml::SAX do
         category: "programming",
         title: "Ruby Programming",
         author: "Jane Smith",
-        price: 29.99
+        price: 29.99,
       )
 
       expect(handler.books[1]).to include(
@@ -323,13 +333,14 @@ RSpec.describe Moxml::SAX do
         category: "fiction",
         title: "The Great Novel",
         author: "John Doe",
-        price: 19.99
+        price: 19.99,
       )
     end
 
     it "parses with block-based handler" do
       # Use a result collector that's accessible from block context
-      results = { books: [], current_book: nil, current_field: nil, current_text: "".dup }
+      results = { books: [], current_book: nil, current_field: nil,
+                  current_text: +"" }
 
       context.sax_parse(xml) do
         start_element do |name, attrs|
@@ -338,7 +349,7 @@ RSpec.describe Moxml::SAX do
             results[:current_book] = { id: attrs["id"] }
           when "title", "author", "price"
             results[:current_field] = name
-            results[:current_text] = "".dup
+            results[:current_text] = +""
           end
         end
 
@@ -352,12 +363,14 @@ RSpec.describe Moxml::SAX do
           case name
           when "title", "author"
             if results[:current_book] && results[:current_field]
-              results[:current_book][results[:current_field].to_sym] = results[:current_text].strip
+              results[:current_book][results[:current_field].to_sym] =
+                results[:current_text].strip
             end
             results[:current_field] = nil
           when "price"
             if results[:current_book] && results[:current_field]
-              results[:current_book][results[:current_field].to_sym] = results[:current_text].strip.to_f
+              results[:current_book][results[:current_field].to_sym] =
+                results[:current_text].strip.to_f
             end
             results[:current_field] = nil
           when "book"
@@ -402,11 +415,11 @@ RSpec.describe Moxml::SAX do
       # All CDATA content is delivered as text() events
       skip "Ox SAX does not support separate CDATA events"
 
-      xml_with_cdata = '<root><![CDATA[special content]]></root>'
+      xml_with_cdata = "<root><![CDATA[special content]]></root>"
 
       cdata_found = false
       context.sax_parse(xml_with_cdata) do
-        cdata { |text| cdata_found = true }
+        cdata { |_text| cdata_found = true }
       end
 
       # This will fail because Ox doesn't support separate CDATA events
@@ -417,11 +430,11 @@ RSpec.describe Moxml::SAX do
       # Ox SAX does not have separate comment events
       skip "Ox SAX does not support separate comment events"
 
-      xml_with_comment = '<root><!-- comment --><data>content</data></root>'
+      xml_with_comment = "<root><!-- comment --><data>content</data></root>"
 
       comment_found = false
       context.sax_parse(xml_with_comment) do
-        comment { |text| comment_found = true }
+        comment { |_text| comment_found = true }
       end
 
       # This will fail because Ox doesn't support comment events
@@ -436,7 +449,7 @@ RSpec.describe Moxml::SAX do
 
       pi_found = false
       context.sax_parse(xml_with_pi) do
-        processing_instruction { |target, data| pi_found = true }
+        processing_instruction { |_target, _data| pi_found = true }
       end
 
       # This will fail because Ox doesn't support PI events
@@ -444,7 +457,7 @@ RSpec.describe Moxml::SAX do
     end
   end
 
-  describe "SAX parsing with REXML adapter", :adapter => :rexml do
+  describe "SAX parsing with REXML adapter", adapter: :rexml do
     let(:context) { Moxml.new(:rexml) }
 
     it "parses with class-based handler" do
@@ -463,9 +476,10 @@ RSpec.describe Moxml::SAX do
           super
           case name
           when "book"
-            @current_book = { id: attributes["id"], category: attributes["category"] }
+            @current_book = { id: attributes["id"],
+                              category: attributes["category"] }
           when "title", "author", "price"
-            @current_text = "".dup
+            @current_text = +""
           end
         end
 
@@ -499,7 +513,7 @@ RSpec.describe Moxml::SAX do
         category: "programming",
         title: "Ruby Programming",
         author: "Jane Smith",
-        price: 29.99
+        price: 29.99,
       )
 
       expect(handler.books[1]).to include(
@@ -507,12 +521,13 @@ RSpec.describe Moxml::SAX do
         category: "fiction",
         title: "The Great Novel",
         author: "John Doe",
-        price: 19.99
+        price: 19.99,
       )
     end
 
     it "parses with block-based handler" do
-      results = { books: [], current_book: nil, current_field: nil, current_text: "".dup }
+      results = { books: [], current_book: nil, current_field: nil,
+                  current_text: +"" }
 
       context.sax_parse(xml) do
         start_element do |name, attrs|
@@ -521,7 +536,7 @@ RSpec.describe Moxml::SAX do
             results[:current_book] = { id: attrs["id"] }
           when "title", "author", "price"
             results[:current_field] = name
-            results[:current_text] = "".dup
+            results[:current_text] = +""
           end
         end
 
@@ -535,12 +550,14 @@ RSpec.describe Moxml::SAX do
           case name
           when "title", "author"
             if results[:current_book] && results[:current_field]
-              results[:current_book][results[:current_field].to_sym] = results[:current_text].strip
+              results[:current_book][results[:current_field].to_sym] =
+                results[:current_text].strip
             end
             results[:current_field] = nil
           when "price"
             if results[:current_book] && results[:current_field]
-              results[:current_book][results[:current_field].to_sym] = results[:current_text].strip.to_f
+              results[:current_book][results[:current_field].to_sym] =
+                results[:current_text].strip.to_f
             end
             results[:current_field] = nil
           when "book"
@@ -581,7 +598,7 @@ RSpec.describe Moxml::SAX do
     end
   end
 
-  describe "SAX parsing with Oga adapter", :adapter => :oga do
+  describe "SAX parsing with Oga adapter", adapter: :oga do
     let(:context) { Moxml.new(:oga) }
 
     it "parses with class-based handler" do
@@ -600,9 +617,10 @@ RSpec.describe Moxml::SAX do
           super
           case name
           when "book"
-            @current_book = { id: attributes["id"], category: attributes["category"] }
+            @current_book = { id: attributes["id"],
+                              category: attributes["category"] }
           when "title", "author", "price"
-            @current_text = "".dup
+            @current_text = +""
           end
         end
 
@@ -636,7 +654,7 @@ RSpec.describe Moxml::SAX do
         category: "programming",
         title: "Ruby Programming",
         author: "Jane Smith",
-        price: 29.99
+        price: 29.99,
       )
 
       expect(handler.books[1]).to include(
@@ -644,12 +662,13 @@ RSpec.describe Moxml::SAX do
         category: "fiction",
         title: "The Great Novel",
         author: "John Doe",
-        price: 19.99
+        price: 19.99,
       )
     end
 
     it "parses with block-based handler" do
-      results = { books: [], current_book: nil, current_field: nil, current_text: "".dup }
+      results = { books: [], current_book: nil, current_field: nil,
+                  current_text: +"" }
 
       context.sax_parse(xml) do
         start_element do |name, attrs|
@@ -658,7 +677,7 @@ RSpec.describe Moxml::SAX do
             results[:current_book] = { id: attrs["id"] }
           when "title", "author", "price"
             results[:current_field] = name
-            results[:current_text] = "".dup
+            results[:current_text] = +""
           end
         end
 
@@ -672,12 +691,14 @@ RSpec.describe Moxml::SAX do
           case name
           when "title", "author"
             if results[:current_book] && results[:current_field]
-              results[:current_book][results[:current_field].to_sym] = results[:current_text].strip
+              results[:current_book][results[:current_field].to_sym] =
+                results[:current_text].strip
             end
             results[:current_field] = nil
           when "price"
             if results[:current_book] && results[:current_field]
-              results[:current_book][results[:current_field].to_sym] = results[:current_text].strip.to_f
+              results[:current_book][results[:current_field].to_sym] =
+                results[:current_text].strip.to_f
             end
             results[:current_field] = nil
           when "book"
@@ -720,7 +741,7 @@ RSpec.describe Moxml::SAX do
     end
   end
 
-  describe "SAX parsing with LibXML adapter", :adapter => :libxml do
+  describe "SAX parsing with LibXML adapter", adapter: :libxml do
     let(:context) { Moxml.new(:libxml) }
 
     it "parses with class-based handler" do
@@ -739,9 +760,10 @@ RSpec.describe Moxml::SAX do
           super
           case name
           when "book"
-            @current_book = { id: attributes["id"], category: attributes["category"] }
+            @current_book = { id: attributes["id"],
+                              category: attributes["category"] }
           when "title", "author", "price"
-            @current_text = "".dup
+            @current_text = +""
           end
         end
 
@@ -775,7 +797,7 @@ RSpec.describe Moxml::SAX do
         category: "programming",
         title: "Ruby Programming",
         author: "Jane Smith",
-        price: 29.99
+        price: 29.99,
       )
 
       expect(handler.books[1]).to include(
@@ -783,12 +805,13 @@ RSpec.describe Moxml::SAX do
         category: "fiction",
         title: "The Great Novel",
         author: "John Doe",
-        price: 19.99
+        price: 19.99,
       )
     end
 
     it "parses with block-based handler" do
-      results = { books: [], current_book: nil, current_field: nil, current_text: "".dup }
+      results = { books: [], current_book: nil, current_field: nil,
+                  current_text: +"" }
 
       context.sax_parse(xml) do
         start_element do |name, attrs|
@@ -797,7 +820,7 @@ RSpec.describe Moxml::SAX do
             results[:current_book] = { id: attrs["id"] }
           when "title", "author", "price"
             results[:current_field] = name
-            results[:current_text] = "".dup
+            results[:current_text] = +""
           end
         end
 
@@ -811,12 +834,14 @@ RSpec.describe Moxml::SAX do
           case name
           when "title", "author"
             if results[:current_book] && results[:current_field]
-              results[:current_book][results[:current_field].to_sym] = results[:current_text].strip
+              results[:current_book][results[:current_field].to_sym] =
+                results[:current_text].strip
             end
             results[:current_field] = nil
           when "price"
             if results[:current_book] && results[:current_field]
-              results[:current_book][results[:current_field].to_sym] = results[:current_text].strip.to_f
+              results[:current_book][results[:current_field].to_sym] =
+                results[:current_text].strip.to_f
             end
             results[:current_field] = nil
           when "book"
@@ -857,7 +882,7 @@ RSpec.describe Moxml::SAX do
     end
   end
 
-  describe "SAX parsing with HeadedOx adapter", :adapter => :headed_ox do
+  describe "SAX parsing with HeadedOx adapter", adapter: :headed_ox do
     let(:context) { Moxml.new(:headed_ox) }
 
     it "parses with class-based handler" do
@@ -876,9 +901,10 @@ RSpec.describe Moxml::SAX do
           super
           case name
           when "book"
-            @current_book = { id: attributes["id"], category: attributes["category"] }
+            @current_book = { id: attributes["id"],
+                              category: attributes["category"] }
           when "title", "author", "price"
-            @current_text = "".dup
+            @current_text = +""
           end
         end
 
@@ -912,7 +938,7 @@ RSpec.describe Moxml::SAX do
         category: "programming",
         title: "Ruby Programming",
         author: "Jane Smith",
-        price: 29.99
+        price: 29.99,
       )
 
       expect(handler.books[1]).to include(
@@ -920,12 +946,13 @@ RSpec.describe Moxml::SAX do
         category: "fiction",
         title: "The Great Novel",
         author: "John Doe",
-        price: 19.99
+        price: 19.99,
       )
     end
 
     it "parses with block-based handler" do
-      results = { books: [], current_book: nil, current_field: nil, current_text: "".dup }
+      results = { books: [], current_book: nil, current_field: nil,
+                  current_text: +"" }
 
       context.sax_parse(xml) do
         start_element do |name, attrs|
@@ -934,7 +961,7 @@ RSpec.describe Moxml::SAX do
             results[:current_book] = { id: attrs["id"] }
           when "title", "author", "price"
             results[:current_field] = name
-            results[:current_text] = "".dup
+            results[:current_text] = +""
           end
         end
 
@@ -948,12 +975,14 @@ RSpec.describe Moxml::SAX do
           case name
           when "title", "author"
             if results[:current_book] && results[:current_field]
-              results[:current_book][results[:current_field].to_sym] = results[:current_text].strip
+              results[:current_book][results[:current_field].to_sym] =
+                results[:current_text].strip
             end
             results[:current_field] = nil
           when "price"
             if results[:current_book] && results[:current_field]
-              results[:current_book][results[:current_field].to_sym] = results[:current_text].strip.to_f
+              results[:current_book][results[:current_field].to_sym] =
+                results[:current_text].strip.to_f
             end
             results[:current_field] = nil
           when "book"
@@ -997,11 +1026,11 @@ RSpec.describe Moxml::SAX do
       # HeadedOx inherits Ox's SAX implementation, which does not have separate CDATA events
       skip "HeadedOx SAX (inherited from Ox) does not support separate CDATA events"
 
-      xml_with_cdata = '<root><![CDATA[special content]]></root>'
+      xml_with_cdata = "<root><![CDATA[special content]]></root>"
 
       cdata_found = false
       context.sax_parse(xml_with_cdata) do
-        cdata { |text| cdata_found = true }
+        cdata { |_text| cdata_found = true }
       end
 
       expect(cdata_found).to be true
@@ -1011,11 +1040,11 @@ RSpec.describe Moxml::SAX do
       # HeadedOx inherits Ox's SAX implementation, which does not have separate comment events
       skip "HeadedOx SAX (inherited from Ox) does not support separate comment events"
 
-      xml_with_comment = '<root><!-- comment --><data>content</data></root>'
+      xml_with_comment = "<root><!-- comment --><data>content</data></root>"
 
       comment_found = false
       context.sax_parse(xml_with_comment) do
-        comment { |text| comment_found = true }
+        comment { |_text| comment_found = true }
       end
 
       expect(comment_found).to be true
@@ -1029,7 +1058,7 @@ RSpec.describe Moxml::SAX do
 
       pi_found = false
       context.sax_parse(xml_with_pi) do
-        processing_instruction { |target, data| pi_found = true }
+        processing_instruction { |_target, _data| pi_found = true }
       end
 
       expect(pi_found).to be true

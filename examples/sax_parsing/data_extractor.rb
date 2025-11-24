@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'bundler/setup'
-require 'moxml'
+require "bundler/setup"
+require "moxml"
 
-xml = File.read(File.join(__dir__, 'example.xml'))
+xml = File.read(File.join(__dir__, "example.xml"))
 
 # Handler that extracts book data using ElementHandler utilities
 class BookExtractor < Moxml::SAX::ElementHandler
@@ -15,22 +15,22 @@ class BookExtractor < Moxml::SAX::ElementHandler
     @books = []
     @current_book = nil
     @current_field = nil
-    @current_text = "".dup
+    @current_text = +""
   end
 
   def on_start_element(name, attributes = {}, namespaces = {})
-    super  # Important: updates element stack
+    super # Important: updates element stack
 
     case name
     when "book"
       @current_book = {
         id: attributes["id"],
-        category: attributes["category"]
+        category: attributes["category"],
       }
       puts "Found book with ID: #{attributes['id']}"
     when "title", "author", "price", "isbn"
       @current_field = name
-      @current_text = "".dup
+      @current_text = +""
     end
   end
 
@@ -55,7 +55,7 @@ class BookExtractor < Moxml::SAX::ElementHandler
       @current_book = nil
     end
 
-    super  # Important: updates element stack
+    super # Important: updates element stack
   end
 end
 

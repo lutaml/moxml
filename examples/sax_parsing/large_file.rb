@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require 'bundler/setup'
-require 'moxml'
+require "bundler/setup"
+require "moxml"
 
-xml = File.read(File.join(__dir__, 'example.xml'))
+xml = File.read(File.join(__dir__, "example.xml"))
 
 # Memory-efficient streaming processor
 # Processes and outputs records immediately without accumulating in memory
@@ -14,20 +14,20 @@ class StreamProcessor < Moxml::SAX::Handler
     @output = output
     @current_record = nil
     @current_field = nil
-    @text_buffer = "".dup
+    @text_buffer = +""
     @record_count = 0
   end
 
-  def on_start_element(name, attributes = {}, namespaces = {})
+  def on_start_element(name, attributes = {}, _namespaces = {})
     case name
     when "book"
       @current_record = {
         id: attributes["id"],
-        category: attributes["category"]
+        category: attributes["category"],
       }
     when "title", "author", "price", "isbn"
       @current_field = name
-      @text_buffer = "".dup
+      @text_buffer = +""
     end
   end
 
@@ -47,8 +47,8 @@ class StreamProcessor < Moxml::SAX::Handler
     # Process complete record immediately
     if name == "book" && @current_record
       process_record(@current_record)
-      @current_record = nil  # Free memory immediately
-      @text_buffer = "".dup  # Reset for next record
+      @current_record = nil # Free memory immediately
+      @text_buffer = +"" # Reset for next record
     end
   end
 
