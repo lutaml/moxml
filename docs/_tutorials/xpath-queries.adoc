@@ -1,6 +1,5 @@
 ---
 title: XPath queries
-parent: Overview
 nav_order: 3
 ---
 

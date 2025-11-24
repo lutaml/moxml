@@ -1,7 +1,6 @@
 ---
-title: Oga adapter
+title: Oga
 parent: Adapters
-grand_parent: Overview
 nav_order: 3
 ---
 

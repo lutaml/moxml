@@ -1,7 +1,6 @@
 ---
-title: LibXML adapter
+title: LibXML
 parent: Adapters
-grand_parent: Overview
 nav_order: 2
 ---
 

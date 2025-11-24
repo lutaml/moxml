@@ -1,6 +1,5 @@
 ---
 title: Error handling
-parent: Overview
 nav_order: 8
 ---
 

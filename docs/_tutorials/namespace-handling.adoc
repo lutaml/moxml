@@ -1,6 +1,5 @@
 ---
 title: Namespace handling
-parent: Overview
 nav_order: 4
 ---
 

@@ -1,0 +1,450 @@
+= XML Declaration Preservation
+:toc:
+:toclevels: 3
+
+== Overview
+
+Moxml automatically preserves the presence or absence of XML declarations (`<?xml version="1.0"?>`) when parsing and serializing documents. This ensures round-trip fidelity and compliance with standards that require specific declaration handling.
+
+=== Why This Matters
+
+Some XML use cases require specific declaration handling:
+
+* **SVG Files**: Often have no XML declaration
+* **XML Fragments**: Should not have declarations
+* **Standards Compliance**: Some specs prohibit declarations in certain contexts
+* **Round-Trip Fidelity**: Parse → Modify → Serialize should preserve format
+
+=== Key Features
+
+* **Automatic Detection**: Moxml detects whether input had a declaration
+* **Automatic Preservation**: Output matches input format by default
+* **Explicit Override**: Force add or remove declarations when needed
+* **All Adapters**: Works across all 6 XML adapters
+
+== Basic Usage
+
+=== Automatic Preservation
+
+Moxml automatically preserves whether input had an XML declaration:
+
+[source,ruby]
+----
+require 'moxml'
+
+# Document without declaration
+svg = '<svg xmlns="http://www.w3.org/2000/svg"><rect/></svg>'
+doc = Moxml.new.parse(svg)
+doc.to_xml
+# => "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect/></svg>"
+# ✓ No <?xml...?> added
+
+# Document with declaration
+xml = '<?xml version="1.0" encoding="UTF-8"?><root><child/></root>'
+doc = Moxml.new.parse(xml)
+doc.to_xml
+# => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><child/></root>"
+# ✓ Declaration preserved
+----
+
+=== Checking Declaration Presence
+
+Use the `has_xml_declaration` attribute to check if a document has a declaration:
+
+[source,ruby]
+----
+# Document without declaration
+doc = Moxml.new.parse('<root/>')
+doc.has_xml_declaration  # => false
+
+# Document with declaration
+doc = Moxml.new.parse('<?xml version="1.0"?><root/>')
+doc.has_xml_declaration  # => true
+----
+
+== Explicit Control
+
+=== Forcing Declaration Addition
+
+Add a declaration to documents that don't have one:
+
+[source,ruby]
+----
+svg = '<svg><rect/></svg>'
+doc = Moxml.new.parse(svg)
+
+# Force add declaration
+output = doc.to_xml(declaration: true)
+# => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg><rect/></svg>"
+----
+
+=== Removing Declarations
+
+Remove declaration from documents that have one:
+
+[source,ruby]
+----
+xml = '<?xml version="1.0"?><root><item/></root>'
+doc = Moxml.new.parse(xml)
+
+# Force remove declaration
+output = doc.to_xml(declaration: false)
+# => "<root><item/></root>"
+----
+
+== Use Cases
+
+=== SVG File Processing
+
+SVG files often don't have XML declarations. Moxml preserves this:
+
+[source,ruby]
+----
+# Original SVG without declaration
+svg_content = File.read('image.svg')
+doc = Moxml.new.parse(svg_content)
+
+# Modify SVG (add viewBox)
+doc.root['viewBox'] = '0 0 100 100'
+
+# Save - no declaration added
+File.write('image.svg', doc.to_xml)
+----
+
+=== XML Fragment Generation
+
+Create XML fragments without declarations:
+
+[source,ruby]
+----
+context = Moxml.new
+doc = context.create_document
+
+# Build fragment
+root = doc.create_element('fragment')
+root << doc.create_element('item')
+doc.root = root
+
+# Serialize without declaration (default for built documents)
+doc.to_xml  # => "<fragment><item/></fragment>"
+----
+
+=== Standards-Compliant XML
+
+Some XML standards require or prohibit declarations:
+
+[source,ruby]
+----
+# Standard prohibits declarations
+doc = Moxml.new.parse(compliant_xml_without_decl)
+output = doc.to_xml  # Declaration correctly absent
+
+# Standard requires declarations
+doc = Moxml.new.parse(standard_xml_with_decl)
+output = doc.to_xml  # Declaration correctly present
+----
+
+=== Round-Trip Processing
+
+Preserve original format through multiple parse/serialize cycles:
+
+[source,ruby]
+----
+original = '<data><item id="1"/></data>'
+
+# First round-trip
+doc1 = Moxml.new.parse(original)
+intermediate = doc1.to_xml
+
+# Second round-trip
+doc2 = Moxml.new.parse(intermediate)
+final = doc2.to_xml
+
+# All three are identical
+original == intermediate && intermediate == final  # => true
+----
+
+== Adapter Behavior
+
+All 6 adapters support declaration preservation:
+
+[cols="1,3"]
+|===
+|Adapter |Implementation
+
+|Nokogiri
+|Uses `SaveOptions::NO_DECLARATION` flag
+
+|Oga
+|Custom serialization logic
+
+|REXML
+|Conditional declaration output
+
+|Ox
+|Declaration control in serialize
+
+|LibXML
+|Custom serializer respects flag
+
+|HeadedOx
+|Inherits Ox implementation
+|===
+
+== Advanced Usage
+
+=== Programmatically Built Documents
+
+Documents built from scratch default to no declaration:
+
+[source,ruby]
+----
+doc = Moxml.new.create_document
+root = doc.create_element('config')
+doc.root = root
+
+doc.has_xml_declaration  # => false
+doc.to_xml  # => "<config/>"
+
+# Explicitly add declaration if needed
+doc.to_xml(declaration: true)
+# => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><config/>"
+----
+
+=== Element Serialization
+
+Only document nodes can have declarations. Element serialization never includes declarations:
+
+[source,ruby]
+----
+doc = Moxml.new.parse('<?xml version="1.0"?><root><child/></root>')
+element = doc.root
+
+# Element serialization - no declaration
+element.to_xml  # => "<root><child/></root>"
+
+# Even with explicit request (ignored for elements)
+element.to_xml(declaration: true)  # => "<root><child/></root>"
+----
+
+=== Custom Declaration Attributes
+
+When forcing declaration addition, use standard attributes:
+
+[source,ruby]
+----
+doc = Moxml.new.parse('<root/>')
+
+# Default declaration
+doc.to_xml(declaration: true)
+# => "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root/>"
+
+# Custom encoding via adapter
+doc.to_xml(declaration: true, encoding: "ISO-8859-1")
+# => "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><root/>"
+----
+
+== Best Practices
+
+=== Let Moxml Handle It
+
+In most cases, rely on automatic preservation:
+
+[source,ruby]
+----
+# Good - automatic preservation
+doc = Moxml.new.parse(xml_content)
+modified = process_document(doc)
+output = doc.to_xml  # Declaration preserved automatically
+
+# Only use explicit control when required by specific needs
+output = doc.to_xml(declaration: false)  # Explicit requirement
+----
+
+=== Check Declaration Before Processing
+
+Know what you're working with:
+
+[source,ruby]
+----
+doc = Moxml.new.parse(xml_source)
+
+if doc.has_xml_declaration
+  # Handle documents with declarations
+  process_with_declaration(doc)
+else
+  # Handle fragments without declarations
+  process_fragment(doc)
+end
+----
+
+=== Document Your Requirements
+
+Make declaration requirements explicit in code:
+
+[source,ruby]
+----
+def save_svg(doc)
+  # SVG files should not have XML declarations
+  raise "SVG has declaration" if doc.has_xml_declaration
+  File.write('output.svg', doc.to_xml)
+end
+
+def save_xml_config(doc)
+  # Config files require declarations
+  File.write('config.xml', doc.to_xml(declaration: true))
+end
+----
+
+== Migration from Previous Versions
+
+=== Behavior Change
+
+In Moxml versions before 0.2.1, serialization *always* added an XML declaration. Starting with 0.2.1, behavior changed to preserve input format:
+
+[cols="1,2,2"]
+|===
+|Scenario |Before v0.2.1 |v0.2.1+
+
+|Parse without declaration
+|Added declaration ❌
+|No declaration ✓
+
+|Parse with declaration
+|Preserved declaration ✓
+|Preserved declaration ✓
+
+|Built document
+|Added declaration
+|No declaration (can override)
+|===
+
+=== Update Your Code
+
+If you relied on automatic declaration addition:
+
+[source,ruby]
+----
+# Before (relied on automatic declaration)
+doc = Moxml.new.parse('<root/>')
+output = doc.to_xml  # Had declaration
+
+# After (explicitly request if needed)
+doc = Moxml.new.parse('<root/>')
+output = doc.to_xml(declaration: true)  # Force add
+----
+
+=== Minimal Impact
+
+Most code will see **no change** because:
+
+* Documents with declarations still preserve them
+* Only fragments without declarations behave differently
+* New behavior is arguably more correct
+
+== Troubleshooting
+
+=== Declaration Not Preserved
+
+If declaration isn't being preserved, check:
+
+1. **Input Format**: Verify input actually has `<?xml...?>`
++
+[source,ruby]
+----
+xml_content = File.read('file.xml')
+puts "Has declaration: #{xml_content.strip.start_with?('<?xml')}"
+----
+
+2. **Explicit Override**: Check if code explicitly removes it
++
+[source,ruby]
+----
+# This will remove declaration regardless of input
+doc.to_xml(declaration: false)
+----
+
+3. **Element vs Document**: Only documents can have declarations
++
+[source,ruby]
+----
+element = doc.root
+element.to_xml  # Never has declaration (correct)
+----
+
+=== Unwanted Declaration
+
+If declaration is added when you don't want it:
+
+[source,ruby]
+----
+# Solution 1: Parse input without declaration
+svg = '<svg><rect/></svg>'  # No <?xml...?>
+doc = Moxml.new.parse(svg)
+doc.to_xml  # No declaration
+
+# Solution 2: Explicitly remove
+doc.to_xml(declaration: false)
+
+# Solution 3: Check and fix source
+if doc.has_xml_declaration
+  # Input has declaration - remove from source or override
+  output = doc.to_xml(declaration: false)
+end
+----
+
+=== Whitespace Before Declaration
+
+XML declarations must be at the document start. Whitespace before the declaration makes it invalid:
+
+[source,ruby]
+----
+# Invalid - whitespace before declaration
+invalid = '  <?xml version="1.0"?><root/>'
+doc = Moxml.new.parse(invalid)  # May raise error depending on adapter
+
+# Valid - declaration at start
+valid = '<?xml version="1.0"?><root/>'
+doc = Moxml.new.parse(valid)  # Works correctly
+----
+
+== API Reference
+
+=== Document Attributes
+
+==== has_xml_declaration
+
+[source,ruby]
+----
+doc.has_xml_declaration  # => Boolean
+----
+
+Returns `true` if the document was parsed from XML that contained an XML declaration, `false` otherwise.
+
+* Read/write attribute (can be manually set)
+* Defaults to `false` for programmatically built documents
+* Automatically set during parsing
+
+=== Serialization Options
+
+==== declaration
+
+[source,ruby]
+----
+doc.to_xml(declaration: true)   # Force include declaration
+doc.to_xml(declaration: false)  # Force exclude declaration
+doc.to_xml                       # Use automatic preservation
+----
+
+Controls whether XML declaration is included in serialized output:
+
+* `true`: Always include declaration
+* `false`: Never include declaration  
+* Not specified: Use `has_xml_declaration` value (automatic preservation)
+
+== See Also
+
+* link:parsing-xml.html[Parsing XML] - How to parse XML documents
+* link:modifying-xml.html[Modifying XML] - Working with parsed documents
+* link:../adapters/index.html[Adapters] - Adapter-specific behavior
+* link:../best-practices.html[Best Practices] - General XML processing guidelines

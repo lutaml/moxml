@@ -1,6 +1,5 @@
 ---
 title: Best practices
-parent: Overview
 nav_order: 9
 ---
 

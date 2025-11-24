@@ -1,7 +1,6 @@
 ---
-title: REXML adapter
+title: REXML
 parent: Adapters
-grand_parent: Overview
 nav_order: 4
 ---
 
