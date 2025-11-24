@@ -27,6 +27,28 @@ module Moxml
           DocumentBuilder.new(Context.new(:oga)).build(native_doc)
         end
 
+        # SAX parsing implementation for Oga
+        #
+        # @param xml [String, IO] XML to parse
+        # @param handler [Moxml::SAX::Handler] Moxml SAX handler
+        # @return [void]
+        def sax_parse(xml, handler)
+          bridge = OgaSAXBridge.new(handler)
+
+          xml_string = xml.respond_to?(:read) ? xml.read : xml.to_s
+
+          # Manually call start_document (Oga doesn't)
+          handler.on_start_document
+
+          ::Oga.sax_parse_xml(bridge, xml_string)
+
+          # Manually call end_document (Oga doesn't)
+          handler.on_end_document
+        rescue => e
+          error = Moxml::ParseError.new(e.message)
+          handler.on_error(error)
+        end
+
         def create_document(_native_doc = nil)
           ::Oga::XML::Document.new
         end
@@ -353,6 +375,64 @@ module Moxml
           # Expand empty tags, encode attributes, etc
           ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
         end
+      end
+    end
+
+    # Bridge between Oga SAX and Moxml SAX
+    #
+    # Translates Oga SAX events to Moxml::SAX::Handler events.
+    # Oga has different event naming and namespace as first param.
+    #
+    # @private
+    class OgaSAXBridge
+      def initialize(handler)
+        @handler = handler
+      end
+
+      # Oga: on_element(namespace, name, attributes)
+      # namespace may be nil
+      # attributes is an array of [name, value] pairs
+      def on_element(namespace, name, attributes)
+        # Build full qualified name if namespace present
+        element_name = namespace ? "#{namespace}:#{name}" : name
+
+        # Convert Oga attributes to hash
+        attr_hash = {}
+        ns_hash = {}
+
+        # Oga delivers attributes as array of [name, value] pairs
+        attributes.each do |attr_name, attr_value|
+          if attr_name.to_s.start_with?("xmlns")
+            prefix = attr_name.to_s == "xmlns" ? nil : attr_name.to_s.sub("xmlns:", "")
+            ns_hash[prefix] = attr_value
+          else
+            attr_hash[attr_name.to_s] = attr_value
+          end
+        end
+
+        @handler.on_start_element(element_name, attr_hash, ns_hash)
+      end
+
+      # Oga: after_element(namespace, name)
+      def after_element(namespace, name)
+        element_name = namespace ? "#{namespace}:#{name}" : name
+        @handler.on_end_element(element_name)
+      end
+
+      def on_text(text)
+        @handler.on_characters(text)
+      end
+
+      def on_cdata(text)
+        @handler.on_cdata(text)
+      end
+
+      def on_comment(text)
+        @handler.on_comment(text)
+      end
+
+      def on_processing_instruction(name, text)
+        @handler.on_processing_instruction(name, text || "")
       end
     end
   end

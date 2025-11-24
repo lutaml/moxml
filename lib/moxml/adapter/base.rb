@@ -27,6 +27,32 @@ module Moxml
           )
         end
 
+        # Parse XML using SAX (event-driven) parsing
+        #
+        # SAX parsing provides a memory-efficient way to process XML
+        # by triggering events as the document is parsed, rather than
+        # building a complete DOM tree.
+        #
+        # @param xml [String, IO] XML string or IO object to parse
+        # @param handler [Moxml::SAX::Handler] Handler object receiving events
+        # @return [void]
+        # @raise [Moxml::NotImplementedError] if adapter doesn't support SAX
+        def sax_parse(_xml, _handler)
+          raise Moxml::NotImplementedError.new(
+            "sax_parse not implemented",
+            feature: "sax_parse",
+            adapter: name,
+          )
+        end
+
+        # Check if this adapter supports SAX parsing
+        #
+        # @return [Boolean] true if SAX parsing is supported
+        def sax_supported?
+          respond_to?(:sax_parse) &&
+            method(:sax_parse).owner != Moxml::Adapter::Base.singleton_class
+        end
+
         def create_document(_native_doc = nil)
           raise Moxml::NotImplementedError.new(
             "create_document not implemented",

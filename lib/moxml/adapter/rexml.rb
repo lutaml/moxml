@@ -26,6 +26,29 @@ module Moxml
           DocumentBuilder.new(Context.new(:rexml)).build(native_doc)
         end
 
+        # SAX parsing implementation for REXML
+        #
+        # @param xml [String, IO] XML to parse
+        # @param handler [Moxml::SAX::Handler] Moxml SAX handler
+        # @return [void]
+        def sax_parse(xml, handler)
+          require "rexml/parsers/sax2parser"
+          require "rexml/source"
+          require "stringio"
+
+          bridge = REXMLSAX2Bridge.new(handler)
+
+          xml_string = xml.respond_to?(:read) ? xml.read : xml.to_s
+          source = ::REXML::IOSource.new(StringIO.new(xml_string))
+
+          parser = ::REXML::Parsers::SAX2Parser.new(source)
+          parser.listen(bridge)
+          parser.parse
+        rescue ::REXML::ParseException => e
+          error = Moxml::ParseError.new(e.message, line: e.line)
+          handler.on_error(error)
+        end
+
         def create_document(_native_doc = nil)
           ::REXML::Document.new
         end
@@ -472,6 +495,74 @@ module Moxml
           )
           formatter.write(node, output)
         end
+      end
+    end
+
+    # Bridge between REXML SAX2 and Moxml SAX
+    #
+    # Translates REXML::SAX2Parser events to Moxml::SAX::Handler events
+    #
+    # @private
+    class REXMLSAX2Bridge
+      def initialize(handler)
+        @handler = handler
+      end
+
+      # REXML splits element name into uri/localname/qname
+      def start_element(_uri, _localname, qname, attributes)
+        # Convert REXML attributes to hash
+        attr_hash = {}
+        ns_hash = {}
+
+        attributes.each do |name, value|
+          if name.to_s.start_with?("xmlns")
+            # Namespace declaration
+            prefix = name.to_s == "xmlns" ? nil : name.to_s.sub("xmlns:", "")
+            ns_hash[prefix] = value
+          else
+            attr_hash[name.to_s] = value
+          end
+        end
+
+        # Use qname (qualified name) for element name
+        @handler.on_start_element(qname, attr_hash, ns_hash)
+      end
+
+      def end_element(_uri, _localname, qname)
+        @handler.on_end_element(qname)
+      end
+
+      def characters(text)
+        @handler.on_characters(text)
+      end
+
+      def cdata(content)
+        @handler.on_cdata(content)
+      end
+
+      def comment(text)
+        @handler.on_comment(text)
+      end
+
+      def processing_instruction(target, data)
+        @handler.on_processing_instruction(target, data || "")
+      end
+
+      def start_document
+        @handler.on_start_document
+      end
+
+      def end_document
+        @handler.on_end_document
+      end
+
+      # REXML calls these but we don't need to handle them
+      def xmldecl(version, encoding, standalone)
+        # XML declaration - we don't need to do anything
+      end
+
+      def progress(position)
+        # Progress callback - we don't need to do anything
       end
     end
   end

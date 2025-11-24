@@ -2,6 +2,7 @@
 
 require_relative "base"
 require "ox"
+require "stringio"
 require_relative "customized_ox/text"
 require_relative "customized_ox/attribute"
 require_relative "customized_ox/namespace"
@@ -36,6 +37,28 @@ module Moxml
           end
 
           DocumentBuilder.new(Context.new(:ox)).build(native_doc)
+        end
+
+        # SAX parsing implementation for Ox
+        #
+        # @param xml [String, IO] XML to parse
+        # @param handler [Moxml::SAX::Handler] Moxml SAX handler
+        # @return [void]
+        def sax_parse(xml, handler)
+          # Create bridge that translates Ox SAX to Moxml SAX
+          bridge = OxSAXBridge.new(handler)
+
+          # Parse using Ox's SAX parser
+          xml_string = xml.respond_to?(:read) ? xml.read : xml.to_s
+
+          begin
+            ::Ox.sax_parse(bridge, StringIO.new(xml_string))
+            # Ox doesn't automatically call end_document, so we do it manually
+            bridge.end_document
+          rescue ::Ox::ParseError => e
+            error = Moxml::ParseError.new(e.message)
+            handler.on_error(error)
+          end
         end
 
         def create_document(native_doc = nil)
@@ -593,6 +616,104 @@ module Moxml
 
           node.nodes&.each { |child| traverse(child, &block) }
         end
+      end
+    end
+
+    # Bridge between Ox SAX and Moxml SAX
+    #
+    # Translates Ox::Sax events to Moxml::SAX::Handler events.
+    # Ox has a unique SAX pattern where attributes are delivered AFTER start_element.
+    #
+    # @private
+    class OxSAXBridge
+      def initialize(handler)
+        @handler = handler
+        @pending_attrs = {}
+        @pending_element_name = nil
+        @element_started = false
+        @document_started = false
+      end
+
+      # Ox delivers attributes AFTER start_element
+      def attr(name, value)
+        @pending_attrs[name] = value
+      end
+
+      # Called when element starts (but attributes come AFTER this)
+      def start_element(name)
+        # If we had a previous element waiting, we need to finalize it first
+        if @pending_element_name
+          finalize_pending_element
+        end
+
+        # Store this element name (convert symbol to string)
+        @pending_element_name = name.to_s
+        @element_started = true
+
+        # Call on_start_document if this is the first element
+        unless @document_started
+          @handler.on_start_document
+          @document_started = true
+        end
+      end
+
+      def end_element(name)
+        # Finalize any pending element before ending
+        if @pending_element_name
+          finalize_pending_element
+        end
+
+        # Convert symbol to string
+        @handler.on_end_element(name.to_s)
+      end
+
+      # Ox only has text() - no separate CDATA, comment, or PI events
+      def text(string)
+        # Finalize any pending element before text
+        if @pending_element_name
+          finalize_pending_element
+        end
+
+        @handler.on_characters(string)
+      end
+
+      def error(message, line, column)
+        error = Moxml::ParseError.new(message, line: line, column: column)
+        @handler.on_error(error)
+      end
+
+      # Called at end of parsing (not automatically by Ox)
+      def end_document
+        # Finalize any pending element
+        if @pending_element_name
+          finalize_pending_element
+        end
+
+        @handler.on_end_document if @document_started
+      end
+
+      private
+
+      def finalize_pending_element
+        # Separate namespace declarations from regular attributes
+        attr_hash = {}
+        namespaces_hash = {}
+
+        @pending_attrs.each do |attr_name, attr_value|
+          if attr_name.to_s.start_with?("xmlns")
+            # Namespace declaration
+            prefix = attr_name.to_s == "xmlns" ? nil : attr_name.to_s.sub("xmlns:", "")
+            namespaces_hash[prefix] = attr_value
+          else
+            attr_hash[attr_name.to_s] = attr_value
+          end
+        end
+
+        @handler.on_start_element(@pending_element_name, attr_hash, namespaces_hash)
+
+        # Clear for next element
+        @pending_attrs = {}
+        @pending_element_name = nil
       end
     end
   end

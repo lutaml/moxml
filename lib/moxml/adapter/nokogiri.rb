@@ -32,6 +32,29 @@ module Moxml
           DocumentBuilder.new(Context.new(:nokogiri)).build(native_doc)
         end
 
+        # SAX parsing implementation for Nokogiri
+        #
+        # @param xml [String, IO] XML to parse
+        # @param handler [Moxml::SAX::Handler] Moxml SAX handler
+        # @return [void]
+        def sax_parse(xml, handler)
+          # Create bridge that translates Nokogiri SAX to Moxml SAX
+          bridge = NokogiriSAXBridge.new(handler)
+
+          # Create Nokogiri SAX parser
+          parser = ::Nokogiri::XML::SAX::Parser.new(bridge)
+
+          # Parse
+          if xml.respond_to?(:read)
+            parser.parse(xml)
+          else
+            parser.parse(xml.to_s)
+          end
+        rescue ::Nokogiri::XML::SyntaxError => e
+          error = Moxml::ParseError.new(e.message, line: e.line, column: e.column)
+          handler.on_error(error)
+        end
+
         def create_document(_native_doc = nil)
           ::Nokogiri::XML::Document.new
         end
@@ -331,6 +354,77 @@ module Moxml
 
             hsh.merge(attr_name => value)
           end
+        end
+      end
+
+      # Bridge between Nokogiri SAX and Moxml SAX
+      #
+      # Translates Nokogiri::XML::SAX::Document events to Moxml::SAX::Handler events
+      #
+      # @private
+      class NokogiriSAXBridge < ::Nokogiri::XML::SAX::Document
+        def initialize(handler)
+          super()
+          @handler = handler
+        end
+
+        # Map Nokogiri events to Moxml events
+
+        def start_document
+          @handler.on_start_document
+        end
+
+        def end_document
+          @handler.on_end_document
+        end
+
+        def start_element(name, attributes = [])
+          # Convert Nokogiri attributes array to hash
+          attr_hash = {}
+          namespaces_hash = {}
+
+          attributes.each do |attr|
+            attr_name = attr[0]
+            attr_value = attr[1]
+
+            if attr_name.start_with?("xmlns")
+              # Namespace declaration
+              prefix = attr_name == "xmlns" ? nil : attr_name.sub("xmlns:", "")
+              namespaces_hash[prefix] = attr_value
+            else
+              attr_hash[attr_name] = attr_value
+            end
+          end
+
+          @handler.on_start_element(name, attr_hash, namespaces_hash)
+        end
+
+        def end_element(name)
+          @handler.on_end_element(name)
+        end
+
+        def characters(string)
+          @handler.on_characters(string)
+        end
+
+        def cdata_block(string)
+          @handler.on_cdata(string)
+        end
+
+        def comment(string)
+          @handler.on_comment(string)
+        end
+
+        def processing_instruction(target, data)
+          @handler.on_processing_instruction(target, data || "")
+        end
+
+        def error(string)
+          @handler.on_error(Moxml::ParseError.new(string))
+        end
+
+        def warning(string)
+          @handler.on_warning(string)
         end
       end
     end
