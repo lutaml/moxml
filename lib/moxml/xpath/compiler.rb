@@ -976,8 +976,10 @@ module Moxml
           conversions << conversion.to_string(arg_var)
         end
 
+        # rubocop:disable Style/RedundantSum, Performance/Sum
         concatted = assigns.inject(:followed_by)
           .followed_by(conversions.inject(:+))
+        # rubocop:enable Style/RedundantSum, Performance/Sum
 
         block_given? ? concatted.empty?.if_false { yield concatted } : concatted
       end

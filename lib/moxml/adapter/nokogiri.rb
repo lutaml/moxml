@@ -221,6 +221,23 @@ module Moxml
         end
 
         def add_child(element, child)
+          # Special handling for declarations on Nokogiri documents
+          if element.is_a?(::Nokogiri::XML::Document) &&
+              child.is_a?(::Nokogiri::XML::ProcessingInstruction) &&
+              child.name == "xml"
+            # Set document's xml_decl property
+            version = declaration_attribute(child, "version") || "1.0"
+            encoding = declaration_attribute(child, "encoding")
+            standalone = declaration_attribute(child, "standalone")
+
+            # Nokogiri's xml_decl can only be set via instance variable
+            element.instance_variable_set(:@xml_decl, {
+              version: version,
+              encoding: encoding,
+              standalone: standalone,
+            }.compact)
+          end
+
           if node_type(child) == :doctype
             # avoid exceptions: cannot reparent Nokogiri::XML::DTD there
             element.create_internal_subset(
@@ -240,6 +257,14 @@ module Moxml
         end
 
         def remove(node)
+          # Special handling for declarations on Nokogiri documents
+          if node.is_a?(::Nokogiri::XML::ProcessingInstruction) &&
+              node.name == "xml" &&
+              node.parent.is_a?(::Nokogiri::XML::Document)
+            # Clear document's xml_decl when removing declaration
+            node.parent.instance_variable_set(:@xml_decl, nil)
+          end
+
           node.remove
         end
 
@@ -328,8 +353,18 @@ module Moxml
           if options[:indent].to_i.positive?
             save_options |= ::Nokogiri::XML::Node::SaveOptions::FORMAT
           end
-          if options[:no_declaration]
-            save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION
+
+          # Handle declaration option
+          # Priority:
+          # 1. Explicit no_declaration option
+          # 2. Check Nokogiri's internal @xml_decl (when remove is called, this becomes nil)
+          if options.key?(:no_declaration)
+            save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION if options[:no_declaration]
+          elsif node.respond_to?(:instance_variable_get) &&
+              node.instance_variable_defined?(:@xml_decl)
+            # Nokogiri's internal state - if nil, declaration was removed
+            xml_decl = node.instance_variable_get(:@xml_decl)
+            save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION if xml_decl.nil?
           end
 
           node.to_xml(

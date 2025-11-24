@@ -348,6 +348,24 @@ module Moxml
         end
 
         def add_child(element, child)
+          # Special handling for declarations on Ox documents
+          if element.is_a?(::Ox::Document) && child.is_a?(::Ox::Instruct) && child.target == "xml"
+            # Transfer declaration attributes to document
+            element.attributes ||= {}
+            if child.attributes["version"]
+              element.attributes[:version] =
+                child.attributes["version"]
+            end
+            if child.attributes["encoding"]
+              element.attributes[:encoding] =
+                child.attributes["encoding"]
+            end
+            if child.attributes["standalone"]
+              element.attributes[:standalone] =
+                child.attributes["standalone"]
+            end
+          end
+
           child.parent = element if child.respond_to?(:parent)
           element.nodes ||= []
           element.nodes << child
@@ -379,6 +397,15 @@ module Moxml
           return node.clear if node.is_a?(String)
 
           return unless parent(node)
+
+          # Special handling for declarations on Ox documents
+          if parent(node).is_a?(::Ox::Document) && node.is_a?(::Ox::Instruct) && node.target == "xml"
+            # Clear declaration attributes from document
+            doc = parent(node)
+            doc.attributes&.delete(:version)
+            doc.attributes&.delete(:encoding)
+            doc.attributes&.delete(:standalone)
+          end
 
           parent(node).nodes.delete(unpatch_node(node))
         end
@@ -524,13 +551,24 @@ module Moxml
         def serialize(node, options = {})
           output = ""
           if node.is_a?(::Ox::Document)
-            # add declaration
-            version = node[:version] || "1.0"
-            encoding = options[:encoding] || node[:encoding]
-            standalone = node[:standalone]
+            # Check if we should include declaration
+            # Priority: explicit option > document attributes
+            should_include_decl = if options.key?(:no_declaration)
+                                    !options[:no_declaration]
+                                  else
+                                    # Check if document has declaration attributes
+                                    node[:version] || node[:encoding] || node[:standalone]
+                                  end
 
-            decl = create_native_declaration(version, encoding, standalone)
-            output = ::Ox.dump(::Ox::Document.new << decl).strip
+            # Only add declaration if should_include_decl is true
+            if should_include_decl
+              version = node[:version] || "1.0"
+              encoding = options[:encoding] || node[:encoding]
+              standalone = node[:standalone]
+
+              decl = create_native_declaration(version, encoding, standalone)
+              output = ::Ox.dump(::Ox::Document.new << decl).strip
+            end
           end
 
           ox_options = {

@@ -23,6 +23,7 @@ module Moxml
             end
             create_document
           end
+
           DocumentBuilder.new(Context.new(:rexml)).build(native_doc)
         end
 
@@ -255,6 +256,12 @@ module Moxml
         end
 
         def add_child(element, child)
+          # Special handling for declarations on REXML documents
+          if element.is_a?(::REXML::Document) && child.is_a?(::REXML::XMLDecl)
+            # Set document's xml_decl directly
+            element.instance_variable_set(:@xml_declaration, child)
+          end
+
           case child
           when String
             element.add_text(child)
@@ -279,6 +286,12 @@ module Moxml
         end
 
         def remove(node)
+          # Special handling for declarations on REXML documents
+          if node.is_a?(::REXML::XMLDecl) && node.parent.is_a?(::REXML::Document)
+            # Clear document's xml_declaration when removing declaration
+            node.parent.instance_variable_set(:@xml_declaration, nil)
+          end
+
           node.remove
         end
 
@@ -453,16 +466,25 @@ module Moxml
           output = +""
 
           if node.is_a?(::REXML::Document)
-            # Always include XML declaration
-            decl = node.xml_decl || ::REXML::XMLDecl.new("1.0",
-                                                         options[:encoding] || "UTF-8")
-            decl.encoding = options[:encoding] if options[:encoding]
-            output << "<?xml"
-            output << %( version="#{decl.version}") if decl.version
-            output << %( encoding="#{decl.encoding}") if decl.encoding
-            output << %( standalone="#{decl.standalone}") if decl.standalone
-            output << "?>"
-            # output << "\n"
+            # Check if we should include declaration
+            # Priority: explicit option > check if document has xml_decl
+            should_include_decl = if options.key?(:no_declaration)
+                                    !options[:no_declaration]
+                                  else
+                                    # Include declaration only if document has xml_decl
+                                    !node.xml_decl.nil?
+                                  end
+
+            # Include XML declaration only if should_include_decl and xml_decl exists
+            if should_include_decl && node.xml_decl
+              decl = node.xml_decl
+              decl.encoding = options[:encoding] if options[:encoding]
+              output << "<?xml"
+              output << %( version="#{decl.version}") if decl.version
+              output << %( encoding="#{decl.encoding}") if decl.encoding
+              output << %( standalone="#{decl.standalone}") if decl.standalone
+              output << "?>"
+            end
 
             # output << "\n"
             node.doctype&.write(output)

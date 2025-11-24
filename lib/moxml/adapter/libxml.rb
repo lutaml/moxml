@@ -332,7 +332,13 @@ module Moxml
 
         def document(node)
           native_node = unpatch_node(node)
-          native_node&.doc
+          return nil unless native_node
+
+          # Handle documents themselves
+          return native_node if native_node.is_a?(::LibXML::XML::Document)
+
+          # For other nodes, return their document
+          native_node.doc
         end
 
         def root(document)
@@ -831,7 +837,16 @@ module Moxml
           if native_node.is_a?(::LibXML::XML::Document)
             output = +""
 
-            unless options[:no_declaration]
+            # Check if we should include declaration
+            # Priority: explicit no_declaration option > default (include)
+            should_include_decl = if options.key?(:no_declaration)
+                                    !options[:no_declaration]
+                                  else
+                                    # Default: include declaration
+                                    true
+                                  end
+
+            if should_include_decl
               # Check if declaration was explicitly managed
               if native_node.instance_variable_defined?(:@moxml_declaration)
                 decl = native_node.instance_variable_get(:@moxml_declaration)
@@ -1301,7 +1316,7 @@ module Moxml
           # - On child elements, output namespace definitions that override parent namespaces
           if elem.respond_to?(:namespaces) && elem.namespaces.respond_to?(:definitions)
             # Get parent's namespace definitions to detect overrides
-            parent_ns_defs = if !include_ns && elem.respond_to?(:parent) && elem.parent
+            parent_ns_defs = if !include_ns && elem.respond_to?(:parent) && elem.parent && !elem.parent.is_a?(::LibXML::XML::Document)
                                parent_namespaces = {}
                                if elem.parent.respond_to?(:namespaces)
                                  elem.parent.namespaces.each do |ns|
@@ -1444,6 +1459,7 @@ module Moxml
           node.each_child do |child|
             collect_ns_from_subtree(child, ns_defs) if child.element?
           end
+          ns_defs
         end
 
         def build_xpath_namespaces(node, user_namespaces)

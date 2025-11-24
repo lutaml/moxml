@@ -13,7 +13,24 @@ module Moxml
     end
 
     def parse(xml, options = {})
-      config.adapter.parse(xml, default_options.merge(options))
+      # Detect if input has XML declaration
+      xml_string = if xml.respond_to?(:read)
+                     xml.read.tap do
+                       xml.rewind if xml.respond_to?(:rewind)
+                     end
+                   else
+                     xml.to_s
+                   end
+      has_declaration = xml_string.strip.start_with?("<?xml")
+
+      # Parse with adapter (without declaration info - adapters don't need it)
+      parsed_options = default_options.merge(options)
+      doc = config.adapter.parse(xml_string, parsed_options)
+
+      # Set declaration flag on Document wrapper (proper OOP)
+      doc.has_xml_declaration = has_declaration if doc.is_a?(Document)
+
+      doc
     end
 
     # Parse XML using SAX (event-driven) parsing

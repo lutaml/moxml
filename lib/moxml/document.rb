@@ -12,6 +12,17 @@ require_relative "doctype"
 
 module Moxml
   class Document < Node
+    attr_accessor :has_xml_declaration
+
+    def initialize(native, context)
+      super
+      @has_xml_declaration = false
+    end
+
+    def document
+      self
+    end
+
     def root=(element)
       adapter.set_root(@native, element.native)
     end
@@ -61,6 +72,9 @@ module Moxml
       node = prepare_node(node)
 
       if node.is_a?(Declaration)
+        # Mark that document now has a declaration
+        @has_xml_declaration = true
+
         if children.empty?
           adapter.add_child(@native, node.native)
         else
