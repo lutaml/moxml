@@ -6,7 +6,7 @@ require_relative "base"
 if Gem.win_platform?
   dll_path = File.expand_path("../../dlls", __dir__)
   if File.directory?(dll_path)
-    ENV["PATH"] = "#{dll_path};#{ENV.fetch('PATH', nil)}"
+    ENV["PATH"] = "#{dll_path}#{File::PATH_SEPARATOR}#{ENV.fetch('PATH', nil)}"
   end
 end
 
