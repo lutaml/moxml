@@ -1,0 +1,50 @@
+---
+title: Node API reference
+parent: Overview
+nav_order: 5
+---
+
+== Node API reference
+
+== XML objects and their methods
+
+Each node type provides methods for traversing the document structure:
+
+[source,ruby]
+----
+node.parent              # Get parent node
+node.children            # Get child nodes
+node.next_sibling        # Get next sibling
+node.previous_sibling    # Get previous sibling
+
+# Convenience accessors
+node.first_child         # Get first child
+node.last_child          # Get last child
+node.has_children?       # Check if node has children
+
+# Node manipulation
+node.clone              # Deep copy of node
+node.dup                # Alias for clone
+
+# Query methods
+node.find(xpath)        # Alias for at_xpath
+node.find_all(xpath)    # Returns array of matching elements
+
+# Type checking
+node.element?          # Is it an element?
+node.text?             # Is it a text node?
+node.cdata?            # Is it a CDATA section?
+node.comment?          # Is it a comment?
+node.processing_instruction? # Is it a PI?
+node.attribute?        # Is it an attribute?
+node.namespace?        # Is it a namespace?
+
+# Node information
+node.document          # Get owning document
+----
+
+
+See also:
+
+* link:../guides/working-with-documents[Working with documents guide]
+* link:../guides/advanced-features[Advanced features guide]

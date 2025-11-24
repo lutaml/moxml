@@ -1,0 +1,268 @@
+---
+title: Basic usage
+parent: Overview
+nav_order: 2
+---
+
+== Basic usage
+
+=== Purpose
+
+Learn the fundamentals of XML processing with Moxml through hands-on examples
+covering parsing, creating, querying, and modifying XML documents.
+
+=== Prerequisites
+
+* Moxml installed with an adapter
+* Basic understanding of XML concepts
+
+=== Step 1: Parse XML documents
+
+Start by parsing existing XML:
+
+[source,ruby]
+----
+require 'moxml'
+
+# Create a Moxml context
+context = Moxml.new
+
+# Parse XML from a string
+xml = '<library><book id="1">Ruby Programming</book></library>'
+doc = context.parse(xml)
+
+# Access the root element
+puts doc.root.name  # => "library"
+
+# Access child elements
+book = doc.root.children.first
+puts book.name      # => "book"
+puts book['id']     # => "1"
+puts book.text      # => "Ruby Programming"
+----
+
+=== Step 2: Query with XPath
+
+Use XPath to find elements:
+
+[source,ruby]
+----
+xml = <<~XML
+  <library>
+    <book id="1" category="programming">
+      <title>Ruby Basics</title>
+      <author>Jane Smith</author>
+      <price>29.99</price>
+    </book>
+    <book id="2" category="fiction">
+      <title>Ruby Story</title>
+      <author>John Doe</author>
+      <price>19.99</price>
+    </book>
+  </library>
+XML
+
+doc = context.parse(xml)
+
+# Find all books
+all_books = doc.xpath('//book')
+puts "Total books: #{all_books.length}"  # => 2
+
+# Find specific book by attribute
+book1 = doc.at_xpath('//book[@id="1"]')
+puts book1.at_xpath('.//title').text  # => "Ruby Basics"
+
+# Find all titles
+titles = doc.xpath('//book/title')
+titles.each { |t| puts t.text }
+# => Ruby Basics
+# => Ruby Story
+
+# Find books by category
+programming = doc.xpath('//book[@category="programming"]')
+puts programming.first.at_xpath('.//title').text  # => "Ruby Basics"
+----
+
+=== Step 3: Create XML documents
+
+Build XML from scratch using the builder:
+
+[source,ruby]
+----
+doc = Moxml::Builder.build(context) do |xml|
+  xml.declaration version: "1.0", encoding: "UTF-8"
+
+  xml.library do
+    xml.book id: "1", category: "programming" do
+      xml.title "Ruby Basics"
+      xml.author "Jane Smith"
+      xml.price "29.99"
+    end
+  end
+end
+
+puts doc.to_xml(indent: 2)
+----
+
+Output:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<library>
+  <book id="1" category="programming">
+    <title>Ruby Basics</title>
+    <author>Jane Smith</author>
+    <price>29.99</price>
+  </book>
+</library>
+----
+
+=== Step 4: Modify XML content
+
+Update existing XML documents:
+
+[source,ruby]
+----
+xml = '<library><book id="1"><title>Old Title</title></book></library>'
+doc = context.parse(xml)
+
+# Find element to modify
+book = doc.at_xpath('//book[@id="1"]')
+
+# Update text content
+title = book.at_xpath('.//title')
+title.text = 'New Title'
+
+# Update attributes
+book['id'] = '100'
+book['category'] = 'programming'
+
+# Add new elements
+author = doc.create_element('author')
+author.text = 'Jane Smith'
+book.add_child(author)
+
+# Add price
+price = doc.create_element('price')
+price.text = '29.99'
+book.add_child(price)
+
+puts doc.to_xml(indent: 2)
+----
+
+=== Step 5: Work with attributes
+
+Manage element attributes:
+
+[source,ruby]
+----
+doc = context.parse('<book/>')
+book = doc.root
+
+# Set attributes
+book['id'] = '1'
+book['isbn'] = '978-0-123456-78-9'
+book['category'] = 'programming'
+
+# Get attributes
+puts book['id']        # => "1"
+puts book['isbn']      # => "978-0-123456-78-9"
+
+# Check attribute existence
+has_id = book.attributes.any? { |a| a.name == 'id' }
+puts has_id  # => true
+
+# Remove attributes
+book.remove_attribute('category')
+
+# List all attributes
+book.attributes.each do |attr|
+  puts "#{attr.name} = #{attr.value}"
+end
+----
+
+=== Step 6: Handle special content
+
+Work with CDATA, comments, and processing instructions:
+
+[source,ruby]
+----
+doc = context.create_document
+
+root = doc.create_element('data')
+doc.add_child(root)
+
+# Add comment
+comment = doc.create_comment('This is a note')
+root.add_child(comment)
+
+# Add CDATA section
+cdata = doc.create_cdata('<raw>XML content</raw>')
+root.add_child(cdata)
+
+# Add processing instruction
+pi = doc.create_processing_instruction('xml-stylesheet',
+  'type="text/xsl" href="style.xsl"')
+doc.add_child(pi)
+
+puts doc.to_xml
+----
+
+Output:
+
+[source,xml]
+----
+<?xml-stylesheet type="text/xsl" href="style.xsl"?>
+<data>
+  <!--This is a note-->
+  <![CDATA[<raw>XML content</raw>]]>
+</data>
+----
+
+=== Step 7: Error handling
+
+Handle XML processing errors:
+
+[source,ruby]
+----
+# Handle parse errors
+begin
+  doc = context.parse('<invalid><unclosed>', strict: true)
+rescue Moxml::ParseError => e
+  puts "Parse error: #{e.message}"
+  puts "Hint: #{e.to_s}"
+end
+
+# Handle XPath errors
+begin
+  doc.xpath('//invalid[[[')
+rescue Moxml::XPathError => e
+  puts "Invalid XPath: #{e.expression}"
+end
+
+# Handle validation errors
+begin
+  doc.version = "invalid"
+rescue Moxml::ValidationError => e
+  puts "Validation error: #{e.message}"
+end
+----
+
+=== Next steps
+
+* link:working-with-elements[Working with elements] - Deep dive into element
+manipulation
+* link:xpath-queries[XPath queries] - Master XPath querying
+* link:namespace-handling[Namespace handling] - Work with XML namespaces
+* link:../guides/[Guides] - Task-oriented documentation
+
+=== Practice exercises
+
+Try these exercises to reinforce your learning:
+
+. Parse an XML file from disk and find all elements with a specific attribute
+. Create a new XML document with nested elements and multiple attributes
+. Modify an existing document by adding, updating, and removing elements
+. Query a document using XPath with predicates
+. Handle namespaced XML documents

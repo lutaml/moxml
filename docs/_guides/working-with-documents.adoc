@@ -1,0 +1,118 @@
+---
+title: Working with documents
+parent: Guides
+nav_order: 3
+---
+
+== Working with documents
+
+=== Builder pattern
+
+The builder pattern provides a clean DSL for creating XML documents:
+
+[source,ruby]
+----
+doc = Moxml::Builder.new(Moxml.new).build do
+  declaration version: "1.0", encoding: "UTF-8"
+  element 'library', xmlns: 'http://example.org/library' do
+    element 'book' do
+      element 'title' do
+        text 'Ruby Programming'
+      end
+    end
+  end
+end
+----
+
+See link:parsing-xml.adoc[Parsing XML Guide] for more document creation patterns.
+
+=== Fluent interface API
+
+Moxml provides a fluent, chainable API for creating and manipulating XML documents with improved developer experience:
+
+[source,ruby]
+----
+# Old way - verbose and less readable
+element = doc.create_element('book')
+element.add_namespace("dc", "http://purl.org/dc/elements/1.1/")
+element["id"] = "123"
+element["type"] = "article"
+child = doc.create_element("title")
+child.text = "Hello"
+element.add_child(child)
+
+# New way - fluent and chainable
+element = doc.create_element('book')
+  .with_namespace("dc", "http://purl.org/dc/elements/1.1/")
+  .set_attributes(id: "123", type: "article")
+  .with_child(doc.create_element("title").tap { |t| t.text = "Hello" })
+----
+
+==== Chainable element methods
+
+[source,ruby]
+----
+# with_namespace - add namespace and return self
+element.with_namespace("dc", "http://purl.org/dc/elements/1.1/")
+
+# set_attributes - set multiple attributes at once
+element.set_attributes(id: "123", title: "Ruby", year: "2024")
+
+# with_child - add child and return self
+element.with_child(doc.create_element("author"))
+
+# Chain multiple operations
+element
+  .with_namespace("dc", "http://purl.org/dc/elements/1.1/")
+  .set_attributes(id: "123", type: "technical")
+  .with_child(doc.create_element("title"))
+  .with_child(doc.create_element("author"))
+----
+
+==== Convenience query methods
+
+[source,ruby]
+----
+# find_element - alias for at_xpath
+first_book = doc.root.find_element("//book")
+
+# find_all - returns array of matching elements
+all_books = doc.root.find_all("//book")
+
+# Document-level find methods
+first_title = doc.find("//title")
+all_titles = doc.find_all("//title")
+----
+
+==== Quick element creation
+
+[source,ruby]
+----
+# add_element - create, configure, and add element in one call
+book = doc.add_element("book", id: "123", title: "Ruby") do |elem|
+  elem.text = "Ruby Programming Guide"
+end
+----
+
+==== Practical fluent example
+
+[source,ruby]
+----
+doc = Moxml.new.create_document
+
+# Build a complete book entry with fluent API
+doc.add_element("library") do |library|
+  library
+    .with_namespace("dc", "http://purl.org/dc/elements/1.1/")
+    .with_child(
+      doc.create_element("book")
+        .set_attributes(id: "b1", isbn: "978-0-123456-78-9")
+        .with_child(doc.create_element("dc:title").tap { |t| t.text = "Ruby Programming" })
+        .with_child(doc.create_element("dc:creator").tap { |c| c.text = "Jane Smith" })
+        .with_child(doc.create_element("dc:date").tap { |d| d.text = "2024" })
+    )
+end
+
+puts doc.to_xml(indent: 2)
+----
+

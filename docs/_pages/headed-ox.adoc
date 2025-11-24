@@ -1022,4 +1022,4 @@ HeadedOx is part of the Moxml project.
 
 Copyright Ribose.
 
-Licensed under the BSD-2-Clause License.
+Licensed under the Ribose 3-Clause BSD License.

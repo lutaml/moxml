@@ -1,0 +1,48 @@
+---
+title: Overview
+nav_order: 1
+---
+
+== Reference
+
+Detailed technical specifications and API documentation for Moxml.
+
+=== API reference
+
+link:document-api[Document API]::
+Complete reference for Document class methods and properties.
+
+link:element-api[Element API]::
+Detailed documentation of Element class methods and operations.
+
+link:node-api[Node API]::
+Base Node class methods available to all node types.
+
+link:node-types[Node types]::
+Reference for Text, Comment, CDATA, ProcessingInstruction, and other node
+types.
+
+link:namespace-api[Namespace API]::
+Methods and operations for working with XML namespaces.
+
+link:xpath-api[XPath API]::
+XPath query methods, expressions, and namespace handling.
+
+=== Adapter reference
+
+link:adapter-api[Adapter API]::
+Base adapter interface and adapter-specific method documentation.
+
+link:adapter-capabilities[Adapter capabilities]::
+Detailed feature matrix and capability comparison across all adapters.
+
+=== Utilities
+
+link:builder-api[Builder API]::
+DSL methods for building XML documents programmatically.
+
+link:error-classes[Error classes]::
+Complete reference of all error classes with attributes and usage.
+
+link:xml-utils[XML utilities]::
+Validation, encoding, and utility functions.

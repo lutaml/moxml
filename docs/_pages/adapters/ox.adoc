@@ -1,0 +1,55 @@
+---
+title: Ox adapter
+parent: Adapters
+nav_order: 5
+---
+
+== Ox adapter
+
+=== Overview
+
+Ox is the fastest XML parser available for Ruby, providing excellent performance for simple to moderately complex XML documents.
+
+**Best for:**
+* Maximum parsing speed
+* Simple document structures
+* Memory-constrained environments
+* When XPath usage is minimal
+
+== Specific adapter limitations
+
+=== Ox adapter
+
+==== XPath limitations
+
+The Ox adapter uses a custom "XPath-to-locate" translation engine.
+
+The following XPath features are NOT supported:
+
+* Attribute value predicates: `//book[@id='123']` ❌
+* Logical operators: `//book[@id and @title]` ❌
+* Position predicates: `//book[1]`, `//book[last()]` ❌
+* Text predicates: `//book[text()='Title']` ❌
+* Namespace queries: `//ns:element` ❌
+* Parent axis: `//child/..` ❌
+* Sibling axes: `following-sibling::*` ❌
+* XPath functions: `count()`, `concat()`, etc. ❌
+
+*Workaround:* Use Ruby enumerable methods after basic queries:
+
+[source,ruby]
+----
+# Instead of: doc.xpath("//book[@id='123']")
+# Use:
+doc.xpath("//book").find { |book| book["id"] == "123" }
+----
+
+IMPORTANT: For complete XPath 1.0 specification with zero limitations today, use
+Nokogiri or Oga adapters.
+
+
+
+See also:
+
+* link:headed-ox[HeadedOx adapter] - Ox with full XPath support
+* link:../compatibility[Adapter compatibility matrix]

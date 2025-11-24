@@ -1,0 +1,292 @@
+---
+title: Oga adapter
+parent: Adapters
+grand_parent: Overview
+nav_order: 3
+---
+
+== Oga adapter
+
+=== Purpose
+
+The Oga adapter provides pure Ruby XML processing with full XPath 1.0
+support, making it ideal for environments where C extensions are not allowed
+or desired.
+
+=== Overview
+
+link:https://github.com/yorickpeterse/oga[Oga] is a pure Ruby XML parser that
+requires no C extensions. It's perfect for JRuby, TruffleRuby, Opal, or any
+environment where native extensions are problematic.
+
+=== Installation
+
+Add to your Gemfile:
+
+[source,ruby]
+----
+gem 'moxml'
+gem 'oga'
+----
+
+Install:
+
+[source,shell]
+----
+bundle install
+----
+
+=== Configuration
+
+[source,ruby]
+----
+# Explicit selection
+context = Moxml.new
+context.config.adapter = :oga
+
+# Global default
+Moxml::Config.default_adapter = :oga
+----
+
+=== Features
+
+==== Full XPath 1.0 support
+
+Pure Ruby implementation of XPath 1.0:
+
+[source,ruby]
+----
+doc = Moxml.new.parse(xml)
+
+# All XPath features work
+books = doc.xpath('//book[@price < 30]')
+count = doc.xpath('count(//book)')
+titles = doc.xpath('//book[position() < 3]/title')
+
+# Namespace-aware queries
+doc.xpath('//ns:element', 'ns' => 'http://example.org')
+
+# Functions and predicates
+doc.xpath('//book[contains(title, "Ruby")]')
+----
+
+==== Complete namespace support
+
+Full namespace handling in pure Ruby:
+
+[source,ruby]
+----
+# Create namespaced elements
+element.add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
+
+# Query with namespaces
+results = doc.xpath('//dc:creator',
+  'dc' => 'http://purl.org/dc/elements/1.1/')
+----
+
+==== All node types supported
+
+Complete support for all XML node types:
+
+* Elements with attributes
+* Text nodes
+* CDATA sections
+* Comments
+* Processing instructions
+* DOCTYPE declarations
+* XML declarations
+
+==== Pure Ruby benefits
+
+* No C extension compilation required
+* Works on JRuby and TruffleRuby
+* Compatible with Opal for browser environments
+* Easier debugging and introspection
+* No platform-specific build issues
+
+=== Limitations
+
+Minor limitations compared to native implementations:
+
+* Slower parsing than C-based libraries
+* Higher memory usage than Ox
+* Some advanced XPath 1.0 functions may have edge case differences
+
+NOTE: Oga's pure Ruby implementation makes it slower than C-based libraries,
+but it provides excellent functionality and is faster than REXML.
+
+=== Performance characteristics
+
+Based on benchmarks:
+
+[cols="2,2,3"]
+|===
+| Operation | Performance | Notes
+
+| Parse medium XML
+| ~30-50 ips
+| Pure Ruby parsing
+
+| Serialize medium XML
+| ~2,000+ ips
+| Efficient serialization
+
+| XPath queries
+| ~20,000+ ips
+| Pure Ruby XPath engine
+
+| Memory usage
+| Medium
+| More than C libraries, less than REXML
+|===
+
+=== Best use cases
+
+**Choose Oga when:**
+
+* Pure Ruby environment is required (JRuby, TruffleRuby)
+* C extensions cannot be compiled or used
+* Browser deployment via Opal is needed
+* Full XPath 1.0 support is required without C dependencies
+* Easier debugging of XML processing is desired
+
+**Avoid Oga when:**
+
+* Maximum parsing performance is critical (use link:ox[Ox] or
+link:nokogiri[Nokogiri])
+* Memory usage must be minimized (use link:ox[Ox])
+* Standard library only is required (use link:rexml[REXML])
+
+=== Example usage
+
+==== Basic document processing
+
+[source,ruby]
+----
+require 'moxml'
+
+# Configure Oga adapter
+context = Moxml.new
+context.config.adapter = :oga
+
+xml = <<~XML
+  <library>
+    <book id="1">
+      <title>Ruby Programming</title>
+      <price>29.99</price>
+    </book>
+  </library>
+XML
+
+doc = context.parse(xml)
+
+# Query with XPath
+book = doc.at_xpath('//book[@id="1"]')
+puts book.at_xpath('.//title').text  # => "Ruby Programming"
+
+# Modify
+book.at_xpath('.//price').text = '24.99'
+
+# Serialize
+puts doc.to_xml(indent: 2)
+----
+
+==== XPath queries
+
+[source,ruby]
+----
+# Complex XPath expressions work
+cheap_books = doc.xpath('//book[price < 25]')
+fiction = doc.xpath('//book[@category="fiction"]')
+last_book = doc.at_xpath('//book[last()]')
+
+# Functions
+book_count = doc.xpath('count(//book)')
+has_isbn = doc.xpath('//book[string-length(@isbn) = 13]')
+----
+
+==== Namespace handling
+
+[source,ruby]
+----
+xml = <<~XML
+  <library xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <book>
+      <dc:title>Programming</dc:title>
+      <dc:creator>Smith</dc:creator>
+    </book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Query with namespaces
+ns = { 'dc' => 'http://purl.org/dc/elements/1.1/' }
+titles = doc.xpath('//dc:title', ns)
+
+puts titles.first.text  # => "Programming"
+----
+
+=== JRuby and TruffleRuby support
+
+Oga is particularly valuable for alternative Ruby implementations:
+
+[source,ruby]
+----
+# Works identically on JRuby
+# jruby -S gem install moxml oga
+# jruby script.rb
+
+# Works on TruffleRuby
+# Same code, no modifications needed
+
+require 'moxml'
+context = Moxml.new
+context.config.adapter = :oga
+
+# Full functionality on all Ruby implementations
+doc = context.parse(xml)
+results = doc.xpath('//book[@id="1"]')
+----
+
+=== Comparison with other pure Ruby options
+
+[cols="2,2,2"]
+|===
+| Aspect | Oga | REXML
+
+| XPath support
+| Full XPath 1.0
+| Limited
+
+| Performance
+| Fast for pure Ruby
+| Medium
+
+| Memory usage
+| Medium
+| Medium
+
+| Namespace XPath
+| Full support
+| Not supported
+
+| Standard library
+| No (external gem)
+| Yes (built-in)
+
+| Maintenance
+| Active
+| Active
+|===
+
+=== References
+
+* link:https://github.com/yorickpeterse/oga[Oga on GitHub]
+* link:https://github.com/yorickpeterse/oga/tree/master/doc[Oga documentation]
+
+=== See also
+
+* link:../compatibility[Compatibility matrix] - Feature comparison
+* link:rexml[REXML adapter] - Alternative pure Ruby option
+* link:../../guides/adapter-switching[Adapter switching guide]

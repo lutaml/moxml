@@ -590,117 +590,31 @@ book.add_child(title)
 
 === Fluent interface API
 
-Moxml provides a fluent, chainable API for creating and manipulating XML documents with improved developer experience:
+Moxml provides a fluent, chainable API for improved developer experience:
 
 [source,ruby]
 ----
-# Old way - verbose and less readable
 element = doc.create_element('book')
-element.add_namespace("dc", "http://purl.org/dc/elements/1.1/")
-element["id"] = "123"
-element["type"] = "article"
-child = doc.create_element("title")
-child.text = "Hello"
-element.add_child(child)
-
-# New way - fluent and chainable
-element = doc.create_element('book')
-  .with_namespace("dc", "http://purl.org/dc/elements/1.1/")
-  .set_attributes(id: "123", type: "article")
-  .with_child(doc.create_element("title").tap { |t| t.text = "Hello" })
-----
-
-==== Chainable element methods
-
-[source,ruby]
-----
-# with_namespace - add namespace and return self
-element.with_namespace("dc", "http://purl.org/dc/elements/1.1/")
-
-# set_attributes - set multiple attributes at once
-element.set_attributes(id: "123", title: "Ruby", year: "2024")
-
-# with_child - add child and return self
-element.with_child(doc.create_element("author"))
-
-# Chain multiple operations
-element
-  .with_namespace("dc", "http://purl.org/dc/elements/1.1/")
   .set_attributes(id: "123", type: "technical")
+  .with_namespace("dc", "http://purl.org/dc/elements/1.1/")
   .with_child(doc.create_element("title"))
-  .with_child(doc.create_element("author"))
 ----
 
-==== Convenience query methods
+For complete fluent API documentation including all chainable methods, convenience methods, and practical examples, see link:docs/_guides/working-with-documents.adoc[Working with Documents Guide].
 
-[source,ruby]
-----
-# find_element - alias for at_xpath
-first_book = doc.root.find_element("//book")
-
-# find_all - returns array of matching elements
-all_books = doc.root.find_all("//book")
-
-# Document-level find methods
-first_title = doc.find("//title")
-all_titles = doc.find_all("//title")
-----
-
-==== Quick element creation
-
-[source,ruby]
-----
-# add_element - create, configure, and add element in one call
-book = doc.add_element("book", id: "123", title: "Ruby") do |elem|
-  elem.text = "Ruby Programming Guide"
-end
-----
-
-==== Practical fluent example
-
-[source,ruby]
-----
-doc = Moxml.new.create_document
-
-# Build a complete book entry with fluent API
-doc.add_element("library") do |library|
-  library
-    .with_namespace("dc", "http://purl.org/dc/elements/1.1/")
-    .with_child(
-      doc.create_element("book")
-        .set_attributes(id: "b1", isbn: "978-0-123456-78-9")
-        .with_child(doc.create_element("dc:title").tap { |t| t.text = "Ruby Programming" })
-        .with_child(doc.create_element("dc:creator").tap { |c| c.text = "Jane Smith" })
-        .with_child(doc.create_element("dc:date").tap { |d| d.text = "2024" })
-    )
-end
-
-puts doc.to_xml(indent: 2)
-----
 
 === SAX (Event-Driven) Parsing
 
-SAX (Simple API for XML) provides memory-efficient, event-driven XML parsing. Instead of building a complete Document Object Model (DOM) in memory, SAX triggers callback events as it encounters each XML structure during parsing.
+SAX (Simple API for XML) provides memory-efficient, event-driven XML parsing for large documents.
 
-=== When to use SAX
+**When to use SAX:**
 
-Use SAX parsing when:
+* Processing very large XML files (>100MB)
+* Memory-constrained environments
+* Streaming data extraction
+* Need to process data as it arrives
 
-* Processing very large XML files (>100MB) that would be impractical to load entirely into memory
-* Memory efficiency is critical (streaming applications, embedded systems)
-* You only need to extract specific data from the XML, not the full document structure
-* Processing data as it arrives (network streams, log files)
-
-Use DOM parsing (default) when:
-
-* Need random access to any part of the document
-* Need to modify the XML structure
-* Working with reasonably-sized documents that fit comfortably in memory
-* Need XPath queries across the document
-
-=== Class-based handler
-
-Create a handler by subclassing `Moxml::SAX::Handler` or `Moxml::SAX::ElementHandler`:
+**Quick example:**
 
 [source,ruby]
 ----
@@ -710,333 +624,43 @@ class BookExtractor < Moxml::SAX::ElementHandler
   def initialize
     super
     @books = []
-    @current_book = nil
-    @current_text = "".dup
   end
 
   def on_start_element(name, attributes = {}, namespaces = {})
-    super  # Important: updates element stack
-    case name
-    when "book"
-      @current_book = { id: attributes["id"], category: attributes["category"] }
-    when "title", "author", "price"
-      @current_text = "".dup
-    end
-  end
-
-  def on_characters(text)
-    @current_text << text if @current_book
-  end
-
-  def on_end_element(name)
-    case name
-    when "title"
-      @current_book[:title] = @current_text.strip if @current_book
-    when "author"
-      @current_book[:author] = @current_text.strip if @current_book
-    when "price"
-      @current_book[:price] = @current_text.strip.to_f if @current_book
-    when "book"
-      @books << @current_book if @current_book
-      @current_book = nil
-    end
     super
+    @books << { id: attributes["id"] } if name == "book"
   end
 end
 
-# Use the handler
-context = Moxml.new
 handler = BookExtractor.new
-context.sax_parse(xml_string, handler)
-
+Moxml.new.sax_parse(xml_string, handler)
 puts handler.books.inspect
-# => [{:id=>"1", :category=>"programming", :title=>"Ruby Programming",
-#      :author=>"Jane Smith", :price=>29.99}, ...]
 ----
 
-=== Block-based handler
-
-For simple cases, use the block-based DSL:
-
-[source,ruby]
-----
-books = []
-current_book = nil
-current_field = nil
-current_text = "".dup
-
-context = Moxml.new
-context.sax_parse(xml_string) do
-  start_element do |name, attrs|
-    case name
-    when "book"
-      current_book = { id: attrs["id"] }
-    when "title", "author", "price"
-      current_field = name
-      current_text = "".dup
-    end
-  end
-
-  characters do |text|
-    current_text << text if current_field
-  end
-
-  end_element do |name|
-    case name
-    when "title", "author"
-      current_book[current_field.to_sym] = current_text.strip if current_book
-      current_field = nil
-    when "price"
-      current_book[current_field.to_sym] = current_text.strip.to_f if current_book
-      current_field = nil
-    when "book"
-      books << current_book if current_book
-      current_book = nil
-    end
-  end
-end
-
-puts books.inspect
-----
-
-=== Handler utilities (ElementHandler)
-
-`Moxml::SAX::ElementHandler` provides utilities for element stack tracking:
-
-[source,ruby]
-----
-class SmartHandler < Moxml::SAX::ElementHandler
-  def on_start_element(name, attributes = {}, namespaces = {})
-    super  # Updates stack
-
-    # Check current path
-    if path_matches?(/library\/book\/title$/)
-      puts "Found book title at depth #{depth}"
-    end
-
-    # Check if we're inside specific elements
-    if in_element?("book") && in_element?("author")
-      puts "Processing author inside book"
-    end
-
-    # Get current context
-    puts "Current: #{current_element}, Parent: #{parent_element}"
-    puts "Full path: #{path_string}"  # => "/library/book/title"
-  end
-end
-----
-
-=== Available event methods
-
-All handlers support these callback methods:
-
-[source,ruby]
-----
-def on_start_document
-  # Called once at the beginning of parsing
-end
-
-def on_end_document
-  # Called once at the end of parsing
-end
-
-def on_start_element(name, attributes = {}, namespaces = {})
-  # Called for each opening XML tag
-  # name: element name (String)
-  # attributes: element attributes (Hash<String, String>)
-  # namespaces: namespace declarations (Hash<String|nil, String>)
-end
-
-def on_end_element(name)
-  # Called for each closing XML tag
-  # name: element name (String)
-end
-
-def on_characters(text)
-  # Called for text content
-  # May be called multiple times for a single text node
-  # text: character data (String)
-end
-
-def on_cdata(text)
-  # Called for CDATA sections: <![CDATA[...]]>
-  # text: CDATA content (String)
-end
-
-def on_comment(text)
-  # Called for XML comments: <!-- ... -->
-  # text: comment content (String)
-end
-
-def on_processing_instruction(target, data)
-  # Called for processing instructions: <?target data?>
-  # target: PI target (String)
-  # data: PI data (String)
-end
-
-def on_error(error)
-  # Called for fatal parsing errors
-  # error: Moxml::ParseError
-  # Default: raises the error
-end
-
-def on_warning(message)
-  # Called for non-fatal warnings
-  # message: warning message (String)
-  # Default: ignores the warning
-end
-----
-
-=== SAX adapter support
-
-[cols="2,1,4", options="header"]
-|===
-| Adapter | Support | Limitations
-
-| Nokogiri
-| ✅ Full
-| All 10 event types supported
-
-| Ox
-| ⚠️ Core
-| No separate CDATA/comment/PI events (delivered as text)
-
-| REXML
-| ✅ Full
-| All 10 event types supported
-
-| Oga
-| ✅ Full
-| All 10 event types supported
-
-| LibXML
-| ✅ Full
-| All 10 event types supported
-
-| HeadedOx
-| ⚠️ Core
-| Same as Ox (inherits implementation)
-|===
-
-=== Best practices
-
-**String accumulation in Ruby 2.3+:**
-
-[source,ruby]
-----
-# WRONG - String literals are frozen
-@text = ""  # Will cause FrozenError!
-
-# RIGHT - Use .dup to create mutable string
-@text = "".dup
-----
-
-**Memory-efficient processing:**
-
-[source,ruby]
-----
-class StreamProcessor < Moxml::SAX::Handler
-  def on_end_element(name)
-    if name == "record" && @current_record
-      process_and_write(@current_record)
-      @current_record = nil  # Free memory immediately
-    end
-  end
-end
-----
-
-**Error handling:**
-
-[source,ruby]
-----
-class RobustHandler < Moxml::SAX::Handler
-  def on_error(error)
-    # Log but don't crash
-    logger.error("Parse error: #{error.message}")
-    @errors << error
-    # Don't re-raise - continue parsing if possible
-  end
-end
-----
+For complete SAX documentation including all handler types, event methods, adapter support, and best practices, see link:docs/_guides/sax-parsing.adoc[SAX Parsing Guide].
 
 == XML objects and their methods
 
-Each node type provides methods for traversing the document structure:
+For complete node API reference including traversal methods, manipulation, queries, type checking, and node information, see link:docs/_pages/node-api-reference.adoc[Node API Reference].
 
-[source,ruby]
-----
-node.parent              # Get parent node
-node.children            # Get child nodes
-node.next_sibling        # Get next sibling
-node.previous_sibling    # Get previous sibling
-
-# Convenience accessors
-node.first_child         # Get first child
-node.last_child          # Get last child
-node.has_children?       # Check if node has children
-
-# Node manipulation
-node.clone              # Deep copy of node
-node.dup                # Alias for clone
-
-# Query methods
-node.find(xpath)        # Alias for at_xpath
-node.find_all(xpath)    # Returns array of matching elements
-
-# Type checking
-node.element?          # Is it an element?
-node.text?             # Is it a text node?
-node.cdata?            # Is it a CDATA section?
-node.comment?          # Is it a comment?
-node.processing_instruction? # Is it a PI?
-node.attribute?        # Is it an attribute?
-node.namespace?        # Is it a namespace?
-
-# Node information
-node.document          # Get owning document
-----
 
 == Advanced features
 
-=== XPath querying and node mapping
+=== XPath querying
 
-==== Nokogiri, Oga, REXML, LibXML
-
-Moxml provides efficient XPath querying by leveraging the native XML library's
-implementation while maintaining consistent node mapping:
+Moxml provides efficient XPath querying with consistent node mapping:
 
 [source,ruby]
 ----
 # Find all book elements
 books = doc.xpath('//book')
-# Returns Moxml::Element objects mapped to native nodes
 
 # Find with namespaces
-titles = doc.xpath('//dc:title',
-  'dc' => 'http://purl.org/dc/elements/1.1/')
+titles = doc.xpath('//dc:title', 'dc' => 'http://purl.org/dc/elements/1.1/')
 
 # Find first matching node
 first_book = doc.at_xpath('//book')
-
-# Chain queries
-doc.xpath('//book').each do |book|
-  # Each book is a mapped Moxml::Element
-  title = book.at_xpath('.//title')
-  puts "#{book['id']}: #{title.text}"
-end
 ----
-
-==== Ox
-
-The native Ox's query method
-https://www.ohler.com/ox/Ox/Element.html#method-i-locate[`locate`] resembles
-XPath but has a different syntax.
-
-==== HeadedOx
-
-HeadedOx provides comprehensive (but not fully) XPath 1.0 support via a pure
-Ruby XPath engine layered on top of Ox.
-
 
 === Namespace handling
 
@@ -1047,247 +671,35 @@ element.add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
 
 # Create element in namespace
 title = doc.create_element('dc:title')
-title.text = 'Document Title'
-
-# Query with namespaces
-doc.xpath('//dc:title',
-  'dc' => 'http://purl.org/dc/elements/1.1/')
 ----
 
-=== Accessing native implementation
+For complete documentation on XPath querying, namespace handling, and accessing native implementations, see link:docs/_guides/advanced-features.adoc[Advanced Features Guide].
 
-While not typically needed, you can access the underlying XML library's nodes:
-
-[source,ruby]
-----
-# Get native node
-native_node = element.native
-
-# Get adapter being used
-adapter = element.context.config.adapter
-
-# Create from native node
-element = Moxml::Element.new(native_node, context)
-----
 
 == Error handling
 
-Moxml provides comprehensive error classes with enhanced context and helpful hints
-for debugging. Each error class includes specific attributes relevant to the error
-type and provides detailed error messages with suggestions.
-
-=== Error class hierarchy
-
-All Moxml errors inherit from [`Moxml::Error`](lib/moxml/error.rb:4), which itself
-inherits from `StandardError`.
+Moxml provides comprehensive error classes with enhanced context for debugging:
 
 [source,ruby]
 ----
-Moxml::Error (< StandardError)
-├── ParseError           # XML parsing failures
-├── XPathError          # XPath expression errors
-├── ValidationError     # XML validation failures
-├── NamespaceError      # Namespace-related errors
-├── AdapterError        # Adapter loading/operation errors
-├── SerializationError  # XML serialization failures
-├── DocumentStructureError # Invalid document structure
-├── AttributeError      # Attribute operation errors
-└── NotImplementedError # Unimplemented adapter features
-----
-
-=== Enhanced error context
-
-Each error class provides contextual information to aid debugging:
-
-[source,ruby]
-----
-begin
-  doc = context.parse(invalid_xml, strict: true)
-rescue Moxml::ParseError => e
-  # Enhanced parse errors include:
-  puts e.line      # Line number where error occurred
-  puts e.column    # Column number where error occurred
-  puts e.source    # Excerpt of problematic XML
-  puts e.to_s      # Full message with hints
-  # Output includes helpful hint:
-  # "Hint: Check XML syntax and ensure all tags are properly closed"
-end
-----
-
-=== Error types and usage
-
-==== ParseError
-
-Raised when XML parsing fails. Includes line/column information when available.
-
-[source,ruby]
-----
-begin
-  doc = Moxml.new.parse("<invalid>", strict: true)
-rescue Moxml::ParseError => e
-  puts "Parse failed at line #{e.line}, column #{e.column}"
-  puts e.to_s  # Includes hint for resolution
-end
-----
-
-==== XPathError
-
-Raised when XPath expression evaluation fails.
-
-[source,ruby]
-----
-begin
-  results = doc.xpath("//invalid[[[")
-rescue Moxml::XPathError => e
-  puts "Expression: #{e.expression}"
-  puts "Adapter: #{e.adapter}"
-  puts e.to_s  # Includes syntax verification hint
-end
-----
-
-==== ValidationError
-
-Raised when XML content violates XML specifications.
-
-[source,ruby]
-----
-begin
-  # Invalid XML version
-  doc.version = "2.0"
-rescue Moxml::ValidationError => e
-  puts "Constraint: #{e.constraint}"  # "version"
-  puts "Value: #{e.value}"            # "2.0"
-  puts e.to_s  # Includes allowed values
-end
-----
-
-==== NamespaceError
-
-Raised when namespace operations fail.
-
-[source,ruby]
-----
-begin
-  element.add_namespace("ns", "invalid-uri")
-rescue Moxml::NamespaceError => e
-  puts "Prefix: #{e.prefix}"   # "ns"
-  puts "URI: #{e.uri}"          # "invalid-uri"
-  puts "Element: #{e.element}"  # Element reference
-  puts e.to_s  # Includes registration hint
-end
-----
-
-==== AdapterError
-
-Raised when adapter loading or operations fail.
-
-[source,ruby]
-----
-begin
-  Moxml::Config.new.adapter = :nonexistent
-rescue Moxml::AdapterError => e
-  puts "Adapter: #{e.adapter_name}"      # :nonexistent
-  puts "Operation: #{e.operation}"       # "set_adapter"
-  puts "Native Error: #{e.native_error}" # Original error
-  puts e.to_s  # Includes installation hint
-end
-----
-
-==== SerializationError
-
-Raised when XML serialization fails.
-
-[source,ruby]
-----
-begin
-  xml_output = node.to_xml
-rescue Moxml::SerializationError => e
-  puts "Node: #{e.node}"
-  puts "Adapter: #{e.adapter}"
-  puts e.to_s  # Includes structure validation hint
-end
-----
-
-==== DocumentStructureError
-
-Raised when attempting invalid document structure operations.
-
-[source,ruby]
-----
-begin
-  doc.root.add_child(invalid_node)
-rescue Moxml::DocumentStructureError => e
-  puts "Operation: #{e.attempted_operation}"
-  puts "State: #{e.current_state}"
-  puts e.to_s  # Includes XML spec reference hint
-end
-----
-
-==== AttributeError
-
-Raised when attribute operations fail.
-
-[source,ruby]
-----
-begin
-  element["123invalid"] = "value"  # Invalid attribute name
-rescue Moxml::AttributeError => e
-  puts "Attribute: #{e.attribute_name}"
-  puts "Element: #{e.element}"
-  puts "Value: #{e.value}"
-  puts e.to_s  # Includes naming rules hint
-end
-----
-
-==== NotImplementedError
-
-Raised when an adapter doesn't support a requested feature.
-
-[source,ruby]
-----
-begin
-  # Some operation not supported by current adapter
-  result = adapter.unsupported_method
-rescue Moxml::NotImplementedError => e
-  puts "Feature: #{e.feature}"
-  puts "Adapter: #{e.adapter}"
-  puts e.to_s  # Includes adapter capability hint
-end
-----
-
-=== Best practices for error handling
-
-[source,ruby]
-----
-# Catch specific errors for targeted handling
 begin
   doc = Moxml.new.parse(xml_string, strict: true)
   results = doc.xpath("//book[@id='123']")
 rescue Moxml::ParseError => e
-  # Handle parsing errors
-  logger.error("XML parsing failed: #{e.to_s}")
-  # e.to_s includes hints for fixing the issue
+  puts "Parse failed at line #{e.line}: #{e.message}"
 rescue Moxml::XPathError => e
-  # Handle XPath errors
-  logger.error("XPath query failed: #{e.expression}")
-rescue Moxml::NamespaceError => e
-  # Handle namespace errors
-  logger.error("Namespace error: #{e.prefix}:#{e.uri}")
+  puts "XPath error: #{e.expression}"
 rescue Moxml::Error => e
-  # Catch-all for other Moxml errors
-  logger.error("XML processing error: #{e.message}")
+  puts "XML processing error: #{e.message}"
 end
 ----
 
-All error messages include helpful hints for resolving common issues. Use the
-[`to_s`](lib/moxml/error.rb:16) method to get the full error message with
-context and hints.
+For complete error class hierarchy, error types, best practices, and debugging techniques, see link:docs/_pages/error-handling.adoc[Error Handling Guide].
+
 
 == Configuration
 
-=== General
-
-Moxml can be configured globally or per instance.
+Moxml can be configured globally or per instance:
 
 [source,ruby]
 ----
@@ -1299,179 +711,73 @@ Moxml.configure do |config|
 end
 
 # Instance configuration
-moxml = Moxml.new do |config|
+context = Moxml.new do |config|
   config.adapter = :oga
   config.strict = false
 end
 ----
 
-=== Default adapter selection
+For all configuration options, adapter selection, serialization options, and environment-based configuration, see link:docs/_pages/configuration.adoc[Configuration Guide].
 
-To select a non-default adapter, set it before processing any input using the
-following syntax.
-
-[source,ruby]
-----
-Moxml::Config.default_adapter = <adapter-symbol>
-----
-
-Where, `<adapter-symbol>` is one of the following:
-
-`:rexml`:: REXML
-
-`:nokogiri`:: Nokogiri (default)
-
-`:oga`:: Oga
-
-`:ox`:: Ox
-
-`:libxml`:: LibXML
-
-`:headed_ox`:: HeadedOx (Ox parser + full XPath engine)
 
 
 == Thread safety
 
-Moxml is thread-safe when used properly. Each instance maintains its own state
-and can be used safely in concurrent operations:
+For complete information on thread-safe patterns, context management, and concurrent processing, see the link:docs/_pages/thread-safety.adoc[Thread Safety Guide].
 
-[source,ruby]
-----
-class XmlProcessor
-  def initialize
-    @mutex = Mutex.new
-    @context = Moxml.new
-  end
-
-  def process(xml)
-    @mutex.synchronize do
-      doc = @context.parse(xml)
-      # Modify document
-      doc.to_xml
-    end
-  end
-end
-----
 
 == Performance considerations
 
-=== Memory management
-
-Moxml maintains a node registry to ensure consistent object mapping:
-
-[source,ruby]
-----
-doc = context.parse(large_xml)
-# Process document
-doc = nil  # Allow garbage collection of document and registry
-GC.start   # Force garbage collection if needed
-----
-
-=== Efficient querying
-
-Use specific XPath expressions for better performance:
-
-[source,ruby]
-----
-# More efficient - specific path
-doc.xpath('//book/title')
-
-# Less efficient - requires full document scan
-doc.xpath('//title')
-
-# Most efficient - direct child access
-root.xpath('./*/title')
-----
+For detailed performance optimization strategies, memory management best practices, and efficient querying patterns, see the link:docs/_pages/performance.adoc[Performance Considerations Guide].
 
 == Best practices
 
-=== Document creation
+For comprehensive best practices covering XPath queries, adapter selection, error handling, namespace handling, memory management, thread safety, performance optimization, and testing strategies, see link:docs/_pages/best-practices.adoc[Best Practices Guide].
 
-[source,ruby]
-----
-# Preferred - using builder pattern
-doc = Moxml::Builder.new(Moxml.new).build do
-  declaration version: "1.0", encoding: "UTF-8"
-  element 'root' do
-    element 'child' do
-      text 'content'
-    end
-  end
-end
-
-# Alternative - direct manipulation
-doc = Moxml.new.create_document
-doc.add_child(doc.create_declaration("1.0", "UTF-8"))
-root = doc.create_element('root')
-doc.add_child(root)
-----
-
-=== Node manipulation
-
-[source,ruby]
-----
-# Preferred - chainable operations
-element
-  .add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
-  .add_child(doc.create_text('content'))
-
-# Preferred - clear node type checking
-if node.element?
-  node.add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
-  node.add_child(doc.create_text('content'))
-end
-----
 
 == Specific adapter limitations
 
 === Ox adapter
 
-==== XPath limitations
+The Ox adapter provides maximum parsing speed but has XPath limitations.
 
-The Ox adapter uses a custom "XPath-to-locate" translation engine.
+**XPath limitations:**
 
-The following XPath features are NOT supported:
+* No attribute value predicates: `//book[@id='123']` ❌
+* No logical operators, position predicates, text predicates ❌
+* No namespace queries, parent axis, sibling axes ❌
+* No XPath functions ❌
 
-* Attribute value predicates: `//book[@id='123']` ❌
-* Logical operators: `//book[@id and @title]` ❌
-* Position predicates: `//book[1]`, `//book[last()]` ❌
-* Text predicates: `//book[text()='Title']` ❌
-* Namespace queries: `//ns:element` ❌
-* Parent axis: `//child/..` ❌
-* Sibling axes: `following-sibling::*` ❌
-* XPath functions: `count()`, `concat()`, etc. ❌
-
-*Workaround:* Use Ruby enumerable methods after basic queries:
+**Workaround:** Use Ruby enumerable methods:
 
 [source,ruby]
 ----
 # Instead of: doc.xpath("//book[@id='123']")
-# Use:
 doc.xpath("//book").find { |book| book["id"] == "123" }
 ----
 
-IMPORTANT: For complete XPath 1.0 specification with zero limitations today, use
-Nokogiri or Oga adapters.
-
+For complete Ox adapter documentation including all limitations and workarounds, see link:docs/_pages/adapters/ox.adoc[Ox Adapter Guide].
 
 === HeadedOx adapter
 
-==== General
+The HeadedOx adapter combines Ox's fast C-based XML parsing with Moxml's comprehensive pure Ruby XPath 1.0 engine.
 
-The HeadedOx adapter combines Ox's fast C-based XML parsing with Moxml's
-comprehensive pure Ruby XPath 1.0 engine.
+**Status:** Production-ready v1.2 (99.20% pass rate, 1,992/2,008 tests)
 
-HeadedOx provides full XPath 1.0 functionality through a pure Ruby XPath engine
-layered on top of Ox's fast C parser, allowing comprehensive XPath queries
-unhampered by the `locate()` method of the default Ox implementation.
+**Key features:**
 
-NOTE: Trivia: the "Headed Ox" implementation allows the Ox to head in the right
-direction to find the desired nodes through its comprehensive XPath layer.
+* Fast XML parsing (Ox C extension)
+* All 27 XPath 1.0 functions
+* 6 XPath axes (child, descendant, parent, attribute, self, descendant-or-self)
+* Expression caching for performance
+* Pure Ruby XPath engine (debuggable)
 
-NOTE: The HeadedOx adapter is added in v0.2.0.
+**When to use:**
 
-For complete architectural details and implementation guide, see
-link:docs/headed-ox.adoc[HeadedOx Documentation].
+* Need Ox's fast parsing with comprehensive XPath
+* Want XPath functions (count, sum, contains, etc.)
+* Prefer pure Ruby XPath for debugging
+* Basic namespace queries are sufficient
 
 [source,ruby]
 ----
@@ -1479,191 +785,16 @@ link:docs/headed-ox.adoc[HeadedOx Documentation].
 context = Moxml.new(:headed_ox)
 doc = context.parse(xml_string)
 
-# Full XPath 1.0 support - All 27 functions work
+# Full XPath 1.0 support
 books = doc.xpath('//book[@price < 20]')
 count = doc.xpath('count(//book)')
 titles = doc.xpath('//book/title[contains(., "Ruby")]')
-cheap = doc.xpath('//book[@price <= sum(//book/@price) div count(//book)]')
 ----
 
-IMPORTANT: For complete XPath 1.0 specification with zero limitations today, use
-Nokogiri or Oga adapters.
-
-==== Features
-
-* Fast XML parsing (Ox C extension) - Same speed as standard Ox
-* 6 of 13 XPath axes (46% - covers 80% of common usage patterns)
-* Complex XPath predicates with numeric/string/boolean expressions
-* Basic namespace-aware XPath queries (Ox namespace limitations apply)
-* Expression compilation and caching (1000-entry LRU cache)
-* Document construction and serialization through Ox
-
-==== Architecture
-
-HeadedOx is a **hybrid adapter** that layers Moxml's pure Ruby XPath engine on
-top of Ox's fast C parser:
-
-.Architecture layers of HeadedOx
-[source,text]
-----
-┌─────────────────────────────────────────┐
-│     Moxml Unified API                   │
-│  (Document, Element, Node, Builder)     │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│     HeadedOx Adapter Layer              │
-│  (Delegates to Ox + XPath Engine)       │
-└──────────────┬──────────────────────────┘
-               │
-      ┌────────┴─────────┐
-      ├───────────┐      │
-┌─────▼────┐ ┌────▼──────▼─────────────┐
-│  Ox Gem  │ │ Moxml XPath Engine      │
-│ (C Parse)│ │ (Pure Ruby)             │
-└──────────┘ │  • Lexer (Tokenize)     │
-             │  • Parser (AST Build)   │
-             │  • Compiler (Ruby Gen)  │
-             │  • Cache (1000 entries) │
-             └─────────────────────────┘
-----
-
-==== Known limitations
-
-The following 16 test failures represent architectural boundaries in the Ox gem,
-not bugs in HeadedOx:
-
-* ✗ Attribute wildcard syntax (`@*`) - Ox API limitation
-* ✗ Namespace introspection methods - Ox doesn't expose namespace data
-* ✗ Parent node setter - Ox C struct immutability
-* ✗ CDATA end marker escaping - Complex nested `]]>` sequences
-* ✗ Complex namespace inheritance - Ox parses but doesn't track
-* ✗ Namespaced attribute access - `element["ns:attr"]` pattern
-
-IMPORTANT: **These are Ox limitations, not HeadedOx bugs.**
-
-See link:docs/HEADED_OX_LIMITATIONS.md[HEADED_OX_LIMITATIONS.md] for:
-
-* Detailed analysis of each limitation with examples
-* Workarounds and alternative approaches
-* Exact Ox API enhancements required for full compatibility
-* When to use HeadedOx vs other adapters decision guide
-* Future roadmap if Ox adds namespace introspection API
-
-==== When to Use HeadedOx
-
-You can use HeadedOx instead of Ox for all XML parsing needs, except when
-certain advanced XPath features are required.
-
-* Need fast parsing + comprehensive XPath beyond Ox's `locate()`
-* XPath functions are critical (count, sum, contains, substring, etc.)
-* Complex predicates required (`[@price < average]`, `[position() = last()]`)
-* Prefer pure Ruby XPath for debugging and customization
-* Basic namespace queries are sufficient
-* Document structure is mostly read-only
-* Performance matters but XPath features are non-negotiable
-
-When not to use HeadedOx:
-
-* Need all 13 XPath axes (especially ancestor, sibling, following/preceding)
-* Advanced namespace operations required (introspection, complex inheritance)
-* Complex DOM modifications needed (parent node mutation)
-* CDATA escaping for nested markers is critical
-* Full Nokogiri feature parity required
-
-For complete details, see
-link:docs/headed-ox.adoc[HeadedOx Implementation Guide] and
-link:docs/HEADED_OX_LIMITATIONS.md[HeadedOx Limitations Documentation].
+For complete HeadedOx documentation including architecture, XPath capabilities, known limitations, and usage examples, see link:docs/_pages/adapters/headed-ox.adoc[HeadedOx Adapter Guide] and link:docs/HEADED_OX_LIMITATIONS.md[Limitations Documentation].
 
 
-==== XPath capabilities
-
-[cols="1,1,4"]
-|===
-| Category | XPath 1.0 Support | Details
-
-| Functions
-| ✅
-|
-All XPath 1.0 standard functions fully implemented and tested:
-String (10), Numeric (6), Boolean (4), Node (4), Position (2), Special (1)
-
-| Axes
-| 6/13 axes (46%)
-|
-✓ Implemented: child, self, parent, descendant, descendant-or-self (//), attribute (@)
-
-✗ Missing: ancestor, sibling families, following/preceding families, namespace
-Coverage: 80% of real-world XPath usage patterns
-
-| Operators
-| ✅
-|
-All comparison (=, !=, <, >, <=, >=), arithmetic (+, -, *, div, mod),
-logical (and, or), and union (\|) operators
-
-| Predicates
-| ✅ of Core
-|
-Position predicates `[1]`, `[last()]`, boolean predicates,
-operator predicates, complex nested expressions
-
-| Parsing
-| ✅ Complete
-| Uses Ox's C parser for maximum speed - fastest of all adapters
-
-| Caching
-| ✅ LRU Cache
-| 1000-entry cache for compiled XPath expressions - significant performance boost for repeated queries
-
-|===
-
-
-==== What XPath queries work in HeadedOx
-
-NOTE: This table is of v0.2.0.
-
-The following XPath patterns are fully functional:
-
-[source,ruby]
-----
-# Descendant searches
-doc.xpath('//book')                        # ✅ Works
-doc.xpath('//book/title')                  # ✅ Works
-
-# Attribute selection
-doc.xpath('//book/@price')                 # ✅ Works
-doc.xpath('//@price')                      # ✅ Works
-
-# Predicates with operators
-doc.xpath('//book[@price < 20]')           # ✅ Works
-doc.xpath('//book[1]')                     # ✅ Works (position)
-doc.xpath('//book[last()]')                # ✅ Works (last position)
-doc.xpath('//book[@price=10 or @price=30]')  # ✅ Works (logical)
-
-# All 27 XPath 1.0 functions
-doc.xpath('count(//book)')                           # ✅ Returns Float
-doc.xpath('sum(//book/@price)')                      # ✅ Returns Float
-doc.xpath('string(//title[1])')                      # ✅ Returns String
-doc.xpath('concat("Price: ", //book/@price)')        # ✅ String concatenation
-doc.xpath('contains(//title, "Ruby")')               # ✅ Boolean search
-doc.xpath('substring(//title, 1, 5)')                # ✅ String extraction
-doc.xpath('normalize-space(//title)')                # ✅ Whitespace handling
-doc.xpath('boolean(//book[@price])')                 # ✅ Boolean conversion
-doc.xpath('floor(//book/@price)')                    # ✅ Numeric rounding
-doc.xpath('starts-with(//title, "Ruby")')            # ✅ Prefix checking
-
-# Complex queries with function composition
-doc.xpath('//book[@price < 25]/title')                # ✅ Chained paths
-doc.xpath('//book[contains(title, "Ruby")]')          # ✅ Functions in predicates
-doc.xpath('//book[position() = last()]')              # ✅ Position functions
-doc.xpath('//book[string-length(title) > 10]')        # ✅ String functions
-doc.xpath('//book[@price < sum(//book/@price) div count(//book)]') # ✅ Complex arithmetic
-----
-
-
-
-=== LibXML adapter
+==== LibXML adapter
 
 *DOCTYPE Limitations:*
 
@@ -1688,161 +819,7 @@ limitations. Use these adapters when you need full XPath and namespace support.
 
 == Development and testing
 
-=== Skipping benchmarks
-
-Benchmark tests can be slow and are not needed for regular test runs. To
-speed up local development, you can skip benchmark tests using the
-`SKIP_BENCHMARKS` environment variable.
-
-Syntax:
-
-[source,shell]
-----
-SKIP_BENCHMARKS=1 bundle exec rspec
-----
-
-This will skip all benchmark tests while running the regular test suite.
-
-To run benchmarks explicitly:
-
-[source,shell]
-----
-bundle exec rspec spec/moxml/examples/xpath_benchmark_spec.rb
-----
-
-Or use the rake task:
-
-[source,shell]
-----
-rake benchmark:xpath
-----
-
-NOTE: The `rake benchmark:xpath` task always runs benchmarks regardless of the
-`SKIP_BENCHMARKS` environment variable setting.
-
-=== Running tests with coverage
-
-To run the test suite with code coverage tracking:
-
-[source,shell]
-----
-COVERAGE=true bundle exec rspec
-----
-
-After running, view the coverage report:
-
-[source,shell]
-----
-open coverage/index.html
-----
-
-The coverage configuration includes:
-
-* Minimum overall coverage: 90%
-* Minimum per-file coverage: 80%
-* Organized groups for Core, Adapters, and Utilities
-* Filters for spec and vendor directories
-
-=== Generating performance benchmark reports
-
-Moxml provides a comprehensive benchmark reporting system that measures and
-compares all adapters across multiple dimensions.
-
-==== Running the benchmark report
-
-To generate a complete performance report for all adapters:
-
-[source,shell]
-----
-rake benchmark:report
-----
-
-Or run the script directly:
-
-[source,shell]
-----
-bundle exec ruby benchmarks/generate_report.rb
-----
-
-This will benchmark all available adapters and generate a detailed report at
-[`benchmarks/PERFORMANCE_REPORT.md`](benchmarks/PERFORMANCE_REPORT.md).
-
-==== Benchmark categories
-
-The report includes the following benchmark categories:
-
-**Parsing benchmarks:**
-
-* Simple XML (< 1KB)
-* Medium XML (10KB, 50 elements with namespaces)
-* Large XML (145KB, 500 elements)
-* Complex nested structures
-
-**Serialization benchmarks:**
-
-* Simple documents
-* Documents with namespaces
-* Documents with mixed content
-
-**XPath benchmarks:**
-
-* Simple queries (`//element`)
-* Complex queries with predicates (`//element[@attribute]`)
-* Namespace-aware queries (`//ns:element`)
-
-**Memory benchmarks:**
-
-* Memory usage per document parse
-* Memory usage for large documents
-
-==== Report contents
-
-The generated report includes:
-
-* Summary table comparing all adapters with grades
-* Detailed performance metrics for each benchmark
-* ASCII performance visualization charts
-* Adapter selection recommendations based on results
-* Complete test environment details (Ruby version, platform, gem versions)
-* Best performers for each category
-
-==== Viewing the report
-
-After generation, the report is available at:
-
-[source,shell]
-----
-cat benchmarks/PERFORMANCE_REPORT.md
-----
-
-Or open it in your preferred Markdown viewer.
-
-NOTE: The generated report is machine-specific and excluded from git via
-`.gitignore`. Results will vary based on your hardware, OS, and Ruby version.
-
-==== Example output
-
-The summary table shows comparative performance:
-
-[source,markdown]
-----
-| Adapter | Parse (ips) | Serialize (ips) | XPath (ips) | Memory (MB) | Grade |
-|---------|-------------|-----------------|-------------|-------------|-------|
-| Nokogiri | 76 | 13900 | 64958 | -0.1 ⭐ | A |
-| Ox | 289 | 39203 | 9640 | 0.0 ⭐⭐⭐⭐⭐ | A+ |
-...
-----
-
-Performance visualizations help quickly identify the best adapter for specific
-needs:
-
-[source]
-----
-Parsing (Medium XML):
-  Nokogiri   █████████████ 76 ips
-  Ox         ██████████████████████████████████████████████████ 289 ips
-...
-----
+For complete information on development setup, testing strategies, benchmarking, and coverage reporting, see the link:docs/_guides/development-testing.adoc[Development and Testing Guide].
 
 == Contributing
 
@@ -1856,5 +833,5 @@ Parsing (Medium XML):
 
 Copyright Ribose.
 
-This project is licensed under the BSD-2-Clause License. See the
+This project is licensed under the Ribose 3-Clause BSD License. See the
 link:LICENSE.md[] file for details.

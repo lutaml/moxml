@@ -1,0 +1,603 @@
+= SAX Parsing Guide
+:toc:
+:toclevels: 3
+
+== Introduction
+
+SAX (Simple API for XML) provides event-driven XML parsing, allowing you to process XML documents efficiently without loading the entire structure into memory. This is particularly useful for large files or streaming scenarios.
+
+Moxml provides a consistent SAX interface across all supported adapters, with three handler types to suit different use cases.
+
+== When to use SAX vs DOM
+
+=== Use SAX when
+
+* Processing files >100MB in size
+* Memory is constrained
+* You only need specific data from the document
+* Streaming data processing is required
+* Linear, forward-only traversal is sufficient
+
+=== Use DOM when
+
+* Need random access to any part of the document
+* Need to modify XML structure
+* Working with small documents (<10MB)
+* Need XPath queries for complex selections
+* Need to navigate backwards or access parent nodes
+
+== Handler types
+
+Moxml provides three handler types, each suited for different scenarios.
+
+=== Base handler
+
+The base handler provides minimal interface - override only the events you need.
+
+[source,ruby]
+----
+class MyHandler < Moxml::SAX::Handler
+  def on_start_element(name, attributes = {}, namespaces = {})
+    puts "Element: #{name}"
+  end
+  
+  def on_characters(text)
+    puts "Text: #{text}"
+  end
+end
+
+context = Moxml.new(:nokogiri)
+context.sax_parse(xml, MyHandler.new)
+----
+
+=== ElementHandler
+
+Adds element stack tracking and path utilities for more sophisticated parsing.
+
+[source,ruby]
+----
+class DataExtractor < Moxml::SAX::ElementHandler
+  def on_start_element(name, attributes = {}, namespaces = {})
+    super  # Important: updates the stack
+    
+    if path_matches?(/book\/title$/)
+      # We're inside book/title element
+      @capturing = true
+    end
+  end
+end
+----
+
+**Utilities provided:**
+
+* `element_stack` - Array of open elements
+* `current_element()` - Current element name
+* `parent_element()` - Parent element name  
+* `in_element?(name)` - Check if inside element
+* `path_matches?(pattern)` - Match current path with regex
+* `path_string(sep)` - Get path as string (default separator: "/")
+* `depth()` - Current nesting level
+
+=== BlockHandler
+
+DSL for simple cases without defining a class.
+
+[source,ruby]
+----
+context.sax_parse(xml) do
+  start_element { |name, attrs| puts name }
+  characters { |text| puts text unless text.strip.empty? }
+  end_element { |name| puts "End: #{name}" }
+end
+----
+
+== Event reference
+
+=== Document lifecycle
+
+[source,ruby]
+----
+def on_start_document
+  # Called once at document start
+  # Initialize any document-level state here
+end
+
+def on_end_document
+  # Called once at document end
+  # Clean up, finalize processing
+end
+----
+
+=== Element events
+
+[source,ruby]
+----
+def on_start_element(name, attributes = {}, namespaces = {})
+  # name: Element name (String)
+  # attributes: Hash<String, String> - regular attributes
+  # namespaces: Hash<String|nil, String> - prefix => uri
+  #   nil prefix = default namespace (xmlns="...")
+end
+
+def on_end_element(name)
+  # name: Element name (String)
+  # Signals element is closing
+end
+----
+
+=== Content events
+
+[source,ruby]
+----
+def on_characters(text)
+  # Called for text content
+  # May be called multiple times for single text node
+  # Accumulate text if needed
+end
+
+def on_cdata(text)
+  # Called for <![CDATA[...]]> sections
+  # Not supported by Ox adapter
+end
+
+def on_comment(text)
+  # Called for <!-- ... --> comments
+  # Not supported by Ox adapter
+end
+----
+
+=== Processing instructions
+
+[source,ruby]
+----
+def on_processing_instruction(target, data)
+  # Called for <?target data?>
+  # Example: <?xml-stylesheet type="text/xsl"?>
+  # Not supported by Ox adapter
+end
+----
+
+=== Error handling
+
+[source,ruby]
+----
+def on_error(error)
+  # error is Moxml::ParseError
+  # Default: raises the error
+  # Override to handle differently
+end
+
+def on_warning(message)
+  # Non-fatal warnings
+  # Default: ignores
+end
+----
+
+== Best practices
+
+=== Memory management
+
+[source,ruby]
+----
+class MemoryEfficientHandler < Moxml::SAX::Handler
+  def initialize(output_stream)
+    super()
+    @output = output_stream
+    @current_text = "".dup  # Mutable string
+  end
+  
+  def on_characters(text)
+    @current_text << text  # Accumulate
+  end
+  
+  def on_end_element(name)
+    @output.puts @current_text.strip
+    @current_text = "".dup  # Reset - don't accumulate memory
+  end
+end
+----
+
+=== String accumulation
+
+Ruby 2.3+ freezes string literals by default. Always use `.dup`:
+
+[source,ruby]
+----
+# WRONG:
+@text = ""  # Frozen literal!
+
+# RIGHT:
+@text = "".dup  # Mutable string
+----
+
+=== Error recovery
+
+[source,ruby]
+----
+class RobustHandler < Moxml::SAX::Handler
+  def initialize
+    super
+    @errors = []
+  end
+  
+  def on_error(error)
+    # Log but don't crash
+    warn "Parse error: #{error.message}"
+    @errors << error
+    # Don't re-raise - allows parsing to continue if possible
+  end
+  
+  def on_warning(message)
+    warn "Warning: #{message}"
+  end
+end
+----
+
+== Adapter-specific notes
+
+=== Nokogiri
+
+* ✅ Full SAX support
+* ✅ All 10 event types
+* ✅ Line/column information in errors
+* **Best choice for production use**
+
+=== REXML
+
+* ✅ Full SAX support
+* ✅ Pure Ruby (no C dependencies)
+* ✅ Always available (stdlib)
+* ⚠️ Slower than C-based parsers
+* **Best for portability**
+
+=== Oga
+
+* ✅ Full SAX support
+* ✅ Pure Ruby
+* ✅ Modern API
+* ⚠️ May be lenient with malformed XML
+* **Good for JRuby/TruffleRuby**
+
+=== Ox
+
+* ✅ Fast parsing
+* ✅ Core events supported (start/end element, text)
+* ❌ No separate CDATA events (delivered as text)
+* ❌ No comment events
+* ❌ No processing instruction events
+* **Best for simple, fast parsing**
+
+=== LibXML
+
+* ✅ Full SAX support
+* ✅ Fast (C-based)
+* ✅ Alternative to Nokogiri
+* **Good for performance**
+
+=== HeadedOx
+
+* Same as Ox (inherits implementation)
+* ✅ Fast parsing
+* ❌ Same limitations as Ox
+
+== Common patterns
+
+=== Extract specific data
+
+[source,ruby]
+----
+class BookExtractor < Moxml::SAX::ElementHandler
+  attr_reader :books
+  
+  def initialize
+    super
+    @books = []
+    @current_book = nil
+    @current_field = nil
+    @current_text = "".dup
+  end
+  
+  def on_start_element(name, attributes = {}, namespaces = {})
+    super
+    case name
+    when "book"
+      @current_book = { id: attributes["id"] }
+    when "title", "author", "price"
+      @current_field = name
+      @current_text = "".dup
+    end
+  end
+  
+  def on_characters(text)
+    @current_text << text if @current_field
+  end
+  
+  def on_end_element(name)
+    case name
+    when "title", "author"
+      @current_book[@current_field.to_sym] = @current_text.strip if @current_book
+      @current_field = nil
+    when "price"
+      @current_book[:price] = @current_text.strip.to_f if @current_book
+      @current_field = nil
+    when "book"
+      @books << @current_book if @current_book
+      @current_book = nil
+    end
+    super
+  end
+end
+
+handler = BookExtractor.new
+context.sax_parse(xml, handler)
+puts handler.books.inspect
+----
+
+=== Stream processing
+
+[source,ruby]
+----
+class StreamProcessor < Moxml::SAX::Handler
+  def initialize(output)
+    super()
+    @output = output
+    @current_record = nil
+  end
+  
+  def on_start_element(name, attributes = {}, namespaces = {})
+    if name == "record"
+      @current_record = {}
+    end
+  end
+  
+  def on_end_element(name)
+    if name == "record" && @current_record
+      process_record(@current_record)
+      @current_record = nil  # Free memory immediately
+    end
+  end
+  
+  private
+  
+  def process_record(record)
+    # Process and write immediately - don't accumulate
+    @output.puts record.to_json
+  end
+end
+----
+
+=== Path-based filtering
+
+[source,ruby]
+----
+class PathMatcher < Moxml::SAX::ElementHandler
+  def on_start_element(name, attributes = {}, namespaces = {})
+    super
+    
+    # Match exact path
+    if path_matches?(%r{^/catalog/book/title$})
+      puts "Found book title at depth #{depth}"
+    end
+    
+    # Match pattern
+    if path_matches?(/\/book\//)
+      puts "Inside a book element somewhere"
+    end
+    
+    # Check current element
+    if current_element == "price" && in_element?("book")
+      puts "Found price inside book"
+    end
+  end
+end
+----
+
+=== Counting and statistics
+
+[source,ruby]
+----
+class StatsCollector < Moxml::SAX::ElementHandler
+  attr_reader :stats
+  
+  def initialize
+    super
+    @stats = Hash.new(0)
+  end
+  
+  def on_start_element(name, attributes = {}, namespaces = {})
+    super
+    @stats[:elements] += 1
+    @stats[:by_name][name] ||= 0
+    @stats[:by_name][name] += 1
+    @stats[:max_depth] = [stats[:max_depth], depth].max
+  end
+  
+  def on_characters(text)
+    @stats[:text_nodes] += 1 unless text.strip.empty?
+  end
+end
+----
+
+=== Using block handler for quick scripts
+
+[source,ruby]
+----
+# Quick data extraction
+titles = []
+context.sax_parse(xml) do
+  start_element do |name, attrs|
+    @in_title = (name == "title")
+    @text = "".dup if @in_title
+  end
+  
+  characters do |text|
+    @text << text if @in_title
+  end
+  
+  end_element do |name|
+    if name == "title"
+      titles << @text.strip
+      @in_title = false
+    end
+  end
+end
+
+puts titles
+----
+
+== Performance tips
+
+=== Minimize object creation
+
+[source,ruby]
+----
+# SLOW: Creates new string each time
+def on_characters(text)
+  @text = @text + text
+end
+
+# FAST: Mutates existing string
+def on_characters(text)
+  @text << text
+end
+----
+
+=== Batch output operations
+
+[source,ruby]
+----
+# SLOW: Write each record individually
+def on_end_element(name)
+  @output.puts record if name == "record"
+end
+
+# FAST: Buffer and write in batches
+def on_end_element(name)
+  if name == "record"
+    @buffer << record
+    flush if @buffer.size >= 1000
+  end
+end
+----
+
+=== Reset state properly
+
+[source,ruby]
+----
+def on_end_element(name)
+  if name == "book"
+    process(@current_book)
+    @current_book = nil  # Free for GC
+    @current_text = "".dup  # Fresh string, not ""
+  end
+end
+----
+
+== Comparison with DOM parsing
+
+[cols="1,1,1"]
+|===
+|Feature |SAX |DOM
+
+|Memory usage
+|O(1) - constant
+|O(n) - full document
+
+|Speed
+|Fast - single pass
+|Slower - builds tree
+
+|Random access
+|No
+|Yes
+
+|Modification
+|No
+|Yes
+
+|XPath queries
+|No
+|Yes
+
+|Best for
+|Large files, streaming
+|Small files, complex queries
+|===
+
+== Complete example
+
+[source,ruby]
+----
+require 'moxml'
+
+# Handler that extracts book data and counts elements
+class BookProcessor < Moxml::SAX::ElementHandler
+  attr_reader :books, :element_count
+  
+  def initialize
+    super
+    @books = []
+    @element_count = 0
+    @current_book = nil
+    @current_field = nil
+    @text_buffer = "".dup
+  end
+  
+  def on_start_document
+    puts "Starting XML processing..."
+  end
+  
+  def on_start_element(name, attributes = {}, namespaces = {})
+    super  # Updates stack
+    @element_count += 1
+    
+    case name
+    when "book"
+      @current_book = {
+        id: attributes["id"],
+        category: attributes["category"]
+      }
+    when "title", "author", "price", "isbn"
+      @current_field = name
+      @text_buffer = "".dup
+    end
+  end
+  
+  def on_characters(text)
+    @text_buffer << text if @current_field
+  end
+  
+  def on_end_element(name)
+    if @current_field == name && @current_book
+      value = @text_buffer.strip
+      value = value.to_f if name == "price"
+      @current_book[name.to_sym] = value
+      @current_field = nil
+    end
+    
+    if name == "book" && @current_book
+      @books << @current_book
+      @current_book = nil
+    end
+    
+    super  # Updates stack
+  end
+  
+  def on_end_document
+    puts "Processed #{@element_count} elements"
+    puts "Found #{@books.size} books"
+  end
+end
+
+# Usage
+xml = File.read("library.xml")
+context = Moxml.new(:nokogiri)  # or :rexml, :oga, :ox
+
+handler = BookProcessor.new
+context.sax_parse(xml, handler)
+
+# Access results
+handler.books.each do |book|
+  puts "#{book[:title]} by #{book[:author]} - $#{book[:price]}"
+end
+----

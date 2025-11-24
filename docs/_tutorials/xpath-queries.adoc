@@ -1,0 +1,359 @@
+---
+title: XPath queries
+parent: Overview
+nav_order: 3
+---
+
+== XPath queries
+
+=== Purpose
+
+Master XPath querying in Moxml to efficiently find and select XML nodes using
+path expressions, predicates, and functions.
+
+=== Prerequisites
+
+* Basic understanding of XPath syntax
+* Moxml installed with an adapter
+* Familiarity with link:basic-usage[basic Moxml usage]
+
+=== Step 1: Basic path expressions
+
+Start with simple path selection:
+
+[source,ruby]
+----
+require 'moxml'
+
+xml = <<~XML
+  <library>
+    <section name="programming">
+      <book id="1">Ruby Basics</book>
+      <book id="2">Advanced Ruby</book>
+    </section>
+    <section name="fiction">
+      <book id="3">Ruby Story</book>
+    </section>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Absolute path - from root
+sections = doc.xpath('/library/section')
+puts sections.length  # => 2
+
+# Descendant-or-self - any depth
+all_books = doc.xpath('//book')
+puts all_books.length  # => 3
+
+# Relative path - from current node
+section = sections.first
+books = section.xpath('.//book')
+puts books.length  # => 2
+
+# Parent path
+book = all_books.first
+parent = book.xpath('..').first
+puts parent.name  # => "section"
+----
+
+=== Step 2: Attribute predicates
+
+Filter elements by attributes:
+
+[source,ruby]
+----
+# Elements with specific attribute
+books_with_id = doc.xpath('//book[@id]')
+puts books_with_id.length  # => 3 (all have id)
+
+# Elements with attribute value
+book1 = doc.at_xpath('//book[@id="1"]')
+puts book1.text  # => "Ruby Basics"
+
+# Multiple attribute conditions
+sections = doc.xpath('//section[@name="programming"]')
+puts sections.first['name']  # => "programming"
+----
+
+=== Step 3: Position predicates
+
+Select by position:
+
+[source,ruby]
+----
+# First book
+first = doc.at_xpath('//book[1]')
+puts first.text  # => "Ruby Basics"
+
+# Last book
+last = doc.at_xpath('//book[last()]')
+puts last.text  # => "Ruby Story"
+
+# First two books
+first_two = doc.xpath('//book[position() <= 2]')
+puts first_two.length  # => 2
+
+# Every second book
+even_books = doc.xpath('//book[position() mod 2 = 0]')
+----
+
+=== Step 4: Text predicates
+
+Filter by text content:
+
+[source,ruby]
+----
+xml = <<~XML
+  <library>
+    <book><title>Ruby Programming</title></book>
+    <book><title>Python Programming</title></book>
+    <book><title>Advanced Ruby</title></book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Exact text match
+ruby_book = doc.at_xpath('//title[text()="Ruby Programming"]')
+puts ruby_book.text  # => "Ruby Programming"
+
+# Contains text
+ruby_books = doc.xpath('//title[contains(text(), "Ruby")]')
+puts ruby_books.length  # => 2
+
+# Starts with
+programming = doc.xpath('//title[starts-with(text(), "Ruby")]')
+----
+
+=== Step 5: Logical operators
+
+Combine conditions:
+
+[source,ruby]
+----
+xml = <<~XML
+  <library>
+    <book id="1" category="programming" price="29.99">
+      <title>Ruby Basics</title>
+    </book>
+    <book id="2" category="fiction" price="19.99">
+      <title>Ruby Story</title>
+    </book>
+    <book id="3" category="programming" price="39.99">
+      <title>Advanced Ruby</title>
+    </book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# AND condition
+cheap_programming = doc.xpath('//book[@category="programming" and @price < 35]')
+puts cheap_programming.length  # => 1
+
+# OR condition
+fiction_or_cheap = doc.xpath('//book[@category="fiction" or @price < 25]')
+puts fiction_or_cheap.length  # => 2
+
+# Complex conditions
+results = doc.xpath('//book[(@category="programming" and @price < 40) or @id="2"]')
+puts results.length  # => 2
+----
+
+=== Step 6: XPath functions
+
+Use built-in XPath functions:
+
+[source,ruby]
+----
+# Count function
+book_count = doc.xpath('count(//book)')
+puts book_count  # => 3
+
+# String functions
+titles = doc.xpath('//title[string-length(text()) > 10]')
+
+# Concat function
+full_title = doc.xpath('concat(//book[1]/title, " - Edition 2")')
+
+# Position functions
+middle_books = doc.xpath('//book[position() > 1 and position() < last()]')
+----
+
+=== Step 7: Namespace-aware queries
+
+Query XML with namespaces:
+
+[source,ruby]
+----
+xml = <<~XML
+  <library xmlns="http://example.org/library"
+           xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <book>
+      <dc:title>Ruby Programming</dc:title>
+      <dc:creator>Jane Smith</dc:creator>
+    </book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Define namespace mappings
+namespaces = {
+  'lib' => 'http://example.org/library',
+  'dc' => 'http://purl.org/dc/elements/1.1/'
+}
+
+# Query with namespace prefixes
+books = doc.xpath('//lib:book', namespaces)
+titles = doc.xpath('//dc:title', namespaces)
+creators = doc.xpath('//dc:creator', namespaces)
+
+puts titles.first.text  # => "Ruby Programming"
+puts creators.first.text  # => "Jane Smith"
+
+# Complex namespace queries
+all_dc_elements = doc.xpath('//dc:*', namespaces)
+puts all_dc_elements.length  # => 2 (title + creator)
+----
+
+=== Step 8: Axes and advanced selection
+
+Use XPath axes for complex traversal:
+
+[source,ruby]
+----
+xml = <<~XML
+  <book>
+    <chapter id="1">Introduction</chapter>
+    <chapter id="2">Basics</chapter>
+    <chapter id="3">Advanced</chapter>
+  </book>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Following sibling
+chapter1 = doc.at_xpath('//chapter[@id="1"]')
+next_chapters = chapter1.xpath('following-sibling::chapter')
+puts next_chapters.length  # => 2
+
+# Preceding sibling
+chapter3 = doc.at_xpath('//chapter[@id="3"]')
+prev_chapters = chapter3.xpath('preceding-sibling::chapter')
+puts prev_chapters.length  # => 2
+
+# Ancestor
+chapter = doc.at_xpath('//chapter[@id="2"]')
+book = chapter.xpath('ancestor::book').first
+puts book.name  # => "book"
+
+# Descendant
+all_text = doc.root.xpath('descendant::text()')
+----
+
+=== Adapter-specific considerations
+
+==== Nokogiri, LibXML, Oga
+
+Full XPath 1.0 support - all examples above work perfectly.
+
+==== REXML
+
+Limited support - namespace queries don't work:
+
+[source,ruby]
+----
+# Works
+doc.xpath('//book')
+doc.xpath('//book[@id="1"]')
+
+# Does NOT work
+doc.xpath('//ns:book', namespaces)  # ❌
+
+# Workaround
+books = doc.xpath('//book')
+books.select { |b| b.namespace == 'http://example.org' }
+----
+
+==== Ox
+
+Basic paths only - use Ruby for complex filtering:
+
+[source,ruby]
+----
+# Works
+all_books = doc.xpath('//book')
+
+# Does NOT work - use Ruby instead
+# doc.xpath('//book[@id="1"]')  # ❌
+
+# Workaround
+books = doc.xpath('//book')
+book1 = books.find { |b| b['id'] == '1' }
+----
+
+=== Best practices
+
+. **Use specific paths** when possible for better performance
+. **Cache XPath results** if querying multiple times
+. **Choose the right adapter** for your XPath needs
+. **Test namespace queries** with your chosen adapter
+. **Use relative paths** (`.//`) when querying from elements
+
+=== Common patterns
+
+==== Extract structured data
+
+[source,ruby]
+----
+products = doc.xpath('//product').map do |product|
+  {
+    id: product['id'],
+    name: product.at_xpath('.//name').text,
+    price: product.at_xpath('.//price').text.to_f,
+    stock: product.at_xpath('.//stock').text.to_i
+  }
+end
+----
+
+==== Conditional processing
+
+[source,ruby]
+----
+# Find and process matching elements
+expensive_books = doc.xpath('//book[price > 30]')
+expensive_books.each do |book|
+  # Apply discount
+  price = book.at_xpath('.//price')
+  current = price.text.to_f
+  price.text = (current * 0.9).to_s
+end
+----
+
+==== Validation
+
+[source,ruby]
+----
+# Check required elements exist
+required = ['title', 'author', 'isbn']
+missing = required.reject { |elem| doc.at_xpath("//#{elem}") }
+
+if missing.any?
+  raise "Missing elements: #{missing.join(', ')}"
+end
+----
+
+=== Next steps
+
+* link:namespace-handling[Namespace handling] - Master XML namespaces
+* link:working-with-elements[Working with elements] - Element manipulation
+* link:../guides/xpath-queries[XPath queries guide] - Advanced patterns
+
+=== See also
+
+* link:../pages/adapters/[Adapters] - XPath capabilities per adapter
+* link:../references/xpath-api[XPath API reference]
+* link:../pages/compatibility[Compatibility matrix] - XPath support comparison

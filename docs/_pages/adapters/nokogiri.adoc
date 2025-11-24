@@ -1,0 +1,252 @@
+---
+title: Nokogiri adapter
+parent: Adapters
+grand_parent: Overview
+nav_order: 1
+---
+
+== Nokogiri adapter
+
+=== Purpose
+
+The Nokogiri adapter provides XML processing through the industry-standard
+Nokogiri library, offering excellent performance and complete XPath 1.0
+support.
+
+=== Overview
+
+link:https://github.com/sparklemotion/nokogiri[Nokogiri] is the most widely
+used XML library in the Ruby ecosystem. It wraps the performant libxml2 C
+library, providing fast parsing, flexible querying, and reliable XML
+processing.
+
+=== Installation
+
+Add to your Gemfile:
+
+[source,ruby]
+----
+gem 'moxml'
+gem 'nokogiri'
+----
+
+Install:
+
+[source,shell]
+----
+bundle install
+----
+
+=== Configuration
+
+Nokogiri is the default adapter and will be used automatically if installed:
+
+[source,ruby]
+----
+# Automatic selection (default)
+context = Moxml.new
+# Uses Nokogiri if available
+
+# Explicit selection
+context = Moxml.new
+context.config.adapter = :nokogiri
+
+# Global default
+Moxml::Config.default_adapter = :nokogiri
+----
+
+=== Features
+
+==== Full XPath 1.0 support
+
+Nokogiri provides complete XPath 1.0 implementation:
+
+[source,ruby]
+----
+doc = Moxml.new.parse(xml)
+
+# All XPath features work
+books = doc.xpath('//book[@price < 30]')
+count = doc.xpath('count(//book)')
+titles = doc.xpath('//book[position() < 3]/title')
+
+# Namespace-aware queries
+doc.xpath('//ns:element', 'ns' => 'http://example.org')
+
+# Complex predicates
+doc.xpath('//book[@id and @isbn and price < 50]')
+
+# All axes supported
+doc.xpath('//chapter/following-sibling::*')
+----
+
+==== Complete namespace support
+
+Full namespace handling including default namespaces and inheritance:
+
+[source,ruby]
+----
+# Create namespaced elements
+element.add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
+
+# Query with namespaces
+results = doc.xpath('//dc:creator',
+  'dc' => 'http://purl.org/dc/elements/1.1/')
+
+# Namespace inheritance works correctly
+# Child elements inherit parent namespaces
+----
+
+==== All node types supported
+
+Complete support for all XML node types:
+
+* Elements with attributes
+* Text nodes
+* CDATA sections
+* Comments
+* Processing instructions
+* DOCTYPE declarations
+* XML declarations
+
+==== High performance
+
+* **Parsing speed**: Fast (C library)
+* **Serialization speed**: Fast
+* **Memory usage**: Good
+* **XPath performance**: Excellent (native libxml2)
+
+=== Limitations
+
+Nokogiri has minimal limitations:
+
+* Requires C extensions (not pure Ruby)
+* Platform-specific compilation may be needed
+* Slightly larger memory footprint than some alternatives
+
+=== Performance characteristics
+
+Based on benchmarks:
+
+[cols="2,2,3"]
+|===
+| Operation | Performance | Notes
+
+| Parse medium XML
+| ~76 ips
+| Fast C library parsing
+
+| Serialize medium XML
+| ~13,900 ips
+| Very fast serialization
+
+| XPath queries
+| ~64,958 ips
+| Native libxml2 XPath engine
+
+| Memory usage
+| -0.1 MB delta
+| Excellent memory efficiency
+|===
+
+=== Best use cases
+
+**Choose Nokogiri when:**
+
+* You need industry-standard XML processing
+* Large community support is important
+* Full XPath 1.0 compliance is required
+* Performance is important but not the absolute priority
+* Cross-platform deployment is needed
+* C extensions are acceptable
+
+**Avoid Nokogiri when:**
+
+* Pure Ruby is required (use link:oga[Oga])
+* Absolutely maximum speed is critical (use link:ox[Ox])
+* C extension compilation is problematic (use link:oga[Oga] or
+link:rexml[REXML])
+
+=== Example usage
+
+==== Basic document processing
+
+[source,ruby]
+----
+require 'moxml'
+
+# Nokogiri is used by default
+context = Moxml.new
+
+xml = <<~XML
+  <library>
+    <book id="1">
+      <title>Ruby Programming</title>
+      <price>29.99</price>
+    </book>
+  </library>
+XML
+
+doc = context.parse(xml)
+
+# Query efficiently
+book = doc.at_xpath('//book[@id="1"]')
+puts book.at_xpath('.//title').text  # => "Ruby Programming"
+
+# Modify
+book.at_xpath('.//price').text = '24.99'
+
+# Serialize
+puts doc.to_xml(indent: 2)
+----
+
+==== Complex XPath queries
+
+[source,ruby]
+----
+# All XPath 1.0 features work
+doc.xpath('//book[price < 30 and @category="fiction"]')
+doc.xpath('//book[position() mod 2 = 0]')
+doc.xpath('count(//book[author="Smith"])')
+doc.xpath('//chapter[last()]/preceding-sibling::*')
+----
+
+==== Namespace handling
+
+[source,ruby]
+----
+xml = <<~XML
+  <library xmlns="http://example.org/library"
+           xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <book>
+      <dc:title>Programming</dc:title>
+    </book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Define namespace mappings
+ns = {
+  'lib' => 'http://example.org/library',
+  'dc' => 'http://purl.org/dc/elements/1.1/'
+}
+
+# Query with namespaces
+books = doc.xpath('//lib:book', ns)
+titles = doc.xpath('//dc:title', ns)
+
+puts titles.first.text  # => "Programming"
+----
+
+=== References
+
+* link:https://nokogiri.org/[Nokogiri homepage]
+* link:https://nokogiri.org/tutorials/[Nokogiri tutorials]
+* link:https://github.com/sparklemotion/nokogiri[Nokogiri on GitHub]
+
+=== See also
+
+* link:../compatibility[Compatibility matrix] - Feature comparison
+* link:libxml[LibXML adapter] - Similar performance alternative
+* link:../../guides/adapter-switching[Adapter switching guide]

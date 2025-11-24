@@ -1,0 +1,36 @@
+---
+title: Performance considerations
+parent: Overview
+nav_order: 11
+---
+
+== Performance considerations
+
+=== Memory management
+
+Moxml maintains a node registry to ensure consistent object mapping:
+
+[source,ruby]
+----
+doc = context.parse(large_xml)
+# Process document
+doc = nil  # Allow garbage collection of document and registry
+GC.start   # Force garbage collection if needed
+----
+
+=== Efficient querying
+
+Use specific XPath expressions for better performance:
+
+[source,ruby]
+----
+# More efficient - specific path
+doc.xpath('//book/title')
+
+# Less efficient - requires full document scan
+doc.xpath('//title')
+
+# Most efficient - direct child access
+root.xpath('./*/title')
+----
+

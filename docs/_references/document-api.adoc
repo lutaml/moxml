@@ -1,0 +1,408 @@
+---
+title: Document API
+parent: Overview
+nav_order: 2
+---
+
+== Document API
+
+=== Purpose
+
+Complete reference for the Document class methods and properties.
+
+=== Class: Moxml::Document
+
+The Document class represents an XML document and serves as the root container
+for all XML nodes.
+
+=== Creating documents
+
+[source,ruby]
+----
+# Parse from XML string
+doc = Moxml.new.parse(xml_string)
+
+# Create empty document
+doc = Moxml.new.create_document
+
+# Using builder
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.root "content"
+end
+----
+
+=== Instance methods
+
+==== `#root`
+
+Returns the root element of the document.
+
+[source,ruby]
+----
+doc = Moxml.new.parse('<library><book/></library>')
+root = doc.root
+puts root.name  # => "library"
+----
+
+**Returns:** `Moxml::Element` or `nil`
+
+==== `#root=(element)`
+
+Sets the root element of the document.
+
+[source,ruby]
+----
+doc = Moxml.new.create_document
+root = doc.create_element('library')
+doc.root = root
+----
+
+**Parameters:**
+
+* `element` (`Moxml::Element`) - The element to set as root
+
+==== `#children`
+
+Returns all top-level children of the document.
+
+[source,ruby]
+----
+doc = Moxml.new.parse('<?xml version="1.0"?><root/>')
+children = doc.children
+# => [Declaration, Element]
+----
+
+**Returns:** `Moxml::NodeSet`
+
+==== `#add_child(node)`
+
+Adds a child node to the document.
+
+[source,ruby]
+----
+doc = Moxml.new.create_document
+
+# Add declaration
+decl = doc.create_declaration
+doc.add_child(decl)
+
+# Add root element
+root = doc.create_element('library')
+doc.add_child(root)
+----
+
+**Parameters:**
+
+* `node` (`Moxml::Node`) - The node to add
+
+**Returns:** `Moxml::Node` - The added node
+
+==== `#remove_child(node)`
+
+Removes a child node from the document.
+
+[source,ruby]
+----
+doc.remove_child(declaration)
+----
+
+**Parameters:**
+
+* `node` (`Moxml::Node`) - The node to remove
+
+==== `#create_element(name)`
+
+Creates a new element node.
+
+[source,ruby]
+----
+elem = doc.create_element('book')
+elem.text = 'Content'
+----
+
+**Parameters:**
+
+* `name` (`String`) - Element name
+
+**Returns:** `Moxml::Element`
+
+==== `#create_text(content)`
+
+Creates a new text node.
+
+[source,ruby]
+----
+text = doc.create_text('content')
+element.add_child(text)
+----
+
+**Parameters:**
+
+* `content` (`String`) - Text content
+
+**Returns:** `Moxml::Text`
+
+==== `#create_comment(content)`
+
+Creates a new comment node.
+
+[source,ruby]
+----
+comment = doc.create_comment('Note: this is important')
+element.add_child(comment)
+----
+
+**Parameters:**
+
+* `content` (`String`) - Comment text
+
+**Returns:** `Moxml::Comment`
+
+==== `#create_cdata(content)`
+
+Creates a new CDATA section.
+
+[source,ruby]
+----
+cdata = doc.create_cdata('<raw>HTML content</raw>')
+element.add_child(cdata)
+----
+
+**Parameters:**
+
+* `content` (`String`) - CDATA content
+
+**Returns:** `Moxml::Cdata`
+
+==== `#create_processing_instruction(target, content)`
+
+Creates a new processing instruction.
+
+[source,ruby]
+----
+pi = doc.create_processing_instruction('xml-stylesheet',
+  'type="text/xsl" href="style.xsl"')
+doc.add_child(pi)
+----
+
+**Parameters:**
+
+* `target` (`String`) - PI target
+* `content` (`String`) - PI content
+
+**Returns:** `Moxml::ProcessingInstruction`
+
+==== `#create_declaration(version, encoding, standalone)`
+
+Creates a new XML declaration.
+
+[source,ruby]
+----
+# With defaults
+decl = doc.create_declaration
+# => <?xml version="1.0" encoding="UTF-8"?>
+
+# Custom values
+decl = doc.create_declaration("1.1", "ISO-8859-1", "yes")
+# => <?xml version="1.1" encoding="ISO-8859-1" standalone="yes"?>
+----
+
+**Parameters:**
+
+* `version` (`String`, optional) - XML version (default: "1.0")
+* `encoding` (`String`, optional) - Character encoding (default: "UTF-8")
+* `standalone` (`String`, optional) - Standalone declaration ("yes"/"no")
+
+**Returns:** `Moxml::Declaration`
+
+==== `#create_doctype(name, external_id, system_id)`
+
+Creates a new DOCTYPE declaration.
+
+[source,ruby]
+----
+doctype = doc.create_doctype('html')
+doc.add_child(doctype)
+
+# With system ID
+doctype = doc.create_doctype('root', nil, 'test.dtd')
+----
+
+**Parameters:**
+
+* `name` (`String`) - DOCTYPE name
+* `external_id` (`String`, optional) - External ID
+* `system_id` (`String`, optional) - System ID
+
+**Returns:** `Moxml::Doctype`
+
+==== `#xpath(expression, namespaces = {})`
+
+Finds nodes matching XPath expression.
+
+[source,ruby]
+----
+books = doc.xpath('//book[@id="1"]')
+
+# With namespaces
+ns = { 'dc' => 'http://purl.org/dc/elements/1.1/' }
+titles = doc.xpath('//dc:title', ns)
+----
+
+**Parameters:**
+
+* `expression` (`String`) - XPath expression
+* `namespaces` (`Hash`, optional) - Namespace prefix mappings
+
+**Returns:** `Moxml::NodeSet`
+
+**Raises:** `Moxml::XPathError` if expression is invalid
+
+==== `#at_xpath(expression, namespaces = {})`
+
+Finds first node matching XPath expression.
+
+[source,ruby]
+----
+book = doc.at_xpath('//book[@id="1"]')
+----
+
+**Parameters:**
+
+* `expression` (`String`) - XPath expression
+* `namespaces` (`Hash`, optional) - Namespace prefix mappings
+
+**Returns:** `Moxml::Node` or `nil`
+
+**Raises:** `Moxml::XPathError` if expression is invalid
+
+==== `#to_xml(options = {})`
+
+Serializes document to XML string.
+
+[source,ruby]
+----
+# Default formatting
+xml = doc.to_xml
+
+# With indentation
+xml = doc.to_xml(indent: 2)
+
+# Without declaration
+xml = doc.to_xml(no_declaration: true)
+
+# Custom encoding
+xml = doc.to_xml(encoding: 'ISO-8859-1')
+----
+
+**Parameters:**
+
+* `options` (`Hash`, optional) - Serialization options
+** `:indent` (`Integer`) - Indentation spaces (default: 0)
+** `:encoding` (`String`) - Output encoding
+** `:no_declaration` (`Boolean`) - Omit XML declaration
+
+**Returns:** `String` - XML document as string
+
+==== `#declaration`
+
+Returns the XML declaration if present.
+
+[source,ruby]
+----
+doc = Moxml.new.parse('<?xml version="1.0"?><root/>')
+decl = doc.declaration
+puts decl.version    # => "1.0"
+puts decl.encoding   # => nil (not specified)
+----
+
+**Returns:** `Moxml::Declaration` or `nil`
+
+==== `#doctype`
+
+Returns the DOCTYPE declaration if present.
+
+[source,ruby]
+----
+doc = Moxml.new.parse('<!DOCTYPE root><root/>')
+doctype = doc.doctype
+puts doctype.name  # => "root"
+----
+
+**Returns:** `Moxml::Doctype` or `nil`
+
+==== `#encoding`
+
+Gets or sets document encoding.
+
+[source,ruby]
+----
+doc.encoding = 'UTF-8'
+puts doc.encoding  # => "UTF-8"
+----
+
+==== `#version`
+
+Gets or sets XML version.
+
+[source,ruby]
+----
+doc.version = '1.0'
+puts doc.version  # => "1.0"
+----
+
+==== `#context`
+
+Returns the Moxml context.
+
+[source,ruby]
+----
+context = doc.context
+adapter = context.config.adapter
+----
+
+**Returns:** `Moxml::Context`
+
+=== Complete example
+
+[source,ruby]
+----
+# Create comprehensive document
+doc = Moxml.new.create_document
+
+# Add declaration
+decl = doc.create_declaration("1.0", "UTF-8")
+doc.add_child(decl)
+
+# Add doctype
+doctype = doc.create_doctype('library')
+doc.add_child(doctype)
+
+# Create root
+root = doc.create_element('library')
+root.add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
+doc.add_child(root)
+
+# Add content
+book = doc.create_element('book')
+book['id'] = '1'
+
+title = doc.create_element('dc:title')
+title.text = 'Ruby Programming'
+book.add_child(title)
+
+root.add_child(book)
+
+# Query
+ns = { 'dc' => 'http://purl.org/dc/elements/1.1/' }
+titles = doc.xpath('//dc:title', ns)
+
+# Serialize
+puts doc.to_xml(indent: 2)
+----
+
+=== See also
+
+* link:element-api[Element API] - Element methods
+* link:../pages/quick-start[Quick start] - Basic usage examples
+* link:../guides/creating-documents[Creating documents guide]

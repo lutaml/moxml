@@ -1,0 +1,244 @@
+---
+title: Quick start
+parent: Overview
+nav_order: 3
+---
+
+== Quick start
+
+=== Purpose
+
+Get up and running with Moxml in minutes through practical examples covering
+parsing, creating, querying, and modifying XML documents.
+
+=== Prerequisites
+
+* Moxml installed with at least one adapter
+* Basic familiarity with XML concepts
+* Ruby 3.0 or higher
+
+=== Parse and query XML
+
+The most common operation is parsing existing XML and querying it:
+
+[source,ruby]
+----
+require 'moxml'
+
+xml = <<~XML
+  <library>
+    <book id="1">
+      <title>Ruby Programming</title>
+      <author>Jane Smith</author>
+      <price>29.99</price>
+    </book>
+    <book id="2">
+      <title>Advanced Ruby</title>
+      <author>John Doe</author>
+      <price>39.99</price>
+    </book>
+  </library>
+XML
+
+# Parse the XML
+doc = Moxml.new.parse(xml)
+
+# Query using XPath
+books = doc.xpath('//book')
+puts "Found #{books.length} books"  # => Found 2 books
+
+# Access specific book
+first_book = doc.at_xpath('//book[@id="1"]')
+puts first_book['id']              # => "1"
+puts first_book.at_xpath('.//title').text  # => "Ruby Programming"
+
+# Find all titles
+titles = doc.xpath('//book/title')
+titles.each { |title| puts title.text }
+# => Ruby Programming
+# => Advanced Ruby
+----
+
+=== Create XML documents
+
+Build XML documents from scratch using the builder pattern:
+
+[source,ruby]
+----
+require 'moxml'
+
+doc = Moxml::Builder.build(Moxml.new) do |xml|
+  xml.declaration version: "1.0", encoding: "UTF-8"
+
+  xml.library do
+    xml.book id: "1" do
+      xml.title "Ruby Programming"
+      xml.author "Jane Smith"
+      xml.price "29.99"
+    end
+
+    xml.book id: "2" do
+      xml.title "Advanced Ruby"
+      xml.author "John Doe"
+      xml.price "39.99"
+    end
+  end
+end
+
+puts doc.to_xml(indent: 2)
+----
+
+Output:
+
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<library>
+  <book id="1">
+    <title>Ruby Programming</title>
+    <author>Jane Smith</author>
+    <price>29.99</price>
+  </book>
+  <book id="2">
+    <title>Advanced Ruby</title>
+    <author>John Doe</author>
+    <price>39.99</price>
+  </book>
+</library>
+----
+
+=== Modify existing XML
+
+Add, update, and remove elements and attributes:
+
+[source,ruby]
+----
+require 'moxml'
+
+# Parse existing XML
+xml = '<library><book id="1"><title>Old Title</title></book></library>'
+doc = Moxml.new.parse(xml)
+
+# Find and modify element
+book = doc.at_xpath('//book[@id="1"]')
+
+# Update text content
+book.at_xpath('.//title').text = 'New Title'
+
+# Update attribute
+book['id'] = '100'
+book['edition'] = '2nd'
+
+# Add new child element
+author = doc.create_element('author')
+author.text = 'Jane Smith'
+book.add_child(author)
+
+# Add comment
+book.add_child(doc.create_comment('Updated book'))
+
+# Remove attribute
+book.remove_attribute('edition')
+
+puts doc.to_xml(indent: 2)
+----
+
+=== Work with namespaces
+
+Handle XML namespaces properly:
+
+[source,ruby]
+----
+require 'moxml'
+
+xml = <<~XML
+  <library xmlns="http://example.org/library"
+           xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <book>
+      <dc:title>Ruby Programming</dc:title>
+      <dc:creator>Jane Smith</dc:creator>
+    </book>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Query with namespace mapping
+namespaces = {
+  'lib' => 'http://example.org/library',
+  'dc' => 'http://purl.org/dc/elements/1.1/'
+}
+
+books = doc.xpath('//lib:book', namespaces)
+titles = doc.xpath('//dc:title', namespaces)
+
+puts titles.first.text  # => "Ruby Programming"
+
+# Create namespaced elements
+new_book = doc.create_element('book')
+new_book.add_namespace('dc', 'http://purl.org/dc/elements/1.1/')
+
+title = doc.create_element('dc:title')
+title.text = 'Advanced Ruby'
+new_book.add_child(title)
+----
+
+=== Switch adapters
+
+Choose a different XML adapter based on your needs:
+
+[source,ruby]
+----
+require 'moxml'
+
+# Use Nokogiri (default)
+context_nokogiri = Moxml.new
+
+# Use LibXML for native performance
+context_libxml = Moxml.new
+context_libxml.config.adapter = :libxml
+
+# Use Oga for pure Ruby
+context_oga = Moxml.new
+context_oga.config.adapter = :oga
+
+# Use REXML for standard library only
+context_rexml = Moxml.new
+context_rexml.config.adapter = :rexml
+
+# Parse with chosen adapter
+doc = context_libxml.parse(xml)
+----
+
+=== Handle errors
+
+Moxml provides comprehensive error handling:
+
+[source,ruby]
+----
+require 'moxml'
+
+begin
+  # Parse malformed XML
+  doc = Moxml.new.parse('<invalid><unclosed>', strict: true)
+rescue Moxml::ParseError => e
+  puts "Parse error at line #{e.line}: #{e.message}"
+end
+
+begin
+  # Invalid XPath expression
+  doc.xpath('//invalid[[[')
+rescue Moxml::XPathError => e
+  puts "XPath error: #{e.expression}"
+  puts e.to_s  # Includes helpful hints
+end
+----
+
+=== Next steps
+
+Now that you've seen the basics, explore more:
+
+* link:../tutorials/[Tutorials] - Learn Moxml step by step
+* link:adapters/[Adapters] - Choose the right adapter for your needs
+* link:../guides/[Guides] - Task-oriented documentation
+* link:../references/[API Reference] - Complete technical documentation

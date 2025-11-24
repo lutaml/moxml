@@ -47,3 +47,4 @@ libxml_*.txt
 # Artifacts from static site generators
 /_site
 /docs/_site
+/docs/.jekyll-cache

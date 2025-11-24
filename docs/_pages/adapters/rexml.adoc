@@ -1,0 +1,293 @@
+---
+title: REXML adapter
+parent: Adapters
+grand_parent: Overview
+nav_order: 4
+---
+
+== REXML adapter
+
+=== Purpose
+
+The REXML adapter provides XML processing through Ruby's standard library,
+offering maximum portability without requiring any external gems.
+
+=== Overview
+
+link:https://github.com/ruby/rexml[REXML] is Ruby's built-in XML parser,
+distributed as part of the standard library. It requires no external
+dependencies and works on all Ruby installations.
+
+=== Installation
+
+REXML is included with Ruby, so only Moxml needs to be installed:
+
+[source,ruby]
+----
+gem 'moxml'
+# No additional gems needed - REXML is in Ruby stdlib
+----
+
+Install:
+
+[source,shell]
+----
+bundle install
+----
+
+=== Configuration
+
+[source,ruby]
+----
+# Explicit selection
+context = Moxml.new
+context.config.adapter = :rexml
+
+# Global default
+Moxml::Config.default_adapter = :rexml
+----
+
+=== Features
+
+==== Basic XPath support
+
+REXML provides basic XPath querying:
+
+[source,ruby]
+----
+doc = Moxml.new.parse(xml)
+
+# Basic paths work
+books = doc.xpath('//book')
+first_book = doc.xpath('/library/book[1]')
+
+# Attribute predicates work
+has_id = doc.xpath('//book[@id]')
+specific_book = doc.xpath('//book[@id="1"]')
+
+# Position predicates work
+first_three = doc.xpath('//book[position() < 4]')
+----
+
+==== Limited namespace support
+
+REXML can parse and preserve namespaces but cannot use them in XPath queries:
+
+[source,ruby]
+----
+xml = '<library xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Book</dc:title></library>'
+
+doc = Moxml.new.parse(xml)
+
+# Namespace metadata is preserved
+element = doc.root.children.first
+puts element.namespace  # Works - returns namespace URI
+
+# But namespace-aware XPath does NOT work
+doc.xpath('//dc:title', 'dc' => 'http://purl.org/dc/elements/1.1/')
+# => Returns empty, cannot resolve namespace prefix
+
+# Workaround: use element name without namespace
+doc.xpath('//title')  # Works - finds the element
+----
+
+==== All basic node types
+
+Support for standard XML node types:
+
+* Elements with attributes
+* Text nodes
+* CDATA sections
+* Comments
+* Processing instructions
+* DOCTYPE declarations
+* XML declarations
+
+==== Standard library advantage
+
+* Always available - no gem dependencies
+* Maximum portability across Ruby versions
+* Simple deployment - no compilation needed
+* Guaranteed compatibility
+
+=== Limitations
+
+REXML has several limitations compared to other adapters:
+
+**XPath limitations:**
+
+* No namespace-aware XPath queries (see example above)
+* Limited function support
+* Some axes not supported
+* Complex predicates may not work
+
+**Performance:**
+
+* Slower parsing than C-based libraries
+* Medium serialization speed
+* Higher memory usage than Ox
+
+**Namespace XPath workaround:**
+
+[source,ruby]
+----
+# Instead of:
+doc.xpath('//ns:element', 'ns' => 'http://example.org')
+
+# Use element name matching:
+doc.xpath('//element')
+
+# Then filter in Ruby:
+elements.select { |e| e.namespace == 'http://example.org' }
+----
+
+=== Performance characteristics
+
+Based on benchmarks:
+
+[cols="2,2,3"]
+|===
+| Operation | Performance | Notes
+
+| Parse medium XML
+| ~10-20 ips
+| Pure Ruby parsing
+
+| Serialize medium XML
+| ~500-1,000 ips
+| Medium speed
+
+| XPath queries
+| ~5,000-10,000 ips
+| Limited XPath
+
+| Memory usage
+| Medium
+| Pure Ruby overhead
+|===
+
+=== Best use cases
+
+**Choose REXML when:**
+
+* No external gems can be used (standard library only)
+* Maximum portability is required
+* Small to medium documents
+* Deployment simplicity is critical
+* C extensions cannot be compiled
+* Basic XPath without namespaces is sufficient
+
+**Avoid REXML when:**
+
+* Namespace-aware XPath is required (use link:oga[Oga],
+link:nokogiri[Nokogiri], or link:libxml[LibXML])
+* High performance is needed (use link:ox[Ox] or link:nokogiri[Nokogiri])
+* Complex XPath expressions are needed (use link:nokogiri[Nokogiri])
+
+=== Example usage
+
+==== Basic operations
+
+[source,ruby]
+----
+require 'moxml'
+
+# Configure REXML adapter
+context = Moxml.new
+context.config.adapter = :rexml
+
+xml = '<library><book id="1">Ruby Programming</book></library>'
+doc = context.parse(xml)
+
+# Basic XPath works
+book = doc.at_xpath('//book[@id="1"]')
+puts book.text  # => "Ruby Programming"
+
+# Modify
+book.text = 'Advanced Ruby'
+book['edition'] = '2nd'
+
+puts doc.to_xml(indent: 2)
+----
+
+==== XPath queries
+
+[source,ruby]
+----
+# Supported patterns
+books = doc.xpath('//book')
+with_id = doc.xpath('//book[@id]')
+specific = doc.xpath('//book[@id="1"]')
+first_two = doc.xpath('//book[position() <= 2]')
+
+# NOT supported - avoid these
+# doc.xpath('//ns:book', namespaces)  # ❌ No namespace XPath
+# doc.xpath('count(//book)')          # ⚠️ Limited functions
+# doc.xpath('//book[price < 30]')     # ⚠️ May not work
+----
+
+==== Namespace workarounds
+
+[source,ruby]
+----
+xml = <<~XML
+  <library xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Programming</dc:title>
+    <dc:creator>Smith</dc:creator>
+  </library>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Find elements by name (without namespace prefix)
+titles = doc.xpath('//title')
+
+# Check namespace programmatically
+titles.each do |title|
+  if title.namespace == 'http://purl.org/dc/elements/1.1/'
+    puts "DC title: #{title.text}"
+  end
+end
+----
+
+=== Comparison with other pure Ruby option
+
+[cols="2,2,2"]
+|===
+| Aspect | REXML | Oga
+
+| XPath support
+| Limited
+| Full XPath 1.0
+
+| Performance
+| Medium
+| Fast
+
+| Memory usage
+| Medium
+| Medium
+
+| Namespace XPath
+| Not supported
+| Full support
+
+| Standard library
+| Yes
+| No (external gem)
+
+| Dependencies
+| None
+| None (pure Ruby)
+|===
+
+=== References
+
+* link:https://github.com/ruby/rexml[REXML on GitHub]
+* link:https://ruby-doc.org/stdlib/libdoc/rexml/rdoc/REXML.html[REXML documentation]
+
+=== See also
+
+* link:../compatibility[Compatibility matrix] - Feature comparison
+* link:oga[Oga adapter] - Alternative pure Ruby with full XPath
+* link:../../guides/xpath-queries[XPath queries guide]

@@ -1,0 +1,231 @@
+---
+title: Parsing XML
+parent: Overview
+nav_order: 2
+---
+
+== Parsing XML
+
+=== Purpose
+
+Learn how to parse XML from various sources including strings, files, and IO
+streams using different Moxml adapters.
+
+=== Basic string parsing
+
+Parse XML from a string:
+
+[source,ruby]
+----
+require 'moxml'
+
+xml_string = '<root><child>content</child></root>'
+
+# Parse with default adapter
+doc = Moxml.new.parse(xml_string)
+
+# Access parsed content
+puts doc.root.name  # => "root"
+puts doc.root.children.first.text  # => "content"
+----
+
+=== Parsing from files
+
+Read and parse XML files:
+
+[source,ruby]
+----
+# Read file first, then parse
+xml_content = File.read('document.xml')
+doc = Moxml.new.parse(xml_content)
+
+# Or use File.open with read
+File.open('document.xml') do |file|
+  doc = Moxml.new.parse(file.read)
+  # Process document
+end
+----
+
+=== Parsing with options
+
+Control parsing behavior:
+
+[source,ruby]
+----
+# Strict parsing (raises errors on malformed XML)
+doc = Moxml.new.parse(xml, strict: true)
+
+# With specific encoding
+doc = Moxml.new.parse(xml, encoding: 'ISO-8859-1')
+
+# Relaxed parsing (attempts to handle malformed XML)
+doc = Moxml.new.parse(possibly_invalid_xml, strict: false)
+----
+
+=== Handling parse errors
+
+Catch and handle parsing errors:
+
+[source,ruby]
+----
+xml = '<root><unclosed>'
+
+begin
+  doc = Moxml.new.parse(xml, strict: true)
+rescue Moxml::ParseError => e
+  puts "Parse failed at line #{e.line}, column #{e.column}"
+  puts "Error: #{e.message}"
+  puts e.to_s  # Includes helpful hints
+end
+----
+
+=== Parsing large documents
+
+Handle large XML files efficiently:
+
+[source,ruby]
+----
+# For large files, consider memory usage
+large_xml = File.read('large_document.xml')
+
+context = Moxml.new
+# Choose appropriate adapter for size
+context.config.adapter = :ox  # Fast for large files
+
+doc = context.parse(large_xml)
+
+# Process in chunks if possible
+doc.xpath('//record').each_slice(1000) do |records|
+  process_batch(records)
+end
+----
+
+=== Parsing with different adapters
+
+Each adapter may handle edge cases differently:
+
+[source,ruby]
+----
+xml_with_namespaces = <<~XML
+  <library xmlns="http://example.org">
+    <book>Title</book>
+  </library>
+XML
+
+# Parse with Nokogiri (full namespace support)
+context_nokogiri = Moxml.new
+context_nokogiri.config.adapter = :nokogiri
+doc = context_nokogiri.parse(xml_with_namespaces)
+
+# Parse with REXML (limited namespace XPath)
+context_rexml = Moxml.new
+context_rexml.config.adapter = :rexml
+doc = context_rexml.parse(xml_with_namespaces)
+# Namespace preserved but XPath queries limited
+----
+
+=== Common parse patterns
+
+==== Parse and extract data
+
+[source,ruby]
+----
+xml = <<~XML
+  <products>
+    <product id="1">
+      <name>Widget A</name>
+      <price>9.99</price>
+    </product>
+    <product id="2">
+      <name>Widget B</name>
+      <price>14.99</price>
+    </product>
+  </products>
+XML
+
+doc = Moxml.new.parse(xml)
+
+# Extract data into Ruby structures
+products = doc.xpath('//product').map do |prod|
+  {
+    id: prod['id'],
+    name: prod.at_xpath('.//name').text,
+    price: prod.at_xpath('.//price').text.to_f
+  }
+end
+
+products.each { |p| puts "#{p[:name]}: $#{p[:price]}" }
+----
+
+==== Parse and validate
+
+[source,ruby]
+----
+doc = Moxml.new.parse(xml)
+
+# Validate required elements exist
+required_elements = ['title', 'author', 'price']
+
+required_elements.each do |elem|
+  unless doc.at_xpath("//#{elem}")
+    raise "Missing required element: #{elem}"
+  end
+end
+----
+
+=== Troubleshooting
+
+**Encoding issues:**
+
+[source,ruby]
+----
+# Specify encoding explicitly
+doc = Moxml.new.parse(xml, encoding: 'UTF-8')
+
+# Or let adapter auto-detect
+doc = Moxml.new.parse(xml)  # Usually works
+----
+
+**Malformed XML:**
+
+[source,ruby]
+----
+# Use relaxed parsing
+doc = Moxml.new.parse(possibly_broken_xml, strict: false)
+
+# Check what was parsed
+puts doc.root.name
+puts doc.to_xml  # See what was actually parsed
+----
+
+**Empty or whitespace:**
+
+[source,ruby]
+----
+xml = "  \n  <root/>  \n  "
+
+# Whitespace is handled automatically
+doc = Moxml.new.parse(xml)
+puts doc.root.name  # => "root"
+----
+
+=== Best practices
+
+. **Always use strict mode in production** for data integrity
+. **Specify encoding** when working with non-UTF-8 documents
+. **Handle parse errors** gracefully with appropriate error messages
+. **Choose the right adapter** based on document size and complexity
+. **Validate critical elements** after parsing
+
+=== Next steps
+
+* link:xpath-queries[XPath queries tutorial] - Learn advanced querying
+* link:working-with-elements[Working with elements] - Element manipulation
+* link:../guides/error-handling[Error handling guide] - Comprehensive error
+management
+
+=== See also
+
+* link:../pages/adapters/[Adapters] - Choose the right adapter for parsing
+* link:../references/document-api[Document API] - Complete parsing reference
+* link:../pages/compatibility[Compatibility] - Adapter differences

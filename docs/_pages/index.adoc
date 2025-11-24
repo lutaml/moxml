@@ -1,0 +1,35 @@
+---
+title: Overview
+nav_order: 1
+---
+
+== Core topics
+
+This section covers the fundamental concepts and essential information for
+working with Moxml.
+
+=== Topics covered
+
+link:installation[Installation]::
+How to install Moxml and select an XML adapter for your needs.
+
+link:quick-start[Quick start]::
+Get up and running with Moxml in minutes with practical examples.
+
+link:architecture[Architecture]::
+Understand how Moxml's unified interface and adapter system works.
+
+link:adapters/[Adapters]::
+Learn about the supported XML libraries and how to choose the right one.
+
+link:compatibility[Compatibility]::
+Compare features, performance, and compatibility across adapters.
+
+link:configuration[Configuration]::
+Configure Moxml for your application's requirements.
+
+link:error-handling[Error handling]::
+Comprehensive guide to Moxml's error classes and debugging.
+
+link:best-practices[Best practices]::
+Recommended patterns and practices for using Moxml effectively.
