@@ -177,6 +177,9 @@ module Moxml
       current = parent
       while current
         result << current.native
+        # Stop at document node (documents don't have parents)
+        break if current.is_a?(Document)
+        
         current = current.respond_to?(:parent) ? current.parent : nil
       end
       NodeSet.new(result, context)
