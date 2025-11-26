@@ -194,6 +194,14 @@ module Moxml
           document.respond_to?(:root) ? document.root : document.children.first
         end
 
+        def path(node)
+          node.path
+        end
+
+        def line_number(node)
+          node.respond_to?(:line) ? node.line : nil
+        end
+
         def attribute_element(attr)
           attr.parent
         end
