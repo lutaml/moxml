@@ -177,12 +177,13 @@ module Moxml
       current = parent
       while current
         result << current.native
-        current = current.parent rescue nil
+        current = current.respond_to?(:parent) ? current.parent : nil
       end
       NodeSet.new(result, context)
     end
 
     # Returns all descendant nodes (children, grandchildren, etc.)
+    # Does not include the current node itself
     # @return [NodeSet] collection of descendant nodes
     def descendants
       result = []
