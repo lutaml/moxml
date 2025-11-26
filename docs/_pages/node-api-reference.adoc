@@ -1,9 +1,77 @@
 ---
-title: Node API reference
-nav_order: 5
+title: Node API Reference
+:toc:
+:toclevels: 3
 ---
 
-== Node API reference
+== Node API Reference
+
+This reference documents the API of all node types in Moxml. For a guide on API consistency and safe coding patterns, see the link:../guides/node-api-consistency[Node API Consistency Guide].
+
+== Node Identity: The #identifier Method
+
+All node types in Moxml support the `#identifier` method, which returns the primary identifier for a node:
+
+[cols="1,2,1"]
+|===
+| Node Type | #identifier Returns | Example
+
+| Element
+| The tag name
+| `"book"`, `"title"`
+
+| Attribute
+| The attribute name
+| `"id"`, `"class"`
+
+| ProcessingInstruction
+| The PI target
+| `"xml-stylesheet"`
+
+| Text, Comment, Cdata
+| `nil` (no identifier)
+| `nil`
+
+| Declaration
+| `nil` (no identifier)
+| `nil`
+
+| Document
+| `nil` (no identifier)
+| `nil`
+|===
+
+**Example usage:**
+
+[source,ruby]
+----
+element = doc.at_xpath("//book")
+puts element.identifier  # => "book"
+
+attr = element.attribute("id")
+puts attr.identifier     # => "id"
+
+pi = doc.children.find { |n| n.processing_instruction? }
+puts pi.identifier       # => "xml-stylesheet"
+
+text = element.children.find { |n| n.text? }
+puts text.identifier     # => nil
+----
+
+**Safe iteration over mixed nodes:**
+
+[source,ruby]
+----
+doc.root.children.each do |node|
+  if id = node.identifier
+    puts "#{node.class.name.split('::').last}: #{id}"
+  else
+    puts "#{node.class.name.split('::').last}: (no identifier)"
+  end
+end
+----
+
+== Common Node Methods
 
 == XML objects and their methods
 
@@ -47,3 +115,25 @@ See also:
 
 * link:../guides/working-with-documents[Working with documents guide]
 * link:../guides/advanced-features[Advanced features guide]
+=== Doctype nodes
+
+Doctype nodes represent DOCTYPE declarations in XML documents.
+
+[source,ruby]
+----
+doctype = doc.create_doctype("html", "-//W3C//DTD HTML 4.01//EN",
+                              "http://www.w3.org/TR/html4/strict.dtd")
+doctype.name         # => "html"
+doctype.external_id  # => "-//W3C//DTD HTML 4.01//EN"
+doctype.system_id    # => "http://www.w3.org/TR/html4/strict.dtd"
+doctype.identifier   # => "html"
+----
+
+*Available methods:*
+
+* `name` - Returns the DOCTYPE name (root element name)
+* `external_id` - Returns the PUBLIC identifier (or nil)
+* `system_id` - Returns the SYSTEM identifier (DTD URI, or nil)
+* `identifier` - Returns the primary identifier (same as `name`)
+
+All Doctype accessor methods are fully implemented across all 6 adapters.

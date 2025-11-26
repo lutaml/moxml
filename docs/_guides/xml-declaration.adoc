@@ -439,12 +439,12 @@ doc.to_xml                       # Use automatic preservation
 Controls whether XML declaration is included in serialized output:
 
 * `true`: Always include declaration
-* `false`: Never include declaration  
+* `false`: Never include declaration
 * Not specified: Use `has_xml_declaration` value (automatic preservation)
 
 == See Also
 
-* link:parsing-xml.html[Parsing XML] - How to parse XML documents
-* link:modifying-xml.html[Modifying XML] - Working with parsed documents
-* link:../adapters/index.html[Adapters] - Adapter-specific behavior
-* link:../best-practices.html[Best Practices] - General XML processing guidelines
+* link:parsing-xml[Parsing XML] - How to parse XML documents
+* link:modifying-xml[Modifying XML] - Working with parsed documents
+* link:../adapters/index[Adapters] - Adapter-specific behavior
+* link:../best-practices[Best Practices] - General XML processing guidelines

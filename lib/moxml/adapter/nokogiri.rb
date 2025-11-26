@@ -321,6 +321,19 @@ module Moxml
           node.namespace_definitions
         end
 
+        # Doctype accessor methods
+        def doctype_name(native)
+          native.name
+        end
+
+        def doctype_external_id(native)
+          native.external_id
+        end
+
+        def doctype_system_id(native)
+          native.system_id
+        end
+
         def xpath(node, expression, namespaces = nil)
           node.xpath(expression, namespaces).to_a
         rescue ::Nokogiri::XML::XPath::SyntaxError => e

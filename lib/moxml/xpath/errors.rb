@@ -36,7 +36,7 @@ module Moxml
 
       def to_s
         msg = super
-        msg += "\n  Context node: <#{@context_node.name}>" if @context_node.respond_to?(:name)
+        msg += "\n  Context node: <#{@context_node.name}>" if @context_node.is_a?(Moxml::Element) || @context_node.is_a?(Moxml::Attribute)
         msg += "\n  Step: #{@step}" if @step
         msg
       end

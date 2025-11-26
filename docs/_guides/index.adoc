@@ -10,23 +10,25 @@ Task-oriented guides for common XML processing operations with Moxml.
 === Document operations
 
 link:parsing-xml[Parsing XML]::
-Parse XML from strings, files, and IO streams with different adapters.
+Parse XML from strings, files, and IO streams
 
-link:sax-parsing[SAX parsing]::
-Memory-efficient event-driven parsing for large XML files and streaming data.
-
-link:xml-declaration[XML declaration preservation]::
-Understand how Moxml preserves XML declarations for round-trip fidelity and standards compliance.
-
-link:creating-documents[Creating documents]::
-Build XML documents from scratch using the builder pattern or direct
-manipulation.
+link:working-with-documents[Working with Documents]::
+Create and manipulate XML documents
 
 link:modifying-xml[Modifying XML]::
-Add, remove, and modify elements, attributes, and content in XML documents.
+Edit elements, attributes, and content
 
-link:serializing-xml[Serializing XML]::
-Convert XML documents to strings with formatting and encoding options.
+link:sax-parsing[SAX Parsing]::
+Memory-efficient event-driven parsing
+
+link:advanced-features[Advanced Features]::
+Namespaces, XPath, and more
+
+link:node-api-consistency[Node API Consistency]::
+Understanding node types and their APIs
+
+link:development-testing[Development & Testing]::
+Contributing to Moxml
 
 === Querying and traversal
 

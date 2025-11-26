@@ -510,6 +510,31 @@ module Moxml
           end.values
         end
 
+        # Doctype accessor methods
+        # Ox stores DOCTYPE as a string, so we parse it
+        def doctype_name(native)
+          # Parse: "name PUBLIC \"external_id\" \"system_id\"" or "name SYSTEM \"system_id\""
+          value = native.value.to_s.strip
+          # Extract the first word (the name)
+          value.split(/\s+/).first
+        end
+
+        def doctype_external_id(native)
+          value = native.value.to_s
+          # Match PUBLIC "external_id"
+          match = value.match(/PUBLIC\s+"([^"]*)"/)
+          match ? match[1] : nil
+        end
+
+        def doctype_system_id(native)
+          value = native.value.to_s
+          # Match the last quoted string (system_id)
+          # For PUBLIC: "name PUBLIC \"external_id\" \"system_id\""
+          # For SYSTEM: "name SYSTEM \"system_id\""
+          matches = value.scan(/"([^"]*)"/)
+          matches.last&.first
+        end
+
         def xpath(node, expression, namespaces = {})
           # Translate common XPath patterns to Ox locate() syntax
           locate_expr = translate_xpath_to_locate(expression, namespaces)

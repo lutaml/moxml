@@ -365,6 +365,19 @@ module Moxml
           node.namespaces.values
         end
 
+        # Doctype accessor methods
+        def doctype_name(native)
+          native.name
+        end
+
+        def doctype_external_id(native)
+          native.public_id
+        end
+
+        def doctype_system_id(native)
+          native.system_id
+        end
+
         def xpath(node, expression, namespaces = nil)
           node.xpath(expression, {},
                      namespaces: namespaces&.transform_keys(&:to_s)).to_a
