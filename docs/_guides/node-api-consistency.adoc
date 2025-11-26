@@ -1,0 +1,572 @@
+= Node API consistency guide
+:toc:
+:toclevels: 3
+
+== Overview
+
+This guide documents the API surface of all node types in Moxml, providing clear
+expectations for developers about which methods are available on which node
+types.
+
+== Node Type Hierarchy
+
+[source]
+----
+Node (abstract base)
+├── Document
+├── Element
+├── Attribute
+├── Text
+├── Cdata
+├── Comment
+├── ProcessingInstruction
+├── Declaration
+└── Doctype
+----
+
+== Common Node Methods
+
+All node types inherit these methods from `Moxml::Node`:
+
+=== Document Navigation
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#document`
+| Returns the containing document
+| ✅ Yes
+
+| `#parent`
+| Returns the parent node
+| ✅ Yes
+
+| `#children`
+| Returns a NodeSet of child nodes
+| ✅ Yes (may be empty)
+
+| `#next_sibling`
+| Returns the next sibling node
+| ✅ Yes (may be nil)
+
+| `#previous_sibling`
+| Returns the previous sibling node
+| ✅ Yes (may be nil)
+|===
+
+=== Tree Manipulation
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#add_child(node)`
+| Adds a child node
+| ✅ Yes
+
+| `#add_previous_sibling(node)`
+| Adds a sibling before this node
+| ✅ Yes
+
+| `#add_next_sibling(node)`
+| Adds a sibling after this node
+| ✅ Yes
+
+| `#remove`
+| Removes this node from the tree
+| ✅ Yes
+
+| `#replace(node)`
+| Replaces this node with another
+| ✅ Yes
+|===
+
+=== Serialization
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#to_xml(options = {})`
+| Serializes node to XML string
+| ✅ Yes
+
+| `#clone` / `#dup`
+| Creates a deep copy of the node
+| ✅ Yes
+|===
+
+=== XPath Queries
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#xpath(expression, ns = {})`
+| Returns NodeSet matching XPath
+| ✅ Yes (adapter-dependent)
+
+| `#at_xpath(expression, ns = {})`
+| Returns first node matching XPath
+| ✅ Yes (adapter-dependent)
+|===
+
+=== Type Checking
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#element?`
+| Returns true if node is an Element
+| ✅ Yes
+
+| `#text?`
+| Returns true if node is a Text node
+| ✅ Yes
+
+| `#cdata?`
+| Returns true if node is a CDATA section
+| ✅ Yes
+
+| `#comment?`
+| Returns true if node is a Comment
+| ✅ Yes
+
+| `#processing_instruction?`
+| Returns true if node is a PI
+| ✅ Yes
+
+| `#document?`
+| Returns true if node is a Document
+| ✅ Yes
+
+| `#declaration?`
+| Returns true if node is a Declaration
+| ✅ Yes
+
+| `#doctype?`
+| Returns true if node is a Doctype
+| ✅ Yes
+
+| `#attribute?`
+| Returns true if node is an Attribute
+| ✅ Yes
+|===
+
+== Node Type-Specific APIs
+
+=== Document
+
+The root document node.
+
+==== Additional Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#root`
+| Returns the root element
+| ✅ Yes
+
+| `#root=(element)`
+| Sets the root element
+| ✅ Yes
+
+| `#encoding`
+| Returns document encoding
+| ✅ Yes
+
+| `#create_element(name, content = nil)`
+| Creates a new element
+| ✅ Yes
+
+| `#create_text(content)`
+| Creates a new text node
+| ✅ Yes
+
+| `#create_comment(content)`
+| Creates a new comment
+| ✅ Yes
+
+| `#create_cdata(content)`
+| Creates a new CDATA section
+| ✅ Yes
+
+| `#create_processing_instruction(target, content)`
+| Creates a new processing instruction
+| ✅ Yes
+
+| `#create_declaration(version, encoding, standalone)`
+| Creates a new XML declaration
+| ✅ Yes (adapter-dependent)
+|===
+
+=== Element
+
+Elements are the primary structural nodes with tag names, attributes, and children.
+
+==== Identity Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#name`
+| Returns the element tag name
+| ✅ Yes
+
+| `#name=(value)`
+| Sets the element tag name
+| ✅ Yes
+
+| `#identifier`
+| Returns the primary identifier (same as #name)
+| ✅ Yes
+|===
+
+==== Namespace Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#namespace`
+| Returns the element's namespace
+| ✅ Yes (may be nil)
+
+| `#namespace=(ns_or_hash)`
+| Sets the element's namespace
+| ✅ Yes
+
+| `#namespace_prefix`
+| Returns the namespace prefix
+| ✅ Yes (may be nil)
+
+| `#namespace_uri`
+| Returns the namespace URI
+| ✅ Yes (may be nil)
+
+| `#namespaces`
+| Returns all namespace definitions
+| ✅ Yes
+
+| `#add_namespace(prefix, uri)`
+| Adds a namespace definition
+| ✅ Yes
+|===
+
+==== Attribute Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#[](name)`
+| Gets attribute value
+| ✅ Yes
+
+| `#[]=(name, value)`
+| Sets attribute value
+| ✅ Yes
+
+| `#attribute(name)`
+| Returns Attribute object
+| ✅ Yes (may be nil)
+
+| `#attributes`
+| Returns array of all attributes
+| ✅ Yes
+
+| `#remove_attribute(name)`
+| Removes an attribute
+| ✅ Yes
+|===
+
+==== Content Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#text`
+| Returns text content
+| ✅ Yes
+
+| `#text=(content)`
+| Sets text content
+| ✅ Yes
+
+| `#inner_text`
+| Returns inner text (concatenated)
+| ✅ Yes
+
+| `#inner_xml`
+| Returns inner XML as string
+| ✅ Yes
+
+| `#inner_xml=(xml)`
+| Sets inner XML from string
+| ✅ Yes
+|===
+
+=== Attribute
+
+Attributes are name-value pairs attached to elements.
+
+==== Identity Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#name`
+| Returns the attribute name
+| ✅ Yes
+
+| `#name=(new_name)`
+| Sets the attribute name
+| ✅ Yes
+
+| `#identifier`
+| Returns the primary identifier (same as #name)
+| ✅ Yes
+|===
+
+==== Value Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#value`
+| Returns the attribute value
+| ✅ Yes
+
+| `#value=(new_value)`
+| Sets the attribute value
+| ✅ Yes
+
+| `#text`
+| Alias for #value (XPath compatibility)
+| ✅ Yes
+|===
+
+==== Relationship Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#element`
+| Returns the owning element
+| ✅ Yes
+
+| `#namespace`
+| Returns the attribute's namespace
+| ✅ Yes (may be nil)
+|===
+
+=== Text
+
+Text nodes contain character data.
+
+==== Content Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#content`
+| Returns the text content
+| ✅ Yes
+
+| `#content=(text)`
+| Sets the text content
+| ✅ Yes
+
+| `#text`
+| Alias for #content
+| ✅ Yes
+|===
+
+==== Identity Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#identifier`
+| Returns nil (content nodes have no identifier)
+| ✅ Yes
+|===
+
+=== Cdata
+
+CDATA sections contain character data that should not be parsed.
+
+==== Content Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#content`
+| Returns the CDATA content
+| ✅ Yes
+
+| `#content=(text)`
+| Sets the CDATA content
+| ✅ Yes
+
+| `#text`
+| Alias for #content
+| ✅ Yes
+|===
+
+==== Identity Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#identifier`
+| Returns nil (content nodes have no identifier)
+| ✅ Yes
+|===
+
+=== Comment
+
+Comment nodes contain XML comments.
+
+==== Content Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#content`
+| Returns the comment text
+| ✅ Yes
+
+| `#content=(text)`
+| Sets the comment text
+| ✅ Yes
+
+| `#text`
+| Alias for #content
+| ✅ Yes
+|===
+
+==== Identity Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#identifier`
+| Returns nil (content nodes have no identifier)
+| ✅ Yes
+|===
+
+=== ProcessingInstruction
+
+Processing instructions provide directives to applications.
+
+==== Identity Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#target`
+| Returns the PI target
+| ✅ Yes
+
+| `#target=(new_target)`
+| Sets the PI target
+| ✅ Yes
+
+| `#identifier`
+| Returns the primary identifier (same as #target)
+| ✅ Yes
+|===
+
+==== Content Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#content`
+| Returns the PI content
+| ✅ Yes
+
+| `#content=(new_content)`
+| Sets the PI content
+| ✅ Yes
+|===
+
+=== Declaration
+
+XML declarations specify document metadata.
+
+==== Property Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#version`
+| Returns XML version (e.g., "1.0")
+| ✅ Yes
+
+| `#version=(new_version)`
+| Sets XML version
+| ✅ Yes
+
+| `#encoding`
+| Returns character encoding
+| ✅ Yes (may be nil)
+
+| `#encoding=(new_encoding)`
+| Sets character encoding
+| ✅ Yes
+
+| `#standalone`
+| Returns standalone status
+| ✅ Yes (may be nil)
+
+| `#standalone=(new_standalone)`
+| Sets standalone status
+| ✅ Yes
+|===
+
+==== Identity Methods
+
+[cols="1,3,1"]
+|===
+| Method | Description | Always Available?
+
+| `#identifier`
+| Returns nil (declarations have no identifier)
+| ✅ Yes
+|===
+
+=== Doctype
+
+Document type declarations specify DTD information.
+
+WARNING: Doctype accessor methods are **not fully implemented** across all adapters. The availability of these methods depends on the specific adapter being used.
+
+==== Identity Methods
+
+[cols="1,3,1"]
+|===
+|Doctype |`#name` |✅ Yes |Returns DOCTYPE name (root element)
+|Doctype |`#external_id` |✅ Yes |Returns PUBLIC identifier
+|Doctype |`#system_id` |✅ Yes |Returns SYSTEM identifier (DTD URI)
+|Doctype |`#identifier` |✅ Yes |Returns DOCTYPE name (same as `#name`)
+|===

@@ -426,6 +426,19 @@ module Moxml
           end
         end
 
+        # Doctype accessor methods
+        def doctype_name(native)
+          native.name
+        end
+
+        def doctype_external_id(native)
+          native.public
+        end
+
+        def doctype_system_id(native)
+          native.system
+        end
+
         # not used at the moment
         # but may be useful when the xpath is upgraded to work with namespaces
         def prepare_xpath_namespaces(node)

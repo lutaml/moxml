@@ -10,6 +10,12 @@ module Moxml
       adapter.set_attribute_name(@native, new_name)
     end
 
+    # Returns the primary identifier for this attribute (its name)
+    # @return [String] the attribute name
+    def identifier
+      name
+    end
+
     def value
       @native.value
     end

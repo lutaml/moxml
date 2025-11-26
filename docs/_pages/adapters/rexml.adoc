@@ -283,7 +283,7 @@ end
 === References
 
 * link:https://github.com/ruby/rexml[REXML on GitHub]
-* link:https://ruby-doc.org/stdlib/libdoc/rexml/rdoc/REXML.html[REXML documentation]
+* link:https://ruby-doc.org/stdlib/libdoc/rexml/rdoc/REXML[REXML documentation]
 
 === See also
 

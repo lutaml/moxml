@@ -10,6 +10,12 @@ module Moxml
       adapter.set_node_name(@native, new_target.to_s)
     end
 
+    # Returns the primary identifier for this processing instruction (its target)
+    # @return [String] the PI target
+    def identifier
+      target
+    end
+
     def content
       adapter.processing_instruction_content(@native)
     end

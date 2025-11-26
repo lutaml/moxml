@@ -13,6 +13,12 @@ module Moxml
       adapter.set_node_name(@native, value)
     end
 
+    # Returns the primary identifier for this element (its tag name)
+    # @return [String] the element name
+    def identifier
+      name
+    end
+
     # Returns the expanded name including namespace prefix
     def expanded_name
       if namespace_prefix && !namespace_prefix.empty?

@@ -40,7 +40,7 @@ module Moxml
       msg = super
       msg += "\n  Expression: #{@expression}" if @expression
       msg += "\n  Adapter: #{@adapter}" if @adapter
-      msg += "\n  Node: <#{@node.name}>" if @node.respond_to?(:name)
+      msg += "\n  Node: <#{@node.name}>" if @node.is_a?(Element) || @node.is_a?(Attribute)
       msg += "\n  Hint: Verify XPath syntax and ensure the adapter supports the expression"
       msg
     end
@@ -60,9 +60,9 @@ module Moxml
     def to_s
       msg = super
       # Only add extra details if any were provided
-      has_details = @node.respond_to?(:name) || @constraint || @value
+      has_details = (@node.is_a?(Element) || @node.is_a?(Attribute)) || @constraint || @value
       if has_details
-        msg += "\n  Node: <#{@node.name}>" if @node.respond_to?(:name)
+        msg += "\n  Node: <#{@node.name}>" if @node.is_a?(Element) || @node.is_a?(Attribute)
         msg += "\n  Constraint: #{@constraint}" if @constraint
         msg += "\n  Value: #{@value.inspect}" if @value
         msg += "\n  Hint: Ensure the value meets XML specification requirements"
@@ -119,7 +119,7 @@ module Moxml
 
     def to_s
       msg = super
-      msg += "\n  Node: <#{@node.name}>" if @node.respond_to?(:name)
+      msg += "\n  Node: <#{@node.name}>" if @node.is_a?(Element) || @node.is_a?(Attribute)
       msg += "\n  Adapter: #{@adapter}" if @adapter
       msg += "\n  Format: #{@format}" if @format
       msg += "\n  Hint: Check that the node structure is valid for serialization"
@@ -160,7 +160,7 @@ module Moxml
     def to_s
       msg = super
       msg += "\n  Attribute: #{@attribute_name}" if @attribute_name
-      msg += "\n  Element: <#{@element.name}>" if @element.respond_to?(:name)
+      msg += "\n  Element: <#{@element.name}>" if @element.is_a?(Element)
       msg += "\n  Value: #{@value.inspect}" if @value
       msg += "\n  Hint: Verify attribute name follows XML naming rules"
       msg

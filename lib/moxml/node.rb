@@ -186,6 +186,18 @@ module Moxml
       end
     end
 
+    # Returns the primary identifier for this node type
+    # For Element: the tag name
+    # For Attribute: the attribute name
+    # For ProcessingInstruction: the target
+    # For content nodes (Text, Comment, Cdata, Declaration): nil (no identifier)
+    # For Doctype: nil (not fully implemented across adapters)
+    #
+    # @return [String, nil] the node's primary identifier or nil
+    def identifier
+      nil
+    end
+
     def self.wrap(node, context)
       return nil if node.nil?
 

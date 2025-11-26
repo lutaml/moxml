@@ -26,6 +26,8 @@ Key features:
 
 == Supported XML libraries
 
+=== General
+
 Moxml supports the following XML libraries:
 
 REXML:: https://github.com/ruby/rexml[REXML], a pure Ruby XML parser
@@ -110,7 +112,9 @@ section.
 NOTE: HeadedOx provides full XPath 1.0 support via a pure Ruby XPath engine
 layered on top of Ox's C parser. See HeadedOx documentation for details.
 
-NOTE: Ox/HeadedOx SAX: Only core events supported (start_element, end_element, characters, errors). No separate CDATA, comment, or processing instruction events.
+NOTE: Ox/HeadedOx SAX: Only core events supported (start_element, end_element,
+characters, errors). No separate CDATA, comment, or processing instruction
+events.
 
 == Adapter comparison
 
@@ -356,7 +360,7 @@ NOTE: Ox/HeadedOx SAX: Only core events supported (start_element, end_element, c
 | ✅ Full
 | ✅ Full
 | ✅ Full
-| ⚠️ Limited^4^
+| ✅ Full
 | ✅ Full
 | ✅ Full
 
@@ -400,13 +404,12 @@ NOTE: Ox/HeadedOx SAX: Only core events supported (start_element, end_element, c
 | ✅ Yes
 | ✅ Yes
 |===
-
++
 ^1^ Ox/HeadedOx: Text node replacement may fail in some cases due to internal node structure +
 ^2^ Ox: `//book[@id]` works (returns all book elements), but doesn't filter by attribute existence +
 ^3^ HeadedOx: Full XPath 1.0 with all 27 functions and 6 axes. Pure Ruby XPath engine on Ox's C parser. 99.20% pass rate. See link:docs/headed-ox.adoc[] +
 ^4^ Ox: Use `.find { |el| el["id"] == "123" }` instead of XPath attribute value predicates +
-^5^ LibXML: DOCTYPE parsing works, serialization is limited (no round-trip preservation) +
-^6^ HeadedOx limitations: Namespace introspection and 7 axes not implemented. See link:docs/HEADED_OX_LIMITATIONS.md[]
+^5^ HeadedOx limitations: Namespace introspection and 7 axes not implemented. See link:docs/HEADED_OX_LIMITATIONS.md[]
 
 === Adapter selection guide
 
@@ -453,9 +456,12 @@ NOTE: Ox/HeadedOx SAX: Only core events supported (start_element, end_element, c
 * Need more XPath capabilities than standard Ox provides
 * Memory efficiency is important but XPath features are required
 
-CAUTION: Ox's custom XPath engine supports common patterns but may not handle
+CAUTION: Ox's custom XPath engine supports common patterns but cannot handle
 complex XPath expressions. Test thoroughly if your use case requires advanced
 XPath.
+
+TODO: We should throw errors when unsupported XPath features are used with Ox
+or HeadedOx to prevent silent failures.
 
 
 == Getting started
@@ -643,6 +649,23 @@ For complete SAX documentation including all handler types, event methods, adapt
 
 For complete node API reference including traversal methods, manipulation, queries, type checking, and node information, see link:docs/_pages/node-api-reference.adoc[Node API Reference].
 
+=== Node identity
+
+Moxml provides a consistent `#identifier` method across all node types to safely identify nodes:
+
+[source,ruby]
+----
+element = doc.at_xpath("//book")
+puts element.identifier  # => "book"
+
+attr = element.attribute("id")
+puts attr.identifier     # => "id"
+----
+
+The `#identifier` method returns the primary identifier for each node type (tag name for elements, attribute name for attributes, target for processing instructions, or `nil` for content nodes).
+
+IMPORTANT: Always use type-safe patterns when working with mixed node types. See the link:docs/_guides/node-api-consistency.adoc[Node API Consistency Guide] for complete documentation on safe coding patterns, API surface by node type, and migration guidelines.
+
 
 == Advanced features
 
@@ -694,7 +717,8 @@ rescue Moxml::Error => e
 end
 ----
 
-For complete error class hierarchy, error types, best practices, and debugging techniques, see link:docs/_pages/error-handling.adoc[Error Handling Guide].
+For complete error class hierarchy, error types, best practices, and debugging
+techniques, see link:docs/_pages/error-handling.adoc[Error Handling Guide].
 
 
 == Configuration
@@ -717,22 +741,31 @@ context = Moxml.new do |config|
 end
 ----
 
-For all configuration options, adapter selection, serialization options, and environment-based configuration, see link:docs/_pages/configuration.adoc[Configuration Guide].
+For all configuration options, adapter selection, serialization options, and
+environment-based configuration, see
+link:docs/_pages/configuration.adoc[Configuration Guide].
 
 
 
 == Thread safety
 
-For complete information on thread-safe patterns, context management, and concurrent processing, see the link:docs/_pages/thread-safety.adoc[Thread Safety Guide].
+For complete information on thread-safe patterns, context management, and
+concurrent processing, see the link:docs/_pages/thread-safety.adoc[Thread Safety
+Guide].
 
 
 == Performance considerations
 
-For detailed performance optimization strategies, memory management best practices, and efficient querying patterns, see the link:docs/_pages/performance.adoc[Performance Considerations Guide].
+For detailed performance optimization strategies, memory management best
+practices, and efficient querying patterns, see the
+link:docs/_pages/performance.adoc[Performance Considerations Guide].
 
 == Best practices
 
-For comprehensive best practices covering XPath queries, adapter selection, error handling, namespace handling, memory management, thread safety, performance optimization, and testing strategies, see link:docs/_pages/best-practices.adoc[Best Practices Guide].
+For comprehensive best practices covering XPath queries, adapter selection,
+error handling, namespace handling, memory management, thread safety,
+performance optimization, and testing strategies, see
+link:docs/_pages/best-practices.adoc[Best Practices Guide].
 
 
 == Specific adapter limitations
@@ -756,11 +789,13 @@ The Ox adapter provides maximum parsing speed but has XPath limitations.
 doc.xpath("//book").find { |book| book["id"] == "123" }
 ----
 
-For complete Ox adapter documentation including all limitations and workarounds, see link:docs/_pages/adapters/ox.adoc[Ox Adapter Guide].
+For complete Ox adapter documentation including all limitations and workarounds,
+see link:docs/_pages/adapters/ox.adoc[Ox Adapter Guide].
 
 === HeadedOx adapter
 
-The HeadedOx adapter combines Ox's fast C-based XML parsing with Moxml's comprehensive pure Ruby XPath 1.0 engine.
+The HeadedOx adapter combines Ox's fast C-based XML parsing with Moxml's
+comprehensive pure Ruby XPath 1.0 engine.
 
 **Status:** Production-ready v1.2 (99.20% pass rate, 1,992/2,008 tests)
 
@@ -796,12 +831,6 @@ For complete HeadedOx documentation including architecture, XPath capabilities, 
 
 ==== LibXML adapter
 
-*DOCTYPE Limitations:*
-
-* DOCTYPE parsing works
-* DOCTYPE round-trip preservation is limited
-* DOCTYPE cannot be reliably re-serialized after parsing
-
 *Performance:*
 
 * Serialization speed: ~120 ips (slower than target)
@@ -819,7 +848,9 @@ limitations. Use these adapters when you need full XPath and namespace support.
 
 == Development and testing
 
-For complete information on development setup, testing strategies, benchmarking, and coverage reporting, see the link:docs/_guides/development-testing.adoc[Development and Testing Guide].
+For complete information on development setup, testing strategies, benchmarking,
+and coverage reporting, see the
+link:docs/_guides/development-testing.adoc[Development and Testing Guide].
 
 == Contributing
 

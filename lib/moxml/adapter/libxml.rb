@@ -788,6 +788,20 @@ module Moxml
           end
         end
 
+        # Doctype accessor methods
+        def doctype_name(native)
+          # LibXML uses DoctypeWrapper which stores the values
+          native.name
+        end
+
+        def doctype_external_id(native)
+          native.external_id
+        end
+
+        def doctype_system_id(native)
+          native.system_id
+        end
+
         def xpath(node, expression, namespaces = nil)
           native_node = unpatch_node(node)
           return [] unless native_node
@@ -1149,7 +1163,7 @@ module Moxml
           # Add namespace definitions (only on this element, not ancestors)
           if elem.respond_to?(:namespaces)
             seen_ns = {}
-            elem.namespaces.definitions.each do |ns|
+            elem.namespaces.each do |ns|
               prefix = ns.prefix
               uri = ns.href
               next if seen_ns.key?(prefix)
