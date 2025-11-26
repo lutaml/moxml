@@ -213,6 +213,16 @@ module Moxml
           document.root
         end
 
+        def path(node)
+          # REXML uses xpath to generate path
+          build_xpath_for_node(node)
+        end
+
+        def line_number(node)
+          # REXML doesn't track line numbers
+          nil
+        end
+
         def attributes(element)
           return [] unless element.respond_to?(:attributes)
 
@@ -523,6 +533,36 @@ module Moxml
         end
 
         private
+
+        def build_xpath_for_node(node)
+          # Build XPath by traversing up to root
+          path_parts = []
+          current = node
+          
+          while current && !current.is_a?(::REXML::Document)
+            if current.is_a?(::REXML::Element)
+              # Get element name
+              name = current.name
+              
+              # Find position among siblings with same name
+              parent = current.parent
+              if parent && !parent.is_a?(::REXML::Document)
+                siblings = parent.elements.select { |e| e.name == name }
+                if siblings.size > 1
+                  position = siblings.index(current) + 1
+                  path_parts.unshift("#{name}[#{position}]")
+                else
+                  path_parts.unshift(name)
+                end
+              else
+                path_parts.unshift(name)
+              end
+            end
+            current = current.parent
+          end
+          
+          "/" + path_parts.join("/")
+        end
 
         def write_with_formatter(node, output, indent = 2)
           formatter = ::Moxml::Adapter::CustomizedRexml::Formatter.new(

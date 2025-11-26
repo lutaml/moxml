@@ -270,6 +270,16 @@ module Moxml
           document.nodes&.find { |node| node.is_a?(::Ox::Element) }
         end
 
+        def path(node)
+          # Ox doesn't have a built-in path method, build it manually
+          build_xpath_for_node(node)
+        end
+
+        def line_number(node)
+          # Ox doesn't track line numbers
+          nil
+        end
+
         def attributes(element)
           unless element.respond_to?(:attributes) && element.attributes
             return []
@@ -607,6 +617,41 @@ module Moxml
         end
 
         private
+
+        def build_xpath_for_node(node)
+          # Build XPath by traversing up to root
+          path_parts = []
+          current = node
+          
+          while current && !current.is_a?(::Ox::Document)
+            if current.is_a?(::Ox::Element)
+              # Get element name
+              name = current.value
+              
+              # Find position among siblings with same name
+              parent = get_ox_parent(current)
+              if parent && !parent.is_a?(::Ox::Document)
+                siblings = parent.nodes.select { |n| n.is_a?(::Ox::Element) && n.value == name }
+                if siblings.size > 1
+                  position = siblings.index(current) + 1
+                  path_parts.unshift("#{name}[#{position}]")
+                else
+                  path_parts.unshift(name)
+                end
+              else
+                path_parts.unshift(name)
+              end
+            end
+            current = get_ox_parent(current)
+          end
+          
+          "/" + path_parts.join("/")
+        end
+
+        def get_ox_parent(node)
+          # Ox stores parent in @moxml_parent instance variable
+          node.instance_variable_get(:@moxml_parent)
+        end
 
         # Translate a subset of XPath to Ox locate() syntax
         # Supports: //element, /path/to/element, .//element, element[@attr]

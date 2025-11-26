@@ -346,6 +346,19 @@ module Moxml
           native_doc&.root
         end
 
+        def path(node)
+          native_node = unpatch_node(node)
+          return "/" unless native_node
+          
+          # LibXML has a built-in path method
+          native_node.respond_to?(:path) ? native_node.path : build_xpath_for_node(native_node)
+        end
+
+        def line_number(node)
+          native_node = unpatch_node(node)
+          native_node.respond_to?(:line_num) ? native_node.line_num : nil
+        end
+
         def attributes(element)
           native_elem = unpatch_node(element)
           return [] unless native_elem
@@ -1156,6 +1169,39 @@ module Moxml
         end
 
         private
+
+        def build_xpath_for_node(node)
+          # Build XPath by traversing up to root
+          path_parts = []
+          current = node
+          
+          while current && !current.is_a?(::LibXML::XML::Document)
+            if current.is_a?(::LibXML::XML::Node) && current.element?
+              # Get element name
+              name = current.name
+              
+              # Find position among siblings with same name
+              parent = current.parent
+              if parent && !parent.is_a?(::LibXML::XML::Document)
+                siblings = []
+                parent.each_child do |child|
+                  siblings << child if child.element? && child.name == name
+                end
+                if siblings.size > 1
+                  position = siblings.index(current) + 1
+                  path_parts.unshift("#{name}[#{position}]")
+                else
+                  path_parts.unshift(name)
+                end
+              else
+                path_parts.unshift(name)
+              end
+            end
+            current = current.parent
+          end
+          
+          "/" + path_parts.join("/")
+        end
 
         def serialize_element(elem)
           output = "<#{elem.name}"

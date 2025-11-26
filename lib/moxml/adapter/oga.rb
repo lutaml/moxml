@@ -201,6 +201,16 @@ module Moxml
           document.children.find { |node| node.is_a?(::Oga::XML::Element) }
         end
 
+        def path(node)
+          # Oga doesn't have a built-in path method, build it manually
+          build_xpath_for_node(node)
+        end
+
+        def line_number(node)
+          # Oga doesn't track line numbers
+          nil
+        end
+
         def attribute_element(attr)
           attr.element
         end
@@ -451,6 +461,38 @@ module Moxml
 
           # Default: use XmlGenerator
           ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
+        end
+
+        private
+
+        def build_xpath_for_node(node)
+          # Build XPath by traversing up to root
+          path_parts = []
+          current = node
+          
+          while current && !current.is_a?(::Oga::XML::Document)
+            if current.is_a?(::Oga::XML::Element)
+              # Get element name
+              name = current.name
+              
+              # Find position among siblings with same name
+              parent = current.parent
+              if parent && !parent.is_a?(::Oga::XML::Document)
+                siblings = parent.children.select { |e| e.is_a?(::Oga::XML::Element) && e.name == name }
+                if siblings.size > 1
+                  position = siblings.index(current) + 1
+                  path_parts.unshift("#{name}[#{position}]")
+                else
+                  path_parts.unshift(name)
+                end
+              else
+                path_parts.unshift(name)
+              end
+            end
+            current = current.parent
+          end
+          
+          "/" + path_parts.join("/")
         end
       end
     end

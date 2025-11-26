@@ -170,6 +170,38 @@ module Moxml
       end
     end
 
+    # Returns all ancestor nodes from parent up to document
+    # @return [NodeSet] collection of ancestor nodes
+    def ancestors
+      result = []
+      current = parent
+      while current
+        result << current.native
+        current = current.parent rescue nil
+      end
+      NodeSet.new(result, context)
+    end
+
+    # Returns all descendant nodes (children, grandchildren, etc.)
+    # @return [NodeSet] collection of descendant nodes
+    def descendants
+      result = []
+      each_node { |node| result << node.native }
+      NodeSet.new(result, context)
+    end
+
+    # Returns the XPath expression to locate this node
+    # @return [String] XPath path to this node
+    def path
+      adapter.path(@native)
+    end
+
+    # Returns the line number where this node appears in the source XML
+    # @return [Integer, nil] line number or nil if not available
+    def line_number
+      adapter.line_number(@native)
+    end
+
     # Clone the node (deep copy)
     def clone
       Node.wrap(adapter.dup(@native), context)
