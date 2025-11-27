@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "libxml"
+# Load adapter first - it sets up PATH for DLLs on Windows before requiring libxml
 require "moxml/adapter/libxml"
 
 RSpec.describe Moxml::Adapter::Libxml do
