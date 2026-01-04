@@ -1,0 +1,1178 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IRTF" category="exp" consensus="true" docName="draft-irtf-icnrg-pathsteering-07" number="9531" ipr="trust200902" xml:lang="en" tocInclude="true" tocDepth="4" symRefs="true" sortRefs="true" updates="" obsoletes="" prepTime="2024-03-11T13:41:41" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-irtf-icnrg-pathsteering-07" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9531" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="ICN Path Steering">Path Steering in Content-Centric Networking (CCNx) and Named Data Networking (NDN)</title>
+    <seriesInfo name="RFC" value="9531" stream="IRTF"/>
+    <author fullname="Ilya Moiseenko" surname="I. Moiseenko">
+      <organization showOnFrontPage="true">Apple, Inc.</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Cupertino</city>
+          <region>CA</region>
+          <code/>
+          <country>United States of America</country>
+        </postal>
+        <phone/>
+        <email>iliamo@mailbox.org</email>
+      </address>
+    </author>
+    <author fullname="Dave Oran" surname="D. Oran">
+      <organization showOnFrontPage="true">Network Systems Research and Design</organization>
+      <address>
+        <postal>
+          <street>4 Shady Hill Square</street>
+          <city>Cambridge</city>
+          <region>MA</region>
+          <code>02138</code>
+          <country>United States of America</country>
+        </postal>
+        <phone/>
+        <email>daveoran@orandom.net</email>
+      </address>
+    </author>
+    <date month="03" year="2024"/>
+    <workgroup>Information-Centric Networking</workgroup>
+    <keyword>ICN</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">Path steering is a mechanism to discover paths to the producers of
+      Information-Centric Networking (ICN) Content Objects and steer subsequent Interest messages along a
+      previously discovered path. It has various uses, including the operation
+      of state-of-the-art multi-path congestion control algorithms and for
+      network measurement and management. This specification derives directly
+      from the design published in "Path Switching in Content Centric and
+      Named Data Networks" (4th ACM Conference on Information-Centric
+      Networking) and, therefore, does not recapitulate the design
+      motivations, implementation details, or evaluation of the
+      scheme. However, some technical details are different, and where there
+      are differences, the design documented here is to be considered
+      definitive.</t>
+      <t indent="0" pn="section-abstract-2">This document is a product of the IRTF Information-Centric Networking
+      Research Group (ICNRG). It is not an IETF product and is not an Internet
+      Standard.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for examination, experimental implementation, and
+            evaluation. 
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document defines an Experimental Protocol for the Internet
+            community.  This document is a product of the Internet Research
+            Task Force (IRTF).  The IRTF publishes the results of Internet-related
+            research and development activities.  These results might not be
+            suitable for deployment.  This RFC represents the consensus of the
+            Information-Centric Networking Research Group of the Internet Research Task Force
+            (IRTF).  Documents approved for publication by the IRSG are not
+            candidates for any level of Internet Standard; see Section 2 of RFC
+            7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9531" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-path-steering-as-an-experim">Path Steering as an Experimental Extension to ICN Protocol Architectures</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.3">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.3.1"><xref derivedContent="1.3" format="counter" sectionFormat="of" target="section-1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-essential-elements-of-icn-p">Essential Elements of ICN Path Discovery and Path Steering</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-path-discovery">Path Discovery</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-path-steering">Path Steering</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.3">
+                <t indent="0" pn="section-toc.1-1.2.2.3.1"><xref derivedContent="2.3" format="counter" sectionFormat="of" target="section-2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-handling-path-steering-erro">Handling Path Steering Errors</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.4">
+                <t indent="0" pn="section-toc.1-1.2.2.4.1"><xref derivedContent="2.4" format="counter" sectionFormat="of" target="section-2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-interactions-with-interest-">Interactions with Interest Aggregation</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.5">
+                <t indent="0" pn="section-toc.1-1.2.2.5.1"><xref derivedContent="2.5" format="counter" sectionFormat="of" target="section-2.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-how-to-represent-the-path-l">How to Represent the Path Label</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-mapping-to-ccnx-and-ndn-pac">Mapping to CCNx and NDN Packet Encodings</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-path-label-tlv">Path Label TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-path-label-encoding-for-ccn">Path Label Encoding for CCNx</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-path-label-encoding-for-ndn">Path Label Encoding for NDN</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-cryptographic-protection-of">Cryptographic Protection of a Path Label</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="intro" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">Path steering is a mechanism to discover paths to the producers of
+      ICN Content Objects and steer subsequent Interest messages along a
+      previously discovered path. It has various uses, including the operation
+      of state-of-the-art multi-path congestion control algorithms and for
+      network measurement and management. This specification derives directly
+      from the design published in <xref target="Moiseenko2017" format="default" sectionFormat="of" derivedContent="Moiseenko2017"/> and,
+      therefore, does not recapitulate the design motivations, implementation
+      details, or evaluation of the scheme. That publication should be
+      considered a normative reference as it is not likely a reader will be
+      able to understand all elements of this design without first having read
+      the reference. However, some technical details are different, and where
+      there are differences, the design documented here is to be considered
+      definitive.</t>
+      <t indent="0" pn="section-1-2">Path discovery and subsequent path steering in ICN networks is
+      facilitated by the symmetry of forward and reverse paths in the Content-Centric Networking (CCNx) and
+      Named Data Networking (NDN) architectures. Path discovery is achieved by a consumer endpoint
+      transmitting an ordinary Interest message and receiving a Content (Data)
+      message containing an end-to-end path label constructed on the reverse
+      path by the forwarding plane. Path steering is achieved by a consumer
+      endpoint including a path label in the Interest message, which is
+      forwarded to each nexthop through the corresponding egress interfaces in
+      conjunction with Longest Name Prefix Match (LNPM) lookup in the
+      Forwarding Information Base (FIB).</t>
+      <t indent="0" pn="section-1-3">This document is a product of the IRTF Information-Centric Networking
+      Research Group (ICNRG). It was supported by the ICNRG participants
+      during its development and through Research Group Last Call. It has
+      received detailed review by experts in both the CCNx and NDN
+      communities.</t>
+      <section anchor="experimenting" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-path-steering-as-an-experim">Path Steering as an Experimental Extension to ICN Protocol Architectures</name>
+        <t indent="0" pn="section-1.1-1">There are a number of important use cases to justify extending ICN architectures such as <xref target="RFC8569" format="default" sectionFormat="of" derivedContent="RFC8569">CCNx</xref> or <xref target="NDN" format="default" sectionFormat="of" derivedContent="NDN">NDN</xref> to provide these capabilities. These are summarized as follows:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1.1-2">
+          <li pn="section-1.1-2.1">Support the discovery, monitoring, and troubleshooting of
+          multi-path network connectivity, based on names and name
+          prefixes. Analogous functions have been shown to be a crucial
+          operational capability in multicast and multi-path topologies for
+          IP. The canonical tools are the well-known <em>traceroute</em> and
+          <em>ping</em>. For point-to-multipoint MPLS, the more recent MPLS <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029">traceroute</xref> protocol is
+          used. Equivalent diagnostic functions have been defined for CCNx
+          through the <xref target="RFC9508" format="default" sectionFormat="of" derivedContent="RFC9508">ICN Ping</xref>
+          and <xref target="RFC9507" format="default" sectionFormat="of" derivedContent="RFC9507">ICN Traceroute</xref>
+          specifications; both of which are capable of exploiting path
+          steering, if available.</li>
+          <li pn="section-1.1-2.2">Perform accurate online measurement of network performance,
+          which generally requires multiple consecutive packets to follow the
+          same path under control of an application.</li>
+          <li pn="section-1.1-2.3">Improve the performance and flexibility of multi-path congestion
+          control algorithms. Congestion control schemes, such as <xref target="Mahdian2016" format="default" sectionFormat="of" derivedContent="Mahdian2016"/> and <xref target="Song2018" format="default" sectionFormat="of" derivedContent="Song2018"/>, depend on the ability of a consumer to explicitly
+          steer packets onto individual paths in a multi-path and/or
+          multi-destination topology.</li>
+          <li pn="section-1.1-2.4">Allow a consumer endpoint to mitigate content poisoning attacks by
+          directing its Interests onto the network paths that bypass poisoned
+          caches.</li>
+        </ul>
+        <t indent="0" pn="section-1.1-3">The path discovery machinery described here may (and likely will)
+      	discover paths with varying properties. <xref target="RFC9217" format="default" sectionFormat="of" derivedContent="RFC9217"/>
+      	discusses a number of open questions in path-aware networking, among
+      	which is how to assess and exploit paths having different
+      	properties. Experimenting with ICN path steering may be helpful in
+      	further elucidating these questions and perhaps shedding light on
+      	which path properties are most useful for the use cases cited
+      	above.</t>
+        <t indent="0" pn="section-1.1-4">One nuance compared to other path-aware networking approaches is
+      	that ICN path steering piggybacks path discovery on the base ICN data
+      	exchange rather than having a separate path advertisement or discovery
+      	mechanism. That means when the recorded path comes back in an ICN Data
+      	message response, the properties of the path are known only implicitly
+      	to the consumer as opposed to being explicitly labeled.  That makes
+      	the question of what properties a consumer uses to choose a path one
+      	of observation or measurement rather than advance selection based on
+      	an explicit, advertised property (e.g., <xref target="I-D.dekater-panrg-scion-overview" format="default" sectionFormat="of" derivedContent="SCION">SCION</xref>).</t>
+        <t indent="0" pn="section-1.1-5">The utility and overall technical quality of this path steering
+      	capability can be assessed by how well it enables the above use cases
+      	and what performance and robustness effects it has on the underlying
+      	ICN protocols and their use in various applications. A few of the open
+      	questions that should be addressed through experimentation with path
+      	steering include:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1.1-6">
+          <li pn="section-1.1-6.1">How much more accurate and useful are measurements of RTT,
+      	  packet loss, etc. through ping and traceroute when utilizing path
+      	  steering?</li>
+          <li pn="section-1.1-6.2">How much is the performance and robustness of multi-path
+      	  forwarding enhanced by the use of this explicit path steering
+      	  capability?</li>
+        </ul>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.2">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.2-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+        "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+        "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+        "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+        are to be interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they
+        appear in all capitals, as shown here.
+        </t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-1.3">
+        <name slugifiedName="name-terminology">Terminology</name>
+        <t indent="0" pn="section-1.3-1">This document uses the general ICN terms that are defined in <xref target="RFC8793" format="default" sectionFormat="of" derivedContent="RFC8793"/>. In addition, we define the following terms
+      	specific to path steering:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-1.3-2">
+          <dt pn="section-1.3-2.1">Path Discovery:</dt>
+          <dd pn="section-1.3-2.2">The process of sending an Interest message requesting discovery of a
+            path and, if successful, receiving a Data message containing a path label
+            for the path the corresponding Interest traversed.</dd>
+          <dt pn="section-1.3-2.3">Path Steering:</dt>
+          <dd pn="section-1.3-2.4">The process of sending an Interest message containing the path
+            label of a previously discovered path so that the forwarders
+            use that path when forwarding that particular Interest
+            message.</dd>
+          <dt pn="section-1.3-2.5">Path Label:</dt>
+          <dd pn="section-1.3-2.6">An optional field in the packet indicating a particular path
+            from a consumer to either a producer or a forwarder cache that
+            can respond with the requested item. In an Interest message, the
+            path label gets built up hop by hop as the Interest traverses a
+            path. In a Data message, the path label carries the full path
+            information back to the consumer for use in one or more subsequent
+            Interest messages.</dd>
+          <dt pn="section-1.3-2.7">Nexthop Label:</dt>
+          <dd pn="section-1.3-2.8">One entry in a path label representing the next hop for the
+            corresponding forwarder to use when a path-steered Interest
+            message arrives at that forwarder. A sequence of Nexthop Labels
+            constitutes a full path label.</dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="design" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-essential-elements-of-icn-p">Essential Elements of ICN Path Discovery and Path Steering</name>
+      <t indent="0" pn="section-2-1">We elucidate the design using <xref target="RFC8569" format="default" sectionFormat="of" derivedContent="RFC8569">CCNx semantics</xref> and extend its <xref target="RFC8609" format="default" sectionFormat="of" derivedContent="RFC8609">CCNx Message Formats</xref> defined in Section
+      <xref target="RFC8609" section="3.2" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8609#section-3.2" derivedContent="RFC8609"/>. While the terminology
+      is slightly different, this design can also be applied to NDN by
+      extending its bespoke <xref target="NDNTLV" format="default" sectionFormat="of" derivedContent="NDNTLV">packet
+      encodings</xref> (see <xref target="NDN-encoding" format="default" sectionFormat="of" derivedContent="Section 3.3"/>).</t>
+      <section anchor="discovery" numbered="true" toc="include" removeInRFC="false" pn="section-2.1">
+        <name slugifiedName="name-path-discovery">Path Discovery</name>
+        <t indent="0" pn="section-2.1-1"><em>End-to-end Path Discovery</em> for CCNx is achieved by creating
+        a <em>path label</em> and placing it as a hop-by-hop TLV in a CCNx
+        Content (Data) message. The path label is constructed hop by hop as
+        the message traverses the reverse path of transit CCNx forwarders, as
+        shown in the first example in <xref target="pathsteeringoverview" format="default" sectionFormat="of" derivedContent="Figure 1"/>. The path label is updated by adding
+        the Nexthop Label of the interface at which
+        the Content (Data) message has arrived to the existing path label. Eventually, when the
+        Content (Data) message arrives at the consumer, the path label
+        identifies the complete path the Content (Data) message took to reach
+        the consumer. As shown in the second example in <xref target="pathsteeringoverview" format="default" sectionFormat="of" derivedContent="Figure 1"/>, when multiple paths are available,
+        subsequent Interests may be able to discover additional paths by
+        omitting a path steering TLV and obtaining a new path label on the
+        returning Interest.</t>
+        <figure anchor="pathsteeringoverview" align="left" suppress-title="false" pn="figure-1">
+          <name slugifiedName="name-basic-example-of-path-disco">Basic Example of Path Discovery and Steering</name>
+          <artwork name="Path Discovery 1" type="" align="left" alt="" pn="section-2.1-2.1">
+          Discover and use first path:
+
+               Consumer                  Interest 1  ___  Interest 2
+                  |                          |        ^       |
+                  |                          |        |       |
+                  |                          |        |       |
+             Forwarder 1                     v        |       V
+                  | (nexthop 1)          (nexthop 1)  ^   (nexthop 1)
+                  |                          |        |       |
+                  |                          |        |       |
+             Forwarder 2                     v        |       v
+     (nexthop 3) / \ (nexthop 2)         (nexthop 2)  ^   (nexthop 2)
+                /   \                        |        |       |
+               /     \                       |        |       |
+              /       \                      |        |       |
+             /         \                     |        |       |
+            /           \                    |        |       |
+      Forwarder 4    Forwarder 3             v        |       v
+(nexthop 5)\             / (nexthop 4)   (nexthop 4)  ^   (nexthop 4)
+            \           /                    |        |       |
+             \         /                     |        |       |
+              \       /                      |        |       |
+               \     /                       |        |       |
+                \   /                        |        |       |
+                 \ /                         v        |       v
+               Producer                     ___     Data 1   ___
+                 or
+            Content Store
+      </artwork>
+          <artwork name="Path Discovery 2" type="" align="left" alt="" pn="section-2.1-2.2">
+	  
+          Discover and use second path:
+
+               Consumer                  Interest 3  ___  Interest 4
+                  |                          |        ^       |
+                  |                          |        |       |
+                  |                          |        |       |
+             Forwarder 1                     v        |       V
+                  | (nexthop 1)          (nexthop 1)  ^   (nexthop 1)
+                  |                          |        |       |
+                  |                          |        |       |
+             Forwarder 2                     v        |       v
+     (nexthop 3) / \ (nexthop 2)         (nexthop 3)  ^   (nexthop 3)
+                /   \                        |        |       |
+               /     \                       |        |       |
+              /       \                      |        |       |
+             /         \                     |        |       |
+            /           \                    |        |       |
+      Forwarder 4    Forwarder 3             v        |       v
+(nexthop 5)\             / (nexthop 4)   (nexthop 5)  ^   (nexthop 5)
+            \           /                    |        |       |
+             \         /                     |        |       |
+              \       /                      |        |       |
+               \     /                       |        |       |
+                \   /                        |        |       |
+                 \ /                         v        |       v
+               Producer                     ___     Data 2   ___
+                 or
+            Content Store
+	    </artwork>
+        </figure>
+      </section>
+      <section anchor="steering" numbered="true" toc="include" removeInRFC="false" pn="section-2.2">
+        <name slugifiedName="name-path-steering">Path Steering</name>
+        <t indent="0" pn="section-2.2-1">Due to the symmetry of forward and reverse paths in CCNx, a
+        consumer application can reuse a discovered path label to fetch the
+        same or a similar (e.g., next chunk, next Application Data Unit, or
+        next pointer in a <xref target="I-D.irtf-icnrg-flic" format="default" sectionFormat="of" derivedContent="FLIC">Manifest</xref>) Content (Data) message over the
+        discovered network path. This <em>path steering</em> is achieved by
+        processing the Interest message's path label at each transit ICN
+        forwarder and forwarding the Interest through the specified nexthop
+        among those identified as feasible by LNPM FIB lookup (<xref target="pathsteeringdataplane" format="default" sectionFormat="of" derivedContent="Figure 2"/>).</t>
+        <figure anchor="pathsteeringdataplane" align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-path-steering-ccnx-ndn-data">Path Steering CCNx/NDN Data Plane</name>
+          <artwork name="" type="" align="left" alt="" pn="section-2.2-2.1">
+----------------------------------------------------------------------
+                              FORWARD PATH
+----------------------------------------------------------------------
+
+Interest +---------+  +-----+ (path label) +--------+ (match) Interest
+--------&gt;| Content |-&gt;| PIT | ------------&gt;| Label  |----------------&gt;
+         |  Store  |  +-----+              | Lookup |
+         +---------+   | \ (no path label) +--------+
+          |            |  \                    |\(path label mismatch)
+Data      |            |   \                   | \
+&lt;---------+            v    \                  |  \
+                  aggregate  \                 |   \
+                              \                |    \
+                               \               |     +-----+  Interest
+                                +--------------|----&gt;| FIB | --------&gt;
+                                               |     +-----+
+InterestReturn (NACK)                          v        | (no route)
+&lt;----------------------------------------------+&lt;-------+
+
+
+----------------------------------------------------------------------
+                              REVERSE PATH
+----------------------------------------------------------------------
+
+InterestReturn(NACK)  +-----+(update path label)  InterestReturn(NACK)
+&lt;---------------------|     |&lt;----------------------------------------
+                      |     |
+Data   +---------+    | PIT |  (update path label)                Data
+&lt;------| Content |&lt;---|     |&lt;----------------------------------------
+       |  Store  |    |     |
+       +---------+    +-----+
+                         |
+                         | (no match)
+                         v
+      </artwork>
+        </figure>
+      </section>
+      <section anchor="error-processing" numbered="true" toc="include" removeInRFC="false" pn="section-2.3">
+        <name slugifiedName="name-handling-path-steering-erro">Handling Path Steering Errors</name>
+        <t indent="0" pn="section-2.3-1">Over time, the state of interfaces and the FIB on forwarders may
+        change such that, at any particular forwarder, a given nexthop is no
+        longer valid for a given prefix. In this case, the path label will
+        point to a now-invalid nexthop. This is detected by failure to find a
+        match between the decoded nexthop ID and the nexthops of the FIB entry
+        after LNPM FIB lookup.</t>
+        <t indent="0" pn="section-2.3-2">On detecting an invalid path label, the forwarder
+        <bcp14>SHOULD</bcp14> respond to the Interest with an
+        InterestReturn. Therefore, we define a new <em>invalid path
+        label</em> response code for the InterestReturn message and include
+        the current path label as a hop-by-hop header. Each transit forwarder
+        processing the InterestReturn message updates the path label in the
+        same manner as Content (Data) messages so that the consumer receiving
+        the InterestReturn (NACK) can easily identify which path label is no
+        longer valid.</t>
+        <t indent="0" pn="section-2.3-3">A consumer may alternatively request that a forwarder detecting the
+	inconsistency forward the Interest by means of normal LNPM FIB lookup
+	rather than return an error. The consumer endpoint, if it cares,
+	can keep enough information about outstanding Interests to determine
+	if the path label sent with the Interest fails to match the path label
+	in the corresponding returned Content (Data) and use that information
+	to replace stale path labels. It does so by setting the FALLBACK_MODE
+	flag of the path label TLV in its Interest message.</t>
+      </section>
+      <section anchor="Interest-Aggregation" numbered="true" removeInRFC="false" toc="include" pn="section-2.4">
+        <name slugifiedName="name-interactions-with-interest-">Interactions with Interest Aggregation</name>
+        <t indent="0" pn="section-2.4-1">If two or more Interests matching the same Pending Interest Table
+      	(PIT) entry arrive at a forwarder, under current behavior, they will
+      	be aggregated whether or not they carry identical path label
+      	TLVs. This may or may not be appropriate. For example, multiple
+      	Interests with different modes (e.g., one with DISCOVERY_MODE and one
+      	without) will get aggregated; therefore, the behavior of the forwarder
+      	might be dependent on the arrival order of those Interests. In
+      	particular:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2.4-2">
+          <li pn="section-2.4-2.1">If the DISCOVERY_MODE Interest arrives first, it will be
+      	  forwarded and potentially discover a new path, while the other
+      	  Interest will be aggregated.  If that Interest carried no path
+      	  label, its behavior is essentially unchanged, but if it carried a
+      	  path label without specifying DISCOVERY_MODE, the consumer's intent
+      	  for the Interest to traverse the specified path will be ignored, and
+      	  it is indeterminate if the chosen path will actually be used.</li>
+          <li pn="section-2.4-2.2">If the two Interests arrive in the reverse order, the DISCOVERY
+      	  MODE Interest will be aggregated, and the consumer issuing it will
+      	  not achieve its desire to discover a new path.</li>
+        </ul>
+        <t indent="0" pn="section-2.4-3">Multiple Interests intended to discover paths (i.e., by carrying
+      	the DISCOVERY_MODE flag defined in <xref target="Path-label-types" format="default" sectionFormat="of" derivedContent="Section 3.1"/>)
+      	might also be aggregated by a forwarder. This limits the ability to
+      	discover multiple paths in parallel and, instead, must be discovered
+      	incrementally in subsequent exchanges. In other words, aggregated
+      	Interests will all discover only one single path carried by one single
+      	Data packet. This has implications for management applications, like
+      	<xref target="RFC9507" format="default" sectionFormat="of" derivedContent="RFC9507">traceroute</xref>, which would likely perform
+      	much better if they discover paths in parallel. Hence, when employing path steering, it is
+      	<bcp14>RECOMMENDED</bcp14> that such
+      	applications craft their Interests with unique name suffixes in order
+      	to avoid being aggregated.</t>
+        <aside pn="section-2.4-4">
+          <t indent="0" pn="section-2.4-4.1">While path steering still operates correctly if DISCOVERY
+	MODE Interests are aggregated, after further experimentation, it may be
+	appropriate to advise that a forwarder:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2.4-4.2">
+            <li pn="section-2.4-4.2.1">
+              <bcp14>SHOULD NOT</bcp14> aggregate Interests carrying different
+	  path labels and</li>
+            <li pn="section-2.4-4.2.2">
+              <bcp14>SHOULD</bcp14> apply a rate limit to DISCOVERY_MODE
+	  Interests in order to limit redundant traffic.</li>
+          </ul>
+        </aside>
+      </section>
+      <section anchor="label-encoding" numbered="true" toc="include" removeInRFC="false" pn="section-2.5">
+        <name slugifiedName="name-how-to-represent-the-path-l">How to Represent the Path Label</name>
+        <t indent="0" pn="section-2.5-1"><xref target="Moiseenko2017" format="default" sectionFormat="of" derivedContent="Moiseenko2017"/> presents various
+        options for how to represent a path label, with different trade-offs in
+        flexibility, performance, and space efficiency. For this
+        specification, we choose the <em>polynomial encoding</em>, which
+        achieves reasonable space efficiency at the cost of establishing a
+        hard limit on the length of paths that can be represented.</t>
+        <t indent="0" pn="section-2.5-2">The polynomial encoding utilizes a fixed-size bit array. Each
+        transit ICN forwarder is allocated a fixed-size portion of the bit
+        array. This design allocates 12 bits (i.e., 4095 as a <em>generator
+        polynomial</em>) to each intermediate ICN forwarder. This matches the
+        scalability of today's commercial routers that support up to 4096
+        physical and logical interfaces and usually do not have more than a
+        few hundred active ones.</t>
+        <figure align="left" suppress-title="false" pn="figure-3">
+          <name slugifiedName="name-fixed-size-path-label">Fixed-Size Path Label</name>
+          <artwork name="" type="" align="left" alt="" pn="section-2.5-3.1">
++------------------------------------------------------------------+
+|                      path label bitmap                           |
++----------+-----------------+-----------------+-------------------+
+|   index  |  Nexthop Label  |  Nexthop Label  |                   |
++----------+-----------------+-----------------+-------------------+
+|&lt;- 8bit -&gt;|&lt;---- 12bit ----&gt;|&lt;---- 12bit ----&gt;|&lt;-----------------&gt;|
+</artwork>
+        </figure>
+        <t indent="0" pn="section-2.5-4">A forwarder that receives a Content (Data) message encodes the Nexthop Label in the next available slot and increments the label index. Conversely, a forwarder that receives an Interest message reads the current Nexthop Label and decrements the label index. Therefore, the extra computation required at each hop to forward either an Interest or Content Object message with a path label is minimized and constitutes a fairly trivial additional overhead compared to FIB lookup and other required operations.</t>
+        <t indent="0" pn="section-2.5-5">This approach results in individual path label TLV instances being
+        of fixed pre-computed size.  While this places a hard upper bound on
+        the maximum number of network hops that can be represented, this is
+        not a significant practical problem in NDN and CCNx, since the size
+        can be preset during Content (Data) message encoding based on the
+        exact number of network hops traversed by the Interest message. Even
+        long paths of 24 hops will fit in a path label bitmap of 36 bytes if
+        the Nexthop Label is encoded in 12 bits.</t>
+      </section>
+    </section>
+    <section anchor="encoding" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-mapping-to-ccnx-and-ndn-pac">Mapping to CCNx and NDN Packet Encodings</name>
+      <section anchor="Path-label-types" numbered="true" toc="include" removeInRFC="false" pn="section-3.1">
+        <name slugifiedName="name-path-label-tlv">Path Label TLV</name>
+        <t indent="0" pn="section-3.1-1"> A path label TLV is the tuple: {[Flags], [Path Label Hop Count],
+        [Nexthop Label], [path label bitmap]}.</t>
+        <table anchor="pathlabelflags" align="left" pn="table-1">
+          <name slugifiedName="name-path-label-flags">Path Label Flags</name>
+          <thead>
+            <tr>
+              <th align="center" colspan="1" rowspan="1">Flag</th>
+              <th align="center" colspan="1" rowspan="1">Value (hex)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="center" colspan="1" rowspan="1">DISCOVERY_MODE</td>
+              <td align="center" colspan="1" rowspan="1">0x00</td>
+            </tr>
+            <tr>
+              <td align="center" colspan="1" rowspan="1">FALLBACK_MODE</td>
+              <td align="center" colspan="1" rowspan="1">0x01</td>
+            </tr>
+            <tr>
+              <td align="center" colspan="1" rowspan="1">STRICT_MODE</td>
+              <td align="center" colspan="1" rowspan="1">0x02</td>
+            </tr>
+            <tr>
+              <td align="center" colspan="1" rowspan="1">Unassigned</td>
+              <td align="center" colspan="1" rowspan="1">0x03-0xFF</td>
+            </tr>
+          </tbody>
+        </table>
+        <t indent="0" pn="section-3.1-3">The Path Label Hop Count (PLHC) <bcp14>MUST</bcp14> be incremented
+        by NDN and CCNx forwarders if the Interest packet carries a path label
+        and the DISCOVERY_MODE flag is set. A producer node or a forwarder with a
+        cached Data packet <bcp14>MUST</bcp14> use the PLHC in calculation of a
+        path label bitmap size that is suitable for encoding the entire path to the
+        consumer. The PLHC <bcp14>MUST</bcp14> be set to zero in newly created
+        Data or InterestReturn (NACK) packets. A consumer node
+        <bcp14>MUST</bcp14> reuse the PLHC together with the path label bitmap
+        (PLB) in order to correctly forward the Interest(s) along the
+        corresponding network path.</t>
+        <t indent="0" pn="section-3.1-4">If an NDN or CCNx forwarder supports path labeling, the Nexthop
+        Label <bcp14>MUST</bcp14> be used to determine the correct egress
+        interface for an Interest packet carrying either the FALLBACK_MODE or the
+        STRICT_MODE flag. If any particular NDN or CCNx forwarder is
+        configured to decrypt path labels of Interest packets (see <xref target="security" format="title" sectionFormat="of" derivedContent="Security Considerations"/>), then the forwarder
+        <bcp14>MUST</bcp14>:
+        </t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-3.1-5">
+          <li pn="section-3.1-5.1" derivedCounter="1.">decrypt the path label with its own symmetric key,</li>
+          <li pn="section-3.1-5.2" derivedCounter="2.">update the Nexthop Label with outermost label in the path
+          label,</li>
+          <li pn="section-3.1-5.3" derivedCounter="3.">decrement the PLHC, and</li>
+          <li pn="section-3.1-5.4" derivedCounter="4.">remove the outermost label from the path label.</li>
+        </ol>
+        <t indent="0" pn="section-3.1-6">If any particular NDN or CCNx forwarder is NOT configured to
+        decrypt path labels of Interest packets, then path label decryption
+        <bcp14>SHOULD NOT</bcp14> be performed.</t>
+        <t indent="0" pn="section-3.1-7"> The Nexthop Label <bcp14>MUST</bcp14> be ignored by NDN and CCNx
+        forwarders if it is present in Data or InterestReturn (NACK) packets. If
+        any particular NDN or CCNx forwarder is configured to encrypt path
+        labels of Data and InterestReturn (NACK) packets (see <xref target="security" format="title" sectionFormat="of" derivedContent="Security Considerations"/>), then the forwarder
+        <bcp14>MUST</bcp14> encrypt the existing path label with its own symmetric
+        key, append the Nexthop Label of the ingress interface to the path
+        label, and increment the PLHC. If any particular NDN or CCNx forwarder is
+        NOT configured to encrypt path labels of Interest packets, then path
+        label encryption <bcp14>SHOULD NOT</bcp14> be performed.</t>
+        <t indent="0" pn="section-3.1-8">NDN and CCNx forwarders <bcp14>MUST</bcp14> fall back to Longest
+        Name Prefix Match (LNPM) FIB lookup if an Interest packet carries an
+        invalid Nexthop Label and the FALLBACK_MODE flag is set.</t>
+        <t indent="0" pn="section-3.1-9">CCNx forwarders <bcp14>MUST</bcp14> respond with an InterestReturn
+        packet specifying a T_RETURN_INVALID_PATH_LABEL code if the Interest
+        packet carries an invalid path label and the STRICT_MODE flag is set.
+	This is a new InterestReturn code defined herein (see <xref target="IANA" format="default" sectionFormat="of" derivedContent="Section 4"/> for the value allocation).</t>
+        <t indent="0" pn="section-3.1-10">CCNx forwarders <bcp14>MUST</bcp14> respond with an InterestReturn packet specifying the existing T_RETURN_MALFORMED_INTEREST code if the Interest packet carries a path label TLV with both the FALLBACK_MODE and STRICT_MODE flags set.</t>
+      </section>
+      <section anchor="CCNx-encoding" numbered="true" toc="include" removeInRFC="false" pn="section-3.2">
+        <name slugifiedName="name-path-label-encoding-for-ccn">Path Label Encoding for CCNx</name>
+        <t indent="0" pn="section-3.2-1">Path label is an optional hop-by-hop header TLV that can be present in CCNx Interest, InterestReturn, and Content Object packets.</t>
+        <figure align="left" suppress-title="false" pn="figure-4">
+          <name slugifiedName="name-path-label-hop-by-hop-heade">Path Label Hop-by-Hop Header TLV for CCNx</name>
+          <artwork name="" type="" align="left" alt="" pn="section-3.2-2.1">
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++---------------+---------------+---------------+---------------+
+|         T_PATH_LABEL          |          Length + 4           |
++---------------+---------------+---------------+---------------+
+|     Flags     |  Path Label   |        Nexthop Label          |
+|               |  Hop Count    |                               |
++---------------+---------------+---------------+---------------+
+/                                                               /
+/               Path label bitmap (Length octets)               /
+/                                                               /
++---------------+---------------+---------------+---------------+
+      </artwork>
+        </figure>
+      </section>
+      <section anchor="NDN-encoding" numbered="true" toc="include" removeInRFC="false" pn="section-3.3">
+        <name slugifiedName="name-path-label-encoding-for-ndn">Path Label Encoding for NDN</name>
+        <t indent="0" pn="section-3.3-1">Path label is an optional TLV for NDN Interest and Data packets.
+        It is carried in the <xref target="NDNLPv2" format="default" sectionFormat="of" derivedContent="NDNLPv2">NDN Link Adaptation
+        Protocol</xref>, which is used to wrap NDN packets for carriage over
+        various link layer protocols. NDNLPv2 was chosen over the NDN packet
+        itself since it can carry hop-by-hop information that potentially
+        mutates at each hop and, therefore, cannot be included in the secured
+        hash computation or the signature of NDN packets. Further, it can be
+        used instead of the existing <tt>NextHopFaceId</tt> TLV since it not
+        only can specify the single outgoing face for a consumer but manages
+        the selection and forwarding over an entire path. The path label TLV
+        in NDNLPv2 is defined below:</t>
+        <figure align="left" suppress-title="false" pn="figure-5">
+          <name slugifiedName="name-path-label-tlv-for-ndn">Path Label TLV for NDN</name>
+          <artwork name="" type="" align="left" alt="" pn="section-3.3-2.1">
+PathLabel         = PATH-LABEL-TYPE TLV-LENGTH
+                    PathLabelFlags
+                    PathLabelBitmap
+
+PathLabelFlags    = PATH-LABEL-FLAGS-TYPE
+                    TLV-LENGTH ; == 1
+                    OCTET
+
+NexthopLabel      = PATH-LABEL-NEXTHOP-LABEL-TYPE
+                    TLV-LENGTH ; == 2
+                    2 OCTET
+
+PathLabelHopCount = PATH-LABEL-HOP-COUNT-TYPE
+                    TLV-LENGTH ; == 1
+                    OCTET
+
+PathLabelBitmap   = PATH-LABEL-BITMAP-TYPE
+                    TLV-LENGTH ; == 64
+                    64 OCTET
+      </artwork>
+        </figure>
+        <table anchor="pathlabelTLVs" align="left" pn="table-2">
+          <name slugifiedName="name-tlv-type-number-assignments">TLV-TYPE Number Assignments for NDN</name>
+          <thead>
+            <tr>
+              <th align="center" colspan="1" rowspan="1">Flag</th>
+              <th align="center" colspan="1" rowspan="1">(Suggested) Value (hex)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">T_PATH_LABEL</td>
+              <td align="center" colspan="1" rowspan="1">0x0A</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">T_PATH_LABEL_FLAGS</td>
+              <td align="center" colspan="1" rowspan="1">0x0B</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">T_PATH_LABEL_BITMAP</td>
+              <td align="center" colspan="1" rowspan="1">0x0D</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">T_PATH_LABEL_NEXTHOP_LABEL</td>
+              <td align="center" colspan="1" rowspan="1">0x0E</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">T_PATH_LABEL_HOP_COUNT</td>
+              <td align="center" colspan="1" rowspan="1">0x0F</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+    <section anchor="IANA" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-4-1">IANA has made the following assignments:</t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-4-2">
+        <li pn="section-4-2.1" derivedCounter="1.">The value 0x000A has been assigned to
+        T_PATH_LABEL in the "CCNx Hop-by-Hop Types" registry,
+        established by <xref target="RFC8609" format="default" sectionFormat="of" derivedContent="RFC8609"/>.</li>
+        <li pn="section-4-2.2" derivedCounter="2.">The value 0x0A has been assigned to
+        T_RETURN_INVALID_PATH_LABEL in the "CCNx Interest Return Code
+        Types" registry, established by <xref target="RFC8609" format="default" sectionFormat="of" derivedContent="RFC8609"/>.</li>
+      </ol>
+    </section>
+    <section anchor="security" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-5-1">A path is invalidated by renumbering one or more Nexthop Labels. A malicious
+      consumer can attempt to mount an attack by transmitting Interests with
+      path labels that differ only in a single now-invalid Nexthop Label in
+      order to <em>brute-force</em> a valid Nexthop Label. If such an attack
+      succeeds, a malicious consumer would be capable of steering Interests
+      over a network path that may not match the paths computed by the routing
+      algorithm or learned adaptively by the forwarders.</t>
+      <t indent="0" pn="section-5-2">When a label lookup fails, by default, an <em>invalid path label</em>
+      InterestReturn (NACK) message is returned to the consumer. This
+      contains a path label identical to the one included in the corresponding
+      Interest message. Therefore, a malicious consumer can analyze the
+      message's Hop Count field to infer which specific Nexthop Label had
+      failed and direct an attack to influence path steering at that hop. This
+      threat can be mitigated by the following countermeasures:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-3">
+        <li pn="section-5-3.1">A Nexthop Label that is larger in size is harder to crack. If Nexthop
+        Labels are not allocated in a predictable fashion by the routers,
+        brute-forcing a 32-bit Nexthop Label requires on average O(2<sup>31</sup>)
+        Interests. However, this specification uses Nexthop Labels with much
+        less entropy (12 bits), so depending on computational hardness is not
+        workable.</li>
+        <li pn="section-5-3.2">An ICN forwarder can periodically update Nexthop Labels to limit
+        the maximum lifetime of paths. It is <bcp14>RECOMMENDED</bcp14> that
+        forwarders update path labels at least every few minutes.</li>
+        <li pn="section-5-3.3">A void Hop Count field in an <em>invalid path label</em>
+        InterestReturn (NACK) message would not give out the information on
+        which a specific Nexthop Label had failed. An attacker might need to
+        brute-force all Nexthop Labels in all combinations. However, some
+        useful diagnostic capability is lost by obscuring the hop count. For
+        example, the locus of routing churn is harder to pin down through
+        analysis of path-steered pings or traceroutes. A forwarder
+        <bcp14>MAY</bcp14> choose to invalidate the hop count in addition to
+        changing Nexthop Labels periodically as described above.</li>
+      </ul>
+      <t indent="0" pn="section-5-4">Because ICN forwarders maintain per-face state and forwarding state
+      for Interest messages, state inflation attacks are a general
+      concern. The addition of path steering capabilities in Interest and Data
+      messages does not, however, constitute a meaningful increase in
+      susceptibility to such attacks. This is because:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-5">
+        <li pn="section-5-5.1">The labels that identify each forwarding face is state O(number of
+	faces) and constitutes a small increase to the existing state needed
+	to represent a face.</li>
+        <li pn="section-5-5.2">Interest message data is placed in the PIT. The path steering
+	header does, in fact, inflate the size of the Interest message and,
+	hence, the PIT state but not by an amount that is a concern. The
+	forwarder needs to protect against state inflation attacks on the PIT
+	in general, and an attacker can mount one just as or more easily by
+	issuing Interests with long names and/or by including Interest payload
+	data.</li>
+      </ul>
+      <t indent="0" pn="section-5-6">ICN protocols can be susceptible to a variety of cache poisoning
+      attacks, where a colluding consumer and producer arrange for bogus
+      content (with either invalid or inappropriate signatures) to populate
+      forwarder caches. These are generally confined to on-path attacks. It is
+      also theoretically possible to launch a similar attack without a
+      cooperating producer such that the caches of on-path routers become
+      poisoned with the content from off-path routers (i.e., physical
+      connectivity but no route in a FIB for a given prefix). We estimate
+      that, without any prior knowledge of the network topology, the
+      complexity of this type of attack is in the ballpark of
+      Breadth-First-Search and Depth-First-Search algorithms with the
+      additional burden of transmitting 2<sup>31</sup> Interests in order to
+      crack a Nexthop Label on each hop.  A relatively short periodic update
+      of Nexthop Labels, together with heuristics implemented in the ICN
+      forwarder to foil <em>label scans</em>, may successfully mitigate this
+      type of attack.</t>
+      <section anchor="encryptpathlabel" numbered="true" removeInRFC="false" toc="include" pn="section-5.1">
+        <name slugifiedName="name-cryptographic-protection-of">Cryptographic Protection of a Path Label</name>
+        <t indent="0" pn="section-5.1-1">If the countermeasures listed above do not provide sufficient
+        protection against malicious mis-steering of Interests, the path label
+        can be made opaque to the consumer endpoint via hop-by-hop symmetric
+        cryptography applied to the path labels (<xref target="pathlabelcryptoprocess" format="default" sectionFormat="of" derivedContent="Figure 6"/>). This method is viable due to the
+        symmetry of forward and reverse paths in CCNx and NDN architectures
+        combined with ICN path steering requiring only reads and writes of the
+        topmost Nexthop Label (i.e., active Nexthop Label) in the path
+        label. This way, a path-steering-capable ICN forwarder receiving a
+        Content (Data) message encrypts the current path label with its own
+        non-shared symmetric key prior to adding a new Nexthop Label to the
+        path label. The Content (Data) message is forwarded downstream with an
+        unencrypted topmost (i.e., active) Nexthop Label and the remaining
+        encrypted content of the path label. As a result, a consumer endpoint
+        receives a Content (Data) message with a unique path label exposing
+        only the topmost Nexthop Label as cleartext. A path steering forwarder
+        receiving an Interest message performs label lookup using the topmost
+        Nexthop Label, decrypts the path label with its own non-shared
+        symmetric key, and forwards the message upstream.</t>
+        <t indent="0" pn="section-5.1-2">Cryptographic protection of a path label does not require any key negotiation among ICN forwarders and is no more expensive than Media Access Control Security (MACsec) or IPsec. It is also quite possible that strict hop-by-hop path label encryption is not necessary and path label encryption only on the border routers of the trusted administrative or routing domains may suffice.</t>
+        <figure anchor="pathlabelcryptoprocess" align="left" suppress-title="false" pn="figure-6">
+          <name slugifiedName="name-path-label-protection-with-">Path Label Protection with Hop-by-Hop Symmetric Cryptography</name>
+          <artwork name="" type="" align="left" alt="" pn="section-5.1-3.1">
+                            Producer
+                            |      ^
+                            |      |
+     Path Label TLV         |      |           Path Label TLV
++-----------------------+   |      |     +-----------------------+
+|nexthop label=456      |   v      |     |nexthop label=456      |
+|encrypted path label={}|  Forwarder 3   |encrypted path label={}|
++-----------------------+   |      ^     +-----------------------+
+                            |      |
+path label is encrypted     |      |     path label is decrypted
+with Forwarder 3            |      |     with Forwarder 3
+symmetric key               |      |     symmetric key
+                            |      |
+                            |      |
+                            |      |
+                            |      |
+                            |      |
+     Path Label TLV         |      |           Path Label TLV
++-----------------------+   |      |     +-----------------------+
+|nexthop label=634      |   v      |     |nexthop label=634      |
+|encrypted path label=  |  Forwarder 2   |encrypted path label=  |
+| {456}                 |   |      ^     | {456}                 |
++-----------------------+   |      |     +-----------------------+
+                            |      |
+path label is encrypted     |      |     path label is decrypted
+with Forwarder 2            |      |     with Forwarder 2
+symmetric key               |      |     symmetric key
+                            |      |
+                            |      |
+                            |      |
+                            |      |
+                            |      |
+     Path Label TLV         |      |           Path Label TLV
++-----------------------+   |      |     +-----------------------+
+|nexthop label=912      |   v      |     |nexthop label=912      |
+|encrypted path label=  |  Forwarder 1   |encrypted path label=  |
+| {634, encrypted path  |   |      ^     | {634, encrypted path  |
+| label {456}}          |   |      |     | label {456}}          |
++-----------------------+   |      |     +-----------------------+
+                            |      |
+path label is encrypted     |      |     path label is decrypted
+with Forwarder 1            |      |     with Forwarder 1
+symmetric key               |      |     symmetric key
+                            |      |
+                            |      |
+                            |      |
+                            |      |
+                            v      |
+                            Consumer
+</artwork>
+        </figure>
+      </section>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.irtf-icnrg-flic" to="FLIC"/>
+    <displayreference target="I-D.dekater-panrg-scion-overview" to="SCION"/>
+    <references pn="section-6">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-6.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="Moiseenko2017" target="https://conferences.sigcomm.org/acm-icn/2017/proceedings/icn17-2.pdf" quoteTitle="true" derivedAnchor="Moiseenko2017">
+          <front>
+            <title>Path Switching in Content Centric and Named Data Networks</title>
+            <seriesInfo name="DOI" value="10.1145/3125719.3125721"/>
+            <author surname="Moiseenko" initials="I."/>
+            <author surname="Oran" initials="D."/>
+            <date year="2017" month="September"/>
+          </front>
+          <refcontent>Proceedings of the 4th ACM Conference on
+	  Information-Centric Networking, Pages 66-76</refcontent>
+          <seriesInfo name="DOI" value="10.1145/3125719.3125721"/>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8569" target="https://www.rfc-editor.org/info/rfc8569" quoteTitle="true" derivedAnchor="RFC8569">
+          <front>
+            <title>Content-Centric Networking (CCNx) Semantics</title>
+            <author fullname="M. Mosko" initials="M." surname="Mosko"/>
+            <author fullname="I. Solis" initials="I." surname="Solis"/>
+            <author fullname="C. Wood" initials="C." surname="Wood"/>
+            <date month="July" year="2019"/>
+            <abstract>
+              <t indent="0">This document describes the core concepts of the Content-Centric Networking (CCNx) architecture and presents a network protocol based on two messages: Interests and Content Objects. It specifies the set of mandatory and optional fields within those messages and describes their behavior and interpretation. This architecture and protocol specification is independent of a specific wire encoding.</t>
+              <t indent="0">The protocol also uses a control message called an Interest Return, whereby one system can return an Interest message to the previous hop due to an error condition. This indicates to the previous hop that the current system will not respond to the Interest.</t>
+              <t indent="0">This document is a product of the Information-Centric Networking Research Group (ICNRG). The document received wide review among ICNRG participants. Two full implementations are in active use and have informed the technical maturity of the protocol specification.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8569"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8569"/>
+        </reference>
+        <reference anchor="RFC8609" target="https://www.rfc-editor.org/info/rfc8609" quoteTitle="true" derivedAnchor="RFC8609">
+          <front>
+            <title>Content-Centric Networking (CCNx) Messages in TLV Format</title>
+            <author fullname="M. Mosko" initials="M." surname="Mosko"/>
+            <author fullname="I. Solis" initials="I." surname="Solis"/>
+            <author fullname="C. Wood" initials="C." surname="Wood"/>
+            <date month="July" year="2019"/>
+            <abstract>
+              <t indent="0">Content-Centric Networking (CCNx) is a network protocol that uses a hierarchical name to forward requests and to match responses to requests. This document specifies the encoding of CCNx messages in a TLV packet format, including the TLV types used by each message element and the encoding of each value. The semantics of CCNx messages follow the encoding-independent CCNx Semantics specification.</t>
+              <t indent="0">This document is a product of the Information Centric Networking research group (ICNRG). The document received wide review among ICNRG participants and has two full implementations currently in active use, which have informed the technical maturity of the protocol specification.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8609"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8609"/>
+        </reference>
+      </references>
+      <references pn="section-6.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.irtf-icnrg-flic" quoteTitle="true" target="https://datatracker.ietf.org/doc/html/draft-irtf-icnrg-flic-05" derivedAnchor="FLIC">
+          <front>
+            <title>File-Like ICN Collections (FLIC)</title>
+            <author fullname="Christian Tschudin" initials="C." surname="Tschudin">
+              <organization showOnFrontPage="true">University of Basel</organization>
+            </author>
+            <author fullname="Christopher A. Wood" initials="C. A." surname="Wood">
+              <organization showOnFrontPage="true">Cloudflare</organization>
+            </author>
+            <author fullname="Marc E. Mosko" initials="M." surname="Mosko">
+              <organization showOnFrontPage="true">PARC, Inc.</organization>
+            </author>
+            <author fullname="David Oran" initials="D." surname="Oran" role="editor">
+              <organization showOnFrontPage="true">Network Systems Research &amp; Design</organization>
+            </author>
+            <date day="22" month="October" year="2023"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-irtf-icnrg-flic-05"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="Mahdian2016" target="http://conferences2.sigcomm.org/acm-icn/2016/proceedings/p1-mahdian.pdf" quoteTitle="true" derivedAnchor="Mahdian2016">
+          <front>
+            <title>MIRCC: Multipath-aware ICN Rate-based Congestion Control</title>
+            <author surname="Mahdian" initials="M."/>
+            <author surname="Arianfar" initials="S."/>
+            <author surname="Gibson" initials="J."/>
+            <author surname="Oran" initials="D."/>
+            <date month="September" year="2016"/>
+          </front>
+          <refcontent>Proceedings of the 3rd ACM Conference on
+	  Information-Centric Networking, Pages 1-10</refcontent>
+          <seriesInfo name="DOI" value="10.1145/2984356.2984365"/>
+        </reference>
+        <reference anchor="NDN" target="https://named-data.net/project/execsummary/" quoteTitle="true" derivedAnchor="NDN">
+          <front>
+            <title>Named Data Networking: Executive Summary</title>
+            <author>
+              <organization showOnFrontPage="true">NDN</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="NDNLPv2" target="https://redmine.named-data.net/projects/nfd/wiki/NDNLPv2" quoteTitle="true" derivedAnchor="NDNLPv2">
+          <front>
+            <title>NDNLPv2</title>
+            <author>
+              <organization showOnFrontPage="true">NFD</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="NDNTLV" target="https://named-data.net/doc/NDN-packet-spec/current/" quoteTitle="true" derivedAnchor="NDNTLV">
+          <front>
+            <title>NDN Packet Format Specification v0.3</title>
+            <author>
+              <organization showOnFrontPage="true">NDN</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="RFC8029" target="https://www.rfc-editor.org/info/rfc8029" quoteTitle="true" derivedAnchor="RFC8029">
+          <front>
+            <title>Detecting Multiprotocol Label Switched (MPLS) Data-Plane Failures</title>
+            <author fullname="K. Kompella" initials="K." surname="Kompella"/>
+            <author fullname="G. Swallow" initials="G." surname="Swallow"/>
+            <author fullname="C. Pignataro" initials="C." role="editor" surname="Pignataro"/>
+            <author fullname="N. Kumar" initials="N." surname="Kumar"/>
+            <author fullname="S. Aldrin" initials="S." surname="Aldrin"/>
+            <author fullname="M. Chen" initials="M." surname="Chen"/>
+            <date month="March" year="2017"/>
+            <abstract>
+              <t indent="0">This document describes a simple and efficient mechanism to detect data-plane failures in Multiprotocol Label Switching (MPLS) Label Switched Paths (LSPs). It defines a probe message called an "MPLS echo request" and a response message called an "MPLS echo reply" for returning the result of the probe. The MPLS echo request is intended to contain sufficient information to check correct operation of the data plane and to verify the data plane against the control plane, thereby localizing faults.</t>
+              <t indent="0">This document obsoletes RFCs 4379, 6424, 6829, and 7537, and updates RFC 1122.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8029"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8029"/>
+        </reference>
+        <reference anchor="RFC8793" target="https://www.rfc-editor.org/info/rfc8793" quoteTitle="true" derivedAnchor="RFC8793">
+          <front>
+            <title>Information-Centric Networking (ICN): Content-Centric Networking (CCNx) and Named Data Networking (NDN) Terminology</title>
+            <author fullname="B. Wissingh" initials="B." surname="Wissingh"/>
+            <author fullname="C. Wood" initials="C." surname="Wood"/>
+            <author fullname="A. Afanasyev" initials="A." surname="Afanasyev"/>
+            <author fullname="L. Zhang" initials="L." surname="Zhang"/>
+            <author fullname="D. Oran" initials="D." surname="Oran"/>
+            <author fullname="C. Tschudin" initials="C." surname="Tschudin"/>
+            <date month="June" year="2020"/>
+            <abstract>
+              <t indent="0">Information-Centric Networking (ICN) is a novel paradigm where network communications are accomplished by requesting named content instead of sending packets to destination addresses. Named Data Networking (NDN) and Content-Centric Networking (CCNx) are two prominent ICN architectures. This document provides an overview of the terminology and definitions that have been used in describing concepts in these two implementations of ICN. While there are other ICN architectures, they are not part of the NDN and CCNx concepts and as such are out of scope for this document. This document is a product of the Information-Centric Networking Research Group (ICNRG).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8793"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8793"/>
+        </reference>
+        <reference anchor="RFC9217" target="https://www.rfc-editor.org/info/rfc9217" quoteTitle="true" derivedAnchor="RFC9217">
+          <front>
+            <title>Current Open Questions in Path-Aware Networking</title>
+            <author fullname="B. Trammell" initials="B." surname="Trammell"/>
+            <date month="March" year="2022"/>
+            <abstract>
+              <t indent="0">In contrast to the present Internet architecture, a path-aware internetworking architecture has two important properties: it exposes the properties of available Internet paths to endpoints, and it provides for endpoints and applications to use these properties to select paths through the Internet for their traffic. While this property of "path awareness" already exists in many Internet-connected networks within single domains and via administrative interfaces to the network layer, a fully path-aware internetwork expands these concepts across layers and across the Internet.</t>
+              <t indent="0">This document poses questions in path-aware networking, open as of 2021, that must be answered in the design, development, and deployment of path-aware internetworks. It was originally written to frame discussions in the Path Aware Networking Research Group (PANRG), and has been published to snapshot current thinking in this space.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9217"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9217"/>
+        </reference>
+        <reference anchor="RFC9507" target="https://www.rfc-editor.org/info/rfc9507" quoteTitle="true" derivedAnchor="RFC9507">
+          <front>
+            <title>Information-Centric Networking (ICN) Traceroute Protocol Specification</title>
+            <author initials="S" surname="Mastorakis" fullname="Spyridon Mastorakis">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="D" surname="Oran" fullname="David Oran">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="I" surname="Moiseenko" fullname="Ilya Moiseenko">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="J" surname="Gibson" fullname="Jim Gibson">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="R" surname="Droms" fullname="Ralph Droms">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2024" month="March"/>
+          </front>
+          <seriesInfo name="RFC" value="9507"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9507"/>
+        </reference>
+        <reference anchor="RFC9508" target="https://www.rfc-editor.org/info/rfc9508" quoteTitle="true" derivedAnchor="RFC9508">
+          <front>
+            <title>Information-Centric Networking (ICN) Ping Protocol Specification</title>
+            <author initials="S" surname="Mastorakis" fullname="Spyridon Mastorakis">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="D" surname="Oran" fullname="David Oran">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="J" surname="Gibson" fullname="Jim Gibson">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="I" surname="Moiseenko" fullname="Ilya Moiseenko">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="R" surname="Droms" fullname="Ralph Droms">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2024" month="March"/>
+          </front>
+          <seriesInfo name="RFC" value="9508"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9508"/>
+        </reference>
+        <reference anchor="I-D.dekater-panrg-scion-overview" target="https://datatracker.ietf.org/doc/html/draft-dekater-panrg-scion-overview-05" quoteTitle="true" derivedAnchor="SCION">
+          <front>
+            <title>SCION Overview</title>
+            <author fullname="Corine de Kater" initials="C." surname="de Kater">
+              <organization showOnFrontPage="true">SCION Association</organization>
+            </author>
+            <author fullname="Nicola Rustignoli" initials="N." surname="Rustignoli">
+              <organization showOnFrontPage="true">SCION Association</organization>
+            </author>
+            <author fullname="Adrian Perrig" initials="A." surname="Perrig">
+              <organization showOnFrontPage="true">ETH Zuerich</organization>
+            </author>
+            <date day="5" month="November" year="2023"/>
+            <abstract>
+              <t indent="0">The Internet has been successful beyond even the most optimistic expectations and is intertwined with many aspects of our society. But although the world-wide communication system guarantees global reachability, the Internet has not primarily been built with security and high availability in mind. The next-generation inter-network architecture SCION (Scalability, Control, and Isolation On Next- generation networks) aims to address these issues. SCION was explicitly designed from the outset to offer security and availability by default. The architecture provides route control, failure isolation, and trust information for end-to-end communication. It also enables multi-path routing between hosts. This document discusses the motivations behind the SCION architecture and gives a high-level overview of its fundamental components, including its authentication model and the setup of the control- and data plane. As SCION is already in production use today, the document concludes with an overview of SCION deployments. For detailed descriptions of SCION's components, refer to [I-D.dekater-scion-pki], [I-D.dekater-scion-controlplane], and [I-D.dekater-scion-dataplane]. A more detailed analysis of relationships and dependencies between components is available in [I-D.rustignoli-scion-components].</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-dekater-panrg-scion-overview-05"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="Song2018" target="https://conferences.sigcomm.org/acm-icn/2018/proceedings/icn18-final62.pdf" quoteTitle="true" derivedAnchor="Song2018">
+          <front>
+            <title>SMIC: Subflow-level Multi-path Interest Control for Information Centric Networking</title>
+            <author surname="Song" initials="J."/>
+            <author surname="Lee" initials="M."/>
+            <author surname="Kwon" initials="T."/>
+            <date month="September" year="2018"/>
+          </front>
+          <refcontent>Proceedings of the 5th ACM Conference on Information-Centric Networking, Pages 77-87</refcontent>
+          <seriesInfo name="DOI" value="10.1145/3267955.3267971"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Ilya Moiseenko" surname="I. Moiseenko">
+        <organization showOnFrontPage="true">Apple, Inc.</organization>
+        <address>
+          <postal>
+            <street/>
+            <city>Cupertino</city>
+            <region>CA</region>
+            <code/>
+            <country>United States of America</country>
+          </postal>
+          <phone/>
+          <email>iliamo@mailbox.org</email>
+        </address>
+      </author>
+      <author fullname="Dave Oran" surname="D. Oran">
+        <organization showOnFrontPage="true">Network Systems Research and Design</organization>
+        <address>
+          <postal>
+            <street>4 Shady Hill Square</street>
+            <city>Cambridge</city>
+            <region>MA</region>
+            <code>02138</code>
+            <country>United States of America</country>
+          </postal>
+          <phone/>
+          <email>daveoran@orandom.net</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

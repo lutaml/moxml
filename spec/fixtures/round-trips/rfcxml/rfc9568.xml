@@ -1,0 +1,2843 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" category="std" docName="draft-ietf-rtgwg-vrrp-rfc5798bis-18" ipr="trust200902" number="9568" obsoletes="5798" updates="" submissionType="IETF" xml:lang="en" tocInclude="true" tocDepth="4" symRefs="true" sortRefs="true" consensus="true" prepTime="2024-04-30T20:11:47" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-rtgwg-vrrp-rfc5798bis-18" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9568" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="VRRP Version 3">Virtual Router Redundancy Protocol (VRRP) Version 3 for IPv4 and IPv6</title>
+    <seriesInfo name="RFC" value="9568" stream="IETF"/>
+    <author initials="A" surname="Lindem" fullname="Acee Lindem">
+      <organization showOnFrontPage="true">LabN Consulting, L.L.C.</organization>
+      <address>
+        <postal>
+          <street>301 Midenhall Way</street>
+          <city>Cary</city>
+          <region>NC</region>
+          <code>27513</code>
+          <country>United States of America</country>
+        </postal>
+        <email>acee.ietf@gmail.com</email>
+      </address>
+    </author>
+    <author initials="A" surname="Dogra" fullname="Aditya Dogra">
+      <organization showOnFrontPage="true">Cisco Systems</organization>
+      <address>
+        <postal>
+          <street>Sarjapur Outer Ring Road</street>
+          <city>Bangalore</city>
+          <region>Karnataka</region>
+          <code>560103</code>
+          <country>India</country>
+        </postal>
+        <email>addogra@cisco.com</email>
+      </address>
+    </author>
+    <date month="04" year="2024"/>
+    <area>Routing Area</area>
+    <keyword>VRRP</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">
+        This document defines version 3 of the Virtual Router Redundancy Protocol (VRRP)
+        for IPv4 and IPv6. It obsoletes RFC 5798, which previously specified VRRP (version 3).
+        RFC 5798 obsoleted RFC 3768, which specified VRRP (version 2) for IPv4.
+        VRRP specifies an election protocol that dynamically assigns responsibility for a
+        Virtual Router to one of the VRRP Routers on a LAN.  The VRRP Router
+        controlling the IPv4 or IPv6 address(es) associated with a Virtual
+        Router is called the Active Router, and it forwards packets routed to these
+        IPv4 or IPv6 addresses.  Active Routers are configured with
+        virtual IPv4 or IPv6 addresses, and Backup Routers infer the
+        address family of the virtual addresses being advertised based on the
+        IP protocol version.  Within a VRRP Router, the Virtual Routers in
+        each of the IPv4 and IPv6 address families are independent of one another
+        and always treated as separate Virtual Router instances.
+        The election process provides dynamic
+        failover in the forwarding responsibility should the Active Router become
+        unavailable.  For IPv4, the advantage gained from using VRRP is a
+        higher-availability default path without requiring configuration of
+        dynamic routing or router discovery protocols on every end-host.  For
+        IPv6, the advantage gained from using VRRP for IPv6 is a quicker
+        switchover to Backup Routers than can be obtained with standard IPv6
+        Neighbor Discovery mechanisms.
+      </t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9568" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-differences-from-rfc-5798">Differences from RFC 5798</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-a-note-on-terminology">A Note on Terminology</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.3">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.3.1"><xref derivedContent="1.3" format="counter" sectionFormat="of" target="section-1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipv4">IPv4</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.4">
+                <t indent="0" pn="section-toc.1-1.1.2.4.1"><xref derivedContent="1.4" format="counter" sectionFormat="of" target="section-1.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipv6">IPv6</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.5">
+                <t indent="0" pn="section-toc.1-1.1.2.5.1"><xref derivedContent="1.5" format="counter" sectionFormat="of" target="section-1.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.6">
+                <t indent="0" pn="section-toc.1-1.1.2.6.1"><xref derivedContent="1.6" format="counter" sectionFormat="of" target="section-1.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-scope">Scope</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.7">
+                <t indent="0" pn="section-toc.1-1.1.2.7.1"><xref derivedContent="1.7" format="counter" sectionFormat="of" target="section-1.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-definitions">Definitions</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-required-features">Required Features</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipvx-address-backup">IPvX Address Backup</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-preferred-path-indication">Preferred Path Indication</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.3">
+                <t indent="0" pn="section-toc.1-1.2.2.3.1"><xref derivedContent="2.3" format="counter" sectionFormat="of" target="section-2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-minimization-of-unnecessary">Minimization of Unnecessary Service Disruptions</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.4">
+                <t indent="0" pn="section-toc.1-1.2.2.4.1"><xref derivedContent="2.4" format="counter" sectionFormat="of" target="section-2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-efficient-operation-over-ex">Efficient Operation over Extended LANs</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.5">
+                <t indent="0" pn="section-toc.1-1.2.2.5.1"><xref derivedContent="2.5" format="counter" sectionFormat="of" target="section-2.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sub-second-operation-for-ip">Sub-second Operation for IPv4 and IPv6</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-vrrp-overview">VRRP Overview</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sample-vrrp-networks">Sample VRRP Networks</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sample-vrrp-network-1">Sample VRRP Network 1</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sample-vrrp-network-2">Sample VRRP Network 2</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-protocol">Protocol</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-vrrp-packet-format">VRRP Packet Format</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2.1.2">
+                  <li pn="section-toc.1-1.5.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.1.1"><xref derivedContent="5.1.1" format="counter" sectionFormat="of" target="section-5.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipv4-field-descriptions">IPv4 Field Descriptions</xref></t>
+                    <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2.1.2.1.2">
+                      <li pn="section-toc.1-1.5.2.1.2.1.2.1">
+                        <t indent="0" pn="section-toc.1-1.5.2.1.2.1.2.1.1"><xref derivedContent="5.1.1.1" format="counter" sectionFormat="of" target="section-5.1.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-source-address">Source Address</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.5.2.1.2.1.2.2">
+                        <t indent="0" pn="section-toc.1-1.5.2.1.2.1.2.2.1"><xref derivedContent="5.1.1.2" format="counter" sectionFormat="of" target="section-5.1.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-destination-address">Destination Address</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.5.2.1.2.1.2.3">
+                        <t indent="0" pn="section-toc.1-1.5.2.1.2.1.2.3.1"><xref derivedContent="5.1.1.3" format="counter" sectionFormat="of" target="section-5.1.1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ttl">TTL</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.5.2.1.2.1.2.4">
+                        <t indent="0" pn="section-toc.1-1.5.2.1.2.1.2.4.1"><xref derivedContent="5.1.1.4" format="counter" sectionFormat="of" target="section-5.1.1.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-protocol-2">Protocol</xref></t>
+                      </li>
+                    </ul>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.2.1"><xref derivedContent="5.1.2" format="counter" sectionFormat="of" target="section-5.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipv6-field-descriptions">IPv6 Field Descriptions</xref></t>
+                    <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2.1.2.2.2">
+                      <li pn="section-toc.1-1.5.2.1.2.2.2.1">
+                        <t indent="0" pn="section-toc.1-1.5.2.1.2.2.2.1.1"><xref derivedContent="5.1.2.1" format="counter" sectionFormat="of" target="section-5.1.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-source-address-2">Source Address</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.5.2.1.2.2.2.2">
+                        <t indent="0" pn="section-toc.1-1.5.2.1.2.2.2.2.1"><xref derivedContent="5.1.2.2" format="counter" sectionFormat="of" target="section-5.1.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-destination-address-2">Destination Address</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.5.2.1.2.2.2.3">
+                        <t indent="0" pn="section-toc.1-1.5.2.1.2.2.2.3.1"><xref derivedContent="5.1.2.3" format="counter" sectionFormat="of" target="section-5.1.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-hop-limit">Hop Limit</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.5.2.1.2.2.2.4">
+                        <t indent="0" pn="section-toc.1-1.5.2.1.2.2.2.4.1"><xref derivedContent="5.1.2.4" format="counter" sectionFormat="of" target="section-5.1.2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-next-header">Next Header</xref></t>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-vrrp-field-descriptions">VRRP Field Descriptions</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2.2.2">
+                  <li pn="section-toc.1-1.5.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.1.1"><xref derivedContent="5.2.1" format="counter" sectionFormat="of" target="section-5.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-version">Version</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.2.1"><xref derivedContent="5.2.2" format="counter" sectionFormat="of" target="section-5.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-type">Type</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.3.1"><xref derivedContent="5.2.3" format="counter" sectionFormat="of" target="section-5.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-virtual-rtr-id-vrid">Virtual Rtr ID (VRID)</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.2.2.4">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.4.1"><xref derivedContent="5.2.4" format="counter" sectionFormat="of" target="section-5.2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-priority">Priority</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.2.2.5">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.5.1"><xref derivedContent="5.2.5" format="counter" sectionFormat="of" target="section-5.2.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipvx-addr-count">IPvX Addr Count</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.2.2.6">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.6.1"><xref derivedContent="5.2.6" format="counter" sectionFormat="of" target="section-5.2.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reserve">Reserve</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.2.2.7">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.7.1"><xref derivedContent="5.2.7" format="counter" sectionFormat="of" target="section-5.2.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-maximum-advertisement-inter">Maximum Advertisement Interval (Max Advertise Interval)</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.2.2.8">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.8.1"><xref derivedContent="5.2.8" format="counter" sectionFormat="of" target="section-5.2.8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-checksum">Checksum</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.2.2.9">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.9.1"><xref derivedContent="5.2.9" format="counter" sectionFormat="of" target="section-5.2.9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipvx-addresses">IPvX Address(es)</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-protocol-state-machine">Protocol State Machine</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-parameters-per-virtual-rout">Parameters per Virtual Router</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-timers">Timers</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.3">
+                <t indent="0" pn="section-toc.1-1.6.2.3.1"><xref derivedContent="6.3" format="counter" sectionFormat="of" target="section-6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-state-transition-diagram">State Transition Diagram</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.4">
+                <t indent="0" pn="section-toc.1-1.6.2.4.1"><xref derivedContent="6.4" format="counter" sectionFormat="of" target="section-6.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-state-descriptions">State Descriptions</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.4.2">
+                  <li pn="section-toc.1-1.6.2.4.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.4.2.1.1"><xref derivedContent="6.4.1" format="counter" sectionFormat="of" target="section-6.4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-initialize">Initialize</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.4.2.2">
+                    <t indent="0" pn="section-toc.1-1.6.2.4.2.2.1"><xref derivedContent="6.4.2" format="counter" sectionFormat="of" target="section-6.4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-backup">Backup</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.4.2.3">
+                    <t indent="0" pn="section-toc.1-1.6.2.4.2.3.1"><xref derivedContent="6.4.3" format="counter" sectionFormat="of" target="section-6.4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-active">Active</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sending-and-receiving-vrrp-">Sending and Receiving VRRP Packets</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-receiving-vrrp-packets">Receiving VRRP Packets</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-transmitting-vrrp-packets">Transmitting VRRP Packets</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.3">
+                <t indent="0" pn="section-toc.1-1.7.2.3.1"><xref derivedContent="7.3" format="counter" sectionFormat="of" target="section-7.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-virtual-router-mac-address">Virtual Router MAC Address</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.4">
+                <t indent="0" pn="section-toc.1-1.7.2.4.1"><xref derivedContent="7.4" format="counter" sectionFormat="of" target="section-7.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipv6-interface-identifiers">IPv6 Interface Identifiers</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-operational-issues">Operational Issues</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipv4-2">IPv4</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2.1.2">
+                  <li pn="section-toc.1-1.8.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.8.2.1.2.1.1"><xref derivedContent="8.1.1" format="counter" sectionFormat="of" target="section-8.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-icmp-redirects">ICMP Redirects</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.8.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.8.2.1.2.2.1"><xref derivedContent="8.1.2" format="counter" sectionFormat="of" target="section-8.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-host-arp-requests">Host ARP Requests</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.8.2.1.2.3">
+                    <t indent="0" pn="section-toc.1-1.8.2.1.2.3.1"><xref derivedContent="8.1.3" format="counter" sectionFormat="of" target="section-8.1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-proxy-arp">Proxy ARP</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipv6-2">IPv6</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2.2.2">
+                  <li pn="section-toc.1-1.8.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.8.2.2.2.1.1"><xref derivedContent="8.2.1" format="counter" sectionFormat="of" target="section-8.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-icmpv6-redirects">ICMPv6 Redirects</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.8.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.8.2.2.2.2.1"><xref derivedContent="8.2.2" format="counter" sectionFormat="of" target="section-8.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-nd-neighbor-solicitation">ND Neighbor Solicitation</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.8.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.8.2.2.2.3.1"><xref derivedContent="8.2.3" format="counter" sectionFormat="of" target="section-8.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-router-advertisements">Router Advertisements</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.8.2.2.2.4">
+                    <t indent="0" pn="section-toc.1-1.8.2.2.2.4.1"><xref derivedContent="8.2.4" format="counter" sectionFormat="of" target="section-8.2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-unsolicited-neighbor-advert">Unsolicited Neighbor Advertisements</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.8.2.3">
+                <t indent="0" pn="section-toc.1-1.8.2.3.1"><xref derivedContent="8.3" format="counter" sectionFormat="of" target="section-8.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipvx">IPvX</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2.3.2">
+                  <li pn="section-toc.1-1.8.2.3.2.1">
+                    <t indent="0" pn="section-toc.1-1.8.2.3.2.1.1"><xref derivedContent="8.3.1" format="counter" sectionFormat="of" target="section-8.3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-potential-forwarding-loop">Potential Forwarding Loop</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.8.2.3.2.2">
+                    <t indent="0" pn="section-toc.1-1.8.2.3.2.2.1"><xref derivedContent="8.3.2" format="counter" sectionFormat="of" target="section-8.3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-recommendations-regarding-s">Recommendations Regarding Setting Priority Values</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.8.2.4">
+                <t indent="0" pn="section-toc.1-1.8.2.4.1"><xref derivedContent="8.4" format="counter" sectionFormat="of" target="section-8.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-vrrpv3-and-vrrpv2-interoper">VRRPv3 and VRRPv2 Interoperation</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2.4.2">
+                  <li pn="section-toc.1-1.8.2.4.2.1">
+                    <t indent="0" pn="section-toc.1-1.8.2.4.2.1.1"><xref derivedContent="8.4.1" format="counter" sectionFormat="of" target="section-8.4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-assumptions">Assumptions</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.8.2.4.2.2">
+                    <t indent="0" pn="section-toc.1-1.8.2.4.2.2.1"><xref derivedContent="8.4.2" format="counter" sectionFormat="of" target="section-8.4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-vrrpv3-support-of-vrrpv2-in">VRRPv3 Support of VRRPv2 Interoperation</xref></t>
+                    <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2.4.2.2.2">
+                      <li pn="section-toc.1-1.8.2.4.2.2.2.1">
+                        <t indent="0" pn="section-toc.1-1.8.2.4.2.2.2.1.1"><xref derivedContent="8.4.2.1" format="counter" sectionFormat="of" target="section-8.4.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-interoperation-consideratio">Interoperation Considerations</xref></t>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="11" format="counter" sectionFormat="of" target="section-11"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.11.2">
+              <li pn="section-toc.1-1.11.2.1">
+                <t indent="0" pn="section-toc.1-1.11.2.1.1"><xref derivedContent="11.1" format="counter" sectionFormat="of" target="section-11.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.11.2.2">
+                <t indent="0" pn="section-toc.1-1.11.2.2.1"><xref derivedContent="11.2" format="counter" sectionFormat="of" target="section-11.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="sect-1" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">
+        This document defines version 3 of the Virtual Router Redundancy Protocol (VRRP)
+        for IPv4 and IPv6. It obsoletes <xref target="RFC5798" format="default" sectionFormat="of" derivedContent="RFC5798"/>, which previously
+        specified VRRP (version 3). <xref target="RFC5798" format="default" sectionFormat="of" derivedContent="RFC5798"/> obsoleted <xref target="RFC3768" format="default" sectionFormat="of" derivedContent="RFC3768"/>,
+        which specified VRRP (version 2) for IPv4.
+        VRRP specifies an election protocol that dynamically
+        assigns responsibility for a Virtual Router
+        (refer to <xref target="sect-1.7" format="default" sectionFormat="of" derivedContent="Section 1.7"/>) to one of the VRRP
+        Routers on a LAN.  The VRRP Router controlling the IPv4 or IPv6
+        address(es) associated with a Virtual Router is called the Active Router,
+        and it forwards packets routed to these IPv4 or IPv6 addresses (except for
+        packets addressed to these addresses as described in <xref target="sect-8.3.1" format="default" sectionFormat="of" derivedContent="Section 8.3.1"/>).
+        VRRP Active Routers are configured with virtual IPv4 or IPv6 addresses,
+        and Backup Routers infer the address family of the virtual
+        addresses being advertised based on the IP protocol version.  Within a
+        VRRP Router, the Virtual Routers in each of the IPv4 and IPv6 address
+        families are independent of one another
+        and always treated as separate Virtual Router instances. The
+        election process provides dynamic failover in the forwarding
+        responsibility should the Active Router become unavailable.
+      </t>
+      <t indent="0" pn="section-1-2">
+        VRRP provides a function similar to the proprietary protocols Hot Standby Router Protocol (HSRP)
+        <xref target="RFC2281" format="default" sectionFormat="of" derivedContent="RFC2281"/> and IP Standby Protocol <xref target="IPSTB" format="default" sectionFormat="of" derivedContent="IPSTB"/>.
+      </t>
+      <section anchor="sect-1.1" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-differences-from-rfc-5798">Differences from RFC 5798</name>
+        <t indent="0" pn="section-1.1-1">
+          The following changes have been made from <xref target="RFC5798" format="default" sectionFormat="of" derivedContent="RFC5798"/>:
+        </t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-1.1-2">
+          <li pn="section-1.1-2.1" derivedCounter="1.">
+	    The VRRP terminology has been updated to conform to inclusive language
+            guidelines for IETF technologies.
+            The IETF has designated the National Institute of Standards and Technology (NIST)
+            document "Guidance for NIST Staff on Using Inclusive Language in Documentary Standards"
+            <xref target="NISTIR8366" format="default" sectionFormat="of" derivedContent="NISTIR8366"/> for its inclusive language guidelines.
+          </li>
+          <li pn="section-1.1-2.2" derivedCounter="2.">
+            The term for the VRRP Router assuming forwarding responsibility has been changed
+            to "Active Router" to be consistent with IETF inclusive terminology. Additionally,
+            inconsistencies in the terminology of <xref target="RFC5798" format="default" sectionFormat="of" derivedContent="RFC5798"/> for both "Active Router" and "Backup Router"
+            were corrected. Additionally, the undesirable term for attracting and dropping
+            unreachable packets has been changed.
+          </li>
+          <li pn="section-1.1-2.3" derivedCounter="3.">
+            Errata pertaining to the state machines in <xref target="state-machine" format="default" sectionFormat="of" derivedContent="Section 6"/> were
+            corrected.
+          </li>
+          <li pn="section-1.1-2.4" derivedCounter="4.">
+            The checksum calculation in <xref target="sect-5.2.8" format="default" sectionFormat="of" derivedContent="Section 5.2.8"/> has been clarified to specify
+            precisely what is included and that it does not include the pseudo-header for IPv4.
+          </li>
+          <li pn="section-1.1-2.5" derivedCounter="5.">
+            When a VRRP advertisement is received from a lower priority VRRP Router, the Active
+            VRRP Router will immediately send a VRRP advertisement to assure learning bridges
+            will bridge the packets to the correct Ethernet segment
+            (refer to <xref target="sect-6.4.3" format="default" sectionFormat="of" derivedContent="Section 6.4.3"/>).
+          </li>
+          <li pn="section-1.1-2.6" derivedCounter="6.">
+            Appendices describing operation over legacy technologies (Fiber Distributed Data Interface (FDDI), Token
+            Ring, and ATM LAN Emulation) were removed.
+          </li>
+          <li pn="section-1.1-2.7" derivedCounter="7.">
+            A recommendation was added indicating that IPv6 Unsolicited Neighbor Advertisements
+            <bcp14>SHOULD</bcp14> be accepted by the Active and Backup Routers (<xref target="sect-8.2.4" format="default" sectionFormat="of" derivedContent="Section 8.2.4"/>).
+          </li>
+          <li pn="section-1.1-2.8" derivedCounter="8.">
+            Checking that the Maximum Advertisement Intervals match is recommended, although this will
+            not result in the VRRP packet being dropped (<xref target="sect-7.1" format="default" sectionFormat="of" derivedContent="Section 7.1"/>).
+          </li>
+          <li pn="section-1.1-2.9" derivedCounter="9.">
+            Miscellaneous editorial changes were made for readability.
+          </li>
+          <li pn="section-1.1-2.10" derivedCounter="10.">
+            The IANA Considerations section was augmented to include all the IPv4/IPv6
+            multicast address allocations and Ethernet Media Access Control (MAC) address allocations.
+          </li>
+        </ol>
+      </section>
+      <section anchor="sect-1.2" numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-a-note-on-terminology">A Note on Terminology</name>
+        <t indent="0" pn="section-1.2-1">
+	  This document discusses both IPv4 and IPv6 operations, and with
+          respect to the VRRP protocol, many of the descriptions and procedures
+          are common.  In this document, it would be less verbose to be able to
+          refer to "IP" to mean either "IPv4 or IPv6".  However, historically,
+          the term "IP" often refers to IPv4.  For this reason, in this
+          specification, the term "IPvX" (where X is 4 or 6) is introduced to
+          mean either "IPv4" or "IPv6".  In this text, where the IP version
+          matters, the appropriate term is used, and the use of the term "IP" is
+          avoided.
+        </t>
+      </section>
+      <section anchor="sect-1.3" numbered="true" removeInRFC="false" toc="include" pn="section-1.3">
+        <name slugifiedName="name-ipv4">IPv4</name>
+        <t indent="0" pn="section-1.3-1">
+	  There are a number of methods that an IPv4 end-host can use to
+          determine its first-hop router for a particular IPv4 destination.
+
+          These include running (or snooping) a dynamic routing protocol such
+          as Routing Information Protocol (RIP) <xref target="RFC2453" format="default" sectionFormat="of" derivedContent="RFC2453"/> or OSPF version 2
+	  <xref target="RFC2328" format="default" sectionFormat="of" derivedContent="RFC2328"/>, running an ICMP router discovery client
+          <xref target="RFC1256" format="default" sectionFormat="of" derivedContent="RFC1256"/>, running DHCPv4 <xref target="RFC2131" format="default" sectionFormat="of" derivedContent="RFC2131"/>, or using a
+          statically configured default route.
+        </t>
+        <t indent="0" pn="section-1.3-2">
+	  Running a dynamic routing protocol on every end-host may
+          not be feasible for a number of reasons, including administrative
+          overhead, processing overhead, security issues, or the lack of an
+          implementation for a particular platform.  Neighbor or router discovery
+          protocols may require active participation by all hosts on a network,
+          requiring large timer values to reduce protocol overhead associated
+          with the protocol packet processing for each host.  This can result in
+          a significant delay in the detection of an unreachable router, and
+          such a delay may introduce unacceptably long periods of unreachability for the
+          default route.
+        </t>
+        <t indent="0" pn="section-1.3-3">
+	  The use of a manually configured default route (either via a static route
+          or DHCPv4) is quite popular since it minimizes configuration and
+          processing overhead on the end-host and
+          is supported by virtually every IPv4 implementation.
+          However, this creates a single point of failure.  Loss of the default
+          router results in a catastrophic event, isolating all end-hosts that
+          are unable to detect an available alternate path.
+        </t>
+        <t indent="0" pn="section-1.3-4">
+	  The Virtual Router Redundancy Protocol (VRRP) is designed to
+          eliminate the single point of failure inherent in a network utilizing
+          default routing.  VRRP specifies an election protocol that
+          dynamically assigns responsibility for a Virtual Router to one of the
+          VRRP Routers on a LAN.  The VRRP Router controlling the IPv4
+          address(es) associated with a Virtual Router is called the Active Router and
+          forwards packets sent to these IPv4 addresses.  The election process
+          provides dynamic failover of the forwarding responsibility should the
+          Active Router become unavailable.  Any of the Virtual Router's IPv4
+          addresses on a LAN can then be used as the default first-hop
+	  router by end-hosts.  The advantage gained from using VRRP is a
+          higher availability default path without requiring configuration of
+          dynamic routing or a router discovery protocol on every end-host.
+        </t>
+      </section>
+      <section anchor="sect-1.4" numbered="true" removeInRFC="false" toc="include" pn="section-1.4">
+        <name slugifiedName="name-ipv6">IPv6</name>
+        <t indent="0" pn="section-1.4-1">
+	  IPv6 hosts on a LAN will usually learn about one or more default
+          routers by receiving Router Advertisements sent using the IPv6
+          Neighbor Discovery (ND) protocol <xref target="RFC4861" format="default" sectionFormat="of" derivedContent="RFC4861"/>.
+          The Router Advertisements are periodically multicast
+          at a rate such that the hosts can take more
+          than 10 seconds to learn the default routers on a LAN.
+          They are not sent frequently enough to rely on the absence
+          of the Router Advertisement to detect router failures.
+        </t>
+        <t indent="0" pn="section-1.4-2">
+	  The ND protocol includes a mechanism called Neighbor
+          Unreachability Detection to detect the failure of a neighbor node
+          (router or host) or the forwarding path to a neighbor.  This is done
+          by sending unicast ND Neighbor Solicitation messages to the neighbor
+          node.  To reduce the overhead of sending Neighbor Solicitations, they
+          are only sent to neighbors to which the node is actively sending
+          traffic and only after there has been no positive indication that the
+          router is up for a period of time.  Using the default parameters in
+          ND, it can take a host more than 10 seconds to learn that a router is
+          unreachable before it will switch to another default router.  This
+          delay would be very noticeable to users and cause some transport
+          protocol implementations to time out.
+        </t>
+        <t indent="0" pn="section-1.4-3">
+	  While the Neighbor Unreachability Detection could be made quicker by
+          configuring the timer intervals to be more aggressive (note that the current
+          lower limit for this is 5 seconds), this would have the downside of
+          significantly increasing the overhead of ND traffic, especially when
+          there are many hosts all trying to determine the reachability of one
+          or more routers.
+        </t>
+        <t indent="0" pn="section-1.4-4">
+	  The Virtual Router Redundancy Protocol for IPv6 provides a much
+          faster switchover to an alternate default router than can be obtained
+          using standard ND procedures.  Using VRRP, a Backup Router can take
+          over for a failed default router in around three seconds (using VRRP
+          default parameters).  This is done without any interaction with the
+          hosts and a minimum amount of VRRP traffic.
+        </t>
+      </section>
+      <section anchor="sect-1.5" numbered="true" removeInRFC="false" toc="include" pn="section-1.5">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.5-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+        </t>
+      </section>
+      <section anchor="sect-1.6" numbered="true" removeInRFC="false" toc="include" pn="section-1.6">
+        <name slugifiedName="name-scope">Scope</name>
+        <t indent="0" pn="section-1.6-1">
+	  The remainder of this document describes the features, design goals,
+          and theory of operation of VRRP.  The message formats, protocol
+          processing rules, and state machine that guarantee convergence to a
+          single Active Router are presented.  Finally, operational
+          issues related to MAC address mapping, handling of ARP messages,
+          generation of ICMP redirect messages, and security issues are
+          addressed.
+        </t>
+      </section>
+      <section anchor="sect-1.7" numbered="true" removeInRFC="false" toc="include" pn="section-1.7">
+        <name slugifiedName="name-definitions">Definitions</name>
+        <dl newline="false" spacing="normal" indent="24" pn="section-1.7-1">
+          <dt pn="section-1.7-1.1">VRRP Router</dt>
+          <dd pn="section-1.7-1.2">
+            <t indent="0" pn="section-1.7-1.2.1">
+	      A router running the Virtual Router
+	      Redundancy Protocol.  It may participate as
+              one or more Virtual Routers.
+            </t>
+          </dd>
+          <dt pn="section-1.7-1.3">Virtual Router</dt>
+          <dd pn="section-1.7-1.4">
+            <t indent="0" pn="section-1.7-1.4.1">
+	      An abstract object managed by VRRP that acts
+	      as a default router for hosts on a shared
+              LAN.  It consists of a Virtual Router
+              Identifier and either a set of associated
+              IPv4 addresses or a set of associated IPv6
+              addresses across a common LAN.  A VRRP Router
+              can serve as a Backup Router for one or more
+              Virtual Routers.
+            </t>
+          </dd>
+          <dt pn="section-1.7-1.5">Virtual Router Identifier</dt>
+          <dd pn="section-1.7-1.6">
+            <t indent="0" pn="section-1.7-1.6.1">
+              An integer value (1-255) identifying an instance
+              of a Virtual Router on a LAN. Also referred by its
+              acronym, VRID.
+            </t>
+          </dd>
+          <dt pn="section-1.7-1.7">Virtual Router MAC Address</dt>
+          <dd pn="section-1.7-1.8">
+            <t indent="0" pn="section-1.7-1.8.1">
+              The multicast Ethernet MAC address used for
+              VRRP advertisements for a VRID. Refer to
+              <xref target="sect-7.3" format="default" sectionFormat="of" derivedContent="Section 7.3"/>.
+            </t>
+          </dd>
+          <dt pn="section-1.7-1.9">IP Address Owner</dt>
+          <dd pn="section-1.7-1.10">
+            <t indent="0" pn="section-1.7-1.10.1">
+	      The VRRP Router that has the Virtual Router's
+	      IPvX address(es) as real interface
+              address(es).  This is the router that, when
+              up, will respond to packets addressed to one
+              of these IPvX addresses for ICMP pings, TCP
+              connection requests, etc.
+            </t>
+          </dd>
+          <dt pn="section-1.7-1.11">Primary IP Address</dt>
+          <dd pn="section-1.7-1.12">
+            <t indent="0" pn="section-1.7-1.12.1">
+	      In IPv4, an IPv4 address selected from the
+	      set of real interface addresses.  One
+              possible selection algorithm is to always
+              select the first address.  In IPv4, VRRP
+              advertisements are always sent using the
+              primary IPv4 address as the source of the
+              IPv4 packet.  In IPv6, the link-local address
+              of the interface over which the packet is
+              transmitted is used.
+            </t>
+          </dd>
+          <dt pn="section-1.7-1.13">Forwarding Responsibility</dt>
+          <dd pn="section-1.7-1.14">
+            <t indent="0" pn="section-1.7-1.14.1">
+	      The responsibility for forwarding packets sent to
+              the IPvX address(es) associated with the
+              Virtual Router. This includes receiving packets
+              sent to the Virtual Router MAC address, forwarding these
+              packets based on the local Routing Information Base (RIB) / 
+              Forwarding Information Base (FIB), answering
+              ARP requests for the IPv4 address(es), and answering ND
+              requests for the IPv6 address(es).
+            </t>
+          </dd>
+          <dt pn="section-1.7-1.15">Active Router</dt>
+          <dd pn="section-1.7-1.16">
+            <t indent="0" pn="section-1.7-1.16.1">
+	      The VRRP Router that is assuming the
+	      responsibility of forwarding packets sent to
+              the IPvX address(es) associated with the
+              Virtual Router, answering ARP requests
+	      for the IPv4 address(es), and answering ND
+              requests for the IPv6 address(es).  Note that
+              if the IPvX address owner is available, then
+              it will always be the Active Router.
+            </t>
+          </dd>
+          <dt pn="section-1.7-1.17">Backup Router(s)</dt>
+          <dd pn="section-1.7-1.18">
+            <t indent="0" pn="section-1.7-1.18.1">
+	      The set of VRRP Routers available to assume
+	      forwarding responsibility for a Virtual
+              Router should the current Active Router fail.
+            </t>
+          </dd>
+          <dt pn="section-1.7-1.19">Drop Route</dt>
+          <dd pn="section-1.7-1.20">
+            <t indent="0" pn="section-1.7-1.20.1">
+	      A route installed in the Routing Information Base (RIB) that
+              will result in traffic with a destination address that matches
+              the route to be dropped.
+            </t>
+          </dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="sect-2" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-required-features">Required Features</name>
+      <t indent="0" pn="section-2-1">
+	This section describes the set of features that were considered
+        mandatory and that guided the design of VRRP.
+      </t>
+      <section anchor="sect-2.1" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-ipvx-address-backup">IPvX Address Backup</name>
+        <t indent="0" pn="section-2.1-1">
+	  Backup of an IPvX address or addresses is the primary function of
+          VRRP.  When providing election of an Active Router and the
+          additional functionality described below, the protocol should
+        strive to:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2.1-2">
+          <li pn="section-2.1-2.1">minimize the duration of unreachability,</li>
+          <li pn="section-2.1-2.2">minimize the steady-state bandwidth overhead and processing
+          complexity,</li>
+          <li pn="section-2.1-2.3">function over a wide variety of multiaccess LAN technologies
+          capable of supporting IPvX traffic,</li>
+          <li pn="section-2.1-2.4">allow multiple Virtual Routers on a network for load-balancing, and</li>
+          <li pn="section-2.1-2.5">support multiple logical IPvX subnets on a single LAN segment.</li>
+        </ul>
+      </section>
+      <section anchor="sect-2.2" numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-preferred-path-indication">Preferred Path Indication</name>
+        <t indent="0" pn="section-2.2-1">
+	  A simple model of Active Router election among a set of redundant routers is
+          to treat each router with equal preference and claim victory after
+          converging to any router as the Active Router.  However, there are likely to be
+          many environments where there is a distinct preference (or range of
+          preferences) among the set of redundant routers.  For example, this
+          preference may be based upon access link cost or speed, router
+          performance or reliability, or other policy considerations.  The
+          protocol should allow the expression of this relative path preference
+          in an intuitive manner and guarantee Active Router convergence to the most
+          preferred Virtual Router currently available.
+        </t>
+      </section>
+      <section anchor="sect-2.3" numbered="true" removeInRFC="false" toc="include" pn="section-2.3">
+        <name slugifiedName="name-minimization-of-unnecessary">Minimization of Unnecessary Service Disruptions</name>
+        <t indent="0" pn="section-2.3-1">
+	  Once Active Router election has been performed, any unnecessary transition
+          between Active and Backup Routers can result in a disruption of
+          service.  The protocol should ensure that, after Active Router election, no
+          state transition is triggered by any Backup Router of equal or lower
+          preference as long as the Active Router continues to function properly.
+        </t>
+        <t indent="0" pn="section-2.3-2">
+	  Some environments may find it beneficial to avoid the state
+          transition triggered when a router that is preferred over the current
+          Active Router becomes available.  It may be useful to support an override of
+          the immediate restoration to the preferred path.
+        </t>
+      </section>
+      <section anchor="sect-2.4" numbered="true" removeInRFC="false" toc="include" pn="section-2.4">
+        <name slugifiedName="name-efficient-operation-over-ex">Efficient Operation over Extended LANs</name>
+        <t indent="0" pn="section-2.4-1">
+	  Sending IPvX packets, i.e., sending either IPv4 or IPv6, on a
+          multiaccess LAN requires mapping from an IPvX address to a MAC
+          address.  The use of the Virtual Router MAC address in an extended
+          LAN employing learning bridges can have a significant effect on the
+          bandwidth overhead of packets sent to the Virtual Router.  If the
+          Virtual Router MAC address is never used as the source address in a
+          link-level frame, then the MAC address location is never learned,
+          resulting in flooding of all packets sent to the Virtual Router.  To
+          improve the efficiency in this environment, the protocol should do the
+          following:
+        </t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-2.4-2">
+          <li pn="section-2.4-2.1" derivedCounter="1.">
+            Use the Virtual Router MAC address as the source in a packet sent
+            by the Active Router to trigger MAC learning.
+          </li>
+          <li pn="section-2.4-2.2" derivedCounter="2.">
+            Trigger a message immediately after transitioning to the
+            Active Router to update MAC learning.
+          </li>
+          <li pn="section-2.4-2.3" derivedCounter="3.">
+            Trigger periodic messages from the Active Router to
+            maintain the MAC address cache.
+          </li>
+        </ol>
+      </section>
+      <section anchor="sect-2.5" numbered="true" removeInRFC="false" toc="include" pn="section-2.5">
+        <name slugifiedName="name-sub-second-operation-for-ip">Sub-second Operation for IPv4 and IPv6</name>
+        <t indent="0" pn="section-2.5-1">
+	  Sub-second detection of Active Router failure is needed in both
+          IPv4 and IPv6 environments.  Earlier work proposed that sub-second
+          operation was for IPv6, and this specification leverages that earlier
+          approach for both IPv4 and IPv6.
+        </t>
+        <t indent="0" pn="section-2.5-2">
+	  One possible problematic scenario that may occur when using a small
+          Advertisement_Interval (refer to <xref target="sect-6.1" format="default" sectionFormat="of" derivedContent="Section 6.1"/>) is
+          when a VRRP Router is generating more packets than it can transmit, and a queue
+          builds up on the VRRP Router.  When this occurs, it is possible that packets being
+          transmitted onto the VRRP-protected LAN could see a larger queueing
+          delay than the smallest Advertisement_Interval.  In this case,
+          the Active_Down_Interval (refer to <xref target="sect-6.1" format="default" sectionFormat="of" derivedContent="Section 6.1"/>) may be small
+          enough that normal queuing
+          delays might cause a Backup Router to conclude that the Active Router is down
+          and, hence, promote itself to Active Router.  Very shortly afterwards, the
+          delayed VRRP packets from the original Active Router cause the VRRP Router to switch back to Backup
+          Router.  Furthermore, this process can repeat many times per second,
+          causing a significant disruption of traffic.  To mitigate this problem,
+          giving VRRP packets priority on egress interface queues should be considered.
+          If the Active Router observes that this is occurring, it <bcp14>SHOULD</bcp14> log the problem
+          (subject to rate-limiting).
+        </t>
+      </section>
+    </section>
+    <section anchor="sect-3" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-vrrp-overview">VRRP Overview</name>
+      <t indent="0" pn="section-3-1">
+	VRRP specifies an election protocol to provide the Virtual Router
+        function described earlier.  All protocol messaging is performed
+        using either IPv4 or IPv6 multicast datagrams. Thus, the protocol can
+        operate over a variety of multiaccess LAN technologies supporting
+        IPvX multicast.  Each link of a VRRP Virtual Router has a single
+        well-known MAC address allocated to it.  This document currently only
+        details the mapping to networks using an IEEE 802 48-bit MAC
+        address.  The Virtual Router MAC address is used as the source in all
+        periodic VRRP messages sent by the Active Router to enable MAC
+      learning by Layer 2 (L2) bridges on an extended LAN.</t>
+      <t indent="0" pn="section-3-2">
+	A Virtual Router is defined by its Virtual Router Identifier (VRID)
+        and a set of either IPv4 or IPv6 address(es).  A VRRP Router may
+        associate a Virtual Router with its real address on an interface.
+        The scope of each Virtual Router is restricted to a single LAN.  A
+        VRRP Router may be configured with additional Virtual Router mappings
+        and priority for Virtual Routers it is willing to back up.  The
+        mapping between the VRID and its IPvX address(es) must be coordinated
+        among all VRRP Routers on a LAN.
+      </t>
+      <t indent="0" pn="section-3-3">
+	There is no restriction against reusing a VRID with a different
+        address mapping on different LANs, nor is there a restriction against
+        using the same VRID number for a set of IPv4 addresses and a set of
+        IPv6 addresses. However, these are two different Virtual Routers.
+      </t>
+      <t indent="0" pn="section-3-4">
+	To minimize network traffic, only the Active Router for each Virtual Router
+        sends periodic VRRP Advertisement messages.  A Backup Router will not
+        attempt to preempt the Active Router unless the Backup Router
+        has a higher priority.  This
+        eliminates service disruption unless a more preferred path becomes
+        available.  It's also possible to administratively prohibit Active Router
+        preemption attempts.  The only exception is that a VRRP Router will
+        always become the Active Router for any Virtual Router associated with
+        address(es) it owns.  If the Active Router becomes unavailable, then the
+        highest-priority Backup Router will transition to the Active Router
+        after a short delay, providing a controlled transition of Virtual Router
+        responsibility with minimal service interruption.
+      </t>
+      <t indent="0" pn="section-3-5">
+	The VRRP protocol design provides rapid transition from the Backup Router to
+        the Active Router to minimize service interruption and incorporates
+        optimizations that reduce protocol complexity while guaranteeing
+        controlled Active Router transition for typical operational scenarios.  These
+        optimizations result in an election protocol with minimal runtime
+        state requirements, minimal active protocol states, and a single
+        message type and sender.  The typical operational scenarios are
+        defined to be two redundant routers and/or distinct path preferences
+        for each router.  A side effect when these assumptions are violated,
+        i.e., more than two redundant paths with equal preference, is
+        that duplicate packets may be forwarded for a brief period during
+        Active Router election.  However, the typical scenario assumptions are
+        likely to cover the vast majority of deployments, loss of the Active
+        Router is infrequent, and the expected duration for Active Router election
+        convergence is quite small (&lt; 4 seconds when using the default
+        Advertisement_Interval and configurable to &lt; 1/25 second).  Thus,
+        the VRRP optimizations represent significant simplifications in
+        the protocol design while incurring an insignificant probability of
+        brief network disruption.
+      </t>
+    </section>
+    <section anchor="sect-4" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-sample-vrrp-networks">Sample VRRP Networks</name>
+      <section anchor="sect-4.1" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-sample-vrrp-network-1">Sample VRRP Network 1</name>
+        <t indent="0" pn="section-4.1-1">
+	  The following figure shows a simple network with two VRRP Routers
+          implementing one Virtual Router.
+        </t>
+        <figure align="left" suppress-title="false" pn="figure-1">
+          <name slugifiedName="name-sample-vrrp-network-1-2">Sample VRRP Network 1</name>
+          <artwork align="left" pn="section-4.1-2.1">
+        +-----------+ +-----------+
+        | Router-1  | | Router-2  |
+        |(AR VRID=1)| |(BR VRID=1)|
+        |           | |           |
+VRID=1  +-----------+ +-----------+
+IPvX A------&gt;*            *&lt;---------IPvX B
+             |            |
+             |            |
+-------------+------------+--+-----------+-----------+-----------+
+                             ^           ^           ^           ^
+                             |           |           |           |
+     Default Router          |           |           |           |
+     IPvX Addresses ---&gt; (IPvX A)    (IPvX A)    (IPvX A)    (IPvX A)
+                             |           |           |           |
+                    IPvX H1-&gt;*  IPvX H2-&gt;*  IPvX H3-&gt;*  IPvX H4-&gt;*
+                          +--+--+     +--+--+     +--+--+     +--+--+
+                          |  H1 |     |  H2 |     |  H3 |     |  H4 |
+                          +-----+     +-----+     +--+--+     +--+--+
+Legend:
+      --+---+---+-- = Ethernet
+                  H = Host computer
+                 AR = Active Router
+                 BR = Backup Router
+                 *  =  IPvX Address: X is 4 everywhere in IPv4 case
+                                     X is 6 everywhere in IPv6 case
+                 (IPvX) = Default Router for hosts
+                 </artwork>
+        </figure>
+        <t indent="0" pn="section-4.1-3">
+          In the IPv4 case, i.e., IPvX is IPv4 everywhere in the figure,
+          each router is permanently assigned an IPv4 address on the LAN
+          interface (Router-1 is assigned IPv4 A and Router-2 is assigned IPv4 B), and
+          each host installs a default route (learned through DHCPv4 or via a
+          configured static route) through one of the routers
+          (in this example, they all use Router-1's IPv4 A).
+        </t>
+        <t indent="0" pn="section-4.1-4">
+          In the IPv6 case, i.e., IPvX is IPv6 everywhere in the figure, each router has its own
+          link-local IPv6 address on the LAN interface and a link-local
+          IPv6 address per VRID that is shared with the other routers that serve the same VRID.
+          Each host learns a default route from Router
+          Advertisements through one of the routers (in this example, they all
+          use Router-1's IPv6 Link-Local A).
+        </t>
+        <t indent="0" pn="section-4.1-5">
+          In an IPv4 VRRP environment, each router supports reception and transmission for
+          the exact same IPv4 address.  Router-1 is said to be the IPv4
+          address owner of IPv4 A, and Router-2 is the IPv4 address owner of
+          IPv4 B.  A Virtual Router is then defined by associating a unique
+          identifier (the VRID) with the address owned by Router-1.
+        </t>
+        <t indent="0" pn="section-4.1-6">
+          In an IPv6 VRRP environment, each router will support transmission and
+          reception for the IPv6 addresses associated with the VRID.
+          Router-1 is said to be the IPv6 address owner
+          of IPv6 A, and Router-2 is the IPv6 address owner of IPv6 B.  A Virtual
+          Router is then defined by associating a unique identifier (the
+          VRID) with the address owned by Router-1.
+        </t>
+        <t indent="0" pn="section-4.1-7">
+          Finally, in both the IPv4 and IPv6 cases, the VRRP protocol manages
+          Virtual Router failover to a Backup Router.
+        </t>
+        <t indent="0" pn="section-4.1-8">
+          The IPvX example above shows a Virtual Router configured to cover the
+          IPvX address owned by Router-1 (VRID=1, IPvX_Address=A).  When VRRP is
+          enabled on Router-1 for VRID=1, it will assert itself as the Active Router, with
+          priority = 255, since it is the IPvX address owner for the Virtual
+          Router IPvX address.  When VRRP is enabled on Router-2 for VRID=1, it will
+          transition to the Backup Router, with priority = 100 (the default priority is
+          100), since it is not the IPvX address owner.  If Router-1 should fail,
+          then the VRRP protocol will transition Router-2 to the Active Router, temporarily
+          taking over forwarding responsibility for IPvX A to provide
+          uninterrupted service to the hosts.
+        </t>
+        <t indent="0" pn="section-4.1-9">
+          Note that in both cases in this example, IPvX B is not backed up and it
+          is only used by Router-2 as its interface address.  In order to back up
+          IPvX B, a second Virtual Router must be configured.  This is shown in
+          the next section.
+        </t>
+      </section>
+      <section anchor="sect-4.2" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-sample-vrrp-network-2">Sample VRRP Network 2</name>
+        <t indent="0" pn="section-4.2-1">
+          The following figure shows a configuration with two Virtual Routers
+          with the hosts splitting their traffic between them.
+        </t>
+        <figure align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-sample-vrrp-network-2-2">Sample VRRP Network 2</name>
+          <artwork align="left" pn="section-4.2-2.1">
+        +-----------+  +-----------+
+        |  Router-1 |  | Router-2  |
+        |(AR VRID=1)|  |(BR VRID=1)|
+        |(BR VRID=2)|  |(AR VRID=2)|
+VRID=1  +-----------+  +-----------+  VRID=2
+IPvX A -----&gt;*             *&lt;---------- IPvX B
+             |             |
+             |             |
+   ----------+-------------+-+-----------+-----------+-----------+
+                             ^           ^           ^           ^
+                             |           |           |           |
+     Default Router          |           |           |           |
+     IPvX Addresses ---&gt; (IPvX A)    (IPvX A)    (IPvX B)    (IPvX B)
+                             |           |           |           |
+                    IPvX H1-&gt;*  IPvX H2-&gt;*  IPvX H3-&gt;*  IPvX H4-&gt;*
+                          +--+--+     +--+--+     +--+--+     +--+--+
+                          |  H1 |     |  H2 |     |  H3 |     |  H4 |
+                          +-----+     +-----+     +--+--+     +--+--+
+
+ Legend:
+      ---+---+---+--  =  Ethernet
+                   H  =  Host computer
+                  AR  =  Active Router
+                  BR  =  Backup Router
+                   *  =  IPvX Address: X is 4 everywhere in IPv4 case
+                                       X is 6 everywhere in IPv6 case
+              (IPvX)  =  Default Router for hosts
+              </artwork>
+        </figure>
+        <t indent="0" pn="section-4.2-3">
+          In the IPv4 example above, i.e., IPvX is IPv4 everywhere in the
+          figure, half of the hosts have configured a static default route through
+          Router-1's IPv4 A, and half are using Router-2's IPv4 B.  The configuration
+          of Virtual Router VRID=1 is exactly the same as in the first example
+          (see <xref target="sect-4.1" format="default" sectionFormat="of" derivedContent="Section 4.1"/>), and a second Virtual Router has been added to
+          cover the IPv4 address owned by Router-2 (VRID=2, IPv4_Address=B).  In
+          this case, Router-2 will assert itself as the Active Router for VRID=2, while Router-1
+          will act as a Backup Router.  This scenario demonstrates a deployment
+          providing load-splitting when both routers are available, while
+          providing full redundancy for robustness.
+        </t>
+        <t indent="0" pn="section-4.2-4">
+          In the IPv6 example above, i.e., IPvX is IPv6 everywhere in the
+          figure, half of the hosts are using a default route through
+          Router-1's IPv6 A, and half are using Router-2's IPv6 B.  The configuration
+          of Virtual Router VRID=1 is exactly the same as in the first example
+          (see <xref target="sect-4.1" format="default" sectionFormat="of" derivedContent="Section 4.1"/>), and a second Virtual Router has been added to
+          cover the IPv6 address owned by Router-2 (VRID=2, IPv6_Address=B).  In
+          this case, Router-2 will assert itself as the Active Router for VRID=2, while Router-1
+          will act as a Backup Router.  This scenario demonstrates a deployment
+          providing load-splitting when both routers are available while
+          providing full redundancy for robustness.
+        </t>
+        <t indent="0" pn="section-4.2-5">
+          Note that the details of load-balancing are out of scope of this
+          document.  However, in a case where the servers need different
+          weights, it may not make sense to rely on Router Advertisements alone
+          to balance the host traffic between the routers <xref target="RFC4311" format="default" sectionFormat="of" derivedContent="RFC4311"/>.
+        </t>
+      </section>
+    </section>
+    <section anchor="sect-5" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-protocol">Protocol</name>
+      <t indent="0" pn="section-5-1">
+        The purpose of the VRRP Advertisement is to communicate to all VRRP Routers
+        the priority, Maximum Advertisement Interval, and IPvX addresses of the Active Router
+        associated with the VRID.
+      </t>
+      <t indent="0" pn="section-5-2">
+        When VRRP is protecting an IPv4 address, VRRP packets are sent
+        encapsulated in IPv4 packets.  They are sent to the IPv4 multicast
+        address assigned to VRRP.
+      </t>
+      <t indent="0" pn="section-5-3">
+        When VRRP is protecting an IPv6 address, VRRP packets are sent
+        encapsulated in IPv6 packets.  They are sent to the IPv6 multicast
+        address assigned to VRRP.
+      </t>
+      <section anchor="sect-5.1" numbered="true" removeInRFC="false" toc="include" pn="section-5.1">
+        <name slugifiedName="name-vrrp-packet-format">VRRP Packet Format</name>
+        <t indent="0" pn="section-5.1-1">
+          This section defines the format of the VRRP packet and the relevant
+          fields in the IPvX header (in conjunction with the address family).
+        </t>
+        <figure align="left" suppress-title="false" pn="figure-3">
+          <name slugifiedName="name-ipv4-ipv6-vrrp-advertisemen">IPv4/IPv6 VRRP Advertisement Packet Format</name>
+          <artwork align="left" pn="section-5.1-2.1">
+  0                   1                   2                   3
+  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                    IPv4 Fields or IPv6 Fields                 |
+ ...                                                             ...
+ |                                                               |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |Version| Type  | Virtual Rtr ID|   Priority    |IPvX Addr Count|
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |Reserve| Max Advertise Interval|          Checksum             |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                                                               |
+ +                                                               +
+ |                       IPvX Address(es)                        |
+ +                                                               +
+ +                                                               +
+ +                                                               +
+ +                                                               +
+ |                                                               |
+ +                                                               +
+ |                                                               |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ </artwork>
+        </figure>
+        <section anchor="sect-5.1.1" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.1">
+          <name slugifiedName="name-ipv4-field-descriptions">IPv4 Field Descriptions</name>
+          <section anchor="sect-5.1.1.1" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.1.1">
+            <name slugifiedName="name-source-address">Source Address</name>
+            <t indent="0" pn="section-5.1.1.1-1">
+	      This is the primary IPv4 address of the interface from which the packet is being
+              sent.
+            </t>
+          </section>
+          <section anchor="sect-5.1.1.2" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.1.2">
+            <name slugifiedName="name-destination-address">Destination Address</name>
+            <t indent="0" pn="section-5.1.1.2-1">
+	      The IPv4 multicast address as assigned by the IANA for VRRP is:
+            </t>
+            <t indent="4" pn="section-5.1.1.2-2">
+	      224.0.0.18
+            </t>
+            <t indent="0" pn="section-5.1.1.2-3">
+	      This is a link-local scope multicast address.  Routers <bcp14>MUST NOT</bcp14>
+              forward a datagram with this destination address, regardless of its
+              TTL.
+            </t>
+          </section>
+          <section anchor="sect-5.1.1.3" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.1.3">
+            <name slugifiedName="name-ttl">TTL</name>
+            <t indent="0" pn="section-5.1.1.3-1">
+	      The TTL <bcp14>MUST</bcp14> be set to 255.  A VRRP Router receiving a packet with
+              the TTL not equal to 255 <bcp14>MUST</bcp14> discard the packet <xref target="RFC5082" format="default" sectionFormat="of" derivedContent="RFC5082"/>.
+            </t>
+          </section>
+          <section anchor="sect-5.1.1.4" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.1.4">
+            <name slugifiedName="name-protocol-2">Protocol</name>
+            <t indent="0" pn="section-5.1.1.4-1">
+	      The IPv4 protocol number assigned by the IANA for VRRP is 112
+              (decimal).
+            </t>
+          </section>
+        </section>
+        <section anchor="sect-5.1.2" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.2">
+          <name slugifiedName="name-ipv6-field-descriptions">IPv6 Field Descriptions</name>
+          <section anchor="sect-5.1.2.1" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.2.1">
+            <name slugifiedName="name-source-address-2">Source Address</name>
+            <t indent="0" pn="section-5.1.2.1-1">
+	      This is the IPv6 link-local address of the interface from which the packet is
+              being sent.
+            </t>
+          </section>
+          <section anchor="sect-5.1.2.2" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.2.2">
+            <name slugifiedName="name-destination-address-2">Destination Address</name>
+            <t indent="0" pn="section-5.1.2.2-1">
+              The IPv6 multicast address assigned by the IANA for VRRP is:
+            </t>
+            <t indent="4" pn="section-5.1.2.2-2">
+	      ff02:0:0:0:0:0:0:12
+            </t>
+            <t indent="0" pn="section-5.1.2.2-3">
+	      This is a link-local scope multicast address.  Routers <bcp14>MUST NOT</bcp14>
+              forward a datagram with this destination address, regardless of its
+              Hop Limit.
+            </t>
+          </section>
+          <section anchor="sect-5.1.2.3" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.2.3">
+            <name slugifiedName="name-hop-limit">Hop Limit</name>
+            <t indent="0" pn="section-5.1.2.3-1">
+	      The Hop Limit <bcp14>MUST</bcp14> be set to 255.  A VRRP Router receiving a packet
+              with the Hop Limit not equal to 255 <bcp14>MUST</bcp14> discard the
+              packet <xref target="RFC5082" format="default" sectionFormat="of" derivedContent="RFC5082"/>.
+            </t>
+          </section>
+          <section anchor="sect-5.1.2.4" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.2.4">
+            <name slugifiedName="name-next-header">Next Header</name>
+            <t indent="0" pn="section-5.1.2.4-1">
+	      The IPv6 Next Header protocol assigned by the IANA for VRRP is 112
+              (decimal).
+            </t>
+          </section>
+        </section>
+      </section>
+      <section anchor="sect-5.2" numbered="true" removeInRFC="false" toc="include" pn="section-5.2">
+        <name slugifiedName="name-vrrp-field-descriptions">VRRP Field Descriptions</name>
+        <section anchor="sect-5.2.1" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.1">
+          <name slugifiedName="name-version">Version</name>
+          <t indent="0" pn="section-5.2.1-1">
+	    The Version field specifies the VRRP protocol version of this packet.
+            This document defines version 3.
+          </t>
+        </section>
+        <section anchor="sect-5.2.2" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.2">
+          <name slugifiedName="name-type">Type</name>
+          <t indent="0" pn="section-5.2.2-1">
+	    The Type field specifies the type of this VRRP packet.  The only
+            packet type defined in this version of the protocol is:
+          </t>
+          <dl newline="false" indent="3" spacing="normal" pn="section-5.2.2-2">
+            <dt pn="section-5.2.2-2.1">1</dt>
+            <dd pn="section-5.2.2-2.2">- ADVERTISEMENT</dd>
+          </dl>
+          <t indent="0" pn="section-5.2.2-3">
+	    A packet with unknown type <bcp14>MUST</bcp14> be discarded.
+          </t>
+        </section>
+        <section anchor="sect-5.2.3" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.3">
+          <name slugifiedName="name-virtual-rtr-id-vrid">Virtual Rtr ID (VRID)</name>
+          <t indent="0" pn="section-5.2.3-1">
+	    The Virtual Rtr ID field identifies the Virtual Router for which this
+            packet is reporting status.
+          </t>
+        </section>
+        <section anchor="sect-5.2.4" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.4">
+          <name slugifiedName="name-priority">Priority</name>
+          <t indent="0" pn="section-5.2.4-1">
+	    The Priority field specifies sending the VRRP Router's priority for
+            the Virtual Router.  Higher values indicate higher priority.  This field
+            is an 8-bit unsigned integer field.
+          </t>
+          <t indent="0" pn="section-5.2.4-2">
+	    The priority value for the VRRP Router that owns the IPvX address
+            associated with the Virtual Router <bcp14>MUST</bcp14> be 255 (decimal).
+          </t>
+          <t indent="0" pn="section-5.2.4-3">
+	    VRRP Routers backing up a Virtual Router <bcp14>MUST</bcp14> use priority values
+            between 1-254 (decimal).  The default priority value for VRRP Routers
+            backing up a Virtual Router is 100 (decimal). Refer to <xref target="sect-8.3.2" format="default" sectionFormat="of" derivedContent="Section 8.3.2"/>
+            for recommendations on setting the priority.
+          </t>
+          <t indent="0" pn="section-5.2.4-4">
+	    The priority value zero (0) has special meaning, indicating that the
+            current Active Router has stopped participating in VRRP.  This is used to
+            trigger Backup Routers to quickly transition to the Active Router without having
+            to wait for the current Active_Down_Interval (refer to <xref target="sect-6.1" format="default" sectionFormat="of" derivedContent="Section 6.1"/>).
+          </t>
+        </section>
+        <section anchor="sect-5.2.5" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.5">
+          <name slugifiedName="name-ipvx-addr-count">IPvX Addr Count</name>
+          <t indent="0" pn="section-5.2.5-1">
+	    The IPvX Addr Count field is the number of either IPv4 addresses or IPv6 addresses
+            contained in this VRRP advertisement.  The minimum value is 1.
+            If the received count is 0, the VRRP advertisement <bcp14>MUST</bcp14> be ignored.
+          </t>
+        </section>
+        <section anchor="sect-5.2.6" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.6">
+          <name slugifiedName="name-reserve">Reserve</name>
+          <t indent="0" pn="section-5.2.6-1">
+	    The Reserve field <bcp14>MUST</bcp14> be set to zero on transmission and ignored on
+            reception.
+          </t>
+        </section>
+        <section anchor="sect-5.2.7" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.7">
+          <name slugifiedName="name-maximum-advertisement-inter">Maximum Advertisement Interval (Max Advertise Interval)</name>
+          <t indent="0" pn="section-5.2.7-1">
+	    The Max Advertise Interval is a 12-bit field that indicates
+            the time interval (in centiseconds) between advertisements.  The
+            default is 100 centiseconds (1 second).
+          </t>
+          <t indent="0" pn="section-5.2.7-2">
+	    Note that higher-priority Active Routers with slower transmission
+            rates than their Backup Routers are unstable.  This is because
+            lower-priority Backup Routers configured to faster rates could join the LAN and
+            decide they should be Active Routers before they have heard anything from
+            the higher-priority Active Router with a slower rate.  When this happens, it
+            is temporary, i.e., once the lower-priority node does hear from the higher-priority
+            Active Router, it will relinquish Active Router status.
+          </t>
+        </section>
+        <section anchor="sect-5.2.8" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.8">
+          <name slugifiedName="name-checksum">Checksum</name>
+          <t indent="0" pn="section-5.2.8-1">
+	    The Checksum field is used to detect data corruption in the VRRP
+            message.
+          </t>
+          <t indent="0" pn="section-5.2.8-2">
+	    For both the IPv4 and IPv6 address families, the checksum is the
+            16-bit one's complement of the one's complement sum of the VRRP
+            message. For computing the checksum,
+            the Checksum field is set to zero.  See <xref target="RFC1071" format="default" sectionFormat="of" derivedContent="RFC1071"/> for more details.
+          </t>
+          <t indent="0" pn="section-5.2.8-3">
+            For the IPv4 address family, the checksum calculation only includes the
+            VRRP message starting with the Version field and ending after the last
+            IPv4 address (refer to <xref target="sect-5.2" format="default" sectionFormat="of" derivedContent="Section 5.2"/>).
+          </t>
+          <t indent="0" pn="section-5.2.8-4">
+            For the IPv6 address family, the checksum calculation also includes
+            a prepended "pseudo-header", as defined in <xref target="RFC8200" section="8.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8200#section-8.1" derivedContent="RFC8200"/>.
+            The Next Header field in the "pseudo-header" should be set to 112 (decimal)
+            for VRRP.
+          </t>
+        </section>
+        <section anchor="sect-5.2.9" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.9">
+          <name slugifiedName="name-ipvx-addresses">IPvX Address(es)</name>
+          <t indent="0" pn="section-5.2.9-1">
+	    This refers to one or more IPvX addresses associated with the Virtual
+            Router.  The number of addresses included is specified in the
+            IPvX Addr Count field.  These fields are used for troubleshooting
+            misconfigured routers.  If more than one address is sent, it is
+            recommended that all routers be configured to send these addresses in
+            the same order to simplify comparisons.
+          </t>
+          <t indent="0" pn="section-5.2.9-2">
+	    For IPv4 addresses, this refers to one or more IPv4 addresses that
+            are backed up by the Virtual Router.
+          </t>
+          <t indent="0" pn="section-5.2.9-3">
+	    For IPv6, the first address <bcp14>MUST</bcp14> be the IPv6 link-local address
+            associated with the Virtual Router.
+          </t>
+          <t indent="0" pn="section-5.2.9-4">
+	    This field contains either one or more IPv4 addresses or one or more
+            IPv6 addresses. The address family of the addresses, IPv4 or IPv6
+            but not both, <bcp14>MUST</bcp14> be the same as the VRRP packet's IPvX header
+            address family.
+          </t>
+        </section>
+      </section>
+    </section>
+    <section anchor="state-machine" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-protocol-state-machine">Protocol State Machine</name>
+      <section anchor="sect-6.1" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-parameters-per-virtual-rout">Parameters per Virtual Router</name>
+        <dl newline="false" spacing="normal" indent="28" pn="section-6.1-1">
+          <dt pn="section-6.1-1.1">VRID</dt>
+          <dd pn="section-6.1-1.2">
+            <t indent="0" pn="section-6.1-1.2.1">
+	      Virtual Router Identifier.  Configurable
+	      value in the range 1-255 (decimal).  There
+              is no default.
+            </t>
+          </dd>
+          <dt pn="section-6.1-1.3">Priority</dt>
+          <dd pn="section-6.1-1.4">
+            <t indent="0" pn="section-6.1-1.4.1">
+	      Priority value to be used by this VRRP
+	      Router in Active Router election for this
+              Virtual Router.  The value of 255
+              (decimal) is reserved for the router that
+              owns the IPvX address associated with the
+              Virtual Router.  The value of 0 (zero) is
+              reserved for the Active Router to
+              indicate it is relinquishing responsibility
+              for the Virtual Router.  The range 1-254
+              (decimal) is available for VRRP Routers
+              backing up the Virtual Router.  Higher
+              values indicate higher priorities.  The
+              default value is 100 (decimal).
+            </t>
+          </dd>
+          <dt pn="section-6.1-1.5">IPv4_Addresses</dt>
+          <dd pn="section-6.1-1.6">
+            <t indent="0" pn="section-6.1-1.6.1">
+	      One or more IPv4 addresses associated
+	      with this Virtual Router.  Configured
+              list of addresses with no default.
+            </t>
+          </dd>
+          <dt pn="section-6.1-1.7">IPv6_Addresses</dt>
+          <dd pn="section-6.1-1.8">
+            <t indent="0" pn="section-6.1-1.8.1">
+	      One or more IPv6 addresses associated
+	      with this Virtual Router.  Configured
+              list of addresses with no default.  The first
+              address <bcp14>MUST</bcp14> be the Link-Local address
+              associated with the Virtual Router.
+            </t>
+          </dd>
+          <dt pn="section-6.1-1.9">IPvX_Addresses</dt>
+          <dd pn="section-6.1-1.10">
+            <t indent="0" pn="section-6.1-1.10.1">
+	      Refer to either the IPv4 or IPv6 address associated
+	      with this Virtual Router (see IPv4_Addresses and
+              IPv6_Addresses above).
+            </t>
+          </dd>
+          <dt pn="section-6.1-1.11">Advertisement_Interval</dt>
+          <dd pn="section-6.1-1.12">
+            <t indent="0" pn="section-6.1-1.12.1">
+	      Time interval between VRRP Advertisements
+	      (centiseconds) sent by this Virtual Router.
+              Default is 100 centiseconds (1 second).
+            </t>
+          </dd>
+          <dt pn="section-6.1-1.13">Active_Adver_Interval</dt>
+          <dd pn="section-6.1-1.14">
+            <t indent="0" pn="section-6.1-1.14.1">
+	      Advertisement interval contained in
+	      VRRP Advertisements received from the Active
+              Router (in centiseconds).  This value is saved by
+              Virtual Routers in the Backup state and
+              used to compute Skew_Time (as specified in <xref target="sect-8.3.2" format="default" sectionFormat="of" derivedContent="Section 8.3.2"/>)
+              and Active_Down_Interval.  The initial value
+              is the same as Advertisement_Interval.
+            </t>
+          </dd>
+          <dt pn="section-6.1-1.15">Skew_Time</dt>
+          <dd pn="section-6.1-1.16">
+            <t indent="0" pn="section-6.1-1.16.1">
+	      Time to skew Active_Down_Interval in
+	      centiseconds.  Calculated as:
+            </t>
+            <t indent="4" pn="section-6.1-1.16.2">
+	      (((256 - Priority) * Active_Adver_Interval) / 256)
+            </t>
+          </dd>
+          <dt pn="section-6.1-1.17">Active_Down_Interval</dt>
+          <dd pn="section-6.1-1.18">
+            <t indent="0" pn="section-6.1-1.18.1">
+	      Time interval for the Backup Router to declare
+	      the Active Router down (centiseconds).
+              Calculated as:
+            </t>
+            <t indent="4" pn="section-6.1-1.18.2">
+	      (3 * Active_Adver_Interval) + Skew_Time
+            </t>
+          </dd>
+          <dt pn="section-6.1-1.19">Preempt_Mode</dt>
+          <dd pn="section-6.1-1.20">
+            <t indent="0" pn="section-6.1-1.20.1">
+	      Controls whether a (starting or
+	      restarting) higher-priority Backup Router
+              preempts a lower-priority Active Router.
+              Values are True to allow preemption and
+              False to prohibit preemption.  Default is
+              True.
+            </t>
+            <t indent="0" pn="section-6.1-1.20.2">
+	      Note: The exception is that the router
+              that owns the IPvX address associated
+              with the Virtual Router always preempts,
+              independent of the setting of this flag.
+            </t>
+          </dd>
+          <dt pn="section-6.1-1.21">Accept_Mode</dt>
+          <dd pn="section-6.1-1.22">
+            <t indent="0" pn="section-6.1-1.22.1">
+	      Controls whether a Virtual Router in
+	      Active state will accept packets
+              addressed to the address owner's IPvX
+              address as its own even if it is not the IPvX
+              address owner.  The default is False.
+              Deployments that rely on, for example,
+              pinging the address owner's IPvX address
+              may wish to configure Accept_Mode to
+              True.
+            </t>
+            <t indent="0" pn="section-6.1-1.22.2">
+	      Note: IPv6 Neighbor Solicitations and
+              Neighbor Advertisements <bcp14>MUST NOT</bcp14> be
+              dropped when Accept_Mode is False.
+            </t>
+          </dd>
+          <dt pn="section-6.1-1.23">Virtual_Router_MAC_Address</dt>
+          <dd pn="section-6.1-1.24">
+            <t indent="0" pn="section-6.1-1.24.1">
+	      The MAC address used for the source MAC
+	      address in VRRP advertisements and
+              advertised in ARP/ND messages as
+              the MAC address to use for IPvX_Addresses.
+            </t>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="sect-6.2" numbered="true" removeInRFC="false" toc="include" pn="section-6.2">
+        <name slugifiedName="name-timers">Timers</name>
+        <dl newline="false" spacing="normal" indent="25" pn="section-6.2-1">
+          <dt pn="section-6.2-1.1">Active_Down_Timer</dt>
+          <dd pn="section-6.2-1.2">
+            <t indent="0" pn="section-6.2-1.2.1">
+	      Timer that fires when a VRRP Advertisement has not
+	      been received for Active_Down_Interval (Backup Routers only).
+            </t>
+          </dd>
+          <dt pn="section-6.2-1.3">Adver_Timer</dt>
+          <dd pn="section-6.2-1.4">
+            <t indent="0" pn="section-6.2-1.4.1">
+	      Timer that fires to trigger transmission of
+	      a VRRP Advertisement based on the Advertisement_Interval (Active Routers only).
+            </t>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="sect-6.3" numbered="true" removeInRFC="false" toc="include" pn="section-6.3">
+        <name slugifiedName="name-state-transition-diagram">State Transition Diagram</name>
+        <figure align="left" suppress-title="false" pn="figure-4">
+          <name slugifiedName="name-state-transition-diagram-2">State Transition Diagram</name>
+          <artwork align="left" pn="section-6.3-1.1">
+                   +---------------+
+        +---------&gt;|               |&lt;-------------+
+        |          |  Initialize   |              |
+        |   +------|               |----------+   |
+        |   |      +---------------+          |   |
+        |   |                                 |   |
+        |   V                                 V   |
+   +---------------+                       +---------------+
+   |               |----------------------&gt;|               |
+   |    Active     |                       |    Backup     |
+   |               |&lt;----------------------|               |
+   +---------------+                       +---------------+
+   </artwork>
+        </figure>
+      </section>
+      <section anchor="sect-6.4" numbered="true" removeInRFC="false" toc="include" pn="section-6.4">
+        <name slugifiedName="name-state-descriptions">State Descriptions</name>
+        <t indent="0" pn="section-6.4-1">
+	  In the state descriptions below, the state names are identified by
+          {state-name}, and the packets are identified by all-uppercase
+          characters.
+        </t>
+        <t indent="0" pn="section-6.4-2">
+	  A VRRP Router implements an instance of the state machine for each
+          Virtual Router in which it is participating.
+        </t>
+        <section anchor="sect-6.4.1" numbered="true" removeInRFC="false" toc="include" pn="section-6.4.1">
+          <name slugifiedName="name-initialize">Initialize</name>
+          <t indent="0" pn="section-6.4.1-1">
+	    The purpose of this state is to wait for a Startup event, that is, an
+            implementation-defined mechanism that initiates the protocol once it
+            has been configured.  The configuration mechanism is out of scope for
+            this specification.
+          </t>
+          <t indent="0" pn="section-6.4.1-2">If a Startup event is received, then:</t>
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.1-3">
+            <li pn="section-6.4.1-3.1">
+              <t indent="0" pn="section-6.4.1-3.1.1">If the Priority = 255, i.e., the router owns the IPvX
+  address(es) associated with the Virtual Router, then:</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.1-3.1.2">
+                <li pn="section-6.4.1-3.1.2.1">Send an ADVERTISEMENT</li>
+                <li pn="section-6.4.1-3.1.2.2">
+                  <t indent="0" pn="section-6.4.1-3.1.2.2.1">If the protected IPvX address is an IPv4 address, then:</t>
+                  <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.1-3.1.2.2.2">
+                    <li pn="section-6.4.1-3.1.2.2.2.1">For each IPv4 address associated with the Virtual
+      Router, broadcast a gratuitous ARP message
+      containing the Virtual Router MAC address and
+      with the target link-layer address set to the
+      Virtual Router MAC address.</li>
+                  </ul>
+                </li>
+                <li pn="section-6.4.1-3.1.2.3">
+                  <t indent="0" pn="section-6.4.1-3.1.2.3.1">else // IPv6</t>
+                  <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.1-3.1.2.3.2">
+                    <li pn="section-6.4.1-3.1.2.3.2.1">For each IPv6 address associated with the Virtual
+      Router, send an unsolicited ND Neighbor
+      Advertisement with the Router Flag (R) set, the
+      Solicited Flag (S) clear, the Override flag (O)
+      set, the target address set to the IPv6 address
+      of the Virtual Router, and the target link-layer
+      address set to the Virtual Router MAC address.</li>
+                  </ul>
+                </li>
+                <li pn="section-6.4.1-3.1.2.4">endif // was protected address IPv4?</li>
+                <li pn="section-6.4.1-3.1.2.5">Set the Adver_Timer to Advertisement_Interval</li>
+                <li pn="section-6.4.1-3.1.2.6">Transition to the {Active} state</li>
+              </ul>
+            </li>
+            <li pn="section-6.4.1-3.2">
+              <t indent="0" pn="section-6.4.1-3.2.1">else // Router is not the address owner</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.1-3.2.2">
+                <li pn="section-6.4.1-3.2.2.1">Set the Active_Adver_Interval to Advertisement_Interval</li>
+                <li pn="section-6.4.1-3.2.2.2">Set the Active_Down_Timer to Active_Down_Interval</li>
+                <li pn="section-6.4.1-3.2.2.3">Transition to the {Backup} state</li>
+              </ul>
+            </li>
+            <li pn="section-6.4.1-3.3">endif // was priority 255?</li>
+          </ul>
+          <t indent="0" pn="section-6.4.1-4">endif // Startup event was received</t>
+        </section>
+        <section anchor="sect-6.4.2" numbered="true" removeInRFC="false" toc="include" pn="section-6.4.2">
+          <name slugifiedName="name-backup">Backup</name>
+          <t indent="0" pn="section-6.4.2-1">
+          The purpose of the {Backup} state is to monitor the availability and
+          state of the Active Router. The Solicited-Node multicast address
+          <xref target="RFC4291" format="default" sectionFormat="of" derivedContent="RFC4291"/> is referenced in the pseudocode below.
+          </t>
+          <t indent="0" pn="section-6.4.2-2">While in the {Backup} state, a VRRP Router <bcp14>MUST</bcp14> do the following:</t>
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3">
+            <li pn="section-6.4.2-3.1">
+              <t indent="0" pn="section-6.4.2-3.1.1">If the protected IPvX address is an IPv4 address,
+  then:</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3.1.2">
+                <li pn="section-6.4.2-3.1.2.1">
+                  <t indent="0" pn="section-6.4.2-3.1.2.1.1">It <bcp14>MUST NOT</bcp14> respond to ARP requests for the IPv4
+    address(es) associated with the Virtual Router.</t>
+                </li>
+              </ul>
+            </li>
+            <li pn="section-6.4.2-3.2">
+              <t indent="0" pn="section-6.4.2-3.2.1">else // protected address is IPv6</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3.2.2">
+                <li pn="section-6.4.2-3.2.2.1">It <bcp14>MUST NOT</bcp14> respond to ND Neighbor Solicitation messages
+    for the IPv6 address(es) associated with the Virtual Router.</li>
+                <li pn="section-6.4.2-3.2.2.2">It <bcp14>MUST NOT</bcp14> send ND Router Advertisement messages
+    for the Virtual Router.</li>
+              </ul>
+            </li>
+            <li pn="section-6.4.2-3.3">endif // was protected address IPv4?</li>
+            <li pn="section-6.4.2-3.4">It <bcp14>MUST</bcp14> discard packets with a destination link-layer
+  MAC address equal to the Virtual Router MAC address.</li>
+            <li pn="section-6.4.2-3.5">It <bcp14>MUST NOT</bcp14> accept packets addressed to the IPvX
+  address(es) associated with the Virtual Router.</li>
+            <li pn="section-6.4.2-3.6">
+              <t indent="0" pn="section-6.4.2-3.6.1">If a Shutdown event is received, then:</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3.6.2">
+                <li pn="section-6.4.2-3.6.2.1">Cancel the Active_Down_Timer</li>
+                <li pn="section-6.4.2-3.6.2.2">Transition to the {Initialize} state</li>
+              </ul>
+            </li>
+            <li pn="section-6.4.2-3.7">endif // Shutdown event received</li>
+            <li pn="section-6.4.2-3.8">
+              <t indent="0" pn="section-6.4.2-3.8.1">If the Active_Down_Timer fires, then:</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3.8.2">
+                <li pn="section-6.4.2-3.8.2.1">
+                  <t indent="0" pn="section-6.4.2-3.8.2.1.1">Send an ADVERTISEMENT</t>
+                </li>
+                <li pn="section-6.4.2-3.8.2.2">
+                  <t indent="0" pn="section-6.4.2-3.8.2.2.1">If the protected IPvX address is an IPv4 address, then:</t>
+                  <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3.8.2.2.2">
+                    <li pn="section-6.4.2-3.8.2.2.2.1">For each IPv4 address associated with the Virtual
+      Router, broadcast a gratuitous ARP message
+      containing the Virtual Router MAC address and
+      with the target link-layer address set to the
+      Virtual Router MAC address.</li>
+                  </ul>
+                </li>
+                <li pn="section-6.4.2-3.8.2.3">
+                  <t indent="0" pn="section-6.4.2-3.8.2.3.1">else // IPv6</t>
+                  <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3.8.2.3.2">
+                    <li pn="section-6.4.2-3.8.2.3.2.1">Compute and join the Solicited-Node multicast
+      address <xref target="RFC4291" format="default" sectionFormat="of" derivedContent="RFC4291"/> for the IPv6 address(es)
+      associated with the Virtual Router.</li>
+                    <li pn="section-6.4.2-3.8.2.3.2.2">For each IPv6 address associated with the
+      Virtual Router, send an unsolicited ND Neighbor
+      Advertisement with the Router Flag (R) set, the
+      Solicited Flag (S) clear, the Override flag (O)
+      set, the target address set to the IPv6 address
+      of the Virtual Router, and the target link-layer
+      address set to the Virtual Router MAC address.</li>
+                  </ul>
+                </li>
+                <li pn="section-6.4.2-3.8.2.4">endif // was protected address IPv4?</li>
+                <li pn="section-6.4.2-3.8.2.5">Set the Adver_Timer to Advertisement_Interval</li>
+                <li pn="section-6.4.2-3.8.2.6">Transition to the {Active} state</li>
+              </ul>
+            </li>
+            <li pn="section-6.4.2-3.9">endif // Active_Down_Timer fired</li>
+            <li pn="section-6.4.2-3.10">
+              <t indent="0" pn="section-6.4.2-3.10.1">If an ADVERTISEMENT is received, then:</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3.10.2">
+                <li pn="section-6.4.2-3.10.2.1">
+                  <t indent="0" pn="section-6.4.2-3.10.2.1.1">If the Priority in the ADVERTISEMENT is 0, then:</t>
+                  <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3.10.2.1.2">
+                    <li pn="section-6.4.2-3.10.2.1.2.1">Set the Active_Down_Timer to Skew_Time</li>
+                  </ul>
+                </li>
+                <li pn="section-6.4.2-3.10.2.2">
+                  <t indent="0" pn="section-6.4.2-3.10.2.2.1">else // priority non-zero</t>
+                  <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3.10.2.2.2">
+                    <li pn="section-6.4.2-3.10.2.2.2.1">
+                      <t indent="0" pn="section-6.4.2-3.10.2.2.2.1.1">If Preempt_Mode is False, or if the Priority in
+    the ADVERTISEMENT is greater than or equal to the
+    local Priority, then:</t>
+                      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3.10.2.2.2.1.2">
+                        <li pn="section-6.4.2-3.10.2.2.2.1.2.1">Set the Active_Adver_Interval to the Max Advertise
+      Interval contained in the ADVERTISEMENT</li>
+                        <li pn="section-6.4.2-3.10.2.2.2.1.2.2">Recompute the Skew_Time</li>
+                        <li pn="section-6.4.2-3.10.2.2.2.1.2.3">Recompute the Active_Down_Interval</li>
+                        <li pn="section-6.4.2-3.10.2.2.2.1.2.4">Set the Active_Down_Timer to Active_Down_Interval</li>
+                      </ul>
+                    </li>
+                    <li pn="section-6.4.2-3.10.2.2.2.2">
+                      <t indent="0" pn="section-6.4.2-3.10.2.2.2.2.1">else // preempt was true and priority was less
+    than the local priority</t>
+                      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.2-3.10.2.2.2.2.2">
+                        <li pn="section-6.4.2-3.10.2.2.2.2.2.1">Discard the ADVERTISEMENT</li>
+                      </ul>
+                    </li>
+                    <li pn="section-6.4.2-3.10.2.2.2.3">endif // preempt test</li>
+                  </ul>
+                </li>
+                <li pn="section-6.4.2-3.10.2.3">endif // was priority 0?</li>
+              </ul>
+            </li>
+            <li pn="section-6.4.2-3.11">endif // was advertisement received?</li>
+          </ul>
+          <t indent="0" pn="section-6.4.2-4">endwhile // {Backup} state</t>
+        </section>
+        <section anchor="sect-6.4.3" numbered="true" removeInRFC="false" toc="include" pn="section-6.4.3">
+          <name slugifiedName="name-active">Active</name>
+          <t indent="0" pn="section-6.4.3-1">
+          While in the {Active} state, the router functions as the forwarding
+          router for the IPvX address(es) associated with the Virtual Router.
+          </t>
+          <t indent="0" pn="section-6.4.3-2">
+          Note that in the {Active} state, the Preempt_Mode Flag is not
+          considered.
+          </t>
+          <t indent="0" pn="section-6.4.3-3">While in the {Active} state, a VRRP Router <bcp14>MUST</bcp14> do the following:</t>
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.3-4">
+            <li pn="section-6.4.3-4.1">
+              <t indent="0" pn="section-6.4.3-4.1.1">If the protected IPvX address is an IPv4 address, then:</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.3-4.1.2">
+                <li pn="section-6.4.3-4.1.2.1">It <bcp14>MUST</bcp14> respond to ARP requests for the IPv4
+    address(es) associated with the Virtual Router.</li>
+              </ul>
+            </li>
+            <li pn="section-6.4.3-4.2">
+              <t indent="0" pn="section-6.4.3-4.2.1">else // IPv6</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.3-4.2.2">
+                <li pn="section-6.4.3-4.2.2.1">It <bcp14>MUST</bcp14> be a member of the Solicited-Node multicast
+         address for the IPv6 address(es) associated with the
+    Virtual Router.</li>
+                <li pn="section-6.4.3-4.2.2.2">It <bcp14>MUST</bcp14> respond to ND Neighbor Solicitation messages (with
+    the Router Flag (R) set) for the IPv6 address(es) associated
+    with the Virtual Router.</li>
+                <li pn="section-6.4.3-4.2.2.3">It <bcp14>MUST</bcp14> send ND Router Advertisements for the Virtual
+    Router.</li>
+                <li pn="section-6.4.3-4.2.2.4">
+                  <t indent="0" pn="section-6.4.3-4.2.2.4.1">If Accept_Mode is False:</t>
+                  <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.3-4.2.2.4.2">
+                    <li pn="section-6.4.3-4.2.2.4.2.1">It <bcp14>MUST NOT</bcp14> drop IPv6
+    Neighbor Solicitations and Neighbor Advertisements.</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li pn="section-6.4.3-4.3">endif // IPv4?</li>
+            <li pn="section-6.4.3-4.4">It <bcp14>MUST</bcp14> forward packets with a destination link-layer MAC
+  address equal to the Virtual Router MAC address.</li>
+            <li pn="section-6.4.3-4.5">It <bcp14>MUST</bcp14> accept packets addressed to the IPvX address(es)
+  associated with the Virtual Router if it is the IPvX
+  address owner or if Accept_Mode is True.  Otherwise, it
+  <bcp14>MUST NOT</bcp14> accept these packets.</li>
+            <li pn="section-6.4.3-4.6">
+              <t indent="0" pn="section-6.4.3-4.6.1">If a Shutdown event is received, then:</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.3-4.6.2">
+                <li pn="section-6.4.3-4.6.2.1">Cancel the Adver_Timer</li>
+                <li pn="section-6.4.3-4.6.2.2">Send an ADVERTISEMENT with Priority = 0</li>
+                <li pn="section-6.4.3-4.6.2.3">Transition to the {Initialize} state</li>
+              </ul>
+            </li>
+            <li pn="section-6.4.3-4.7">endif // shutdown received</li>
+            <li pn="section-6.4.3-4.8">
+              <t indent="0" pn="section-6.4.3-4.8.1">If the Adver_Timer fires, then:</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.3-4.8.2">
+                <li pn="section-6.4.3-4.8.2.1">Send an ADVERTISEMENT</li>
+                <li pn="section-6.4.3-4.8.2.2">Reset the Adver_Timer to Advertisement_Interval</li>
+              </ul>
+            </li>
+            <li pn="section-6.4.3-4.9">endif // advertisement timer fired</li>
+            <li pn="section-6.4.3-4.10">
+              <t indent="0" pn="section-6.4.3-4.10.1">If an ADVERTISEMENT is received, then:</t>
+              <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.3-4.10.2">
+                <li pn="section-6.4.3-4.10.2.1">
+                  <t indent="0" pn="section-6.4.3-4.10.2.1.1">If the Priority in the ADVERTISEMENT is 0, then:</t>
+                  <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.3-4.10.2.1.2">
+                    <li pn="section-6.4.3-4.10.2.1.2.1">Send an ADVERTISEMENT</li>
+                    <li pn="section-6.4.3-4.10.2.1.2.2">Reset the Adver_Timer to Advertisement_Interval</li>
+                  </ul>
+                </li>
+                <li pn="section-6.4.3-4.10.2.2">
+                  <t indent="0" pn="section-6.4.3-4.10.2.2.1">else // priority was non-zero</t>
+                  <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.3-4.10.2.2.2">
+                    <li pn="section-6.4.3-4.10.2.2.2.1">
+                      <t indent="0" pn="section-6.4.3-4.10.2.2.2.1.1">If the Priority in the ADVERTISEMENT is greater
+      than the local Priority or the Priority in the
+      ADVERTISEMENT is equal to the local Priority and
+      the primary IPvX address of the sender is greater
+      than the local primary IPvX address (based on an
+      unsigned integer comparison of the IPvX addresses in
+      network byte order), then:</t>
+                      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.3-4.10.2.2.2.1.2">
+                        <li pn="section-6.4.3-4.10.2.2.2.1.2.1">Cancel Adver_Timer</li>
+                        <li pn="section-6.4.3-4.10.2.2.2.1.2.2">Set the Active_Adver_Interval to the Max Advertise
+        Interval contained in the ADVERTISEMENT</li>
+                        <li pn="section-6.4.3-4.10.2.2.2.1.2.3">Recompute the Skew_Time</li>
+                        <li pn="section-6.4.3-4.10.2.2.2.1.2.4">Recompute the Active_Down_Interval</li>
+                        <li pn="section-6.4.3-4.10.2.2.2.1.2.5">Set the Active_Down_Timer to Active_Down_Interval</li>
+                        <li pn="section-6.4.3-4.10.2.2.2.1.2.6">Transition to the {Backup} state</li>
+                      </ul>
+                    </li>
+                    <li pn="section-6.4.3-4.10.2.2.2.2">
+                      <t indent="0" pn="section-6.4.3-4.10.2.2.2.2.1">else // new Active Router logic</t>
+                      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-6.4.3-4.10.2.2.2.2.2">
+                        <li pn="section-6.4.3-4.10.2.2.2.2.2.1">Discard the ADVERTISEMENT</li>
+                        <li pn="section-6.4.3-4.10.2.2.2.2.2.2">Send an ADVERTISEMENT immediately to assert
+        the {Active} state to the sending VRRP Router and
+        to update any learning bridges with the correct
+        Active VRRP Router path.</li>
+                      </ul>
+                    </li>
+                    <li pn="section-6.4.3-4.10.2.2.2.3">endif // new Active Router detected</li>
+                  </ul>
+                </li>
+                <li pn="section-6.4.3-4.10.2.3">endif // was priority zero?</li>
+              </ul>
+            </li>
+            <li pn="section-6.4.3-4.11">endif // advert received</li>
+          </ul>
+          <t indent="0" pn="section-6.4.3-5">endwhile // in {Active} state</t>
+          <t indent="0" pn="section-6.4.3-6">
+          Note: VRRP packets are transmitted with the Virtual Router MAC
+          address as the source MAC address to ensure that learning bridges
+          correctly determine the LAN segment to which the Virtual Router is
+          attached.
+          </t>
+        </section>
+      </section>
+    </section>
+    <section anchor="sect-7" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-sending-and-receiving-vrrp-">Sending and Receiving VRRP Packets</name>
+      <section anchor="sect-7.1" numbered="true" removeInRFC="false" toc="include" pn="section-7.1">
+        <name slugifiedName="name-receiving-vrrp-packets">Receiving VRRP Packets</name>
+        <t indent="0" pn="section-7.1-1">
+          The following functions must be performed when a VRRP packet is received:
+        </t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-7.1-2">
+          <li pn="section-7.1-2.1">
+            <t indent="0" pn="section-7.1-2.1.1">If the received packet is an IPv4 packet, then:</t>
+            <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-7.1-2.1.2">
+              <li pn="section-7.1-2.1.2.1">It <bcp14>MUST</bcp14> verify that the IPv4 TTL is 255.</li>
+            </ul>
+          </li>
+          <li pn="section-7.1-2.2">
+            <t indent="0" pn="section-7.1-2.2.1">else // IPv6 VRRP packet received</t>
+            <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-7.1-2.2.2">
+              <li pn="section-7.1-2.2.2.1">It <bcp14>MUST</bcp14> verify that the IPv6 Hop Limit is 255.</li>
+            </ul>
+          </li>
+          <li pn="section-7.1-2.3">endif</li>
+          <li pn="section-7.1-2.4">It <bcp14>MUST</bcp14> verify that the VRRP version is 3.</li>
+          <li pn="section-7.1-2.5">It <bcp14>MUST</bcp14> verify that the VRRP packet type is 1 (ADVERTISEMENT).</li>
+          <li pn="section-7.1-2.6">It <bcp14>MUST</bcp14> verify that the received packet contains the complete
+  VRRP packet (including fixed fields and the IPvX address).</li>
+          <li pn="section-7.1-2.7">It <bcp14>MUST</bcp14> verify the VRRP checksum.</li>
+          <li pn="section-7.1-2.8">It <bcp14>MUST</bcp14> verify that the VRID is configured on the receiving
+  interface and the local router is not the IPvX address
+  owner (Priority = 255 (decimal)).</li>
+        </ul>
+        <t indent="0" pn="section-7.1-3">If any one of the above checks fails, the receiver <bcp14>MUST</bcp14> discard
+the packet, <bcp14>SHOULD</bcp14> log the event (subject to rate-limiting), and
+<bcp14>MAY</bcp14> indicate via network management that an error occurred.</t>
+        <t indent="0" pn="section-7.1-4">
+          A receiver <bcp14>SHOULD</bcp14> also verify that the Max Advertise Interval
+          in the received VRRP packet matches the Advertisement_Interval
+          configured for the VRID. Instability can occur with differing intervals
+          (refer to <xref target="sect-5.2.7" format="default" sectionFormat="of" derivedContent="Section 5.2.7"/>).
+          If this check fails, the receiver <bcp14>SHOULD</bcp14> log the event (subject to
+          rate-limiting) and <bcp14>MAY</bcp14> indicate via network management that a
+          misconfiguration was detected.
+        </t>
+        <t indent="0" pn="section-7.1-5">
+          A receiver <bcp14>MAY</bcp14> also verify that "IPvX Addr Count" and the list
+          of IPvX address(es) match the IPvX address(es) configured for the VRID.
+          If this check fails, the receiver <bcp14>SHOULD</bcp14> log (subject to rate-limiting) the event
+          and <bcp14>MAY</bcp14> indicate via network management that a misconfiguration was detected.
+        </t>
+      </section>
+      <section anchor="sect-7.2" numbered="true" removeInRFC="false" toc="include" pn="section-7.2">
+        <name slugifiedName="name-transmitting-vrrp-packets">Transmitting VRRP Packets</name>
+        <t indent="0" pn="section-7.2-1">
+          The following operations <bcp14>MUST</bcp14> be performed when transmitting a VRRP
+          packet:
+        </t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-7.2-2">
+          <li pn="section-7.2-2.1">Fill in the VRRP packet fields with the appropriate Virtual
+  Router configuration state</li>
+          <li pn="section-7.2-2.2">Compute the VRRP checksum</li>
+          <li pn="section-7.2-2.3">Set the source MAC address to the Virtual Router MAC address</li>
+          <li pn="section-7.2-2.4">
+            <t indent="0" pn="section-7.2-2.4.1">If the protected address is an IPv4 address, then:</t>
+            <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-7.2-2.4.2">
+              <li pn="section-7.2-2.4.2.1">Set the source IPv4 address to the interface's primary IPv4
+    address</li>
+            </ul>
+          </li>
+          <li pn="section-7.2-2.5">
+            <t indent="0" pn="section-7.2-2.5.1">else // IPv6</t>
+            <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-7.2-2.5.2">
+              <li pn="section-7.2-2.5.2.1">Set the source IPv6 address to the interface's link-local
+    IPv6 address</li>
+            </ul>
+          </li>
+          <li pn="section-7.2-2.6">endif</li>
+          <li pn="section-7.2-2.7">Set the IPvX protocol to VRRP</li>
+          <li pn="section-7.2-2.8">Send the VRRP packet to the VRRP IPvX multicast group</li>
+        </ul>
+        <t indent="0" pn="section-7.2-3">
+          Note: VRRP packets are transmitted with the Virtual Router MAC
+          address as the source MAC address to ensure that learning bridges
+          correctly determine the LAN segment to which the Virtual Router is
+          attached.
+        </t>
+      </section>
+      <section anchor="sect-7.3" numbered="true" removeInRFC="false" toc="include" pn="section-7.3">
+        <name slugifiedName="name-virtual-router-mac-address">Virtual Router MAC Address</name>
+        <t indent="0" pn="section-7.3-1">
+          The Virtual Router MAC address associated with a Virtual Router is an
+          IEEE 802 MAC address <xref target="RFC9542" format="default" sectionFormat="of" derivedContent="RFC9542"/> in the
+          following format:
+        </t>
+        <t indent="0" pn="section-7.3-2">
+          IPv4 case: 00-00-5E-00-01-{VRID} (in hex, in network byte order)
+        </t>
+        <t indent="0" pn="section-7.3-3">
+          The first three octets are derived from the IANA's Organizationally
+          Unique Identifier (OUI).  The next two octets (00-01) indicate the
+          address block assigned to the VRRP protocol for the IPv4 protocol.
+          {VRID} is the Virtual Router Identifier.  This mapping provides
+          for up to 255 IPv4 VRRP Routers on a LAN.
+        </t>
+        <t indent="0" pn="section-7.3-4">
+          IPv6 case: 00-00-5E-00-02-{VRID} (in hex, in network byte order)
+        </t>
+        <t indent="0" pn="section-7.3-5">
+          The first three octets are derived from the IANA's OUI.  The next two
+          octets (00-02) indicate the address block assigned to the VRRP protocol for
+          the IPv6 protocol. {VRID} is the Virtual Router Identifier.  This
+          mapping provides for up to 255 IPv6 VRRP Routers on a LAN.
+        </t>
+      </section>
+      <section anchor="sect-7.4" numbered="true" removeInRFC="false" toc="include" pn="section-7.4">
+        <name slugifiedName="name-ipv6-interface-identifiers">IPv6 Interface Identifiers</name>
+        <t indent="0" pn="section-7.4-1">
+          <xref target="RFC8064" format="default" sectionFormat="of" derivedContent="RFC8064"/> specifies that <xref target="RFC7217" format="default" sectionFormat="of" derivedContent="RFC7217"/> be used
+          as the default scheme for generating a stable address in IPv6 Stateless
+          Address Autoconfiguration (SLAAC) <xref target="RFC4862" format="default" sectionFormat="of" derivedContent="RFC4862"/>.
+          The Virtual Router MAC <bcp14>MUST NOT</bcp14> be used for the Net_Iface parameter used
+          in the Interface Identifier (IID) derivation algorithms in
+          <xref target="RFC7217" format="default" sectionFormat="of" derivedContent="RFC7217"/> and <xref target="RFC8981" format="default" sectionFormat="of" derivedContent="RFC8981"/>.
+        </t>
+        <t indent="0" pn="section-7.4-2">
+          This VRRP specification describes how to advertise and resolve the
+          VRRP Router's IPv6 link-local address and other associated IPv6
+          addresses into the Virtual Router MAC address.
+        </t>
+      </section>
+    </section>
+    <section anchor="sect-8" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-operational-issues">Operational Issues</name>
+      <section anchor="sect-8.1" numbered="true" removeInRFC="false" toc="include" pn="section-8.1">
+        <name slugifiedName="name-ipv4-2">IPv4</name>
+        <section anchor="sect-8.1.1" numbered="true" removeInRFC="false" toc="include" pn="section-8.1.1">
+          <name slugifiedName="name-icmp-redirects">ICMP Redirects</name>
+          <t indent="0" pn="section-8.1.1-1">
+            ICMP redirects can be used normally when VRRP is running among a
+            group of routers.  This allows VRRP to be used in environments where
+            the topology is not symmetric.
+          </t>
+          <t indent="0" pn="section-8.1.1-2">
+            The IPv4 source address of an ICMP redirect should be the address
+            that the end-host used when making its next-hop routing decision.  If
+            a VRRP Router is acting as the Active Router for Virtual Router(s) containing
+            address(es) it does not own, then it must determine to which Virtual
+            Router the packet was sent when selecting the redirect source
+            address.  One method to deduce the Virtual Router used is to examine
+            the destination MAC address in the packet that triggered the
+            redirect.
+          </t>
+          <t indent="0" pn="section-8.1.1-3">
+            It may be useful to disable redirects for specific cases where VRRP
+            is being used to load-share traffic among a number of routers in a
+            symmetric topology.
+          </t>
+        </section>
+        <section anchor="sect-8.1.2" numbered="true" removeInRFC="false" toc="include" pn="section-8.1.2">
+          <name slugifiedName="name-host-arp-requests">Host ARP Requests</name>
+          <t indent="0" pn="section-8.1.2-1">
+            When a host sends an ARP request for one of the Virtual Router IPv4
+            addresses, the Active Router <bcp14>MUST</bcp14> respond to the ARP request
+            with an ARP response that indicates the Virtual Router MAC address for the
+            Virtual Router.  Note that the source address of the Ethernet frame
+            of this ARP response is the physical MAC address of the physical
+            router.  The Active Router <bcp14>MUST NOT</bcp14> respond with its physical
+            MAC address in the ARP response.  This allows the host to always
+            use the same MAC address, regardless of the current Active Router.
+          </t>
+          <t indent="0" pn="section-8.1.2-2">
+            When a VRRP Router restarts or boots, it <bcp14>SHOULD NOT</bcp14> send any ARP
+            messages using its physical MAC address for an IPv4 address for
+            which it is the IPv4 address owner (as defined in <xref target="sect-1.7" format="default" sectionFormat="of" derivedContent="Section 1.7"/>),
+            and it should only send ARP messages that include Virtual Router MAC addresses.
+          </t>
+          <t indent="0" pn="section-8.1.2-3">
+            This entails the following:
+          </t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-8.1.2-4">
+            <li pn="section-8.1.2-4.1">
+              When configuring an interface, Active Routers
+              <bcp14>SHOULD</bcp14> broadcast a gratuitous ARP message containing the Virtual
+              Router MAC address for each IPv4 address on that interface.
+            </li>
+            <li pn="section-8.1.2-4.2">
+              At system boot, when initializing interfaces for VRRP operation,
+              gratuitous ARP messages <bcp14>MUST</bcp14> be delayed until both the
+              IPv4 address and the Virtual Router MAC address are configured.
+            </li>
+            <li pn="section-8.1.2-4.3">
+              When, for example, Secure Shell (SSH) access to a particular VRRP Router is
+              required, an IPv4 address known to belong to that router <bcp14>SHOULD</bcp14> be
+              used.
+            </li>
+          </ul>
+        </section>
+        <section anchor="sect-8.1.3" numbered="true" removeInRFC="false" toc="include" pn="section-8.1.3">
+          <name slugifiedName="name-proxy-arp">Proxy ARP</name>
+          <t indent="0" pn="section-8.1.3-1">
+            If Proxy ARP is to be used on a VRRP Router, then the VRRP Router
+            <bcp14>MUST</bcp14> advertise the Virtual Router MAC address in the Proxy ARP
+            message.  Doing otherwise could cause hosts to learn the real MAC
+            address of the VRRP Router.
+          </t>
+        </section>
+      </section>
+      <section anchor="sect-8.2" numbered="true" removeInRFC="false" toc="include" pn="section-8.2">
+        <name slugifiedName="name-ipv6-2">IPv6</name>
+        <section anchor="sect-8.2.1" numbered="true" removeInRFC="false" toc="include" pn="section-8.2.1">
+          <name slugifiedName="name-icmpv6-redirects">ICMPv6 Redirects</name>
+          <t indent="0" pn="section-8.2.1-1">
+            ICMPv6 redirects can be used normally when VRRP is running among a
+            group of routers <xref target="RFC4443" format="default" sectionFormat="of" derivedContent="RFC4443"/>.  This allows VRRP to be used in
+            environments where the topology is not symmetric, e.g., the VRRP
+            Routers do not connect to the same destinations.
+          </t>
+          <t indent="0" pn="section-8.2.1-2">
+            The IPv6 source address of an ICMPv6 redirect <bcp14>SHOULD</bcp14> be the address
+            that the end-host used when making its next-hop routing decision.  If
+            a VRRP Router is acting as the Active Router for Virtual Router(s) containing
+            address(es) it does not own, then it has to determine to which Virtual
+            Router the packet was sent when selecting the redirect source
+            address.  A method to deduce the Virtual Router used is to examine
+            the destination MAC address in the packet that triggered the
+            redirect.
+          </t>
+        </section>
+        <section anchor="sect-8.2.2" numbered="true" removeInRFC="false" toc="include" pn="section-8.2.2">
+          <name slugifiedName="name-nd-neighbor-solicitation">ND Neighbor Solicitation</name>
+          <t indent="0" pn="section-8.2.2-1">
+            When a host sends an ND Neighbor Solicitation message for a Virtual
+            Router IPv6 address, the Active Router <bcp14>MUST</bcp14> respond to the ND
+            Neighbor Solicitation message with the Virtual Router MAC address for the
+            Virtual Router.  The Active Router <bcp14>MUST NOT</bcp14> respond with its
+            physical MAC address.  This allows the host to always use the same
+            MAC address, regardless of the current Active Router.
+          </t>
+          <t indent="0" pn="section-8.2.2-2">
+            When an Active Router sends an ND Neighbor Solicitation
+            message for a host's IPv6 address, the Active Router <bcp14>MUST</bcp14>
+            include the Virtual Router MAC address for the Virtual Router if it sends a
+            source link-layer address option in the Neighbor Solicitation
+            message.  It <bcp14>MUST NOT</bcp14> use its physical MAC address in the source
+            link-layer address option.
+          </t>
+          <t indent="0" pn="section-8.2.2-3">
+            When a VRRP Router restarts or boots, it <bcp14>SHOULD NOT</bcp14> send any ND
+            messages with its physical MAC address for the IPv6 address it owns
+            and it should only send ND messages that include Virtual Router MAC addresses.
+          </t>
+          <t indent="0" pn="section-8.2.2-4">
+          This entails the following:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-8.2.2-5">
+            <li pn="section-8.2.2-5.1">
+              When configuring an interface, Active Routers
+              <bcp14>SHOULD</bcp14> send an unsolicited ND Neighbor Advertisement message
+              containing the Virtual Router MAC address for the IPv6 address on
+              that interface.
+            </li>
+            <li pn="section-8.2.2-5.2">
+              At system boot, when initializing interfaces for VRRP operation,
+              all ND Router Advertisements, ND Neighbor Advertisements, and ND Neighbor Solicitation
+              messages <bcp14>MUST</bcp14> be delayed until both the IPv6 address and the
+              Virtual Router MAC address are configured.
+            </li>
+          </ul>
+          <t indent="0" pn="section-8.2.2-6">
+            Note that on a restarting Active Router where the VRRP protected
+            address is an interface address, i.e., the address owner, Duplicate
+            Address Detection may fail, as the Backup Router <bcp14>MAY</bcp14> answer
+            that it owns the address.  One solution is to not run Duplicate
+            Address Detection in this case.
+          </t>
+        </section>
+        <section anchor="sect-8.2.3" numbered="true" removeInRFC="false" toc="include" pn="section-8.2.3">
+          <name slugifiedName="name-router-advertisements">Router Advertisements</name>
+          <t indent="0" pn="section-8.2.3-1">
+            When a Backup VRRP Router has become the Active Router for a Virtual Router, it
+            is responsible for sending Router Advertisements for the Virtual
+            Router, as specified in <xref target="sect-6.4.3" format="default" sectionFormat="of" derivedContent="Section 6.4.3"/>.  The Backup Routers <bcp14>MUST</bcp14> be
+            configured to send the same Router Advertisement options as the
+            address owner.
+          </t>
+          <t indent="0" pn="section-8.2.3-2">
+            Router Advertisement options that advertise special services, e.g.,
+            Home Agent Information Option, that are present in the address owner
+            <bcp14>SHOULD NOT</bcp14> be sent by the address owner unless the Backup Routers are
+            prepared to assume these services in full and have a complete and
+            synchronized database for this service.
+          </t>
+        </section>
+        <section anchor="sect-8.2.4" numbered="true" removeInRFC="false" toc="include" pn="section-8.2.4">
+          <name slugifiedName="name-unsolicited-neighbor-advert">Unsolicited Neighbor Advertisements</name>
+          <t indent="0" pn="section-8.2.4-1">
+            A VRRP Router acting as either an IPv6 Active Router or Backup Router <bcp14>SHOULD</bcp14>
+            accept Unsolicited Neighbor Advertisements and update the corresponding
+            neighbor cache <xref target="RFC4861" format="default" sectionFormat="of" derivedContent="RFC4861"/>. Since these are sent to the
+            IPv6 all-nodes multicast address (ff02::1) <xref target="RFC4861" format="default" sectionFormat="of" derivedContent="RFC4861"/> or the
+            IPv6 all-routers multicast address (ff02::2), they will be received. Unsolicited
+            Neighbor Advertisements are sent both in the case where the link-level addresses
+            change <xref target="RFC4861" format="default" sectionFormat="of" derivedContent="RFC4861"/> and for gratuitous neighbor discovery by first-hop
+            routers <xref target="RFC9131" format="default" sectionFormat="of" derivedContent="RFC9131"/>. Additional configuration may be required in order
+            for Unsolicited Neighbor Advertisements to update the corresponding neighbor cache.
+          </t>
+        </section>
+      </section>
+      <section anchor="sect-8.3" numbered="true" removeInRFC="false" toc="include" pn="section-8.3">
+        <name slugifiedName="name-ipvx">IPvX</name>
+        <section anchor="sect-8.3.1" numbered="true" removeInRFC="false" toc="include" pn="section-8.3.1">
+          <name slugifiedName="name-potential-forwarding-loop">Potential Forwarding Loop</name>
+          <t indent="0" pn="section-8.3.1-1">
+            If it is not the address owner, a VRRP Router <bcp14>SHOULD NOT</bcp14> forward
+            packets addressed to the IPvX address for which it becomes the Active Router.
+            Forwarding these packets would result in unnecessary traffic.  Also,
+            in the case of LANs that receive packets they transmit, this can result
+            in a forwarding loop that is only terminated when the IPvX TTL expires.
+          </t>
+          <t indent="0" pn="section-8.3.1-2">
+            One mechanism for VRRP Routers to avoid these forwarding loops is to add/delete
+            a host Drop Route for each non-owned IPvX address when transitioning
+            to/from the Active state.
+          </t>
+        </section>
+        <section anchor="sect-8.3.2" numbered="true" removeInRFC="false" toc="include" pn="section-8.3.2">
+          <name slugifiedName="name-recommendations-regarding-s">Recommendations Regarding Setting Priority Values</name>
+          <t indent="0" pn="section-8.3.2-1">
+            A priority value of 255 designates a particular router as the "IPvX address owner"
+            for the VRID. VRRP Routers with priority 255 will, as soon as they start up, preempt all
+            lower-priority routers.  For a VRID, only a single VRRP Router on the link <bcp14>SHOULD</bcp14> be
+            configured with priority 255. If multiple VRRP Routers advertising priority 255 are
+            detected, the condition <bcp14>SHOULD</bcp14> be logged (subject to rate-limiting). If no VRRP Router
+            has this priority, and preemption is disabled, then no preemption will occur.
+          </t>
+          <t indent="0" pn="section-8.3.2-2">
+            In order to avoid two or more Backup Routers simultaneously becoming Active Routers after
+            the previous Active Router fails or is shut down, all Virtual Routers <bcp14>SHOULD</bcp14> be configured
+            with different priorities and with sufficient differences in the priorities so that lower
+            priority Backup Routers do not transition to the Active state before receiving an advertisement
+            from the highest priority Backup Router when it transitions to the Active Router. If
+            multiple VRRP Routers advertising the same priority are detected, this condition <bcp14>MAY</bcp14>
+            be logged as a warning (subject to rate-limiting).
+          </t>
+          <t indent="0" pn="section-8.3.2-3">
+            Since the Skew_Time is reduced as the priority is increased, faster
+            convergence can be obtained by using a higher priority for the preferred
+            Backup Router. However, with multiple Backup Routers, the priorities should have
+            sufficient differences, as previously recommended.
+          </t>
+        </section>
+      </section>
+      <section anchor="sect-8.4" numbered="true" removeInRFC="false" toc="include" pn="section-8.4">
+        <name slugifiedName="name-vrrpv3-and-vrrpv2-interoper">VRRPv3 and VRRPv2 Interoperation</name>
+        <section anchor="sect-8.4.1" numbered="true" removeInRFC="false" toc="include" pn="section-8.4.1">
+          <name slugifiedName="name-assumptions">Assumptions</name>
+          <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-8.4.1-1">
+            <li pn="section-8.4.1-1.1" derivedCounter="1.">
+              VRRPv2 and VRRPv3 interoperation is optional.
+            </li>
+            <li pn="section-8.4.1-1.2" derivedCounter="2.">
+              Mixing VRRPv2 and VRRPv3 should only be done when transitioning
+              from VRRPv2 to VRRPv3.  Mixing the two versions should not be
+              considered a permanent solution.
+            </li>
+          </ol>
+        </section>
+        <section anchor="sect-8.4.2" numbered="true" removeInRFC="false" toc="include" pn="section-8.4.2">
+          <name slugifiedName="name-vrrpv3-support-of-vrrpv2-in">VRRPv3 Support of VRRPv2 Interoperation</name>
+          <t indent="0" pn="section-8.4.2-1">
+            As mentioned above, this support is intended for upgrade scenarios
+            and is <bcp14>NOT RECOMMENDED</bcp14> for permanent deployments.
+          </t>
+          <t indent="0" pn="section-8.4.2-2">
+            An implementation <bcp14>MAY</bcp14> implement a configuration flag that tells it to
+            listen for and send both VRRPv2 and VRRPv3 advertisements.
+          </t>
+          <t indent="0" pn="section-8.4.2-3">
+            When a Virtual Router is configured this way and is the Active Router, it
+            <bcp14>MUST</bcp14> send both types at the configured rate, even if it is sub-second.
+          </t>
+          <t indent="0" pn="section-8.4.2-4">
+            When a Virtual Router is configured this way and is the Backup Router, it
+            <bcp14>MUST</bcp14> time out based on the rate advertised by the Active Router. In the
+            case of a VRRPv2 Active Router, this means it <bcp14>MUST</bcp14> translate the timeout
+            value it receives (in seconds) into centiseconds.  Also, a Backup
+            Router <bcp14>SHOULD</bcp14> ignore VRRPv2 advertisements from the current Active Router
+            if it is also receiving VRRPv3 packets from it.  It <bcp14>MAY</bcp14> report when a VRRPv3
+            Active Router is not sending VRRPv2 packets, as this suggests they don't
+            agree on whether they're supporting VRRPv2 interoperation.
+          </t>
+          <section anchor="sect-8.4.3" numbered="true" removeInRFC="false" toc="include" pn="section-8.4.2.1">
+            <name slugifiedName="name-interoperation-consideratio">Interoperation Considerations</name>
+            <section anchor="sect-8.4.3.1" numbered="true" removeInRFC="false" toc="exclude" pn="section-8.4.2.1.1">
+              <name slugifiedName="name-slow-high-priority-active-r">Slow, High-Priority Active Routers</name>
+              <t indent="0" pn="section-8.4.2.1.1-1">
+                See also <xref target="sect-5.2.7" format="default" sectionFormat="of" derivedContent="Section 5.2.7"/>,
+                "Maximum Advertisement Interval (Max Advertise Interval)".
+              </t>
+              <t indent="0" pn="section-8.4.2.1.1-2">
+                The VRRPv2 Active Router interacting with a sub-second VRRPv3 Backup
+                Router is the most important example of this.
+              </t>
+              <t indent="0" pn="section-8.4.2.1.1-3">
+                A VRRPv2 implementation <bcp14>SHOULD NOT</bcp14> be given a higher priority than a
+                VRRPv2 or VRRPv3 implementation with which it is interoperating if the
+                VRRPv2 or VRRPv3 router's advertisement rate is sub-second.
+              </t>
+            </section>
+            <section anchor="sect-8.4.3.2" numbered="true" removeInRFC="false" toc="exclude" pn="section-8.4.2.1.2">
+              <name slugifiedName="name-overwhelming-vrrpv2-backups">Overwhelming VRRPv2 Backups</name>
+              <t indent="0" pn="section-8.4.2.1.2-1">
+                It seems possible that a VRRPv3 Active Router sending at centisecond
+                rates could potentially overwhelm a VRRPv2 Backup Router with
+                potentially non-deterministic results.
+              </t>
+              <t indent="0" pn="section-8.4.2.1.2-2">
+                In this upgrade case, a deployment should initially run the VRRPv3
+                Active Routers with lower frequencies, e.g., 100 centiseconds, until
+                the VRRPv2 routers are upgraded.  Then, once the deployment has
+                verified that VRRPv3 is working properly, the VRRPv2 support
+                may be disabled and the desired sub-second rates may be configured.
+              </t>
+            </section>
+          </section>
+        </section>
+      </section>
+    </section>
+    <section anchor="Security" numbered="true" toc="include" removeInRFC="false" pn="section-9">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-9-1">
+        VRRP for IPvX does not currently include any type of authentication.
+        Earlier versions of the VRRP specification included
+        several types of authentication, ranging from no authentication to strong
+        authentication.
+        Operational experience and further analysis determined that these did
+        not provide sufficient security to overcome the vulnerability of
+        misconfigured secrets, causing multiple Active Routers to be elected.
+        Due to the nature of the VRRP protocol, even if VRRP messages are
+        cryptographically protected, it does not prevent hostile nodes from
+        behaving as if they are an Active Router, creating multiple
+        Active Routers.  Authentication of VRRP messages could have prevented
+        a hostile node from causing all properly functioning routers from going
+        into the Backup state.  However, having multiple Active Routers can cause
+        as much disruption as no routers, which authentication cannot prevent.
+        Also, even if a hostile node could not disrupt VRRP, it can disrupt ARP/ND
+        and create the same effect as having all routers go into the Backup state.
+      </t>
+      <t indent="0" pn="section-9-2">
+        Some L2 switches provide the capability to filter out, for example,
+        ARP and/or ND messages from end-hosts on a switch-port basis.  This
+        mechanism could also filter VRRP messages from switch ports
+        associated with end-hosts and can be considered for deployments with
+        untrusted hosts.
+      </t>
+      <t indent="0" pn="section-9-3">
+        It should be noted that these attacks are not worse and are a subset
+        of the attacks that any node attached to a LAN can do independently
+        of VRRP.  The kind of attacks a malicious node on a LAN can perform
+        include:
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-9-4">
+        <li pn="section-9-4.1">
+          promiscuously receiving packets for any router's MAC address,
+        </li>
+        <li pn="section-9-4.2">
+          sending packets with the router's MAC address as the source MAC
+          address in the L2 header to tell the L2 switches to send packets
+          addressed to the router to the malicious node instead of the router,
+        </li>
+        <li pn="section-9-4.3">
+          sending redirects to tell hosts to send their traffic
+          somewhere else,
+        </li>
+        <li pn="section-9-4.4">
+          sending unsolicited ND replies,
+        </li>
+        <li pn="section-9-4.5">
+          answering ND requests, etc.
+	</li>
+      </ul>
+      <t indent="0" pn="section-9-5">
+        All of these can be done independently of implementing VRRP.
+        VRRP does not add to these vulnerabilities, and most of these
+        vulnerabilities are addressed independently, e.g., SEcure Neighbor Discovery (SEND)
+        <xref target="RFC3971" format="default" sectionFormat="of" derivedContent="RFC3971"/>.
+      </t>
+      <t indent="0" pn="section-9-6">
+        VRRP includes a mechanism
+        (setting IPv4 TTL or IPv6 Hop Limit to 255 and checking the value on receipt)
+        that protects against VRRP packets being injected from another remote
+        network  <xref target="RFC5082" format="default" sectionFormat="of" derivedContent="RFC5082"/>.
+        This limits most vulnerabilities to attacks on the local
+        network.
+      </t>
+      <t indent="0" pn="section-9-7">
+        VRRP does not provide any confidentiality.  Confidentiality is not
+        necessary for the correct operation of VRRP, and there is no
+        information in the VRRP messages that must be kept secret from other
+        nodes on the LAN.
+      </t>
+      <t indent="0" pn="section-9-8">
+        In the context of IPv6 operation, if SEND
+        is deployed, VRRP is compatible with the "trust anchor" and "trust
+        anchor or CGA" modes of SEND <xref target="RFC3971" format="default" sectionFormat="of" derivedContent="RFC3971"/>.  The SEND
+        configuration needs to give the Active and Backup Routers the same prefix
+        delegation in the certificates so that Active and Backup Routers advertise
+        the same set of subnet prefixes.  However, the Active and Backup Routers
+        should have their own key pairs to avoid private key sharing.
+      </t>
+      <t indent="0" pn="section-9-9">
+        Also in the context of IPv6 operation, it is <bcp14>RECOMMENDED</bcp14> that the
+        link-level security guidelines in <xref target="RFC9099" section="2.3" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9099#section-2.3" derivedContent="RFC9099"/>
+        be followed.
+      </t>
+    </section>
+    <section anchor="IANA" numbered="true" toc="include" removeInRFC="false" pn="section-10">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-10-1">
+        IANA has updated all IANA registry references to <xref target="RFC5798" format="default" sectionFormat="of" derivedContent="RFC5798"/>
+        to references to RFC 9568, i.e., this document. The individual IANA
+        references are listed below.
+      </t>
+      <t indent="0" pn="section-10-2">
+        The value 112 is assigned to VRRP in the "Assigned Internet Protocol Numbers" registry.
+      </t>
+      <t indent="0" pn="section-10-3">
+        In the "Local Network Control Block (224.0.0.0 - 224.0.0.255 (224.0.0/24))" registry of the
+        "IPv4 Multicast Address Space Registry" <xref target="RFC5771" format="default" sectionFormat="of" derivedContent="RFC5771"/>, IANA has assigned
+        the IPv4 multicast address 224.0.0.18 for VRRP.
+      </t>
+      <t indent="0" pn="section-10-4">
+        In the "Link-Local Scope Multicast Addresses" registry of the "IPv6 Multicast Address
+        Space Registry" <xref target="RFC3307" format="default" sectionFormat="of" derivedContent="RFC3307"/>, IANA has assigned the IPv6 link-local
+        scope multicast address ff02:0:0:0:0:0:0:12 for VRRP for IPv6.
+      </t>
+      <t indent="0" pn="section-10-5">
+        In the "IANA MAC ADDRESS BLOCK" registry <xref target="RFC9542" format="default" sectionFormat="of" derivedContent="RFC9542"/>,
+        IANA has assigned blocks of Ethernet unicast addresses as
+        follows (in hexadecimal):
+      </t>
+      <table anchor="table_iana_64_bit_macs" align="center" pn="table-1">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Addresses</th>
+            <th align="left" colspan="1" rowspan="1">Usage</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">00-01-00 to 00-01-FF</td>
+            <td align="left" colspan="1" rowspan="1">VRRP (Virtual Router Redundancy Protocol)</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9568</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">00-02-00 to 00-02-FF</td>
+            <td align="left" colspan="1" rowspan="1">VRRP IPv6 (Virtual Router Redundancy Protocol   
+IPv6)</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9568</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-vrrp-ipv6-spec" to="VRRP-IPv6"/>
+    <references pn="section-11">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-11.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC3307" target="https://www.rfc-editor.org/info/rfc3307" quoteTitle="true" derivedAnchor="RFC3307">
+          <front>
+            <title>Allocation Guidelines for IPv6 Multicast Addresses</title>
+            <author fullname="B. Haberman" initials="B." surname="Haberman"/>
+            <date month="August" year="2002"/>
+          </front>
+          <seriesInfo name="RFC" value="3307"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3307"/>
+        </reference>
+        <reference anchor="RFC4291" target="https://www.rfc-editor.org/info/rfc4291" quoteTitle="true" derivedAnchor="RFC4291">
+          <front>
+            <title>IP Version 6 Addressing Architecture</title>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <date month="February" year="2006"/>
+            <abstract>
+              <t indent="0">This specification defines the addressing architecture of the IP Version 6 (IPv6) protocol. The document includes the IPv6 addressing model, text representations of IPv6 addresses, definition of IPv6 unicast addresses, anycast addresses, and multicast addresses, and an IPv6 node's required addresses.</t>
+              <t indent="0">This document obsoletes RFC 3513, "IP Version 6 Addressing Architecture". [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4291"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4291"/>
+        </reference>
+        <reference anchor="RFC4443" target="https://www.rfc-editor.org/info/rfc4443" quoteTitle="true" derivedAnchor="RFC4443">
+          <front>
+            <title>Internet Control Message Protocol (ICMPv6) for the Internet Protocol Version 6 (IPv6) Specification</title>
+            <author fullname="A. Conta" initials="A." surname="Conta"/>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <author fullname="M. Gupta" initials="M." role="editor" surname="Gupta"/>
+            <date month="March" year="2006"/>
+            <abstract>
+              <t indent="0">This document describes the format of a set of control messages used in ICMPv6 (Internet Control Message Protocol). ICMPv6 is the Internet Control Message Protocol for Internet Protocol version 6 (IPv6). [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="89"/>
+          <seriesInfo name="RFC" value="4443"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4443"/>
+        </reference>
+        <reference anchor="RFC4861" target="https://www.rfc-editor.org/info/rfc4861" quoteTitle="true" derivedAnchor="RFC4861">
+          <front>
+            <title>Neighbor Discovery for IP version 6 (IPv6)</title>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <author fullname="E. Nordmark" initials="E." surname="Nordmark"/>
+            <author fullname="W. Simpson" initials="W." surname="Simpson"/>
+            <author fullname="H. Soliman" initials="H." surname="Soliman"/>
+            <date month="September" year="2007"/>
+            <abstract>
+              <t indent="0">This document specifies the Neighbor Discovery protocol for IP Version 6. IPv6 nodes on the same link use Neighbor Discovery to discover each other's presence, to determine each other's link-layer addresses, to find routers, and to maintain reachability information about the paths to active neighbors. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4861"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4861"/>
+        </reference>
+        <reference anchor="RFC5082" target="https://www.rfc-editor.org/info/rfc5082" quoteTitle="true" derivedAnchor="RFC5082">
+          <front>
+            <title>The Generalized TTL Security Mechanism (GTSM)</title>
+            <author fullname="V. Gill" initials="V." surname="Gill"/>
+            <author fullname="J. Heasley" initials="J." surname="Heasley"/>
+            <author fullname="D. Meyer" initials="D." surname="Meyer"/>
+            <author fullname="P. Savola" initials="P." role="editor" surname="Savola"/>
+            <author fullname="C. Pignataro" initials="C." surname="Pignataro"/>
+            <date month="October" year="2007"/>
+            <abstract>
+              <t indent="0">The use of a packet's Time to Live (TTL) (IPv4) or Hop Limit (IPv6) to verify whether the packet was originated by an adjacent node on a connected link has been used in many recent protocols. This document generalizes this technique. This document obsoletes Experimental RFC 3682. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5082"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5082"/>
+        </reference>
+        <reference anchor="RFC5771" target="https://www.rfc-editor.org/info/rfc5771" quoteTitle="true" derivedAnchor="RFC5771">
+          <front>
+            <title>IANA Guidelines for IPv4 Multicast Address Assignments</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="L. Vegoda" initials="L." surname="Vegoda"/>
+            <author fullname="D. Meyer" initials="D." surname="Meyer"/>
+            <date month="March" year="2010"/>
+            <abstract>
+              <t indent="0">This document provides guidance for the Internet Assigned Numbers Authority (IANA) in assigning IPv4 multicast addresses. It obsoletes RFC 3171 and RFC 3138 and updates RFC 2780. This memo documents an Internet Best Current Practice.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="51"/>
+          <seriesInfo name="RFC" value="5771"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5771"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8200" target="https://www.rfc-editor.org/info/rfc8200" quoteTitle="true" derivedAnchor="RFC8200">
+          <front>
+            <title>Internet Protocol, Version 6 (IPv6) Specification</title>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <date month="July" year="2017"/>
+            <abstract>
+              <t indent="0">This document specifies version 6 of the Internet Protocol (IPv6). It obsoletes RFC 2460.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="86"/>
+          <seriesInfo name="RFC" value="8200"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8200"/>
+        </reference>
+        <reference anchor="RFC9542" target="https://www.rfc-editor.org/info/rfc9542" quoteTitle="true" derivedAnchor="RFC9542">
+          <front>
+            <title>IANA Considerations and IETF Protocol and Documentation Usage for IEEE 802 Parameters</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <author fullname="J. Abley" initials="J." surname="Abley"/>
+            <author fullname="Y. Li" initials="Y." surname="Li"/>
+            <date month="April" year="2024"/>
+            <abstract>
+              <t indent="0">Some IETF protocols make use of Ethernet frame formats and IEEE 802 parameters. This document discusses several aspects of such parameters and their use in IETF protocols, specifies IANA considerations for assignment of points under the IANA Organizationally Unique Identifier (OUI), and provides some values for use in documentation. This document obsoletes RFC 7042.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="141"/>
+          <seriesInfo name="RFC" value="9542"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9542"/>
+        </reference>
+      </references>
+      <references pn="section-11.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="IPSTB" quoteTitle="true" derivedAnchor="IPSTB">
+          <front>
+            <title>Development of Router Clusters to Provide Fast Failover in IP Networks</title>
+            <author initials="P" surname="Higginson" fullname="Peter L. Higginson">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="M" surname="Shand" fullname="Michael C. Shand">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="1997"/>
+          </front>
+          <refcontent>Digital Technical Journal, Volume 9, Number 3</refcontent>
+        </reference>
+        <reference anchor="NISTIR8366" quoteTitle="true" target="https://doi.org/10.6028/NIST.IR.8366" derivedAnchor="NISTIR8366">
+          <front>
+            <title>Guidance for NIST Staff on Using Inclusive Language in Documentary Standards,</title>
+            <author>
+              <organization showOnFrontPage="true">National Institute of Standards and Technology (NIST)</organization>
+            </author>
+            <date year="2021" month="April"/>
+          </front>
+          <seriesInfo name="NISTIR" value="8366"/>
+          <seriesInfo name="DOI" value="10.6028/NIST.IR.8366"/>
+        </reference>
+        <reference anchor="RFC1071" target="https://www.rfc-editor.org/info/rfc1071" quoteTitle="true" derivedAnchor="RFC1071">
+          <front>
+            <title>Computing the Internet checksum</title>
+            <author fullname="R.T. Braden" initials="R.T." surname="Braden"/>
+            <author fullname="D.A. Borman" initials="D.A." surname="Borman"/>
+            <author fullname="C. Partridge" initials="C." surname="Partridge"/>
+            <date month="September" year="1988"/>
+            <abstract>
+              <t indent="0">This RFC summarizes techniques and algorithms for efficiently computing the Internet checksum. It is not a standard, but a set of useful implementation techniques.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="1071"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1071"/>
+        </reference>
+        <reference anchor="RFC1256" target="https://www.rfc-editor.org/info/rfc1256" quoteTitle="true" derivedAnchor="RFC1256">
+          <front>
+            <title>ICMP Router Discovery Messages</title>
+            <author fullname="S. Deering" initials="S." role="editor" surname="Deering"/>
+            <date month="September" year="1991"/>
+            <abstract>
+              <t indent="0">This document specifies an extension of the Internet Control Message Protocol (ICMP) to enable hosts attached to multicast or broadcast networks to discover the IP addresses of their neighboring routers. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="1256"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1256"/>
+        </reference>
+        <reference anchor="RFC2131" target="https://www.rfc-editor.org/info/rfc2131" quoteTitle="true" derivedAnchor="RFC2131">
+          <front>
+            <title>Dynamic Host Configuration Protocol</title>
+            <author fullname="R. Droms" initials="R." surname="Droms"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">The Dynamic Host Configuration Protocol (DHCP) provides a framework for passing configuration information to hosts on a TCPIP network. DHCP is based on the Bootstrap Protocol (BOOTP), adding the capability of automatic allocation of reusable network addresses and additional configuration options. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2131"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2131"/>
+        </reference>
+        <reference anchor="RFC2281" target="https://www.rfc-editor.org/info/rfc2281" quoteTitle="true" derivedAnchor="RFC2281">
+          <front>
+            <title>Cisco Hot Standby Router Protocol (HSRP)</title>
+            <author fullname="T. Li" initials="T." surname="Li"/>
+            <author fullname="B. Cole" initials="B." surname="Cole"/>
+            <author fullname="P. Morton" initials="P." surname="Morton"/>
+            <author fullname="D. Li" initials="D." surname="Li"/>
+            <date month="March" year="1998"/>
+            <abstract>
+              <t indent="0">The memo specifies the Hot Standby Router Protocol (HSRP). The goal of the protocol is to allow hosts to appear to use a single router and to maintain connectivity even if the actual first hop router they are using fails. This memo provides information for the Internet community. It does not specify an Internet standard of any kind.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2281"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2281"/>
+        </reference>
+        <reference anchor="RFC2328" target="https://www.rfc-editor.org/info/rfc2328" quoteTitle="true" derivedAnchor="RFC2328">
+          <front>
+            <title>OSPF Version 2</title>
+            <author fullname="J. Moy" initials="J." surname="Moy"/>
+            <date month="April" year="1998"/>
+            <abstract>
+              <t indent="0">This memo documents version 2 of the OSPF protocol. OSPF is a link- state routing protocol. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="54"/>
+          <seriesInfo name="RFC" value="2328"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2328"/>
+        </reference>
+        <reference anchor="RFC2338" target="https://www.rfc-editor.org/info/rfc2338" quoteTitle="true" derivedAnchor="RFC2338">
+          <front>
+            <title>Virtual Router Redundancy Protocol</title>
+            <author fullname="S. Knight" initials="S." surname="Knight"/>
+            <author fullname="D. Weaver" initials="D." surname="Weaver"/>
+            <author fullname="D. Whipple" initials="D." surname="Whipple"/>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <author fullname="D. Mitzel" initials="D." surname="Mitzel"/>
+            <author fullname="P. Hunt" initials="P." surname="Hunt"/>
+            <author fullname="P. Higginson" initials="P." surname="Higginson"/>
+            <author fullname="M. Shand" initials="M." surname="Shand"/>
+            <author fullname="A. Lindem" initials="A." surname="Lindem"/>
+            <date month="April" year="1998"/>
+            <abstract>
+              <t indent="0">This memo defines the Virtual Router Redundancy Protocol (VRRP). VRRP specifies an election protocol that dynamically assigns responsibility for a virtual router to one of the VRRP routers on a LAN. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2338"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2338"/>
+        </reference>
+        <reference anchor="RFC2453" target="https://www.rfc-editor.org/info/rfc2453" quoteTitle="true" derivedAnchor="RFC2453">
+          <front>
+            <title>RIP Version 2</title>
+            <author fullname="G. Malkin" initials="G." surname="Malkin"/>
+            <date month="November" year="1998"/>
+            <abstract>
+              <t indent="0">This document specifies an extension of the Routing Information Protocol (RIP) to expand the amount of useful information carried in RIP messages and to add a measure of security. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="56"/>
+          <seriesInfo name="RFC" value="2453"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2453"/>
+        </reference>
+        <reference anchor="RFC3768" target="https://www.rfc-editor.org/info/rfc3768" quoteTitle="true" derivedAnchor="RFC3768">
+          <front>
+            <title>Virtual Router Redundancy Protocol (VRRP)</title>
+            <author fullname="R. Hinden" initials="R." role="editor" surname="Hinden"/>
+            <date month="April" year="2004"/>
+            <abstract>
+              <t indent="0">This memo defines the Virtual Router Redundancy Protocol (VRRP). VRRP specifies an election protocol that dynamically assigns responsibility for a virtual router to one of the VRRP routers on a LAN. The VRRP router controlling the IP address(es) associated with a virtual router is called the Master, and forwards packets sent to these IP addresses. The election process provides dynamic fail over in the forwarding responsibility should the Master become unavailable. This allows any of the virtual router IP addresses on the LAN to be used as the default first hop router by end-hosts. The advantage gained from using VRRP is a higher availability default path without requiring configuration of dynamic routing or router discovery protocols on every end-host. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3768"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3768"/>
+        </reference>
+        <reference anchor="RFC3971" target="https://www.rfc-editor.org/info/rfc3971" quoteTitle="true" derivedAnchor="RFC3971">
+          <front>
+            <title>SEcure Neighbor Discovery (SEND)</title>
+            <author fullname="J. Arkko" initials="J." role="editor" surname="Arkko"/>
+            <author fullname="J. Kempf" initials="J." surname="Kempf"/>
+            <author fullname="B. Zill" initials="B." surname="Zill"/>
+            <author fullname="P. Nikander" initials="P." surname="Nikander"/>
+            <date month="March" year="2005"/>
+            <abstract>
+              <t indent="0">IPv6 nodes use the Neighbor Discovery Protocol (NDP) to discover other nodes on the link, to determine their link-layer addresses to find routers, and to maintain reachability information about the paths to active neighbors. If not secured, NDP is vulnerable to various attacks. This document specifies security mechanisms for NDP. Unlike those in the original NDP specifications, these mechanisms do not use IPsec. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3971"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3971"/>
+        </reference>
+        <reference anchor="RFC4311" target="https://www.rfc-editor.org/info/rfc4311" quoteTitle="true" derivedAnchor="RFC4311">
+          <front>
+            <title>IPv6 Host-to-Router Load Sharing</title>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <author fullname="D. Thaler" initials="D." surname="Thaler"/>
+            <date month="November" year="2005"/>
+            <abstract>
+              <t indent="0">The original IPv6 conceptual sending algorithm does not do load sharing among equivalent IPv6 routers, and suggests schemes that can be problematic in practice. This document updates the conceptual sending algorithm in RFC 2461 so that traffic to different destinations can be distributed among routers in an efficient fashion. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4311"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4311"/>
+        </reference>
+        <reference anchor="RFC4862" target="https://www.rfc-editor.org/info/rfc4862" quoteTitle="true" derivedAnchor="RFC4862">
+          <front>
+            <title>IPv6 Stateless Address Autoconfiguration</title>
+            <author fullname="S. Thomson" initials="S." surname="Thomson"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <author fullname="T. Jinmei" initials="T." surname="Jinmei"/>
+            <date month="September" year="2007"/>
+            <abstract>
+              <t indent="0">This document specifies the steps a host takes in deciding how to autoconfigure its interfaces in IP version 6. The autoconfiguration process includes generating a link-local address, generating global addresses via stateless address autoconfiguration, and the Duplicate Address Detection procedure to verify the uniqueness of the addresses on a link. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4862"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4862"/>
+        </reference>
+        <reference anchor="RFC5798" target="https://www.rfc-editor.org/info/rfc5798" quoteTitle="true" derivedAnchor="RFC5798">
+          <front>
+            <title>Virtual Router Redundancy Protocol (VRRP) Version 3 for IPv4 and IPv6</title>
+            <author fullname="S. Nadas" initials="S." role="editor" surname="Nadas"/>
+            <date month="March" year="2010"/>
+            <abstract>
+              <t indent="0">This memo defines the Virtual Router Redundancy Protocol (VRRP) for IPv4 and IPv6. It is version three (3) of the protocol, and it is based on VRRP (version 2) for IPv4 that is defined in RFC 3768 and in "Virtual Router Redundancy Protocol for IPv6". VRRP specifies an election protocol that dynamically assigns responsibility for a virtual router to one of the VRRP routers on a LAN. The VRRP router controlling the IPv4 or IPv6 address(es) associated with a virtual router is called the Master, and it forwards packets sent to these IPv4 or IPv6 addresses. VRRP Master routers are configured with virtual IPv4 or IPv6 addresses, and VRRP Backup routers infer the address family of the virtual addresses being carried based on the transport protocol. Within a VRRP router, the virtual routers in each of the IPv4 and IPv6 address families are a domain unto themselves and do not overlap. The election process provides dynamic failover in the forwarding responsibility should the Master become unavailable. For IPv4, the advantage gained from using VRRP is a higher-availability default path without requiring configuration of dynamic routing or router discovery protocols on every end-host. For IPv6, the advantage gained from using VRRP for IPv6 is a quicker switchover to Backup routers than can be obtained with standard IPv6 Neighbor Discovery mechanisms. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5798"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5798"/>
+        </reference>
+        <reference anchor="RFC7217" target="https://www.rfc-editor.org/info/rfc7217" quoteTitle="true" derivedAnchor="RFC7217">
+          <front>
+            <title>A Method for Generating Semantically Opaque Interface Identifiers with IPv6 Stateless Address Autoconfiguration (SLAAC)</title>
+            <author fullname="F. Gont" initials="F." surname="Gont"/>
+            <date month="April" year="2014"/>
+            <abstract>
+              <t indent="0">This document specifies a method for generating IPv6 Interface Identifiers to be used with IPv6 Stateless Address Autoconfiguration (SLAAC), such that an IPv6 address configured using this method is stable within each subnet, but the corresponding Interface Identifier changes when the host moves from one network to another. This method is meant to be an alternative to generating Interface Identifiers based on hardware addresses (e.g., IEEE LAN Media Access Control (MAC) addresses), such that the benefits of stable addresses can be achieved without sacrificing the security and privacy of users. The method specified in this document applies to all prefixes a host may be employing, including link-local, global, and unique-local prefixes (and their corresponding addresses).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7217"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7217"/>
+        </reference>
+        <reference anchor="RFC8064" target="https://www.rfc-editor.org/info/rfc8064" quoteTitle="true" derivedAnchor="RFC8064">
+          <front>
+            <title>Recommendation on Stable IPv6 Interface Identifiers</title>
+            <author fullname="F. Gont" initials="F." surname="Gont"/>
+            <author fullname="A. Cooper" initials="A." surname="Cooper"/>
+            <author fullname="D. Thaler" initials="D." surname="Thaler"/>
+            <author fullname="W. Liu" initials="W." surname="Liu"/>
+            <date month="February" year="2017"/>
+            <abstract>
+              <t indent="0">This document changes the recommended default Interface Identifier (IID) generation scheme for cases where Stateless Address Autoconfiguration (SLAAC) is used to generate a stable IPv6 address. It recommends using the mechanism specified in RFC 7217 in such cases, and recommends against embedding stable link-layer addresses in IPv6 IIDs. It formally updates RFC 2464, RFC 2467, RFC 2470, RFC 2491, RFC 2492, RFC 2497, RFC 2590, RFC 3146, RFC 3572, RFC 4291, RFC 4338, RFC 4391, RFC 5072, and RFC 5121. This document does not change any existing recommendations concerning the use of temporary addresses as specified in RFC 4941.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8064"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8064"/>
+        </reference>
+        <reference anchor="RFC8981" target="https://www.rfc-editor.org/info/rfc8981" quoteTitle="true" derivedAnchor="RFC8981">
+          <front>
+            <title>Temporary Address Extensions for Stateless Address Autoconfiguration in IPv6</title>
+            <author fullname="F. Gont" initials="F." surname="Gont"/>
+            <author fullname="S. Krishnan" initials="S." surname="Krishnan"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <author fullname="R. Draves" initials="R." surname="Draves"/>
+            <date month="February" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes an extension to IPv6 Stateless Address Autoconfiguration that causes hosts to generate temporary addresses with randomized interface identifiers for each prefix advertised with autoconfiguration enabled. Changing addresses over time limits the window of time during which eavesdroppers and other information collectors may trivially perform address-based network-activity correlation when the same address is employed for multiple transactions by the same host. Additionally, it reduces the window of exposure of a host as being accessible via an address that becomes revealed as a result of active communication. This document obsoletes RFC 4941.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8981"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8981"/>
+        </reference>
+        <reference anchor="RFC9099" target="https://www.rfc-editor.org/info/rfc9099" quoteTitle="true" derivedAnchor="RFC9099">
+          <front>
+            <title>Operational Security Considerations for IPv6 Networks</title>
+            <author fullname="É. Vyncke" surname="É. Vyncke"/>
+            <author fullname="K. Chittimaneni" initials="K." surname="Chittimaneni"/>
+            <author fullname="M. Kaeo" initials="M." surname="Kaeo"/>
+            <author fullname="E. Rey" initials="E." surname="Rey"/>
+            <date month="August" year="2021"/>
+            <abstract>
+              <t indent="0">Knowledge and experience on how to operate IPv4 networks securely is available, whether the operator is an Internet Service Provider (ISP) or an enterprise internal network. However, IPv6 presents some new security challenges. RFC 4942 describes security issues in the protocol, but network managers also need a more practical, operations-minded document to enumerate advantages and/or disadvantages of certain choices.</t>
+              <t indent="0">This document analyzes the operational security issues associated with several types of networks and proposes technical and procedural mitigation techniques. This document is only applicable to managed networks, such as enterprise networks, service provider networks, or managed residential networks.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9099"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9099"/>
+        </reference>
+        <reference anchor="RFC9131" target="https://www.rfc-editor.org/info/rfc9131" quoteTitle="true" derivedAnchor="RFC9131">
+          <front>
+            <title>Gratuitous Neighbor Discovery: Creating Neighbor Cache Entries on First-Hop Routers</title>
+            <author fullname="J. Linkova" initials="J." surname="Linkova"/>
+            <date month="October" year="2021"/>
+            <abstract>
+              <t indent="0">Neighbor Discovery (RFC 4861) is used by IPv6 nodes to determine the link-layer addresses of neighboring nodes as well as to discover and maintain reachability information. This document updates RFC 4861 to allow routers to proactively create a Neighbor Cache entry when a new IPv6 address is assigned to a node. It also updates RFC 4861 and recommends that nodes send unsolicited Neighbor Advertisements upon assigning a new IPv6 address. These changes will minimize the delay and packet loss when a node initiates connections to an off-link destination from a new IPv6 address.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9131"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9131"/>
+        </reference>
+        <reference anchor="I-D.ietf-vrrp-ipv6-spec" target="https://datatracker.ietf.org/doc/html/draft-ietf-vrrp-ipv6-spec-08" quoteTitle="true" derivedAnchor="VRRP-IPv6">
+          <front>
+            <title>Virtual Router Redundancy Protocol for IPv6</title>
+            <author fullname="Robert Hinden" initials="R." surname="Hinden">
+              <organization showOnFrontPage="true">Nokia</organization>
+            </author>
+            <author fullname="John Cruz" initials="J." surname="Cruz">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <date day="5" month="March" year="2007"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-vrrp-ipv6-spec-08"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section anchor="Acknowledgments" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">
+        The IPv6 text in this specification is based on <xref target="RFC2338" format="default" sectionFormat="of" derivedContent="RFC2338"/>.  The
+        authors of <xref target="RFC2338" format="default" sectionFormat="of" derivedContent="RFC2338"/> are <contact fullname="S. Knight"/>, <contact fullname="D. Weaver"/>, <contact fullname="D. Whipple"/>, <contact fullname="R. Hinden"/>,
+        <contact fullname="D. Mitzel"/>, <contact fullname="P. Hunt"/>, <contact fullname="P. Higginson"/>, <contact fullname="M. Shand"/>, and <contact fullname="A. Lindem"/>.
+      </t>
+      <t indent="0" pn="section-appendix.a-2">
+        The authors of <xref target="I-D.ietf-vrrp-ipv6-spec" format="default" sectionFormat="of" derivedContent="VRRP-IPv6"/> would also like to thank <contact fullname="Erik Nordmark"/>,
+        <contact fullname="Thomas Narten"/>, <contact fullname="Steve Deering"/>, <contact fullname="Radia Perlman"/>, <contact fullname="Danny Mitzel"/>, <contact fullname="Mukesh         Gupta"/>, <contact fullname="Don Provan"/>, <contact fullname="Mark Hollinger"/>, <contact fullname="John Cruz"/>, and <contact fullname="Melissa Johnson"/> for
+        their helpful suggestions.
+      </t>
+      <t indent="0" pn="section-appendix.a-3">
+        The IPv4 text in this specification is based on <xref target="RFC3768" format="default" sectionFormat="of" derivedContent="RFC3768"/>.  The
+        authors of that specification would like to thank <contact fullname="Glen Zorn"/>, <contact fullname="Michael         Lane"/>, <contact fullname="Clark Bremer"/>, <contact fullname="Hal Peterson"/>, <contact fullname="Tony Li"/>, <contact fullname="Barbara Denny"/>, <contact fullname="Joel         Halpern"/>, <contact fullname="Steve M. Bellovin"/>, <contact fullname="Thomas Narten"/>, <contact fullname="Rob Montgomery"/>, <contact fullname="Rob Coltun"/>,
+        <contact fullname="Radia Perlman"/>, <contact fullname="Russ Housley"/>, <contact fullname="Harald Alvestrand"/>, <contact fullname="Ned         Freed"/>, <contact fullname="Ted Hardie"/>, <contact fullname="Bert Wijnen"/>, <contact fullname="Bill Fenner"/>, and <contact fullname="Alex         Zinin"/> for their comments and suggestions.
+      </t>
+      <t indent="0" pn="section-appendix.a-4">
+        Thanks to <contact fullname="Steve Nadas"/> for his work merging/editing <xref target="RFC3768" format="default" sectionFormat="of" derivedContent="RFC3768"/>
+        and <xref target="I-D.ietf-vrrp-ipv6-spec" format="default" sectionFormat="of" derivedContent="VRRP-IPv6"/> into the document that eventually became
+        <xref target="RFC5798" format="default" sectionFormat="of" derivedContent="RFC5798"/>.
+      </t>
+      <t indent="0" pn="section-appendix.a-5">
+        Thanks to <contact fullname="Stewart Bryant"/>, <contact fullname="Sasha Vainshtein"/>, <contact fullname="Pascal Thubert"/>, <contact fullname="Alexander Okonnikov"/>,
+        <contact fullname="Ben Niven-Jenkins"/>, <contact fullname="Tim Chown"/>, <contact fullname="Mališa Vučinić"/>, <contact fullname="Russ White"/>, <contact fullname="Donald Eastlake"/>, <contact fullname="Dave Thaler"/>,
+        <contact fullname="Eric Kline"/>, and <contact fullname="Vijay Gurbani"/> for comments on the current document (RFC 9568).
+        Thanks to <contact fullname="Gyan Mishra"/>, <contact fullname="Paul Congdon"/>, and <contact fullname="Jon Rosen"/> for discussions related to the removal
+        of legacy technology appendices. Thanks to <contact fullname="Dhruv Dhody"/> and <contact fullname="Donald Eastlake"/> for
+        comments and suggestions for improving the IANA section. Thanks to <contact fullname="Sasha Vainshtein"/>
+        for recommending "Maximum Advertisement Interval" validation. Thanks to <contact fullname="Tim Chown"/> and
+        <contact fullname="Fernando Gont"/> for discussions and updates related to IPv6 SLAAC.
+      </t>
+      <t indent="0" pn="section-appendix.a-6">
+        Special thanks to <contact fullname="Quentin Armitage"/> for a detailed review and extensive comments on the
+        current document (RFC 9568).
+      </t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="A" surname="Lindem" fullname="Acee Lindem">
+        <organization showOnFrontPage="true">LabN Consulting, L.L.C.</organization>
+        <address>
+          <postal>
+            <street>301 Midenhall Way</street>
+            <city>Cary</city>
+            <region>NC</region>
+            <code>27513</code>
+            <country>United States of America</country>
+          </postal>
+          <email>acee.ietf@gmail.com</email>
+        </address>
+      </author>
+      <author initials="A" surname="Dogra" fullname="Aditya Dogra">
+        <organization showOnFrontPage="true">Cisco Systems</organization>
+        <address>
+          <postal>
+            <street>Sarjapur Outer Ring Road</street>
+            <city>Bangalore</city>
+            <region>Karnataka</region>
+            <code>560103</code>
+            <country>India</country>
+          </postal>
+          <email>addogra@cisco.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

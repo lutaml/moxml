@@ -1,0 +1,2976 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" submissionType="IETF" category="info" consensus="true" docName="draft-ietf-lake-traces-09" number="9529" tocDepth="2" tocInclude="true" sortRefs="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2024-03-20T00:39:22" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-lake-traces-09" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9529" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Traces of EDHOC">Traces of Ephemeral Diffie-Hellman Over COSE (EDHOC)</title>
+    <seriesInfo name="RFC" value="9529" stream="IETF"/>
+    <author initials="G." surname="Selander" fullname="Göran Selander">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <country>Sweden</country>
+        </postal>
+        <email>goran.selander@ericsson.com</email>
+      </address>
+    </author>
+    <author initials="J" surname="Preuß Mattsson" fullname="John Preuß Mattsson">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <country>Sweden</country>
+        </postal>
+        <email>john.mattsson@ericsson.com</email>
+      </address>
+    </author>
+    <author initials="M" surname="Serafin" fullname="Marek Serafin">
+      <organization showOnFrontPage="true">ASSA ABLOY</organization>
+      <address>
+        <postal>
+          <country>Poland</country>
+        </postal>
+        <email>marek.serafin@assaabloy.com</email>
+      </address>
+    </author>
+    <author initials="M" surname="Tiloca" fullname="Marco Tiloca">
+      <organization showOnFrontPage="true">RISE AB</organization>
+      <address>
+        <postal>
+          <street>Isafjordsgatan 22</street>
+          <code>164 40</code>
+          <city>Kista</city>
+          <country>Sweden</country>
+        </postal>
+        <email>marco.tiloca@ri.se</email>
+      </address>
+    </author>
+    <author initials="M" surname="Vučinić" fullname="Mališa Vučinić">
+      <organization showOnFrontPage="true">Inria</organization>
+      <address>
+        <postal>
+          <country>France</country>
+        </postal>
+        <email>malisa.vucinic@inria.fr</email>
+      </address>
+    </author>
+    <date month="03" year="2024"/>
+    <area>sec</area>
+    <workgroup>lake</workgroup>
+    <keyword>test vector</keyword>
+    <keyword>lightweight</keyword>
+    <keyword>authenticated key exchange</keyword>
+    <keyword>LAKE</keyword>
+    <keyword>AKE</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document contains example traces of Ephemeral Diffie-Hellman Over COSE (EDHOC).</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for informational purposes.  
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by the
+            Internet Engineering Steering Group (IESG).  Not all documents
+            approved by the IESG are candidates for any level of Internet
+            Standard; see Section 2 of RFC 7841. 
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9529" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-setup">Setup</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-authentication-with-signatu">Authentication with Signatures, X.509 Identified by 'x5t'</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-message_1">message_1</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-message_2">message_2</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.3">
+                <t indent="0" pn="section-toc.1-1.2.2.3.1"><xref derivedContent="2.3" format="counter" sectionFormat="of" target="section-2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-message_3">message_3</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.4">
+                <t indent="0" pn="section-toc.1-1.2.2.4.1"><xref derivedContent="2.4" format="counter" sectionFormat="of" target="section-2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-message_4">message_4</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.5">
+                <t indent="0" pn="section-toc.1-1.2.2.5.1"><xref derivedContent="2.5" format="counter" sectionFormat="of" target="section-2.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-prk_out-and-prk_exporter">PRK_out and PRK_exporter</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.6">
+                <t indent="0" pn="section-toc.1-1.2.2.6.1"><xref derivedContent="2.6" format="counter" sectionFormat="of" target="section-2.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-oscore-parameters">OSCORE Parameters</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.7">
+                <t indent="0" pn="section-toc.1-1.2.2.7.1"><xref derivedContent="2.7" format="counter" sectionFormat="of" target="section-2.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-key-update">Key Update</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.8">
+                <t indent="0" pn="section-toc.1-1.2.2.8.1"><xref derivedContent="2.8" format="counter" sectionFormat="of" target="section-2.8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-certificates">Certificates</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-authentication-with-static-">Authentication with Static DH, CCS Identified by 'kid'</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-message_1-first-time">message_1 (First Time)</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-error">error</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-message_1-second-time">message_1 (Second Time)</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.4">
+                <t indent="0" pn="section-toc.1-1.3.2.4.1"><xref derivedContent="3.4" format="counter" sectionFormat="of" target="section-3.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-message_2-2">message_2</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.5">
+                <t indent="0" pn="section-toc.1-1.3.2.5.1"><xref derivedContent="3.5" format="counter" sectionFormat="of" target="section-3.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-message_3-2">message_3</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.6">
+                <t indent="0" pn="section-toc.1-1.3.2.6.1"><xref derivedContent="3.6" format="counter" sectionFormat="of" target="section-3.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-message_4-2">message_4</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.7">
+                <t indent="0" pn="section-toc.1-1.3.2.7.1"><xref derivedContent="3.7" format="counter" sectionFormat="of" target="section-3.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-prk_out-and-prk_exporter-2">PRK_out and PRK_exporter</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.8">
+                <t indent="0" pn="section-toc.1-1.3.2.8.1"><xref derivedContent="3.8" format="counter" sectionFormat="of" target="section-3.8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-oscore-parameters-2">OSCORE Parameters</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.9">
+                <t indent="0" pn="section-toc.1-1.3.2.9.1"><xref derivedContent="3.9" format="counter" sectionFormat="of" target="section-3.9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-key-update-2">Key Update</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-invalid-traces">Invalid Traces</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-encoding-errors">Encoding Errors</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-cryptography-related-errors">Cryptography-Related Errors</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-non-deterministic-cbor">Non-deterministic CBOR</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">EDHOC <xref target="RFC9528" format="default" sectionFormat="of" derivedContent="RFC9528"/> is a lightweight authenticated key exchange protocol designed for highly constrained settings. This document contains annotated traces of EDHOC sessions with input, output, and intermediate processing results to simplify testing of implementations. The traces have been verified by two independent implementations.</t>
+      <section anchor="setup" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-setup">Setup</name>
+        <t indent="0" pn="section-1.1-1">EDHOC is run between an Initiator (I) and a Responder (R). The private/public key pairs and credentials of the Initiator and the Responder required to produce the protocol messages are shown in the traces when needed for the calculations.</t>
+        <t indent="0" pn="section-1.1-2">EDHOC messages and intermediate results are encoded in Concise Binary Object Representation (CBOR) <xref target="RFC8949" format="default" sectionFormat="of" derivedContent="RFC8949"/> and can therefore be displayed in CBOR diagnostic notation using, e.g., the CBOR playground <xref target="CborMe" format="default" sectionFormat="of" derivedContent="CborMe"/>, which makes them easy to parse for humans. Credentials can also be encoded in CBOR, e.g., CBOR Web Tokens (CWTs) <xref target="RFC8392" format="default" sectionFormat="of" derivedContent="RFC8392"/>.</t>
+        <t indent="0" pn="section-1.1-3">The document contains two traces:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1.1-4">
+          <li pn="section-1.1-4.1">
+            <xref target="sec-trace-1" format="default" sectionFormat="of" derivedContent="Section 2"/> - Authentication with signature keys identified by the hash value of the X.509 certificates (provided in <xref target="certs" format="default" sectionFormat="of" derivedContent="Section 2.8"/>). The endpoints use Edwards-curve Digital Signature Algorithm (EdDSA) <xref target="RFC8032" format="default" sectionFormat="of" derivedContent="RFC8032"/> for authentication and X25519 <xref target="RFC7748" format="default" sectionFormat="of" derivedContent="RFC7748"/> for ephemeral-ephemeral Diffie-Hellman (DH) key exchange.</li>
+          <li pn="section-1.1-4.2">
+            <xref target="sec-trace-2" format="default" sectionFormat="of" derivedContent="Section 3"/> - Authentication with static Diffie-Hellman keys identified by short key identifiers labeling CWT Claims Sets (CCSs) <xref target="RFC8392" format="default" sectionFormat="of" derivedContent="RFC8392"/>.  The endpoints use NIST P-256 <xref target="SP-800-186" format="default" sectionFormat="of" derivedContent="SP-800-186"/> for both ephemeral-ephemeral and ephemeral-static DH key exchange. This trace also illustrates the cipher suite negotiation and provides an example of low protocol overhead with messages sizes of 39, 45, and 19 bytes.</li>
+        </ul>
+        <t indent="0" pn="section-1.1-5">Examples of invalid EDHOC messages are found in <xref target="sec-trace-invalid" format="default" sectionFormat="of" derivedContent="Section 4"/>.</t>
+        <ol type="Note %d." indent="adaptive" spacing="normal" start="1" pn="section-1.1-6">
+        <li pn="section-1.1-6.1" derivedCounter="Note 1.">The same name is used for hexadecimal byte strings and their CBOR encodings. The traces contain both the raw byte strings and the corresponding CBOR-encoded data items.</li>
+          <li pn="section-1.1-6.2" derivedCounter="Note 2.">If not clear from the context, remember that CBOR sequences and CBOR arrays assume CBOR-encoded data items as elements.</li>
+          <li pn="section-1.1-6.3" derivedCounter="Note 3.">When the protocol transporting EDHOC messages does not inherently provide correlation across all messages, then some messages are typically prepended with connection identifiers and potentially a message_1 indicator (see Section <xref target="RFC9528" section="3.4.1" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.4.1" derivedContent="RFC9528"/> and Appendix <xref target="RFC9528" section="A.2" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#appendix-A.2" derivedContent="RFC9528"/> of <xref target="RFC9528" format="default" sectionFormat="of" derivedContent="RFC9528"/>). Those bytes are not included in the traces in this document.</li>
+        </ol>
+      </section>
+      <section anchor="term" numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.2-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+        </t>
+      </section>
+    </section>
+    <section anchor="sec-trace-1" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-authentication-with-signatu">Authentication with Signatures, X.509 Identified by 'x5t'</name>
+      <t indent="0" pn="section-2-1">In this example, the Initiator (I) and Responder (R) are authenticated with digital signatures (METHOD = 0). Both the Initiator and the Responder support cipher suite 0, which determines the algorithms:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-2">
+        <li pn="section-2-2.1">EDHOC AEAD algorithm = AES-CCM-16-64-128</li>
+        <li pn="section-2-2.2">EDHOC hash algorithm = SHA-256</li>
+        <li pn="section-2-2.3">EDHOC Message Authentication Code (MAC) length in bytes (Static DH) = 8</li>
+        <li pn="section-2-2.4">EDHOC key exchange algorithm (ECDH curve) = X25519</li>
+        <li pn="section-2-2.5">EDHOC signature algorithm = EdDSA</li>
+        <li pn="section-2-2.6">application AEAD algorithm = AES-CCM-16-64-128</li>
+        <li pn="section-2-2.7">application hash algorithm = SHA-256</li>
+      </ul>
+      <t indent="0" pn="section-2-3">The public keys are represented with X.509 certificates identified by the CBOR Object Signing and Encryption (COSE) header parameter 'x5t'.</t>
+      <section anchor="message1" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-message_1">message_1</name>
+        <t indent="0" pn="section-2.1-1">Both endpoints are authenticated with signatures, i.e., METHOD = 0:</t>
+        <artwork align="left" pn="section-2.1-2">
+METHOD (CBOR Data Item) (1 byte)
+00
+</artwork>
+        <t indent="0" pn="section-2.1-3">The Initiator selects cipher suite 0. A single cipher suite is encoded as an int:</t>
+        <artwork align="left" pn="section-2.1-4">
+SUITES_I (CBOR Data Item) (1 byte)
+00
+</artwork>
+        <t indent="0" pn="section-2.1-5">The Initiator creates an ephemeral key pair for use with the EDHOC key exchange algorithm:</t>
+        <artwork align="left" pn="section-2.1-6">
+Initiator's ephemeral private key
+X (Raw Value) (32 bytes)
+89 2e c2 8e 5c b6 66 91 08 47 05 39 50 0b 70 5e 60 d0 08 d3 47 c5 81
+7e e9 f3 32 7c 8a 87 bb 03
+</artwork>
+        <artwork align="left" pn="section-2.1-7">
+Initiator's ephemeral public key
+G_X (Raw Value) (32 bytes)
+31 f8 2c 7b 5b 9c bb f0 f1 94 d9 13 cc 12 ef 15 32 d3 28 ef 32 63 2a
+48 81 a1 c0 70 1e 23 7f 04
+</artwork>
+        <artwork align="left" pn="section-2.1-8">
+Initiator's ephemeral public key
+G_X (CBOR Data Item) (34 bytes)
+58 20 31 f8 2c 7b 5b 9c bb f0 f1 94 d9 13 cc 12 ef 15 32 d3 28 ef 32
+63 2a 48 81 a1 c0 70 1e 23 7f 04
+</artwork>
+        <t indent="0" pn="section-2.1-9">The Initiator selects its connection identifier C_I to be the byte string 0x2d, which is encoded as 0x2d since it is represented by the 1-byte CBOR int -14:</t>
+        <artwork align="left" pn="section-2.1-10">
+Connection identifier chosen by the Initiator
+C_I (Raw Value) (1 byte)
+2d
+</artwork>
+        <artwork align="left" pn="section-2.1-11">
+Connection identifier chosen by the Initiator
+C_I (CBOR Data Item) (1 byte)
+2d
+</artwork>
+        <t indent="0" pn="section-2.1-12">No external authorization data:</t>
+        <artwork align="left" pn="section-2.1-13">
+EAD_1 (CBOR Sequence) (0 bytes)
+</artwork>
+        <t indent="0" pn="section-2.1-14">The Initiator constructs message_1:</t>
+        <artwork align="left" pn="section-2.1-15">
+message_1 =
+(
+  0,
+  0,
+  h'31f82c7b5b9cbbf0f194d913cc12ef1532d328ef32632a48
+    81a1c0701e237f04',
+  -14
+)
+</artwork>
+        <artwork align="left" pn="section-2.1-16">
+message_1 (CBOR Sequence) (37 bytes)
+00 00 58 20 31 f8 2c 7b 5b 9c bb f0 f1 94 d9 13 cc 12 ef 15 32 d3 28
+ef 32 63 2a 48 81 a1 c0 70 1e 23 7f 04 2d
+</artwork>
+      </section>
+      <section anchor="message2" numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-message_2">message_2</name>
+        <t indent="0" pn="section-2.2-1">The Responder supports the most preferred and selected cipher suite 0, so SUITES_I is acceptable.</t>
+        <t indent="0" pn="section-2.2-2">The Responder creates an ephemeral key pair for use with the EDHOC key exchange algorithm:</t>
+        <artwork align="left" pn="section-2.2-3">
+Responder's ephemeral private key
+Y (Raw Value) (32 bytes)
+e6 9c 23 fb f8 1b c4 35 94 24 46 83 7f e8 27 bf 20 6c 8f a1 0a 39 db
+47 44 9e 5a 81 34 21 e1 e8
+</artwork>
+        <artwork align="left" pn="section-2.2-4">
+Responder's ephemeral public key
+G_Y (Raw Value) (32 bytes)
+dc 88 d2 d5 1d a5 ed 67 fc 46 16 35 6b c8 ca 74 ef 9e be 8b 38 7e 62
+3a 36 0b a4 80 b9 b2 9d 1c
+</artwork>
+        <artwork align="left" pn="section-2.2-5">
+Responder's ephemeral public key
+G_Y (CBOR Data Item) (34 bytes)
+58 20 dc 88 d2 d5 1d a5 ed 67 fc 46 16 35 6b c8 ca 74 ef 9e be 8b 38
+7e 62 3a 36 0b a4 80 b9 b2 9d 1c
+</artwork>
+        <t indent="0" pn="section-2.2-6">The Responder selects its connection identifier C_R to be the byte string 0x18, which is encoded as h'18' = 0x4118 since it is not represented by a 1-byte CBOR int:</t>
+        <artwork align="left" pn="section-2.2-7">
+Connection identifier chosen by the Responder
+C_R (Raw Value) (1 byte)
+18
+</artwork>
+        <artwork align="left" pn="section-2.2-8">
+Connection identifier chosen by the Responder
+C_R (CBOR Data Item) (2 bytes)
+41 18
+</artwork>
+        <t indent="0" pn="section-2.2-9">The transcript hash TH_2 is calculated using the EDHOC hash algorithm:</t>
+        <t indent="0" pn="section-2.2-10">TH_2 = H( G_Y, H(message_1) )</t>
+        <artwork align="left" pn="section-2.2-11">
+H(message_1) (Raw Value) (32 bytes)
+c1 65 d6 a9 9d 1b ca fa ac 8d bf 2b 35 2a 6f 7d 71 a3 0b 43 9c 9d 64
+d3 49 a2 38 48 03 8e d1 6b
+</artwork>
+        <artwork align="left" pn="section-2.2-12">
+H(message_1) (CBOR Data Item) (34 bytes)
+58 20 c1 65 d6 a9 9d 1b ca fa ac 8d bf 2b 35 2a 6f 7d 71 a3 0b 43 9c
+9d 64 d3 49 a2 38 48 03 8e d1 6b
+</artwork>
+        <t indent="0" pn="section-2.2-13">The input to calculate TH_2 is the CBOR sequence:</t>
+        <t indent="0" pn="section-2.2-14">G_Y, H(message_1)</t>
+        <artwork align="left" pn="section-2.2-15">
+Input to calculate TH_2 (CBOR Sequence) (68 bytes)
+58 20 dc 88 d2 d5 1d a5 ed 67 fc 46 16 35 6b c8 ca 74 ef 9e be 8b 38
+7e 62 3a 36 0b a4 80 b9 b2 9d 1c 58 20 c1 65 d6 a9 9d 1b ca fa ac 8d
+bf 2b 35 2a 6f 7d 71 a3 0b 43 9c 9d 64 d3 49 a2 38 48 03 8e d1 6b
+</artwork>
+        <artwork align="left" pn="section-2.2-16">
+TH_2 (Raw Value) (32 bytes)
+c6 40 5c 15 4c 56 74 66 ab 1d f2 03 69 50 0e 54 0e 9f 14 bd 3a 79 6a
+06 52 ca e6 6c 90 61 68 8d
+</artwork>
+        <artwork align="left" pn="section-2.2-17">
+TH_2 (CBOR Data Item) (34 bytes)
+58 20 c6 40 5c 15 4c 56 74 66 ab 1d f2 03 69 50 0e 54 0e 9f 14 bd 3a
+79 6a 06 52 ca e6 6c 90 61 68 8d
+</artwork>
+        <t indent="0" pn="section-2.2-18">PRK_2e is specified in <xref section="4.1.1.1" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.1.1" derivedContent="RFC9528"/>.</t>
+        <t indent="0" pn="section-2.2-19">First, the Elliptic Curve Diffie-Hellman (ECDH) shared secret G_XY is computed from G_X and Y or G_Y and X:</t>
+        <artwork align="left" pn="section-2.2-20">
+G_XY (Raw Value) (ECDH shared secret) (32 bytes)
+e5 cd f3 a9 86 cd ac 5b 7b f0 46 91 e2 b0 7c 08 e7 1f 53 99 8d 8f 84
+2b 7c 3f b4 d8 39 cf 7b 28
+</artwork>
+        <t indent="0" pn="section-2.2-21">Then, PRK_2e is calculated using EDHOC_Extract(), which is determined by the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-2.2-22">
+PRK_2e = EDHOC_Extract( salt, G_XY ) 
+       = HMAC-SHA-256( salt, G_XY )
+</artwork>
+        <t indent="0" pn="section-2.2-23">where salt is TH_2:</t>
+        <artwork align="left" pn="section-2.2-24">
+salt (Raw Value) (32 bytes)
+c6 40 5c 15 4c 56 74 66 ab 1d f2 03 69 50 0e 54 0e 9f 14 bd 3a 79 6a
+06 52 ca e6 6c 90 61 68 8d
+</artwork>
+        <artwork align="left" pn="section-2.2-25">
+PRK_2e (Raw Value) (32 bytes)
+d5 84 ac 2e 5d ad 5a 77 d1 4b 53 eb e7 2e f1 d5 da a8 86 0d 39 93 73
+bf 2c 24 0a fa 7b a8 04 da
+</artwork>
+        <t indent="0" pn="section-2.2-26">Since METHOD = 0, the Responder authenticates using signatures. Since the selected cipher suite is 0, the EDHOC signature algorithm is EdDSA.</t>
+        <t indent="0" pn="section-2.2-27">The Responder's signature key pair uses EdDSA:</t>
+        <artwork align="left" pn="section-2.2-28">
+Responder's private authentication key
+SK_R (Raw Value) (32 bytes)
+ef 14 0f f9 00 b0 ab 03 f0 c0 8d 87 9c bb d4 b3 1e a7 1e 6e 7e e7 ff
+cb 7e 79 55 77 7a 33 27 99
+</artwork>
+        <artwork align="left" pn="section-2.2-29">
+Responder's public authentication key
+PK_R (Raw Value) (32 bytes)
+a1 db 47 b9 51 84 85 4a d1 2a 0c 1a 35 4e 41 8a ac e3 3a a0 f2 c6 62
+c0 0b 3a c5 5d e9 2f 93 59
+</artwork>
+        <t indent="0" pn="section-2.2-30">PRK_3e2m is specified in <xref section="4.1.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.1.2" derivedContent="RFC9528"/>.</t>
+        <t indent="0" pn="section-2.2-31">Since the Responder authenticates with signatures, PRK_3e2m = PRK_2e.</t>
+        <artwork align="left" pn="section-2.2-32">
+PRK_3e2m (Raw Value) (32 bytes)
+d5 84 ac 2e 5d ad 5a 77 d1 4b 53 eb e7 2e f1 d5 da a8 86 0d 39 93 73
+bf 2c 24 0a fa 7b a8 04 da
+</artwork>
+        <t indent="0" pn="section-2.2-33">The Responder constructs the remaining input needed to calculate MAC_2:</t>
+        <t indent="0" pn="section-2.2-34">MAC_2 = EDHOC_KDF( PRK_3e2m, 2, context_2, mac_length_2 )</t>
+        <t indent="0" pn="section-2.2-35">context_2 = &lt;&lt; C_R, ID_CRED_R, TH_2, CRED_R, ? EAD_2 &gt;&gt;</t>
+        <t indent="0" pn="section-2.2-36">CRED_R is identified by a 64-bit hash:</t>
+        <artwork align="left" pn="section-2.2-37">
+ID_CRED_R =
+{
+  34 : [-15, h'79f2a41b510c1f9b']
+}
+</artwork>
+        <t indent="0" pn="section-2.2-38">where the COSE header value 34 ('x5t') indicates a hash of an X.509 certificate,
+and the COSE algorithm -15 indicates the hash algorithm SHA-256 truncated to 64 bits.</t>
+        <artwork align="left" pn="section-2.2-39">
+ID_CRED_R (CBOR Data Item) (14 bytes)
+a1 18 22 82 2e 48 79 f2 a4 1b 51 0c 1f 9b
+</artwork>
+        <t indent="0" pn="section-2.2-40">CRED_R is a CBOR byte string of the DER encoding of the X.509 certificate in <xref target="resp-cer" format="default" sectionFormat="of" derivedContent="Section 2.8.1"/>:</t>
+        <artwork align="left" pn="section-2.2-41">
+CRED_R (Raw Value) (241 bytes)
+30 81 ee 30 81 a1 a0 03 02 01 02 02 04 62 31 9e c4 30 05 06 03 2b 65
+70 30 1d 31 1b 30 19 06 03 55 04 03 0c 12 45 44 48 4f 43 20 52 6f 6f
+74 20 45 64 32 35 35 31 39 30 1e 17 0d 32 32 30 33 31 36 30 38 32 34
+33 36 5a 17 0d 32 39 31 32 33 31 32 33 30 30 30 30 5a 30 22 31 20 30
+1e 06 03 55 04 03 0c 17 45 44 48 4f 43 20 52 65 73 70 6f 6e 64 65 72
+20 45 64 32 35 35 31 39 30 2a 30 05 06 03 2b 65 70 03 21 00 a1 db 47
+b9 51 84 85 4a d1 2a 0c 1a 35 4e 41 8a ac e3 3a a0 f2 c6 62 c0 0b 3a
+c5 5d e9 2f 93 59 30 05 06 03 2b 65 70 03 41 00 b7 23 bc 01 ea b0 92
+8e 8b 2b 6c 98 de 19 cc 38 23 d4 6e 7d 69 87 b0 32 47 8f ec fa f1 45
+37 a1 af 14 cc 8b e8 29 c6 b7 30 44 10 18 37 eb 4a bc 94 95 65 d8 6d
+ce 51 cf ae 52 ab 82 c1 52 cb 02
+</artwork>
+        <artwork align="left" pn="section-2.2-42">
+CRED_R (CBOR Data Item) (243 bytes)
+58 f1 30 81 ee 30 81 a1 a0 03 02 01 02 02 04 62 31 9e c4 30 05 06 03
+2b 65 70 30 1d 31 1b 30 19 06 03 55 04 03 0c 12 45 44 48 4f 43 20 52
+6f 6f 74 20 45 64 32 35 35 31 39 30 1e 17 0d 32 32 30 33 31 36 30 38
+32 34 33 36 5a 17 0d 32 39 31 32 33 31 32 33 30 30 30 30 5a 30 22 31
+20 30 1e 06 03 55 04 03 0c 17 45 44 48 4f 43 20 52 65 73 70 6f 6e 64
+65 72 20 45 64 32 35 35 31 39 30 2a 30 05 06 03 2b 65 70 03 21 00 a1
+db 47 b9 51 84 85 4a d1 2a 0c 1a 35 4e 41 8a ac e3 3a a0 f2 c6 62 c0
+0b 3a c5 5d e9 2f 93 59 30 05 06 03 2b 65 70 03 41 00 b7 23 bc 01 ea
+b0 92 8e 8b 2b 6c 98 de 19 cc 38 23 d4 6e 7d 69 87 b0 32 47 8f ec fa
+f1 45 37 a1 af 14 cc 8b e8 29 c6 b7 30 44 10 18 37 eb 4a bc 94 95 65
+d8 6d ce 51 cf ae 52 ab 82 c1 52 cb 02
+</artwork>
+        <t indent="0" pn="section-2.2-43">No external authorization data:</t>
+        <artwork align="left" pn="section-2.2-44">
+EAD_2 (CBOR Sequence) (0 bytes)
+</artwork>
+        <t indent="0" pn="section-2.2-45">context_2 = &lt;&lt; C_R, ID_CRED_R, TH_2, CRED_R, ? EAD_2 &gt;&gt;</t>
+        <artwork align="left" pn="section-2.2-46">
+context_2 (CBOR Sequence) (293 bytes)
+41 18 a1 18 22 82 2e 48 79 f2 a4 1b 51 0c 1f 9b 58 20 c6 40 5c 15 4c
+56 74 66 ab 1d f2 03 69 50 0e 54 0e 9f 14 bd 3a 79 6a 06 52 ca e6 6c
+90 61 68 8d 58 f1 30 81 ee 30 81 a1 a0 03 02 01 02 02 04 62 31 9e c4
+30 05 06 03 2b 65 70 30 1d 31 1b 30 19 06 03 55 04 03 0c 12 45 44 48
+4f 43 20 52 6f 6f 74 20 45 64 32 35 35 31 39 30 1e 17 0d 32 32 30 33
+31 36 30 38 32 34 33 36 5a 17 0d 32 39 31 32 33 31 32 33 30 30 30 30
+5a 30 22 31 20 30 1e 06 03 55 04 03 0c 17 45 44 48 4f 43 20 52 65 73
+70 6f 6e 64 65 72 20 45 64 32 35 35 31 39 30 2a 30 05 06 03 2b 65 70
+03 21 00 a1 db 47 b9 51 84 85 4a d1 2a 0c 1a 35 4e 41 8a ac e3 3a a0
+f2 c6 62 c0 0b 3a c5 5d e9 2f 93 59 30 05 06 03 2b 65 70 03 41 00 b7
+23 bc 01 ea b0 92 8e 8b 2b 6c 98 de 19 cc 38 23 d4 6e 7d 69 87 b0 32
+47 8f ec fa f1 45 37 a1 af 14 cc 8b e8 29 c6 b7 30 44 10 18 37 eb 4a
+bc 94 95 65 d8 6d ce 51 cf ae 52 ab 82 c1 52 cb 02
+</artwork>
+        <artwork align="left" pn="section-2.2-47">
+context_2 (CBOR byte string) (296 bytes)
+59 01 25 41 18 a1 18 22 82 2e 48 79 f2 a4 1b 51 0c 1f 9b 58 20 c6 40
+5c 15 4c 56 74 66 ab 1d f2 03 69 50 0e 54 0e 9f 14 bd 3a 79 6a 06 52
+ca e6 6c 90 61 68 8d 58 f1 30 81 ee 30 81 a1 a0 03 02 01 02 02 04 62
+31 9e c4 30 05 06 03 2b 65 70 30 1d 31 1b 30 19 06 03 55 04 03 0c 12
+45 44 48 4f 43 20 52 6f 6f 74 20 45 64 32 35 35 31 39 30 1e 17 0d 32
+32 30 33 31 36 30 38 32 34 33 36 5a 17 0d 32 39 31 32 33 31 32 33 30
+30 30 30 5a 30 22 31 20 30 1e 06 03 55 04 03 0c 17 45 44 48 4f 43 20
+52 65 73 70 6f 6e 64 65 72 20 45 64 32 35 35 31 39 30 2a 30 05 06 03
+2b 65 70 03 21 00 a1 db 47 b9 51 84 85 4a d1 2a 0c 1a 35 4e 41 8a ac
+e3 3a a0 f2 c6 62 c0 0b 3a c5 5d e9 2f 93 59 30 05 06 03 2b 65 70 03
+41 00 b7 23 bc 01 ea b0 92 8e 8b 2b 6c 98 de 19 cc 38 23 d4 6e 7d 69
+87 b0 32 47 8f ec fa f1 45 37 a1 af 14 cc 8b e8 29 c6 b7 30 44 10 18
+37 eb 4a bc 94 95 65 d8 6d ce 51 cf ae 52 ab 82 c1 52 cb 02
+</artwork>
+        <t indent="0" pn="section-2.2-48">MAC_2 is computed through EDHOC_Expand() using the EDHOC hash algorithm (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>):</t>
+        <artwork align="left" pn="section-2.2-49">
+MAC_2 = HKDF-Expand( PRK_3e2m, info, mac_length_2 )
+	</artwork>
+        <t indent="0" pn="section-2.2-50">where</t>
+        <artwork align="left" pn="section-2.2-51">
+info = ( 2, context_2, mac_length_2 )
+</artwork>
+        <t indent="0" pn="section-2.2-52">Since METHOD = 0, mac_length_2 is given by the EDHOC hash algorithm.</t>
+        <t indent="0" pn="section-2.2-53">info for MAC_2 is:</t>
+        <artwork align="left" pn="section-2.2-54">
+info =
+(
+  2,
+  h'4118a11822822e4879f2a41b510c1f9b5820c6405c154c56
+    7466ab1df20369500e540e9f14bd3a796a0652cae66c9061
+    688d58f13081ee3081a1a003020102020462319ec4300506
+    032b6570301d311b301906035504030c124544484f432052
+    6f6f742045643235353139301e170d323230333136303832
+    3433365a170d3239313233313233303030305a3022312030
+    1e06035504030c174544484f4320526573706f6e64657220
+    45643235353139302a300506032b6570032100a1db47b951
+    84854ad12a0c1a354e418aace33aa0f2c662c00b3ac55de9
+    2f9359300506032b6570034100b723bc01eab0928e8b2b6c
+    98de19cc3823d46e7d6987b032478fecfaf14537a1af14cc
+    8be829c6b73044101837eb4abc949565d86dce51cfae52ab
+    82c152cb02',
+  32
+)
+</artwork>
+        <t indent="0" pn="section-2.2-55">where the last value is the output size of the EDHOC hash algorithm in bytes.</t>
+        <artwork align="left" pn="section-2.2-56">
+info for MAC_2 (CBOR Sequence) (299 bytes)
+02 59 01 25 41 18 a1 18 22 82 2e 48 79 f2 a4 1b 51 0c 1f 9b 58 20 c6
+40 5c 15 4c 56 74 66 ab 1d f2 03 69 50 0e 54 0e 9f 14 bd 3a 79 6a 06
+52 ca e6 6c 90 61 68 8d 58 f1 30 81 ee 30 81 a1 a0 03 02 01 02 02 04
+62 31 9e c4 30 05 06 03 2b 65 70 30 1d 31 1b 30 19 06 03 55 04 03 0c
+12 45 44 48 4f 43 20 52 6f 6f 74 20 45 64 32 35 35 31 39 30 1e 17 0d
+32 32 30 33 31 36 30 38 32 34 33 36 5a 17 0d 32 39 31 32 33 31 32 33
+30 30 30 30 5a 30 22 31 20 30 1e 06 03 55 04 03 0c 17 45 44 48 4f 43
+20 52 65 73 70 6f 6e 64 65 72 20 45 64 32 35 35 31 39 30 2a 30 05 06
+03 2b 65 70 03 21 00 a1 db 47 b9 51 84 85 4a d1 2a 0c 1a 35 4e 41 8a
+ac e3 3a a0 f2 c6 62 c0 0b 3a c5 5d e9 2f 93 59 30 05 06 03 2b 65 70
+03 41 00 b7 23 bc 01 ea b0 92 8e 8b 2b 6c 98 de 19 cc 38 23 d4 6e 7d
+69 87 b0 32 47 8f ec fa f1 45 37 a1 af 14 cc 8b e8 29 c6 b7 30 44 10
+18 37 eb 4a bc 94 95 65 d8 6d ce 51 cf ae 52 ab 82 c1 52 cb 02 18 20
+</artwork>
+        <artwork align="left" pn="section-2.2-57">
+MAC_2 (Raw Value) (32 bytes)
+86 2a 7e 5e f1 47 f9 a5 f4 c5 12 e1 b6 62 3c d6 6c d1 7a 72 72 07 2b
+fe 5b 60 2f fe 30 7e e0 e9
+</artwork>
+        <artwork align="left" pn="section-2.2-58">
+MAC_2 (CBOR Data Item) (34 bytes)
+58 20 86 2a 7e 5e f1 47 f9 a5 f4 c5 12 e1 b6 62 3c d6 6c d1 7a 72 72
+07 2b fe 5b 60 2f fe 30 7e e0 e9
+</artwork>
+        <t indent="0" pn="section-2.2-59">Since METHOD = 0, Signature_or_MAC_2 is the 'signature' of the COSE_Sign1 object.</t>
+        <t indent="0" pn="section-2.2-60">The Responder constructs the message to be signed:</t>
+        <artwork align="left" pn="section-2.2-61">
+[
+  "Signature1",
+  &lt;&lt; ID_CRED_R &gt;&gt;,
+  &lt;&lt; TH_2, CRED_R, ? EAD_2 &gt;&gt;,
+  MAC_2
+] =
+
+[
+  "Signature1",
+  h'a11822822e4879f2a41b510c1f9b',
+  h'5820c6405c154c567466ab1df20369500e540e9f14bd3a79
+    6a0652cae66c9061688d58f13081ee3081a1a00302010202
+    0462319ec4300506032b6570301d311b301906035504030c
+    124544484f4320526f6f742045643235353139301e170d32
+    32303331363038323433365a170d32393132333132333030
+    30305a30223120301e06035504030c174544484f43205265
+    73706f6e6465722045643235353139302a300506032b6570
+    032100a1db47b95184854ad12a0c1a354e418aace33aa0f2
+    c662c00b3ac55de92f9359300506032b6570034100b723bc
+    01eab0928e8b2b6c98de19cc3823d46e7d6987b032478fec
+    faf14537a1af14cc8be829c6b73044101837eb4abc949565
+    d86dce51cfae52ab82c152cb02',
+  h'862a7e5ef147f9a5f4c512e1b6623cd66cd17a7272072bfe
+    5b602ffe307ee0e9'
+]
+</artwork>
+        <artwork align="left" pn="section-2.2-62">
+Message to be signed in message_2 (CBOR Data Item) (341 bytes)
+84 6a 53 69 67 6e 61 74 75 72 65 31 4e a1 18 22 82 2e 48 79 f2 a4 1b
+51 0c 1f 9b 59 01 15 58 20 c6 40 5c 15 4c 56 74 66 ab 1d f2 03 69 50
+0e 54 0e 9f 14 bd 3a 79 6a 06 52 ca e6 6c 90 61 68 8d 58 f1 30 81 ee
+30 81 a1 a0 03 02 01 02 02 04 62 31 9e c4 30 05 06 03 2b 65 70 30 1d
+31 1b 30 19 06 03 55 04 03 0c 12 45 44 48 4f 43 20 52 6f 6f 74 20 45
+64 32 35 35 31 39 30 1e 17 0d 32 32 30 33 31 36 30 38 32 34 33 36 5a
+17 0d 32 39 31 32 33 31 32 33 30 30 30 30 5a 30 22 31 20 30 1e 06 03
+55 04 03 0c 17 45 44 48 4f 43 20 52 65 73 70 6f 6e 64 65 72 20 45 64
+32 35 35 31 39 30 2a 30 05 06 03 2b 65 70 03 21 00 a1 db 47 b9 51 84
+85 4a d1 2a 0c 1a 35 4e 41 8a ac e3 3a a0 f2 c6 62 c0 0b 3a c5 5d e9
+2f 93 59 30 05 06 03 2b 65 70 03 41 00 b7 23 bc 01 ea b0 92 8e 8b 2b
+6c 98 de 19 cc 38 23 d4 6e 7d 69 87 b0 32 47 8f ec fa f1 45 37 a1 af
+14 cc 8b e8 29 c6 b7 30 44 10 18 37 eb 4a bc 94 95 65 d8 6d ce 51 cf
+ae 52 ab 82 c1 52 cb 02 58 20 86 2a 7e 5e f1 47 f9 a5 f4 c5 12 e1 b6
+62 3c d6 6c d1 7a 72 72 07 2b fe 5b 60 2f fe 30 7e e0 e9
+</artwork>
+        <t indent="0" pn="section-2.2-63">The Responder signs using the private authentication key SK_R.</t>
+        <artwork align="left" pn="section-2.2-64">
+Signature_or_MAC_2 (Raw Value) (64 bytes)
+c3 b5 bd 44 d1 e4 4a 08 5c 03 d3 ae de 4e 1e 6c 11 c5 72 a1 96 8c c3
+62 9b 50 5f 98 c6 81 60 8d 3d 1d e7 93 d1 c4 0e b5 dd 5d 89 ac f1 96
+6a ea 07 02 2b 48 cd c9 98 70 eb c4 03 74 e8 fa 6e 09
+</artwork>
+        <artwork align="left" pn="section-2.2-65">
+Signature_or_MAC_2 (CBOR Data Item) (66 bytes)
+58 40 c3 b5 bd 44 d1 e4 4a 08 5c 03 d3 ae de 4e 1e 6c 11 c5 72 a1 96
+8c c3 62 9b 50 5f 98 c6 81 60 8d 3d 1d e7 93 d1 c4 0e b5 dd 5d 89 ac
+f1 96 6a ea 07 02 2b 48 cd c9 98 70 eb c4 03 74 e8 fa 6e 09
+</artwork>
+        <t indent="0" pn="section-2.2-66">The Responder constructs PLAINTEXT_2:</t>
+        <artwork align="left" pn="section-2.2-67">
+PLAINTEXT_2 =
+(
+  C_R,
+  ID_CRED_R / bstr / -24..23,
+  Signature_or_MAC_2,
+  ? EAD_2
+)
+</artwork>
+        <artwork align="left" pn="section-2.2-68">
+PLAINTEXT_2 (CBOR Sequence) (82 bytes)
+41 18 a1 18 22 82 2e 48 79 f2 a4 1b 51 0c 1f 9b 58 40 c3 b5 bd 44 d1
+e4 4a 08 5c 03 d3 ae de 4e 1e 6c 11 c5 72 a1 96 8c c3 62 9b 50 5f 98
+c6 81 60 8d 3d 1d e7 93 d1 c4 0e b5 dd 5d 89 ac f1 96 6a ea 07 02 2b
+48 cd c9 98 70 eb c4 03 74 e8 fa 6e 09
+</artwork>
+        <t indent="0" pn="section-2.2-69">The input needed to calculate KEYSTREAM_2 is defined in <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>, using EDHOC_Expand() with the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-2.2-70">
+KEYSTREAM_2 = EDHOC_KDF( PRK_2e, 0, TH_2, plaintext_length ) 
+            = HKDF-Expand( PRK_2e, info, plaintext_length )
+</artwork>
+        <t indent="0" pn="section-2.2-71">where plaintext_length is the length in bytes of PLAINTEXT_2 in bytes and info for KEYSTREAM_2 is:</t>
+        <artwork align="left" pn="section-2.2-72">
+info =
+(
+  0,
+  h'c6405c154c567466ab1df20369500e540e9f14bd3a796a06
+    52cae66c9061688d',
+  82
+)
+</artwork>
+        <t indent="0" pn="section-2.2-73">where the last value is the length in bytes of PLAINTEXT_2.</t>
+        <artwork align="left" pn="section-2.2-74">
+info for KEYSTREAM_2 (CBOR Sequence) (37 bytes)
+00 58 20 c6 40 5c 15 4c 56 74 66 ab 1d f2 03 69 50 0e 54 0e 9f 14 bd
+3a 79 6a 06 52 ca e6 6c 90 61 68 8d 18 52
+</artwork>
+        <artwork align="left" pn="section-2.2-75">
+KEYSTREAM_2 (Raw Value) (82 bytes)
+fd 3e 7c 3f 2d 6b ee 64 3d 3c 9d 2f 28 47 03 5d 73 e2 ec b0 f8 db 5c
+d1 c6 85 4e 24 89 6a f2 11 88 b2 c4 34 4e 68 9e c2 98 42 83 d9 fb c6
+9c e1 c5 db 10 dc ff f2 4d f9 a4 9a 04 a9 40 58 27 7b c7 fa 9a d6 c6
+b1 94 ab 32 8b 44 5e b0 80 49 0c d7 86
+</artwork>
+        <t indent="0" pn="section-2.2-76">The Responder calculates CIPHERTEXT_2 as XOR between PLAINTEXT_2 and KEYSTREAM_2:</t>
+        <artwork align="left" pn="section-2.2-77">
+CIPHERTEXT_2 (Raw Value) (82 bytes)
+bc 26 dd 27 0f e9 c0 2c 44 ce 39 34 79 4b 1c c6 2b a2 2f 05 45 9f 8d
+35 8c 8d 12 27 5a c4 2c 5f 96 de d5 f1 3c c9 08 4e 5b 20 18 89 a4 5e
+5a 60 a5 56 2d c1 18 61 9c 3d aa 2f d9 f4 c9 f4 d6 ed ad 10 9d d4 ed
+f9 59 62 aa fb af 9a b3 f4 a1 f6 b9 8f
+</artwork>
+        <t indent="0" pn="section-2.2-78">The Responder constructs message_2:</t>
+        <artwork align="left" pn="section-2.2-79">
+message_2 =
+(
+  G_Y_CIPHERTEXT_2
+)
+</artwork>
+        <t indent="0" pn="section-2.2-80">where G_Y_CIPHERTEXT_2 is the bstr encoding of the concatenation of
+  the raw values of G_Y and CIPHERTEXT_2.</t>
+        <artwork align="left" pn="section-2.2-81">
+message_2 (CBOR Sequence) (116 bytes)
+58 72 dc 88 d2 d5 1d a5 ed 67 fc 46 16 35 6b c8 ca 74 ef 9e be 8b 38
+7e 62 3a 36 0b a4 80 b9 b2 9d 1c bc 26 dd 27 0f e9 c0 2c 44 ce 39 34
+79 4b 1c c6 2b a2 2f 05 45 9f 8d 35 8c 8d 12 27 5a c4 2c 5f 96 de d5
+f1 3c c9 08 4e 5b 20 18 89 a4 5e 5a 60 a5 56 2d c1 18 61 9c 3d aa 2f
+d9 f4 c9 f4 d6 ed ad 10 9d d4 ed f9 59 62 aa fb af 9a b3 f4 a1 f6 b9
+8f
+</artwork>
+      </section>
+      <section anchor="message3" numbered="true" removeInRFC="false" toc="include" pn="section-2.3">
+        <name slugifiedName="name-message_3">message_3</name>
+        <t indent="0" pn="section-2.3-1">Since METHOD = 0, the Initiator authenticates using signatures. Since the selected cipher suite is 0, the EDHOC signature algorithm is EdDSA.</t>
+        <t indent="0" pn="section-2.3-2">The Initiator's signature key pair uses EdDSA:</t>
+        <artwork align="left" pn="section-2.3-3">
+Initiator's private authentication key
+SK_I (Raw Value) (32 bytes)
+4c 5b 25 87 8f 50 7c 6b 9d ae 68 fb d4 fd 3f f9 97 53 3d b0 af 00 b2
+5d 32 4e a2 8e 6c 21 3b c8
+</artwork>
+        <artwork align="left" pn="section-2.3-4">
+Initiator's public authentication key
+PK_I (Raw Value) (32 bytes)
+ed 06 a8 ae 61 a8 29 ba 5f a5 45 25 c9 d0 7f 48 dd 44 a3 02 f4 3e 0f
+23 d8 cc 20 b7 30 85 14 1e
+</artwork>
+        <t indent="0" pn="section-2.3-5">PRK_4e3m is specified in <xref section="4.1.1.3" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.1.3" derivedContent="RFC9528"/>.</t>
+        <t indent="0" pn="section-2.3-6">Since the Initiator authenticates with signatures, PRK_4e3m = PRK_3e2m.</t>
+        <artwork align="left" pn="section-2.3-7">
+PRK_4e3m (Raw Value) (32 bytes)
+d5 84 ac 2e 5d ad 5a 77 d1 4b 53 eb e7 2e f1 d5 da a8 86 0d 39 93 73
+bf 2c 24 0a fa 7b a8 04 da
+</artwork>
+        <t indent="0" pn="section-2.3-8">The transcript hash TH_3 is calculated using the EDHOC hash algorithm:</t>
+        <t indent="0" pn="section-2.3-9">TH_3 = H( TH_2, PLAINTEXT_2, CRED_R )</t>
+        <artwork align="left" pn="section-2.3-10">
+Input to calculate TH_3 (CBOR Sequence) (359 bytes)
+58 20 c6 40 5c 15 4c 56 74 66 ab 1d f2 03 69 50 0e 54 0e 9f 14 bd 3a
+79 6a 06 52 ca e6 6c 90 61 68 8d 41 18 a1 18 22 82 2e 48 79 f2 a4 1b
+51 0c 1f 9b 58 40 c3 b5 bd 44 d1 e4 4a 08 5c 03 d3 ae de 4e 1e 6c 11
+c5 72 a1 96 8c c3 62 9b 50 5f 98 c6 81 60 8d 3d 1d e7 93 d1 c4 0e b5
+dd 5d 89 ac f1 96 6a ea 07 02 2b 48 cd c9 98 70 eb c4 03 74 e8 fa 6e
+09 58 f1 30 81 ee 30 81 a1 a0 03 02 01 02 02 04 62 31 9e c4 30 05 06
+03 2b 65 70 30 1d 31 1b 30 19 06 03 55 04 03 0c 12 45 44 48 4f 43 20
+52 6f 6f 74 20 45 64 32 35 35 31 39 30 1e 17 0d 32 32 30 33 31 36 30
+38 32 34 33 36 5a 17 0d 32 39 31 32 33 31 32 33 30 30 30 30 5a 30 22
+31 20 30 1e 06 03 55 04 03 0c 17 45 44 48 4f 43 20 52 65 73 70 6f 6e
+64 65 72 20 45 64 32 35 35 31 39 30 2a 30 05 06 03 2b 65 70 03 21 00
+a1 db 47 b9 51 84 85 4a d1 2a 0c 1a 35 4e 41 8a ac e3 3a a0 f2 c6 62
+c0 0b 3a c5 5d e9 2f 93 59 30 05 06 03 2b 65 70 03 41 00 b7 23 bc 01
+ea b0 92 8e 8b 2b 6c 98 de 19 cc 38 23 d4 6e 7d 69 87 b0 32 47 8f ec
+fa f1 45 37 a1 af 14 cc 8b e8 29 c6 b7 30 44 10 18 37 eb 4a bc 94 95
+65 d8 6d ce 51 cf ae 52 ab 82 c1 52 cb 02
+</artwork>
+        <artwork align="left" pn="section-2.3-11">
+TH_3 (Raw Value) (32 bytes)
+5b 7d f9 b4 f5 8f 24 0c e0 41 8e 48 19 1b 5f ff 3a 22 b5 ca 57 f6 69
+b1 67 77 99 65 92 e9 28 bc
+</artwork>
+        <artwork align="left" pn="section-2.3-12">
+TH_3 (CBOR Data Item) (34 bytes)
+58 20 5b 7d f9 b4 f5 8f 24 0c e0 41 8e 48 19 1b 5f ff 3a 22 b5 ca 57
+f6 69 b1 67 77 99 65 92 e9 28 bc
+</artwork>
+        <t indent="0" pn="section-2.3-13">The Initiator constructs the remaining input needed to calculate MAC_3:</t>
+        <artwork align="left" pn="section-2.3-14">
+MAC_3 = EDHOC_KDF( PRK_4e3m, 6, context_3, mac_length_3 )
+</artwork>
+        <t indent="0" pn="section-2.3-15">where</t>
+        <artwork align="left" pn="section-2.3-16">
+context_3 = &lt;&lt; ID_CRED_I, TH_3, CRED_I, ? EAD_3 &gt;&gt;
+</artwork>
+        <t indent="0" pn="section-2.3-17">CRED_I is identified by a 64-bit hash:</t>
+        <artwork align="left" pn="section-2.3-18">
+ID_CRED_I =
+{
+  34 : [-15, h'c24ab2fd7643c79f']
+}
+</artwork>
+        <t indent="0" pn="section-2.3-19">where the COSE header value 34 ('x5t') indicates a hash of an X.509 certificate,
+and the COSE algorithm -15 indicates the hash algorithm SHA-256 truncated to 64 bits.</t>
+        <artwork align="left" pn="section-2.3-20">
+ID_CRED_I (CBOR Data Item) (14 bytes)
+a1 18 22 82 2e 48 c2 4a b2 fd 76 43 c7 9f
+</artwork>
+        <t indent="0" pn="section-2.3-21">CRED_I is a CBOR byte string of the DER encoding of the X.509 certificate in <xref target="init-cer" format="default" sectionFormat="of" derivedContent="Section 2.8.2"/>:</t>
+        <artwork align="left" pn="section-2.3-22">
+CRED_I (Raw Value) (241 bytes)
+30 81 ee 30 81 a1 a0 03 02 01 02 02 04 62 31 9e a0 30 05 06 03 2b 65
+70 30 1d 31 1b 30 19 06 03 55 04 03 0c 12 45 44 48 4f 43 20 52 6f 6f
+74 20 45 64 32 35 35 31 39 30 1e 17 0d 32 32 30 33 31 36 30 38 32 34
+30 30 5a 17 0d 32 39 31 32 33 31 32 33 30 30 30 30 5a 30 22 31 20 30
+1e 06 03 55 04 03 0c 17 45 44 48 4f 43 20 49 6e 69 74 69 61 74 6f 72
+20 45 64 32 35 35 31 39 30 2a 30 05 06 03 2b 65 70 03 21 00 ed 06 a8
+ae 61 a8 29 ba 5f a5 45 25 c9 d0 7f 48 dd 44 a3 02 f4 3e 0f 23 d8 cc
+20 b7 30 85 14 1e 30 05 06 03 2b 65 70 03 41 00 52 12 41 d8 b3 a7 70
+99 6b cf c9 b9 ea d4 e7 e0 a1 c0 db 35 3a 3b df 29 10 b3 92 75 ae 48
+b7 56 01 59 81 85 0d 27 db 67 34 e3 7f 67 21 22 67 dd 05 ee ff 27 b9
+e7 a8 13 fa 57 4b 72 a0 0b 43 0b
+</artwork>
+        <artwork align="left" pn="section-2.3-23">
+CRED_I (CBOR Data Item) (243 bytes)
+58 f1 30 81 ee 30 81 a1 a0 03 02 01 02 02 04 62 31 9e a0 30 05 06 03
+2b 65 70 30 1d 31 1b 30 19 06 03 55 04 03 0c 12 45 44 48 4f 43 20 52
+6f 6f 74 20 45 64 32 35 35 31 39 30 1e 17 0d 32 32 30 33 31 36 30 38
+32 34 30 30 5a 17 0d 32 39 31 32 33 31 32 33 30 30 30 30 5a 30 22 31
+20 30 1e 06 03 55 04 03 0c 17 45 44 48 4f 43 20 49 6e 69 74 69 61 74
+6f 72 20 45 64 32 35 35 31 39 30 2a 30 05 06 03 2b 65 70 03 21 00 ed
+06 a8 ae 61 a8 29 ba 5f a5 45 25 c9 d0 7f 48 dd 44 a3 02 f4 3e 0f 23
+d8 cc 20 b7 30 85 14 1e 30 05 06 03 2b 65 70 03 41 00 52 12 41 d8 b3
+a7 70 99 6b cf c9 b9 ea d4 e7 e0 a1 c0 db 35 3a 3b df 29 10 b3 92 75
+ae 48 b7 56 01 59 81 85 0d 27 db 67 34 e3 7f 67 21 22 67 dd 05 ee ff
+27 b9 e7 a8 13 fa 57 4b 72 a0 0b 43 0b
+</artwork>
+        <t indent="0" pn="section-2.3-24">No external authorization data:</t>
+        <artwork align="left" pn="section-2.3-25">
+EAD_3 (CBOR Sequence) (0 bytes)
+</artwork>
+        <t indent="0" pn="section-2.3-26">context_3 = &lt;&lt; ID_CRED_I, TH_3, CRED_I, ? EAD_3 &gt;&gt;</t>
+        <artwork align="left" pn="section-2.3-27">
+context_3 (CBOR Sequence) (291 bytes)
+a1 18 22 82 2e 48 c2 4a b2 fd 76 43 c7 9f 58 20 5b 7d f9 b4 f5 8f 24
+0c e0 41 8e 48 19 1b 5f ff 3a 22 b5 ca 57 f6 69 b1 67 77 99 65 92 e9
+28 bc 58 f1 30 81 ee 30 81 a1 a0 03 02 01 02 02 04 62 31 9e a0 30 05
+06 03 2b 65 70 30 1d 31 1b 30 19 06 03 55 04 03 0c 12 45 44 48 4f 43
+20 52 6f 6f 74 20 45 64 32 35 35 31 39 30 1e 17 0d 32 32 30 33 31 36
+30 38 32 34 30 30 5a 17 0d 32 39 31 32 33 31 32 33 30 30 30 30 5a 30
+22 31 20 30 1e 06 03 55 04 03 0c 17 45 44 48 4f 43 20 49 6e 69 74 69
+61 74 6f 72 20 45 64 32 35 35 31 39 30 2a 30 05 06 03 2b 65 70 03 21
+00 ed 06 a8 ae 61 a8 29 ba 5f a5 45 25 c9 d0 7f 48 dd 44 a3 02 f4 3e
+0f 23 d8 cc 20 b7 30 85 14 1e 30 05 06 03 2b 65 70 03 41 00 52 12 41
+d8 b3 a7 70 99 6b cf c9 b9 ea d4 e7 e0 a1 c0 db 35 3a 3b df 29 10 b3
+92 75 ae 48 b7 56 01 59 81 85 0d 27 db 67 34 e3 7f 67 21 22 67 dd 05
+ee ff 27 b9 e7 a8 13 fa 57 4b 72 a0 0b 43 0b
+</artwork>
+        <artwork align="left" pn="section-2.3-28">
+context_3 (CBOR byte string) (294 bytes)
+59 01 23 a1 18 22 82 2e 48 c2 4a b2 fd 76 43 c7 9f 58 20 5b 7d f9 b4
+f5 8f 24 0c e0 41 8e 48 19 1b 5f ff 3a 22 b5 ca 57 f6 69 b1 67 77 99
+65 92 e9 28 bc 58 f1 30 81 ee 30 81 a1 a0 03 02 01 02 02 04 62 31 9e
+a0 30 05 06 03 2b 65 70 30 1d 31 1b 30 19 06 03 55 04 03 0c 12 45 44
+48 4f 43 20 52 6f 6f 74 20 45 64 32 35 35 31 39 30 1e 17 0d 32 32 30
+33 31 36 30 38 32 34 30 30 5a 17 0d 32 39 31 32 33 31 32 33 30 30 30
+30 5a 30 22 31 20 30 1e 06 03 55 04 03 0c 17 45 44 48 4f 43 20 49 6e
+69 74 69 61 74 6f 72 20 45 64 32 35 35 31 39 30 2a 30 05 06 03 2b 65
+70 03 21 00 ed 06 a8 ae 61 a8 29 ba 5f a5 45 25 c9 d0 7f 48 dd 44 a3
+02 f4 3e 0f 23 d8 cc 20 b7 30 85 14 1e 30 05 06 03 2b 65 70 03 41 00
+52 12 41 d8 b3 a7 70 99 6b cf c9 b9 ea d4 e7 e0 a1 c0 db 35 3a 3b df
+29 10 b3 92 75 ae 48 b7 56 01 59 81 85 0d 27 db 67 34 e3 7f 67 21 22
+67 dd 05 ee ff 27 b9 e7 a8 13 fa 57 4b 72 a0 0b 43 0b
+</artwork>
+        <t indent="0" pn="section-2.3-29">MAC_3 is computed through EDHOC_Expand() using the EDHOC hash algorithm (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>):</t>
+        <artwork align="left" pn="section-2.3-30">
+MAC_3 = HKDF-Expand( PRK_4e3m, info, mac_length_3 )
+</artwork>
+        <t indent="0" pn="section-2.3-31">where</t>
+        <artwork align="left" pn="section-2.3-32">
+info = ( 6, context_3, mac_length_3 )
+</artwork>
+        <t indent="0" pn="section-2.3-33">where</t>
+        <artwork align="left" pn="section-2.3-34">
+context_3 = &lt;&lt; ID_CRED_I, TH_3, CRED_I, ? EAD_3 &gt;&gt;
+</artwork>
+        <t indent="0" pn="section-2.3-35">Since METHOD = 0, mac_length_3 is given by the EDHOC hash algorithm.</t>
+        <t indent="0" pn="section-2.3-36">info for MAC_3 is:</t>
+        <artwork align="left" pn="section-2.3-37">
+info =
+(
+  6,
+  h'a11822822e48c24ab2fd7643c79f58205b7df9b4f58f240c
+    e0418e48191b5fff3a22b5ca57f669b16777996592e928bc
+    58f13081ee3081a1a003020102020462319ea0300506032b
+    6570301d311b301906035504030c124544484f4320526f6f
+    742045643235353139301e170d3232303331363038323430
+    305a170d3239313233313233303030305a30223120301e06
+    035504030c174544484f4320496e69746961746f72204564
+    3235353139302a300506032b6570032100ed06a8ae61a829
+    ba5fa54525c9d07f48dd44a302f43e0f23d8cc20b7308514
+    1e300506032b6570034100521241d8b3a770996bcfc9b9ea
+    d4e7e0a1c0db353a3bdf2910b39275ae48b756015981850d
+    27db6734e37f67212267dd05eeff27b9e7a813fa574b72a0
+    0b430b',
+  32
+)
+</artwork>
+        <t indent="0" pn="section-2.3-38">where the last value is the output size of the EDHOC hash algorithm in bytes.</t>
+        <artwork align="left" pn="section-2.3-39">
+info for MAC_3 (CBOR Sequence) (297 bytes)
+06 59 01 23 a1 18 22 82 2e 48 c2 4a b2 fd 76 43 c7 9f 58 20 5b 7d f9
+b4 f5 8f 24 0c e0 41 8e 48 19 1b 5f ff 3a 22 b5 ca 57 f6 69 b1 67 77
+99 65 92 e9 28 bc 58 f1 30 81 ee 30 81 a1 a0 03 02 01 02 02 04 62 31
+9e a0 30 05 06 03 2b 65 70 30 1d 31 1b 30 19 06 03 55 04 03 0c 12 45
+44 48 4f 43 20 52 6f 6f 74 20 45 64 32 35 35 31 39 30 1e 17 0d 32 32
+30 33 31 36 30 38 32 34 30 30 5a 17 0d 32 39 31 32 33 31 32 33 30 30
+30 30 5a 30 22 31 20 30 1e 06 03 55 04 03 0c 17 45 44 48 4f 43 20 49
+6e 69 74 69 61 74 6f 72 20 45 64 32 35 35 31 39 30 2a 30 05 06 03 2b
+65 70 03 21 00 ed 06 a8 ae 61 a8 29 ba 5f a5 45 25 c9 d0 7f 48 dd 44
+a3 02 f4 3e 0f 23 d8 cc 20 b7 30 85 14 1e 30 05 06 03 2b 65 70 03 41
+00 52 12 41 d8 b3 a7 70 99 6b cf c9 b9 ea d4 e7 e0 a1 c0 db 35 3a 3b
+df 29 10 b3 92 75 ae 48 b7 56 01 59 81 85 0d 27 db 67 34 e3 7f 67 21
+22 67 dd 05 ee ff 27 b9 e7 a8 13 fa 57 4b 72 a0 0b 43 0b 18 20
+</artwork>
+        <artwork align="left" pn="section-2.3-40">
+MAC_3 (Raw Value) (32 bytes)
+39 b1 27 c1 30 12 9a fa 30 61 8c 75 13 29 e6 37 cc 37 34 27 0d 4b 01
+25 84 45 a8 ee 02 da a3 bd
+</artwork>
+        <artwork align="left" pn="section-2.3-41">
+MAC_3 (CBOR Data Item) (34 bytes)
+58 20 39 b1 27 c1 30 12 9a fa 30 61 8c 75 13 29 e6 37 cc 37 34 27 0d
+4b 01 25 84 45 a8 ee 02 da a3 bd
+</artwork>
+        <t indent="0" pn="section-2.3-42">Since METHOD = 0, Signature_or_MAC_3 is the 'signature' of the
+COSE_Sign1 object.</t>
+        <t indent="0" pn="section-2.3-43">The Initiator constructs the message to be signed:</t>
+        <artwork align="left" pn="section-2.3-44">
+[
+  "Signature1",
+  &lt;&lt; ID_CRED_I &gt;&gt;,
+  &lt;&lt; TH_3, CRED_I, ? EAD_3 &gt;&gt;,
+  MAC_3
+] =
+
+[
+  "Signature1",
+  h'a11822822e48c24ab2fd7643c79f',
+  h'58205b7df9b4f58f240ce0418e48191b5fff3a22b5ca57f6
+    69b16777996592e928bc58f13081ee3081a1a00302010202
+    0462319ea0300506032b6570301d311b301906035504030c
+    124544484f4320526f6f742045643235353139301e170d32
+    32303331363038323430305a170d32393132333132333030
+    30305a30223120301e06035504030c174544484f4320496e
+    69746961746f722045643235353139302a300506032b6570
+    032100ed06a8ae61a829ba5fa54525c9d07f48dd44a302f4
+    3e0f23d8cc20b73085141e300506032b6570034100521241
+    d8b3a770996bcfc9b9ead4e7e0a1c0db353a3bdf2910b392
+    75ae48b756015981850d27db6734e37f67212267dd05eeff
+    27b9e7a813fa574b72a00b430b',
+  h'39b127c130129afa30618c751329e637cc3734270d4b0125
+    8445a8ee02daa3bd'
+]
+</artwork>
+        <artwork align="left" pn="section-2.3-45">
+Message to be signed in message_3 (CBOR Data Item) (341 bytes)
+84 6a 53 69 67 6e 61 74 75 72 65 31 4e a1 18 22 82 2e 48 c2 4a b2 fd
+76 43 c7 9f 59 01 15 58 20 5b 7d f9 b4 f5 8f 24 0c e0 41 8e 48 19 1b
+5f ff 3a 22 b5 ca 57 f6 69 b1 67 77 99 65 92 e9 28 bc 58 f1 30 81 ee
+30 81 a1 a0 03 02 01 02 02 04 62 31 9e a0 30 05 06 03 2b 65 70 30 1d
+31 1b 30 19 06 03 55 04 03 0c 12 45 44 48 4f 43 20 52 6f 6f 74 20 45
+64 32 35 35 31 39 30 1e 17 0d 32 32 30 33 31 36 30 38 32 34 30 30 5a
+17 0d 32 39 31 32 33 31 32 33 30 30 30 30 5a 30 22 31 20 30 1e 06 03
+55 04 03 0c 17 45 44 48 4f 43 20 49 6e 69 74 69 61 74 6f 72 20 45 64
+32 35 35 31 39 30 2a 30 05 06 03 2b 65 70 03 21 00 ed 06 a8 ae 61 a8
+29 ba 5f a5 45 25 c9 d0 7f 48 dd 44 a3 02 f4 3e 0f 23 d8 cc 20 b7 30
+85 14 1e 30 05 06 03 2b 65 70 03 41 00 52 12 41 d8 b3 a7 70 99 6b cf
+c9 b9 ea d4 e7 e0 a1 c0 db 35 3a 3b df 29 10 b3 92 75 ae 48 b7 56 01
+59 81 85 0d 27 db 67 34 e3 7f 67 21 22 67 dd 05 ee ff 27 b9 e7 a8 13
+fa 57 4b 72 a0 0b 43 0b 58 20 39 b1 27 c1 30 12 9a fa 30 61 8c 75 13
+29 e6 37 cc 37 34 27 0d 4b 01 25 84 45 a8 ee 02 da a3 bd
+</artwork>
+        <t indent="0" pn="section-2.3-46">The Initiator signs using the private authentication key SK_I:</t>
+        <artwork align="left" pn="section-2.3-47">
+Signature_or_MAC_3 (Raw Value) (64 bytes)
+96 e1 cd 5f ce ad fa c1 b5 af 81 94 43 f7 09 24 f5 71 99 55 95 7f d0
+26 55 be b4 77 5e 1a 73 18 6a 0d 1d 3e a6 83 f0 8f 8d 03 dc ec b9 cf
+15 4e 1c 6f 55 5a 1e 12 ca 11 8c e4 2b db a6 87 89 07
+</artwork>
+        <artwork align="left" pn="section-2.3-48">
+Signature_or_MAC_3 (CBOR Data Item) (66 bytes)
+58 40 96 e1 cd 5f ce ad fa c1 b5 af 81 94 43 f7 09 24 f5 71 99 55 95
+7f d0 26 55 be b4 77 5e 1a 73 18 6a 0d 1d 3e a6 83 f0 8f 8d 03 dc ec
+b9 cf 15 4e 1c 6f 55 5a 1e 12 ca 11 8c e4 2b db a6 87 89 07
+</artwork>
+        <t indent="0" pn="section-2.3-49">The Initiator constructs PLAINTEXT_3:</t>
+        <artwork align="left" pn="section-2.3-50">
+PLAINTEXT_3 =
+(
+  ID_CRED_I / bstr / -24..23,
+  Signature_or_MAC_3,
+  ? EAD_3
+)
+</artwork>
+        <artwork align="left" pn="section-2.3-51">
+PLAINTEXT_3 (CBOR Sequence) (80 bytes)
+a1 18 22 82 2e 48 c2 4a b2 fd 76 43 c7 9f 58 40 96 e1 cd 5f ce ad fa
+c1 b5 af 81 94 43 f7 09 24 f5 71 99 55 95 7f d0 26 55 be b4 77 5e 1a
+73 18 6a 0d 1d 3e a6 83 f0 8f 8d 03 dc ec b9 cf 15 4e 1c 6f 55 5a 1e
+12 ca 11 8c e4 2b db a6 87 89 07
+</artwork>
+        <t indent="0" pn="section-2.3-52">The Initiator constructs the associated data for message_3:</t>
+        <artwork align="left" pn="section-2.3-53">
+A_3 =
+[
+  "Encrypt0",
+  h'',
+  h'5b7df9b4f58f240ce0418e48191b5fff3a22b5ca57f669b1
+    6777996592e928bc'
+]
+</artwork>
+        <artwork align="left" pn="section-2.3-54">
+A_3 (CBOR Data Item) (45 bytes)
+83 68 45 6e 63 72 79 70 74 30 40 58 20 5b 7d f9 b4 f5 8f 24 0c e0 41
+8e 48 19 1b 5f ff 3a 22 b5 ca 57 f6 69 b1 67 77 99 65 92 e9 28 bc
+</artwork>
+        <t indent="0" pn="section-2.3-55">The Initiator constructs the input needed to derive the key K_3 (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>) using the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-2.3-56">
+K_3 = EDHOC_KDF( PRK_3e2m, 3, TH_3, key_length )
+    = HKDF-Expand( PRK_3e2m, info, key_length )
+</artwork>
+        <t indent="0" pn="section-2.3-57">where key_length is the key length in bytes for the EDHOC Authenticated Encryption with Associated Data (AEAD) algorithm, and info for K_3 is:</t>
+        <artwork align="left" pn="section-2.3-58">
+info =
+(
+  3,
+  h'5b7df9b4f58f240ce0418e48191b5fff3a22b5ca57f669b1
+    6777996592e928bc',
+  16
+)
+</artwork>
+        <t indent="0" pn="section-2.3-59">where the last value is the key length in bytes for the EDHOC AEAD algorithm.</t>
+        <artwork align="left" pn="section-2.3-60">
+info for K_3 (CBOR Sequence) (36 bytes)
+03 58 20 5b 7d f9 b4 f5 8f 24 0c e0 41 8e 48 19 1b 5f ff 3a 22 b5 ca
+57 f6 69 b1 67 77 99 65 92 e9 28 bc 10
+</artwork>
+        <artwork align="left" pn="section-2.3-61">
+K_3 (Raw Value) (16 bytes)
+da 19 5e 5f 64 8a c6 3b 0e 8f b0 c4 55 20 51 39
+</artwork>
+        <t indent="0" pn="section-2.3-62">The Initiator constructs the input needed to derive the nonce IV_3 (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>) using the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-2.3-63">
+IV_3 = EDHOC_KDF( PRK_3e2m, 4, TH_3, iv_length )
+     = HKDF-Expand( PRK_3e2m, info, iv_length )
+</artwork>
+        <t indent="0" pn="section-2.3-64">where iv_length is the nonce length in bytes for the EDHOC AEAD algorithm, and info for IV_3 is:</t>
+        <artwork align="left" pn="section-2.3-65">
+info =
+(
+  4,
+  h'5b7df9b4f58f240ce0418e48191b5fff3a22b5ca57f669b1
+    6777996592e928bc',
+  13
+)
+</artwork>
+        <t indent="0" pn="section-2.3-66">where the last value is the nonce length in bytes for the EDHOC AEAD algorithm.</t>
+        <artwork align="left" pn="section-2.3-67">
+info for IV_3 (CBOR Sequence) (36 bytes)
+04 58 20 5b 7d f9 b4 f5 8f 24 0c e0 41 8e 48 19 1b 5f ff 3a 22 b5 ca
+57 f6 69 b1 67 77 99 65 92 e9 28 bc 0d
+</artwork>
+        <artwork align="left" pn="section-2.3-68">
+IV_3 (Raw Value) (13 bytes)
+38 d8 c6 4c 56 25 5a ff a4 49 f4 be d7
+</artwork>
+        <t indent="0" pn="section-2.3-69">The Initiator calculates CIPHERTEXT_3 as 'ciphertext' of COSE_Encrypt0 applied
+using the EDHOC AEAD algorithm with plaintext PLAINTEXT_3, additional data
+A_3, key K_3, and nonce IV_3.</t>
+        <artwork align="left" pn="section-2.3-70">
+CIPHERTEXT_3 (Raw Value) (88 bytes)
+25 c3 45 88 4a aa eb 22 c5 27 f9 b1 d2 b6 78 72 07 e0 16 3c 69 b6 2a
+0d 43 92 81 50 42 72 03 c3 16 74 e4 51 4e a6 e3 83 b5 66 eb 29 76 3e
+fe b0 af a5 18 77 6a e1 c6 5f 85 6d 84 bf 32 af 3a 78 36 97 04 66 dc
+b7 1f 76 74 5d 39 d3 02 5e 77 03 e0 c0 32 eb ad 51 94 7c
+</artwork>
+        <t indent="0" pn="section-2.3-71">message_3 is the CBOR bstr encoding of CIPHERTEXT_3:</t>
+        <artwork align="left" pn="section-2.3-72">
+message_3 (CBOR Sequence) (90 bytes)
+58 58 25 c3 45 88 4a aa eb 22 c5 27 f9 b1 d2 b6 78 72 07 e0 16 3c 69
+b6 2a 0d 43 92 81 50 42 72 03 c3 16 74 e4 51 4e a6 e3 83 b5 66 eb 29
+76 3e fe b0 af a5 18 77 6a e1 c6 5f 85 6d 84 bf 32 af 3a 78 36 97 04
+66 dc b7 1f 76 74 5d 39 d3 02 5e 77 03 e0 c0 32 eb ad 51 94 7c
+</artwork>
+        <t indent="0" pn="section-2.3-73">The transcript hash TH_4 is calculated using the EDHOC hash algorithm:</t>
+        <t indent="0" pn="section-2.3-74">TH_4 = H( TH_3, PLAINTEXT_3, CRED_I )</t>
+        <artwork align="left" pn="section-2.3-75">
+Input to calculate TH_4 (CBOR Sequence) (357 bytes)
+58 20 5b 7d f9 b4 f5 8f 24 0c e0 41 8e 48 19 1b 5f ff 3a 22 b5 ca 57
+f6 69 b1 67 77 99 65 92 e9 28 bc a1 18 22 82 2e 48 c2 4a b2 fd 76 43
+c7 9f 58 40 96 e1 cd 5f ce ad fa c1 b5 af 81 94 43 f7 09 24 f5 71 99
+55 95 7f d0 26 55 be b4 77 5e 1a 73 18 6a 0d 1d 3e a6 83 f0 8f 8d 03
+dc ec b9 cf 15 4e 1c 6f 55 5a 1e 12 ca 11 8c e4 2b db a6 87 89 07 58
+f1 30 81 ee 30 81 a1 a0 03 02 01 02 02 04 62 31 9e a0 30 05 06 03 2b
+65 70 30 1d 31 1b 30 19 06 03 55 04 03 0c 12 45 44 48 4f 43 20 52 6f
+6f 74 20 45 64 32 35 35 31 39 30 1e 17 0d 32 32 30 33 31 36 30 38 32
+34 30 30 5a 17 0d 32 39 31 32 33 31 32 33 30 30 30 30 5a 30 22 31 20
+30 1e 06 03 55 04 03 0c 17 45 44 48 4f 43 20 49 6e 69 74 69 61 74 6f
+72 20 45 64 32 35 35 31 39 30 2a 30 05 06 03 2b 65 70 03 21 00 ed 06
+a8 ae 61 a8 29 ba 5f a5 45 25 c9 d0 7f 48 dd 44 a3 02 f4 3e 0f 23 d8
+cc 20 b7 30 85 14 1e 30 05 06 03 2b 65 70 03 41 00 52 12 41 d8 b3 a7
+70 99 6b cf c9 b9 ea d4 e7 e0 a1 c0 db 35 3a 3b df 29 10 b3 92 75 ae
+48 b7 56 01 59 81 85 0d 27 db 67 34 e3 7f 67 21 22 67 dd 05 ee ff 27
+b9 e7 a8 13 fa 57 4b 72 a0 0b 43 0b
+</artwork>
+        <artwork align="left" pn="section-2.3-76">
+TH_4 (Raw Value) (32 bytes)
+0e b8 68 f2 63 cf 35 55 dc cd 39 6d d8 de c2 9d 37 50 d5 99 be 42 d5
+a4 1a 5a 37 c8 96 f2 94 ac
+</artwork>
+        <artwork align="left" pn="section-2.3-77">
+TH_4 (CBOR Data Item) (34 bytes)
+58 20 0e b8 68 f2 63 cf 35 55 dc cd 39 6d d8 de c2 9d 37 50 d5 99 be
+42 d5 a4 1a 5a 37 c8 96 f2 94 ac
+</artwork>
+      </section>
+      <section anchor="message4" numbered="true" removeInRFC="false" toc="include" pn="section-2.4">
+        <name slugifiedName="name-message_4">message_4</name>
+        <t indent="0" pn="section-2.4-1">No external authorization data:</t>
+        <artwork align="left" pn="section-2.4-2">
+EAD_4 (CBOR Sequence) (0 bytes)
+</artwork>
+        <t indent="0" pn="section-2.4-3">The Responder constructs PLAINTEXT_4:</t>
+        <artwork align="left" pn="section-2.4-4">
+PLAINTEXT_4 =
+(
+  ? EAD_4
+)
+</artwork>
+        <artwork align="left" pn="section-2.4-5">
+PLAINTEXT_4 (CBOR Sequence) (0 bytes)
+</artwork>
+        <t indent="0" pn="section-2.4-6">The Responder constructs the associated data for message_4:</t>
+        <artwork align="left" pn="section-2.4-7">
+A_4 =
+[
+  "Encrypt0",
+  h'',
+  h'0eb868f263cf3555dccd396dd8dec29d3750d599be42d5a4
+    1a5a37c896f294ac'
+]
+</artwork>
+        <artwork align="left" pn="section-2.4-8">
+A_4 (CBOR Data Item) (45 bytes)
+83 68 45 6e 63 72 79 70 74 30 40 58 20 0e b8 68 f2 63 cf 35 55 dc cd
+39 6d d8 de c2 9d 37 50 d5 99 be 42 d5 a4 1a 5a 37 c8 96 f2 94 ac
+</artwork>
+        <t indent="0" pn="section-2.4-9">The Responder constructs the input needed to derive the EDHOC message_4 key (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>) using the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-2.4-10">
+K_4 = EDHOC_KDF( PRK_4e3m, 8, TH_4, key_length )
+    = HKDF-Expand( PRK_4e3m, info, key_length )
+</artwork>
+        <t indent="0" pn="section-2.4-11">where key_length is the key length in bytes for the EDHOC AEAD algorithm,
+  and info for K_4 is:</t>
+        <artwork align="left" pn="section-2.4-12">
+info =
+(
+  8,
+  h'0eb868f263cf3555dccd396dd8dec29d3750d599be42d5a4
+    1a5a37c896f294ac',
+  16
+)
+</artwork>
+        <t indent="0" pn="section-2.4-13">where the last value is the key length in bytes for the EDHOC AEAD algorithm.</t>
+        <artwork align="left" pn="section-2.4-14">
+info for K_4 (CBOR Sequence) (36 bytes)
+08 58 20 0e b8 68 f2 63 cf 35 55 dc cd 39 6d d8 de c2 9d 37 50 d5 99
+be 42 d5 a4 1a 5a 37 c8 96 f2 94 ac 10
+</artwork>
+        <artwork align="left" pn="section-2.4-15">
+K_4 (Raw Value) (16 bytes)
+df 8c b5 86 1e 1f df ed d3 b2 30 15 a3 9d 1e 2e
+</artwork>
+        <t indent="0" pn="section-2.4-16">The Responder constructs the input needed to derive the EDHOC message_4 nonce (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>) using the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-2.4-17">
+IV_4 = EDHOC_KDF( PRK_4e3m, 9, TH_4, iv_length )
+     = HKDF-Expand( PRK_4e3m, info, iv_length )
+</artwork>
+        <t indent="0" pn="section-2.4-18">where length is the nonce length in bytes for the EDHOC AEAD algorithm,
+  and info for IV_4 is:</t>
+        <artwork align="left" pn="section-2.4-19">
+info =
+(
+  9,
+  h'0eb868f263cf3555dccd396dd8dec29d3750d599be42d5a4
+    1a5a37c896f294ac',
+  13
+)
+</artwork>
+        <t indent="0" pn="section-2.4-20">where the last value is the nonce length in bytes for the EDHOC AEAD algorithm.</t>
+        <artwork align="left" pn="section-2.4-21">
+info for IV_4 (CBOR Sequence) (36 bytes)
+09 58 20 0e b8 68 f2 63 cf 35 55 dc cd 39 6d d8 de c2 9d 37 50 d5 99
+be 42 d5 a4 1a 5a 37 c8 96 f2 94 ac 0d
+</artwork>
+        <artwork align="left" pn="section-2.4-22">
+IV_4 (Raw Value) (13 bytes)
+12 8e c6 58 d9 70 d7 38 0f 74 fc 6c 27
+</artwork>
+        <t indent="0" pn="section-2.4-23">The Responder calculates CIPHERTEXT_4 as 'ciphertext' of COSE_Encrypt0 applied
+using the EDHOC AEAD algorithm with plaintext PLAINTEXT_4, additional data
+A_4, key K_4, and nonce IV_4.</t>
+        <artwork align="left" pn="section-2.4-24">
+CIPHERTEXT_4 (8 bytes)
+4f 0e de e3 66 e5 c8 83
+</artwork>
+        <t indent="0" pn="section-2.4-25">message_4 is the CBOR bstr encoding of CIPHERTEXT_4:</t>
+        <artwork align="left" pn="section-2.4-26">
+message_4 (CBOR Sequence) (9 bytes)
+48 4f 0e de e3 66 e5 c8 83
+</artwork>
+      </section>
+      <section anchor="out-and-exporter1" numbered="true" removeInRFC="false" toc="include" pn="section-2.5">
+        <name slugifiedName="name-prk_out-and-prk_exporter">PRK_out and PRK_exporter</name>
+        <t indent="0" pn="section-2.5-1">PRK_out is specified in <xref section="4.1.3" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.3" derivedContent="RFC9528"/>.</t>
+        <artwork align="left" pn="section-2.5-2">
+PRK_out = EDHOC_KDF( PRK_4e3m, 7, TH_4, hash_length ) 
+        = HKDF-Expand( PRK_4e3m, info, hash_length )
+</artwork>
+        <t indent="0" pn="section-2.5-3">where hash_length is the length in bytes of the output of the EDHOC hash algorithm, and info for PRK_out is:</t>
+        <artwork align="left" pn="section-2.5-4">
+info =
+(
+  7,
+  h'0eb868f263cf3555dccd396dd8dec29d3750d599be42d5a4
+    1a5a37c896f294ac',
+  32
+)
+</artwork>
+        <t indent="0" pn="section-2.5-5">where the last value is the length in bytes of the output of the EDHOC hash algorithm.</t>
+        <artwork align="left" pn="section-2.5-6">
+info for PRK_out (CBOR Sequence) (37 bytes)
+07 58 20 0e b8 68 f2 63 cf 35 55 dc cd 39 6d d8 de c2 9d 37 50 d5 99
+be 42 d5 a4 1a 5a 37 c8 96 f2 94 ac 18 20
+</artwork>
+        <artwork align="left" pn="section-2.5-7">
+PRK_out (Raw Value) (32 bytes)
+b7 44 cb 7d 8a 87 cc 04 47 c3 35 0e 16 5b 25 0d ab 12 ec 45 33 25 ab
+b9 22 b3 03 07 e5 c3 68 f0
+</artwork>
+        <t indent="0" pn="section-2.5-8">The Object Security for Constrained RESTful Environments (OSCORE) Master Secret and OSCORE Master Salt are derived with the EDHOC_Exporter as specified in <xref section="4.2.1" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.2.1" derivedContent="RFC9528"/>.</t>
+        <artwork align="left" pn="section-2.5-9">
+EDHOC_Exporter( exporter_label, context, length )
+= EDHOC_KDF( PRK_exporter, exporter_label, context, length )
+</artwork>
+        <t indent="0" pn="section-2.5-10">where PRK_exporter is derived from PRK_out:</t>
+        <artwork align="left" pn="section-2.5-11">
+PRK_exporter = EDHOC_KDF( PRK_out, 10, h'', hash_length ) 
+             = HKDF-Expand( PRK_out, info, hash_length )
+</artwork>
+        <t indent="0" pn="section-2.5-12">where hash_length is the length in bytes of the output of the EDHOC hash algorithm, and info for the PRK_exporter is:</t>
+        <artwork align="left" pn="section-2.5-13">
+info =
+(
+  10,
+  h'',
+  32
+)
+</artwork>
+        <t indent="0" pn="section-2.5-14">where the last value is the length in bytes of the output of the EDHOC hash algorithm.</t>
+        <artwork align="left" pn="section-2.5-15">
+info for PRK_exporter (CBOR Sequence) (4 bytes)
+0a 40 18 20
+</artwork>
+        <artwork align="left" pn="section-2.5-16">
+PRK_exporter (Raw Value) (32 bytes)
+2a ae c8 fc 4a b3 bc 32 95 de f6 b5 51 05 1a 2f a5 61 42 4d b3 01 fa
+84 f6 42 f5 57 8a 6d f5 1a
+</artwork>
+      </section>
+      <section anchor="oscore-param" numbered="true" removeInRFC="false" toc="include" pn="section-2.6">
+        <name slugifiedName="name-oscore-parameters">OSCORE Parameters</name>
+        <t indent="0" pn="section-2.6-1">The derivation of OSCORE parameters is specified in <xref section="A.1" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#appendix-A.1" derivedContent="RFC9528"/>.</t>
+        <t indent="0" pn="section-2.6-2">The AEAD and hash algorithms to use in OSCORE are given by the selected cipher suite:</t>
+        <artwork align="left" pn="section-2.6-3">
+Application AEAD Algorithm (int)
+10
+</artwork>
+        <artwork align="left" pn="section-2.6-4">
+Application Hash Algorithm (int)
+-16
+</artwork>
+        <t indent="0" pn="section-2.6-5">The mapping from EDHOC connection identifiers to OSCORE Sender/Recipient IDs is defined in <xref section="3.3.3" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.3.3" derivedContent="RFC9528"/>.</t>
+        <t indent="0" pn="section-2.6-6">C_R is mapped to the Recipient ID of the server, i.e., the Sender ID of the client. The byte string 0x18, which as C_R is encoded as the CBOR byte string 0x4118, is converted to the server Recipient ID 0x18.</t>
+        <artwork align="left" pn="section-2.6-7">
+Client's OSCORE Sender ID (Raw Value) (1 byte)
+18
+</artwork>
+        <t indent="0" pn="section-2.6-8">C_I is mapped to the Recipient ID of the client, i.e., the Sender ID of the server. The byte string 0x2d, which as C_I is encoded as the CBOR integer 0x2d, is converted to the client Recipient ID 0x2d.</t>
+        <artwork align="left" pn="section-2.6-9">
+Server's OSCORE Sender ID (Raw Value) (1 byte)
+2d
+</artwork>
+        <t indent="0" pn="section-2.6-10">The OSCORE Master Secret is computed through EDHOC_Expand() using the
+application hash algorithm (see <xref section="A.1" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#appendix-A.1" derivedContent="RFC9528"/>):</t>
+        <artwork align="left" pn="section-2.6-11">
+OSCORE Master Secret = EDHOC_Exporter( 0, h'', oscore_key_length )
+= EDHOC_KDF( PRK_exporter, 0, h'', oscore_key_length )
+= HKDF-Expand( PRK_exporter, info, oscore_key_length )
+</artwork>
+        <t indent="0" pn="section-2.6-12">where oscore_key_length is the key length in bytes for the application AEAD
+algorithm by default, and info for the OSCORE Master Secret is:</t>
+        <artwork align="left" pn="section-2.6-13">
+info =
+(
+  0,
+  h'',
+  16
+)
+</artwork>
+        <t indent="0" pn="section-2.6-14">where the last value is the key length in bytes for the application AEAD algorithm.</t>
+        <artwork align="left" pn="section-2.6-15">
+info for OSCORE Master Secret (CBOR Sequence) (3 bytes)
+00 40 10
+</artwork>
+        <artwork align="left" pn="section-2.6-16">
+OSCORE Master Secret (Raw Value) (16 bytes)
+1e 1c 6b ea c3 a8 a1 ca c4 35 de 7e 2f 9a e7 ff
+</artwork>
+        <t indent="0" pn="section-2.6-17">The OSCORE Master Salt is computed through EDHOC_Expand() using the application hash algorithm (see <xref section="4.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.2" derivedContent="RFC9528"/>):</t>
+        <artwork align="left" pn="section-2.6-18">
+OSCORE Master Salt = EDHOC_Exporter( 1, h'', oscore_salt_length )
+= EDHOC_KDF( PRK_exporter, 1, h'', oscore_salt_length )
+= HKDF-Expand( PRK_exporter, info, oscore_salt_length )
+</artwork>
+        <t indent="0" pn="section-2.6-19">where oscore_salt_length is the length in bytes of the OSCORE Master Salt, and info for the OSCORE Master Salt is:</t>
+        <artwork align="left" pn="section-2.6-20">
+info =
+(
+  1,
+  h'',
+  8
+)
+</artwork>
+        <t indent="0" pn="section-2.6-21">where the last value is the length in bytes of the OSCORE Master Salt.</t>
+        <artwork align="left" pn="section-2.6-22">
+info for OSCORE Master Salt (CBOR Sequence) (3 bytes)
+01 40 08
+</artwork>
+        <artwork align="left" pn="section-2.6-23">
+OSCORE Master Salt (Raw Value) (8 bytes)
+ce 7a b8 44 c0 10 6d 73
+</artwork>
+      </section>
+      <section anchor="key-update" numbered="true" removeInRFC="false" toc="include" pn="section-2.7">
+        <name slugifiedName="name-key-update">Key Update</name>
+        <t indent="0" pn="section-2.7-1">Key update is defined in <xref section="H" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#appendix-H" derivedContent="RFC9528"/>.</t>
+        <artwork align="left" pn="section-2.7-2">
+EDHOC_KeyUpdate( context ):
+PRK_out = EDHOC_KDF( PRK_out, 11, context, hash_length )
+        = HKDF-Expand( PRK_out, info, hash_length )
+</artwork>
+        <t indent="0" pn="section-2.7-3">where hash_length is the length in bytes of the output of the EDHOC hash function, and the context for KeyUpdate is:</t>
+        <artwork align="left" pn="section-2.7-4">
+context for KeyUpdate (Raw Value) (16 bytes)
+d6 be 16 96 02 b8 bc ea a0 11 58 fd b8 20 89 0c
+</artwork>
+        <artwork align="left" pn="section-2.7-5">
+context for KeyUpdate (CBOR Data Item) (17 bytes)
+50 d6 be 16 96 02 b8 bc ea a0 11 58 fd b8 20 89 0c
+</artwork>
+        <t indent="0" pn="section-2.7-6">where info for KeyUpdate is:</t>
+        <artwork align="left" pn="section-2.7-7">
+info =
+(
+  11,
+  h'd6be169602b8bceaa01158fdb820890c',
+  32
+)
+	</artwork>
+        <artwork align="left" pn="section-2.7-8">
+info for KeyUpdate (CBOR Sequence) (20 bytes)
+0b 50 d6 be 16 96 02 b8 bc ea a0 11 58 fd b8 20 89 0c 18 20
+</artwork>
+        <artwork align="left" pn="section-2.7-9">
+PRK_out after KeyUpdate (Raw Value) (32 bytes)
+da 6e ac d9 a9 85 f4 fb a9 ae c2 a9 29 90 22 97 6b 25 b1 4e 89 fa 15
+97 94 f2 8d 82 fa f2 da ad
+</artwork>
+        <t indent="0" pn="section-2.7-10">After the key update, the PRK_exporter needs to be derived anew:</t>
+        <artwork align="left" pn="section-2.7-11">
+PRK_exporter = EDHOC_KDF( PRK_out, 10, h'', hash_length ) 
+             = HKDF-Expand( PRK_out, info, hash_length )
+</artwork>
+        <t indent="0" pn="section-2.7-12">where info and hash_length are unchanged as in <xref target="out-and-exporter1" format="default" sectionFormat="of" derivedContent="Section 2.5"/>.</t>
+        <artwork align="left" pn="section-2.7-13">
+PRK_exporter after KeyUpdate (Raw Value) (32 bytes)
+00 14 d2 52 5e e0 d8 e2 13 ea 59 08 02 8e 9a 1c e9 a0 1c 30 54 6f 09
+30 c0 44 d3 8d b5 36 2c 05
+</artwork>
+        <t indent="0" pn="section-2.7-14">The OSCORE Master Secret is derived with the updated PRK_exporter:</t>
+        <artwork align="left" pn="section-2.7-15">
+OSCORE Master Secret 
+= HKDF-Expand( PRK_exporter, info, oscore_key_length )
+</artwork>
+        <t indent="0" pn="section-2.7-16">where info and oscore_key_length are unchanged as in <xref target="oscore-param" format="default" sectionFormat="of" derivedContent="Section 2.6"/>.</t>
+        <artwork align="left" pn="section-2.7-17">
+OSCORE Master Secret after KeyUpdate (Raw Value) (16 bytes)
+ee 0f f5 42 c4 7e b0 e0 9c 69 30 76 49 bd bb e5
+</artwork>
+        <t indent="0" pn="section-2.7-18">The OSCORE Master Salt is derived with the updated PRK_exporter:</t>
+        <artwork align="left" pn="section-2.7-19">
+OSCORE Master Salt
+= HKDF-Expand( PRK_exporter, info, oscore_salt_length )
+</artwork>
+        <t indent="0" pn="section-2.7-20">where info and oscore_salt_length are unchanged as in <xref target="oscore-param" format="default" sectionFormat="of" derivedContent="Section 2.6"/>.</t>
+        <artwork align="left" pn="section-2.7-21">
+OSCORE Master Salt after KeyUpdate (Raw Value) (8 bytes)
+80 ce de 2a 1e 5a ab 48
+</artwork>
+      </section>
+      <section anchor="certs" numbered="true" removeInRFC="false" toc="include" pn="section-2.8">
+        <name slugifiedName="name-certificates">Certificates</name>
+        <section anchor="resp-cer" numbered="true" removeInRFC="false" toc="exclude" pn="section-2.8.1">
+          <name slugifiedName="name-responder-certificate">Responder Certificate</name>
+          <artwork align="left" pn="section-2.8.1-1">
+        Version: 3 (0x2)
+        Serial Number: 1647419076 (0x62319ec4)
+        Signature Algorithm: ED25519
+        Issuer: CN = EDHOC Root Ed25519
+        Validity
+            Not Before: Mar 16 08:24:36 2022 GMT
+            Not After : Dec 31 23:00:00 2029 GMT
+        Subject: CN = EDHOC Responder Ed25519
+        Subject Public Key Info:
+            Public Key Algorithm: ED25519
+                ED25519 Public-Key:
+                pub:
+                    a1 db 47 b9 51 84 85 4a d1 2a 0c 1a 35 4e 41
+                    8a ac e3 3a a0 f2 c6 62 c0 0b 3a c5 5d e9 2f
+                    93 59
+        Signature Algorithm: ED25519
+        Signature Value:
+            b7 23 bc 01 ea b0 92 8e 8b 2b 6c 98 de 19 cc 38 23 d4
+            6e 7d 69 87 b0 32 47 8f ec fa f1 45 37 a1 af 14 cc 8b
+            e8 29 c6 b7 30 44 10 18 37 eb 4a bc 94 95 65 d8 6d ce
+            51 cf ae 52 ab 82 c1 52 cb 02
+</artwork>
+        </section>
+        <section anchor="init-cer" numbered="true" removeInRFC="false" toc="exclude" pn="section-2.8.2">
+          <name slugifiedName="name-initiator-certificate">Initiator Certificate</name>
+          <artwork align="left" pn="section-2.8.2-1">
+        Version: 3 (0x2)
+        Serial Number: 1647419040 (0x62319ea0)
+        Signature Algorithm: ED25519
+        Issuer: CN = EDHOC Root Ed25519
+        Validity
+            Not Before: Mar 16 08:24:00 2022 GMT
+            Not After : Dec 31 23:00:00 2029 GMT
+        Subject: CN = EDHOC Initiator Ed25519
+        Subject Public Key Info:
+            Public Key Algorithm: ED25519
+                ED25519 Public-Key:
+                pub:
+                    ed 06 a8 ae 61 a8 29 ba 5f a5 45 25 c9 d0 7f
+                    48 dd 44 a3 02 f4 3e 0f 23 d8 cc 20 b7 30 85
+                    14 1e
+        Signature Algorithm: ED25519
+        Signature Value:
+            52 12 41 d8 b3 a7 70 99 6b cf c9 b9 ea d4 e7 e0 a1 c0
+            db 35 3a 3b df 29 10 b3 92 75 ae 48 b7 56 01 59 81 85
+            0d 27 db 67 34 e3 7f 67 21 22 67 dd 05 ee ff 27 b9 e7
+            a8 13 fa 57 4b 72 a0 0b 43 0b
+</artwork>
+        </section>
+        <section anchor="root-cer" numbered="true" removeInRFC="false" toc="exclude" pn="section-2.8.3">
+          <name slugifiedName="name-common-root-certificate">Common Root Certificate</name>
+          <artwork align="left" pn="section-2.8.3-1">
+        Version: 3 (0x2)
+        Serial Number: 1647418996 (0x62319e74)
+        Signature Algorithm: ED25519
+        Issuer: CN = EDHOC Root Ed25519
+        Validity
+            Not Before: Mar 16 08:23:16 2022 GMT
+            Not After : Dec 31 23:00:00 2029 GMT
+        Subject: CN = EDHOC Root Ed25519
+        Subject Public Key Info:
+            Public Key Algorithm: ED25519
+                ED25519 Public-Key:
+                pub:
+                    2b 7b 3e 80 57 c8 64 29 44 d0 6a fe 7a 71 d1
+                    c9 bf 96 1b 62 92 ba c4 b0 4f 91 66 9b bb 71
+                    3b e4
+        X509v3 extensions:
+            X509v3 Key Usage: critical
+                Certificate Sign
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+        Signature Algorithm: ED25519
+        Signature Value:
+            4b b5 2b bf 15 39 b7 1a 4a af 42 97 78 f2 9e da 7e 81
+            46 80 69 8f 16 c4 8f 2a 6f a4 db e8 25 41 c5 82 07 ba
+            1b c9 cd b0 c2 fa 94 7f fb f0 f0 ec 0e e9 1a 7f f3 7a
+            94 d9 25 1f a5 cd f1 e6 7a 0f
+</artwork>
+        </section>
+      </section>
+    </section>
+    <section anchor="sec-trace-2" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-authentication-with-static-">Authentication with Static DH, CCS Identified by 'kid'</name>
+      <t indent="0" pn="section-3-1">In this example, the Initiator and the Responder are authenticated with ephemeral-static Diffie-Hellman (METHOD = 3). The Initiator supports cipher suites 6 and 2 (in order of preference), and the Responder only supports cipher suite 2. After an initial negotiation message exchange, cipher suite 2 is used, which determines the algorithms:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3-2">
+        <li pn="section-3-2.1">EDHOC AEAD algorithm = AES-CCM-16-64-128</li>
+        <li pn="section-3-2.2">EDHOC hash algorithm = SHA-256</li>
+        <li pn="section-3-2.3">EDHOC MAC length in bytes (Static DH) = 8</li>
+        <li pn="section-3-2.4">EDHOC key exchange algorithm (ECDH curve) = P-256</li>
+        <li pn="section-3-2.5">EDHOC signature algorithm = ES256</li>
+        <li pn="section-3-2.6">application AEAD algorithm = AES-CCM-16-64-128</li>
+        <li pn="section-3-2.7">application hash algorithm = SHA-256</li>
+      </ul>
+      <t indent="0" pn="section-3-3">The public keys are represented as raw public keys (RPKs), encoded in a CWT Claims Set (CCS) and identified by the COSE header parameter 'kid'.</t>
+      <section anchor="m1_1" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-message_1-first-time">message_1 (First Time)</name>
+        <t indent="0" pn="section-3.1-1">Both endpoints are authenticated with static DH, i.e., METHOD = 3:</t>
+        <artwork align="left" pn="section-3.1-2">
+METHOD (CBOR Data Item) (1 byte)
+03
+</artwork>
+        <t indent="0" pn="section-3.1-3">The Initiator selects its preferred cipher suite 6. A single cipher suite is encoded as an int:</t>
+        <artwork align="left" pn="section-3.1-4">
+SUITES_I (CBOR Data Item) (1 byte)
+06
+</artwork>
+        <t indent="0" pn="section-3.1-5">The Initiator creates an ephemeral key pair for use with the EDHOC key exchange algorithm:</t>
+        <artwork align="left" pn="section-3.1-6">
+Initiator's ephemeral private key
+X (Raw Value) (32 bytes)
+5c 41 72 ac a8 b8 2b 5a 62 e6 6f 72 22 16 f5 a1 0f 72 aa 69 f4 2c 1d
+1c d3 cc d7 bf d2 9c a4 e9
+</artwork>
+        <artwork align="left" pn="section-3.1-7">
+Initiator's ephemeral public key, 'x'-coordinate
+G_X (Raw Value) (32 bytes)
+74 1a 13 d7 ba 04 8f bb 61 5e 94 38 6a a3 b6 1b ea 5b 3d 8f 65 f3 26
+20 b7 49 be e8 d2 78 ef a9
+</artwork>
+        <artwork align="left" pn="section-3.1-8">
+Initiator's ephemeral public key, 'x'-coordinate
+G_X (CBOR Data Item) (34 bytes)
+58 20 74 1a 13 d7 ba 04 8f bb 61 5e 94 38 6a a3 b6 1b ea 5b 3d 8f 65
+f3 26 20 b7 49 be e8 d2 78 ef a9
+</artwork>
+        <t indent="0" pn="section-3.1-9">The Initiator selects its connection identifier C_I to be the byte string 0x0e, which is encoded as 0x0e since it is represented by the 1-byte CBOR int 14:</t>
+        <artwork align="left" pn="section-3.1-10">
+Connection identifier chosen by the Initiator
+C_I (Raw Value) (1 byte)
+0e
+</artwork>
+        <artwork align="left" pn="section-3.1-11">
+Connection identifier chosen by the Initiator
+C_I (CBOR Data Item) (1 byte)
+0e
+</artwork>
+        <t indent="0" pn="section-3.1-12">No external authorization data:</t>
+        <artwork align="left" pn="section-3.1-13">
+EAD_1 (CBOR Sequence) (0 bytes)
+	</artwork>
+        <t indent="0" pn="section-3.1-14">The Initiator constructs message_1:</t>
+        <artwork align="left" pn="section-3.1-15">
+message_1 =
+(
+  3,
+  6,
+  h'741a13d7ba048fbb615e94386aa3b61bea5b3d8f65f32620
+    b749bee8d278efa9',
+  14
+)
+</artwork>
+        <artwork align="left" pn="section-3.1-16">
+message_1 (CBOR Sequence) (37 bytes)
+03 06 58 20 74 1a 13 d7 ba 04 8f bb 61 5e 94 38 6a a3 b6 1b ea 5b 3d
+8f 65 f3 26 20 b7 49 be e8 d2 78 ef a9 0e
+</artwork>
+      </section>
+      <section anchor="error" numbered="true" removeInRFC="false" toc="include" pn="section-3.2">
+        <name slugifiedName="name-error">error</name>
+        <t indent="0" pn="section-3.2-1">The Responder does not support cipher suite 6 and sends an error with ERR_CODE 2 containing SUITES_R as ERR_INFO. The Responder proposes cipher suite 2, a single cipher suite thus encoded as an int.</t>
+        <artwork align="left" pn="section-3.2-2">
+SUITES_R
+02
+</artwork>
+        <artwork align="left" pn="section-3.2-3">
+error (CBOR Sequence) (2 bytes)
+02 02
+</artwork>
+      </section>
+      <section anchor="message1-second-time" numbered="true" removeInRFC="false" toc="include" pn="section-3.3">
+        <name slugifiedName="name-message_1-second-time">message_1 (Second Time)</name>
+        <t indent="0" pn="section-3.3-1">Same steps are performed as for message_1 the first time (<xref target="m1_1" format="default" sectionFormat="of" derivedContent="Section 3.1"/>) but with SUITES_I updated.</t>
+        <t indent="0" pn="section-3.3-2">Both endpoints are authenticated with static DH, i.e., METHOD = 3:</t>
+        <artwork align="left" pn="section-3.3-3">
+METHOD (CBOR Data Item) (1 byte)
+03
+</artwork>
+        <t indent="0" pn="section-3.3-4">The Initiator selects cipher suite 2 and indicates the more preferred cipher suite(s), in this case 6, all encoded as the array [6, 2]:</t>
+        <artwork align="left" pn="section-3.3-5">
+SUITES_I (CBOR Data Item) (3 bytes)
+82 06 02
+</artwork>
+        <t indent="0" pn="section-3.3-6">The Initiator creates an ephemeral key pair for use with the EDHOC key exchange algorithm:</t>
+        <artwork align="left" pn="section-3.3-7">
+Initiator's ephemeral private key
+X (Raw Value) (32 bytes)
+36 8e c1 f6 9a eb 65 9b a3 7d 5a 8d 45 b2 1b dc 02 99 dc ea a8 ef 23
+5f 3c a4 2c e3 53 0f 95 25
+</artwork>
+        <artwork align="left" pn="section-3.3-8">
+Initiator's ephemeral public key, 'x'-coordinate
+G_X (Raw Value) (32 bytes)
+8a f6 f4 30 eb e1 8d 34 18 40 17 a9 a1 1b f5 11 c8 df f8 f8 34 73 0b
+96 c1 b7 c8 db ca 2f c3 b6
+</artwork>
+        <artwork align="left" pn="section-3.3-9">
+Initiator's ephemeral public key, one 'y'-coordinate
+(Raw Value) (32 bytes)
+51 e8 af 6c 6e db 78 16 01 ad 1d 9c 5f a8 bf 7a a1 57 16 c7 c0 6a 5d
+03 85 03 c6 14 ff 80 c9 b3
+</artwork>
+        <artwork align="left" pn="section-3.3-10">
+Initiator's ephemeral public key, 'x'-coordinate
+G_X (CBOR Data Item) (34 bytes)
+58 20 8a f6 f4 30 eb e1 8d 34 18 40 17 a9 a1 1b f5 11 c8 df f8 f8 34
+73 0b 96 c1 b7 c8 db ca 2f c3 b6
+</artwork>
+        <t indent="0" pn="section-3.3-11">The Initiator selects its connection identifier C_I to be the byte string 0x37, which is encoded as 0x37 since it is represented by the 1-byte CBOR int -24:</t>
+        <artwork align="left" pn="section-3.3-12">
+Connection identifier chosen by the Initiator
+C_I (Raw Value) (1 byte)
+37
+</artwork>
+        <artwork align="left" pn="section-3.3-13">
+Connection identifier chosen by the Initiator
+C_I (CBOR Data Item) (1 byte)
+37
+</artwork>
+        <t indent="0" pn="section-3.3-14">No external authorization data:</t>
+        <artwork align="left" pn="section-3.3-15">
+EAD_1 (CBOR Sequence) (0 bytes)
+</artwork>
+        <t indent="0" pn="section-3.3-16">The Initiator constructs message_1:</t>
+        <artwork align="left" pn="section-3.3-17">
+message_1 =
+(
+  3,
+  [6, 2],
+  h'8af6f430ebe18d34184017a9a11bf511c8dff8f834730b96
+    c1b7c8dbca2fc3b6',
+  -24
+)
+</artwork>
+        <artwork align="left" pn="section-3.3-18">
+message_1 (CBOR Sequence) (39 bytes)
+03 82 06 02 58 20 8a f6 f4 30 eb e1 8d 34 18 40 17 a9 a1 1b f5 11 c8
+df f8 f8 34 73 0b 96 c1 b7 c8 db ca 2f c3 b6 37
+</artwork>
+      </section>
+      <section anchor="message2-1" numbered="true" removeInRFC="false" toc="include" pn="section-3.4">
+        <name slugifiedName="name-message_2-2">message_2</name>
+        <t indent="0" pn="section-3.4-1">The Responder supports the selected cipher suite 2 and not the Initiator's more preferred cipher suite(s) 6, so SUITES_I is acceptable.</t>
+        <t indent="0" pn="section-3.4-2">The Responder creates an ephemeral key pair for use with the EDHOC key exchange algorithm:</t>
+        <artwork align="left" pn="section-3.4-3">
+Responder's ephemeral private key
+Y (Raw Value) (32 bytes)
+e2 f4 12 67 77 20 5e 85 3b 43 7d 6e ac a1 e1 f7 53 cd cc 3e 2c 69 fa
+88 4b 0a 1a 64 09 77 e4 18
+</artwork>
+        <artwork align="left" pn="section-3.4-4">
+Responder's ephemeral public key, 'x'-coordinate
+G_Y (Raw Value) (32 bytes)
+41 97 01 d7 f0 0a 26 c2 dc 58 7a 36 dd 75 25 49 f3 37 63 c8 93 42 2c
+8e a0 f9 55 a1 3a 4f f5 d5
+</artwork>
+        <artwork align="left" pn="section-3.4-5">
+Responder's ephemeral public key, one 'y'-coordinate
+(Raw Value) (32 bytes)
+5e 4f 0d d8 a3 da 0b aa 16 b9 d3 ad 56 a0 c1 86 0a 94 0a f8 59 14 91
+5e 25 01 9b 40 24 17 e9 9d
+</artwork>
+        <artwork align="left" pn="section-3.4-6">
+Responder's ephemeral public key, 'x'-coordinate
+G_Y (CBOR Data Item) (34 bytes)
+58 20 41 97 01 d7 f0 0a 26 c2 dc 58 7a 36 dd 75 25 49 f3 37 63 c8 93
+42 2c 8e a0 f9 55 a1 3a 4f f5 d5
+</artwork>
+        <t indent="0" pn="section-3.4-7">The Responder selects its connection identifier C_R to be the byte string 0x27, which is encoded as 0x27 since it is represented by the 1-byte CBOR int -8:</t>
+        <artwork align="left" pn="section-3.4-8">
+Connection identifier chosen by the Responder
+C_R (raw value) (1 byte)
+27
+</artwork>
+        <artwork align="left" pn="section-3.4-9">
+Connection identifier chosen by the Responder
+C_R (CBOR Data Item) (1 byte)
+27
+</artwork>
+        <t indent="0" pn="section-3.4-10">The transcript hash TH_2 is calculated using the EDHOC hash algorithm:</t>
+        <t indent="0" pn="section-3.4-11">TH_2 = H( G_Y, H(message_1) )</t>
+        <artwork align="left" pn="section-3.4-12">
+H(message_1) (Raw Value) (32 bytes)
+ca 02 ca bd a5 a8 90 27 49 b4 2f 71 10 50 bb 4d bd 52 15 3e 87 52 75
+94 b3 9f 50 cd f0 19 88 8c
+</artwork>
+        <artwork align="left" pn="section-3.4-13">
+H(message_1) (CBOR Data Item) (34 bytes)
+58 20 ca 02 ca bd a5 a8 90 27 49 b4 2f 71 10 50 bb 4d bd 52 15 3e 87
+52 75 94 b3 9f 50 cd f0 19 88 8c
+</artwork>
+        <t indent="0" pn="section-3.4-14">The input to calculate TH_2 is the CBOR sequence:</t>
+        <t indent="0" pn="section-3.4-15">G_Y, H(message_1)</t>
+        <artwork align="left" pn="section-3.4-16">
+Input to calculate TH_2 (CBOR Sequence) (68 bytes)
+58 20 41 97 01 d7 f0 0a 26 c2 dc 58 7a 36 dd 75 25 49 f3 37 63 c8 93
+42 2c 8e a0 f9 55 a1 3a 4f f5 d5 58 20 ca 02 ca bd a5 a8 90 27 49 b4
+2f 71 10 50 bb 4d bd 52 15 3e 87 52 75 94 b3 9f 50 cd f0 19 88 8c
+</artwork>
+        <artwork align="left" pn="section-3.4-17">
+TH_2 (Raw Value) (32 bytes)
+35 6e fd 53 77 14 25 e0 08 f3 fe 3a 86 c8 3f f4 c6 b1 6e 57 02 8f f3
+9d 52 36 c1 82 b2 02 08 4b
+</artwork>
+        <artwork align="left" pn="section-3.4-18">
+TH_2 (CBOR Data Item) (34 bytes)
+58 20 35 6e fd 53 77 14 25 e0 08 f3 fe 3a 86 c8 3f f4 c6 b1 6e 57 02
+8f f3 9d 52 36 c1 82 b2 02 08 4b
+</artwork>
+        <t indent="0" pn="section-3.4-19">PRK_2e is specified in <xref section="4.1.1.1" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.1.1" derivedContent="RFC9528"/>.</t>
+        <t indent="0" pn="section-3.4-20">First, the ECDH shared secret G_XY is computed from G_X and Y or G_Y and X:</t>
+        <artwork align="left" pn="section-3.4-21">
+G_XY (Raw Value) (ECDH shared secret) (32 bytes)
+2f 0c b7 e8 60 ba 53 8f bf 5c 8b de d0 09 f6 25 9b 4b 62 8f e1 eb 7d
+be 93 78 e5 ec f7 a8 24 ba
+</artwork>
+        <t indent="0" pn="section-3.4-22">Then, PRK_2e is calculated using EDHOC_Extract(), which is determined by the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-3.4-23">
+PRK_2e = EDHOC_Extract( salt, G_XY ) 
+       = HMAC-SHA-256( salt, G_XY )
+</artwork>
+        <t indent="0" pn="section-3.4-24">where salt is TH_2:</t>
+        <artwork align="left" pn="section-3.4-25">
+salt (Raw Value) (32 bytes)
+35 6e fd 53 77 14 25 e0 08 f3 fe 3a 86 c8 3f f4 c6 b1 6e 57 02 8f f3
+9d 52 36 c1 82 b2 02 08 4b
+</artwork>
+        <artwork align="left" pn="section-3.4-26">
+PRK_2e (Raw Value) (32 bytes)
+5a a0 d6 9f 3e 3d 1e 0c 47 9f 0b 8a 48 66 90 c9 80 26 30 c3 46 6b 1d
+c9 23 71 c9 82 56 31 70 b5
+</artwork>
+        <t indent="0" pn="section-3.4-27">Since METHOD = 3, the Responder authenticates using static DH. The EDHOC key exchange algorithm is based on the same curve as for the ephemeral keys, which is P-256, since the selected cipher suite is 2.</t>
+        <t indent="0" pn="section-3.4-28">The Responder's static Diffie-Hellman P-256 key pair consists of a private key and a public key.</t>
+        <artwork align="left" pn="section-3.4-29">
+Responder's private authentication key
+SK_R (Raw Value) (32 bytes)
+72 cc 47 61 db d4 c7 8f 75 89 31 aa 58 9d 34 8d 1e f8 74 a7 e3 03 ed
+e2 f1 40 dc f3 e6 aa 4a ac
+</artwork>
+        <artwork align="left" pn="section-3.4-30">
+Responder's public authentication key, 'x'-coordinate
+(Raw Value) (32 bytes)
+bb c3 49 60 52 6e a4 d3 2e 94 0c ad 2a 23 41 48 dd c2 17 91 a1 2a fb
+cb ac 93 62 20 46 dd 44 f0
+</artwork>
+        <artwork align="left" pn="section-3.4-31">
+Responder's public authentication key, 'y'-coordinate
+(Raw Value) (32 bytes)
+45 19 e2 57 23 6b 2a 0c e2 02 3f 09 31 f1 f3 86 ca 7a fd a6 4f cd e0
+10 8c 22 4c 51 ea bf 60 72
+</artwork>
+        <t indent="0" pn="section-3.4-32">Since the Responder authenticates with static DH (METHOD = 3), PRK_3e2m is derived
+from SALT_3e2m and G_RX.</t>
+        <t indent="0" pn="section-3.4-33">The input needed to calculate SALT_3e2m is defined in <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>, using EDHOC_Expand() with the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-3.4-34">
+SALT_3e2m = EDHOC_KDF( PRK_2e, 1, TH_2, hash_length ) 
+          = HKDF-Expand( PRK_2e, info, hash_length )
+</artwork>
+        <t indent="0" pn="section-3.4-35">where hash_length is the length in bytes of the output of the EDHOC hash algorithm, and info for SALT_3e2m is:</t>
+        <artwork align="left" pn="section-3.4-36">
+info =
+(
+  1,
+  h'356efd53771425e008f3fe3a86c83ff4c6b16e57028ff39d
+    5236c182b202084b',
+  32
+)
+</artwork>
+        <artwork align="left" pn="section-3.4-37">
+info for SALT_3e2m (CBOR Sequence) (37 bytes)
+01 58 20 35 6e fd 53 77 14 25 e0 08 f3 fe 3a 86 c8 3f f4 c6 b1 6e 57
+02 8f f3 9d 52 36 c1 82 b2 02 08 4b 18 20
+</artwork>
+        <artwork align="left" pn="section-3.4-38">
+SALT_3e2m (Raw Value) (32 bytes)
+af 4e 10 3a 47 cb 3c f3 25 70 d5 c2 5a d2 77 32 bd 8d 81 78 e9 a6 9d
+06 1c 31 a2 7f 8e 3c a9 26
+</artwork>
+        <t indent="0" pn="section-3.4-39">PRK_3e2m is specified in <xref section="4.1.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.1.2" derivedContent="RFC9528"/>.</t>
+        <t indent="0" pn="section-3.4-40">PRK_3e2m is derived from G_RX using EDHOC_Extract() with the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-3.4-41">
+PRK_3e2m = EDHOC_Extract( SALT_3e2m, G_RX )
+         = HMAC-SHA-256( SALT_3e2m, G_RX )
+</artwork>
+        <t indent="0" pn="section-3.4-42">where G_RX is the ECDH shared secret calculated from G_X and R, or G_R and X.</t>
+        <artwork align="left" pn="section-3.4-43">
+G_RX (Raw Value) (ECDH shared secret) (32 bytes)
+f2 b6 ee a0 22 20 b9 5e ee 5a 0b c7 01 f0 74 e0 0a 84 3e a0 24 22 f6
+08 25 fb 26 9b 3e 16 14 23
+</artwork>
+        <artwork align="left" pn="section-3.4-44">
+PRK_3e2m (Raw Value) (32 bytes)
+0c a3 d3 39 82 96 b3 c0 39 00 98 76 20 c1 1f 6f ce 70 78 1c 1d 12 19
+72 0f 9e c0 8c 12 2d 84 34
+</artwork>
+        <t indent="0" pn="section-3.4-45">The Responder constructs the remaining input needed to calculate MAC_2:</t>
+        <t indent="0" pn="section-3.4-46">MAC_2 = EDHOC_KDF( PRK_3e2m, 2, context_2, mac_length_2 )</t>
+        <t indent="0" pn="section-3.4-47">context_2 = &lt;&lt; C_R, ID_CRED_R, TH_2, CRED_R, ? EAD_2 &gt;&gt;</t>
+        <t indent="0" pn="section-3.4-48">CRED_R is identified by a 'kid' with byte string value 0x32:</t>
+        <artwork align="left" pn="section-3.4-49">
+ID_CRED_R =
+{
+  4 : h'32'
+}
+</artwork>
+        <artwork align="left" pn="section-3.4-50">
+ID_CRED_R (CBOR Data Item) (4 bytes)
+a1 04 41 32
+</artwork>
+        <t indent="0" pn="section-3.4-51">CRED_R is an RPK encoded as a CCS:</t>
+        <artwork align="left" pn="section-3.4-52">
+{                                              /CCS/
+  2 : "example.edu",                           /sub/
+  8 : {                                        /cnf/
+    1 : {                                      /COSE_Key/
+      1 : 2,                                   /kty/
+      2 : h'32',                               /kid/
+     -1 : 1,                                   /crv/
+     -2 : h'bbc34960526ea4d32e940cad2a234148
+            ddc21791a12afbcbac93622046dd44f0', /x/
+     -3 : h'4519e257236b2a0ce2023f0931f1f386
+            ca7afda64fcde0108c224c51eabf6072'  /y/
+    }
+  }
+}
+</artwork>
+        <artwork align="left" pn="section-3.4-53">
+CRED_R (CBOR Data Item) (95 bytes)
+a2 02 6b 65 78 61 6d 70 6c 65 2e 65 64 75 08 a1 01 a5 01 02 02 41 32
+20 01 21 58 20 bb c3 49 60 52 6e a4 d3 2e 94 0c ad 2a 23 41 48 dd c2
+17 91 a1 2a fb cb ac 93 62 20 46 dd 44 f0 22 58 20 45 19 e2 57 23 6b
+2a 0c e2 02 3f 09 31 f1 f3 86 ca 7a fd a6 4f cd e0 10 8c 22 4c 51 ea
+bf 60 72
+</artwork>
+        <t indent="0" pn="section-3.4-54">No external authorization data:</t>
+        <artwork align="left" pn="section-3.4-55">
+EAD_2 (CBOR Sequence) (0 bytes)
+</artwork>
+        <t indent="0" pn="section-3.4-56">context_2 = &lt;&lt; C_R, ID_CRED_R, TH_2, CRED_R, ? EAD_2 &gt;&gt;</t>
+        <artwork align="left" pn="section-3.4-57">
+context_2 (CBOR Sequence) (134 bytes)
+27 a1 04 41 32 58 20 35 6e fd 53 77 14 25 e0 08 f3 fe 3a 86 c8 3f f4
+c6 b1 6e 57 02 8f f3 9d 52 36 c1 82 b2 02 08 4b a2 02 6b 65 78 61 6d
+70 6c 65 2e 65 64 75 08 a1 01 a5 01 02 02 41 32 20 01 21 58 20 bb c3
+49 60 52 6e a4 d3 2e 94 0c ad 2a 23 41 48 dd c2 17 91 a1 2a fb cb ac
+93 62 20 46 dd 44 f0 22 58 20 45 19 e2 57 23 6b 2a 0c e2 02 3f 09 31
+f1 f3 86 ca 7a fd a6 4f cd e0 10 8c 22 4c 51 ea bf 60 72
+</artwork>
+        <artwork align="left" pn="section-3.4-58">
+context_2 (CBOR byte string) (136 bytes)
+58 86 27 a1 04 41 32 58 20 35 6e fd 53 77 14 25 e0 08 f3 fe 3a 86 c8
+3f f4 c6 b1 6e 57 02 8f f3 9d 52 36 c1 82 b2 02 08 4b a2 02 6b 65 78
+61 6d 70 6c 65 2e 65 64 75 08 a1 01 a5 01 02 02 41 32 20 01 21 58 20
+bb c3 49 60 52 6e a4 d3 2e 94 0c ad 2a 23 41 48 dd c2 17 91 a1 2a fb
+cb ac 93 62 20 46 dd 44 f0 22 58 20 45 19 e2 57 23 6b 2a 0c e2 02 3f
+09 31 f1 f3 86 ca 7a fd a6 4f cd e0 10 8c 22 4c 51 ea bf 60 72
+</artwork>
+        <t indent="0" pn="section-3.4-59">MAC_2 is computed through EDHOC_Expand() using the EDHOC hash algorithm (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>):</t>
+        <artwork align="left" pn="section-3.4-60">
+MAC_2 = HKDF-Expand( PRK_3e2m, info, mac_length_2 )
+	</artwork>
+        <t indent="0" pn="section-3.4-61">where</t>
+        <artwork align="left" pn="section-3.4-62">
+info = ( 2, context_2, mac_length_2 )
+</artwork>
+        <t indent="0" pn="section-3.4-63">Since METHOD = 3, mac_length_2 is given by the EDHOC MAC length.</t>
+        <t indent="0" pn="section-3.4-64">info for MAC_2 is:</t>
+        <artwork align="left" pn="section-3.4-65">
+info =
+(
+  2,
+  h'27a10441325820356efd53771425e008f3fe3a86c83ff4c6
+    b16e57028ff39d5236c182b202084ba2026b6578616d706c
+    652e65647508a101a501020241322001215820bbc3496052
+    6ea4d32e940cad2a234148ddc21791a12afbcbac93622046
+    dd44f02258204519e257236b2a0ce2023f0931f1f386ca7a
+    fda64fcde0108c224c51eabf6072',
+  8
+)
+</artwork>
+        <t indent="0" pn="section-3.4-66">where the last value is the EDHOC MAC length in bytes.</t>
+        <artwork align="left" pn="section-3.4-67">
+info for MAC_2 (CBOR Sequence) (138 bytes)
+02 58 86 27 a1 04 41 32 58 20 35 6e fd 53 77 14 25 e0 08 f3 fe 3a 86
+c8 3f f4 c6 b1 6e 57 02 8f f3 9d 52 36 c1 82 b2 02 08 4b a2 02 6b 65
+78 61 6d 70 6c 65 2e 65 64 75 08 a1 01 a5 01 02 02 41 32 20 01 21 58
+20 bb c3 49 60 52 6e a4 d3 2e 94 0c ad 2a 23 41 48 dd c2 17 91 a1 2a
+fb cb ac 93 62 20 46 dd 44 f0 22 58 20 45 19 e2 57 23 6b 2a 0c e2 02
+3f 09 31 f1 f3 86 ca 7a fd a6 4f cd e0 10 8c 22 4c 51 ea bf 60 72 08
+</artwork>
+        <artwork align="left" pn="section-3.4-68">
+MAC_2 (Raw Value) (8 bytes)
+09 43 30 5c 89 9f 5c 54
+</artwork>
+        <artwork align="left" pn="section-3.4-69">
+MAC_2 (CBOR Data Item) (9 bytes)
+48 09 43 30 5c 89 9f 5c 54
+</artwork>
+        <t indent="0" pn="section-3.4-70">Since METHOD = 3, Signature_or_MAC_2 is MAC_2:</t>
+        <artwork align="left" pn="section-3.4-71">
+Signature_or_MAC_2 (Raw Value) (8 bytes)
+09 43 30 5c 89 9f 5c 54
+</artwork>
+        <artwork align="left" pn="section-3.4-72">
+Signature_or_MAC_2 (CBOR Data Item) (9 bytes)
+48 09 43 30 5c 89 9f 5c 54
+</artwork>
+        <t indent="0" pn="section-3.4-73">The Responder constructs PLAINTEXT_2:</t>
+        <artwork align="left" pn="section-3.4-74">
+PLAINTEXT_2 =
+(
+  C_R,
+  ID_CRED_R / bstr / -24..23,
+  Signature_or_MAC_2,
+  ? EAD_2
+)
+</artwork>
+        <t indent="0" pn="section-3.4-75">Since ID_CRED_R contains a single 'kid' parameter, only the byte string value is included in the plaintext, represented as described in <xref section="3.3.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.3.2" derivedContent="RFC9528"/>. The CBOR map { 4 : h'32' } is thus replaced, not by the CBOR byte string 0x4132, but by the CBOR int 0x32, since that is a one-byte encoding of a CBOR integer (-19).</t>
+        <artwork align="left" pn="section-3.4-76">
+PLAINTEXT_2 (CBOR Sequence) (11 bytes)
+27 32 48 09 43 30 5c 89 9f 5c 54
+</artwork>
+        <t indent="0" pn="section-3.4-77">The input needed to calculate KEYSTREAM_2 is defined in <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>, using EDHOC_Expand() with the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-3.4-78">
+KEYSTREAM_2 = EDHOC_KDF( PRK_2e, 0, TH_2, plaintext_length ) 
+            = HKDF-Expand( PRK_2e, info, plaintext_length )
+</artwork>
+        <t indent="0" pn="section-3.4-79">where plaintext_length is the length in bytes of PLAINTEXT_2, and info for KEYSTREAM_2 is:</t>
+        <artwork align="left" pn="section-3.4-80">
+info =
+(
+  0,
+  h'356efd53771425e008f3fe3a86c83ff4c6b16e57028ff39d
+    5236c182b202084b',
+  11
+)
+</artwork>
+        <t indent="0" pn="section-3.4-81">where the last value is the length in bytes of PLAINTEXT_2.</t>
+        <artwork align="left" pn="section-3.4-82">
+info for KEYSTREAM_2 (CBOR Sequence) (36 bytes)
+00 58 20 35 6e fd 53 77 14 25 e0 08 f3 fe 3a 86 c8 3f f4 c6 b1 6e 57
+02 8f f3 9d 52 36 c1 82 b2 02 08 4b 0b
+</artwork>
+        <artwork align="left" pn="section-3.4-83">
+KEYSTREAM_2 (Raw Value) (11 bytes)
+bf 50 e9 e7 ba d0 bb 68 17 33 99
+</artwork>
+        <t indent="0" pn="section-3.4-84">The Responder calculates CIPHERTEXT_2 as XOR between PLAINTEXT_2 and KEYSTREAM_2:</t>
+        <artwork align="left" pn="section-3.4-85">
+CIPHERTEXT_2 (Raw Value) (11 bytes)
+98 62 a1 ee f9 e0 e7 e1 88 6f cd
+</artwork>
+        <t indent="0" pn="section-3.4-86">The Responder constructs message_2:</t>
+        <artwork align="left" pn="section-3.4-87">
+message_2 =
+(
+  G_Y_CIPHERTEXT_2
+)
+</artwork>
+        <t indent="0" pn="section-3.4-88">where G_Y_CIPHERTEXT_2 is the bstr encoding of the concatenation of
+the raw values of G_Y and CIPHERTEXT_2.</t>
+        <artwork align="left" pn="section-3.4-89">
+message_2 (CBOR Sequence) (45 bytes)
+58 2b 41 97 01 d7 f0 0a 26 c2 dc 58 7a 36 dd 75 25 49 f3 37 63 c8 93
+42 2c 8e a0 f9 55 a1 3a 4f f5 d5 98 62 a1 ee f9 e0 e7 e1 88 6f cd
+</artwork>
+      </section>
+      <section anchor="message3-1" numbered="true" removeInRFC="false" toc="include" pn="section-3.5">
+        <name slugifiedName="name-message_3-2">message_3</name>
+        <t indent="0" pn="section-3.5-1">The transcript hash TH_3 is calculated using the EDHOC hash algorithm:</t>
+        <t indent="0" pn="section-3.5-2">TH_3 = H( TH_2, PLAINTEXT_2, CRED_R )</t>
+        <artwork align="left" pn="section-3.5-3">
+Input to calculate TH_3 (CBOR Sequence) (140 bytes)
+58 20 35 6e fd 53 77 14 25 e0 08 f3 fe 3a 86 c8 3f f4 c6 b1 6e 57 02
+8f f3 9d 52 36 c1 82 b2 02 08 4b 27 32 48 09 43 30 5c 89 9f 5c 54 a2
+02 6b 65 78 61 6d 70 6c 65 2e 65 64 75 08 a1 01 a5 01 02 02 41 32 20
+01 21 58 20 bb c3 49 60 52 6e a4 d3 2e 94 0c ad 2a 23 41 48 dd c2 17
+91 a1 2a fb cb ac 93 62 20 46 dd 44 f0 22 58 20 45 19 e2 57 23 6b 2a
+0c e2 02 3f 09 31 f1 f3 86 ca 7a fd a6 4f cd e0 10 8c 22 4c 51 ea bf
+60 72
+</artwork>
+        <artwork align="left" pn="section-3.5-4">
+TH_3 (Raw Value) (32 bytes)
+ad af 67 a7 8a 4b cc 91 e0 18 f8 88 27 62 a7 22 00 0b 25 07 03 9d f0
+bc 1b bf 0c 16 1b b3 15 5c
+</artwork>
+        <artwork align="left" pn="section-3.5-5">
+TH_3 (CBOR Data Item) (34 bytes)
+58 20 ad af 67 a7 8a 4b cc 91 e0 18 f8 88 27 62 a7 22 00 0b 25 07 03
+9d f0 bc 1b bf 0c 16 1b b3 15 5c
+</artwork>
+        <t indent="0" pn="section-3.5-6">Since METHOD = 3, the Initiator authenticates using static DH. The EDHOC key exchange algorithm is based on the same curve as for the ephemeral keys, which is P-256, since the selected cipher suite is 2.</t>
+        <t indent="0" pn="section-3.5-7">The Initiator's static Diffie-Hellman P-256 key pair consists of a private key and a public key:</t>
+        <artwork align="left" pn="section-3.5-8">
+Initiator's private authentication key
+SK_I (Raw Value) (32 bytes)
+fb 13 ad eb 65 18 ce e5 f8 84 17 66 08 41 14 2e 83 0a 81 fe 33 43 80
+a9 53 40 6a 13 05 e8 70 6b
+</artwork>
+        <artwork align="left" pn="section-3.5-9">
+Initiator's public authentication key, 'x'-coordinate
+(Raw Value) (32 bytes)
+ac 75 e9 ec e3 e5 0b fc 8e d6 03 99 88 95 22 40 5c 47 bf 16 df 96 66
+0a 41 29 8c b4 30 7f 7e b6
+</artwork>
+        <artwork align="left" pn="section-3.5-10">
+Initiator's public authentication key, 'y'-coordinate
+(Raw Value) (32 bytes)
+6e 5d e6 11 38 8a 4b 8a 82 11 33 4a c7 d3 7e cb 52 a3 87 d2 57 e6 db
+3c 2a 93 df 21 ff 3a ff c8
+</artwork>
+        <t indent="0" pn="section-3.5-11">Since I authenticates with static DH (METHOD = 3), PRK_4e3m is derived
+from SALT_4e3m and G_IY.</t>
+        <t indent="0" pn="section-3.5-12">The input needed to calculate SALT_4e3m is defined in <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>, using EDHOC_Expand() with the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-3.5-13">
+SALT_4e3m = EDHOC_KDF( PRK_3e2m, 5, TH_3, hash_length ) 
+          = HKDF-Expand( PRK_3e2m, info, hash_length )
+</artwork>
+        <t indent="0" pn="section-3.5-14">where hash_length is the length in bytes of the output of the EDHOC hash algorithm, and info for SALT_4e3m is:</t>
+        <artwork align="left" pn="section-3.5-15">
+info =
+(
+  5,
+  h'adaf67a78a4bcc91e018f8882762a722000b2507039df0bc
+    1bbf0c161bb3155c',
+  32
+)
+</artwork>
+        <artwork align="left" pn="section-3.5-16">
+info for SALT_4e3m (CBOR Sequence) (37 bytes)
+05 58 20 ad af 67 a7 8a 4b cc 91 e0 18 f8 88 27 62 a7 22 00 0b 25 07
+03 9d f0 bc 1b bf 0c 16 1b b3 15 5c 18 20
+</artwork>
+        <artwork align="left" pn="section-3.5-17">
+SALT_4e3m (Raw Value) (32 bytes)
+cf dd f9 51 5a 7e 46 e7 b4 db ff 31 cb d5 6c d0 4b a3 32 25 0d e9 ea
+5d e1 ca f9 f6 d1 39 14 a7
+</artwork>
+        <t indent="0" pn="section-3.5-18">PRK_4e3m is specified in <xref section="4.1.1.3" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.1.3" derivedContent="RFC9528"/>.</t>
+        <t indent="0" pn="section-3.5-19">Since I authenticates with static DH (METHOD = 3), PRK_4e3m is derived
+from G_IY using EDHOC_Extract() with the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-3.5-20">
+PRK_4e3m = EDHOC_Extract(SALT_4e3m, G_IY) 
+         = HMAC-SHA-256(SALT_4e3m, G_IY)
+</artwork>
+        <t indent="0" pn="section-3.5-21">where G_IY is the ECDH shared secret calculated from G_I and Y, or G_Y and I.</t>
+        <artwork align="left" pn="section-3.5-22">
+G_IY (Raw Value) (ECDH shared secret) (32 bytes)
+08 0f 42 50 85 bc 62 49 08 9e ac 8f 10 8e a6 23 26 85 7e 12 ab 07 d7
+20 28 ca 1b 5f 36 e0 04 b3
+</artwork>
+        <artwork align="left" pn="section-3.5-23">
+PRK_4e3m (Raw Value) (32 bytes)
+81 cc 8a 29 8e 35 70 44 e3 c4 66 bb 5c 0a 1e 50 7e 01 d4 92 38 ae ba
+13 8d f9 46 35 40 7c 0f f7
+</artwork>
+        <t indent="0" pn="section-3.5-24">The Initiator constructs the remaining input needed to calculate MAC_3:</t>
+        <t indent="0" pn="section-3.5-25">MAC_3 = EDHOC_KDF( PRK_4e3m, 6, context_3, mac_length_3 )</t>
+        <t indent="0" pn="section-3.5-26">context_3 = &lt;&lt; ID_CRED_I, TH_3, CRED_I, ? EAD_3 &gt;&gt;</t>
+        <t indent="0" pn="section-3.5-27">CRED_I is identified by a 'kid' with byte string value 0x2b:</t>
+        <artwork align="left" pn="section-3.5-28">
+ID_CRED_I =
+{
+  4 : h'2b'
+}
+</artwork>
+        <artwork align="left" pn="section-3.5-29">
+ID_CRED_I (CBOR Data Item) (4 bytes)
+a1 04 41 2b
+</artwork>
+        <t indent="0" pn="section-3.5-30">CRED_I is an RPK encoded as a CCS:</t>
+        <artwork align="left" pn="section-3.5-31">
+{                                              /CCS/
+  2 : "42-50-31-FF-EF-37-32-39",               /sub/
+  8 : {                                        /cnf/
+    1 : {                                      /COSE_Key/
+      1 : 2,                                   /kty/
+      2 : h'2b',                               /kid/
+     -1 : 1,                                   /crv/
+     -2 : h'ac75e9ece3e50bfc8ed6039988952240
+            5c47bf16df96660a41298cb4307f7eb6'  /x/
+     -3 : h'6e5de611388a4b8a8211334ac7d37ecb
+            52a387d257e6db3c2a93df21ff3affc8'  /y/
+    }
+  }
+}
+</artwork>
+        <artwork align="left" pn="section-3.5-32">
+CRED_I (CBOR Data Item) (107 bytes)
+a2 02 77 34 32 2d 35 30 2d 33 31 2d 46 46 2d 45 46 2d 33 37 2d 33 32
+2d 33 39 08 a1 01 a5 01 02 02 41 2b 20 01 21 58 20 ac 75 e9 ec e3 e5
+0b fc 8e d6 03 99 88 95 22 40 5c 47 bf 16 df 96 66 0a 41 29 8c b4 30
+7f 7e b6 22 58 20 6e 5d e6 11 38 8a 4b 8a 82 11 33 4a c7 d3 7e cb 52
+a3 87 d2 57 e6 db 3c 2a 93 df 21 ff 3a ff c8
+</artwork>
+        <t indent="0" pn="section-3.5-33">No external authorization data:</t>
+        <artwork align="left" pn="section-3.5-34">
+EAD_3 (CBOR Sequence) (0 bytes)
+</artwork>
+        <t indent="0" pn="section-3.5-35">context_3 = &lt;&lt; ID_CRED_I, TH_3, CRED_I, ? EAD_3 &gt;&gt;</t>
+        <artwork align="left" pn="section-3.5-36">
+context_3 (CBOR Sequence) (145 bytes)
+a1 04 41 2b 58 20 ad af 67 a7 8a 4b cc 91 e0 18 f8 88 27 62 a7 22 00
+0b 25 07 03 9d f0 bc 1b bf 0c 16 1b b3 15 5c a2 02 77 34 32 2d 35 30
+2d 33 31 2d 46 46 2d 45 46 2d 33 37 2d 33 32 2d 33 39 08 a1 01 a5 01
+02 02 41 2b 20 01 21 58 20 ac 75 e9 ec e3 e5 0b fc 8e d6 03 99 88 95
+22 40 5c 47 bf 16 df 96 66 0a 41 29 8c b4 30 7f 7e b6 22 58 20 6e 5d
+e6 11 38 8a 4b 8a 82 11 33 4a c7 d3 7e cb 52 a3 87 d2 57 e6 db 3c 2a
+93 df 21 ff 3a ff c8
+</artwork>
+        <artwork align="left" pn="section-3.5-37">
+context_3 (CBOR byte string) (147 bytes)
+58 91 a1 04 41 2b 58 20 ad af 67 a7 8a 4b cc 91 e0 18 f8 88 27 62 a7
+22 00 0b 25 07 03 9d f0 bc 1b bf 0c 16 1b b3 15 5c a2 02 77 34 32 2d
+35 30 2d 33 31 2d 46 46 2d 45 46 2d 33 37 2d 33 32 2d 33 39 08 a1 01
+a5 01 02 02 41 2b 20 01 21 58 20 ac 75 e9 ec e3 e5 0b fc 8e d6 03 99
+88 95 22 40 5c 47 bf 16 df 96 66 0a 41 29 8c b4 30 7f 7e b6 22 58 20
+6e 5d e6 11 38 8a 4b 8a 82 11 33 4a c7 d3 7e cb 52 a3 87 d2 57 e6 db
+3c 2a 93 df 21 ff 3a ff c8
+</artwork>
+        <t indent="0" pn="section-3.5-38">MAC_3 is computed through EDHOC_Expand() using the EDHOC hash algorithm (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>):</t>
+        <artwork align="left" pn="section-3.5-39">
+MAC_3 = HKDF-Expand( PRK_4e3m, info, mac_length_3 )
+</artwork>
+        <t indent="0" pn="section-3.5-40">where</t>
+        <artwork align="left" pn="section-3.5-41">
+info = ( 6, context_3, mac_length_3 )
+</artwork>
+        <t indent="0" pn="section-3.5-42">Since METHOD = 3, mac_length_3 is given by the EDHOC MAC length.</t>
+        <t indent="0" pn="section-3.5-43">info for MAC_3 is:</t>
+        <artwork align="left" pn="section-3.5-44">
+info =
+(
+  6,
+  h'a104412b5820adaf67a78a4bcc91e018f8882762a722000b
+    2507039df0bc1bbf0c161bb3155ca2027734322d35302d33
+    312d46462d45462d33372d33322d333908a101a501020241
+    2b2001215820ac75e9ece3e50bfc8ed60399889522405c47
+    bf16df96660a41298cb4307f7eb62258206e5de611388a4b
+    8a8211334ac7d37ecb52a387d257e6db3c2a93df21ff3aff
+    c8',
+  8
+)
+</artwork>
+        <t indent="0" pn="section-3.5-45">where the last value is the EDHOC MAC length in bytes.</t>
+        <artwork align="left" pn="section-3.5-46">
+info for MAC_3 (CBOR Sequence) (149 bytes)
+06 58 91 a1 04 41 2b 58 20 ad af 67 a7 8a 4b cc 91 e0 18 f8 88 27 62
+a7 22 00 0b 25 07 03 9d f0 bc 1b bf 0c 16 1b b3 15 5c a2 02 77 34 32
+2d 35 30 2d 33 31 2d 46 46 2d 45 46 2d 33 37 2d 33 32 2d 33 39 08 a1
+01 a5 01 02 02 41 2b 20 01 21 58 20 ac 75 e9 ec e3 e5 0b fc 8e d6 03
+99 88 95 22 40 5c 47 bf 16 df 96 66 0a 41 29 8c b4 30 7f 7e b6 22 58
+20 6e 5d e6 11 38 8a 4b 8a 82 11 33 4a c7 d3 7e cb 52 a3 87 d2 57 e6
+db 3c 2a 93 df 21 ff 3a ff c8 08
+</artwork>
+        <artwork align="left" pn="section-3.5-47">
+MAC_3 (Raw Value) (8 bytes)
+62 3c 91 df 41 e3 4c 2f
+</artwork>
+        <artwork align="left" pn="section-3.5-48">
+MAC_3 (CBOR Data Item) (9 bytes)
+48 62 3c 91 df 41 e3 4c 2f
+</artwork>
+        <t indent="0" pn="section-3.5-49">Since METHOD = 3, Signature_or_MAC_3 is MAC_3:</t>
+        <artwork align="left" pn="section-3.5-50">
+Signature_or_MAC_3 (Raw Value) (8 bytes)
+62 3c 91 df 41 e3 4c 2f
+</artwork>
+        <artwork align="left" pn="section-3.5-51">
+Signature_or_MAC_3 (CBOR Data Item) (9 bytes)
+48 62 3c 91 df 41 e3 4c 2f
+</artwork>
+        <t indent="0" pn="section-3.5-52">The Initiator constructs PLAINTEXT_3:</t>
+        <artwork align="left" pn="section-3.5-53">
+PLAINTEXT_3 =
+(
+  ID_CRED_I / bstr / -24..23,
+  Signature_or_MAC_3,
+  ? EAD_3
+)
+</artwork>
+        <t indent="0" pn="section-3.5-54">Since ID_CRED_I contains a single 'kid' parameter, only the byte string value is included in the plaintext, represented as described in <xref section="3.3.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.3.2" derivedContent="RFC9528"/>. The CBOR map { 4 : h'2b' } is thus replaced, not by the CBOR byte string 0x412b, but by the CBOR int 0x2b, since that is a one-byte encoding of a CBOR integer (-12).</t>
+        <artwork align="left" pn="section-3.5-55">
+PLAINTEXT_3 (CBOR Sequence) (10 bytes)
+2b 48 62 3c 91 df 41 e3 4c 2f
+</artwork>
+        <t indent="0" pn="section-3.5-56">The Initiator constructs the associated data for message_3:</t>
+        <artwork align="left" pn="section-3.5-57">
+A_3 =
+[
+  "Encrypt0",
+  h'',
+  h'adaf67a78a4bcc91e018f8882762a722000b2507039df0bc
+    1bbf0c161bb3155c'
+]
+</artwork>
+        <artwork align="left" pn="section-3.5-58">
+A_3 (CBOR Data Item) (45 bytes)
+83 68 45 6e 63 72 79 70 74 30 40 58 20 ad af 67 a7 8a 4b cc 91 e0 18
+f8 88 27 62 a7 22 00 0b 25 07 03 9d f0 bc 1b bf 0c 16 1b b3 15 5c
+</artwork>
+        <t indent="0" pn="section-3.5-59">The Initiator constructs the input needed to derive the key K_3 (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>) using the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-3.5-60">
+K_3 = EDHOC_KDF( PRK_3e2m, 3, TH_3, key_length )
+    = HKDF-Expand( PRK_3e2m, info, key_length )
+</artwork>
+        <t indent="0" pn="section-3.5-61">where key_length is the key length in bytes for the EDHOC AEAD algorithm, and info for K_3 is:</t>
+        <artwork align="left" pn="section-3.5-62">
+info =
+(
+  3,
+  h'adaf67a78a4bcc91e018f8882762a722000b2507039df0bc
+    1bbf0c161bb3155c',
+  16
+)
+</artwork>
+        <t indent="0" pn="section-3.5-63">where the last value is the key length in bytes for the EDHOC AEAD algorithm.</t>
+        <artwork align="left" pn="section-3.5-64">
+info for K_3 (CBOR Sequence) (36 bytes)
+03 58 20 ad af 67 a7 8a 4b cc 91 e0 18 f8 88 27 62 a7 22 00 0b 25 07
+03 9d f0 bc 1b bf 0c 16 1b b3 15 5c 10
+</artwork>
+        <artwork align="left" pn="section-3.5-65">
+K_3 (Raw Value) (16 bytes)
+8e 7a 30 04 20 00 f7 90 0e 81 74 13 1f 75 f3 ed
+</artwork>
+        <t indent="0" pn="section-3.5-66">The Initiator constructs the input needed to derive the nonce IV_3 (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>) using the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-3.5-67">
+IV_3 = EDHOC_KDF( PRK_3e2m, 4, TH_3, iv_length )
+     = HKDF-Expand( PRK_3e2m, info, iv_length )
+</artwork>
+        <t indent="0" pn="section-3.5-68">where iv_length is the nonce length in bytes for the EDHOC AEAD algorithm, and info for IV_3 is:</t>
+        <artwork align="left" pn="section-3.5-69">
+info =
+(
+  4,
+  h'adaf67a78a4bcc91e018f8882762a722000b2507039df0bc
+    1bbf0c161bb3155c',
+  13
+)
+</artwork>
+        <t indent="0" pn="section-3.5-70">where the last value is the nonce length in bytes for the EDHOC AEAD algorithm.</t>
+        <artwork align="left" pn="section-3.5-71">
+info for IV_3 (CBOR Sequence) (36 bytes)
+04 58 20 ad af 67 a7 8a 4b cc 91 e0 18 f8 88 27 62 a7 22 00 0b 25 07
+03 9d f0 bc 1b bf 0c 16 1b b3 15 5c 0d
+</artwork>
+        <artwork align="left" pn="section-3.5-72">
+IV_3 (Raw Value) (13 bytes)
+6d 83 00 c1 e2 3b 56 15 3a e7 0e e4 57
+</artwork>
+        <t indent="0" pn="section-3.5-73">The Initiator calculates CIPHERTEXT_3 as 'ciphertext' of COSE_Encrypt0 applied
+using the EDHOC AEAD algorithm with plaintext PLAINTEXT_3, additional data
+A_3, key K_3, and nonce IV_3.</t>
+        <artwork align="left" pn="section-3.5-74">
+CIPHERTEXT_3 (Raw Value) (18 bytes)
+e5 62 09 7b c4 17 dd 59 19 48 5a c7 89 1f fd 90 a9 fc
+</artwork>
+        <t indent="0" pn="section-3.5-75">message_3 is the CBOR bstr encoding of CIPHERTEXT_3:</t>
+        <artwork align="left" pn="section-3.5-76">
+message_3 (CBOR Sequence) (19 bytes)
+52 e5 62 09 7b c4 17 dd 59 19 48 5a c7 89 1f fd 90 a9 fc
+</artwork>
+        <t indent="0" pn="section-3.5-77">The transcript hash TH_4 is calculated using the EDHOC hash algorithm:</t>
+        <t indent="0" pn="section-3.5-78">TH_4 = H( TH_3, PLAINTEXT_3, CRED_I )</t>
+        <artwork align="left" pn="section-3.5-79">
+Input to calculate TH_4 (CBOR Sequence) (151 bytes)
+58 20 ad af 67 a7 8a 4b cc 91 e0 18 f8 88 27 62 a7 22 00 0b 25 07 03
+9d f0 bc 1b bf 0c 16 1b b3 15 5c 2b 48 62 3c 91 df 41 e3 4c 2f a2 02
+77 34 32 2d 35 30 2d 33 31 2d 46 46 2d 45 46 2d 33 37 2d 33 32 2d 33
+39 08 a1 01 a5 01 02 02 41 2b 20 01 21 58 20 ac 75 e9 ec e3 e5 0b fc
+8e d6 03 99 88 95 22 40 5c 47 bf 16 df 96 66 0a 41 29 8c b4 30 7f 7e
+b6 22 58 20 6e 5d e6 11 38 8a 4b 8a 82 11 33 4a c7 d3 7e cb 52 a3 87
+d2 57 e6 db 3c 2a 93 df 21 ff 3a ff c8
+</artwork>
+        <artwork align="left" pn="section-3.5-80">
+TH_4 (Raw Value) (32 bytes)
+c9 02 b1 e3 a4 32 6c 93 c5 55 1f 5f 3a a6 c5 ec c0 24 68 06 76 56 12
+e5 2b 5d 99 e6 05 9d 6b 6e
+</artwork>
+        <artwork align="left" pn="section-3.5-81">
+TH_4 (CBOR Data Item) (34 bytes)
+58 20 c9 02 b1 e3 a4 32 6c 93 c5 55 1f 5f 3a a6 c5 ec c0 24 68 06 76
+56 12 e5 2b 5d 99 e6 05 9d 6b 6e
+</artwork>
+      </section>
+      <section anchor="message4-1" numbered="true" removeInRFC="false" toc="include" pn="section-3.6">
+        <name slugifiedName="name-message_4-2">message_4</name>
+        <t indent="0" pn="section-3.6-1">No external authorization data:</t>
+        <artwork align="left" pn="section-3.6-2">
+EAD_4 (CBOR Sequence) (0 bytes)
+	</artwork>
+        <t indent="0" pn="section-3.6-3">The Responder constructs PLAINTEXT_4:</t>
+        <artwork align="left" pn="section-3.6-4">
+PLAINTEXT_4 =
+(
+  ? EAD_4
+)
+</artwork>
+        <artwork align="left" pn="section-3.6-5">
+PLAINTEXT_4 (CBOR Sequence) (0 bytes)
+	</artwork>
+        <t indent="0" pn="section-3.6-6">The Responder constructs the associated data for message_4:</t>
+        <artwork align="left" pn="section-3.6-7">
+A_4 =
+[
+  "Encrypt0",
+  h'',
+  h'c902b1e3a4326c93c5551f5f3aa6c5ecc0246806765612e5
+    2b5d99e6059d6b6e'
+]
+</artwork>
+        <artwork align="left" pn="section-3.6-8">
+A_4 (CBOR Data Item) (45 bytes)
+83 68 45 6e 63 72 79 70 74 30 40 58 20 c9 02 b1 e3 a4 32 6c 93 c5 55
+1f 5f 3a a6 c5 ec c0 24 68 06 76 56 12 e5 2b 5d 99 e6 05 9d 6b 6e
+</artwork>
+        <t indent="0" pn="section-3.6-9">The Responder constructs the input needed to derive the EDHOC message_4 key (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>) using the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-3.6-10">
+K_4 = EDHOC_KDF( PRK_4e3m, 8, TH_4, key_length )
+    = HKDF-Expand( PRK_4e3m, info, key_length )
+</artwork>
+        <t indent="0" pn="section-3.6-11">where key_length is the key length in bytes for the EDHOC AEAD algorithm,
+and info for K_4 is:</t>
+        <artwork align="left" pn="section-3.6-12">
+info =
+(
+  8,
+  h'c902b1e3a4326c93c5551f5f3aa6c5ecc0246806765612e5
+    2b5d99e6059d6b6e',
+  16
+)
+</artwork>
+        <t indent="0" pn="section-3.6-13">where the last value is the key length in bytes for the EDHOC AEAD algorithm.</t>
+        <artwork align="left" pn="section-3.6-14">
+info for K_4 (CBOR Sequence) (36 bytes)
+08 58 20 c9 02 b1 e3 a4 32 6c 93 c5 55 1f 5f 3a a6 c5 ec c0 24 68 06
+76 56 12 e5 2b 5d 99 e6 05 9d 6b 6e 10
+</artwork>
+        <artwork align="left" pn="section-3.6-15">
+K_4 (Raw Value) (16 bytes)
+d3 c7 78 72 b6 ee b5 08 91 1b db d3 08 b2 e6 a0
+</artwork>
+        <t indent="0" pn="section-3.6-16">The Responder constructs the input needed to derive the EDHOC message_4 nonce (see <xref section="4.1.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.2" derivedContent="RFC9528"/>) using the EDHOC hash algorithm:</t>
+        <artwork align="left" pn="section-3.6-17">
+IV_4 = EDHOC_KDF( PRK_4e3m, 9, TH_4, iv_length )
+     = HKDF-Expand( PRK_4e3m, info, iv_length )
+</artwork>
+        <t indent="0" pn="section-3.6-18">where iv_length is the nonce length in bytes for the EDHOC AEAD algorithm,
+and info for IV_4 is:</t>
+        <artwork align="left" pn="section-3.6-19">
+info =
+(
+  9,
+  h'c902b1e3a4326c93c5551f5f3aa6c5ecc0246806765612e5
+    2b5d99e6059d6b6e',
+  13
+)
+</artwork>
+        <t indent="0" pn="section-3.6-20">where the last value is the nonce length in bytes for the EDHOC AEAD algorithm.</t>
+        <artwork align="left" pn="section-3.6-21">
+info for IV_4 (CBOR Sequence) (36 bytes)
+09 58 20 c9 02 b1 e3 a4 32 6c 93 c5 55 1f 5f 3a a6 c5 ec c0 24 68 06
+76 56 12 e5 2b 5d 99 e6 05 9d 6b 6e 0d
+</artwork>
+        <artwork align="left" pn="section-3.6-22">
+IV_4 (Raw Value) (13 bytes)
+04 ff 0f 44 45 6e 96 e2 17 85 3c 36 01
+</artwork>
+        <t indent="0" pn="section-3.6-23">The Responder calculates CIPHERTEXT_4 as 'ciphertext' of COSE_Encrypt0 applied
+using the EDHOC AEAD algorithm with plaintext PLAINTEXT_4, additional data
+A_4, key K_4, and nonce IV_4.</t>
+        <artwork align="left" pn="section-3.6-24">
+CIPHERTEXT_4 (8 bytes)
+28 c9 66 b7 ca 30 4f 83
+</artwork>
+        <t indent="0" pn="section-3.6-25">message_4 is the CBOR bstr encoding of CIPHERTEXT_4:</t>
+        <artwork align="left" pn="section-3.6-26">
+message_4 (CBOR Sequence) (9 bytes)
+48 28 c9 66 b7 ca 30 4f 83
+</artwork>
+      </section>
+      <section anchor="out-and-exporter2" numbered="true" removeInRFC="false" toc="include" pn="section-3.7">
+        <name slugifiedName="name-prk_out-and-prk_exporter-2">PRK_out and PRK_exporter</name>
+        <t indent="0" pn="section-3.7-1">PRK_out is specified in <xref section="4.1.3" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.1.3" derivedContent="RFC9528"/>.</t>
+        <artwork align="left" pn="section-3.7-2">
+PRK_out = EDHOC_KDF( PRK_4e3m, 7, TH_4, hash_length ) 
+        = HKDF-Expand( PRK_4e3m, info, hash_length )
+</artwork>
+        <t indent="0" pn="section-3.7-3">where hash_length is the length in bytes of the output of the EDHOC hash algorithm, and info for PRK_out is:</t>
+        <artwork align="left" pn="section-3.7-4">
+info =
+(
+  7,
+  h'c902b1e3a4326c93c5551f5f3aa6c5ecc0246806765612e5
+    2b5d99e6059d6b6e',
+  32
+)
+</artwork>
+        <t indent="0" pn="section-3.7-5">where the last value is the length in bytes of the output of the EDHOC hash algorithm.</t>
+        <artwork align="left" pn="section-3.7-6">
+info for PRK_out (CBOR Sequence) (37 bytes)
+07 58 20 c9 02 b1 e3 a4 32 6c 93 c5 55 1f 5f 3a a6 c5 ec c0 24 68 06
+76 56 12 e5 2b 5d 99 e6 05 9d 6b 6e 18 20
+</artwork>
+        <artwork align="left" pn="section-3.7-7">
+PRK_out (Raw Value) (32 bytes)
+2c 71 af c1 a9 33 8a 94 0b b3 52 9c a7 34 b8 86 f3 0d 1a ba 0b 4d c5
+1b ee ae ab df ea 9e cb f8
+</artwork>
+        <t indent="0" pn="section-3.7-8">The OSCORE Master Secret and OSCORE Master Salt are derived with the EDHOC_Exporter as specified in <xref target="RFC9528" sectionFormat="of" section="4.2.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.2.1" derivedContent="RFC9528"/>.</t>
+        <artwork align="left" pn="section-3.7-9">
+EDHOC_Exporter( exporter_label, context, length )
+= EDHOC_KDF( PRK_exporter, exporter_label, context, length )
+</artwork>
+        <t indent="0" pn="section-3.7-10">where PRK_exporter is derived from PRK_out:</t>
+        <artwork align="left" pn="section-3.7-11">
+PRK_exporter = EDHOC_KDF( PRK_out, 10, h'', hash_length ) 
+             = HKDF-Expand( PRK_out, info, hash_length )
+</artwork>
+        <t indent="0" pn="section-3.7-12">where hash_length is the length in bytes of the output of the EDHOC hash algorithm, and info for the PRK_exporter is:</t>
+        <artwork align="left" pn="section-3.7-13">
+info =
+(
+  10,
+  h'',
+  32
+)
+</artwork>
+        <t indent="0" pn="section-3.7-14">where the last value is the length in bytes of the output of the EDHOC hash algorithm.</t>
+        <artwork align="left" pn="section-3.7-15">
+info for PRK_exporter (CBOR Sequence) (4 bytes)
+0a 40 18 20
+</artwork>
+        <artwork align="left" pn="section-3.7-16">
+PRK_exporter (Raw Value) (32 bytes)
+e1 4d 06 69 9c ee 24 8c 5a 04 bf 92 27 bb cd 4c e3 94 de 7d cb 56 db
+43 55 54 74 17 1e 64 46 db
+</artwork>
+      </section>
+      <section anchor="oscore-parameters" numbered="true" removeInRFC="false" toc="include" pn="section-3.8">
+        <name slugifiedName="name-oscore-parameters-2">OSCORE Parameters</name>
+        <t indent="0" pn="section-3.8-1">The derivation of OSCORE parameters is specified in <xref section="A.1" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#appendix-A.1" derivedContent="RFC9528"/>.</t>
+        <t indent="0" pn="section-3.8-2">The AEAD and hash algorithms to use in OSCORE are given by the selected cipher suite:</t>
+        <artwork align="left" pn="section-3.8-3">
+Application AEAD Algorithm (int)
+10
+</artwork>
+        <artwork align="left" pn="section-3.8-4">
+Application Hash Algorithm (int)
+-16
+</artwork>
+        <t indent="0" pn="section-3.8-5">The mapping from EDHOC connection identifiers to OSCORE Sender/Recipient IDs
+is defined in <xref section="3.3.3" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.3.3" derivedContent="RFC9528"/>.</t>
+        <t indent="0" pn="section-3.8-6">C_R is mapped to the Recipient ID of the server, i.e., the Sender ID of the client. The byte string 0x27, which as C_R is encoded as the CBOR integer 0x27, is converted to the server Recipient ID 0x27.</t>
+        <artwork align="left" pn="section-3.8-7">
+Client's OSCORE Sender ID (Raw Value) (1 byte)
+27
+</artwork>
+        <t indent="0" pn="section-3.8-8">C_I is mapped to the Recipient ID of the client, i.e., the Sender ID of the server. The byte string 0x37, which as C_I is encoded as the CBOR integer 0x0e, is converted to the client Recipient ID 0x37.</t>
+        <artwork align="left" pn="section-3.8-9">
+Server's OSCORE Sender ID (Raw Value) (1 byte)
+37
+</artwork>
+        <t indent="0" pn="section-3.8-10">The OSCORE Master Secret is computed through EDHOC_Expand() using the
+application hash algorithm (see <xref section="A.1" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#appendix-A.1" derivedContent="RFC9528"/>):</t>
+        <artwork align="left" pn="section-3.8-11">
+OSCORE Master Secret = EDHOC_Exporter( 0, h'', oscore_key_length )
+= EDHOC_KDF( PRK_exporter, 0, h'', oscore_key_length )
+= HKDF-Expand( PRK_exporter, info, oscore_key_length )
+</artwork>
+        <t indent="0" pn="section-3.8-12">where oscore_key_length is by default the key length in bytes for the application AEAD
+algorithm, and info for the OSCORE Master Secret is:</t>
+        <artwork align="left" pn="section-3.8-13">
+info =
+(
+  0,
+  h'',
+  16
+)
+</artwork>
+        <t indent="0" pn="section-3.8-14">where the last value is the key length in bytes for the application AEAD algorithm.</t>
+        <artwork align="left" pn="section-3.8-15">
+info for OSCORE Master Secret (CBOR Sequence) (3 bytes)
+00 40 10
+</artwork>
+        <artwork align="left" pn="section-3.8-16">
+OSCORE Master Secret (Raw Value) (16 bytes)
+f9 86 8f 6a 3a ca 78 a0 5d 14 85 b3 50 30 b1 62
+</artwork>
+        <t indent="0" pn="section-3.8-17">The OSCORE Master Salt is computed through EDHOC_Expand() using the application hash algorithm (see <xref section="4.2" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-4.2" derivedContent="RFC9528"/>):</t>
+        <artwork align="left" pn="section-3.8-18">
+OSCORE Master Salt = EDHOC_Exporter( 1, h'', oscore_salt_length )
+= EDHOC_KDF( PRK_exporter, 1, h'', oscore_salt_length )
+= HKDF-Expand( PRK_4x3m, info, oscore_salt_length )
+</artwork>
+        <t indent="0" pn="section-3.8-19">where oscore_salt_length is the length in bytes of the OSCORE Master Salt, and info for the OSCORE Master Salt is:</t>
+        <artwork align="left" pn="section-3.8-20">
+info =
+(
+  1,
+  h'',
+  8
+)
+</artwork>
+        <t indent="0" pn="section-3.8-21">where the last value is the length in bytes of the OSCORE Master Salt.</t>
+        <artwork align="left" pn="section-3.8-22">
+info for OSCORE Master Salt (CBOR Sequence) (3 bytes)
+01 40 08
+</artwork>
+        <artwork align="left" pn="section-3.8-23">
+OSCORE Master Salt (Raw Value) (8 bytes)
+ad a2 4c 7d bf c8 5e eb
+</artwork>
+      </section>
+      <section anchor="key-update-1" numbered="true" removeInRFC="false" toc="include" pn="section-3.9">
+        <name slugifiedName="name-key-update-2">Key Update</name>
+        <t indent="0" pn="section-3.9-1">The key update is defined in <xref section="H" sectionFormat="of" target="RFC9528" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#appendix-H" derivedContent="RFC9528"/>.</t>
+        <artwork align="left" pn="section-3.9-2">
+EDHOC_KeyUpdate( context ):
+PRK_out = EDHOC_KDF( PRK_out, 11, context, hash_length )
+        = HKDF-Expand( PRK_out, info, hash_length )
+</artwork>
+        <t indent="0" pn="section-3.9-3">where hash_length is the length in bytes of the output of the EDHOC hash function, and the context for KeyUpdate is:</t>
+        <artwork align="left" pn="section-3.9-4">
+context for KeyUpdate (Raw Value) (16 bytes)
+a0 11 58 fd b8 20 89 0c d6 be 16 96 02 b8 bc ea
+</artwork>
+        <artwork align="left" pn="section-3.9-5">
+context for KeyUpdate (CBOR Data Item) (17 bytes)
+50 a0 11 58 fd b8 20 89 0c d6 be 16 96 02 b8 bc ea
+</artwork>
+        <t indent="0" pn="section-3.9-6">and where info for the key update is:</t>
+        <artwork align="left" pn="section-3.9-7">
+info =
+(
+  11,
+  h'a01158fdb820890cd6be169602b8bcea',
+  32
+)
+</artwork>
+        <artwork align="left" pn="section-3.9-8">
+info for KeyUpdate (CBOR Sequence) (20 bytes)
+0b 50 a0 11 58 fd b8 20 89 0c d6 be 16 96 02 b8 bc ea 18 20
+</artwork>
+        <artwork align="left" pn="section-3.9-9">
+PRK_out after KeyUpdate (Raw Value) (32 bytes)
+f9 79 53 77 43 fe 0b d6 b9 b1 41 dd bd 79 65 6c 52 e6 dc 7c 50 ad 80
+77 54 d7 4d 07 e8 7d 0d 16
+</artwork>
+        <t indent="0" pn="section-3.9-10">After the key update, the PRK_exporter needs to be derived anew:</t>
+        <artwork align="left" pn="section-3.9-11">
+PRK_exporter = EDHOC_KDF( PRK_out, 10, h'', hash_length ) 
+             = HKDF-Expand( PRK_out, info, hash_length )
+</artwork>
+        <t indent="0" pn="section-3.9-12">where info and hash_length are unchanged as in <xref target="out-and-exporter2" format="default" sectionFormat="of" derivedContent="Section 3.7"/>.</t>
+        <artwork align="left" pn="section-3.9-13">
+PRK_exporter after KeyUpdate (Raw Value) (32 bytes)
+00 fc f7 db 9b 2e ad 73 82 4e 7e 83 03 63 c8 05 c2 96 f9 02 83 0f ac
+23 d8 6c 35 9c 75 2f 0f 17
+</artwork>
+        <t indent="0" pn="section-3.9-14">The OSCORE Master Secret is derived with the updated PRK_exporter:</t>
+        <artwork align="left" pn="section-3.9-15">
+OSCORE Master Secret 
+= HKDF-Expand( PRK_exporter, info, oscore_key_length )
+</artwork>
+        <t indent="0" pn="section-3.9-16">where info and oscore_key_length are unchanged as in <xref target="oscore-parameters" format="default" sectionFormat="of" derivedContent="Section 3.8"/>.</t>
+        <artwork align="left" pn="section-3.9-17">
+OSCORE Master Secret after KeyUpdate (Raw Value) (16 bytes)
+49 f7 2f ac 02 b4 65 8b da 21 e2 da c6 6f c3 74
+</artwork>
+        <t indent="0" pn="section-3.9-18">The OSCORE Master Salt is derived with the updated PRK_exporter:</t>
+        <artwork align="left" pn="section-3.9-19">
+OSCORE Master Salt
+= HKDF-Expand( PRK_exporter, info, oscore_salt_length )
+</artwork>
+        <t indent="0" pn="section-3.9-20">where info and oscore_salt_length are unchanged as in <xref target="oscore-parameters" format="default" sectionFormat="of" derivedContent="Section 3.8"/>.</t>
+        <artwork align="left" pn="section-3.9-21">
+OSCORE Master Salt after KeyUpdate (Raw Value) (8 bytes)
+dd 8b 24 f2 aa 9b 01 1a
+</artwork>
+      </section>
+    </section>
+    <section anchor="sec-trace-invalid" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-invalid-traces">Invalid Traces</name>
+      <t indent="0" pn="section-4-1">This section contains examples of invalid messages, which a compliant implementation will not compose and must or may reject according to <xref target="RFC9528" format="default" sectionFormat="of" derivedContent="RFC9528"/>, <xref target="RFC8949" format="default" sectionFormat="of" derivedContent="RFC8949"/>, <xref target="RFC9053" format="default" sectionFormat="of" derivedContent="RFC9053"/>, and <xref target="SP-800-56A" format="default" sectionFormat="of" derivedContent="SP-800-56A"/>. This is just a small set of examples of different reasons for which a message might be invalid. The same types of invalidities apply to other fields and messages as well. Implementations should make sure to check for similar types of invalidities in all EDHOC fields and messages.</t>
+      <section anchor="encoding-errors" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-encoding-errors">Encoding Errors</name>
+        <section anchor="surplus-array-encoding-of-message" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.1.1">
+          <name slugifiedName="name-surplus-array-encoding-of-a">Surplus Array Encoding of a Message</name>
+          <t indent="0" pn="section-4.1.1-1">message_1 is incorrectly encoded as a CBOR array. The correct encoding is a CBOR sequence according to <xref target="RFC9528" section="5.2.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-5.2.1" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.1.1-2">
+Invalid message_1 (38 bytes)
+84 03 02 58 20 74 1a 13 d7 ba 04 8f bb 61 5e 94 38 6a a3 b6 1b ea 5b
+3d 8f 65 f3 26 20 b7 49 be e8 d2 78 ef a9 0e
+</artwork>
+        </section>
+        <section anchor="surplus-bstr-encoding-of-connection-identifier" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.1.2">
+          <name slugifiedName="name-surplus-bstr-encoding-of-th">Surplus bstr Encoding of the Connection Identifier</name>
+          <t indent="0" pn="section-4.1.2-1">The connection identifier C_I = 0x0e is incorrectly encoded as the CBOR byte string 41 0e. The correct encoding is the integer 0e  according to <xref target="RFC9528" section="3.3.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.3.2" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.1.2-2">
+Invalid message_1 (38 bytes)
+03 02 58 20 74 1a 13 d7 ba 04 8f bb 61 5e 94 38 6a a3 b6 1b ea 5b 3d
+8f 65 f3 26 20 b7 49 be e8 d2 78 ef a9 41 0e
+</artwork>
+        </section>
+        <section anchor="surplus-array-encoding-of-ciphersuite" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.1.3">
+          <name slugifiedName="name-surplus-array-encoding-of-t">Surplus Array Encoding of the Ciphersuite</name>
+          <t indent="0" pn="section-4.1.3-1">The element SUITES_I = 2 is incorrectly encoded as the CBOR array 81 02. The correct encoding is the integer 02 according to <xref target="RFC9528" section="5.2.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-5.2.2" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.1.3-2">
+Invalid message_1 (38 bytes)
+03 81 02 58 20 74 1a 13 d7 ba 04 8f bb 61 5e 94 38 6a a3 b6 1b ea 5b
+3d 8f 65 f3 26 20 b7 49 be e8 d2 78 ef a9 0e
+</artwork>
+        </section>
+        <section anchor="text-string-encoding-of-ephemeral-key" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.1.4">
+          <name slugifiedName="name-text-string-encoding-of-the">Text String Encoding of the Ephemeral Key</name>
+          <t indent="0" pn="section-4.1.4-1">The third element of message_1 (G_X) is incorrectly encoded as a text string. The correct encoding is a byte string according to <xref target="RFC9528" section="5.2.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-5.2.1" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.1.4-2">
+Invalid message_1 (37 bytes)
+03 02 78 20 20 61 69 72 20 73 70 65 65 64 20 6F 66 20 61 20 75 6E 6C
+61 64 65 6E 20 73 77 61 6C 6C 6F 77 20 0e
+</artwork>
+        </section>
+        <section anchor="wrong-number-of-cbor-sequence-elements" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.1.5">
+          <name slugifiedName="name-wrong-number-of-cbor-sequen">Wrong Number of CBOR Sequence Elements</name>
+          <t indent="0" pn="section-4.1.5-1">The CBOR sequence in message_2 has an incorrect number of elements. The correct number of elements in the CBOR sequence is 1 according to <xref target="RFC9528" section="5.3.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-5.3.1" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.1.5-2">
+Invalid message_2 (46 bytes)
+58 20 41 97 01 d7 f0 0a 26 c2 dc 58 7a 36 dd 75 25 49 f3 37 63 c8 93
+42 2c 8e a0 f9 55 a1 3a 4f f5 d5 4B 98 62 a1 1d e4 2a 95 d7 85 38 6a
+</artwork>
+        </section>
+        <section anchor="surplus-map-encoding-of-idcred-field" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.1.6">
+          <name slugifiedName="name-surplus-map-encoding-of-the">Surplus Map Encoding of the ID_CRED Field</name>
+          <t indent="0" pn="section-4.1.6-1">The element ID_CRED_R in PLAINTEXT_2 is incorrectly encoded as the map a1 04 42 32 10. The correct encoding is 42 32 10 according to <xref target="RFC9528" section="3.5.3.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.5.3.2" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.1.6-2">
+Invalid PLAINTEXT_2 (15 bytes)
+27 a1 04 42 32 10 48 fa 5e fa 2e bf 92 0b f3
+</artwork>
+        </section>
+        <section anchor="surplus-bstr-encoding-of-idcred-field" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.1.7">
+          <name slugifiedName="name-surplus-bstr-encoding-of-the">Surplus bstr Encoding of the ID_CRED Field</name>
+          <t indent="0" pn="section-4.1.7-1">The element ID_CRED_R in PLAINTEXT_2 is incorrectly encoded as the byte string 41 32. The correct encoding is 32 according to <xref target="RFC9528" section="3.5.3.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.5.3.2" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.1.7-2">
+Invalid PLAINTEXT_2 (12 bytes)
+27 41 32 48 fa 5e fa 2e bf 92 0b f3
+</artwork>
+        </section>
+      </section>
+      <section anchor="crypto-related-errors" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-cryptography-related-errors">Cryptography-Related Errors</name>
+        <section anchor="error-in-length-of-ephemeral-key" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.2.1">
+          <name slugifiedName="name-error-in-the-length-of-the-">Error in the Length of the Ephemeral Key</name>
+          <t indent="0" pn="section-4.2.1-1">The third element (G_X) has an invalid length. The selected cipher suite is cipher suite 24 with curve P-384 according to Sections <xref target="RFC9528" sectionFormat="bare" section="5.2.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-5.2.2" derivedContent="RFC9528"/> and <xref target="RFC9528" sectionFormat="bare" section="10.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-10.2" derivedContent="RFC9528"/> of <xref target="RFC9528" format="default" sectionFormat="of" derivedContent="RFC9528"/>. The correct length of the x-coordinate is 48 bytes according to <xref target="RFC9528" section="3.7" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.7" derivedContent="RFC9528"/> and <xref target="RFC9053" section="7.1.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9053#section-7.1.1" derivedContent="RFC9053"/>.</t>
+          <artwork align="left" pn="section-4.2.1-2">
+Invalid message_1 (40 bytes)
+03 82 02 18 18 58 20 74 1a 13 d7 ba 04 8f bb 61 5e 94 38 6a a3 b6 1b
+ea 5b 3d 8f 65 f3 26 20 b7 49 be e8 d2 78 ef a9 0e
+</artwork>
+        </section>
+        <section anchor="error-in-elliptic-curve-representation" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.2.2">
+          <name slugifiedName="name-error-in-elliptic-curve-rep">Error in Elliptic Curve Representation</name>
+          <t indent="0" pn="section-4.2.2-1">The x-coordinate in G_X is invalid as x ≥ p.  It is required that x &lt; p according to Section 5.6.2.3 of <xref target="SP-800-56A" format="default" sectionFormat="of" derivedContent="SP-800-56A"/>, which is referenced in <xref target="RFC9528" section="9.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-9.2" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.2.2-2">
+Invalid message_1 (37 bytes)
+03 02 58 20 ff ff ff ff 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00
+00 ff ff ff ff ff ff ff ff ff ff ff ff 0e
+</artwork>
+        </section>
+        <section anchor="error-in-elliptic-curve-point" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.2.3">
+          <name slugifiedName="name-error-in-the-elliptic-curve">Error in the Elliptic Curve Point</name>
+          <t indent="0" pn="section-4.2.3-1">The x-coordinate in G_X is invalid as it does not correspond to a point on the P-256 curve. It is required that y<sup>2</sup> ≡ x<sup>3</sup> + a ⋅ x + b (mod p) according to Section 5.6.2.3 of <xref target="SP-800-56A" format="default" sectionFormat="of" derivedContent="SP-800-56A"/>, which is referenced in <xref target="RFC9528" section="9.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-9.2" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.2.3-2">
+Invalid message_1 (37 bytes)
+03 02 58 20 a0 4e 73 60 1d f5 44 a7 0b a7 ea 1e 57 03 0f 7d 4b 4e b7
+f6 73 92 4e 58 d5 4c a7 7a 5e 7d 4d 4a 0e
+</artwork>
+        </section>
+        <section anchor="curve-point-of-low-order" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.2.4">
+          <name slugifiedName="name-curve-point-of-the-low-orde">Curve Point of the Low Order</name>
+          <t indent="0" pn="section-4.2.4-1">The Curve25519 point is invalid as it is of low order and fails the check for all-zero output according to <xref target="RFC9528" section="9.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-9.2" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.2.4-2">
+Invalid message_1 (37 bytes)
+03 00 58 20 ed ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+ff ff ff ff ff ff ff ff ff ff ff ff 7f 0e
+</artwork>
+        </section>
+        <section anchor="error-in-length-of-mac" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.2.5">
+          <name slugifiedName="name-error-in-the-length-of-the-m">Error in the Length of the MAC</name>
+          <t indent="0" pn="section-4.2.5-1">The third element (Signature_or_MAC_2) has an invalid length. The length of Signature_or_MAC_2 is given by the cipher suite, and the MAC length is at least 8 bytes according to <xref target="RFC9528" section="9.3" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-9.3" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.2.5-2">
+Invalid PLAINTEXT_2 (7 bytes)
+27 32 44 fa 5e fa 2e
+</artwork>
+        </section>
+        <section anchor="error-in-elliptic-curve-encoding" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.2.6">
+          <name slugifiedName="name-error-in-the-elliptic-curve-">Error in the Elliptic Curve Encoding</name>
+          <t indent="0" pn="section-4.2.6-1">The third element (G_X) is incorrectly encoded. The correct encoding is with leading-zero octets according to <xref target="RFC9053" section="7.1.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9053#section-7.1.1" derivedContent="RFC9053"/>, which is referenced in <xref target="RFC9528" section="3.7" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.7" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.2.6-2">
+Invalid message_1 (36 bytes)
+03 02 58 1f d9 69 77 25 d2 3a 68 8b 12 d1 c7 e0 10 8a 08 c9 f7 1a 85
+a0 9c 20 81 49 76 ab 21 12 22 48 fc 0e
+</artwork>
+        </section>
+      </section>
+      <section anchor="non-deterministic-cbor" numbered="true" removeInRFC="false" toc="include" pn="section-4.3">
+        <name slugifiedName="name-non-deterministic-cbor">Non-deterministic CBOR</name>
+        <section anchor="unnecessary-long-encoding" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.3.1">
+          <name slugifiedName="name-unnecessary-long-encoding">Unnecessary Long Encoding</name>
+          <t indent="0" pn="section-4.3.1-1">The element METHOD = 3 is incorrectly encoded as a 16-bit integer. The deterministic encoding 03 is correct according to <xref target="RFC9528" section="3.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.1" derivedContent="RFC9528"/> and <xref target="RFC8949" section="4.2.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8949#section-4.2.1" derivedContent="RFC8949"/>, which states that the arguments for integers, lengths in major types 2 through 5, and tags are required to be as short as possible.</t>
+          <artwork align="left" pn="section-4.3.1-2">
+Invalid message_1 (39 bytes)
+19 00 03 02 58 20 74 1a 13 d7 ba 04 8f bb 61 5e 94 38 6a a3 b6 1b ea
+5b 3d 8f 65 f3 26 20 b7 49 be e8 d2 78 ef a9 0e
+</artwork>
+        </section>
+        <section anchor="indefinite-length-array-encoding" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.3.2">
+          <name slugifiedName="name-indefinite-length-array-enc">Indefinite-Length Array Encoding</name>
+          <t indent="0" pn="section-4.3.2-1">The element SUITES_I = [6, 2] is incorrectly encoded as an indefinite-length array. The correct encoding is the definite-length array 82 06 02 according to <xref target="RFC8949" section="4.2.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8949#section-4.2.1" derivedContent="RFC8949"/>, which is referenced in <xref target="RFC9528" section="3.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9528#section-3.1" derivedContent="RFC9528"/>.</t>
+          <artwork align="left" pn="section-4.3.2-2">
+Invalid message_1 (40 bytes)
+03 9F 06 02 FF 58 20 74 1a 13 d7 ba 04 8f bb 61 5e 94 38 6a a3 b6 1b
+ea 5b 3d 8f 65 f3 26 20 b7 49 be e8 d2 78 ef a9 0e
+</artwork>
+        </section>
+      </section>
+    </section>
+    <section anchor="security" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-5-1">This document contains examples of EDHOC <xref target="RFC9528" format="default" sectionFormat="of" derivedContent="RFC9528"/>. The security considerations described in <xref target="RFC9528" format="default" sectionFormat="of" derivedContent="RFC9528"/> apply. The keys printed in these examples cannot be considered secret and <bcp14>MUST NOT</bcp14> be used.</t>
+    </section>
+    <section anchor="iana" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-6-1">This document has no IANA actions.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-7">
+      <name slugifiedName="name-references">References</name>
+      <references anchor="sec-normative-references" pn="section-7.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC9528" quoteTitle="true" target="https://www.rfc-editor.org/rfc/rfc9528" derivedAnchor="RFC9528">
+          <front>
+            <title>Ephemeral Diffie-Hellman Over COSE (EDHOC)</title>
+            <author initials="G" surname="Selander" fullname="Göran Selander">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="J" surname="Preuß Mattsson" fullname="John Preuß Mattsson">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="F" surname="Palombini" fullname="Francesca Palombini">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2024" month="March"/>
+          </front>
+          <seriesInfo name="RFC" value="9528"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9528"/>
+        </reference>
+      </references>
+      <references anchor="sec-informative-references" pn="section-7.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="CborMe" target="https://cbor.me/" quoteTitle="true" derivedAnchor="CborMe">
+          <front>
+            <title>CBOR playground</title>
+            <author initials="C." surname="Bormann">
+              <organization showOnFrontPage="true"/>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="RFC7748" target="https://www.rfc-editor.org/info/rfc7748" quoteTitle="true" derivedAnchor="RFC7748">
+          <front>
+            <title>Elliptic Curves for Security</title>
+            <author fullname="A. Langley" initials="A." surname="Langley"/>
+            <author fullname="M. Hamburg" initials="M." surname="Hamburg"/>
+            <author fullname="S. Turner" initials="S." surname="Turner"/>
+            <date month="January" year="2016"/>
+            <abstract>
+              <t indent="0">This memo specifies two elliptic curves over prime fields that offer a high level of practical security in cryptographic applications, including Transport Layer Security (TLS). These curves are intended to operate at the ~128-bit and ~224-bit security level, respectively, and are generated deterministically based on a list of required properties.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7748"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7748"/>
+        </reference>
+        <reference anchor="RFC8032" target="https://www.rfc-editor.org/info/rfc8032" quoteTitle="true" derivedAnchor="RFC8032">
+          <front>
+            <title>Edwards-Curve Digital Signature Algorithm (EdDSA)</title>
+            <author fullname="S. Josefsson" initials="S." surname="Josefsson"/>
+            <author fullname="I. Liusvaara" initials="I." surname="Liusvaara"/>
+            <date month="January" year="2017"/>
+            <abstract>
+              <t indent="0">This document describes elliptic curve signature scheme Edwards-curve Digital Signature Algorithm (EdDSA). The algorithm is instantiated with recommended parameters for the edwards25519 and edwards448 curves. An example implementation and test vectors are provided.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8032"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8032"/>
+        </reference>
+        <reference anchor="RFC8392" target="https://www.rfc-editor.org/info/rfc8392" quoteTitle="true" derivedAnchor="RFC8392">
+          <front>
+            <title>CBOR Web Token (CWT)</title>
+            <author fullname="M. Jones" initials="M." surname="Jones"/>
+            <author fullname="E. Wahlstroem" initials="E." surname="Wahlstroem"/>
+            <author fullname="S. Erdtman" initials="S." surname="Erdtman"/>
+            <author fullname="H. Tschofenig" initials="H." surname="Tschofenig"/>
+            <date month="May" year="2018"/>
+            <abstract>
+              <t indent="0">CBOR Web Token (CWT) is a compact means of representing claims to be transferred between two parties. The claims in a CWT are encoded in the Concise Binary Object Representation (CBOR), and CBOR Object Signing and Encryption (COSE) is used for added application-layer security protection. A claim is a piece of information asserted about a subject and is represented as a name/value pair consisting of a claim name and a claim value. CWT is derived from JSON Web Token (JWT) but uses CBOR rather than JSON.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8392"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8392"/>
+        </reference>
+        <reference anchor="RFC8949" target="https://www.rfc-editor.org/info/rfc8949" quoteTitle="true" derivedAnchor="RFC8949">
+          <front>
+            <title>Concise Binary Object Representation (CBOR)</title>
+            <author fullname="C. Bormann" initials="C." surname="Bormann"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="December" year="2020"/>
+            <abstract>
+              <t indent="0">The Concise Binary Object Representation (CBOR) is a data format whose design goals include the possibility of extremely small code size, fairly small message size, and extensibility without the need for version negotiation. These design goals make it different from earlier binary serializations such as ASN.1 and MessagePack.</t>
+              <t indent="0">This document obsoletes RFC 7049, providing editorial improvements, new details, and errata fixes while keeping full compatibility with the interchange format of RFC 7049. It does not create a new version of the format.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="94"/>
+          <seriesInfo name="RFC" value="8949"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8949"/>
+        </reference>
+        <reference anchor="RFC9053" target="https://www.rfc-editor.org/info/rfc9053" quoteTitle="true" derivedAnchor="RFC9053">
+          <front>
+            <title>CBOR Object Signing and Encryption (COSE): Initial Algorithms</title>
+            <author fullname="J. Schaad" initials="J." surname="Schaad"/>
+            <date month="August" year="2022"/>
+            <abstract>
+              <t indent="0">Concise Binary Object Representation (CBOR) is a data format designed for small code size and small message size. There is a need to be able to define basic security services for this data format. This document defines a set of algorithms that can be used with the CBOR Object Signing and Encryption (COSE) protocol (RFC 9052).</t>
+              <t indent="0">This document, along with RFC 9052, obsoletes RFC 8152.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9053"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9053"/>
+        </reference>
+        <reference anchor="SP-800-186" quoteTitle="true" target="https://doi.org/10.6028/NIST.SP.800-186" derivedAnchor="SP-800-186">
+          <front>
+            <title>Recommendations for Discrete Logarithm-based Cryptography: Elliptic Curve Domain Parameters</title>
+            <author initials="L." surname="Chen">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="D." surname="Moody">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="K." surname="Randall">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="A." surname="Regenscheid">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="A." surname="Robinson">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2023" month="February"/>
+          </front>
+          <seriesInfo name="NIST" value="Special Publication 800-186"/>
+          <seriesInfo name="DOI" value="10.6028/NIST.SP.800-186"/>
+        </reference>
+        <reference anchor="SP-800-56A" quoteTitle="true" target="https://doi.org/10.6028/NIST.SP.800-56Ar3" derivedAnchor="SP-800-56A">
+          <front>
+            <title>Recommendation for Pair-Wise Key-Establishment Schemes Using Discrete Logarithm Cryptography</title>
+            <author initials="E." surname="Barker">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="L." surname="Chen">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="A." surname="Roginsky">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="A." surname="Vassilev">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="R." surname="Davis">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2018" month="April"/>
+          </front>
+          <seriesInfo name="NIST" value="Special Publication 800-56A Revision 3"/>
+          <seriesInfo name="DOI" value="10.6028/NIST.SP.800-56Ar3"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" anchor="acknowledgments" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">The authors want to thank all people verifying EDHOC test vectors and/or contributing to the interoperability testing, including: <contact fullname="Christian Amsüss"/>, <contact fullname="Timothy Claeys"/>, <contact fullname="Rikard Höglund"/>, <contact fullname="Stefan Hristozov"/>, <contact fullname="Christos Koulamas"/>, <contact fullname="Francesca Palombini"/>, <contact fullname="Lidia Pocero"/>, <contact fullname="Peter van der Stok"/>, and <contact fullname="Michel Veillette"/>.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="G." surname="Selander" fullname="Göran Selander">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <country>Sweden</country>
+          </postal>
+          <email>goran.selander@ericsson.com</email>
+        </address>
+      </author>
+      <author initials="J" surname="Preuß Mattsson" fullname="John Preuß Mattsson">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <country>Sweden</country>
+          </postal>
+          <email>john.mattsson@ericsson.com</email>
+        </address>
+      </author>
+      <author initials="M" surname="Serafin" fullname="Marek Serafin">
+        <organization showOnFrontPage="true">ASSA ABLOY</organization>
+        <address>
+          <postal>
+            <country>Poland</country>
+          </postal>
+          <email>marek.serafin@assaabloy.com</email>
+        </address>
+      </author>
+      <author initials="M" surname="Tiloca" fullname="Marco Tiloca">
+        <organization showOnFrontPage="true">RISE AB</organization>
+        <address>
+          <postal>
+            <street>Isafjordsgatan 22</street>
+            <code>164 40</code>
+            <city>Kista</city>
+            <country>Sweden</country>
+          </postal>
+          <email>marco.tiloca@ri.se</email>
+        </address>
+      </author>
+      <author initials="M" surname="Vučinić" fullname="Mališa Vučinić">
+        <organization showOnFrontPage="true">Inria</organization>
+        <address>
+          <postal>
+            <country>France</country>
+          </postal>
+          <email>malisa.vucinic@inria.fr</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

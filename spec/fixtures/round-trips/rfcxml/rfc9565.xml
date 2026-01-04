@@ -1,0 +1,518 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-opsawg-rfc7125-update-07" number="9565" category="std" consensus="true" submissionType="IETF" obsoletes="7125" updates="" tocInclude="true" sortRefs="true" symRefs="true" xml:lang="en" prepTime="2024-03-11T21:43:17" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-opsawg-rfc7125-update-07" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9565" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="tcpControlBits IPFIX Information Element">An Update to the tcpControlBits IP Flow Information Export (IPFIX) Information Element</title>
+    <seriesInfo name="RFC" value="9565" stream="IETF"/>
+    <author fullname="Mohamed Boucadair">
+      <organization showOnFrontPage="true">Orange</organization>
+      <address>
+        <postal>
+          <city>Rennes</city>
+          <code>35000</code>
+          <country>France</country>
+        </postal>
+        <email>mohamed.boucadair@orange.com</email>
+      </address>
+    </author>
+    <date month="03" year="2024"/>
+    <area>Operations and Management</area>
+    <workgroup>OPSAWG</workgroup>
+    <keyword>IPFIX</keyword>
+    <keyword>TCP</keyword>
+    <keyword>Measurement</keyword>
+    <keyword>Export</keyword>
+    <keyword>Observability</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">RFC 7125 revised the tcpControlBits IP Flow Information Export
+   (IPFIX) Information Element that was originally defined in RFC 5102
+   to reflect changes to the TCP header control bits since RFC 793.
+   However, that update is still problematic for interoperability
+   because some flag values have subsequently been deprecated.</t>
+      <t indent="0" pn="section-abstract-2">This document removes stale information from the IANA
+   "IPFIX Information Elements" registry and avoids future conflicts with the authoritative
+   IANA "TCP Header Flags" registry.</t>
+      <t indent="0" pn="section-abstract-3">This document obsoletes RFC 7125.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9565" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-revised-tcpcontrolbits-info">Revised tcpControlBits Information Element</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-an-example">An Example</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-changes-from-rfc-7125">Changes from RFC 7125</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b.1"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments-from-rfc-71">Acknowledgments from RFC 7125</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.d"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-address">Author's Address</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">TCP defines a set of control bits (also known as "flags") for
+   managing connections (<xref section="3.1" sectionFormat="of" target="RFC9293" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9293#section-3.1" derivedContent="RFC9293"/>). The "TCP
+   Header Flags" registry was initially set by <xref target="RFC3168" format="default" sectionFormat="of" derivedContent="RFC3168"/>, but it was
+   populated with only TCP control bits that were defined in <xref target="RFC3168" format="default" sectionFormat="of" derivedContent="RFC3168"/>.
+   <xref target="RFC9293" format="default" sectionFormat="of" derivedContent="RFC9293"/> fixed that by moving that registry to be listed as a
+   subregistry under the "Transmission Control Protocol (TCP)
+   Parameters" registry <xref target="TCP-FLAGS" format="default" sectionFormat="of" derivedContent="TCP-FLAGS"/>, adding bits that had previously been specified
+   in <xref target="RFC0793" format="default" sectionFormat="of" derivedContent="RFC0793"/>, and removing the NS (Nonce Sum) bit per <xref target="RFC8311" format="default" sectionFormat="of" derivedContent="RFC8311"/>.
+   Also, <xref section="6" sectionFormat="of" target="RFC9293" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9293#section-6" derivedContent="RFC9293"/> introduces "Bit Offset" to ease referencing each
+   header flag's offset within the 16-bit aligned view of the TCP header
+   (Figure 1 of <xref target="RFC9293" format="default" sectionFormat="of" derivedContent="RFC9293"/>). <xref target="TCP-FLAGS" format="default" sectionFormat="of" derivedContent="TCP-FLAGS"/> is thus settled as the
+   authoritative reference for the assigned TCP control bits.</t>
+      <t indent="3" pn="section-1-2">Note: The bits in offsets 0 through 3 are not header flags, but the TCP segment Data Offset field.</t>
+      <t indent="0" pn="section-1-3"><xref target="RFC7125" format="default" sectionFormat="of" derivedContent="RFC7125"/> revised the tcpControlBits IP Flow Information Export
+   (IPFIX) Information Element that was originally defined in
+   <xref target="RFC5102" format="default" sectionFormat="of" derivedContent="RFC5102"/> to reflect changes to the TCP control bits since
+   <xref target="RFC0793" format="default" sectionFormat="of" derivedContent="RFC0793"/>.  However, that update is still problematic for
+   interoperability because a value was deprecated since then (<xref section="7" sectionFormat="of" target="RFC8311" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8311#section-7" derivedContent="RFC8311"/>),
+   and, therefore, <xref target="RFC7125" format="default" sectionFormat="of" derivedContent="RFC7125"/> risks deviating from the
+   authoritative "TCP Header Flags" registry <xref target="TCP-FLAGS" format="default" sectionFormat="of" derivedContent="TCP-FLAGS"/>.</t>
+      <t indent="0" pn="section-1-4">This document fixes that problem by removing stale information from
+   the "IPFIX Information Elements" registry <xref target="IPFIX" format="default" sectionFormat="of" derivedContent="IPFIX"/> and avoiding future conflicts with the
+   authoritative "TCP Header Flags" registry <xref target="TCP-FLAGS" format="default" sectionFormat="of" derivedContent="TCP-FLAGS"/>. The update in this document also
+   enhances observability. For example, network operators can identify
+   packets that are observed with unassigned TCP flags set and,
+   therefore, identify which applications in the network should be upgraded
+   to reflect the changes to TCP flags that were introduced, e.g., in <xref target="RFC8311" format="default" sectionFormat="of" derivedContent="RFC8311"/>.</t>
+      <t indent="0" pn="section-1-5">The main changes from <xref target="RFC7125" format="default" sectionFormat="of" derivedContent="RFC7125"/> are listed in <xref target="changes" format="default" sectionFormat="of" derivedContent="Appendix A"/>.</t>
+    </section>
+    <section anchor="terminology" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <t indent="0" pn="section-2-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+      "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+      "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+      "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are
+      to be interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+      shown here.</t>
+      <t indent="0" pn="section-2-2">This document uses the terms defined in <xref target="RFC7011" section="2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7011#section-2" derivedContent="RFC7011"/>.</t>
+    </section>
+    <section anchor="revised-tcpcontrolbits-information-element" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-revised-tcpcontrolbits-info">Revised tcpControlBits Information Element</name>
+      <dl indent="3" newline="false" spacing="normal" pn="section-3-1">
+        <dt pn="section-3-1.1">ElementID:</dt>
+        <dd pn="section-3-1.2">
+          <t indent="0" pn="section-3-1.2.1">6</t>
+        </dd>
+        <dt pn="section-3-1.3">Name:</dt>
+        <dd pn="section-3-1.4">
+          <t indent="0" pn="section-3-1.4.1">tcpControlBits</t>
+        </dd>
+        <dt pn="section-3-1.5">Abstract Data Type:</dt>
+        <dd pn="section-3-1.6">
+          <t indent="0" pn="section-3-1.6.1">unsigned16</t>
+        </dd>
+        <dt pn="section-3-1.7">Data Type Semantics:</dt>
+        <dd pn="section-3-1.8">
+          <t indent="0" pn="section-3-1.8.1">flags</t>
+        </dd>
+        <dt pn="section-3-1.9">Status:</dt>
+        <dd pn="section-3-1.10">
+          <t indent="0" pn="section-3-1.10.1">current</t>
+        </dd>
+        <dt pn="section-3-1.11">Description:</dt>
+        <dd pn="section-3-1.12">
+          <t indent="0" pn="section-3-1.12.1">TCP control bits observed for the packets of this Flow.
+This information is encoded as a bit field; each TCP control
+bit has a corresponding bit in that field. A bit is set to 1 if any
+observed packet of this Flow has the corresponding TCP control bit
+set to 1. The bit is cleared to 0 otherwise.</t>
+          <t indent="0" pn="section-3-1.12.2">Per <xref target="RFC9293" format="default" sectionFormat="of" derivedContent="RFC9293"/>, the assignment of TCP control bits is
+managed by IANA via the "TCP Header Flags" registry <xref target="TCP-FLAGS" format="default" sectionFormat="of" derivedContent="TCP-FLAGS"/>.
+Implementers can retrieve the current TCP control bits from that registry, 
+which is authoritative for them.</t>
+          <t indent="0" pn="section-3-1.12.3">As the most significant 4 bits of octets 12 and 13 (counting from
+zero) of the TCP header <xref target="RFC9293" format="default" sectionFormat="of" derivedContent="RFC9293"/> are used to encode the TCP data
+offset (header length), the corresponding bits in this Information
+Element <bcp14>MUST</bcp14> be reported by the Exporter with a value of zero and <bcp14>MUST</bcp14> be ignored
+by the Collector. Use the tcpHeaderLength Information Element to
+encode this value.</t>
+          <t indent="0" pn="section-3-1.12.4">All TCP control bits (including those unassigned) <bcp14>MUST</bcp14> be exported
+as observed in the TCP headers of the packets of this Flow.</t>
+          <t indent="0" pn="section-3-1.12.5">If exported as a single octet with reduced-size encoding (<xref section="6.2" sectionFormat="of" target="RFC7011" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7011#section-6.2" derivedContent="RFC7011"/>), this
+Information Element covers the low-order octet of this field (i.e.,
+bit offset positions 8 to 15) <xref target="TCP-FLAGS" format="default" sectionFormat="of" derivedContent="TCP-FLAGS"/>. A Collector receiving this Information Element
+with reduced-size encoding must not assume anything about the
+content of the four bits with bit offset positions 4 to 7.</t>
+          <t indent="0" pn="section-3-1.12.6">Exporting Processes exporting this Information Element on behalf
+of a Metering Process that is not capable of observing any of the
+flags with bit offset positions 4 to 7 <bcp14>SHOULD</bcp14> use reduced-size encoding,
+and only export the least significant 8 bits of this Information
+Element.</t>
+          <t indent="0" pn="section-3-1.12.7">Note that previous revisions of this Information Element's
+definition specified that flags with bit offset positions 8 and 9 must be exported as
+zero, even if observed.  Collectors should therefore not assume
+that a value of zero for these bits in this Information Element
+indicates the bits were never set in the observed traffic,
+especially if these bits are zero in every Flow Record sent by a
+given Exporter.</t>
+          <t indent="0" pn="section-3-1.12.8">Note also that the "TCP Header Flags" registry <xref target="TCP-FLAGS" format="default" sectionFormat="of" derivedContent="TCP-FLAGS"/> indexes the bit offset from the most significant
+bit of octet 12 to the least significant bit of octet 13 in the TCP header,
+but the tcpControlBits is encoded as a regular unsigned 16-bit integer.</t>
+        </dd>
+        <dt pn="section-3-1.13">Units:</dt>
+        <dd pn="section-3-1.14"/>
+        <dt pn="section-3-1.15">Range:</dt>
+        <dd pn="section-3-1.16"/>
+        <dt pn="section-3-1.17">Additional Information:</dt>
+        <dd pn="section-3-1.18">
+          <t indent="0" pn="section-3-1.18.1">See the assigned TCP control bits in the "TCP Header Flags" registry <xref target="TCP-FLAGS" format="default" sectionFormat="of" derivedContent="TCP-FLAGS"/>.</t>
+        </dd>
+        <dt pn="section-3-1.19">Reference:</dt>
+        <dd pn="section-3-1.20">
+          <t indent="0" pn="section-3-1.20.1"><xref target="RFC9293" format="default" sectionFormat="of" derivedContent="RFC9293"/>, RFC 9565</t>
+        </dd>
+        <dt pn="section-3-1.21">Revision:</dt>
+        <dd pn="section-3-1.22">
+          <t indent="0" pn="section-3-1.22.1">2</t>
+        </dd>
+      </dl>
+    </section>
+    <section anchor="an-example" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-an-example">An Example</name>
+      <t indent="0" pn="section-4-1"><xref target="ex" format="default" sectionFormat="of" derivedContent="Figure 1"/> shows an example of a tcpControlBits Information Element set to 0x92, where MSB indicates the most significant bit and LSB indicates the least significant bit. This Information Element is used to report TCP control bits for a Flow
+that has CWR (Congestion Window Reduced), ACK, and SYN flag bits set (that is, bit offset positions 8, 11, and 14).</t>
+      <figure anchor="ex" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-an-example-of-the-tcpcontro">An Example of the tcpControlBits Information Element</name>
+        <artwork align="center" pn="section-4-2.1">
+MSB                           LSB
+                     1
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|0|0|0|0|0|0|0|1|0|0|1|0|0|1|0|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+      </figure>
+    </section>
+    <section anchor="iana-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-5-1">IANA has updated the "tcpControlBits" entry of the "IPFIX Information Elements" registry <xref target="IPFIX" format="default" sectionFormat="of" derivedContent="IPFIX"/>
+   to echo the details provided in <xref target="revised-tcpcontrolbits-information-element" format="default" sectionFormat="of" derivedContent="Section 3"/>.</t>
+    </section>
+    <section anchor="security-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-6-1">Because the setting of TCP control bits may be misused in some
+   Flows (e.g., Distributed Denial-of-Service (DDoS) attacks), an Exporter
+   has to report all observed control bits even if no meaning is associated
+   with a given TCP flag. This document uses a stronger requirements language
+   compared to <xref target="RFC7125" format="default" sectionFormat="of" derivedContent="RFC7125"/>.</t>
+      <t indent="0" pn="section-6-2">This document does not add new security considerations to those already
+   discussed for IPFIX in <xref target="RFC7011" format="default" sectionFormat="of" derivedContent="RFC7011"/>.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-7">
+      <name slugifiedName="name-references">References</name>
+      <references anchor="sec-normative-references" pn="section-7.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC7011" target="https://www.rfc-editor.org/info/rfc7011" quoteTitle="true" derivedAnchor="RFC7011">
+          <front>
+            <title>Specification of the IP Flow Information Export (IPFIX) Protocol for the Exchange of Flow Information</title>
+            <author fullname="B. Claise" initials="B." role="editor" surname="Claise"/>
+            <author fullname="B. Trammell" initials="B." role="editor" surname="Trammell"/>
+            <author fullname="P. Aitken" initials="P." surname="Aitken"/>
+            <date month="September" year="2013"/>
+            <abstract>
+              <t indent="0">This document specifies the IP Flow Information Export (IPFIX) protocol, which serves as a means for transmitting Traffic Flow information over the network. In order to transmit Traffic Flow information from an Exporting Process to a Collecting Process, a common representation of flow data and a standard means of communicating them are required. This document describes how the IPFIX Data and Template Records are carried over a number of transport protocols from an IPFIX Exporting Process to an IPFIX Collecting Process. This document obsoletes RFC 5101.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="77"/>
+          <seriesInfo name="RFC" value="7011"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7011"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC9293" target="https://www.rfc-editor.org/info/rfc9293" quoteTitle="true" derivedAnchor="RFC9293">
+          <front>
+            <title>Transmission Control Protocol (TCP)</title>
+            <author fullname="W. Eddy" initials="W." role="editor" surname="Eddy"/>
+            <date month="August" year="2022"/>
+            <abstract>
+              <t indent="0">This document specifies the Transmission Control Protocol (TCP). TCP is an important transport-layer protocol in the Internet protocol stack, and it has continuously evolved over decades of use and growth of the Internet. Over this time, a number of changes have been made to TCP as it was specified in RFC 793, though these have only been documented in a piecemeal fashion. This document collects and brings those changes together with the protocol specification from RFC 793. This document obsoletes RFC 793, as well as RFCs 879, 2873, 6093, 6429, 6528, and 6691 that updated parts of RFC 793. It updates RFCs 1011 and 1122, and it should be considered as a replacement for the portions of those documents dealing with TCP requirements. It also updates RFC 5961 by adding a small clarification in reset handling while in the SYN-RECEIVED state. The TCP header control bits from RFC 793 have also been updated based on RFC 3168.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="7"/>
+          <seriesInfo name="RFC" value="9293"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9293"/>
+        </reference>
+        <reference anchor="TCP-FLAGS" target="https://www.iana.org/assignments/tcp-parameters/" quoteTitle="true" derivedAnchor="TCP-FLAGS">
+          <front>
+            <title>TCP Header Flags</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+          </front>
+        </reference>
+      </references>
+      <references anchor="sec-informative-references" pn="section-7.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="IPFIX" target="https://www.iana.org/assignments/ipfix/" quoteTitle="true" derivedAnchor="IPFIX">
+          <front>
+            <title>IPFIX Information Elements</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="RFC0793" target="https://www.rfc-editor.org/info/rfc793" quoteTitle="true" derivedAnchor="RFC0793">
+          <front>
+            <title>Transmission Control Protocol</title>
+            <author fullname="J. Postel" initials="J." surname="Postel"/>
+            <date month="September" year="1981"/>
+          </front>
+          <seriesInfo name="RFC" value="793"/>
+          <seriesInfo name="DOI" value="10.17487/RFC0793"/>
+        </reference>
+        <reference anchor="RFC3168" target="https://www.rfc-editor.org/info/rfc3168" quoteTitle="true" derivedAnchor="RFC3168">
+          <front>
+            <title>The Addition of Explicit Congestion Notification (ECN) to IP</title>
+            <author fullname="K. Ramakrishnan" initials="K." surname="Ramakrishnan"/>
+            <author fullname="S. Floyd" initials="S." surname="Floyd"/>
+            <author fullname="D. Black" initials="D." surname="Black"/>
+            <date month="September" year="2001"/>
+            <abstract>
+              <t indent="0">This memo specifies the incorporation of ECN (Explicit Congestion Notification) to TCP and IP, including ECN's use of two bits in the IP header. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3168"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3168"/>
+        </reference>
+        <reference anchor="RFC5102" target="https://www.rfc-editor.org/info/rfc5102" quoteTitle="true" derivedAnchor="RFC5102">
+          <front>
+            <title>Information Model for IP Flow Information Export</title>
+            <author fullname="J. Quittek" initials="J." surname="Quittek"/>
+            <author fullname="S. Bryant" initials="S." surname="Bryant"/>
+            <author fullname="B. Claise" initials="B." surname="Claise"/>
+            <author fullname="P. Aitken" initials="P." surname="Aitken"/>
+            <author fullname="J. Meyer" initials="J." surname="Meyer"/>
+            <date month="January" year="2008"/>
+            <abstract>
+              <t indent="0">This memo defines an information model for the IP Flow Information eXport (IPFIX) protocol. It is used by the IPFIX protocol for encoding measured traffic information and information related to the traffic Observation Point, the traffic Metering Process, and the Exporting Process. Although developed for the IPFIX protocol, the model is defined in an open way that easily allows using it in other protocols, interfaces, and applications. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5102"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5102"/>
+        </reference>
+        <reference anchor="RFC7125" target="https://www.rfc-editor.org/info/rfc7125" quoteTitle="true" derivedAnchor="RFC7125">
+          <front>
+            <title>Revision of the tcpControlBits IP Flow Information Export (IPFIX) Information Element</title>
+            <author fullname="B. Trammell" initials="B." surname="Trammell"/>
+            <author fullname="P. Aitken" initials="P." surname="Aitken"/>
+            <date month="February" year="2014"/>
+            <abstract>
+              <t indent="0">This document revises the tcpControlBits IP Flow Information Export (IPFIX) Information Element as originally defined in RFC 5102 to reflect changes to the TCP Flags header field since RFC 793.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7125"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7125"/>
+        </reference>
+        <reference anchor="RFC8311" target="https://www.rfc-editor.org/info/rfc8311" quoteTitle="true" derivedAnchor="RFC8311">
+          <front>
+            <title>Relaxing Restrictions on Explicit Congestion Notification (ECN) Experimentation</title>
+            <author fullname="D. Black" initials="D." surname="Black"/>
+            <date month="January" year="2018"/>
+            <abstract>
+              <t indent="0">This memo updates RFC 3168, which specifies Explicit Congestion Notification (ECN) as an alternative to packet drops for indicating network congestion to endpoints. It relaxes restrictions in RFC 3168 that hinder experimentation towards benefits beyond just removal of loss. This memo summarizes the anticipated areas of experimentation and updates RFC 3168 to enable experimentation in these areas. An Experimental RFC in the IETF document stream is required to take advantage of any of these enabling updates. In addition, this memo makes related updates to the ECN specifications for RTP in RFC 6679 and for the Datagram Congestion Control Protocol (DCCP) in RFCs 4341, 4342, and 5622. This memo also records the conclusion of the ECN nonce experiment in RFC 3540 and provides the rationale for reclassification of RFC 3540 from Experimental to Historic; this reclassification enables new experimental use of the ECT(1) codepoint.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8311"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8311"/>
+        </reference>
+        <reference anchor="RFC9487" target="https://www.rfc-editor.org/info/rfc9487" quoteTitle="true" derivedAnchor="RFC9487">
+          <front>
+            <title>Export of Segment Routing over IPv6 Information in IP Flow Information Export (IPFIX)</title>
+            <author fullname="T. Graf" initials="T." surname="Graf"/>
+            <author fullname="B. Claise" initials="B." surname="Claise"/>
+            <author fullname="P. Francois" initials="P." surname="Francois"/>
+            <date month="November" year="2023"/>
+            <abstract>
+              <t indent="0">This document introduces new IP Flow Information Export (IPFIX) Information Elements (IEs) to identify a set of information related to Segment Routing over IPv6 (SRv6) such as data contained in a Segment Routing Header (SRH), the SRv6 control plane, and the SRv6 Endpoint behavior that traffic is being forwarded with.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9487"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9487"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="changes" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-changes-from-rfc-7125">Changes from RFC 7125</name>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a-1">
+        <li pn="section-appendix.a-1.1">
+          <t indent="0" pn="section-appendix.a-1.1.1">Cleaned up the description of the tcpControlBits Information Element by removing mentions of stale flag bits, referring to the flag bits by their bit offset position, and relying upon the IANA "TCP Header Flags" registry.</t>
+        </li>
+        <li pn="section-appendix.a-1.2">
+          <t indent="0" pn="section-appendix.a-1.2.1">Removed the table of TCP flag bits from the description of the tcpControlBits Information Element.</t>
+        </li>
+        <li pn="section-appendix.a-1.3">
+          <t indent="0" pn="section-appendix.a-1.3.1">Added the reference  <xref target="TCP-FLAGS" format="default" sectionFormat="of" derivedContent="TCP-FLAGS"/> to the Additional Information field of the tcpControlBits Information Element.</t>
+        </li>
+        <li pn="section-appendix.a-1.4">
+          <t indent="0" pn="section-appendix.a-1.4.1">Used strong normative language for exporting observed flags.</t>
+        </li>
+        <li pn="section-appendix.a-1.5">
+          <t indent="0" pn="section-appendix.a-1.5.1">Updated the references of the tcpControlBits Information Element.</t>
+        </li>
+        <li pn="section-appendix.a-1.6">
+          <t indent="0" pn="section-appendix.a-1.6.1">Bumped the revision of the tcpControlBits Information Element.</t>
+        </li>
+        <li pn="section-appendix.a-1.7">
+          <t indent="0" pn="section-appendix.a-1.7.1">Replaced obsolete RFCs (e.g., <xref target="RFC0793" format="default" sectionFormat="of" derivedContent="RFC0793"/>).</t>
+        </li>
+        <li pn="section-appendix.a-1.8">
+          <t indent="0" pn="section-appendix.a-1.8.1">Added an example section (<xref target="an-example" format="default" sectionFormat="of" derivedContent="Section 4"/>).</t>
+        </li>
+      </ul>
+    </section>
+    <section numbered="false" anchor="acknowledgments" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.b-1">This document was triggered by a discussion in the opsawg working group between the author and the
+   authors of <xref target="RFC9487" format="default" sectionFormat="of" derivedContent="RFC9487"/>.</t>
+      <t indent="0" pn="section-appendix.b-2">Thanks to <contact fullname="Christian Jacquenet"/>, <contact fullname="Thomas Graf"/>, and <contact fullname="Benoît Claise"/> for the
+   review and comments.</t>
+      <t indent="0" pn="section-appendix.b-3">Thanks to <contact fullname="Michael Scharf"/> for the tsvart review, <contact fullname="Ketan Talaulikar"/> for the rtgdir review,
+   and <contact fullname="Elwyn Davies"/> for the genart review.</t>
+      <t indent="0" pn="section-appendix.b-4">Thanks to <contact fullname="Rob Wilton"/> for the AD review.</t>
+      <t indent="0" pn="section-appendix.b-5">Thanks to <contact fullname="Tim Bray"/> for the artart review and <contact fullname="Shawn Emery"/> for the secdir review.</t>
+      <t indent="0" pn="section-appendix.b-6">Thanks to <contact fullname="Éric Vyncke"/> and <contact fullname="Paul Wouters"/> for the comments in the IESG review.</t>
+      <section numbered="false" anchor="acknowledgments7125" removeInRFC="false" toc="include" pn="section-appendix.b.1">
+        <name slugifiedName="name-acknowledgments-from-rfc-71">Acknowledgments from RFC 7125</name>
+        <t indent="0" pn="section-appendix.b.1-1">Thanks to <contact fullname="Andrew Feren"/>, <contact fullname="Lothar Braun"/>, <contact fullname="Michael Scharf"/>, and <contact fullname="Simon  Josefsson"/> for comments on the revised definition.  This work is
+ partially supported by the European Commission under grant agreement
+ FP7-ICT-318627 mPlane; this does not imply endorsement by the
+ Commission.</t>
+      </section>
+    </section>
+    <section numbered="false" anchor="contributors" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <t indent="0" pn="section-appendix.c-1">The authors of <xref target="RFC7125" format="default" sectionFormat="of" derivedContent="RFC7125"/> are as follows:</t>
+      <contact fullname="Brian Trammell">
+        <organization showOnFrontPage="true"/>
+      </contact>
+      <contact fullname="Paul Aitken">
+        <organization showOnFrontPage="true"/>
+      </contact>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.d">
+      <name slugifiedName="name-authors-address">Author's Address</name>
+      <author fullname="Mohamed Boucadair">
+        <organization showOnFrontPage="true">Orange</organization>
+        <address>
+          <postal>
+            <city>Rennes</city>
+            <code>35000</code>
+            <country>France</country>
+          </postal>
+          <email>mohamed.boucadair@orange.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

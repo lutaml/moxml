@@ -1,0 +1,464 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-yee-ssh-iana-requirements-03" number="9519" ipr="trust200902" obsoletes="" updates="4250, 4716, 4819, 8308" xml:lang="en" tocInclude="true" tocDepth="4" symRefs="true" sortRefs="true" prepTime="2024-01-24T16:37:03" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-yee-ssh-iana-requirements-03" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9519" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="IANA SSH Registry Requirements">Update to the IANA SSH Protocol Parameters Registry Requirements</title>
+    <seriesInfo name="RFC" value="9519" stream="IETF"/>
+    <author fullname="Peter E. Yee" initials="P." surname="Yee">
+      <organization showOnFrontPage="true">AKAYLA</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Mountain View</city>
+          <region>CA</region>
+          <code>94043</code>
+          <country>United States of America</country>
+        </postal>
+        <phone/>
+        <email>peter@akayla.com</email>
+      </address>
+    </author>
+    <date month="01" year="2024"/>
+    <area>sec</area>
+    <keyword>ssh</keyword>
+    <keyword>iana</keyword>
+    <keyword>registry</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">
+   This specification updates the registration policies for adding new entries to
+   registries within the IANA "Secure Shell (SSH) Protocol Parameters" group of registries.  Previously, the registration policy was generally IETF Review, as defined in RFC
+   8126, although a few registries require Standards Action. This specification changes it from IETF Review to Expert Review. This document updates RFCs 4250, 4716, 4819, and 8308.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9519" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ssh-protocol-parameters-aff">SSH Protocol Parameters Affected</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-designated-expert-pool">Designated Expert Pool</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-address">Author's Address</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">The IANA "Secure Shell (SSH) Protocol Parameters" registry was populated by several RFCs including <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/>, <xref target="RFC4716" format="default" sectionFormat="of" derivedContent="RFC4716"/>, <xref target="RFC4819" format="default" sectionFormat="of" derivedContent="RFC4819"/>, and <xref target="RFC8308" format="default" sectionFormat="of" derivedContent="RFC8308"/>. Outside of some narrow value ranges that require Standards Action in order to add new values or that are marked for Private Use, the registration policy for other portions of the registry was IETF Review <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>. This specification changes the policy from IETF Review to Expert Review. This change is in line with similar changes undertaken for certain IPsec and TLS registries.
+      </t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.1">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-ssh-protocol-parameters-aff">SSH Protocol Parameters Affected</name>
+      <t indent="0" pn="section-2-1">The following table lists the "Secure Shell (SSH) Protocol Parameters" registries whose registration policy has changed from IETF Review to Expert Review. Where this change applied to a specific range of values within the particular parameter, that range is given in the notes column.  Affected registries now list this document as a reference.</t>
+      <table anchor="ssh_protocol_parameters_table" align="center" pn="table-1">
+        <name slugifiedName="name-secure-shell-ssh-protocol-p">Secure Shell (SSH) Protocol Parameters Affected</name>
+        <thead>
+          <tr>
+            <th align="center" colspan="1" rowspan="1">Parameter Name</th>
+            <th align="center" colspan="1" rowspan="1">RFC</th>
+            <th align="center" colspan="1" rowspan="1">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Authentication Method Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Channel Connection Failure Reason Codes and Descriptions</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1">0x00000001-0xFDFFFFFF (inclusive)</td>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Compression Algorithm Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Connection Protocol Channel Request Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Connection Protocol Channel Types</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Connection Protocol Global Request Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Connection Protocol Subsystem Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Disconnection Messages Reason Codes and Descriptions</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1">0x00000001-0xFDFFFFFF (inclusive)</td>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Encryption Algorithm Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Extended Channel Data Transfer data_type_code and Data</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1">0x00000001-0xFDFFFFFF (inclusive)</td>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Extension Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC8308" format="default" sectionFormat="of" derivedContent="RFC8308"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Key Exchange Method Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">MAC Algorithm Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Pseudo-Terminal Encoded Terminal Modes</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Public Key Algorithm Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Publickey Subsystem Attributes</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4819" format="default" sectionFormat="of" derivedContent="RFC4819"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Publickey Subsystem Request Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4819" format="default" sectionFormat="of" derivedContent="RFC4819"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Publickey Subsystem Response Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4819" format="default" sectionFormat="of" derivedContent="RFC4819"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Service Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">Signal Names</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4250" format="default" sectionFormat="of" derivedContent="RFC4250"/></td>
+            <td align="center" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">SSH Public-Key File Header Tags</td>
+            <td align="center" colspan="1" rowspan="1">
+              <xref target="RFC4716" format="default" sectionFormat="of" derivedContent="RFC4716"/></td>
+            <td align="center" colspan="1" rowspan="1">Excluding header-tags beginning with x-</td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-2-3">The only IANA SSH protocol parameter registries not affected are
+      "Message Numbers" and "Publickey Subsystem Status Codes", as these
+      remain Standards Action due to their limited resources as
+      one-byte registry values.</t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-designated-expert-pool">Designated Expert Pool</name>
+      <t indent="0" pn="section-3-1">Expert Review <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/> registry requests
+       are registered after a three-week review period on the
+       &lt;ssh-reg-review@ietf.org&gt; mailing list, and on the advice of one or more
+       designated experts. However, to allow for the allocation of values prior to
+       publication, the designated experts may approve registration once they are
+       satisfied that such a specification will be published.</t>
+      <t indent="0" pn="section-3-2">Registration requests sent to the mailing list for review <bcp14>SHOULD</bcp14> use
+       an appropriate subject (e.g., "Request to register value in SSH protocol
+       parameters &lt;specific parameter&gt; registry").</t>
+      <t indent="0" pn="section-3-3">Within the review period, the designated experts will either approve
+       or deny the registration request, communicating this decision to the
+       review list and IANA.  Denials <bcp14>MUST</bcp14> include an explanation and, if
+       applicable, suggestions as to how to make the request successful.
+       Registration requests that are undetermined for a period longer than
+       21 days can be brought to the IESG's attention (using the
+       &lt;iesg@ietf.org&gt; mailing list) for resolution.</t>
+      <t indent="0" pn="section-3-4">Criteria that <bcp14>SHOULD</bcp14> be applied by the designated experts includes
+       determining whether the proposed registration duplicates existing
+       functionality (which is not permitted), whether it is likely to be of
+       general applicability or useful only for a single application, and
+       whether the registration description is clear.</t>
+      <t indent="0" pn="section-3-5">IANA <bcp14>MUST</bcp14> only accept registry updates from the designated experts
+       and the IESG. It <bcp14>SHOULD</bcp14> direct all requests for registration from other sources to the review mailing list.</t>
+      <t indent="0" pn="section-3-6">It is suggested that multiple designated experts be appointed who are
+       able to represent the perspectives of different applications using
+       this specification, in order to enable broadly informed review of
+       registration decisions.  In cases where a registration decision could
+       be perceived as creating a conflict of interest for a particular
+       expert, that expert <bcp14>SHOULD</bcp14> defer to the judgment of the other
+       experts.</t>
+    </section>
+    <section anchor="IANA" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-4-1">This memo is entirely about updating the IANA "Secure Shell (SSH) Protocol Parameters" registry.</t>
+    </section>
+    <section anchor="Security" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-5-1">This memo does not change the Security Considerations for any of the updated RFCs.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-6">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-6.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC4250" target="https://www.rfc-editor.org/info/rfc4250" quoteTitle="true" derivedAnchor="RFC4250">
+          <front>
+            <title>The Secure Shell (SSH) Protocol Assigned Numbers</title>
+            <author fullname="S. Lehtinen" initials="S." surname="Lehtinen"/>
+            <author fullname="C. Lonvick" initials="C." role="editor" surname="Lonvick"/>
+            <date month="January" year="2006"/>
+            <abstract>
+              <t indent="0">This document defines the instructions to the IANA and the initial state of the IANA assigned numbers for the Secure Shell (SSH) protocol. It is intended only for the initialization of the IANA registries referenced in the set of SSH documents. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4250"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4250"/>
+        </reference>
+        <reference anchor="RFC4819" target="https://www.rfc-editor.org/info/rfc4819" quoteTitle="true" derivedAnchor="RFC4819">
+          <front>
+            <title>Secure Shell Public Key Subsystem</title>
+            <author fullname="J. Galbraith" initials="J." surname="Galbraith"/>
+            <author fullname="J. Van Dyke" initials="J." surname="Van Dyke"/>
+            <author fullname="J. Bright" initials="J." surname="Bright"/>
+            <date month="March" year="2007"/>
+            <abstract>
+              <t indent="0">Secure Shell defines a user authentication mechanism that is based on public keys, but does not define any mechanism for key distribution. No common key management solution exists in current implementations. This document describes a protocol that can be used to configure public keys in an implementation-independent fashion, allowing client software to take on the burden of this configuration.</t>
+              <t indent="0">The Public Key Subsystem provides a server-independent mechanism for clients to add public keys, remove public keys, and list the current public keys known by the server. Rights to manage public keys are specific and limited to the authenticated user.</t>
+              <t indent="0">A public key may also be associated with various restrictions, including a mandatory command or subsystem. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4819"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4819"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8308" target="https://www.rfc-editor.org/info/rfc8308" quoteTitle="true" derivedAnchor="RFC8308">
+          <front>
+            <title>Extension Negotiation in the Secure Shell (SSH) Protocol</title>
+            <author fullname="D. Bider" initials="D." surname="Bider"/>
+            <date month="March" year="2018"/>
+            <abstract>
+              <t indent="0">This memo updates RFCs 4251, 4252, 4253, and 4254 by defining a mechanism for Secure Shell (SSH) clients and servers to exchange information about supported protocol extensions confidentially after SSH key exchange.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8308"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8308"/>
+        </reference>
+      </references>
+      <references pn="section-6.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="CURDLE-MA" target="https://mailarchive.ietf.org/arch/msg/curdle/gdiOlZr9bnrZv8umVyguGG3woIM/" quoteTitle="true" derivedAnchor="CURDLE-MA">
+          <front>
+            <title>Subject: [Curdle] Time to Review IANA SSH Registries Policies?</title>
+            <author initials="S." surname="Turner" fullname="Sean Turner">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2021" month="February"/>
+          </front>
+          <refcontent>message to the Curdle mailing list</refcontent>
+        </reference>
+        <reference anchor="RFC4716" target="https://www.rfc-editor.org/info/rfc4716" quoteTitle="true" derivedAnchor="RFC4716">
+          <front>
+            <title>The Secure Shell (SSH) Public Key File Format</title>
+            <author fullname="J. Galbraith" initials="J." surname="Galbraith"/>
+            <author fullname="R. Thayer" initials="R." surname="Thayer"/>
+            <date month="November" year="2006"/>
+            <abstract>
+              <t indent="0">This document formally documents an existing public key file format in use for exchanging public keys between different Secure Shell (SSH) implementations.</t>
+              <t indent="0">In addition, this document defines a standard textual representation for SSH public key fingerprints. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4716"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4716"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="Acknowledgements" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">The impetus for this specification was a February 2021 discussion on the CURDLE mailing list <xref target="CURDLE-MA" format="default" sectionFormat="of" derivedContent="CURDLE-MA"/>.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-address">Author's Address</name>
+      <author fullname="Peter E. Yee" initials="P." surname="Yee">
+        <organization showOnFrontPage="true">AKAYLA</organization>
+        <address>
+          <postal>
+            <street/>
+            <city>Mountain View</city>
+            <region>CA</region>
+            <code>94043</code>
+            <country>United States of America</country>
+          </postal>
+          <phone/>
+          <email>peter@akayla.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

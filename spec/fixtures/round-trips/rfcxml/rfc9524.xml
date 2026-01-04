@@ -1,0 +1,1504 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc version="3" category="std" consensus="true" docName="draft-ietf-spring-sr-replication-segment-19" ipr="trust200902" number="9524" obsoletes="" sortRefs="true" submissionType="IETF" symRefs="true" tocDepth="3" tocInclude="true" updates="" xml:lang="en" prepTime="2024-02-22T13:05:57" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-spring-sr-replication-segment-19" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9524" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="SR Replication Segment">Segment Routing Replication for Multipoint Service Delivery</title>
+    <seriesInfo name="RFC" value="9524" stream="IETF"/>
+    <author fullname="Daniel Voyer" initials="D." role="editor" surname="Voyer">
+      <organization showOnFrontPage="true">Bell Canada</organization>
+      <address>
+        <postal>
+          <city>Montreal</city>
+          <country>Canada</country>
+        </postal>
+        <email>daniel.voyer@bell.ca</email>
+      </address>
+    </author>
+    <author fullname="Clarence Filsfils" initials="C." surname="Filsfils">
+      <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+      <address>
+        <postal>
+          <city>Brussels</city>
+          <country>Belgium</country>
+        </postal>
+        <email>cfilsfil@cisco.com</email>
+      </address>
+    </author>
+    <author fullname="Rishabh Parekh" initials="R." surname="Parekh">
+      <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+      <address>
+        <postal>
+          <city>San Jose</city>
+          <region>CA</region>
+          <country>United States of America</country>
+        </postal>
+        <email>riparekh@cisco.com</email>
+      </address>
+    </author>
+    <author fullname="Hooman Bidgoli" initials="H." surname="Bidgoli">
+      <organization showOnFrontPage="true">Nokia</organization>
+      <address>
+        <postal>
+          <city>Ottawa</city>
+          <country>Canada</country>
+        </postal>
+        <email>hooman.bidgoli@nokia.com</email>
+      </address>
+    </author>
+    <author fullname="Zhaohui Zhang" initials="Z." surname="Zhang">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <email>zzhang@juniper.net</email>
+      </address>
+    </author>
+    <date month="02" year="2024"/>
+    <area>rtg</area>
+    <workgroup>spring</workgroup>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document describes the Segment Routing Replication segment for
+      multipoint service delivery. A Replication segment allows a packet to be
+      replicated from a replication node to downstream nodes.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9524" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-use-cases">Use Cases</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-replication-segment">Replication Segment</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sr-mpls-data-plane">SR-MPLS Data Plane</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-data-plane">SRv6 Data Plane</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2.2.2">
+                  <li pn="section-toc.1-1.2.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.1.1"><xref derivedContent="2.2.1" format="counter" sectionFormat="of" target="section-2.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-endreplicate-replicate-and-">End.Replicate: Replicate and/or Decapsulate</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.2.1"><xref derivedContent="2.2.2" format="counter" sectionFormat="of" target="section-2.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-oam-operations">OAM Operations</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.3.1"><xref derivedContent="2.2.3" format="counter" sectionFormat="of" target="section-2.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-icmpv6-error-messages">ICMPv6 Error Messages</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-illustration-of-a-replicati">Illustration of a Replication Segment</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="A.1" format="counter" sectionFormat="of" target="section-appendix.a.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sr-mpls">SR-MPLS</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="A.2" format="counter" sectionFormat="of" target="section-appendix.a.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6">SRv6</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.2.2">
+                  <li pn="section-toc.1-1.6.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.2.2.1.1"><xref derivedContent="A.2.1" format="counter" sectionFormat="of" target="section-appendix.a.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-pinging-a-replication-sid">Pinging a Replication-SID</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.d"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">The Replication segment is a new type of segment for Segment Routing
+      (SR) <xref format="default" target="RFC8402" sectionFormat="of" derivedContent="RFC8402"/>, which allows a node
+      (henceforth called a "replication node") to replicate packets to a set
+      of other nodes (called "downstream nodes") in an SR domain.
+      A Replication segment can replicate packets to directly connected nodes
+      or to downstream nodes (without the need for state on the transit
+      routers). This document focuses on specifying the behavior of a
+      Replication segment for both Segment Routing with Multiprotocol Label
+      Switching (SR-MPLS) <xref format="default" target="RFC8660" sectionFormat="of" derivedContent="RFC8660"/> and
+      Segment Routing with IPv6 (SRv6) <xref format="default" target="RFC8986" sectionFormat="of" derivedContent="RFC8986"/>. The examples in <xref format="default" target="Appendix" sectionFormat="of" derivedContent="Appendix A"/> illustrate the behavior of a Replication Segment in
+      an SR domain. The use of two or more Replication segments stitched
+      together to form a tree using a control plane is left to be specified in
+      other documents. The management of IP multicast groups, building IP
+      multicast trees, and performing multicast congestion control are out of
+      scope of this document.</t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.1">
+        <name slugifiedName="name-terminology">Terminology</name>
+        <t indent="0" pn="section-1.1-1">This section defines terms introduced and used frequently in this
+        document. Refer to the Terminology sections of <xref format="default" target="RFC8402" sectionFormat="of" derivedContent="RFC8402"/>, <xref format="default" target="RFC8754" sectionFormat="of" derivedContent="RFC8754"/>, and
+        <xref format="default" target="RFC8986" sectionFormat="of" derivedContent="RFC8986"/> for other terms used in
+        SR.</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-1.1-2">
+          <dt pn="section-1.1-2.1">Replication segment:</dt>
+          <dd pn="section-1.1-2.2">A segment in an SR domain that replicates packets. See <xref format="default" target="RepSeg" sectionFormat="of" derivedContent="Section 2"/> for details.</dd>
+          <dt pn="section-1.1-2.3">Replication node:</dt>
+          <dd pn="section-1.1-2.4">A node in an SR domain that replicates packets based on a
+          Replication segment.</dd>
+          <dt pn="section-1.1-2.5">Downstream nodes:</dt>
+          <dd pn="section-1.1-2.6">A Replication segment replicates packets to a set of nodes.
+          These nodes are downstream nodes.</dd>
+          <dt pn="section-1.1-2.7">Replication state:</dt>
+          <dd pn="section-1.1-2.8">State held for a Replication segment at a replication node. It
+          is conceptually a list of Replication branches to downstream nodes.
+          The list can be empty.</dd>
+          <dt pn="section-1.1-2.9">Replication-SID:</dt>
+          <dd pn="section-1.1-2.10">Data plane identifier of a Replication segment. This is an
+          SR-MPLS label or SRv6 Segment Identifier (SID).</dd>
+          <dt pn="section-1.1-2.11">SRH:</dt>
+          <dd pn="section-1.1-2.12">IPv6 Segment Routing Header <xref format="default" target="RFC8754" sectionFormat="of" derivedContent="RFC8754"/>.</dd>
+          <dt pn="section-1.1-2.13">Point-to-Multipoint (P2MP) Service:</dt>
+          <dd pn="section-1.1-2.14">A service that has one ingress node and one or more egress
+          nodes. A packet is delivered to all the egress nodes.</dd>
+          <dt pn="section-1.1-2.15">Root node:</dt>
+          <dd pn="section-1.1-2.16">An ingress node of a P2MP service.</dd>
+          <dt pn="section-1.1-2.17">Leaf node:</dt>
+          <dd pn="section-1.1-2.18">An egress node of a P2MP service.</dd>
+          <dt pn="section-1.1-2.19">Bud node:</dt>
+          <dd pn="section-1.1-2.20">A node that is both a replication node and a leaf node.</dd>
+        </dl>
+        <t indent="0" pn="section-1.1-3">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.2">
+        <name slugifiedName="name-use-cases">Use Cases</name>
+        <t indent="0" pn="section-1.2-1">In the simplest use case, a single Replication segment includes the
+        ingress node of a multipoint service and the egress nodes of the
+        service as all the downstream nodes. This achieves Ingress Replication
+        <xref format="default" target="RFC7988" sectionFormat="of" derivedContent="RFC7988"/> that has been widely used
+        for Multicast VPN (MVPN) <xref format="default" target="RFC6513" sectionFormat="of" derivedContent="RFC6513"/> and
+        Ethernet VPN (EVPN) <xref format="default" target="RFC7432" sectionFormat="of" derivedContent="RFC7432"/> bridging
+        of Broadcast, Unknown Unicast, and Multicast (BUM) traffic.  This Replication segment on ingress and
+        egress nodes can either be provisioned locally or using dynamic autodiscovery procedures for MVPN and
+        EVPN. Note <xref format="default" target="RFC8986" sectionFormat="of" derivedContent="RFC8986">SRv6</xref> has
+        End.DT2M replication behavior for EVPN BUM traffic.</t>
+        <t indent="0" pn="section-1.2-2">Replication segments can also be used to form trees by stitching
+        Replication segments on a root node, intermediate replication nodes,
+        and leaf nodes for efficient delivery of MVPN and EVPN BUM
+        traffic.</t>
+      </section>
+    </section>
+    <section anchor="RepSeg" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-replication-segment">Replication Segment</name>
+      <t indent="0" pn="section-2-1">In an SR domain, a Replication segment is a logical
+      construct that connects a replication node to a set of downstream nodes.
+      A Replication segment is a local segment instantiated at a Replication
+      node. It can be either provisioned locally on a node or programmed by a control plane.
+      </t>
+      <t indent="0" pn="section-2-2">Replication segments can be stitched together to form a tree by
+      either local provisioning on nodes or using a control plane. The
+      procedures for doing this are out of scope of this document. One such
+      control plane using a PCE with the SR P2MP policy is specified in <xref format="default" target="I-D.ietf-pim-sr-p2mp-policy" sectionFormat="of" derivedContent="P2MP-POLICY"/>. However, if
+      local provisioning is used to stitch Replication segments, then a chain
+      of Replication segments <bcp14>SHOULD NOT</bcp14> form a loop. If a
+      control plane is used to stitch Replication segments, the control plane
+      specification <bcp14>MUST</bcp14> prevent loops or detect and mitigate
+      loops in steady state.</t>
+      <t indent="0" pn="section-2-3">A Replication segment is identified by the tuple &lt;Replication-ID,
+      Node-ID&gt;, where:</t>
+      <dl newline="false" spacing="normal" indent="3" pn="section-2-4">
+        <dt pn="section-2-4.1">Replication-ID:</dt>
+        <dd pn="section-2-4.2">An identifier for a Replication segment that is unique in context
+        of the replication node.</dd>
+        <dt pn="section-2-4.3">Node-ID:</dt>
+        <dd pn="section-2-4.4">The address of the replication node for the Replication segment.
+        Note that the root of a multipoint service is also a Replication
+        node.</dd>
+      </dl>
+      <t indent="0" pn="section-2-5">Replication-ID is a variable-length field. In the simplest case, it
+      can be a 32-bit number, but it can be extended or modified as required
+      based on the specific use of a Replication segment. This is out of scope
+      for this document. The length of the Replication-ID is specified in the
+      signaling mechanism used for the Replication segment. Examples of such
+      signaling and extensions are described in <xref format="default" target="I-D.ietf-pim-sr-p2mp-policy" sectionFormat="of" derivedContent="P2MP-POLICY"/>. When the PCE signals a
+      Replication segment to its node, the &lt;Replication-ID, Node-ID&gt;
+      tuple identifies the segment.</t>
+      <t indent="0" pn="section-2-6">A Replication segment includes the following elements:</t>
+      <dl newline="false" spacing="normal" indent="3" pn="section-2-7">
+        <dt pn="section-2-7.1">Replication-SID:</dt>
+        <dd pn="section-2-7.2">The Segment Identifier of a Replication segment. This is an
+        SR-MPLS label or an SRv6 SID <xref format="default" target="RFC8402" sectionFormat="of" derivedContent="RFC8402"/>.</dd>
+        <dt pn="section-2-7.3">Downstream nodes:</dt>
+        <dd pn="section-2-7.4">Set of nodes in an SR domain to which a packet is
+        replicated by the Replication segment.</dd>
+        <dt pn="section-2-7.5">Replication state:</dt>
+        <dd pn="section-2-7.6">See below.</dd>
+      </dl>
+      <t indent="0" pn="section-2-8">The downstream nodes and Replication state (RS) of a Replication segment
+      can change over time, depending on the network state and leaf nodes of a
+      multipoint service that the segment is part of.</t>
+      <t indent="0" pn="section-2-9">The Replication-SID identifies the Replication segment in the
+      forwarding plane. At a replication node, the Replication-SID operates on
+      the RS of the Replication segment.</t>
+      <t indent="0" pn="section-2-10">RS is a list of Replication branches to the downstream
+      nodes. In this document, each branch is abstracted to a &lt;downstream
+      node, downstream Replication-SID&gt; tuple. &lt;downstream node&gt;
+      represents the reachability from the replication node to the downstream
+      node. In its simplest form, this <bcp14>MAY</bcp14> be specified as an
+      interface or next-hop if the downstream node is adjacent to the
+      replication node. The reachability may be specified in terms of a
+      Flexible Algorithm path (including the default algorithm) <xref format="default" target="RFC9350" sectionFormat="of" derivedContent="RFC9350"/> or specified by an SR-explicit path
+      represented either by a SID list (of one or more SIDs) or by a Segment
+      Routing Policy <xref format="default" target="RFC9256" sectionFormat="of" derivedContent="RFC9256"/>. The downstream
+      Replication-SID is the Replication-SID of the Replication segment at the
+      downstream node.</t>
+      <t indent="0" pn="section-2-11">A packet is steered into a Replication segment at a replication node
+      in two ways:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-12">
+        <li pn="section-2-12.1">When the active segment <xref format="default" target="RFC8402" sectionFormat="of" derivedContent="RFC8402"/>
+        is a locally instantiated Replication-SID.</li>
+        <li pn="section-2-12.2">By the root of a multipoint service based on local configuration
+        that is outside the scope of this document.</li>
+      </ul>
+      <t indent="0" pn="section-2-13">In either case, the packet is replicated to each downstream node in
+      the associated RS.</t>
+      <t indent="0" pn="section-2-14">If a downstream node is an egress (leaf) of the multipoint service,
+      no further replication is needed. The leaf node's Replication segment
+      has an indicator for the leaf role, and it does not have any RS (i.e., the list of Replication branches is empty). The Replication-SID at a leaf node <bcp14>MAY</bcp14> be used to identify the multipoint
+      service. Notice that the segment on the leaf node is still referred to
+      as a "Replication segment" for the purpose of generalization.</t>
+      <t indent="0" pn="section-2-15">A node can be a bud node (i.e., it is a replication node and a leaf
+      node of a multipoint service <xref format="default" target="I-D.ietf-pim-sr-p2mp-policy" sectionFormat="of" derivedContent="P2MP-POLICY"/>). The Replication segment of a
+      bud node has a list of Replication branches as well as a leaf role
+      indicator.</t>
+      <t indent="0" pn="section-2-16">In principle, it is possible for different Replication segments to
+      replicate packets to the same Replication segment on a downstream node.
+      However, such usage is intentionally left out of scope of this
+      document.</t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-2.1">
+        <name slugifiedName="name-sr-mpls-data-plane">SR-MPLS Data Plane</name>
+        <t indent="0" pn="section-2.1-1">When the active segment is a Replication-SID, the processing
+        results in a POP <xref format="default" target="RFC8402" sectionFormat="of" derivedContent="RFC8402"/> operation
+        and the lookup of the associated RS. For each
+        replication in the RS, the operation is a PUSH <xref format="default" target="RFC8402" sectionFormat="of" derivedContent="RFC8402"/> of the downstream Replication-SID
+        and an optional segment list onto the packet to steer the packet to
+        the downstream node.</t>
+        <t indent="0" pn="section-2.1-2">The operation performed on the incoming Replication-SID is NEXT
+        <xref format="default" target="RFC8402" sectionFormat="of" derivedContent="RFC8402"/> at a leaf or bud node where
+        delivery of payload off the tree is per local configuration. For some
+        usages, this may involve looking at the next SID, for example, to get
+        the necessary context.</t>
+        <t indent="0" pn="section-2.1-3">When the root of a multipoint service steers a packet to a
+        Replication segment, it results in a replication to each downstream
+        node in the associated RS. The operation is a PUSH of
+        the Replication-SID and an optional segment list onto the packet,
+        which is forwarded to the downstream node.</t>
+        <t indent="0" pn="section-2.1-4">The following applies to a Replication-SID in MPLS
+        encapsulation:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2.1-5">
+          <li pn="section-2.1-5.1">SIDs <bcp14>MAY</bcp14> be inserted before the downstream
+          SR-MPLS Replication-SID in order to guide a packet from a
+          non-adjacent SR node to a replication node.</li>
+          <li pn="section-2.1-5.2">A replication node <bcp14>MAY</bcp14> replicate a packet to a
+          non-adjacent downstream node using SIDs it inserts in the copy
+          preceding the downstream Replication-SID. The downstream node may be
+          a leaf node of the Replication segment, another replication node, or
+          both in the case of a bud node.</li>
+          <li pn="section-2.1-5.3">A replication node <bcp14>MAY</bcp14> use an Anycast-SID or a
+          Border Gateway Protocol (BGP) PeerSet-SID in the segment list to
+          send a replicated packet to one downstream replication node in a set of
+          Anycast nodes. This occurs if and only if all nodes in the set have an
+          identical Replication-SID and reach the same set of receivers.</li>
+          <li pn="section-2.1-5.4">For some use cases, there <bcp14>MAY</bcp14> be SIDs after the
+          Replication-SID in the segment list of a packet. These SIDs are used
+          only by the leaf and bud nodes to forward a packet off the tree
+          independent of the Replication-SID. Coordination regarding the
+          absence or presence and value of context information for leaf and bud
+          nodes is outside the scope of this document.</li>
+        </ul>
+      </section>
+      <section anchor="SRv6" numbered="true" toc="include" removeInRFC="false" pn="section-2.2">
+        <name slugifiedName="name-srv6-data-plane">SRv6 Data Plane</name>
+        <t indent="0" pn="section-2.2-1">For SRv6 <xref format="default" target="RFC8986" sectionFormat="of" derivedContent="RFC8986"/>, this document
+        specifies "Endpoint with replication and/or decapsulate" behavior (End.Replicate for
+        short) to replicate a packet and forward the replicas according to an
+        RS.</t>
+        <t indent="0" pn="section-2.2-2">When processing a packet destined to a local Replication-SID, the
+        packet is replicated according to the associated RS to
+        downstream nodes and/or locally delivered off the tree when this is a
+        leaf or bud node. For replication, the outer header is reused, and the
+        downstream Replication-SID, from RS, is written into
+        the outer IPv6 header Destination Address (DA). If required, an
+        optional segment list may be used on some branches using H.Encaps.Red
+        <xref format="default" target="RFC8986" sectionFormat="of" derivedContent="RFC8986"/> (while some other branches
+        may not need that). Note that this H.Encaps.Red is independent of the
+        Replication segment: it is just used to steer the replicated packet on
+        a traffic-engineered path to a downstream node. The penultimate
+        segment in the encapsulating IPv6 header will execute the Ultimate
+        Segment Decapsulation (USD) flavor <xref format="default" target="RFC8986" sectionFormat="of" derivedContent="RFC8986"/> of End/End.X behavior and forward the inner
+        (replicated) packet to the downstream node. If H.Encaps.Red is used to
+        steer a replicated packet to a downstream node, the operator must
+        ensure the MTU on path to the downstream node is sufficient to account
+        for additional SRv6 encapsulation. This also applies when the
+        Replication segment is for the root node, whose upstream node has
+        placed the Replication-SID in the header.</t>
+        <t indent="0" pn="section-2.2-3">A local application on root (e.g., MVPN <xref format="default" target="RFC6513" sectionFormat="of" derivedContent="RFC6513"/> or EVPN <xref format="default" target="RFC7432" sectionFormat="of" derivedContent="RFC7432"/>)
+        may also apply H.Encaps.Red and then steer the resulting traffic into
+        the Replication segment. Again, note that H.Encaps.Red is independent
+        of the Replication segment: it is the action of the application (e.g.
+        MVPN or EVPN service). If the service is on a root node, then the two
+        H.Encaps mentioned, one for the service and the other in the previous
+        paragraph for replication to the downstream node,
+        <bcp14>SHOULD</bcp14> be combined for optimization (to avoid extra
+        IPv6 encapsulation).</t>
+        <t indent="0" pn="section-2.2-4">When processing a packet destined to a local Replication-SID, the
+        IPv6 Hop Limit <bcp14>MUST</bcp14> be decremented and
+        <bcp14>MUST</bcp14> be non-zero to replicate the packet. A root node
+        that encapsulates a payload can set the IPv6 Hop Limit based on a
+        local policy. This local policy <bcp14>SHOULD</bcp14> set the IPv6 Hop
+        Limit so that a replicated packet can reach the furthest leaf node. A
+        root node can also have a local policy to set the IPv6 Hop Limit from
+        the payload. In this case, the IPv6 Hop Limit may not be sufficient to
+        get the replicated packet to all the leaf nodes. Non-replication nodes
+        (i.e., nodes that forward replicated packets based on the IPv6 locator
+        unicast prefix) can decrement the IPv6 Hop Limit to zero and originate
+        ICMPv6 error packets to the root node. This can result in a storm of
+        ICMPv6 packets (see <xref format="default" target="ICMP" sectionFormat="of" derivedContent="Section 2.2.3"/>) to the
+        root node. To avoid this, a Replication segment has an optional IPv6
+        Hop Limit Threshold. If this threshold is set, a replication node
+        <bcp14>MUST</bcp14> discard an incoming packet with a local
+        Replication-SID if the IPv6 Hop Limit in the packet is less than the
+        threshold and log this in a rate-limited manner. The IPv6 Hop Limit
+        Threshold <bcp14>SHOULD</bcp14> be set so that an incoming packet can
+        be replicated to the furthest leaf node.</t>
+        <t indent="0" pn="section-2.2-5">For leaf and bud nodes, local delivery off the tree is per Replication-SID or the next SID (if present in the SRH). For some usages, this may
+        involve getting the necessary context either from the next SID (e.g.,
+        MVPN with a shared tree) or from the Replication-SID itself (e.g.,
+        MVPN with a non-shared tree). In both cases, the context association
+        is achieved with signaling and is out of scope of this document.</t>
+        <t indent="0" pn="section-2.2-6">The following applies to a Replication-SID in SRv6
+        encapsulation:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2.2-7">
+          <li pn="section-2.2-7.1">There <bcp14>MAY</bcp14> be SIDs preceding the SRv6 Replication-SID in order to guide a packet from a non-adjacent SR node to a
+          replication node via an explicit path.</li>
+          <li pn="section-2.2-7.2">A replication node <bcp14>MAY</bcp14> steer a replicated packet
+          on an explicit path to a non-adjacent downstream node using SIDs it
+          inserts in the copy preceding the downstream Replication-SID. The
+          downstream node may be a leaf node of the Replication segment,
+          another replication node, or both in the case of a bud node.</li>
+          <li pn="section-2.2-7.3">For SRv6, as described in above paragraphs, the insertion of
+          SIDs prior to the Replication-SID entails a new IPv6 encapsulation
+          with the SRH. However, this can be optimized on the root node or for
+          compressed SRv6 SIDs.</li>
+          <li pn="section-2.2-7.4">The locator of the Replication-SID is sufficient to guide a
+          packet on the shortest path between non-adjacent nodes for default
+          or Flexible Algorithms.</li>
+          <li pn="section-2.2-7.5">A replication node <bcp14>MAY</bcp14> use an Anycast-SID or a
+          BGP PeerSet-SID in the segment list to send a replicated packet to
+          one downstream replication node in an Anycast set. This occurs if
+          and only if all nodes in the set have an identical Replication-SID
+          and reach the same set of receivers.</li>
+          <li pn="section-2.2-7.6">There <bcp14>MAY</bcp14> be SIDs after the Replication-SID in
+          the SRH of a packet. These SIDs are used to provide additional
+          context for processing a packet locally at the node where the
+          Replication-SID is the active segment. Coordination regarding the
+          absence or presence and value of context information for leaf and bud
+          nodes is outside the scope of this document.</li>
+        </ul>
+        <section numbered="true" toc="include" removeInRFC="false" pn="section-2.2.1">
+          <name slugifiedName="name-endreplicate-replicate-and-">End.Replicate: Replicate and/or Decapsulate</name>
+          <t indent="0" pn="section-2.2.1-1">The "Endpoint with replication and/or decapsulate"
+          (End.Replicate for short) is a variant of End behavior. The
+          pseudocode in this section follows the convention introduced in
+          <xref format="default" target="RFC8986" sectionFormat="of" derivedContent="RFC8986"/>.</t>
+          <t indent="0" pn="section-2.2.1-2">An RS conceptually contains the following
+          elements:</t>
+          <sourcecode name="" type="pseudocode" markers="false" pn="section-2.2.1-3">
+Replication state:
+{
+  Node-Role: {Head, Transit, Leaf, Bud};
+  IPv6 Hop Limit Threshold; # default is zero
+  # On Leaf, replication list is zero length
+  Replication-List:
+  {
+    downstream node: &lt;Node-Identifier&gt;;
+    downstream Replication-SID: R-SID;
+    # Segment-List may be empty
+    Segment-List: [SID-1, .... SID-N];
+  }
+}
+</sourcecode>
+          <t indent="0" pn="section-2.2.1-4">Below is the Replicate function on a packet for Replication state
+          (RS).</t>
+          <sourcecode name="" type="pseudocode" markers="false" pn="section-2.2.1-5">
+S01. Replicate(RS, packet)
+S02. {
+S03.    For each Replication R in RS.Replication-List {
+S04.       Make a copy of the packet
+S05.       Set IPv6 DA = RS.R-SID
+S06.       If RS.Segment-List is not empty {
+S07.         # Head node may optimize below encapsulation and
+S08.         # the encapsulation of packet in a single encapsulation
+S09.         Execute H.Encaps or H.Encaps.Red with RS.Segment-List
+             on packet copy #RFC 8986, Sections 5.1 and 5.2
+S10.       }
+S11.       Submit the packet to the egress IPv6 FIB lookup and
+           transmission to the new destination
+S12.   }
+S13. }
+</sourcecode>
+          <t indent="0" pn="section-2.2.1-6">Notes:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2.2.1-7">
+            <li pn="section-2.2.1-7.1">The IPv6 DA in the copy of a packet is set
+            from the local state and not from the SRH.</li>
+          </ul>
+          <t indent="0" pn="section-2.2.1-8">When N receives a packet whose IPv6 DA is S and S is a local
+          End.Replicate SID, N does:</t>
+          <sourcecode name="" type="pseudocode" markers="false" pn="section-2.2.1-9">
+S01.   Lookup FUNCT portion of S to get Replication state (RS)
+S02.   If (IPv6 Hop Limit &lt;= 1) {
+S03.     Discard the packet
+S04.     # ICMPv6 Time Exceeded is not permitted
+           (see Section 2.2.3)
+S05.   }
+S06.   If RS is not found {
+S07.     Discard the packet
+S08.   }
+S09.   If (IPv6 Hop Limit &lt; RS.IPv6 Hop Limit Threshold) {
+S10.     Discard the packet
+S11.     # Rate-limited logging
+S12.   }
+S13.   Decrement IPv6 Hop Limit by 1
+S14.   If (IPv6 NH == SRH and SRH TLVs present) {
+S15.     Process SRH TLVs if allowed by local configuration
+S16.   }
+S17.   Call Replicate(RS, packet)
+S18.   If (RS.Node-Role == Leaf OR RS.Node-Role == bud) {
+S19.     If (IPv6 NH == SRH and Segments Left &gt; 0) {
+S20.       Derive packet processing context (PPC) from Segment List
+S21.       If (Segments Left != 0) {
+S22.         Discard the packet
+S23.         # ICMPv6 Parameter Problem message with Code 0
+S24.         # (Erroneous header field encountered)
+S25.         # is not permitted (Section 2.2.3)
+S26.       }
+S27.     } Else {
+S28.       Derive packet processing context (PPC)
+           from FUNCT of Replicatio-SID
+S29.     }
+S30.     Process the next header
+S31.   }
+</sourcecode>
+          <t indent="0" pn="section-2.2.1-10">The processing of the Upper-Layer header of a packet matching the
+          End.Replicate SID at a leaf or bud node is as follows:</t>
+          <sourcecode name="" type="pseudocode" markers="false" pn="section-2.2.1-11">
+S01.   If (Upper-Layer header type == 4(IPv4) OR
+           Upper-Layer header type == 41(IPv6) ) {
+S02.     Remove the outer IPv6 header with all its extension headers
+S03.     Process the packet in context of PPC
+S04.   } Else If (Upper-Layer header type == 143(Ethernet) ) {
+S05.     Remove the outer IPv6 header with all its extension headers
+S06.     Process the Ethernet Frame in context of PPC
+S07.   } Else If (Upper-Layer header type is allowed
+                  by local configuration) {
+S08.     Proceed to process the Upper-Layer header
+S09.   } Else {
+S10.     Discard the packet
+S11.     # ICMPv6 Parameter Problem message with Code 4
+S12.     # (SR Upper-Layer header Error)
+S13.     # is not permitted (Section 2.2.3)
+S14.   }
+</sourcecode>
+          <t indent="0" pn="section-2.2.1-12">Notes:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2.2.1-13">
+            <li pn="section-2.2.1-13.1">The behavior above <bcp14>MAY</bcp14> result in a packet with
+            a partially processed segment list in the SRH under some
+            circumstances. For example, a head node may encode a context-SID
+            in an SRH. As per the pseudocode above, a replication node that
+            receives a packet with a local Replication-SID will not process
+            the SRH segment list and will just forward a copy with an
+            unmodified SRH to downstream nodes.</li>
+            <li pn="section-2.2.1-13.2">The packet processing context is usually a FIB table "T".</li>
+          </ul>
+          <t indent="0" pn="section-2.2.1-14">If configured to process TLVs, processing the Replication-SID may
+          modify the "variable-length data" of TLV types that change en route.
+          Therefore, TLVs that change en route are mutable. The remainder of
+          the SRH (Segments Left, Flags, Tag, Segment List, and TLVs that do
+          not change en route) are immutable while processing this SID.</t>
+          <section numbered="true" toc="exclude" removeInRFC="false" pn="section-2.2.1.1">
+            <name slugifiedName="name-hashed-message-authenticati">Hashed Message Authentication Code (HMAC) SRH TLV</name>
+            <t indent="0" pn="section-2.2.1.1-1">If a root node encodes a context-SID in an SRH with an optional
+            HMAC SRH TLV <xref format="default" target="RFC8754" sectionFormat="of" derivedContent="RFC8754"/>, it
+            <bcp14>MUST</bcp14> set the 'D' bit as defined in <xref section="2.1.2" sectionFormat="of" target="RFC8754" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2.1.2" derivedContent="RFC8754"/> because the
+            Replication-SID is not part of the segment list in the SRH.</t>
+            <t indent="0" pn="section-2.2.1.1-2">HMAC generation and verification is as specified in <xref format="default" target="RFC8754" sectionFormat="of" derivedContent="RFC8754"/>. Verification of an HMAC TLV
+            is determined by local configuration. If verification fails, an
+            implementation of a Replication-SID <bcp14>MUST NOT</bcp14>
+            originate an ICMPv6 Parameter Problem message with code 0. The
+            failure <bcp14>SHOULD</bcp14> be logged (rate-limited) and the
+            packet <bcp14>SHOULD</bcp14> be discarded.</t>
+          </section>
+        </section>
+        <section numbered="true" toc="include" removeInRFC="false" pn="section-2.2.2">
+          <name slugifiedName="name-oam-operations">OAM Operations</name>
+          <t indent="0" pn="section-2.2.2-1"><xref format="default" target="RFC9259" sectionFormat="of" derivedContent="RFC9259"/> specifies procedures
+          for Operations, Administration, and Maintenance (OAM) like ping and
+          traceroute on SRv6 SIDs.</t>
+          <t indent="0" pn="section-2.2.2-2">Assuming the source node knows the Replication-SID a priori, it
+          is possible to ping a Replication-SID of a leaf or bud node directly by
+          putting it in the IPv6 DA without an SRH or in an
+          SRH as the last segment. While it is not possible to ping a
+          Replication-SID of a transit node because transit nodes do not
+          process Upper-Layer headers, it is still possible to ping a
+          Replication-SID of a leaf or bud node of a tree via the Replication-SID
+          of intermediate transit nodes. The source of the ping
+          <bcp14>MUST</bcp14> compute the ICMPv6 Echo Request checksum using
+          the Replication-SID of the leaf or bud node as the DA. The
+          source can then send the Echo Request packet to a transit node's
+          Replication-SID. The transit node replicates the packet by replacing
+          the IPv6 DA until the packet reaches the leaf or bud
+          node, which responds with an ICMPv6 Echo Reply. Note that a transit
+          replication node may replicate Echo Request packets to other
+          leaf or bud nodes. These nodes will drop the Echo Request due to an
+          incorrect checksum. Procedures to prevent the misdelivery of an Echo
+          Request may be addressed in a future document. <xref format="default" target="A.2.1" sectionFormat="of" derivedContent="Appendix A.2.1"/> illustrates examples of a ping to
+          a Replication-SID.</t>
+          <t indent="0" pn="section-2.2.2-3">Traceroute to a leaf or bud node Replication-SID is not possible due
+          to restrictions prohibiting the origination of the ICMPv6 Time
+          Exceeded error message for a Replication-SID as described in <xref format="default" target="ICMP" sectionFormat="of" derivedContent="Section 2.2.3"/>.</t>
+        </section>
+        <section anchor="ICMP" numbered="true" toc="include" removeInRFC="false" pn="section-2.2.3">
+          <name slugifiedName="name-icmpv6-error-messages">ICMPv6 Error Messages</name>
+          <t indent="0" pn="section-2.2.3-1"><xref section="2.4" sectionFormat="of" target="RFC4443" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4443#section-2.4" derivedContent="RFC4443"/> states
+          an ICMPv6 error message <bcp14>MUST NOT</bcp14> be originated as a
+          result of receiving a packet destined to an IPv6 multicast address.
+          This is to prevent a source node from being overwhelmed by a storm of ICMPv6 error messages resulting from
+          replicated IPv6 packets. There are
+          two exceptions:</t>
+          <ol indent="adaptive" spacing="normal" start="1" type="1" pn="section-2.2.3-2">
+            <li pn="section-2.2.3-2.1" derivedCounter="1.">The Packet Too Big message for Path MTU discovery, and</li>
+            <li pn="section-2.2.3-2.2" derivedCounter="2.">The ICMPv6 Parameter Problem message with Code 2 reporting an
+            unrecognized IPv6 option.</li>
+          </ol>
+          <t indent="0" pn="section-2.2.3-3">An implementation of a Replication segment for SRv6
+          <bcp14>MUST</bcp14> enforce these same restrictions and
+          exceptions.</t>
+        </section>
+      </section>
+    </section>
+    <section anchor="IANA" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-3-1">IANA has assigned the following codepoint for End.Replicate behavior
+      in the "SRv6 Endpoint Behaviors" registry in the "Segment Routing"
+      registry group.</t>
+      <table align="center" anchor="endpoint_cp_types" pn="table-1">
+        <name slugifiedName="name-srv6-endpoint-behavior">SRv6 Endpoint Behavior</name>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="center" colspan="1" rowspan="1">Hex</th>
+            <th align="center" colspan="1" rowspan="1">Endpoint Behavior</th>
+            <th align="center" colspan="1" rowspan="1">Reference</th>
+            <th align="center" colspan="1" rowspan="1">Change Controller</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">75</td>
+            <td align="center" colspan="1" rowspan="1">0x004B</td>
+            <td align="center" colspan="1" rowspan="1">End.Replicate</td>
+            <td align="center" colspan="1" rowspan="1">RFC 9524</td>
+            <td align="center" colspan="1" rowspan="1">IETF</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section anchor="Security" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-4-1">The SID behaviors defined in this document are deployed within an SR
+      domain <xref format="default" target="RFC8402" sectionFormat="of" derivedContent="RFC8402"/>. An SR domain needs
+      protection from outside attackers (as described in <xref format="default" target="RFC8754" sectionFormat="of" derivedContent="RFC8754"/>). The following is a brief reminder
+      of the same:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-2">
+        <li pn="section-4-2.1">
+          <t indent="0" pn="section-4-2.1.1">For SR-MPLS deployments:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-2.1.2">
+            <li pn="section-4-2.1.2.1">Disable MPLS on external interfaces of each edge node or any
+            other technique to filter labeled traffic ingress on these
+            interfaces.</li>
+          </ul>
+        </li>
+        <li pn="section-4-2.2">
+          <t indent="0" pn="section-4-2.2.1">For SRv6 deployments:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-2.2.2">
+            <li pn="section-4-2.2.2.1">Allocate all the SIDs from an IPv6 prefix block S/s and
+            configure each external interface of each edge node of the domain
+            with an inbound Infrastructure Access Control List (IACL) that drops any
+            incoming packet with a DA in S/s.</li>
+            <li pn="section-4-2.2.2.2">
+              <t indent="0" pn="section-4-2.2.2.2.1">Additionally, an IACL may be applied to all nodes (k)
+              provisioning SIDs as defined in this specification:</t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-2.2.2.2.2">
+                <li pn="section-4-2.2.2.2.2.1">Assign all interface addresses from within IPv6 prefix
+                A/a. At node k, all SIDs local to k are assigned from prefix
+                Sk/sk. Configure each internal interface of each SR node k in
+                the SR domain with an inbound IACL that drops any incoming
+                packet with a DA in Sk/sk if the source
+                address is not in A/a.</li>
+              </ul>
+            </li>
+            <li pn="section-4-2.2.2.3">Deny traffic with spoofed source addresses by implementing
+            recommendations in BCP 84 <xref format="default" target="RFC3704" sectionFormat="of" derivedContent="RFC3704"/>.</li>
+            <li pn="section-4-2.2.2.4">Additionally, the block S/s from which SIDs are allocated may
+            be an address that is not globally routable such as a Unique Local
+            Address (ULA) or the prefix defined in <xref format="default" target="I-D.ietf-6man-sids" sectionFormat="of" derivedContent="SIDS-SRv6"/>.</li>
+          </ul>
+        </li>
+      </ul>
+      <t indent="0" pn="section-4-3">Failure to protect the SR-MPLS domain by correctly provisioning MPLS
+      support per interface permits attackers from outside the domain to send
+      packets that use the replication services provisioned within the
+      domain.</t>
+      <t indent="0" pn="section-4-4">Failure to protect the SRv6 domain with IACLs on external interfaces
+      combined with failure to implement the recommendations of BCP 38 <xref format="default" target="RFC2827" sectionFormat="of" derivedContent="RFC2827"/> or apply IACLs on nodes provisioning
+      SIDs permits attackers from outside the SR domain to send packets that
+      use the replication services provisioned within the domain.</t>
+      <t indent="0" pn="section-4-5">Given the definition of the Replication segment in this document, an
+      attacker subverting the ingress filters above cannot take advantage of a
+      stack of Replication segments to perform amplification attacks nor link
+      exhaustion attacks. Replication segment trees always terminate at a leaf
+      or bud node resulting in a decapsulation. However, this does allow an
+      attacker to inject traffic to the receivers within a P2MP service.</t>
+      <t indent="0" pn="section-4-6">This document introduces an SR segment endpoint behavior that
+      replicates and decapsulates an inner payload for both the MPLS and IPv6
+      data planes. Similar to any MPLS end-of-stack label, or SRv6 END.D*
+      behavior, if the protections described above are not implemented, an
+      attacker can perform an attack via the decapsulating segment (including
+      the one described in this document).</t>
+      <t indent="0" pn="section-4-7">Incorrect provisioning of Replication segments can result in a chain
+      of Replication segments forming a loop. This can happen if Replication
+      segments are provisioned on SR nodes without using a control plane. In
+      this case, replicated packets can create a storm until MPLS TTL (for
+      SR-MPLS) or IPv6 Hop Limit (for SRv6) decrements to zero. A control
+      plane such as PCE can be used to prevent loops. The control plane
+      protocols (like Path Computation Element Communication Protocol (PCEP),
+      BGP, etc.) used to instantiate Replication segments can leverage their
+      own security mechanisms such as encryption, authentication filtering,
+      etc.</t>
+      <t indent="0" pn="section-4-8">For SRv6, <xref format="default" target="ICMP" sectionFormat="of" derivedContent="Section 2.2.3"/> describes an
+      exception for the ICMPv6 Parameter Problem message with Code 2. If an attacker sends a packet destined to a Replication-SID
+      with the source address of a node and with an extension header using the
+      unknown option type marked as mandatory, then a large number of ICMPv6
+      Parameter Problem messages can cause a denial-of-service attack on the
+      source node. Although this document does not specify any extension
+      headers, any future extension of this document that does so is
+      susceptible to this security concern.</t>
+      <t indent="0" pn="section-4-9">If an attacker can forge an IPv6 packet with:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-10">
+        <li pn="section-4-10.1">the source address of a node,</li>
+        <li pn="section-4-10.2">a Replication-SID as the DA, and</li>
+        <li pn="section-4-10.3">an IPv6 Hop Limit such that nodes that forward replicated packets on an IPv6 locator
+      unicast prefix, decrement the Hop Limit to zero,</li>
+      </ul>
+      <t indent="0" pn="section-4-11">then these nodes can
+      cause a storm of ICMPv6 error packets to overwhelm the source node under
+      attack. The IPv6 Hop Limit Threshold check described in <xref format="default" target="SRv6" sectionFormat="of" derivedContent="Section 2.2"/> can help mitigate such attacks.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-pim-sr-p2mp-policy" to="P2MP-POLICY"/>
+    <displayreference target="I-D.filsfils-spring-srv6-net-pgm-illustration" to="PGM-ILLUSTRATION"/>
+    <displayreference target="I-D.ietf-6man-sids" to="SIDS-SRv6"/>
+    <references pn="section-5">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-5.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC4443" target="https://www.rfc-editor.org/info/rfc4443" quoteTitle="true" derivedAnchor="RFC4443">
+          <front>
+            <title>Internet Control Message Protocol (ICMPv6) for the Internet Protocol Version 6 (IPv6) Specification</title>
+            <author fullname="A. Conta" initials="A." surname="Conta"/>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <author fullname="M. Gupta" initials="M." role="editor" surname="Gupta"/>
+            <date month="March" year="2006"/>
+            <abstract>
+              <t indent="0">This document describes the format of a set of control messages used in ICMPv6 (Internet Control Message Protocol). ICMPv6 is the Internet Control Message Protocol for Internet Protocol version 6 (IPv6). [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="89"/>
+          <seriesInfo name="RFC" value="4443"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4443"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8402" target="https://www.rfc-editor.org/info/rfc8402" quoteTitle="true" derivedAnchor="RFC8402">
+          <front>
+            <title>Segment Routing Architecture</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="S. Previdi" initials="S." role="editor" surname="Previdi"/>
+            <author fullname="L. Ginsberg" initials="L." surname="Ginsberg"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="S. Litkowski" initials="S." surname="Litkowski"/>
+            <author fullname="R. Shakir" initials="R." surname="Shakir"/>
+            <date month="July" year="2018"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) leverages the source routing paradigm. A node steers a packet through an ordered list of instructions, called "segments". A segment can represent any instruction, topological or service based. A segment can have a semantic local to an SR node or global within an SR domain. SR provides a mechanism that allows a flow to be restricted to a specific topological path, while maintaining per-flow state only at the ingress node(s) to the SR domain.</t>
+              <t indent="0">SR can be directly applied to the MPLS architecture with no change to the forwarding plane. A segment is encoded as an MPLS label. An ordered list of segments is encoded as a stack of labels. The segment to process is on the top of the stack. Upon completion of a segment, the related label is popped from the stack.</t>
+              <t indent="0">SR can be applied to the IPv6 architecture, with a new type of routing header. A segment is encoded as an IPv6 address. An ordered list of segments is encoded as an ordered list of IPv6 addresses in the routing header. The active segment is indicated by the Destination Address (DA) of the packet. The next active segment is indicated by a pointer in the new routing header.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8402"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8402"/>
+        </reference>
+        <reference anchor="RFC8754" target="https://www.rfc-editor.org/info/rfc8754" quoteTitle="true" derivedAnchor="RFC8754">
+          <front>
+            <title>IPv6 Segment Routing Header (SRH)</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="D. Dukes" initials="D." role="editor" surname="Dukes"/>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="J. Leddy" initials="J." surname="Leddy"/>
+            <author fullname="S. Matsushima" initials="S." surname="Matsushima"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <date month="March" year="2020"/>
+            <abstract>
+              <t indent="0">Segment Routing can be applied to the IPv6 data plane using a new type of Routing Extension Header called the Segment Routing Header (SRH). This document describes the SRH and how it is used by nodes that are Segment Routing (SR) capable.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8754"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8754"/>
+        </reference>
+        <reference anchor="RFC8986" target="https://www.rfc-editor.org/info/rfc8986" quoteTitle="true" derivedAnchor="RFC8986">
+          <front>
+            <title>Segment Routing over IPv6 (SRv6) Network Programming</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="P. Camarillo" initials="P." role="editor" surname="Camarillo"/>
+            <author fullname="J. Leddy" initials="J." surname="Leddy"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <author fullname="S. Matsushima" initials="S." surname="Matsushima"/>
+            <author fullname="Z. Li" initials="Z." surname="Li"/>
+            <date month="February" year="2021"/>
+            <abstract>
+              <t indent="0">The Segment Routing over IPv6 (SRv6) Network Programming framework enables a network operator or an application to specify a packet processing program by encoding a sequence of instructions in the IPv6 packet header.</t>
+              <t indent="0">Each instruction is implemented on one or several nodes in the network and identified by an SRv6 Segment Identifier in the packet.</t>
+              <t indent="0">This document defines the SRv6 Network Programming concept and specifies the base set of SRv6 behaviors that enables the creation of interoperable overlays with underlay optimization.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8986"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8986"/>
+        </reference>
+        <reference anchor="RFC9259" target="https://www.rfc-editor.org/info/rfc9259" quoteTitle="true" derivedAnchor="RFC9259">
+          <front>
+            <title>Operations, Administration, and Maintenance (OAM) in Segment Routing over IPv6 (SRv6)</title>
+            <author fullname="Z. Ali" initials="Z." surname="Ali"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="S. Matsushima" initials="S." surname="Matsushima"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <author fullname="M. Chen" initials="M." surname="Chen"/>
+            <date month="June" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes how the existing IPv6 mechanisms for ping and traceroute can be used in a Segment Routing over IPv6 (SRv6) network. The document also specifies the OAM flag (O-flag) in the Segment Routing Header (SRH) for performing controllable and predictable flow sampling from segment endpoints. In addition, the document describes how a centralized monitoring system performs a path continuity check between any nodes within an SRv6 domain.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9259"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9259"/>
+        </reference>
+      </references>
+      <references pn="section-5.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.ietf-pim-sr-p2mp-policy" quoteTitle="true" target="https://datatracker.ietf.org/doc/html/draft-ietf-pim-sr-p2mp-policy-07" derivedAnchor="P2MP-POLICY">
+          <front>
+            <title>Segment Routing Point-to-Multipoint Policy</title>
+            <author fullname="Daniel Voyer" initials="D." role="editor" surname="Voyer">
+              <organization showOnFrontPage="true">Bell Canada</organization>
+            </author>
+            <author fullname="Clarence Filsfils" initials="C." surname="Filsfils">
+              <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+            </author>
+            <author fullname="Rishabh Parekh" initials="R." surname="Parekh">
+              <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+            </author>
+            <author fullname="Hooman Bidgoli" initials="H." surname="Bidgoli">
+              <organization showOnFrontPage="true">Nokia</organization>
+            </author>
+            <author fullname="Zhaohui (Jeffrey) Zhang" initials="Z. J." surname="Zhang">
+              <organization showOnFrontPage="true">Juniper Networks</organization>
+            </author>
+            <date day="11" month="October" year="2023"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-pim-sr-p2mp-policy-07"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="I-D.filsfils-spring-srv6-net-pgm-illustration" quoteTitle="true" target="https://datatracker.ietf.org/doc/html/draft-filsfils-spring-srv6-net-pgm-illustration-04" derivedAnchor="PGM-ILLUSTRATION">
+          <front>
+            <title>Illustrations for SRv6 Network Programming</title>
+            <author fullname="Clarence Filsfils" initials="C." surname="Filsfils">
+              <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+            </author>
+            <author fullname="Pablo Camarillo" initials="P." role="editor" surname="Camarillo">
+              <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+            </author>
+            <author fullname="Zhenbin Li" initials="Z." surname="Li">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author fullname="Satoru Matsushima" initials="S." surname="Matsushima">
+              <organization showOnFrontPage="true">SoftBank</organization>
+            </author>
+            <author fullname="Bruno Decraene" initials="B." surname="Decraene">
+              <organization showOnFrontPage="true">Orange</organization>
+            </author>
+            <author fullname="Dirk Steinberg" initials="D." surname="Steinberg">
+              <organization showOnFrontPage="true">Lapishills Consulting Limited</organization>
+            </author>
+            <author fullname="David Lebrun" initials="D." surname="Lebrun">
+              <organization showOnFrontPage="true">Google</organization>
+            </author>
+            <author fullname="Robert Raszuk" initials="R." surname="Raszuk">
+              <organization showOnFrontPage="true">Bloomberg LP</organization>
+            </author>
+            <author fullname="John Leddy" initials="J." surname="Leddy">
+              <organization showOnFrontPage="true">Individual Contributor</organization>
+            </author>
+            <date day="30" month="March" year="2021"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-filsfils-spring-srv6-net-pgm-illustration-04"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC2827" target="https://www.rfc-editor.org/info/rfc2827" quoteTitle="true" derivedAnchor="RFC2827">
+          <front>
+            <title>Network Ingress Filtering: Defeating Denial of Service Attacks which employ IP Source Address Spoofing</title>
+            <author fullname="P. Ferguson" initials="P." surname="Ferguson"/>
+            <author fullname="D. Senie" initials="D." surname="Senie"/>
+            <date month="May" year="2000"/>
+            <abstract>
+              <t indent="0">This paper discusses a simple, effective, and straightforward method for using ingress traffic filtering to prohibit DoS (Denial of Service) attacks which use forged IP addresses to be propagated from 'behind' an Internet Service Provider's (ISP) aggregation point. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="38"/>
+          <seriesInfo name="RFC" value="2827"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2827"/>
+        </reference>
+        <reference anchor="RFC3704" target="https://www.rfc-editor.org/info/rfc3704" quoteTitle="true" derivedAnchor="RFC3704">
+          <front>
+            <title>Ingress Filtering for Multihomed Networks</title>
+            <author fullname="F. Baker" initials="F." surname="Baker"/>
+            <author fullname="P. Savola" initials="P." surname="Savola"/>
+            <date month="March" year="2004"/>
+            <abstract>
+              <t indent="0">BCP 38, RFC 2827, is designed to limit the impact of distributed denial of service attacks, by denying traffic with spoofed addresses access to the network, and to help ensure that traffic is traceable to its correct source network. As a side effect of protecting the Internet against such attacks, the network implementing the solution also protects itself from this and other attacks, such as spoofed management access to networking equipment. There are cases when this may create problems, e.g., with multihoming. This document describes the current ingress filtering operational mechanisms, examines generic issues related to ingress filtering, and delves into the effects on multihoming in particular. This memo updates RFC 2827. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="84"/>
+          <seriesInfo name="RFC" value="3704"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3704"/>
+        </reference>
+        <reference anchor="RFC6513" target="https://www.rfc-editor.org/info/rfc6513" quoteTitle="true" derivedAnchor="RFC6513">
+          <front>
+            <title>Multicast in MPLS/BGP IP VPNs</title>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <author fullname="R. Aggarwal" initials="R." role="editor" surname="Aggarwal"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">In order for IP multicast traffic within a BGP/MPLS IP VPN (Virtual Private Network) to travel from one VPN site to another, special protocols and procedures must be implemented by the VPN Service Provider. These protocols and procedures are specified in this document. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6513"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6513"/>
+        </reference>
+        <reference anchor="RFC7432" target="https://www.rfc-editor.org/info/rfc7432" quoteTitle="true" derivedAnchor="RFC7432">
+          <front>
+            <title>BGP MPLS-Based Ethernet VPN</title>
+            <author fullname="A. Sajassi" initials="A." role="editor" surname="Sajassi"/>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="N. Bitar" initials="N." surname="Bitar"/>
+            <author fullname="A. Isaac" initials="A." surname="Isaac"/>
+            <author fullname="J. Uttaro" initials="J." surname="Uttaro"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <date month="February" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes procedures for BGP MPLS-based Ethernet VPNs (EVPN). The procedures described here meet the requirements specified in RFC 7209 -- "Requirements for Ethernet VPN (EVPN)".</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7432"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7432"/>
+        </reference>
+        <reference anchor="RFC7988" target="https://www.rfc-editor.org/info/rfc7988" quoteTitle="true" derivedAnchor="RFC7988">
+          <front>
+            <title>Ingress Replication Tunnels in Multicast VPN</title>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <author fullname="K. Subramanian" initials="K." surname="Subramanian"/>
+            <author fullname="Z. Zhang" initials="Z." surname="Zhang"/>
+            <date month="October" year="2016"/>
+            <abstract>
+              <t indent="0">RFCs 6513, 6514, and other RFCs describe procedures by which a Service Provider may offer Multicast VPN (MVPN) service to its customers. These procedures create point-to-multipoint (P2MP) or multipoint-to-multipoint (MP2MP) trees across the Service Provider's backbone. One type of P2MP tree that may be used is known as an "Ingress Replication (IR) tunnel". In an IR tunnel, a parent node need not be directly connected to its child nodes. When a parent node has to send a multicast data packet to its n child nodes, it does not use Layer 2 multicast, IP multicast, or MPLS multicast to do so. Rather, it makes n individual copies, and then unicasts each copy, through an IP or MPLS unicast tunnel, to exactly one child node. While the prior MVPN specifications allow the use of IR tunnels, those specifications are not always very clear or explicit about how the MVPN protocol elements and procedures are applied to IR tunnels. This document updates RFCs 6513 and 6514 by adding additional details that are specific to the use of IR tunnels.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7988"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7988"/>
+        </reference>
+        <reference anchor="RFC8660" target="https://www.rfc-editor.org/info/rfc8660" quoteTitle="true" derivedAnchor="RFC8660">
+          <front>
+            <title>Segment Routing with the MPLS Data Plane</title>
+            <author fullname="A. Bashandy" initials="A." role="editor" surname="Bashandy"/>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="S. Litkowski" initials="S." surname="Litkowski"/>
+            <author fullname="R. Shakir" initials="R." surname="Shakir"/>
+            <date month="December" year="2019"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) leverages the source-routing paradigm. A node steers a packet through a controlled set of instructions, called segments, by prepending the packet with an SR header. In the MPLS data plane, the SR header is instantiated through a label stack. This document specifies the forwarding behavior to allow instantiating SR over the MPLS data plane (SR-MPLS).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8660"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8660"/>
+        </reference>
+        <reference anchor="RFC9256" target="https://www.rfc-editor.org/info/rfc9256" quoteTitle="true" derivedAnchor="RFC9256">
+          <front>
+            <title>Segment Routing Policy Architecture</title>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="K. Talaulikar" initials="K." role="editor" surname="Talaulikar"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <author fullname="A. Bogdanov" initials="A." surname="Bogdanov"/>
+            <author fullname="P. Mattes" initials="P." surname="Mattes"/>
+            <date month="July" year="2022"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) allows a node to steer a packet flow along any path. Intermediate per-path states are eliminated thanks to source routing. SR Policy is an ordered list of segments (i.e., instructions) that represent a source-routed policy. Packet flows are steered into an SR Policy on a node where it is instantiated called a headend node. The packets steered into an SR Policy carry an ordered list of segments associated with that SR Policy.</t>
+              <t indent="0">This document updates RFC 8402 as it details the concepts of SR Policy and steering into an SR Policy.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9256"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9256"/>
+        </reference>
+        <reference anchor="RFC9350" target="https://www.rfc-editor.org/info/rfc9350" quoteTitle="true" derivedAnchor="RFC9350">
+          <front>
+            <title>IGP Flexible Algorithm</title>
+            <author fullname="P. Psenak" initials="P." role="editor" surname="Psenak"/>
+            <author fullname="S. Hegde" initials="S." surname="Hegde"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="K. Talaulikar" initials="K." surname="Talaulikar"/>
+            <author fullname="A. Gulko" initials="A." surname="Gulko"/>
+            <date month="February" year="2023"/>
+            <abstract>
+              <t indent="0">IGP protocols historically compute the best paths over the network based on the IGP metric assigned to the links. Many network deployments use RSVP-TE or Segment Routing - Traffic Engineering (SR-TE) to steer traffic over a path that is computed using different metrics or constraints than the shortest IGP path. This document specifies a solution that allows IGPs themselves to compute constraint-based paths over the network. This document also specifies a way of using Segment Routing (SR) Prefix-SIDs and SRv6 locators to steer packets along the constraint-based paths.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9350"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9350"/>
+        </reference>
+        <reference anchor="I-D.ietf-6man-sids" target="https://datatracker.ietf.org/doc/html/draft-ietf-6man-sids-06" quoteTitle="true" derivedAnchor="SIDS-SRv6">
+          <front>
+            <title>SRv6 Segment Identifiers in the IPv6 Addressing Architecture</title>
+            <author initials="S." surname="Krishnan" fullname="Suresh Krishnan">
+              <organization showOnFrontPage="true">Cisco</organization>
+            </author>
+            <date month="February" day="15" year="2024"/>
+            <abstract>
+              <t indent="0">   The data plane for Segment Routing over IPv6 (SRv6) is built using
+   IPv6 as the underlying forwarding plane.  Due to this underlying use
+   of IPv6, Segment Identifiers (SIDs) used by SRv6 can resemble IPv6
+   addresses and behave like them while exhibiting slightly different
+   behaviors in some situations.  This document explores the
+   characteristics of SRv6 SIDs and focuses on the relationship of SRv6
+   SIDs to the IPv6 Addressing Architecture.  This document allocates
+   and makes a dedicated prefix available for SRv6 SIDs.
+
+              </t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-6man-sids-06"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section anchor="Appendix" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-illustration-of-a-replicati">Illustration of a Replication Segment</name>
+      <t indent="0" pn="section-appendix.a-1">This section illustrates an example of a single Replication segment.
+      Examples showing Replication segments stitched together to form a P2MP
+      tree (based on SR P2MP policy) are in <xref format="default" target="I-D.ietf-pim-sr-p2mp-policy" sectionFormat="of" derivedContent="P2MP-POLICY"/>.</t>
+      <t indent="0" pn="section-appendix.a-2">Consider the following topology:</t>
+      <figure align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-topology-for-illustration-o">Topology for Illustration of a Replication Segment</name>
+        <artwork align="left" alt="" name="" type="" pn="section-appendix.a-3.1">
+                               R3------R6
+                              /         \
+                      R1----R2----R5-----R7
+                              \         /
+                               +--R4---+
+</artwork>
+      </figure>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.1">
+        <name slugifiedName="name-sr-mpls">SR-MPLS</name>
+        <t indent="0" pn="section-appendix.a.1-1">In this example, the Node-SID of a node Rn is N-SIDn and the
+        Adj-SID from node Rm to node Rn is A-SIDmn. The interface
+        between Rm and Rn is Lmn. The state representation uses
+        "R-SID-&gt;Lmn" to represent a packet replication with outgoing
+        Replication-SID R-SID sent on interface Lmn.</t>
+        <t indent="0" pn="section-appendix.a.1-2">Assume a Replication segment identified with R-ID at Replication
+        node R1 and downstream nodes R2, R6, and R7. The Replication-SID at
+        node n is R-SIDn. A packet replicated from R1 to R7 has to traverse
+        R4.</t>
+        <t indent="0" pn="section-appendix.a.1-3">The Replication segments at nodes R1, R2, R6, and R7 are shown
+        below. Note nodes R3, R4, and R5 do not have a Replication
+        segment.</t>
+        <t indent="0" pn="section-appendix.a.1-4">Replication segment at R1:</t>
+        <sourcecode name="" type="pseudocode" markers="false" pn="section-appendix.a.1-5">Replication segment
+        &lt;R-ID,R1&gt;: Replication-SID: R-SID1 Replication state: R2:
+        &lt;R-SID2-&gt;L12&gt; R6: &lt;N-SID6, R-SID6&gt; R7: &lt;N-SID4,
+        A-SID47, R-SID7&gt;</sourcecode>
+        <t indent="0" pn="section-appendix.a.1-6">Replication to R2 steers the packet directly to R2 on interface
+        L12. Replication to R6, using N-SID6, steers the packet via the
+        shortest path to that node. Replication to R7 is steered via R4, using
+        N-SID4 and then adjacency SID A-SID47 to R7.</t>
+        <t indent="0" pn="section-appendix.a.1-7">Replication segment at R2:</t>
+        <sourcecode name="" type="pseudocode" markers="false" pn="section-appendix.a.1-8">Replication segment
+        &lt;R-ID,R2&gt;: Replication-SID: R-SID2 Replication state: R2:
+        &lt;Leaf&gt;</sourcecode>
+        <t indent="0" pn="section-appendix.a.1-9">Replication segment at R6:</t>
+        <sourcecode name="" type="pseudocode" markers="false" pn="section-appendix.a.1-10">Replication segment
+        &lt;R-ID,R6&gt;: Replication-SID: R-SID6 Replication state: R6:
+        &lt;Leaf&gt;</sourcecode>
+        <t indent="0" pn="section-appendix.a.1-11">Replication segment at R7:</t>
+        <sourcecode name="" type="pseudocode" markers="false" pn="section-appendix.a.1-12">Replication segment
+        &lt;R-ID,R7&gt;: Replication-SID: R-SID7 Replication state: R7:
+        &lt;Leaf&gt;</sourcecode>
+        <t indent="0" pn="section-appendix.a.1-13">When a packet is steered into the Replication segment at R1:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a.1-14">
+          <li pn="section-appendix.a.1-14.1">R1 performs the PUSH operation with just the &lt;R-SID2&gt;
+          label for the replicated copy and sends it to R2 on interface L12,
+          since R1 is directly connected to R2. R2, as leaf, performs the NEXT
+          operation, pops the R-SID2 label, and delivers the payload.</li>
+          <li pn="section-appendix.a.1-14.2">R1 performs the PUSH operation with the &lt;N-SID6, R-SID6&gt;
+          label stack for the replicated copy to R6 and sends it to R2, which
+          is the nexthop on the shortest path to R6. R2 performs the CONTINUE
+          operation on N-SID6 and forwards it to R3. R3 is the penultimate hop
+          for N-SID6; it performs penultimate hop popping, which corresponds
+          to the NEXT operation. The packet is then sent to R6 with
+          &lt;R-SID6&gt; in the label stack. R6, as leaf, performs the NEXT
+          operation, pops the R-SID6 label, and delivers the payload.</li>
+          <li pn="section-appendix.a.1-14.3">R1 performs the PUSH operation with the &lt;N-SID4, A-SID47,
+          R-SID7&gt; label stack for the replicated copy to R7 and sends it to
+          R2, which is the nexthop on the shortest path to R4. R2 is the
+          penultimate hop for N-SID4; it performs penultimate hop popping,
+          which corresponds to the NEXT operation. The packet is then sent to
+          R4 with &lt;A-SID47, R-SID1&gt; in the label stack. R4 performs the
+          NEXT operation, pops A-SID47, and delivers the packet to R7 with
+          &lt;R-SID7&gt; in the label stack. R7, as leaf, performs the NEXT
+          operation, pops the R-SID7 label, and delivers the payload.</li>
+        </ul>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.2">
+        <name slugifiedName="name-srv6">SRv6</name>
+        <t indent="0" pn="section-appendix.a.2-1">For SRv6, we use the SID allocation scheme, reproduced below, from
+        "Illustrations for SRv6 Network Programming" <xref format="default" target="I-D.filsfils-spring-srv6-net-pgm-illustration" sectionFormat="of" derivedContent="PGM-ILLUSTRATION"/>:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a.2-2">
+          <li pn="section-appendix.a.2-2.1">2001:db8::/32 is an IPv6 block allocated by a Regional Internet
+          Registry (RIR) to the operator.</li>
+          <li pn="section-appendix.a.2-2.2">2001:db8:0::/48 is dedicated to the internal address space.</li>
+          <li pn="section-appendix.a.2-2.3">2001:db8:cccc::/48 is dedicated to the internal SRv6 SID
+          space.</li>
+          <li pn="section-appendix.a.2-2.4">We assume a location expressed in 64 bits and a function
+          expressed in 16 bits.</li>
+          <li pn="section-appendix.a.2-2.5">Node k has a classic IPv6 loopback address 2001:db8::k/128,
+          which is advertised in the Interior Gateway Protocol (IGP).</li>
+          <li pn="section-appendix.a.2-2.6">Node k has 2001:db8:cccc:k::/64 for its local SID space. Its
+          SIDs will be explicitly assigned from that block.</li>
+          <li pn="section-appendix.a.2-2.7">Node k advertises 2001:db8:cccc:k::/64 in its IGP.</li>
+          <li pn="section-appendix.a.2-2.8">Function :1:: (function 1, for short) represents the End
+          function with the Penultimate Segment Pop (PSP) of the SRH <xref format="default" target="RFC8986" sectionFormat="of" derivedContent="RFC8986"/> and USD support.</li>
+          <li pn="section-appendix.a.2-2.9">Function :Cn:: (function Cn, for short) represents the End.X
+          function from to Node n with PSP and USD support.</li>
+        </ul>
+        <t indent="0" pn="section-appendix.a.2-3">Each node k has:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a.2-4">
+          <li pn="section-appendix.a.2-4.1">An explicit SID instantiation 2001:db8:cccc:k:1::/128 bound to
+          an End function with additional support for PSP and USD.</li>
+          <li pn="section-appendix.a.2-4.2">An explicit SID instantiation 2001:db8:cccc:k:Cj::/128 bound to
+          an End.X function to neighbor J with additional support for PSP and
+          USD.</li>
+          <li pn="section-appendix.a.2-4.3">An explicit SID instantiation 2001:db8:cccc:k:Fk::/128 bound to
+          an End.Replicate function.</li>
+        </ul>
+        <t indent="0" pn="section-appendix.a.2-5">Assume a Replication segment identified with R-ID at Replication
+        node R1 and downstream nodes R2, R6, and R7. The Replication-SID at
+        node k, bound to an End.Replicate function, is
+        2001:db8:cccc:k:Fk::/128. A packet replicated from R1 to R7 has to
+        traverse R4.</t>
+        <t indent="0" pn="section-appendix.a.2-6">The Replication segments at nodes R1, R2, R6, and R7 are shown
+        below. Note nodes R3, R4, and R5 do not have a Replication
+        segment. The state representation uses "R-SID-&gt;Lmn" to represent a
+        packet replication with outgoing Replication-SID R-SID sent on
+        interface Lmn. "SL" represents an optional segment list used to steer
+        a replicated packet on a specific path to a downstream node.</t>
+        <t indent="0" pn="section-appendix.a.2-7">Replication segment at R1:</t>
+        <sourcecode name="" type="pseudocode" markers="false" pn="section-appendix.a.2-8">Replication segment
+        &lt;R-ID,R1&gt;: Replication-SID: 2001:db8:cccc:1:F1::0 Replication
+        state: R2: &lt;2001:db8:cccc:2:F2::0-&gt;L12&gt; R6:
+        &lt;2001:db8:cccc:6:F6::0&gt; R7: &lt;2001:db8:cccc:4:C7::0&gt;, SL:
+        &lt;2001:db8:cccc:7:F7::0&gt;</sourcecode>
+        <t indent="0" pn="section-appendix.a.2-9">Replication to R2 steers the packet directly to R2 on interface
+        L12. Replication to R6, using 2001:db8:cccc:6:F6::0, steers the packet
+        via the shortest path to that node. Replication to R7 is steered via
+        R4, using H.Encaps.Red with End.X SID 2001:db8:cccc:4:C7::0 at R4 to
+        R7.</t>
+        <t indent="0" pn="section-appendix.a.2-10">Replication segment at R2:</t>
+        <sourcecode name="" type="pseudocode" markers="false" pn="section-appendix.a.2-11">Replication segment
+        &lt;R-ID,R2&gt;: Replication-SID: 2001:db8:cccc:2:F2::0 Replication
+        state: R2: &lt;Leaf&gt;</sourcecode>
+        <t indent="0" pn="section-appendix.a.2-12">Replication segment at R6:</t>
+        <sourcecode name="" type="pseudocode" markers="false" pn="section-appendix.a.2-13">Replication segment
+        &lt;R-ID,R6&gt;: Replication-SID: 2001:db8:cccc:6:F6::0 Replication
+        state: R6: &lt;Leaf&gt;</sourcecode>
+        <t indent="0" pn="section-appendix.a.2-14">Replication segment at R7:</t>
+        <sourcecode name="" type="pseudocode" markers="false" pn="section-appendix.a.2-15">Replication segment
+        &lt;R-ID,R7&gt;: Replication-SID: 2001:db8:cccc:7:F7::0 Replication
+        state: R7: &lt;Leaf&gt;</sourcecode>
+        <t indent="0" pn="section-appendix.a.2-16">When a packet, (A,B2), is steered into the Replication segment at
+        R1:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a.2-17">
+          <li pn="section-appendix.a.2-17.1">R1 creates an encapsulated replicated copy (2001:db8::1,
+          2001:db8:cccc:2:F2::0) (A, B2), and sends it to R2 on interface L12,
+          since R1 is directly connected to R2. R2, as leaf, removes the outer
+          IPv6 header and delivers the payload.</li>
+          <li pn="section-appendix.a.2-17.2">R1 creates an encapsulated replicated copy (2001:db8::1,
+          2001:db8:cccc:6:F6::0) (A, B2) then forwards the resulting packet on
+          the shortest path to 2001:db8:cccc:6::/64. R2 and R3 forward the
+          packet using 2001:db8:cccc:6::/64. R6, as leaf, removes the outer
+          IPv6 header and delivers the payload.</li>
+          <li pn="section-appendix.a.2-17.3">
+            <t indent="0" pn="section-appendix.a.2-17.3.1">R1 has to steer the packet to downstream node R7 via node R4.
+            It can do this in one of two ways:</t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a.2-17.3.2">
+              <li pn="section-appendix.a.2-17.3.2.1">R1 creates an encapsulated replicated copy (2001:db8::1,
+              2001:db8:cccc:7:F7::0) (A, B2) and then performs H.Encaps.Red
+              using the SL to create the (2001:db8::1, 2001:db8:cccc:4:C7::0)
+              (2001:db8::1, 2001:db8:cccc:7:F7::0) (A, B2) packet. It sends
+              this packet to R2, which is the nexthop on the shortest path to
+              2001:db8:cccc:4::/64. R2 forwards the packet to R4 using
+              2001:db8:cccc:4::/64. R4 executes the End.X function on
+              2001:db8:cccc:4:C7::0, performs a USD action, removes the outer
+              IPv6 encapsulation, and sends the resulting packet (2001:db8::1,
+              2001:db8:cccc:7:F7::0) (A, B2) to R7. R7, as leaf, removes the
+              outer IPv6 header and delivers the payload.</li>
+              <li pn="section-appendix.a.2-17.3.2.2">R1 is the root of the Replication segment. Therefore, it can
+              combine above encapsulations to create an encapsulated
+              replicated copy (2001:db8::1, 2001:db8:cccc:4:C7::0)
+              (2001:db8:cccc:7:F7::0; SL=1) (A, B2) and sends it to R2, which
+              is the nexthop on the shortest path to 2001:db8:cccc:4::/64. R2
+              forwards the packet to R4 using 2001:db8:cccc:4::/64. R4
+              executes the End.X function on 2001:db8:cccc:4:C7::0, performs a
+              PSP action, removes the SRH, and sends the resulting packet
+              (2001:db8::1, 2001:db8:cccc:7:F7::0) (A, B2) to R7. R7, as leaf,
+              removes the outer IPv6 header and delivers the payload.</li>
+            </ul>
+          </li>
+        </ul>
+        <section anchor="A.2.1" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.2.1">
+          <name slugifiedName="name-pinging-a-replication-sid">Pinging a Replication-SID</name>
+          <t indent="0" pn="section-appendix.a.2.1-1">This section illustrates the ping of a Replication-SID.</t>
+          <t indent="0" pn="section-appendix.a.2.1-2">Node R1 pings the Replication-SID of node R6 directly by sending
+          the following packet:</t>
+          <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-appendix.a.2.1-3">
+            <li pn="section-appendix.a.2.1-3.1" derivedCounter="1.">R1 to R6: (2001:db8::1, 2001:db8:cccc:6:F6::0; NH=ICMPv6)
+            (ICMPv6 Echo Request).</li>
+            <li pn="section-appendix.a.2.1-3.2" derivedCounter="2.">Node R6 as a leaf processes the upper-layer ICMPv6 Echo
+            Request and responds with an ICMPv6 Echo Reply.</li>
+          </ol>
+          <t indent="0" pn="section-appendix.a.2.1-4">Node R1 pings the Replication-SID of R7 via R4 by sending the
+          following packet with the SRH:</t>
+          <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-appendix.a.2.1-5">
+            <li pn="section-appendix.a.2.1-5.1" derivedCounter="1.">R1 to R4: (2001:db8::1, 2001:db8:cccc:4:C7::0)
+            (2001:db8:cccc:7:F7::0; SL=1; NH=ICMPV6) (ICMPv6 Echo
+            Request).</li>
+            <li pn="section-appendix.a.2.1-5.2" derivedCounter="2.">R4 to R7: (2001:db8::1, 2001:db8:cccc:7:F7::0; NH=ICMPv6)
+            (ICMPv6 Echo Request).</li>
+            <li pn="section-appendix.a.2.1-5.3" derivedCounter="3.">Node R7 as a leaf processes the upper-layer ICMPv6 Echo
+            Request and responds with an ICMPv6 Echo Reply.</li>
+          </ol>
+          <t indent="0" pn="section-appendix.a.2.1-6">Assume node R4 is a transit replication node with Replication-SID
+          2001:db8:cccc:4:F4::0 replicating to R7. Node R1 pings the
+          Replication-SID of R7 via the Replication-SID of R4 as follows:</t>
+          <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-appendix.a.2.1-7">
+            <li pn="section-appendix.a.2.1-7.1" derivedCounter="1.">R1 to R4: (2001:db8::1, 2001:db8:cccc:4:F4::0; NH=ICMPv6)
+            (ICMPv6 Echo Request).</li>
+            <li pn="section-appendix.a.2.1-7.2" derivedCounter="2.">R4 replicates to R7 by replacing the IPv6 DA
+            with the Replication-SID of R7 from its Replication state.</li>
+            <li pn="section-appendix.a.2.1-7.3" derivedCounter="3.">R4 to R7: (2001:db8::1, 2001:db8:cccc:7:F7::0; NH=ICMPv6)
+            (ICMPv6 Echo Request).</li>
+            <li pn="section-appendix.a.2.1-7.4" derivedCounter="4.">Node R7 as a leaf processes the upper-layer ICMPv6 Echo
+            Request and responds with an ICMPv6 Echo Reply.</li>
+          </ol>
+        </section>
+      </section>
+    </section>
+    <section anchor="Acknowledgements" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.b">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.b-1">The authors would like to acknowledge <contact fullname="Siva Sivabalan"/>, <contact fullname="Mike Koldychev"/>,
+      <contact fullname="Vishnu Pavan Beeram"/>, <contact fullname="Alexander Vainshtein"/>, <contact fullname="Bruno Decraene"/>, <contact fullname="Thierry Couture"/>,
+      <contact fullname="Joel Halpern"/>, <contact fullname="Ketan Talaulikar"/>, <contact fullname="Darren Dukes"/>
+      and <contact fullname="Jingrong Xie"/> for their valuable inputs.</t>
+    </section>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.c">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <contact fullname="Clayton Hassen">
+        <organization showOnFrontPage="true">Bell Canada</organization>
+        <address>
+          <postal>
+            <city>Vancouver</city>
+            <country>Canada</country>
+          </postal>
+          <email>clayton.hassen@bell.ca</email>
+        </address>
+      </contact>
+      <contact fullname="Kurtis Gillis">
+        <organization showOnFrontPage="true">Bell Canada</organization>
+        <address>
+          <postal>
+            <city>Halifax</city>
+            <country>Canada</country>
+          </postal>
+          <email>kurtis.gillis@bell.ca</email>
+        </address>
+      </contact>
+      <contact fullname="Arvind Venkateswaran">
+        <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+        <address>
+          <postal>
+            <city>San Jose</city>
+            <region>CA</region>
+            <country>United States of America</country>
+          </postal>
+          <email>arvvenka@cisco.com</email>
+        </address>
+      </contact>
+      <contact fullname="Zafar Ali">
+        <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>zali@cisco.com</email>
+        </address>
+      </contact>
+      <contact fullname="Swadesh Agrawal">
+        <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+        <address>
+          <postal>
+            <city>San Jose</city>
+            <region>CA</region>
+            <country>United States of America</country>
+          </postal>
+          <email>swaagraw@cisco.com</email>
+        </address>
+      </contact>
+      <contact fullname="Jayant Kotalwar">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <postal>
+            <city>Mountain View</city>
+            <region>CA</region>
+            <country>United States of America</country>
+          </postal>
+          <email>jayant.kotalwar@nokia.com</email>
+        </address>
+      </contact>
+      <contact fullname="Tanmoy Kundu">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <postal>
+            <city>Mountain View</city>
+            <region>CA</region>
+            <country>United States of America</country>
+          </postal>
+          <email>tanmoy.kundu@nokia.com</email>
+        </address>
+      </contact>
+      <contact fullname="Andrew Stone">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <postal>
+            <city>Ottawa</city>
+            <country>Canada</country>
+          </postal>
+          <email>andrew.stone@nokia.com</email>
+        </address>
+      </contact>
+      <contact fullname="Tarek Saad">
+        <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+        <address>
+          <postal>
+            <country>Canada</country>
+          </postal>
+          <email>tsaad@cisco.com</email>
+        </address>
+      </contact>
+      <contact fullname="Kamran Raza">
+        <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+        <address>
+          <postal>
+            <country>Canada</country>
+          </postal>
+          <email>skraza@cisco.com</email>
+        </address>
+      </contact>
+      <contact fullname="Jingrong Xie">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <postal>
+            <city>Beijing</city>
+            <country>China</country>
+          </postal>
+          <email>xiejingrong@huawei.com</email>
+        </address>
+      </contact>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.d">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Daniel Voyer" initials="D." role="editor" surname="Voyer">
+        <organization showOnFrontPage="true">Bell Canada</organization>
+        <address>
+          <postal>
+            <city>Montreal</city>
+            <country>Canada</country>
+          </postal>
+          <email>daniel.voyer@bell.ca</email>
+        </address>
+      </author>
+      <author fullname="Clarence Filsfils" initials="C." surname="Filsfils">
+        <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+        <address>
+          <postal>
+            <city>Brussels</city>
+            <country>Belgium</country>
+          </postal>
+          <email>cfilsfil@cisco.com</email>
+        </address>
+      </author>
+      <author fullname="Rishabh Parekh" initials="R." surname="Parekh">
+        <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+        <address>
+          <postal>
+            <city>San Jose</city>
+            <region>CA</region>
+            <country>United States of America</country>
+          </postal>
+          <email>riparekh@cisco.com</email>
+        </address>
+      </author>
+      <author fullname="Hooman Bidgoli" initials="H." surname="Bidgoli">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <postal>
+            <city>Ottawa</city>
+            <country>Canada</country>
+          </postal>
+          <email>hooman.bidgoli@nokia.com</email>
+        </address>
+      </author>
+      <author fullname="Zhaohui Zhang" initials="Z." surname="Zhang">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <email>zzhang@juniper.net</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

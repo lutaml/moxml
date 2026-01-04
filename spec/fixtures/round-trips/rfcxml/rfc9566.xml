@@ -1,0 +1,837 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" category="info" docName="draft-ietf-detnet-mpls-over-ip-preof-11" number="9566" ipr="trust200902" submissionType="IETF" obsoletes="" updates="" xml:lang="en" tocInclude="true" consensus="true" symRefs="true" sortRefs="true" prepTime="2024-04-26T08:49:09" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-detnet-mpls-over-ip-preof-11" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9566" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="DetNet PREOF via MPLS over UDP/IP">Deterministic Networking (DetNet) Packet Replication, Elimination, and Ordering Functions (PREOF) via MPLS over UDP/IP</title>
+    <seriesInfo name="RFC" value="9566" stream="IETF"/>
+    <author fullname="Balazs Varga" initials="B." surname="Varga">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <street>Magyar Tudosok krt. 11.</street>
+          <city>Budapest</city>
+          <country>Hungary</country>
+          <code>1117</code>
+        </postal>
+        <email>balazs.a.varga@ericsson.com</email>
+      </address>
+    </author>
+    <author fullname="Janos Farkas" initials="J." surname="Farkas">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <street>Magyar Tudosok krt. 11.</street>
+          <city>Budapest</city>
+          <country>Hungary</country>
+          <code>1117</code>
+        </postal>
+        <email>janos.farkas@ericsson.com</email>
+      </address>
+    </author>
+    <author fullname="Andrew G. Malis" initials="A." surname="Malis">
+      <organization showOnFrontPage="true">Malis Consulting</organization>
+      <address>
+        <email>agmalis@gmail.com</email>
+      </address>
+    </author>
+    <date month="04" year="2024"/>
+    <area>RTG</area>
+    <workgroup>DetNet</workgroup>
+    <keyword>DetNet</keyword>
+    <keyword>IP Data Plane</keyword>
+    <keyword>Service sub-layer</keyword>
+    <keyword>Replication</keyword>
+    <keyword>Elimination</keyword>
+    <keyword>Ordering</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">
+     This document describes how the DetNet IP data plane can support the Packet
+	 Replication, Elimination, and Ordering Functions (PREOF) built on 
+	 the existing MPLS PREOF solution defined for the DetNet MPLS 
+	 data plane and the mechanisms defined by MPLS-over-UDP technology.
+      </t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for informational purposes.  
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by the
+            Internet Engineering Steering Group (IESG).  Not all documents
+            approved by the IESG are candidates for any level of Internet
+            Standard; see Section 2 of RFC 7841. 
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9566" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terms-used-in-this-document">Terms Used in This Document</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-abbreviations">Abbreviations</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-for-adding-pre">Requirements for Adding PREOF to DetNet IP</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-adding-preof-to-detnet-ip">Adding PREOF to DetNet IP</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-solution-basics">Solution Basics</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-encapsulation">Encapsulation</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-packet-processing">Packet Processing</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.4">
+                <t indent="0" pn="section-toc.1-1.4.2.4.1"><xref derivedContent="4.4" format="counter" sectionFormat="of" target="section-4.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-flow-aggregation">Flow Aggregation</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.5">
+                <t indent="0" pn="section-toc.1-1.4.2.5.1"><xref derivedContent="4.5" format="counter" sectionFormat="of" target="section-4.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-preof-processing">PREOF Processing</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.6">
+                <t indent="0" pn="section-toc.1-1.4.2.6.1"><xref derivedContent="4.6" format="counter" sectionFormat="of" target="section-4.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-preof-capable-detnet-ip-dom">PREOF-Capable DetNet IP Domain</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-control-and-management-plan">Control and Management Plane Parameters</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="sec_intro" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">
+     The DetNet Working Group has defined Packet Replication (PRF), Packet 
+	 Elimination (PEF), and Packet Ordering (POF) Functions 
+	 (represented as PREOF) to provide 
+	 service protection by the DetNet service sub-layer 
+	 <xref target="RFC8655" format="default" sectionFormat="of" derivedContent="RFC8655"/>. The PREOF service protection method relies on 
+	 copies of the same packet sent over multiple maximally disjoint paths 
+	 and uses sequencing information to eliminate duplicates. A possible 
+	 implementation of PRF and PEF is described in 
+	 <xref target="IEEE8021CB" format="default" sectionFormat="of" derivedContent="IEEE8021CB"/>, and the related YANG data model is defined 
+	 in <xref target="IEEE8021CBcv" format="default" sectionFormat="of" derivedContent="IEEE8021CBcv"/>. A possible implementation of POF 
+	 is described in <xref target="RFC9550" format="default" sectionFormat="of" derivedContent="RFC9550"/>.	 
+     <xref target="PREOF-scene" format="default" sectionFormat="of" derivedContent="Figure 1"/> shows a DetNet flow on which PREOF 
+	 are applied during forwarding from the source to the destination. 
+      </t>
+      <figure anchor="PREOF-scene" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-preof-scenario-in-a-detnet-">PREOF Scenario in a DetNet Network</name>
+        <artwork align="center" name="" type="" alt="" pn="section-1-2.1">
+                                      +------------+
+            +---------------E1---+    |            |
++---+       |               |    +---R3---+        |          +---+
+|src|------R1           +---+             |        E3----O----+dst|
++---+       |           |                 E2-------+          +---+
+            +----------R2                 |
+                        +-----------------+
+
+R: Replication Function (PRF)
+E: Elimination Function (PEF)
+O: Ordering Function (POF)
+</artwork>
+      </figure>
+      <t indent="0" pn="section-1-3">
+     In general, the use of PREOF require sequencing information to
+	 be included in the packets of a DetNet compound flow.  This can be done 
+	 by adding a sequence number or timestamp as part of DetNet encapsulation.
+	 Sequencing information is typically added once, at or close to the source.
+      </t>
+      <t indent="0" pn="section-1-4">
+     The DetNet MPLS data plane <xref target="RFC8964" format="default" sectionFormat="of" derivedContent="RFC8964"/> specifies how 
+	 sequencing information is encoded in the MPLS header. However, the DetNet 
+	 IP data plane described in <xref target="RFC8939" format="default" sectionFormat="of" derivedContent="RFC8939"/> does not specify how 
+	 sequencing information can be encoded in the IP packet. This document 
+	 provides sequencing information to DetNet IP nodes, so it results
+     in an improved version of the DetNet IP data plane. As suggested by 
+	 <xref target="RFC8938" format="default" sectionFormat="of" derivedContent="RFC8938"/>, the solution uses existing standardized headers
+	 and encapsulations. The improvement is achieved by reusing the DetNet 
+	 MPLS-over-UDP/IP data plane <xref target="RFC9025" format="default" sectionFormat="of" derivedContent="RFC9025"/> with the restriction 
+	 of using zero F-Labels.	 
+      </t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-2.1">
+        <name slugifiedName="name-terms-used-in-this-document">Terms Used in This Document</name>
+        <t indent="0" pn="section-2.1-1">
+   This document uses the terminology established in the DetNet architecture
+   <xref target="RFC8655" format="default" sectionFormat="of" derivedContent="RFC8655"/>, and it is assumed that the reader is
+   familiar with that document and its terminology.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-2.2">
+        <name slugifiedName="name-abbreviations">Abbreviations</name>
+        <t indent="0" pn="section-2.2-1">
+   The following abbreviations are used in this document:
+        </t>
+        <dl newline="false" spacing="normal" indent="14" pn="section-2.2-2">
+          <dt pn="section-2.2-2.1">DetNet</dt>
+          <dd pn="section-2.2-2.2">Deterministic Networking</dd>
+          <dt pn="section-2.2-2.3">PEF</dt>
+          <dd pn="section-2.2-2.4">Packet Elimination Function</dd>
+          <dt pn="section-2.2-2.5">POF</dt>
+          <dd pn="section-2.2-2.6">Packet Ordering Function</dd>
+          <dt pn="section-2.2-2.7">PREOF</dt>
+          <dd pn="section-2.2-2.8">Packet Replication, Elimination, and Ordering Functions</dd>
+          <dt pn="section-2.2-2.9">PRF</dt>
+          <dd pn="section-2.2-2.10">Packet Replication Function</dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="req-on-pof" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-requirements-for-adding-pre">Requirements for Adding PREOF to DetNet IP</name>
+      <t indent="0" pn="section-3-1">
+     The requirements for adding PREOF to DetNet IP are: 
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3-2">
+        <li pn="section-3-2.1">
+          <t indent="0" pn="section-3-2.1.1">to reuse existing DetNet data plane solutions (e.g., 
+		 <xref target="RFC8964" format="default" sectionFormat="of" derivedContent="RFC8964"/>, <xref target="RFC9025" format="default" sectionFormat="of" derivedContent="RFC9025"/>), and</t>
+        </li>
+        <li pn="section-3-2.2">
+          <t indent="0" pn="section-3-2.2.1">to allow the DetNet service sub-layer for IP packet-switched 
+		 networks with minimal implementation effort. </t>
+        </li>
+      </ul>
+      <t indent="0" pn="section-3-3">
+     The described solution leverages MPLS header fields without 
+	 requiring the support of the MPLS forwarding plane.
+      </t>
+    </section>
+    <section anchor="pof-alg" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-adding-preof-to-detnet-ip">Adding PREOF to DetNet IP</name>
+      <section anchor="preof-relations" numbered="true" toc="include" removeInRFC="false" pn="section-4.1">
+        <name slugifiedName="name-solution-basics">Solution Basics</name>
+        <t indent="0" pn="section-4.1-1">
+	  The DetNet IP encapsulation supporting the DetNet service sub-layer is based
+	  on the "UDP tunneling" concept. The solution creates a set of underlay 
+	  UDP/IP tunnels between an overlay set of DetNet relay nodes. 
+        </t>
+        <t indent="0" pn="section-4.1-2">
+	  At the edge of a PREOF-capable DetNet IP 
+	  domain, the DetNet flow is encapsulated in a UDP packet containing the 
+	  sequence number used by PREOF within the domain. This solution 
+	  maintains the 6-tuple-based DetNet flow identification in DetNet transit 
+	  nodes, which operate at the DetNet forwarding sub-layer between the DetNet
+	  service sub-layer nodes; therefore, it is compatible with 
+	  <xref target="RFC8939" format="default" sectionFormat="of" derivedContent="RFC8939"/>. <xref target="PREOF-IP-basics" format="default" sectionFormat="of" derivedContent="Figure 2"/> shows how the 
+	  PREOF-capable DetNet IP data plane fits into the DetNet sub-layers.
+        </t>
+        <figure anchor="PREOF-IP-basics" align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-preof-capable-detnet-ip-dat">PREOF-Capable DetNet IP Data Plane</name>
+          <artwork align="center" name="" type="" alt="" pn="section-4.1-3.1">
+   DetNet          IP
+      .
+      .
++------------+
+|  Service   | d-CW, Service-ID (S-Label)
++------------+
+| Forwarding | UDP/IP Header
++------------+
+
+               *d-CW: DetNet Control Word
+</artwork>
+        </figure>
+      </section>
+      <section anchor="pof-blocks" numbered="true" toc="include" removeInRFC="false" pn="section-4.2">
+        <name slugifiedName="name-encapsulation">Encapsulation</name>
+        <t indent="0" pn="section-4.2-1">
+     The PREOF-capable DetNet IP encapsulation builds on encapsulating 
+	 DetNet pseudowire (PW) directly over UDP. That is, it combines DetNet MPLS
+	 <xref target="RFC8964" format="default" sectionFormat="of" derivedContent="RFC8964"/> with DetNet MPLS-in-UDP <xref target="RFC9025" format="default" sectionFormat="of" derivedContent="RFC9025"/>,
+	 without using any F-Labels, as shown in <xref target="PREOF-IP-encap" format="default" sectionFormat="of" derivedContent="Figure 3"/>. 
+	 DetNet flows are identified at the receiving DetNet service sub-layer 
+	 processing node via the S-Label and/or the UDP/IP header information. 
+	 Sequencing information for PREOF is provided by the DetNet Control Word 
+	 (d-CW) per <xref target="RFC8964" format="default" sectionFormat="of" derivedContent="RFC8964"/>. The S-Label is used to identify
+	 both the DetNet flow and the DetNet App-flow type. The UDP tunnel is used
+	 to direct the packet across the DetNet domain to the next DetNet service 
+	 sub-layer processing node.
+        </t>
+        <figure anchor="PREOF-IP-encap" align="left" suppress-title="false" pn="figure-3">
+          <name slugifiedName="name-preof-capable-detnet-ip-enc">PREOF-Capable DetNet IP Encapsulation</name>
+          <artwork align="center" name="" type="" alt="" pn="section-4.2-2.1">
++---------------------------------+
+|                                 |
+|         DetNet App-Flow         |
+|       (Original IP) Packet      |
+|                                 |
++---------------------------------+ &lt;--\
+|       DetNet Control Word       |    |
++---------------------------------+    +--&gt; PREOF-capable
+|       Service-ID (S-Label)      |    |    DetNet IP data
++---------------------------------+    |    plane encapsulation
+|            UDP Header           |    |
++---------------------------------+    |
+|            IP Header            |    |
++---------------------------------+ &lt;--/
+|            Data-Link            |
++---------------------------------+
+|             Physical            |
++---------------------------------+
+</artwork>
+        </figure>
+      </section>
+      <section anchor="PREOF-IP-proc" numbered="true" toc="include" removeInRFC="false" pn="section-4.3">
+        <name slugifiedName="name-packet-processing">Packet Processing</name>
+        <t indent="0" pn="section-4.3-1">
+     IP ingress and egress nodes of the PREOF-capable DetNet IP domain 
+	 add and remove a DetNet service-specific d-CW and Service-ID (i.e., 
+	 S-Label). Relay nodes can change Service-ID values when processing a 
+	 DetNet flow, i.e., incoming and outgoing Service-IDs of a DetNet flow 
+	 can be different. Service-ID values are provisioned per DetNet 
+	 service via configuration, e.g., via the Controller Plane described in 
+	 <xref target="RFC8938" format="default" sectionFormat="of" derivedContent="RFC8938"/>. In some PREOF topologies, the node performing 
+	 replication sends the packets to multiple nodes performing, e.g., PEF or POF, and 
+	 the replication node can use different Service-ID values for the 
+	 different member flows for the same DetNet service.
+        </t>
+        <t indent="0" pn="section-4.3-2">
+     Note that the Service-ID is a local ID on the receiver side that identifies 
+	 the DetNet flow at the downstream DetNet service sub-layer receiver.
+        </t>
+      </section>
+      <section anchor="aggr" numbered="true" toc="include" removeInRFC="false" pn="section-4.4">
+        <name slugifiedName="name-flow-aggregation">Flow Aggregation</name>
+        <t indent="0" pn="section-4.4-1">
+     Two methods can be used for flow aggregation:
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.4-2">
+          <li pn="section-4.4-2.1">
+            <t indent="0" pn="section-4.4-2.1.1">aggregation using same UDP tunnel, and </t>
+          </li>
+          <li pn="section-4.4-2.2">
+            <t indent="0" pn="section-4.4-2.2.1">aggregation of DetNet flows as a new DetNet flow. </t>
+          </li>
+        </ul>
+        <t indent="0" pn="section-4.4-3">
+     In the first method, the different DetNet pseudowires use the same UDP tunnel, so they 
+	 are treated as a single (aggregated) flow at the forwarding sub-layer. At the 
+	 service sub-layer, each flow uses a different Service-ID 
+	 (see <xref target="PREOF-IP-encap" format="default" sectionFormat="of" derivedContent="Figure 3"/>).
+        </t>
+        <t indent="0" pn="section-4.4-4">
+	 For the second method, an additional hierarchy is created by 
+	 adding an additional Service-ID and d-CW tuple to the encapsulation. 
+	 The Aggregate-ID is a special case of a Service-ID,
+	 whose properties are known only at the aggregation and deaggregation 
+	 end points. It is a property of the Aggregate-ID that it is followed by a 
+	 d-CW followed by a Service-ID/d-CW tuple. 
+	 <xref target="PREOF-IP-aggr" format="default" sectionFormat="of" derivedContent="Figure 4"/> shows the encapsulation in the case of 
+	 aggregation. 
+        </t>
+        <figure anchor="PREOF-IP-aggr" align="left" suppress-title="false" pn="figure-4">
+          <name slugifiedName="name-aggregating-detnet-flows-as">Aggregating DetNet Flows as a New DetNet Flow</name>
+          <artwork align="center" name="" type="" alt="" pn="section-4.4-5.1">
++---------------------------------+
+|                                 |
+|         DetNet App-Flow         |
+|         Payload  Packet         |
+|                                 |
++---------------------------------+ &lt;--\
+|       DetNet Control Word       |    |
++---------------------------------+    +--&gt; PREOF-capable
+|       Service-ID (S-Label)      |    |    DetNet IP data
++---------------------------------+    |    plane encapsulation
+|       DetNet Control Word       |    |
++---------------------------------+    |
+|      Aggregate-ID (A-Label)     |    |
++---------------------------------+    |
+|           UDP Header            |    |
++---------------------------------+    |
+|            IP Header            |    |
++---------------------------------+ &lt;--/
+|            Data-Link            |
++---------------------------------+
+|             Physical            |
++---------------------------------+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-4.4-6">
+   The aggregation method is configured in the 
+   aggregation/deaggregation nodes. 
+        </t>
+        <t indent="0" pn="section-4.4-7">
+   If several DetNet flows are aggregated in a single UDP tunnel, they all need 
+   to follow the same path in the network. 
+        </t>
+      </section>
+      <section anchor="PREOF-proc" numbered="true" toc="include" removeInRFC="false" pn="section-4.5">
+        <name slugifiedName="name-preof-processing">PREOF Processing</name>
+        <t indent="0" pn="section-4.5-1">
+     A node operating on a received DetNet flow at the DetNet service sub-layer 
+	 uses the local context associated with a received Service-ID to determine 
+	 which local DetNet operation(s) are applied to the received packet.  A unique Service-ID 
+	 can be allocated and can be used to identify a DetNet flow 
+	 regardless of which input interface or UDP tunnel receives the packet.
+	 It is important to note that Service-ID values are driven by the receiver, 
+	 not the sender.
+        </t>
+        <t indent="0" pn="section-4.5-2">
+	 The DetNet forwarding sub-layer is supported by the UDP tunnel and is 
+	 responsible for providing resource allocation and explicit routes.
+        </t>
+        <t indent="0" pn="section-4.5-3">
+     The outgoing PREOF encapsulation and processing can be implemented 
+	 via the provisioning of UDP and IP header information.
+	 Note, when PRF is performed at the DetNet service sub-layer, 
+	 there are multiple member flows, and each member flow requires  
+	 its own Service-ID, UDP header information, and IP header information. The headers for 
+	 each outgoing packet are formatted according to the configuration 
+	 information, and the UDP Source Port value is set to uniquely identify
+	 the DetNet flow. The packet is then handled as a PREOF-capable DetNet 
+	 IP packet.
+        </t>
+        <t indent="0" pn="section-4.5-4">
+     The incoming PREOF processing can be implemented by assigning 
+	 a Service-ID to the received DetNet flow and processing the information in the UDP and IP headers. The 
+	 provisioned information is used to identify incoming App-flows based
+	 on the combination of Service-ID and/or incoming encapsulation header
+	 information.  
+        </t>
+      </section>
+      <section anchor="PREOF-IP-domain" numbered="true" toc="include" removeInRFC="false" pn="section-4.6">
+        <name slugifiedName="name-preof-capable-detnet-ip-dom">PREOF-Capable DetNet IP Domain</name>
+        <t indent="0" pn="section-4.6-1">
+	 <xref target="PREOF-domain" format="default" sectionFormat="of" derivedContent="Figure 5"/> shows using PREOF in a PREOF-capable DetNet
+	 IP network, where service protection is provided end to end, and not only 
+	 within sub-networks, as is depicted in <eref target="https://www.rfc-editor.org/rfc/rfc8939#figure-4" brackets="angle">Figure 4</eref> of <xref target="RFC8939" format="default" sectionFormat="of" derivedContent="RFC8939"/>. 	 
+        </t>
+        <figure anchor="PREOF-domain" align="left" suppress-title="false" pn="figure-5">
+          <name slugifiedName="name-preof-capable-detnet-ip-doma">PREOF-Capable DetNet IP Domain</name>
+          <artwork align="center" name="" type="" alt="" pn="section-4.6-2.1">
+          &lt;---------- PREOF-capable DetNet IP ---------------&gt;
+                                    ______
+                          ____     /      \__
+               ____      /     \__/          \____________
++----+      __/    \____/                                 \    +----+
+|src |_____/                                               \___| dst|
++----+     \_______            DetNet network    __________/   +----+
+                   \_______                    _/
+                           \         __     __/
+                            \_______/  \___/
+
+                                       +------------+
+             +---------------E1---+    |            |
++----+       |               |    +---R3---+        |          +----+
+|src |------R1           +---+             |        E3----O----+ dst|
++----+       |           |                 E2-------+          +----+
+             +----------R2                 |
+                         +-----------------+
+</artwork>
+        </figure>
+      </section>
+    </section>
+    <section anchor="ctrl-mngmnt-PREOF-IP" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-control-and-management-plan">Control and Management Plane Parameters</name>
+      <t indent="0" pn="section-5-1">
+     The information needed to identify individual and aggregated DetNet flows
+	 is summarized as follows:
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-2">
+        <li pn="section-5-2.1">
+          <t indent="0" pn="section-5-2.1.1">Service-ID information to be mapped to UDP/IP flows. Note that, for 
+	     example, a single Service-ID can map to multiple sets of UDP/IP 
+		 information when PREOF is used.</t>
+        </li>
+        <li pn="section-5-2.2">
+          <t indent="0" pn="section-5-2.2.1">IPv4 or IPv6 Source Address field.</t>
+        </li>
+        <li pn="section-5-2.3">
+          <t indent="0" pn="section-5-2.3.1">IPv4 or IPv6 source address prefix length, where a zero
+         (0) value effectively means that the address field is
+         ignored.</t>
+        </li>
+        <li pn="section-5-2.4">
+          <t indent="0" pn="section-5-2.4.1">IPv4 or IPv6 Destination Address field.</t>
+        </li>
+        <li pn="section-5-2.5">
+          <t indent="0" pn="section-5-2.5.1">IPv4 or IPv6 destination address prefix length, where a
+         zero (0) effectively means that the address field is
+         ignored.</t>
+        </li>
+        <li pn="section-5-2.6">
+          <t indent="0" pn="section-5-2.6.1">IPv6 Flow Label field.</t>
+        </li>
+        <li pn="section-5-2.7">
+          <t indent="0" pn="section-5-2.7.1">IPv4 Protocol field being equal to "UDP". </t>
+        </li>
+        <li pn="section-5-2.8">
+          <t indent="0" pn="section-5-2.8.1">IPv6 (last) Next Header field being equal to "UDP".</t>
+        </li>
+        <li pn="section-5-2.9">
+          <t indent="0" pn="section-5-2.9.1">For the IPv4 Type of Service and IPv6 Traffic Class
+         fields:
+          </t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-2.9.2">
+            <li pn="section-5-2.9.2.1">
+              <t indent="0" pn="section-5-2.9.2.1.1">Whether or not the Differentiated Services Code Point (DSCP) field is used in flow identification,
+				as the use of the DSCP field for flow identification is optional.</t>
+            </li>
+            <li pn="section-5-2.9.2.2">
+              <t indent="0" pn="section-5-2.9.2.2.1">If the DSCP field is used to identify a flow, then the flow
+				identification information (for that flow) includes a list of
+				DSCPs used by the given DetNet flow.</t>
+            </li>
+          </ul>
+        </li>
+        <li pn="section-5-2.10">
+          <t indent="0" pn="section-5-2.10.1">UDP Source Port. Support for both exact and wildcard matching is
+         required. Port ranges can optionally be used.</t>
+        </li>
+        <li pn="section-5-2.11">
+          <t indent="0" pn="section-5-2.11.1">UDP Destination Port. Support for both exact and wildcard matching is
+         required. Port ranges can optionally be used.</t>
+        </li>
+        <li pn="section-5-2.12">
+          <t indent="0" pn="section-5-2.12.1">For end systems, an optional maximum IP packet size
+         that should be used for that outgoing DetNet IP flow.</t>
+        </li>
+      </ul>
+      <t indent="0" pn="section-5-3">
+      This information is provisioned per DetNet flow via
+      configuration, e.g., via the Controller Plane.
+      </t>
+      <t indent="0" pn="section-5-4">
+     Ordering of the set of information used to identify an individual 
+	 DetNet flow can, for example, be used to 
+	 provide a DetNet service for a specific UDP flow, with unique Source and 
+	 Destination Port field values, while providing a different service for the
+	 aggregate of all other flows with that same UDP Destination Port value.
+      </t>
+      <t indent="0" pn="section-5-5">
+     The minimum set of information for the configuration of the DetNet service 
+	 sub-layer is summarized as follows:
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-6">
+        <li pn="section-5-6.1">
+          <t indent="0" pn="section-5-6.1.1">App-flow identification information </t>
+        </li>
+        <li pn="section-5-6.2">
+          <t indent="0" pn="section-5-6.2.1">Sequence number length</t>
+        </li>
+        <li pn="section-5-6.3">
+          <t indent="0" pn="section-5-6.3.1">Type of PREOF to be executed on the DetNet flow</t>
+        </li>
+        <li pn="section-5-6.4">
+          <t indent="0" pn="section-5-6.4.1">Service-ID(s) used by the member flows</t>
+        </li>
+        <li pn="section-5-6.5">
+          <t indent="0" pn="section-5-6.5.1">Associated forwarding sub-layer information</t>
+        </li>
+        <li pn="section-5-6.6">
+          <t indent="0" pn="section-5-6.6.1">Service aggregation information</t>
+        </li>
+      </ul>
+      <t indent="0" pn="section-5-7">
+     The minimum set of information for the configuration of the DetNet forwarding 
+	 sub-layer is summarized as follows: 
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-8">
+        <li pn="section-5-8.1">
+          <t indent="0" pn="section-5-8.1.1">UDP tunnel-specific information </t>
+        </li>
+        <li pn="section-5-8.2">
+          <t indent="0" pn="section-5-8.2.1">Traffic parameters</t>
+        </li>
+      </ul>
+      <t indent="0" pn="section-5-9">
+	 These parameters are defined in the DetNet flow and service information model
+	 <xref target="RFC9016" format="default" sectionFormat="of" derivedContent="RFC9016"/> and the DetNet YANG model.
+      </t>
+      <t indent="0" pn="section-5-10">
+     Note: this document focuses on the use of MPLS-over-UDP/IP encapsulation throughout an 
+	 entire DetNet IP network, making MPLS-based DetNet Operations, Administration, and Maintenance (OAM) techniques applicable
+	 <xref target="RFC9546" format="default" sectionFormat="of" derivedContent="RFC9546"/>.
+	 Using the described encapsulation only for a portion of a DetNet IP network 
+	 that handles PREOF would complicate OAM.
+      </t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-6-1">
+     There are no new DetNet-related security considerations introduced by 
+	 this solution. Security considerations of DetNet MPLS <xref target="RFC8964" format="default" sectionFormat="of" derivedContent="RFC8964"/> and 
+     DetNet MPLS over UDP/IP <xref target="RFC9025" format="default" sectionFormat="of" derivedContent="RFC9025"/> apply.
+
+      </t>
+    </section>
+    <section anchor="iana" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-7-1">
+   This document has no IANA actions.
+      </t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-8">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-8.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC8655" target="https://www.rfc-editor.org/info/rfc8655" quoteTitle="true" derivedAnchor="RFC8655">
+          <front>
+            <title>Deterministic Networking Architecture</title>
+            <author fullname="N. Finn" initials="N." surname="Finn"/>
+            <author fullname="P. Thubert" initials="P." surname="Thubert"/>
+            <author fullname="B. Varga" initials="B." surname="Varga"/>
+            <author fullname="J. Farkas" initials="J." surname="Farkas"/>
+            <date month="October" year="2019"/>
+            <abstract>
+              <t indent="0">This document provides the overall architecture for Deterministic Networking (DetNet), which provides a capability to carry specified unicast or multicast data flows for real-time applications with extremely low data loss rates and bounded latency within a network domain. Techniques used include 1) reserving data-plane resources for individual (or aggregated) DetNet flows in some or all of the intermediate nodes along the path of the flow, 2) providing explicit routes for DetNet flows that do not immediately change with the network topology, and 3) distributing data from DetNet flow packets over time and/or space to ensure delivery of each packet's data in spite of the loss of a path. DetNet operates at the IP layer and delivers service over lower-layer technologies such as MPLS and Time- Sensitive Networking (TSN) as defined by IEEE 802.1.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8655"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8655"/>
+        </reference>
+        <reference anchor="RFC8938" target="https://www.rfc-editor.org/info/rfc8938" quoteTitle="true" derivedAnchor="RFC8938">
+          <front>
+            <title>Deterministic Networking (DetNet) Data Plane Framework</title>
+            <author fullname="B. Varga" initials="B." role="editor" surname="Varga"/>
+            <author fullname="J. Farkas" initials="J." surname="Farkas"/>
+            <author fullname="L. Berger" initials="L." surname="Berger"/>
+            <author fullname="A. Malis" initials="A." surname="Malis"/>
+            <author fullname="S. Bryant" initials="S." surname="Bryant"/>
+            <date month="November" year="2020"/>
+            <abstract>
+              <t indent="0">This document provides an overall framework for the Deterministic Networking (DetNet) data plane. It covers concepts and considerations that are generally common to any DetNet data plane specification. It describes related Controller Plane considerations as well.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8938"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8938"/>
+        </reference>
+        <reference anchor="RFC8939" target="https://www.rfc-editor.org/info/rfc8939" quoteTitle="true" derivedAnchor="RFC8939">
+          <front>
+            <title>Deterministic Networking (DetNet) Data Plane: IP</title>
+            <author fullname="B. Varga" initials="B." role="editor" surname="Varga"/>
+            <author fullname="J. Farkas" initials="J." surname="Farkas"/>
+            <author fullname="L. Berger" initials="L." surname="Berger"/>
+            <author fullname="D. Fedyk" initials="D." surname="Fedyk"/>
+            <author fullname="S. Bryant" initials="S." surname="Bryant"/>
+            <date month="November" year="2020"/>
+            <abstract>
+              <t indent="0">This document specifies the Deterministic Networking (DetNet) data plane operation for IP hosts and routers that provide DetNet service to IP-encapsulated data. No DetNet-specific encapsulation is defined to support IP flows; instead, the existing IP-layer and higher-layer protocol header information is used to support flow identification and DetNet service delivery. This document builds on the DetNet architecture (RFC 8655) and data plane framework (RFC 8938).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8939"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8939"/>
+        </reference>
+        <reference anchor="RFC8964" target="https://www.rfc-editor.org/info/rfc8964" quoteTitle="true" derivedAnchor="RFC8964">
+          <front>
+            <title>Deterministic Networking (DetNet) Data Plane: MPLS</title>
+            <author fullname="B. Varga" initials="B." role="editor" surname="Varga"/>
+            <author fullname="J. Farkas" initials="J." surname="Farkas"/>
+            <author fullname="L. Berger" initials="L." surname="Berger"/>
+            <author fullname="A. Malis" initials="A." surname="Malis"/>
+            <author fullname="S. Bryant" initials="S." surname="Bryant"/>
+            <author fullname="J. Korhonen" initials="J." surname="Korhonen"/>
+            <date month="January" year="2021"/>
+            <abstract>
+              <t indent="0">This document specifies the Deterministic Networking (DetNet) data plane when operating over an MPLS Packet Switched Network. It leverages existing pseudowire (PW) encapsulations and MPLS Traffic Engineering (MPLS-TE) encapsulations and mechanisms. This document builds on the DetNet architecture and data plane framework.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8964"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8964"/>
+        </reference>
+        <reference anchor="RFC9016" target="https://www.rfc-editor.org/info/rfc9016" quoteTitle="true" derivedAnchor="RFC9016">
+          <front>
+            <title>Flow and Service Information Model for Deterministic Networking (DetNet)</title>
+            <author fullname="B. Varga" initials="B." surname="Varga"/>
+            <author fullname="J. Farkas" initials="J." surname="Farkas"/>
+            <author fullname="R. Cummings" initials="R." surname="Cummings"/>
+            <author fullname="Y. Jiang" initials="Y." surname="Jiang"/>
+            <author fullname="D. Fedyk" initials="D." surname="Fedyk"/>
+            <date month="March" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes the flow and service information model for Deterministic Networking (DetNet). These models are defined for IP and MPLS DetNet data planes.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9016"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9016"/>
+        </reference>
+        <reference anchor="RFC9025" target="https://www.rfc-editor.org/info/rfc9025" quoteTitle="true" derivedAnchor="RFC9025">
+          <front>
+            <title>Deterministic Networking (DetNet) Data Plane: MPLS over UDP/IP</title>
+            <author fullname="B. Varga" initials="B." role="editor" surname="Varga"/>
+            <author fullname="J. Farkas" initials="J." surname="Farkas"/>
+            <author fullname="L. Berger" initials="L." surname="Berger"/>
+            <author fullname="A. Malis" initials="A." surname="Malis"/>
+            <author fullname="S. Bryant" initials="S." surname="Bryant"/>
+            <date month="April" year="2021"/>
+            <abstract>
+              <t indent="0">This document specifies the MPLS Deterministic Networking (DetNet) data plane operation and encapsulation over an IP network. The approach is based on the operation of MPLS-over-UDP technology.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9025"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9025"/>
+        </reference>
+        <reference anchor="RFC9546" target="https://www.rfc-editor.org/info/rfc9546" quoteTitle="true" derivedAnchor="RFC9546">
+          <front>
+            <title>Operations, Administration, and Maintenance (OAM) for Deterministic Networking (DetNet) with the MPLS Data Plane</title>
+            <author fullname="G. Mirsky" initials="G." surname="Mirsky"/>
+            <author fullname="M. Chen" initials="M." surname="Chen"/>
+            <author fullname="B. Varga" initials="B." surname="Varga"/>
+            <date month="February" year="2024"/>
+            <abstract>
+              <t indent="0">This document defines format and usage principles of the Deterministic Networking (DetNet) service Associated Channel over a DetNet network with the MPLS data plane. The DetNet service Associated Channel can be used to carry test packets of active Operations, Administration, and Maintenance (OAM) protocols that are used to detect DetNet failures and measure performance metrics.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9546"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9546"/>
+        </reference>
+      </references>
+      <references pn="section-8.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="IEEE8021CB" quoteTitle="true" target="https://doi.org/10.1109/IEEESTD.2017.8091139" derivedAnchor="IEEE8021CB">
+          <front>
+            <title>IEEE Standard for Local and metropolitan area networks -- Frame Replication and Elimination for Reliability</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date month="October" year="2017"/>
+          </front>
+          <seriesInfo name="IEEE Std" value="802.1CB-2017"/>
+          <seriesInfo name="DOI" value="10.1109/IEEESTD.2017.8091139"/>
+        </reference>
+        <reference anchor="IEEE8021CBcv" quoteTitle="true" target="https://doi.org/10.1109/IEEESTD.2022.9715061" derivedAnchor="IEEE8021CBcv">
+          <front>
+            <title>IEEE Standard for Local and metropolitan area networks -- Frame Replication and Elimination for Reliability - Amendment 1: Information Model, YANG Data Model, and Management Information Base Module</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date month="February" year="2022"/>
+          </front>
+          <refcontent>Amendment to IEEE Std 802.1CB-2017</refcontent>
+          <seriesInfo name="IEEE Std" value="802.1CBcv-2021"/>
+          <seriesInfo name="DOI" value="10.1109/IEEESTD.2022.9715061"/>
+        </reference>
+        <reference anchor="RFC9550" target="https://www.rfc-editor.org/info/rfc9550" quoteTitle="true" derivedAnchor="RFC9550">
+          <front>
+            <title>Deterministic Networking (DetNet): Packet Ordering Function</title>
+            <author fullname="B. Varga" initials="B." role="editor" surname="Varga"/>
+            <author fullname="J. Farkas" initials="J." surname="Farkas"/>
+            <author fullname="S. Kehrer" initials="S." surname="Kehrer"/>
+            <author fullname="T. Heer" initials="T." surname="Heer"/>
+            <date month="March" year="2024"/>
+            <abstract>
+              <t indent="0">The replication and elimination functions of the Deterministic Networking (DetNet) architecture can result in out-of-order packets, which is not acceptable for some time-sensitive applications. The Packet Ordering Function (POF) algorithms described in this document enable restoration of the correct packet order when the replication and elimination functions are used in DetNet networks. The POF only provides ordering within the latency bound of a DetNet flow; it does not provide any additional reliability.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9550"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9550"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="acks" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">
+   Authors extend their appreciation to <contact fullname="Stewart Bryant"/>, <contact fullname="Pascal Thubert"/>, <contact fullname="David Black"/>, 
+   <contact fullname="Shirley Yangfan"/>, and <contact fullname="Greg Mirsky"/> for their insightful comments and productive 
+   discussion that helped to improve the document.
+      </t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Balazs Varga" initials="B." surname="Varga">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <street>Magyar Tudosok krt. 11.</street>
+            <city>Budapest</city>
+            <country>Hungary</country>
+            <code>1117</code>
+          </postal>
+          <email>balazs.a.varga@ericsson.com</email>
+        </address>
+      </author>
+      <author fullname="Janos Farkas" initials="J." surname="Farkas">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <street>Magyar Tudosok krt. 11.</street>
+            <city>Budapest</city>
+            <country>Hungary</country>
+            <code>1117</code>
+          </postal>
+          <email>janos.farkas@ericsson.com</email>
+        </address>
+      </author>
+      <author fullname="Andrew G. Malis" initials="A." surname="Malis">
+        <organization showOnFrontPage="true">Malis Consulting</organization>
+        <address>
+          <email>agmalis@gmail.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

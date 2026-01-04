@@ -1,0 +1,1931 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-regext-rdap-openid-27" number="9560" ipr="trust200902" tocInclude="true" tocDepth="4" sortRefs="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2024-04-26T10:26:54" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-regext-rdap-openid-27" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9560" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="OIDC for RDAP">Federated Authentication for the Registration Data Access Protocol (RDAP) Using OpenID Connect</title>
+    <seriesInfo name="RFC" value="9560" stream="IETF"/>
+    <author initials="S." surname="Hollenbeck" fullname="Scott Hollenbeck">
+      <organization showOnFrontPage="true">Verisign Labs</organization>
+      <address>
+        <postal>
+          <street>12061 Bluemont Way</street>
+          <city>Reston</city>
+          <region>VA</region>
+          <code>20190</code>
+          <country>United States of America</country>
+        </postal>
+        <email>shollenbeck@verisign.com</email>
+        <uri>https://www.verisignlabs.com/</uri>
+      </address>
+    </author>
+    <date month="04" year="2024"/>
+    <area>art</area>
+    <workgroup>regext</workgroup>
+    <keyword>RDAP</keyword>
+    <keyword>Federated</keyword>
+    <keyword>Authentication</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">The Registration Data Access Protocol (RDAP) provides
+      Representational State Transfer (RESTful) web services to retrieve
+      registration metadata from domain name and regional internet
+      registries. RDAP allows a server to make access control decisions based
+      on client identity, and as such, it includes support for client
+      identification features provided by the Hypertext Transfer Protocol
+      (HTTP). Identification methods that require clients to obtain and manage
+      credentials from every RDAP server operator present management
+      challenges for both clients and servers, whereas a federated
+      authentication system would make it easier to operate and use RDAP
+      without the need to maintain server-specific client credentials. This
+      document describes a federated authentication system for RDAP based on
+      OpenID Connect.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9560" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-problem-statement">Problem Statement</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-approach">Approach</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-conventions-used-in-this-do">Conventions Used in This Document</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-federated-authentication-fo">Federated Authentication for RDAP</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-and-openid-connect">RDAP and OpenID Connect</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2.1.2">
+                  <li pn="section-toc.1-1.3.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.1.1"><xref derivedContent="3.1.1" format="counter" sectionFormat="of" target="section-3.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.2.1"><xref derivedContent="3.1.2" format="counter" sectionFormat="of" target="section-3.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-client-considerations">Client Considerations</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.3">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.3.1"><xref derivedContent="3.1.3" format="counter" sectionFormat="of" target="section-3.1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-overview">Overview</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.4">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.4.1"><xref derivedContent="3.1.4" format="counter" sectionFormat="of" target="section-3.1.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-authentication-and-aut">RDAP Authentication and Authorization Steps</xref></t>
+                    <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2.1.2.4.2">
+                      <li pn="section-toc.1-1.3.2.1.2.4.2.1">
+                        <t indent="0" pn="section-toc.1-1.3.2.1.2.4.2.1.1"><xref derivedContent="3.1.4.1" format="counter" sectionFormat="of" target="section-3.1.4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-provider-discovery">Provider Discovery</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.3.2.1.2.4.2.2">
+                        <t indent="0" pn="section-toc.1-1.3.2.1.2.4.2.2.1"><xref derivedContent="3.1.4.2" format="counter" sectionFormat="of" target="section-3.1.4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-authentication-request">Authentication Request</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.3.2.1.2.4.2.3">
+                        <t indent="0" pn="section-toc.1-1.3.2.1.2.4.2.3.1"><xref derivedContent="3.1.4.3" format="counter" sectionFormat="of" target="section-3.1.4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-end-user-authorization">End User Authorization</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.3.2.1.2.4.2.4">
+                        <t indent="0" pn="section-toc.1-1.3.2.1.2.4.2.4.1"><xref derivedContent="3.1.4.4" format="counter" sectionFormat="of" target="section-3.1.4.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-authorization-response-and-">Authorization Response and Validation</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.3.2.1.2.4.2.5">
+                        <t indent="0" pn="section-toc.1-1.3.2.1.2.4.2.5.1"><xref derivedContent="3.1.4.5" format="counter" sectionFormat="of" target="section-3.1.4.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-token-processing">Token Processing</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.3.2.1.2.4.2.6">
+                        <t indent="0" pn="section-toc.1-1.3.2.1.2.4.2.6.1"><xref derivedContent="3.1.4.6" format="counter" sectionFormat="of" target="section-3.1.4.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-delivery-of-user-informatio">Delivery of User Information</xref></t>
+                      </li>
+                    </ul>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.5">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.5.1"><xref derivedContent="3.1.5" format="counter" sectionFormat="of" target="section-3.1.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-specialized-claims-and-auth">Specialized Claims and Authorization Scope for RDAP</xref></t>
+                    <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2.1.2.5.2">
+                      <li pn="section-toc.1-1.3.2.1.2.5.2.1">
+                        <t indent="0" pn="section-toc.1-1.3.2.1.2.5.2.1.1"><xref derivedContent="3.1.5.1" format="counter" sectionFormat="of" target="section-3.1.5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-stated-purposes">Stated Purposes</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.3.2.1.2.5.2.2">
+                        <t indent="0" pn="section-toc.1-1.3.2.1.2.5.2.2.1"><xref derivedContent="3.1.5.2" format="counter" sectionFormat="of" target="section-3.1.5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-do-not-track">Do Not Track</xref></t>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-common-protocol-features">Common Protocol Features</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-openid-connect-configuratio">OpenID Connect Configuration</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-query-parameters">RDAP Query Parameters</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2.2.2">
+                  <li pn="section-toc.1-1.4.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.4.2.2.2.1.1"><xref derivedContent="4.2.1" format="counter" sectionFormat="of" target="section-4.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-query-purpose">RDAP Query Purpose</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.4.2.2.2.2.1"><xref derivedContent="4.2.2" format="counter" sectionFormat="of" target="section-4.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-do-not-track">RDAP Do Not Track</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.4.2.2.2.3.1"><xref derivedContent="4.2.3" format="counter" sectionFormat="of" target="section-4.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-parameter-processing">Parameter Processing</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-protocol-features-for-sessi">Protocol Features for Session-Oriented Clients</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-data-structures">Data Structures</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2.1.2">
+                  <li pn="section-toc.1-1.5.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.1.1"><xref derivedContent="5.1.1" format="counter" sectionFormat="of" target="section-5.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-session">Session</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.2.1"><xref derivedContent="5.1.2" format="counter" sectionFormat="of" target="section-5.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-device-info">Device Info</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-client-login">Client Login</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2.2.2">
+                  <li pn="section-toc.1-1.5.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.1.1"><xref derivedContent="5.2.1" format="counter" sectionFormat="of" target="section-5.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-end-user-identifier">End-User Identifier</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.2.1"><xref derivedContent="5.2.2" format="counter" sectionFormat="of" target="section-5.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-op-issuer-identifier">OP Issuer Identifier</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.3.1"><xref derivedContent="5.2.3" format="counter" sectionFormat="of" target="section-5.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-login-response">Login Response</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.2.2.4">
+                    <t indent="0" pn="section-toc.1-1.5.2.2.2.4.1"><xref derivedContent="5.2.4" format="counter" sectionFormat="of" target="section-5.2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-clients-with-limited-user-i">Clients with Limited User Interfaces</xref></t>
+                    <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2.2.2.4.2">
+                      <li pn="section-toc.1-1.5.2.2.2.4.2.1">
+                        <t indent="0" pn="section-toc.1-1.5.2.2.2.4.2.1.1"><xref derivedContent="5.2.4.1" format="counter" sectionFormat="of" target="section-5.2.4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ui-constrained-client-login">UI-Constrained Client Login</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.5.2.2.2.4.2.2">
+                        <t indent="0" pn="section-toc.1-1.5.2.2.2.4.2.2.1"><xref derivedContent="5.2.4.2" format="counter" sectionFormat="of" target="section-5.2.4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ui-constrained-client-login-">UI-Constrained Client Login Polling</xref></t>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.5.2.3">
+                <t indent="0" pn="section-toc.1-1.5.2.3.1"><xref derivedContent="5.3" format="counter" sectionFormat="of" target="section-5.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-session-status">Session Status</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.4">
+                <t indent="0" pn="section-toc.1-1.5.2.4.1"><xref derivedContent="5.4" format="counter" sectionFormat="of" target="section-5.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-session-refresh">Session Refresh</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.5">
+                <t indent="0" pn="section-toc.1-1.5.2.5.1"><xref derivedContent="5.5" format="counter" sectionFormat="of" target="section-5.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-client-logout">Client Logout</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.6">
+                <t indent="0" pn="section-toc.1-1.5.2.6.1"><xref derivedContent="5.6" format="counter" sectionFormat="of" target="section-5.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-request-sequencing">Request Sequencing</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-protocol-features-for-token">Protocol Features for Token-Oriented Clients</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-client-login-2">Client Login</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-client-queries">Client Queries</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.3">
+                <t indent="0" pn="section-toc.1-1.6.2.3.1"><xref derivedContent="6.3" format="counter" sectionFormat="of" target="section-6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-access-token-validation">Access Token Validation</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.4">
+                <t indent="0" pn="section-toc.1-1.6.2.4.1"><xref derivedContent="6.4" format="counter" sectionFormat="of" target="section-6.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-token-exchange">Token Exchange</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-query-processing">RDAP Query Processing</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-conformance">RDAP Conformance</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-extensions-registry">RDAP Extensions Registry</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-json-web-token-claims-regis">JSON Web Token Claims Registry</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.3">
+                <t indent="0" pn="section-toc.1-1.9.2.3.1"><xref derivedContent="9.3" format="counter" sectionFormat="of" target="section-9.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-query-purpose-registry">RDAP Query Purpose Registry</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.10.2">
+              <li pn="section-toc.1-1.10.2.1">
+                <t indent="0" pn="section-toc.1-1.10.2.1.1"><xref derivedContent="10.1" format="counter" sectionFormat="of" target="section-10.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-authentication-and-access-c">Authentication and Access Control</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="11" format="counter" sectionFormat="of" target="section-11"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.11.2">
+              <li pn="section-toc.1-1.11.2.1">
+                <t indent="0" pn="section-toc.1-1.11.2.1.1"><xref derivedContent="11.1" format="counter" sectionFormat="of" target="section-11.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.11.2.2">
+                <t indent="0" pn="section-toc.1-1.11.2.2.1"><xref derivedContent="11.2" format="counter" sectionFormat="of" target="section-11.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-address">Author's Address</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">The Registration Data Access Protocol (RDAP) provides 
+      Representational State Transfer (RESTful) web services to retrieve
+      registration metadata from domain name and regional internet
+      registries. RDAP allows a server to make access control decisions based
+      on client identity, and as such, it includes support for client
+      identification features provided by the Hypertext Transfer Protocol
+      (HTTP) <xref target="RFC9110" format="default" sectionFormat="of" derivedContent="RFC9110"/>.</t>
+      <t indent="0" pn="section-1-2">RDAP is specified in multiple documents, including "<xref target="RFC7480" format="title" sectionFormat="of" derivedContent="HTTP Usage in the Registration Data Access Protocol (RDAP)"/>" <xref target="RFC7480" format="default" sectionFormat="of" derivedContent="RFC7480"/>, "<xref target="RFC7481" format="title" sectionFormat="of" derivedContent="Security Services for the Registration Data Access Protocol (RDAP)"/>" <xref target="RFC7481" format="default" sectionFormat="of" derivedContent="RFC7481"/>, "<xref target="RFC9082" format="title" sectionFormat="of" derivedContent="Registration Data Access Protocol (RDAP) Query Format"/>" <xref target="RFC9082" format="default" sectionFormat="of" derivedContent="RFC9082"/>, and "<xref target="RFC9083" format="title" sectionFormat="of" derivedContent="JSON Responses for the Registration Data Access Protocol (RDAP)"/>" <xref target="RFC9083" format="default" sectionFormat="of" derivedContent="RFC9083"/>. <xref target="RFC7481" format="default" sectionFormat="of" derivedContent="RFC7481"/> describes client identification and authentication
+      services that can be used with RDAP, but it does not specify how any of
+      these services can (or should) be used with RDAP.</t>
+      <section anchor="problem" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-problem-statement">Problem Statement</name>
+        <t indent="0" pn="section-1.1-1">The conventional "username and password" authentication method does not scale well in the RDAP ecosystem. Assuming that all domain name and address registries will eventually provide RDAP service, it is impractical and inefficient for users to secure login credentials from the hundreds of different server operators. Authentication methods based on usernames and passwords do not provide information that describes the user in sufficient detail (while protecting the personal privacy of the user) for server operators to make fine-grained access control decisions based on the user's identity. The authentication system used for RDAP needs to address all of these needs.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-approach">Approach</name>
+        <t indent="0" pn="section-1.2-1">A basic level of RDAP service can be provided to users who possess an identifier issued by a recognized provider who can authenticate and validate the user. For example, the identifiers issued by social media services can be used. Users who require higher levels of service (and who are willing to share more information about themselves to gain access to that service) can secure identifiers from specialized providers who are or will be able to provide more detailed information about the user. Server operators can then make access control decisions based on the identification information provided by the user.</t>
+        <t indent="0" pn="section-1.2-2">A federated authentication system in which an RDAP server outsources identification and authentication services to a trusted identity provider would make it easier to operate and use RDAP by reusing existing identifiers to provide a basic level of access. It can also provide the ability to collect additional user identification information, and that information can be shared with the RDAP server operator with the consent of the user in order to help the server operator make access control decisions. This type of system allows an RDAP server to make access control decisions based on the nature of a query and the identity, authentication, and authorization information that is received from the identity provider. This document describes a federated authentication system for RDAP based on OpenID Connect <xref target="OIDC" format="default" sectionFormat="of" derivedContent="OIDC"/> that meets these needs.</t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-conventions-used-in-this-do">Conventions Used in This Document</name>
+      <t indent="0" pn="section-2-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>", "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as shown here.</t>
+      <t indent="0" pn="section-2-2">All of the HTTP requests described in this document that are sent from an RDAP client to an RDAP server use the HTTP GET method as specified in <xref target="RFC9110" format="default" sectionFormat="of" derivedContent="RFC9110"/>.</t>
+      <t indent="0" pn="section-2-3">Long lines in examples are wrapped using "The Single Backslash Strategy" described in <xref target="RFC8792" format="default" sectionFormat="of" derivedContent="RFC8792"/>.</t>
+    </section>
+    <section anchor="RDAP-FedAuth" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-federated-authentication-fo">Federated Authentication for RDAP</name>
+      <t indent="0" pn="section-3-1">RDAP itself does not include built-in security services. Instead, RDAP relies on features that are available in other protocol layers to provide needed security services including access control, authentication, authorization, availability, data confidentiality, data integrity, and identification. A description of each of these security services can be found in "<xref target="RFC4949" format="title" sectionFormat="of" derivedContent="Internet Security Glossary, Version 2"/>" <xref target="RFC4949" format="default" sectionFormat="of" derivedContent="RFC4949"/>. This document focuses on a federated authentication system for RDAP that provides services for authentication, authorization, and identification, allowing a server operator to make access control decisions. <xref section="3" target="RFC7481" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7481#section-3" derivedContent="RFC7481"/> describes general considerations for RDAP access control, authentication, and authorization.</t>
+      <t indent="0" pn="section-3-2">The conventional client-server authentication model requires clients to maintain distinct credentials for every RDAP server. This situation can become unwieldy as the number of RDAP servers increases. Federated authentication mechanisms allow clients to use one credential to access multiple RDAP servers and reduce client credential management complexity.</t>
+      <section anchor="RDAP-OIDC" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-rdap-and-openid-connect">RDAP and OpenID Connect</name>
+        <t indent="0" pn="section-3.1-1">OpenID Connect 1.0 <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/> is a decentralized, Single Sign-On (SSO) federated authentication system that allows users to access multiple web resources with one identifier instead of having to create multiple server-specific identifiers. Users acquire identifiers from OpenID Providers (OPs). Relying Parties (RPs) are applications (such as RDAP) that outsource their user authentication function to an OP. OpenID Connect is built on top of the authorization framework provided by the OAuth 2.0  protocol <xref target="RFC6749" format="default" sectionFormat="of" derivedContent="RFC6749"/>.</t>
+        <t indent="0" pn="section-3.1-2">The OAuth authorization framework describes a method for users to access protected web resources without having to hand out their credentials. Instead, clients are issued access tokens by OPs with the permission of the resource owners. Using OpenID Connect and OAuth, multiple RDAP servers can form a federation, and clients can access any server in the federation by providing one credential registered with any OP in that federation. The OAuth authorization framework is designed for use with HTTP and thus can be used with RDAP.</t>
+        <section anchor="terms" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.1">
+          <name slugifiedName="name-terminology">Terminology</name>
+          <t indent="0" pn="section-3.1.1-1">This document uses the following terminology.</t>
+          <t indent="0" pn="section-3.1.1-2">Terms defined by <xref target="RFC7480" format="default" sectionFormat="of" derivedContent="RFC7480"/>:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1.1-3">
+            <li pn="section-3.1.1-3.1">client</li>
+            <li pn="section-3.1.1-3.2">server</li>
+          </ul>
+          <t indent="0" pn="section-3.1.1-4">Terms defined by <xref target="RFC6749" format="default" sectionFormat="of" derivedContent="RFC6749"/>:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1.1-5">
+            <li pn="section-3.1.1-5.1">access token</li>
+            <li pn="section-3.1.1-5.2">authorization code</li>
+            <li pn="section-3.1.1-5.3">authorization endpoint</li>
+            <li pn="section-3.1.1-5.4">authorization grant</li>
+            <li pn="section-3.1.1-5.5">client authentication</li>
+            <li pn="section-3.1.1-5.6">client identifier</li>
+            <li pn="section-3.1.1-5.7">protected resource</li>
+            <li pn="section-3.1.1-5.8">refresh token</li>
+            <li pn="section-3.1.1-5.9">resource owner</li>
+            <li pn="section-3.1.1-5.10">resource server</li>
+            <li pn="section-3.1.1-5.11">token endpoint</li>
+          </ul>
+          <t indent="0" pn="section-3.1.1-6">Terms defined by <xref target="RFC7519" format="default" sectionFormat="of" derivedContent="RFC7519"/>:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1.1-7">
+            <li pn="section-3.1.1-7.1">claim name</li>
+            <li pn="section-3.1.1-7.2">claim value</li>
+            <li pn="section-3.1.1-7.3">JSON Web Token (JWT)</li>
+          </ul>
+          <t indent="0" pn="section-3.1.1-8">Terms defined by <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1.1-9">
+            <li pn="section-3.1.1-9.1">ID Token</li>
+            <li pn="section-3.1.1-9.2">UserInfo Endpoint</li>
+          </ul>
+          <t indent="0" pn="section-3.1.1-10">Term defined by <xref target="RFC9068" format="default" sectionFormat="of" derivedContent="RFC9068"/>:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1.1-11">
+            <li pn="section-3.1.1-11.1">JWT access token</li>
+          </ul>
+          <t indent="0" pn="section-3.1.1-12">Additional terms from Section 1.2 of the OpenID Connect Core specification are incorporated by reference.</t>
+          <t indent="0" pn="section-3.1.1-13">This document uses the terms "remote" and "default" to describe the relationship between an RDAP server and the OPs that it interacts with. A "remote" OP is one that is identified by the RDAP client by providing either an Issuer Identifier or an end-user identifier in a login request. Whether an Issuer Identifier or end-user identifier can be provided in the login request for the purposes of selecting an OP can be determined by retrieving the RDAP server's OIDC configuration details (see <xref target="openidcConfiguration" format="default" sectionFormat="of" derivedContent="Section 4.1"/>). A "default" OP is one that the RDAP server will use when the RDAP client does not provide an Issuer Identifier or an end-user identifier in the login request.</t>
+          <t indent="0" pn="section-3.1.1-14">This document uses the term "session" to describe a set of interactions between an RDAP client and an RDAP server during a given period of time. For session-oriented clients (see <xref target="client-cons" format="default" sectionFormat="of" derivedContent="Section 3.1.2"/>), the RDAP session is a typical HTTP session starting with a farv1_session/login request and ending with either a farv1_session/logout request (see <xref target="protocol" format="default" sectionFormat="of" derivedContent="Section 5"/> for a description of both path segments) or a timeout. For token-oriented clients (see Sections <xref target="client-cons" format="counter" sectionFormat="of" derivedContent="3.1.2"/> and <xref target="protocol-tokens" format="counter" sectionFormat="of" derivedContent="6"/>), the RDAP session corresponds to the lifespan of an authorization obtained from an OP and the corresponding access token, including any refreshed access tokens.</t>
+        </section>
+        <section anchor="client-cons" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.2">
+          <name slugifiedName="name-client-considerations">Client Considerations</name>
+          <t indent="0" pn="section-3.1.2-1">Clients that delegate OIDC authentication to an RDAP server as part of session-oriented interactions and can accept and process HTTP cookies <xref target="RFC6265" format="default" sectionFormat="of" derivedContent="RFC6265"/> to maintain the session are known as "session-oriented" clients. This type of RDAP client performs the role of a user agent <xref target="RFC9110" format="default" sectionFormat="of" derivedContent="RFC9110"/>. An RDAP server performs the role of an OpenID Connect Core Relying Party (RP). A web browser used to send queries directly to an RDAP server is an example of a session-oriented client. Specifications for this type of client can be found in <xref target="protocol" format="default" sectionFormat="of" derivedContent="Section 5"/>.</t>
+          <t indent="0" pn="section-3.1.2-2">Clients that perform OIDC authentication directly, taking the role of an RP in interactions with an OP and sending access tokens <xref target="RFC6749" format="default" sectionFormat="of" derivedContent="RFC6749"/> to an RDAP server to authorize RDAP queries, are known as "token-oriented" clients. An RDAP server performs resource server <xref target="RFC6749" format="default" sectionFormat="of" derivedContent="RFC6749"/> functions to verify the tokens received from the client and RP functions to retrieve information from the OP as necessary to make access control decisions. A web browser running JavaScript received from a web service that sends queries to an RDAP server directly or through its back-end web service is an example of a token-oriented client. Specifications for this type of client can be found in <xref target="protocol-tokens" format="default" sectionFormat="of" derivedContent="Section 6"/>.</t>
+          <t indent="0" pn="section-3.1.2-3">Clients <bcp14>MAY</bcp14> operate as either session-oriented or token-oriented clients, but they <bcp14>MUST</bcp14> do so consistently by not mixing token-oriented and session-oriented requests while interacting with an OP. Servers <bcp14>SHOULD</bcp14> support both types of client to maximize interoperability but <bcp14>MAY</bcp14> choose to support only one type of client as required by local policy or operating conditions. A server that does not support a particular client type will not support the protocol features (the data structures, path segments, parameters, and interactions) specified for that client type. Server signaling of supported client types is described in <xref target="openidcConfiguration" format="default" sectionFormat="of" derivedContent="Section 4.1"/>.</t>
+        </section>
+        <section anchor="overview" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.3">
+          <name slugifiedName="name-overview">Overview</name>
+          <t indent="0" pn="section-3.1.3-1">At a high level, RDAP authentication of a session-oriented client using OpenID Connect requires completion of the following steps:</t>
+          <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-3.1.3-2">
+	    <li pn="section-3.1.3-2.1" derivedCounter="1.">
+              <t indent="0" pn="section-3.1.3-2.1.1">An RDAP client sends an RDAP "help" query to an RDAP server
+              to determine the types and capabilities of the OPs
+              that are used by the RDAP server. This information is returned
+              in the "rdapConformance" section of the response. A value of
+              "farv1" indicates support for the extension described in this
+              specification. If one or more remote OPs are
+              supported, the RDAP client <bcp14>SHOULD</bcp14> evaluate the
+              additional information described in <xref target="openidcConfiguration" format="default" sectionFormat="of" derivedContent="Section 4.1"/> in order to discover the
+              capabilities of the RDAP server and optionally obtain the set of
+              supported OPs unless that information is available from a
+              trusted out-of-band source and has already been processed.</t>
+            </li>
+            <li pn="section-3.1.3-2.2" derivedCounter="2.">
+              <t indent="0" pn="section-3.1.3-2.2.1">An RDAP client sends an RDAP "login" request to an RDAP server as described in <xref target="client-login" format="default" sectionFormat="of" derivedContent="Section 5.2"/>.</t>
+            </li>
+            <li pn="section-3.1.3-2.3" derivedCounter="3.">
+              <t indent="0" pn="section-3.1.3-2.3.1">The RDAP server prepares an Authentication Request containing the desired request parameters.</t>
+            </li>
+            <li pn="section-3.1.3-2.4" derivedCounter="4.">
+              <t indent="0" pn="section-3.1.3-2.4.1">The RDAP server sends an Authentication Request to an OP authorization endpoint and redirects the RDAP client to the OP using an HTTP redirect.</t>
+            </li>
+            <li pn="section-3.1.3-2.5" derivedCounter="5.">
+              <t indent="0" pn="section-3.1.3-2.5.1">The OP authenticates the end user.</t>
+            </li>
+            <li pn="section-3.1.3-2.6" derivedCounter="6.">
+              <t indent="0" pn="section-3.1.3-2.6.1">The OP obtains end-user consent and authorization.</t>
+            </li>
+            <li pn="section-3.1.3-2.7" derivedCounter="7.">
+              <t indent="0" pn="section-3.1.3-2.7.1">The OP sends the RDAP client back to the RDAP server with an authorization code using an HTTP redirect.</t>
+            </li>
+            <li pn="section-3.1.3-2.8" derivedCounter="8.">
+              <t indent="0" pn="section-3.1.3-2.8.1">The RDAP server requests tokens using the authorization code at the OP's token endpoint.</t>
+            </li>
+            <li pn="section-3.1.3-2.9" derivedCounter="9.">
+              <t indent="0" pn="section-3.1.3-2.9.1">The RDAP server receives a response that contains an ID Token and access token in the response body.</t>
+            </li>
+            <li pn="section-3.1.3-2.10" derivedCounter="10.">
+              <t indent="0" pn="section-3.1.3-2.10.1">The RDAP server validates the tokens as described in <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/> and retrieves the claims associated with the end user's identity from the OP's UserInfo
+   Endpoint.</t>
+            </li>
+          </ol>
+          <t keepWithNext="true" indent="0" pn="section-3.1.3-3">The steps above can be described in a sequence diagram:</t>
+          <figure anchor="sequence_diagram_session" align="left" suppress-title="false" pn="figure-1">
+            <artwork align="left" pn="section-3.1.3-4.1">
+End          OpenID         RDAP                 RDAP
+User        Provider       Client               Server
+  |             |             |                    |
+  |             |             |-----Help Query----&gt;|
+  |             |             |                    |
+  |             |             |&lt;---Help Response---|
+  |             |             |                    |
+  |-------Login Request------&gt;|                    |
+  |             |             |                    |
+  |             |             |---Login Request---&gt;|
+  |             |             |                    |
+  |             |&lt;-----Authentication Request------|
+  |             |             |                    |
+  | Credential--|             |                    |
+  |&lt;--Request   |             |                    |
+  |             |             |                    |
+  |--Credential |             |                    |
+  |   Response-&gt;|             |                    |
+  |             |             |                    |
+  |             |-----Authentication Response-----&gt;|
+  |             |             |                    |
+  |             |&lt;----------Token Request----------|
+  |             |             |                    |
+  |             |-----------Token Response--------&gt;|
+  |             |             |                    |
+  |             |&lt;----------Claim Request----------|
+  |             |             |                    |
+  |             |-----------Claim Response--------&gt;|
+  |             |             |                    |
+  |             |             |&lt;--Login Response---|
+  |             |             |                    |
+  |&lt;------Login Response------|                    |
+  |             |             |                    |
+  |----------RDAP Query------&gt;|                    |
+  |             |             |                    |
+  |             |             |-----RDAP Query----&gt;|
+  |             |             |                    |
+  |             |             |&lt;---RDAP Response---|
+  |             |             |                    |
+  |&lt;------RDAP Response-------|                    |</artwork>
+          </figure>
+          <t indent="0" pn="section-3.1.3-5">The RDAP server can then make identification, authorization, and access control decisions based on end-user identity information and local policies. Note that OpenID Connect describes different process flows for other types of clients, such as script-based or command-line clients.</t>
+          <t indent="0" pn="section-3.1.3-6">RDAP authentication of a token-oriented client using OpenID Connect requires completion of the following steps:</t>
+          <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-3.1.3-7"><li pn="section-3.1.3-7.1" derivedCounter="1.">
+              <t indent="0" pn="section-3.1.3-7.1.1">An RDAP client sends an RDAP "help" query to an RDAP server to determine the type and capabilities of the OPs that are used by the RDAP server. This information is returned in the "rdapConformance" section of the response. A value of "farv1" indicates support for the extension described in this specification. If one or more remote OPs are supported, the RDAP client <bcp14>SHOULD</bcp14> evaluate the additional information described in <xref target="openidcConfiguration" format="default" sectionFormat="of" derivedContent="Section 4.1"/> in order to discover the capabilities of the RDAP server and optionally obtain the set of supported OPs. Support for token-oriented clients requires a default OP.</t>
+            </li>
+            <li pn="section-3.1.3-7.2" derivedCounter="2.">
+              <t indent="0" pn="section-3.1.3-7.2.1">The RDAP client determines the end user's OP and confirms that it's supported by the RDAP server.</t>
+            </li>
+            <li pn="section-3.1.3-7.3" derivedCounter="3.">
+              <t indent="0" pn="section-3.1.3-7.3.1">The RDAP client sends an Authentication Request to the OP's authorization endpoint.</t>
+            </li>
+            <li pn="section-3.1.3-7.4" derivedCounter="4.">
+              <t indent="0" pn="section-3.1.3-7.4.1">The OP authenticates the end user.</t>
+            </li>
+            <li pn="section-3.1.3-7.5" derivedCounter="5.">
+              <t indent="0" pn="section-3.1.3-7.5.1">The OP obtains end-user consent or authorization.</t>
+            </li>
+            <li pn="section-3.1.3-7.6" derivedCounter="6.">
+              <t indent="0" pn="section-3.1.3-7.6.1">The OP returns an authorization code to the RDAP client.</t>
+            </li>
+            <li pn="section-3.1.3-7.7" derivedCounter="7.">
+              <t indent="0" pn="section-3.1.3-7.7.1">The RDAP client requests tokens using the authorization code at the OP's token endpoint.</t>
+            </li>
+            <li pn="section-3.1.3-7.8" derivedCounter="8.">
+              <t indent="0" pn="section-3.1.3-7.8.1">The RDAP client receives a response that contains an ID Token and an access token in the response body.</t>
+            </li>
+            <li pn="section-3.1.3-7.9" derivedCounter="9.">
+              <t indent="0" pn="section-3.1.3-7.9.1">The RDAP client monitors the token validity period and either refreshes the token or requests new tokens as necessary.</t>
+            </li>
+            <li pn="section-3.1.3-7.10" derivedCounter="10.">
+              <t indent="0" pn="section-3.1.3-7.10.1">The RDAP client sends queries that require user identification, authentication, and authorization to an RDAP server that include an access token in an HTTP "authorization" header using the "bearer" authentication scheme described in <xref target="RFC6750" format="default" sectionFormat="of" derivedContent="RFC6750"/>.</t>
+            </li>
+            <li pn="section-3.1.3-7.11" derivedCounter="11.">
+              <t indent="0" pn="section-3.1.3-7.11.1">The RDAP server validates the access token and retrieves the claims associated with the end user's identity from the OP's UserInfo Endpoint.</t>
+            </li>
+            <li pn="section-3.1.3-7.12" derivedCounter="12.">
+              <t indent="0" pn="section-3.1.3-7.12.1">The RDAP server determines the end user's authorization level and processes the query in accordance with server policies.</t>
+            </li>
+          </ol>
+          <t keepWithNext="true" indent="0" pn="section-3.1.3-8">The steps above can be described in a sequence diagram:</t>
+          <figure anchor="sequence_diagram_token" align="left" suppress-title="false" pn="figure-2">
+            <artwork align="left" pn="section-3.1.3-9.1">
+End          OpenID         RDAP                 RDAP
+User        Provider       Client               Server
+  |             |             |                    |
+  |             |             |-----Help Query----&gt;|
+  |             |             |                    |
+  |             |             |&lt;----Help Response--|
+  |             |             |                    |
+  |-------Login Request------&gt;|                    |
+  |             |             |                    |
+  |             |&lt;-Authentication                  |
+  |             |   Request---|                    |
+  |             |             |                    |
+  |&lt;-Credential |             |                    |
+  |   Request---|             |                    |
+  |             |             |                    |
+  |--Credential |             |                    |
+  |   Response-&gt;|             |                    |
+  |             |             |                    |
+  |             |--Authentication                  |
+  |             | Response---&gt;|                    |
+  |             |             |                    |
+  |             |&lt;-Token      |                    |
+  |             |  Request----|                    |
+  |             |             |                    |
+  |             |--Token      |                    |
+  |             |  Response--&gt;|                    |
+  |             |             |                    |
+  |&lt;------Login Response------|                    |
+  |             |             |                    |
+  |-----RDAP Query-----------&gt;|                    |
+  |             |             |                    |
+  |             |             |----RDAP Query-----&gt;|
+  |             |             |                    |
+  |             |&lt;------------Claim                |
+  |             |            Request---------------|
+  |             |             |                    |
+  |             |-------------Claim                |
+  |             |            Response-------------&gt;|
+  |             |             |                    |
+  |             |             |&lt;---RDAP Response---|
+  |             |             |                    |
+  |&lt;----RDAP Response---------|                    |</artwork>
+          </figure>
+        </section>
+        <section anchor="process" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.4">
+          <name slugifiedName="name-rdap-authentication-and-aut">RDAP Authentication and Authorization Steps</name>
+          <t indent="0" pn="section-3.1.4-1">End users <bcp14>MAY</bcp14> present an identifier (an OpenID) issued by an OP to use OpenID Connect with RDAP. If the RDAP server supports a default OP or if provider discovery is not supported, the end-user identifier <bcp14>MAY</bcp14> be omitted. An OP <bcp14>SHOULD</bcp14> include support for the claims described in <xref target="rdap-claims" format="default" sectionFormat="of" derivedContent="Section 3.1.5"/> to provide additional information needed for RDAP end-user authorization; in the absence of these claims, clients and servers <bcp14>MAY</bcp14> make authorization and access control decisions as appropriate given any other information returned from the OP. OpenID Connect requires RPs to register with OPs to use OpenID Connect services for an end user. The registration process is often completed using out-of-band methods, but it is also possible to use the automated method described by the OpenID Connect Dynamic Client Registration protocol <xref target="OIDCR" format="default" sectionFormat="of" derivedContent="OIDCR"/>. The parties involved can use any method that is mutually acceptable.</t>
+          <section anchor="discovery" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.4.1">
+            <name slugifiedName="name-provider-discovery">Provider Discovery</name>
+            <t indent="0" pn="section-3.1.4.1-1">An RDAP server acting as an RP needs to be able to map an end user's identifier to an OP. This can be accomplished using the <bcp14>OPTIONAL</bcp14> OpenID Connect Discovery protocol <xref target="OIDCD" format="default" sectionFormat="of" derivedContent="OIDCD"/>, but that protocol is not widely implemented. Out-of-band methods are also possible and can be more dependable. For example, an RP can support a limited number of OPs and maintain internal associations of those identifiers with the OPs that issued them.</t>
+            <t indent="0" pn="section-3.1.4.1-2">Alternatively, if mapping an end user's identifier is not possible, or not supported by the RDAP server, the RDAP server <bcp14>SHOULD</bcp14> support explicit specification of a remote OP by the RDAP client in the form of a query parameter as described in <xref target="issuer-identifier" format="default" sectionFormat="of" derivedContent="Section 5.2.2"/> unless the remote OP has been identified using an out-of-band mechanism. An RDAP server <bcp14>MUST</bcp14> provide information about its capabilities and supported OPs in the "help" query response in the "farv1_openidcConfiguration" data structure described in <xref target="openidcConfiguration" format="default" sectionFormat="of" derivedContent="Section 4.1"/>. An RDAP server acting as an RP <bcp14>MUST</bcp14> support at least one of these methods of OP discovery.</t>
+          </section>
+          <section anchor="auth-request" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.4.2">
+            <name slugifiedName="name-authentication-request">Authentication Request</name>
+            <t indent="0" pn="section-3.1.4.2-1">Once the OP is known, an RP <bcp14>MUST</bcp14> form an Authentication Request and send it to the OP as described in Section 3 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>. The authentication path followed (authorization, implicit, or hybrid) will depend on the Authentication Request response_type set by the RP. The remainder of the processing steps described here assume that the authorization code flow is being used by setting "response_type=code" in the Authentication Request.</t>
+            <t indent="0" pn="section-3.1.4.2-2">The benefits of using the authorization code flow for authenticating a human user are described in Section 3.1 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>. The Implicit Flow is more commonly used by clients implemented in a web browser using a scripting language; it is described in Section 3.2 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>. At the time of this writing, the Implicit Flow is considered insecure and efforts are being made to deprecate the flow. The Hybrid Flow (described in Section 3.3 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>) combines elements of the authorization code and Implicit Flows by returning some tokens from the authorization endpoint and others from the token endpoint.</t>
+            <t indent="0" pn="section-3.1.4.2-3">An Authentication Request can contain several parameters. <bcp14>REQUIRED</bcp14> parameters are specified in Section 3.1.2.1 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>. Apart from these parameters, it is <bcp14>RECOMMENDED</bcp14> that the RP include the optional "login_hint" parameter in the request, with the value being that of the "farv1_id" query parameter of the end user's RDAP "login" request, if provided. Passing the "login_hint" parameter allows a client to pre-fill login form information, so logging in can be more convenient for users. Other parameters <bcp14>MAY</bcp14> be included.</t>
+            <t indent="0" pn="section-3.1.4.2-4">The OP receives the Authentication Request and attempts to validate it as described in Section 3.1.2.2 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>. If the request is valid, the OP attempts to authenticate the end user as described in Section 3.1.2.3 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>. The OP returns an error response if the request is not valid or if any error is encountered.</t>
+          </section>
+          <section anchor="End-User-auth" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.4.3">
+            <name slugifiedName="name-end-user-authorization">End User Authorization</name>
+            <t indent="0" pn="section-3.1.4.3-1">After the end user is authenticated, the OP <bcp14>MUST</bcp14> obtain consent from the end user to release authorization information to the RDAP server acting as an RP. This process is described in Section 3.1.2.4 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>.</t>
+          </section>
+          <section anchor="auth-valid" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.4.4">
+            <name slugifiedName="name-authorization-response-and-">Authorization Response and Validation</name>
+            <t indent="0" pn="section-3.1.4.4-1">After obtaining an authorization result, the OP will send a response to the RP that provides the result of the authorization process using an authorization code. The RP <bcp14>MUST</bcp14> validate the response. This process is described in Sections 3.1.2.5 - 3.1.2.7 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>.</t>
+          </section>
+          <section anchor="tokens" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.4.5">
+            <name slugifiedName="name-token-processing">Token Processing</name>
+            <t indent="0" pn="section-3.1.4.5-1">The RP sends a token request using the authorization grant to a token endpoint to obtain a token response containing an access token, ID Token, and an <bcp14>OPTIONAL</bcp14> refresh token. The RP <bcp14>MUST</bcp14> validate the token response. This process is described in Section 3.1.3.5 <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>.</t>
+          </section>
+          <section anchor="user-info" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.4.6">
+            <name slugifiedName="name-delivery-of-user-informatio">Delivery of User Information</name>
+            <t indent="0" pn="section-3.1.4.6-1">The set of claims can be retrieved by sending a request to a UserInfo Endpoint using the access token. The claims are returned in the ID Token. The process of retrieving claims from a UserInfo Endpoint is described in Section 5.3 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>.</t>
+            <t indent="0" pn="section-3.1.4.6-2">OpenID Connect specifies a set of standard claims in Section 5.1 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>. Additional claims for RDAP are described in <xref target="rdap-claims" format="default" sectionFormat="of" derivedContent="Section 3.1.5"/>.</t>
+          </section>
+        </section>
+        <section anchor="rdap-claims" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.5">
+          <name slugifiedName="name-specialized-claims-and-auth">Specialized Claims and Authorization Scope for RDAP</name>
+          <t indent="0" pn="section-3.1.5-1">OpenID Connect claims are pieces of information used to make assertions about an entity. Section 5 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/> describes a set of standard claims. Section 5.1.2 of <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/> notes that additional claims <bcp14>MAY</bcp14> be used, and it describes a method to create them. The set of claims that are specific to RDAP are associated with an OAuth scope request parameter value (see <xref section="3.3" target="RFC6749" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6749#section-3.3" derivedContent="RFC6749"/>) of "rdap".</t>
+          <section anchor="stated-purposes" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.5.1">
+            <name slugifiedName="name-stated-purposes">Stated Purposes</name>
+            <t indent="0" pn="section-3.1.5.1-1">Communities of RDAP users and operators may wish to make and validate claims about a user's "need to know" when it comes to requesting access to a protected resource. For example, a law enforcement agent or a trademark attorney may wish to be able to assert that they have a legal right to access a protected resource, and a server operator may need to be able to receive and validate that claim. These needs can be met by defining and using an additional "rdap_allowed_purposes" claim.</t>
+            <t indent="0" pn="section-3.1.5.1-2">The "rdap_allowed_purposes" claim identifies the purposes for which access to a protected resource can be requested by an end user. Use of the "rdap_allowed_purposes" claim is <bcp14>OPTIONAL</bcp14>; processing of this claim is subject to server acceptance of the purposes, the trust level assigned to this claim by the server, and successful authentication of the end user. Unrecognized purpose values <bcp14>MUST</bcp14> be ignored, and the associated query <bcp14>MUST</bcp14> be processed as if the unrecognized purpose value was not present at all. See <xref target="purpose-registry" format="default" sectionFormat="of" derivedContent="Section 9.3"/> for a description of the IANA considerations associated with this claim.</t>
+            <t indent="0" pn="section-3.1.5.1-3">The "rdap_allowed_purposes" claim is represented as an array of case-sensitive StringOrURI values as specified in <xref section="2" target="RFC7519" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7519#section-2" derivedContent="RFC7519"/>. An example:</t>
+            <t indent="0" pn="section-3.1.5.1-4">"rdap_allowed_purposes": ["domainNameControl","dnsTransparency"]</t>
+            <t indent="0" pn="section-3.1.5.1-5">Purpose values are assigned to an end user's credential by an identity provider. Identity providers <bcp14>MUST</bcp14> ensure that appropriate purpose values are only assigned to end user identities that are authorized to use them.</t>
+          </section>
+          <section anchor="rdap_dnt_allowed" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.5.2">
+            <name slugifiedName="name-do-not-track">Do Not Track</name>
+            <t indent="0" pn="section-3.1.5.2-1">Communities of RDAP users and operators may wish to make and validate claims about a user's wish to not have their queries logged, tracked, or recorded. For example, a law enforcement agent may wish to assert that their queries are part of a criminal investigation and should not be tracked due to a risk of query exposure compromising the investigation, and a server operator may need to be able to receive and validate that claim. These needs can be met by defining and using an additional "do not track" claim.</t>
+            <t indent="0" pn="section-3.1.5.2-2">The "do not track" ("rdap_dnt_allowed") claim can be used to identify an end user that is authorized to perform queries without the end user's association with those queries being logged, tracked, or recorded by the server. Client use of the "rdap_dnt_allowed" claim is <bcp14>OPTIONAL</bcp14>. Server operators <bcp14>MUST NOT</bcp14> log, track, or record any association of the query and the end user's identity if the end user is successfully identified and authorized, if the "rdap_dnt_allowed" claim is present, if the value of the claim is "true", and if accepting the claim complies with local regulations regarding logging and tracking.</t>
+            <t indent="0" pn="section-3.1.5.2-3">The "rdap_dnt_allowed" value is represented as a JSON boolean literal. An example:</t>
+            <t indent="0" pn="section-3.1.5.2-4">rdap_dnt_allowed: true</t>
+            <t indent="0" pn="section-3.1.5.2-5">No special query tracking processing is required if this claim is not present or if the value of the claim is "false". Use of this claim <bcp14>MUST</bcp14> be limited to end users who are granted "do not track" privileges in accordance with service policies and regulations. Specification of these policies and regulations is beyond the scope of this document.</t>
+          </section>
+        </section>
+      </section>
+    </section>
+    <section anchor="protocol-common" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-common-protocol-features">Common Protocol Features</name>
+      <t indent="0" pn="section-4-1">As described in <xref target="discovery" format="default" sectionFormat="of" derivedContent="Section 3.1.4.1"/>, an RDAP server <bcp14>MUST</bcp14> provide information about its capabilities and supported OPs in a "help" query response. This specification describes a new "farv1_openidcConfiguration" data structure that describes the OpenID Connect configuration and related extension features supported by the RDAP server. This data structure is returned to all client types.</t>
+      <section anchor="openidcConfiguration" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-openid-connect-configuratio">OpenID Connect Configuration</name>
+        <t indent="0" pn="section-4.1-1">The "farv1_openidcConfiguration" data structure is an object with
+        the following members:</t>
+        <dl spacing="normal" newline="false" indent="3" pn="section-4.1-2">
+          <dt pn="section-4.1-2.1">"sessionClientSupported":</dt>
+          <dd pn="section-4.1-2.2">(<bcp14>REQUIRED</bcp14>) a boolean value that describes RDAP
+	    server support for session-oriented clients (see <xref target="client-cons" format="default" sectionFormat="of" derivedContent="Section 3.1.2"/>).</dd>
+          <dt pn="section-4.1-2.3">"tokenClientSupported":</dt>
+          <dd pn="section-4.1-2.4">(<bcp14>REQUIRED</bcp14>) a boolean value that describes RDAP
+	    server support for token-oriented clients (see <xref target="client-cons" format="default" sectionFormat="of" derivedContent="Section 3.1.2"/>).</dd>
+          <dt pn="section-4.1-2.5">"dntSupported":</dt>
+          <dd pn="section-4.1-2.6">(<bcp14>REQUIRED</bcp14>) a boolean value that describes RDAP
+	    server support for the "farv1_dnt" query parameter (see <xref target="rdap-do-not-track" format="default" sectionFormat="of" derivedContent="Section 4.2.2"/>).</dd>
+          <dt pn="section-4.1-2.7">"providerDiscoverySupported":</dt>
+          <dd pn="section-4.1-2.8">(<bcp14>OPTIONAL</bcp14>) a boolean value that describes RDAP
+	    server support for discovery of providers of end-user
+	    identifiers. The default value is "true".</dd>
+          <dt pn="section-4.1-2.9">"issuerIdentifierSupported":</dt>
+          <dd pn="section-4.1-2.10">(<bcp14>OPTIONAL</bcp14>) a boolean value that describes RDAP
+	    server support for explicit client specification of an Issuer
+	    Identifier. The default value is "true".</dd>
+          <dt pn="section-4.1-2.11">"implicitTokenRefreshSupported":</dt>
+          <dd pn="section-4.1-2.12">(<bcp14>OPTIONAL</bcp14>) a boolean value that describes RDAP
+	    server support for implicit token refresh. The default value is
+	    "false".</dd>
+          <dt pn="section-4.1-2.13">"openidcProviders":</dt>
+          <dd pn="section-4.1-2.14">
+            <t indent="0" pn="section-4.1-2.14.1">(<bcp14>OPTIONAL</bcp14>) a list of objects with the
+	    following members that describes the set of OPs that are supported
+	    by the RDAP server. This data is <bcp14>RECOMMENDED</bcp14> if the
+	    value of issuerIdentifierSupported is "true":</t>
+            <dl spacing="normal" newline="false" indent="3" pn="section-4.1-2.14.2">
+              <dt pn="section-4.1-2.14.2.1">"iss":</dt>
+              <dd pn="section-4.1-2.14.2.2">(<bcp14>REQUIRED</bcp14>) a URI value that represents the
+		Issuer Identifier of the OP as per the OpenID Connect Core
+		specification <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>.</dd>
+              <dt pn="section-4.1-2.14.2.3">"name":</dt>
+              <dd pn="section-4.1-2.14.2.4">(<bcp14>REQUIRED</bcp14>) a string value representing the
+		human-friendly name of the OP.</dd>
+              <dt pn="section-4.1-2.14.2.5">"default":</dt>
+              <dd pn="section-4.1-2.14.2.6">(<bcp14>OPTIONAL</bcp14>) a boolean value that describes
+		RDAP server support for an <bcp14>OPTIONAL</bcp14> default OP
+		that will be used when a client omits the "farv1_id" and
+		"farv1_iss" query parameters from a "farv1_session/login"
+		request. Only one member of this set can be identified as the
+		default OP by setting a value of "true". The default value is
+		"false".</dd>
+              <dt pn="section-4.1-2.14.2.7">"additionalAuthorizationQueryParams":</dt>
+              <dd pn="section-4.1-2.14.2.8">(<bcp14>OPTIONAL</bcp14>) an object where each member
+                represents an OAuth authorization request parameter name-value
+                pair supported by the OP. The name represents an OAuth query
+                parameter, and the value is the query parameter value. A
+                token-oriented RDAP client <bcp14>SHOULD</bcp14> add these
+                query parameters and their corresponding values to the
+                Authentication Request URL when requesting authorization by a
+                specified OP through a proxy OP.</dd>
+            </dl>
+          </dd>
+        </dl>
+        <t indent="0" pn="section-4.1-3">An RDAP server <bcp14>MUST</bcp14> set either the "sessionClientSupported" or the "tokenClientSupported" value to "true". Both values <bcp14>MAY</bcp14> be set to "true" if an RDAP server supports both types of clients.</t>
+        <t indent="0" pn="section-4.1-4">The "providerDiscoverySupported" value has a direct impact on the use of the "farv1_id" query parameter described in Sections <xref target="auth-request" format="counter" sectionFormat="of" derivedContent="3.1.4.2"/> and <xref target="end-user-identifier" format="counter" sectionFormat="of" derivedContent="5.2.1"/>. The value of "providerDiscoverySupported" <bcp14>MUST</bcp14> be "true" for an RDAP server to properly accept and process "farv1_id" query parameters. Similarly, the "issuerIdentifierSupported" value has a direct impact on the use of the "farv1_iss" query parameter described in <xref target="issuer-identifier" format="default" sectionFormat="of" derivedContent="Section 5.2.2"/>. The value of "issuerIdentifierSupported" <bcp14>MUST</bcp14> be "true" for an RDAP server to properly accept and process "farv1_iss" query parameters.</t>
+        <t keepWithNext="true" indent="0" pn="section-4.1-5">An example of a "farv1_openidcConfiguration" data structure:</t>
+        <figure anchor="example_openidcConfiguration_structure" align="left" suppress-title="false" pn="figure-3">
+          <artwork align="left" pn="section-4.1-6.1">
+"farv1_openidcConfiguration": {
+  "sessionClientSupported": true,
+  "tokenClientSupported": true,
+  "dntSupported": false,
+  "providerDiscoverySupported": true,
+  "issuerIdentifierSupported": true,
+  "openidcProviders":
+    [
+      {
+        "iss": "https://idp.example.com",
+        "name": "Example IDP"
+      },
+      {
+        "iss": "https://accounts.example.net",
+        "name": "Login with EXAMPLE",
+        "additionalAuthorizationQueryParams": {
+          "kc_idp_hint": "examplePublicIDP"
+        }
+      },
+      {
+        "iss": "https://auth.nic.example/auth/realms/rdap",
+        "name": "Default OP for the Example RDAP server",
+        "default": true
+      }
+    ]
+}</artwork>
+        </figure>
+      </section>
+      <section anchor="rdap-query-parameters" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-rdap-query-parameters">RDAP Query Parameters</name>
+        <t indent="0" pn="section-4.2-1">This specification describes two <bcp14>OPTIONAL</bcp14> query parameters for use with RDAP queries that request access to information associated with protected resources:</t>
+        <dl spacing="normal" newline="false" indent="3" pn="section-4.2-2">
+          <dt pn="section-4.2-2.1">"farv1_qp":</dt>
+          <dd pn="section-4.2-2.2">A query parameter to identify the purpose of the query.</dd>
+          <dt pn="section-4.2-2.3">"farv1_dnt":</dt>
+          <dd pn="section-4.2-2.4">A query parameter to request that the server not log or
+	  otherwise record information about the identity associated with a
+	  query.</dd>
+        </dl>
+        <t indent="0" pn="section-4.2-3">One or both parameters <bcp14>MAY</bcp14> be added to an RDAP request URI using the syntax described in Section "application/x-www-form-urlencoded" of <xref target="HTMLURL" format="default" sectionFormat="of" derivedContent="HTMLURL"/>.</t>
+        <section anchor="rdap-query-purpose" numbered="true" removeInRFC="false" toc="include" pn="section-4.2.1">
+          <name slugifiedName="name-rdap-query-purpose">RDAP Query Purpose</name>
+          <t indent="0" pn="section-4.2.1-1">This query is represented as a "key=value" pair using a key value of "farv1_qp" and a value component that contains a single query purpose string from the set of allowed purposes associated with the end user's identity (see <xref target="stated-purposes" format="default" sectionFormat="of" derivedContent="Section 3.1.5.1"/>). If present, the server <bcp14>SHOULD</bcp14> compare the value of the parameter to the "rdap_allowed_purposes" claim values associated with the end user's identity and ensure that the requested purpose is present in the set of allowed purposes. The RDAP server <bcp14>MAY</bcp14> choose to ignore both the requested purpose and the "rdap_allowed_purposes" claim values if they are inconsistent with local server policy. The server <bcp14>MUST</bcp14> return an HTTP 403 (Forbidden) response if the requested purpose is not an allowed purpose. If the "farv1_qp" parameter is not present, the server <bcp14>MUST</bcp14> process the query and make an access control decision based on any other information known to the server about the end user and the information they are requesting. For example, a server <bcp14>MAY</bcp14> treat the request as one performed by an unidentified or unauthenticated user and return either an error or an appropriate subset of the available data. An example domain query using the "farv1_qp" query parameter:</t>
+          <figure anchor="example_farv1_qp" align="left" suppress-title="false" pn="figure-4">
+            <artwork align="left" pn="section-4.2.1-2.1">
+https://example.com/rdap/domain/example.com?farv1_qp=legalActions
+</artwork>
+          </figure>
+        </section>
+        <section anchor="rdap-do-not-track" numbered="true" removeInRFC="false" toc="include" pn="section-4.2.2">
+          <name slugifiedName="name-rdap-do-not-track">RDAP Do Not Track</name>
+          <t indent="0" pn="section-4.2.2-1">This query is represented as a "key=value" pair using a key value of "farv1_dnt" and a value component that contains a single boolean value. A value of "true" indicates that the end user is requesting that their query is not tracked or logged in accordance with server policy. A value of "false" indicates that the end user is accepting that their query can be tracked or logged in accordance with server policy. The server <bcp14>MUST</bcp14> return an HTTP 403 (Forbidden) response if the server is unable to perform the action requested by this query parameter. An example domain query using the "farv1_dnt" query parameter:</t>
+          <figure anchor="example_farv1_dnt" align="left" suppress-title="false" pn="figure-5">
+            <artwork align="left" pn="section-4.2.2-2.1">
+https://example.com/rdap/domain/example.com?farv1_dnt=true
+</artwork>
+          </figure>
+        </section>
+        <section anchor="parameter-processing" numbered="true" removeInRFC="false" toc="include" pn="section-4.2.3">
+          <name slugifiedName="name-parameter-processing">Parameter Processing</name>
+          <t indent="0" pn="section-4.2.3-1">Unrecognized query parameters <bcp14>MUST</bcp14> be ignored. An RDAP server that processes an authenticated query <bcp14>MUST</bcp14> determine if the end-user identification information is associated with an OP that is recognized and supported by the server. RDAP servers <bcp14>MUST</bcp14> reject queries that include identification information that is not associated with a supported OP by returning an HTTP 400 (Bad Request) response. An RDAP server that receives a query containing identification information associated with a recognized OP <bcp14>MUST</bcp14> perform the steps required to authenticate the user with the OP, process the query, and return an RDAP response that is appropriate for the end user's level of authorization and access.</t>
+        </section>
+      </section>
+    </section>
+    <section anchor="protocol" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-protocol-features-for-sessi">Protocol Features for Session-Oriented Clients</name>
+      <t indent="0" pn="section-5-1">This specification adds the following features to RDAP that are commonly used by session-oriented clients:</t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-5-2"><li pn="section-5-2.1" derivedCounter="1.">
+          <t indent="0" pn="section-5-2.1.1">Data structures to return information that describes an established session and the information needed to establish a session for a UI-constrained device.</t>
+        </li>
+        <li pn="section-5-2.2" derivedCounter="2.">
+          <t indent="0" pn="section-5-2.2.1">A query parameter to request authentication for a specific end-user identity.</t>
+        </li>
+        <li pn="section-5-2.3" derivedCounter="3.">
+          <t indent="0" pn="section-5-2.3.1">A query parameter to support authentication for a specific end-user identity on a device with a constrained user interface.</t>
+        </li>
+        <li pn="section-5-2.4" derivedCounter="4.">
+          <t indent="0" pn="section-5-2.4.1">A query parameter to identify the purpose of the query.</t>
+        </li>
+        <li pn="section-5-2.5" derivedCounter="5.">
+          <t indent="0" pn="section-5-2.5.1">A query parameter to request that the server not log or otherwise record information about the identity associated with a query.</t>
+        </li>
+        <li pn="section-5-2.6" derivedCounter="6.">
+          <t indent="0" pn="section-5-2.6.1">Path segments to start, stop, refresh, and determine the status of an authenticated session for a specific end-user identity.</t>
+        </li>
+      </ol>
+      <section anchor="data-structures" numbered="true" removeInRFC="false" toc="include" pn="section-5.1">
+        <name slugifiedName="name-data-structures">Data Structures</name>
+        <t indent="0" pn="section-5.1-1">This specification describes two new data structures that are used to return information to a session-oriented client:</t>
+        <dl spacing="normal" newline="false" indent="3" pn="section-5.1-2">
+          <dt pn="section-5.1-2.1">"farv1_session":</dt>
+          <dd pn="section-5.1-2.2">A data structure that contains information that describes an established session.</dd>
+          <dt pn="section-5.1-2.3">"farv1_deviceInfo":</dt>
+          <dd pn="section-5.1-2.4">A data structure that contains information that describes an
+	  active attempt to establish a session on a UI-constrained
+	  device.</dd>
+        </dl>
+        <section anchor="session" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.1">
+          <name slugifiedName="name-session">Session</name>
+          <t indent="0" pn="section-5.1.1-1">The "farv1_session" data structure is an object that contains the following members:</t>
+          <dl spacing="normal" newline="false" indent="3" pn="section-5.1.1-2">
+            <dt pn="section-5.1.1-2.1">"userID":</dt>
+            <dd pn="section-5.1.1-2.2">an <bcp14>OPTIONAL</bcp14> string value that represents the
+	    end-user identifier associated with the session.</dd>
+            <dt pn="section-5.1.1-2.3">"iss":</dt>
+            <dd pn="section-5.1.1-2.4">an <bcp14>OPTIONAL</bcp14> URI value that represents the
+	    issuer of the end-user identifier associated with the
+	    session.</dd>
+            <dt pn="section-5.1.1-2.5">"userClaims":</dt>
+            <dd pn="section-5.1.1-2.6">an <bcp14>OPTIONAL</bcp14> object that contains the set of
+	    claims associated with the end user's identity based on the user
+	    information provided by the OP as described in <xref target="user-info" format="default" sectionFormat="of" derivedContent="Section 3.1.4.6"/> and processed by the RDAP server in the
+	    authentication and authorization process. The set of possible
+	    values is determined by OP policy and RDAP server policy.</dd>
+            <dt pn="section-5.1.1-2.7">"sessionInfo":</dt>
+            <dd pn="section-5.1.1-2.8">
+              <t indent="0" pn="section-5.1.1-2.8.1">an <bcp14>OPTIONAL</bcp14> object that contains two members:</t>
+              <dl spacing="normal" newline="false" indent="3" pn="section-5.1.1-2.8.2">
+                <dt pn="section-5.1.1-2.8.2.1">"tokenExpiration":</dt>
+                <dd pn="section-5.1.1-2.8.2.2">an integer value that represents the number of seconds
+		that remain in the lifetime of the access token.</dd>
+                <dt pn="section-5.1.1-2.8.2.3">"tokenRefresh":</dt>
+                <dd pn="section-5.1.1-2.8.2.4">a boolean value that indicates if the OP supports refresh
+		tokens. As described in <xref target="RFC6749" format="default" sectionFormat="of" derivedContent="RFC6749"/>, support for
+		refresh tokens is <bcp14>OPTIONAL</bcp14>.</dd>
+              </dl>
+            </dd>
+          </dl>
+          <t indent="0" pn="section-5.1.1-3">Note that all of the members of the "farv1_session" data structure are <bcp14>OPTIONAL</bcp14>. See <xref target="login-response" format="default" sectionFormat="of" derivedContent="Section 5.2.3"/> for instructions describing when to return the minimum set of members.</t>
+          <t keepWithNext="true" indent="0" pn="section-5.1.1-4">An example of a "farv1_session" data structure:</t>
+          <figure anchor="example_session_structure" align="left" suppress-title="false" pn="figure-6">
+            <artwork align="left" pn="section-5.1.1-5.1">
+  "farv1_session": {
+    "userID": "user.idp.example",
+    "iss": "https://idp.example.com",
+    "userClaims": {
+      "sub": "103892603076825016132",
+      "name": "User Person",
+      "given_name": "User",
+      "family_name": "Person",
+      "picture": "https://lh3.example.com/a-/AOh14=s96-c",
+      "email": "user@example.com",
+      "email_verified": true,
+      "locale": "en",
+      "rdap_allowed_purposes": [
+        "domainNameControl",
+        "personalDataProtection"
+      ],
+      "rdap_dnt_allowed": false
+    },
+    "sessionInfo": {
+      "tokenExpiration": 3599,
+      "tokenRefresh": true
+    }
+  }</artwork>
+          </figure>
+        </section>
+        <section anchor="deviceInfo" numbered="true" removeInRFC="false" toc="include" pn="section-5.1.2">
+          <name slugifiedName="name-device-info">Device Info</name>
+          <t indent="0" pn="section-5.1.2-1">The flow described in <xref target="process" format="default" sectionFormat="of" derivedContent="Section 3.1.4"/> requires an end user to interact with a server using a user interface that can process HTTP. This will not work well in situations where the client is automated or an end user is using a command-line user interface such as <eref target="https://curl.se/" brackets="none">curl</eref> or <eref target="https://www.gnu.org/software/wget/" brackets="none">wget</eref>. This limitation can be addressed using a web browser on a second device. The information that needs to be entered using the web browser is contained in the "farv1_deviceInfo" data structure, an object that contains members as described in <xref target="RFC8628" sectionFormat="of" section="3.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8628#section-3.2" derivedContent="RFC8628"/>.</t>
+          <t keepWithNext="true" indent="0" pn="section-5.1.2-2">An example of a "farv1_deviceInfo" data structure:</t>
+          <figure anchor="example_deviceInfo_structure" align="left" suppress-title="false" pn="figure-7">
+            <artwork align="left" pn="section-5.1.2-3.1">
+  "farv1_deviceInfo": {
+    "device_code": "AH-1ng2ezu",
+    "user_code": "NJJQ-GJFC",
+    "verification_uri": "https://www.example.com/device",
+    "verification_uri_complete":
+       "https://www.example.com/device?user_code=NJJQ-GJFC",
+    "expires_in": 1800,
+    "interval": 5
+  }</artwork>
+          </figure>
+        </section>
+      </section>
+      <section anchor="client-login" numbered="true" removeInRFC="false" toc="include" pn="section-5.2">
+        <name slugifiedName="name-client-login">Client Login</name>
+        <t indent="0" pn="section-5.2-1">Client authentication is requested by sending a "farv1_session/login" request to an RDAP server. If the RDAP server supports only remote OPs, the "farv1_session/login" request <bcp14>MUST</bcp14> include at least one end-user identifier or OP Issuer Identifier.</t>
+        <t indent="0" pn="section-5.2-2">The server sets an HTTP cookie as described in <xref target="RFC6265" format="default" sectionFormat="of" derivedContent="RFC6265"/> when the "farv1_session/login" request is received and processed successfully. The client <bcp14>MUST</bcp14> include the session cookie received from the server in any RDAP request within the scope of that session, including "farv1_session/refresh", "farv1_session/status", and "farv1_session/logout". A "farv1_session/login" followed by another "farv1_session/login" that does not include an HTTP cookie <bcp14>MUST</bcp14> start a new session on the server that includes a new cookie. A server that receives a "farv1_session/login" followed by another "farv1_session/login" that includes an HTTP cookie <bcp14>MUST</bcp14> return an HTTP 409 (Conflict) response.</t>
+        <t indent="0" pn="section-5.2-3">To help reduce the risk of resource starvation, a server <bcp14>MAY</bcp14> reject a "farv1_session/login" request and refuse to start a new session by returning an HTTP 409 (Conflict) response if a server-side maximum number of concurrent sessions per user exists and the client exceeds that limit. Additionally, an active session <bcp14>MAY</bcp14> be removed by the server due to timeout expiration or because a maximum session lifetime has been exceeded. Clients <bcp14>SHOULD</bcp14> proactively monitor the "tokenExpiration" value associated with an active session and refresh the session as appropriate to provide a positive user experience.</t>
+        <section anchor="end-user-identifier" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.1">
+          <name slugifiedName="name-end-user-identifier">End-User Identifier</name>
+          <t indent="0" pn="section-5.2.1-1">The end-user identifier is delivered using one of two methods: by adding a query component to an RDAP request URI using the syntax described in Section "application/x-www-form-urlencoded" of <xref target="HTMLURL" format="default" sectionFormat="of" derivedContent="HTMLURL"/> or by including an HTTP "authorization" request header for the Basic authentication scheme as described in <xref target="RFC7617" format="default" sectionFormat="of" derivedContent="RFC7617"/>. Clients can use either of these methods to deliver the end-user identifier to a server that supports remote OPs and provider discovery. Servers that support remote OPs and provider discovery <bcp14>MUST</bcp14> accept both methods. If the RDAP server supports a default OP or if provider discovery is not supported, the end-user identifier <bcp14>MAY</bcp14> be omitted.</t>
+          <t indent="0" pn="section-5.2.1-2">The query parameter used to deliver the end-user identifier is represented as an <bcp14>OPTIONAL</bcp14> "key=value" pair using a key value of "farv1_id" and a value component that contains the client identifier issued by an OP. An example for client identifier "user.idp.example":</t>
+          <figure anchor="example_client_identifier" align="left" suppress-title="false" pn="figure-8">
+            <artwork align="left" pn="section-5.2.1-3.1">
+========== NOTE: '\' line wrapping per RFC 8792 ===========
+https://example.com/rdap/farv1_session/\
+login?farv1_id=user.idp.example</artwork>
+          </figure>
+          <t indent="0" pn="section-5.2.1-4">The authorization header for the Basic authentication scheme contains a base64-encoded representation of the client identifier issued by an OP. No password is provided. An example for client identifier "user.idp.example":</t>
+          <figure anchor="example_base64" align="left" suppress-title="false" pn="figure-9">
+            <artwork align="left" pn="section-5.2.1-5.1">
+https://example.com/rdap/farv1_session/login
+Authorization: Basic dXNlci5pZHAuZXhhbXBsZQ==
+</artwork>
+          </figure>
+          <t indent="0" pn="section-5.2.1-6">An example for use with a default OP:</t>
+          <figure anchor="example_default_op" align="left" suppress-title="false" pn="figure-10">
+            <artwork align="left" pn="section-5.2.1-7.1">
+https://example.com/rdap/farv1_session/login
+</artwork>
+          </figure>
+        </section>
+        <section anchor="issuer-identifier" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.2">
+          <name slugifiedName="name-op-issuer-identifier">OP Issuer Identifier</name>
+          <t indent="0" pn="section-5.2.2-1">The OP's Issuer Identifier is delivered by adding a query component to an RDAP request URI using the syntax described in Section "application/x-www-form-urlencoded" of <xref target="HTMLURL" format="default" sectionFormat="of" derivedContent="HTMLURL"/>. If the RDAP server supports a default OP, the Issuer Identifier <bcp14>MAY</bcp14> be omitted.</t>
+          <t indent="0" pn="section-5.2.2-2">The query parameter used to deliver the OP's Issuer Identifier is represented as an <bcp14>OPTIONAL</bcp14> "key=value" pair using a key value of "farv1_iss" and a value component that contains the Issuer Identifier associated with an OP. An RDAP server <bcp14>MAY</bcp14> accept Issuer Identifiers not specified in the "farv1_openidcConfiguration" data structure and <bcp14>MAY</bcp14> also decide to accept specific Issuer Identifiers only from specific clients. An example for Issuer Identifier "https://idp.example.com":</t>
+          <figure anchor="example_issuer_identifier" align="left" suppress-title="false" pn="figure-11">
+            <artwork align="left" pn="section-5.2.2-3.1">
+========== NOTE: '\' line wrapping per RFC 8792 ===========	  
+https://example.com/rdap/farv1_session/\
+login?farv1_iss=https://idp.example.com</artwork>
+          </figure>
+        </section>
+        <section anchor="login-response" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.3">
+          <name slugifiedName="name-login-response">Login Response</name>
+          <t indent="0" pn="section-5.2.3-1">The response to this request <bcp14>MUST</bcp14> be a valid RDAP response per <xref target="RFC9083" format="default" sectionFormat="of" derivedContent="RFC9083"/>. It <bcp14>MUST NOT</bcp14> include any members that relate to a specific RDAP object type (e.g., "events" or "status"). In addition, the response <bcp14>MAY</bcp14> include an indication of the requested operation's success or failure in the "notices" data structure. If successful, the response <bcp14>MUST</bcp14> include a "farv1_session" data structure that includes a "sessionInfo" object and an <bcp14>OPTIONAL</bcp14> "userClaims" object. If unsuccessful, the response <bcp14>MUST</bcp14> include a "farv1_session" data structure that omits the "userClaims" and "sessionInfo" objects.</t>
+          <t keepWithNext="true" indent="0" pn="section-5.2.3-2">An example of a successful "farv1_session/login" response:</t>
+          <figure anchor="example_login_response" align="left" suppress-title="false" pn="figure-12">
+            <artwork align="left" pn="section-5.2.3-3.1">
+    {
+      "rdapConformance": [
+        "farv1"
+      ],
+      "lang": "en-US",
+      "notices": [
+        {
+          "title": "Login Result",
+          "description": [
+            "Login succeeded"
+          ]
+        }
+      ],
+      "farv1_session": {
+        "userID": "user.idp.example",
+        "iss": "https://idp.example.com",
+        "userClaims": {
+          "sub": "103892603076825016132",
+          "name": "User Person",
+          "given_name": "User",
+          "family_name": "Person",
+          "picture": "https://lh3.example.com/a-/AOh14=s96-c",
+          "email": "user@example.com",
+          "email_verified": true,
+          "locale": "en",
+          "rdap_allowed_purposes": [
+            "domainNameControl",
+            "personalDataProtection"
+          ],
+          "rdap_dnt_allowed": false
+        },
+        "sessionInfo": {
+          "tokenExpiration": 3599,
+          "tokenRefresh": true
+        }
+      }
+    }</artwork>
+          </figure>
+          <t keepWithNext="true" indent="0" pn="section-5.2.3-4">An example of a failed "farv1_session/login" response:</t>
+          <figure anchor="example_failed_login_response" align="left" suppress-title="false" pn="figure-13">
+            <artwork align="left" pn="section-5.2.3-5.1">
+    {
+      "rdapConformance": [
+        "farv1"
+      ],
+      "lang": "en-US",
+      "notices": [
+        {
+          "title": "Login Result",
+          "description": [
+            "Login failed"
+          ]
+        }
+      ],
+      "farv1_session": {
+        "userID": "user.idp.example",
+        "iss": "https://idp.example.com"
+      }
+    }</artwork>
+          </figure>
+        </section>
+        <section anchor="ui-constrained" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.4">
+          <name slugifiedName="name-clients-with-limited-user-i">Clients with Limited User Interfaces</name>
+          <t indent="0" pn="section-5.2.4-1">"<xref target="RFC8628" format="title" sectionFormat="of" derivedContent="OAuth 2.0 Device Authorization Grant"/>" <xref target="RFC8628" format="default" sectionFormat="of" derivedContent="RFC8628"/> provides an <bcp14>OPTIONAL</bcp14> method to
+          request user authorization from devices that have an Internet
+          connection but lack a suitable browser for a more conventional OAuth
+          flow. This method requires an end user to use a second device (such
+          as a smartphone) that has access to a web browser for entry of a
+          code sequence that is presented on the UI-constrained device.</t>
+          <section anchor="client-login-device" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.4.1">
+            <name slugifiedName="name-ui-constrained-client-login">UI-Constrained Client Login</name>
+            <t indent="0" pn="section-5.2.4.1-1">Client authentication is requested by sending a
+            "farv1_session/device" request to an RDAP server. If the RDAP
+            server supports only remote OPs, the
+            "farv1_session/device" request <bcp14>MUST</bcp14> include either
+            an end-user identifier as described in <xref target="end-user-identifier" format="default" sectionFormat="of" derivedContent="Section 5.2.1"/> or an OP Issuer Identifier as
+            described in <xref target="issuer-identifier" format="default" sectionFormat="of" derivedContent="Section 5.2.2"/>.</t>
+            <t keepWithNext="true" indent="0" pn="section-5.2.4.1-2">An example using wget for client identifier "user.idp.example":</t>
+            <figure anchor="example_wget1" align="left" suppress-title="false" pn="figure-14">
+              <artwork align="left" pn="section-5.2.4.1-3.1">
+========== NOTE: '\' line wrapping per RFC 8792 ===========	      
+   wget -qO- "https://example.com/rdap/farv1_session/device\
+   ?farv1_id=user.idp.example"</artwork>
+            </figure>
+            <t indent="0" pn="section-5.2.4.1-4">The authorization header for the Basic authentication scheme contains a base64-encoded representation of the client identifier issued by an OP. No password is provided.</t>
+            <t keepWithNext="true" indent="0" pn="section-5.2.4.1-5">An example using curl and an authorization header:</t>
+            <figure anchor="example_curl1" align="left" suppress-title="false" pn="figure-15">
+              <artwork align="left" pn="section-5.2.4.1-6.1">
+========== NOTE: '\' line wrapping per RFC 8792 ===========	      
+   curl -H "Authorization: Basic dXNlci5pZHAuZXhhbXBsZQ=="\
+   "https://example.com/rdap/farv1_session/device"</artwork>
+            </figure>
+            <t indent="0" pn="section-5.2.4.1-7">The response to this request <bcp14>MUST</bcp14> be a valid RDAP response per <xref target="RFC9083" format="default" sectionFormat="of" derivedContent="RFC9083"/>. It <bcp14>MUST NOT</bcp14> include any members that relate to a specific RDAP object type (e.g., "events" or "status"). In addition, the response <bcp14>MAY</bcp14> include an indication of the requested operation's success or failure in the "notices" data structure and, if successful, a "farv1_deviceInfo" data structure.</t>
+            <t keepWithNext="true" indent="0" pn="section-5.2.4.1-8">An example of a "farv1_session/device" response:</t>
+            <figure anchor="example_device_login_response" align="left" suppress-title="false" pn="figure-16">
+              <artwork align="left" pn="section-5.2.4.1-9.1">
+  {
+    "rdapConformance": [
+      "farv1"
+    ],
+    "lang": "en-US",
+    "notices": [
+      {
+        "title": "Device Login Result",
+        "description": [
+          "Login succeeded"
+        ]
+      }
+    ],
+    "farv1_deviceInfo": {
+      "device_code": "AH-1ng2ezu",
+      "user_code": "NJJQ-GJFC",
+      "verification_uri": "https://www.example.com/device",
+      "verification_uri_complete":
+	      "https://www.example.com/device?user_code=NJJQ-GJFC",
+      "expires_in": 1800,
+	  "interval": 5
+    }
+  }</artwork>
+            </figure>
+          </section>
+          <section anchor="client-login-device-poll" numbered="true" removeInRFC="false" toc="include" pn="section-5.2.4.2">
+            <name slugifiedName="name-ui-constrained-client-login-">UI-Constrained Client Login Polling</name>
+            <t indent="0" pn="section-5.2.4.2-1">After successful processing of the "farv1_session/device" request, the client <bcp14>MUST</bcp14> send a "farv1_session/devicepoll" request to the RDAP server to continue the login process. This request initiates the polling function described in <xref target="RFC8628" format="default" sectionFormat="of" derivedContent="RFC8628"/> on the RDAP server. The RDAP server polls the OP as described in <xref target="RFC8628" section="3.4" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8628#section-3.4" derivedContent="RFC8628"/>, allowing the RDAP server to wait for the end user to enter the information returned from the "farv1_session/device" request using the interface on their second device. After the end user has completed that process, or if the process fails or times out, the OP will respond to the polling requests with an indication of success or failure. If the RDAP server supports only remote OPs, the "farv1_session/devicepoll" request <bcp14>MUST</bcp14> include either an end-user identifier as described in <xref target="end-user-identifier" format="default" sectionFormat="of" derivedContent="Section 5.2.1"/> or an OP Issuer Identifier as described in <xref target="issuer-identifier" format="default" sectionFormat="of" derivedContent="Section 5.2.2"/>.</t>
+            <t indent="0" pn="section-5.2.4.2-2">The "farv1_session/devicepoll" request <bcp14>MUST</bcp14> also include a "farv1_dc" query parameter. The query parameter is represented as an <bcp14>OPTIONAL</bcp14> "key=value" pair using a key value of "farv1_dc" and a value component that contains the value of the device_code that was returned in the response to the "farv1_session/device" request.</t>
+            <t keepWithNext="true" indent="0" pn="section-5.2.4.2-3">An example using wget:</t>
+            <figure anchor="example_wget2" align="left" suppress-title="false" pn="figure-17">
+              <artwork align="left" pn="section-5.2.4.2-4.1">
+========== NOTE: '\' line wrapping per RFC 8792 ===========	      
+   wget -qO- --keep-session-cookies --save-cookies cookie.txt\
+   "https://example.com/rdap/farv1_session/devicepoll\
+   ?farv1_id=user.idp.example&amp;farv1_dc=AH-1ng2ezu"</artwork>
+            </figure>
+            <t keepWithNext="true" indent="0" pn="section-5.2.4.2-5">An example using curl:</t>
+            <figure anchor="example_curl2" align="left" suppress-title="false" pn="figure-18">
+              <artwork align="left" pn="section-5.2.4.2-6.1">
+========== NOTE: '\' line wrapping per RFC 8792 ===========	      
+   curl -c cookie.txt "https://example.com/rdap/farv1_session/\
+   devicepoll?farv1_id=user.idp.example&amp;farv1_dc=AH-1ng2ezu"</artwork>
+            </figure>
+            <t indent="0" pn="section-5.2.4.2-7">The response to this request <bcp14>MUST</bcp14> use the response structures described in <xref target="client-login" format="default" sectionFormat="of" derivedContent="Section 5.2"/>. RDAP query processing can continue normally on the UI-constrained device once the device polling process has been completed successfully.</t>
+          </section>
+        </section>
+      </section>
+      <section anchor="session-status" numbered="true" removeInRFC="false" toc="include" pn="section-5.3">
+        <name slugifiedName="name-session-status">Session Status</name>
+        <t indent="0" pn="section-5.3-1">Clients <bcp14>MAY</bcp14> send a query to an RDAP server to determine the status of an existing login session using a "farv1_session/status" path segment. An example "farv1_session/status" request:</t>
+        <figure anchor="example_session_status" align="left" suppress-title="false" pn="figure-19">
+          <artwork align="left" pn="section-5.3-2.1">
+https://example.com/rdap/farv1_session/status
+</artwork>
+        </figure>
+        <t indent="0" pn="section-5.3-3">The response to this request <bcp14>MUST</bcp14> be a valid RDAP response per <xref target="RFC9083" format="default" sectionFormat="of" derivedContent="RFC9083"/>. It <bcp14>MUST NOT</bcp14> include any members that relate to a specific RDAP object type (e.g., "events" or "status"). In addition, the response <bcp14>MAY</bcp14> include an indication of the requested operation's success or failure in the "notices" data structure. If the operation is successful and an active session exists, the response <bcp14>MUST</bcp14> include a "farv1_session" data structure that includes a "sessionInfo" object and an <bcp14>OPTIONAL</bcp14> "userClaims" object. If the operation is unsuccessful or if no active session exists, the response <bcp14>MUST NOT</bcp14> include a "farv1_session" object.</t>
+        <t keepWithNext="true" indent="0" pn="section-5.3-4">An example of a "farv1_session/status" response for an active session:</t>
+        <figure anchor="example_session_response_1" align="left" suppress-title="false" pn="figure-20">
+          <artwork align="left" pn="section-5.3-5.1">
+  {
+    "rdapConformance": [
+      "farv1"
+    ],
+    "lang": "en-US",
+    "notices": [
+      {
+        "title": "Session Status Result",
+        "description": [
+          "Session status succeeded"
+        ]
+      }
+    ],
+    "farv1_session": {
+      "userID": "user.idp.example",
+      "iss": "https://idp.example.com",
+      "userClaims": {
+        "sub": "103892603076825016132",
+        "name": "User Person",
+        "given_name": "User",
+        "family_name": "Person",
+        "picture": "https://lh3.example.com/a-/AOh14=s96-c",
+        "email": "user@example.com",
+        "email_verified": true,
+        "locale": "en",
+        "rdap_allowed_purposes": [
+          "domainNameControl",
+          "personalDataProtection"
+        ],
+        "rdap_dnt_allowed": false
+      },
+      "sessionInfo": {
+        "tokenExpiration": 3490,
+        "tokenRefresh": true
+      }
+    }
+  }</artwork>
+        </figure>
+        <t indent="0" pn="section-5.3-6">If the operation is successful and an active session does not exist, the response <bcp14>MAY</bcp14> note the lack of an active session in the "notices" data structure. The "farv1_session" data structure <bcp14>MUST</bcp14> be omitted.</t>
+        <t keepWithNext="true" indent="0" pn="section-5.3-7">An example of a "farv1_session/status" response with no active session:</t>
+        <figure anchor="example_session_response_2" align="left" suppress-title="false" pn="figure-21">
+          <artwork align="left" pn="section-5.3-8.1">
+  {
+    "rdapConformance": [
+      "farv1"
+    ],
+    "lang": "en-US",
+    "notices": [
+      {
+        "title": "Session Status Result",
+        "description": [
+          "Session status succeeded",
+          "No active session"
+        ]
+      }
+    ]
+  }</artwork>
+        </figure>
+      </section>
+      <section anchor="session-refresh" numbered="true" removeInRFC="false" toc="include" pn="section-5.4">
+        <name slugifiedName="name-session-refresh">Session Refresh</name>
+        <t indent="0" pn="section-5.4-1">Clients <bcp14>MAY</bcp14> send a request to an RDAP server to refresh or extend an existing login session using a "farv1_session/refresh" path segment. The RDAP server <bcp14>MAY</bcp14> attempt to refresh the access token associated with the current session as part of extending the session for a period of time determined by the RDAP server. As described in <xref target="RFC6749" format="default" sectionFormat="of" derivedContent="RFC6749"/>, OP support for refresh tokens is <bcp14>OPTIONAL</bcp14>. An RDAP server <bcp14>MUST</bcp14> determine if the OP supports token refresh and process the refresh request by either requesting refresh of the access token or returning a response that indicates that token refresh is not supported by the OP in the "notices" data structure. An example "farv1_session/refresh" request:</t>
+        <figure anchor="example_session_refresh" align="left" suppress-title="false" pn="figure-22">
+          <artwork align="left" pn="section-5.4-2.1">
+https://example.com/rdap/farv1_session/refresh
+</artwork>
+        </figure>
+        <t indent="0" pn="section-5.4-3">The response to this request <bcp14>MUST</bcp14> be a valid RDAP response per <xref target="RFC9083" format="default" sectionFormat="of" derivedContent="RFC9083"/>. It <bcp14>MUST NOT</bcp14> include any members that relate to a specific RDAP object type (e.g., "events" or "status"). In addition, the response <bcp14>MAY</bcp14> include an indication of the requested operation's success or failure in the "notices" data structure. The response <bcp14>MUST</bcp14> include a "farv1_session" data structure that includes a "sessionInfo" object and an <bcp14>OPTIONAL</bcp14> "userClaims" object. If unsuccessful but an active session exists, the response <bcp14>MUST</bcp14> include a "farv1_session" data structure that includes a "sessionInfo" object and an <bcp14>OPTIONAL</bcp14> "userClaims" object. If unsuccessful and no active session exists, the response <bcp14>MUST</bcp14> omit the "farv1_session" data structure.</t>
+        <t keepWithNext="true" indent="0" pn="section-5.4-4">An example of a successful "farv1_session/refresh" response:</t>
+        <figure anchor="example_refresh_response" align="left" suppress-title="false" pn="figure-23">
+          <artwork align="left" pn="section-5.4-5.1">
+  {
+    "rdapConformance": [
+      "farv1"
+    ],
+    "lang": "en-US",
+    "notices": [
+      {
+        "title": "Session Refresh Result",
+        "description": [
+          "Session refresh succeeded",
+          "Token refresh succeeded."
+        ]
+      }
+    ],
+    "farv1_session": {
+      "userID": "user.idp.example",
+      "iss": "https://idp.example.com",
+      "userClaims": {
+        "sub": "103892603076825016132",
+        "name": "User Person",
+        "given_name": "User",
+        "family_name": "Person",
+        "picture": "https://lh3.example.com/a-/AOh14=s96-c",
+        "email": "user@example.com",
+        "email_verified": true,
+        "locale": "en",
+        "rdap_allowed_purposes": [
+          "domainNameControl",
+          "personalDataProtection"
+        ],
+        "rdap_dnt_allowed": false
+      },
+      "sessionInfo": {
+        "tokenExpiration": 3599,
+        "tokenRefresh": true
+      }
+    }
+  }</artwork>
+        </figure>
+        <t indent="0" pn="section-5.4-6">Alternatively, an RDAP server <bcp14>MAY</bcp14> attempt to refresh an access token upon receipt of a query if the access token associated with an existing session has expired and the corresponding OP supports token refresh. The default RDAP server behavior is described in the "implicitTokenRefreshSupported" value that's included in the "farv1_openidcConfiguration" data structure (see <xref target="openidcConfiguration" format="default" sectionFormat="of" derivedContent="Section 4.1"/>).</t>
+        <t indent="0" pn="section-5.4-7">If the value of "implicitTokenRefreshSupported" is "true", the client <bcp14>MAY</bcp14> either explicitly attempt to refresh the session using the "farv1_session/refresh" query or depend on the RDAP server to attempt to refresh the session as necessary when an RDAP query is received by the server. In this case, a server <bcp14>MUST</bcp14> attempt to refresh the access token upon receipt of a query if the access token associated with an existing session has expired and the corresponding OP supports token refresh. Servers <bcp14>MUST</bcp14> return an HTTP 401 (Unauthorized) response to a query if an attempt to implicitly refresh an existing session fails.</t>
+        <t indent="0" pn="section-5.4-8">If the value of "implicitTokenRefreshSupported" is "false", the client <bcp14>MUST</bcp14> explicitly attempt to refresh the session using the "farv1_session/refresh" query to extend an existing session. If a session cannot be extended for any reason, the client <bcp14>MUST</bcp14> establish a new session to continue authenticated query processing by submitting a "farv1_session/login" query. If the OP does not support token refresh, the client <bcp14>MUST</bcp14> submit a new "farv1_session/login" request to establish a new session once an access token has expired.</t>
+        <t indent="0" pn="section-5.4-9">Clients <bcp14>SHOULD NOT</bcp14> send a "farv1_session/refresh" request in the absence of an active login session because the request conflicts with the current state of the server. Servers <bcp14>MUST</bcp14> return an HTTP 409 (Conflict) response if a "farv1_session/refresh" request is received in the absence of a session cookie.</t>
+      </section>
+      <section anchor="client-logout" numbered="true" removeInRFC="false" toc="include" pn="section-5.5">
+        <name slugifiedName="name-client-logout">Client Logout</name>
+        <t indent="0" pn="section-5.5-1">Clients <bcp14>MAY</bcp14> send a request to an RDAP server to terminate an existing login session. Termination of a session is requested using a "farv1_session/logout" path segment. 
+Access and refresh tokens can be revoked during the "farv1_session/logout" process as described in <xref target="RFC7009" format="default" sectionFormat="of" derivedContent="RFC7009"/> if supported by the OP (token revocation endpoint support is <bcp14>OPTIONAL</bcp14> per <xref target="RFC8414" format="default" sectionFormat="of" derivedContent="RFC8414"/>). If supported, this feature <bcp14>SHOULD</bcp14> be used to ensure that the tokens are not mistakenly associated with a future RDAP session. Alternatively, an RDAP server <bcp14>MAY</bcp14> attempt to log out from the OP using the OpenID Connect RP-Initiated Logout protocol <xref target="OIDCL" format="default" sectionFormat="of" derivedContent="OIDCL"/> if that protocol is supported by the OP. In any case, to prevent abuse before the cookie times out, an RDAP server <bcp14>SHOULD</bcp14> invalidate the HTTP cookie associated with the session as part of terminating the session.</t>
+        <t indent="0" pn="section-5.5-2">An example "farv1_session/logout" request:</t>
+        <figure anchor="example_session_logout" align="left" suppress-title="false" pn="figure-24">
+          <artwork align="left" pn="section-5.5-3.1">
+https://example.com/rdap/farv1_session/logout
+</artwork>
+        </figure>
+        <t indent="0" pn="section-5.5-4">The response to this request <bcp14>MUST</bcp14> be a valid RDAP response per <xref target="RFC9083" format="default" sectionFormat="of" derivedContent="RFC9083"/>. It <bcp14>MUST NOT</bcp14> include any members that relate to a specific RDAP object type (e.g., "events" or "status"). In addition, the response <bcp14>MAY</bcp14> include an indication of the requested operation's success or failure in the "notices" data structure. The "notices" data structure <bcp14>MAY</bcp14> include an indication of the success or failure of any attempt to logout from the OP or to revoke the tokens issued by the OP.</t>
+        <t keepWithNext="true" indent="0" pn="section-5.5-5">An example of a "farv1_session/logout" response:</t>
+        <figure anchor="example_logout_response" align="left" suppress-title="false" pn="figure-25">
+          <artwork align="left" pn="section-5.5-6.1">
+  {
+    "rdapConformance": [
+      "farv1"
+    ],
+    "lang": "en-US",
+    "notices": [
+      {
+        "title": "Logout Result",
+        "description": [
+          "Logout succeeded"
+          "Provider logout failed: Not supported by provider.",
+          "Token revocation successful."
+        ]
+      }
+    ]
+  }</artwork>
+        </figure>
+        <t indent="0" pn="section-5.5-7">In the absence of a "logout" request, an RDAP session <bcp14>MUST</bcp14> be terminated by the RDAP server after a server-defined period of time. The server <bcp14>SHOULD</bcp14> also take appropriate steps to ensure that the tokens associated with the terminated session cannot be reused. This <bcp14>SHOULD</bcp14> include revoking the tokens or logging out from the OP if either operation is supported by the OP.</t>
+      </section>
+      <section anchor="request-sequencing" numbered="true" removeInRFC="false" toc="include" pn="section-5.6">
+        <name slugifiedName="name-request-sequencing">Request Sequencing</name>
+        <t indent="0" pn="section-5.6-1">The requests described in this document are typically performed in
+        a specific sequence:</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-5.6-2">
+	  <li pn="section-5.6-2.1" derivedCounter="1.">"farv1_session/login" (or the related "farv1_session/device" and
+	  "farv1_session/devicepoll" requests) to start a session,</li>
+          <li pn="section-5.6-2.2" derivedCounter="2.">"farv1_session/status" and/or "farv1_session/refresh" to manage
+	  a session,</li>
+          <li pn="section-5.6-2.3" derivedCounter="3.">and "farv1_session/logout" to end a session.</li>
+        </ol>
+        <t indent="0" pn="section-5.6-3">If a client sends a "farv1_session/status",
+	"farv1_session/refresh", or "farv1_session/logout" request in the
+	absence of a session cookie, the server <bcp14>MUST</bcp14> return an
+	HTTP 409 (Conflict) error.</t>
+        <t indent="0" pn="section-5.6-4">A client can end a session explicitly by sending a
+        "farv1_session/logout" request to the RDAP server. A session can also
+        be ended implicitly by the server after a server-defined period of
+        time. The status of a session can be determined at any time by sending
+        a "farv1_session/status" query to the RDAP server.</t>
+        <t indent="0" pn="section-5.6-5">An RDAP server <bcp14>MUST</bcp14> maintain session state
+        information for the duration of an active session. This is commonly
+        done using HTTP cookies as described in <xref target="RFC6265" format="default" sectionFormat="of" derivedContent="RFC6265"/>. Doing so allows end users to submit queries
+        without having to explicitly identify and authenticate themselves for
+        every query.</t>
+        <t indent="0" pn="section-5.6-6">An RDAP server can receive queries that include a session cookie where the associated session has expired or is otherwise unavailable (e.g., due to the user requesting explicit logout for the associated session).  The server <bcp14>MUST</bcp14> return an HTTP 401 (Unauthorized) error in response to such queries.</t>
+      </section>
+    </section>
+    <section anchor="protocol-tokens" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-protocol-features-for-token">Protocol Features for Token-Oriented Clients</name>
+      <t indent="0" pn="section-6-1">This specification adds additional processing steps for token-oriented clients as described in this section and <xref target="overview" format="default" sectionFormat="of" derivedContent="Section 3.1.3"/>. It does not define additional data structures or RDAP-specific protocol parameters specifically for token-oriented clients.</t>
+      <section anchor="login-tokens" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-client-login-2">Client Login</name>
+        <t indent="0" pn="section-6.1-1">Clients identify and authenticate end users by exchanging information with an OP that is recognized by the RDAP server as described in Sections <xref target="auth-request" format="counter" sectionFormat="of" derivedContent="3.1.4.2"/>, <xref target="End-User-auth" format="counter" sectionFormat="of" derivedContent="3.1.4.3"/>, and <xref target="auth-valid" format="counter" sectionFormat="of" derivedContent="3.1.4.4"/>. A client <bcp14>SHOULD</bcp14> append the "additionalAuthorizationQueryParams" values retrieved from the "openidcProviders" array described in <xref target="openidcConfiguration" format="default" sectionFormat="of" derivedContent="Section 4.1"/> to the authorization endpoint URL when requesting authorization from the OP. Once these processes are completed successfully, the client can request tokens from the OP as described in <xref target="tokens" format="default" sectionFormat="of" derivedContent="Section 3.1.4.5"/>. The OP <bcp14>SHOULD</bcp14> include the RDAP server's client_id in the "aud" claim value of an issued ID Token. The RDAP server <bcp14>MAY</bcp14> choose to ignore the value of the "aud" claim or exchange the token as described in <xref target="token-exch" format="default" sectionFormat="of" derivedContent="Section 6.4"/>. With these steps completed, the access token received from the OP can be passed to an RDAP server in an HTTP "authorization" request header <xref target="RFC6750" format="default" sectionFormat="of" derivedContent="RFC6750"/> for RDAP queries that require end-user identification, authentication, and authorization.</t>
+      </section>
+      <section anchor="queries-tokens" numbered="true" removeInRFC="false" toc="include" pn="section-6.2">
+        <name slugifiedName="name-client-queries">Client Queries</name>
+        <t indent="0" pn="section-6.2-1">An RDAP server that receives a bearer token in an HTTP "authorization" request header as part of an RDAP object query <bcp14>MUST</bcp14> validate the token in accordance with local policy and confirm that the token is a legitimate access token. Once validated, the access token <bcp14>MAY</bcp14> be used to retrieve the claims associated with the end user's identity, including claims associated with the "rdap" scope that are not already included in the access token, as described in <xref target="user-info" format="default" sectionFormat="of" derivedContent="Section 3.1.4.6"/>. The RDAP server can then evaluate the end user's identity information to determine the end user's authorization level and process the query in accordance with server policies. A client <bcp14>MUST</bcp14> include the "farv1_iss" query parameter and Issuer Identifier value with an RDAP query if the token was issued by a remote OP.</t>
+      </section>
+      <section anchor="access-token-val" numbered="true" removeInRFC="false" toc="include" pn="section-6.3">
+        <name slugifiedName="name-access-token-validation">Access Token Validation</name>
+        <t indent="0" pn="section-6.3-1">An RDAP server <bcp14>MUST</bcp14> validate a received access token prior to using that token for access control purposes. Validation <bcp14>MAY</bcp14> include token introspection <xref target="RFC7662" format="default" sectionFormat="of" derivedContent="RFC7662"/> using the issuing OP or analysis of the values included in a JWT access token. Once an access token is validated, an RDAP server <bcp14>MAY</bcp14> use that token to request user claims from the issuing OP.</t>
+        <t indent="0" pn="section-6.3-2">There are performance considerations associated with the process of validating a token and requesting user claims as part of processing every received RDAP query. An RDAP server <bcp14>MAY</bcp14> cache validated information and use that cached information to reduce the amount of time needed to process subsequent RDAP queries associated with the same access token as long as the token has not expired. The client <bcp14>SHOULD</bcp14> monitor the token expiration time and refresh the token as needed.</t>
+      </section>
+      <section anchor="token-exch" numbered="true" removeInRFC="false" toc="include" pn="section-6.4">
+        <name slugifiedName="name-token-exchange">Token Exchange</name>
+        <t indent="0" pn="section-6.4-1">Tokens can include an "aud" (audience) claim that contains the OAuth 2.0 client_id of the RP as an audience value. In some operational scenarios (such as a client that is providing a proxy service), an RP can receive tokens with an "aud" claim value that does not include the RP's client_id. These tokens might not be trusted by the RP, and the RP might refuse to accept the tokens. This situation can be remedied by having the RP exchange the access token with the OP for a set of trusted tokens that reset the "aud" claim. The token exchange protocol is described in <xref target="RFC8693" format="default" sectionFormat="of" derivedContent="RFC8693"/>.</t>
+      </section>
+    </section>
+    <section anchor="query-processing" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-rdap-query-processing">RDAP Query Processing</name>
+      <t indent="0" pn="section-7-1">Once an RDAP session is active, an RDAP server <bcp14>MUST</bcp14> determine if the end user is authorized to perform any queries that are received during the duration of the session. This <bcp14>MAY</bcp14> include rejecting queries outright, and it <bcp14>MAY</bcp14> include omitting or otherwise redacting information that the end user is not authorized to receive. Specific processing requirements are beyond the scope of this document.</t>
+    </section>
+    <section anchor="conformance" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-rdap-conformance">RDAP Conformance</name>
+      <t indent="0" pn="section-8-1">RDAP responses that contain values described in this document <bcp14>MUST</bcp14> indicate conformance with this specification by including an rdapConformance <xref target="RFC9083" format="default" sectionFormat="of" derivedContent="RFC9083"/> value of "farv1" (federated authentication method for RDAP version 1). The information needed to register this value in the "RDAP Extensions" registry is described in <xref target="ext-registry" format="default" sectionFormat="of" derivedContent="Section 9.1"/>.</t>
+      <t keepWithNext="true" indent="0" pn="section-8-2">Example rdapConformance structure with extension specified:</t>
+      <figure anchor="rdapConformance_example" align="left" suppress-title="false" pn="figure-26">
+        <artwork align="left" pn="section-8-3.1">
+   "rdapConformance" : 
+     [
+       "rdap_level_0",
+       "farv1"
+     ]</artwork>
+      </figure>
+    </section>
+    <section anchor="IANA" numbered="true" removeInRFC="false" toc="include" pn="section-9">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section anchor="ext-registry" numbered="true" removeInRFC="false" toc="include" pn="section-9.1">
+        <name slugifiedName="name-rdap-extensions-registry">RDAP Extensions Registry</name>
+        <t indent="0" pn="section-9.1-1">IANA has registered the following value in the "RDAP Extensions" registry:</t>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.1-2">
+          <dt pn="section-9.1-2.1">Extension Identifier:</dt>
+          <dd pn="section-9.1-2.2">farv1</dd>
+          <dt pn="section-9.1-2.3">Registry Operator:</dt>
+          <dd pn="section-9.1-2.4">Any</dd>
+          <dt pn="section-9.1-2.5">Specification:</dt>
+          <dd pn="section-9.1-2.6">RFC 9560</dd>
+          <dt pn="section-9.1-2.7">Contact:</dt>
+          <dd pn="section-9.1-2.8"> IETF &lt;iesg@ietf.org&gt;</dd>
+          <dt pn="section-9.1-2.9">Intended Usage:</dt>
+          <dd pn="section-9.1-2.10"> This extension describes federated authentication method for RDAP version 1 using OAuth 2.0 and OpenID Connect.</dd>
+        </dl>
+      </section>
+      <section anchor="JWT-registry" numbered="true" removeInRFC="false" toc="include" pn="section-9.2">
+        <name slugifiedName="name-json-web-token-claims-regis">JSON Web Token Claims Registry</name>
+        <t indent="0" pn="section-9.2-1">IANA has registered the following values in the "JSON Web Token Claims" registry:</t>
+        <dl spacing="compact" indent="3" newline="false" pn="section-9.2-2">
+          <dt pn="section-9.2-2.1">Claim Name:</dt>
+          <dd pn="section-9.2-2.2">rdap_allowed_purposes</dd>
+          <dt pn="section-9.2-2.3">Claim Description:</dt>
+          <dd pn="section-9.2-2.4"> This claim describes the set of RDAP query purposes that are available to an identity that is presented for access to a protected RDAP resource.</dd>
+          <dt pn="section-9.2-2.5">Change Controller:</dt>
+          <dd pn="section-9.2-2.6"> IETF</dd>
+          <dt pn="section-9.2-2.7">Reference:</dt>
+          <dd pn="section-9.2-2.8">
+            <xref target="stated-purposes" format="default" sectionFormat="of" derivedContent="Section 3.1.5.1"/> of RFC 9560.</dd>
+        </dl>
+        <dl spacing="compact" indent="3" newline="false" pn="section-9.2-3">
+          <dt pn="section-9.2-3.1">Claim Name:</dt>
+          <dd pn="section-9.2-3.2">rdap_dnt_allowed</dd>
+          <dt pn="section-9.2-3.3">Claim Description:</dt>
+          <dd pn="section-9.2-3.4"> This claim contains a JSON boolean literal that describes a "do not track" request for server-side tracking, logging, or recording of an identity that is presented for access to a protected RDAP resource.</dd>
+          <dt pn="section-9.2-3.5">Change Controller:</dt>
+          <dd pn="section-9.2-3.6"> IETF</dd>
+          <dt pn="section-9.2-3.7">Reference:</dt>
+          <dd pn="section-9.2-3.8">
+            <xref target="rdap_dnt_allowed" format="default" sectionFormat="of" derivedContent="Section 3.1.5.2"/> of RFC 9560.</dd>
+        </dl>
+      </section>
+      <section anchor="purpose-registry" numbered="true" removeInRFC="false" toc="include" pn="section-9.3">
+        <name slugifiedName="name-rdap-query-purpose-registry">RDAP Query Purpose Registry</name>
+        <t indent="0" pn="section-9.3-1">IANA has created a new protocol registry to manage RDAP query purpose values.</t>
+        <dl newline="false" spacing="compact" indent="3" pn="section-9.3-2">
+          <dt pn="section-9.3-2.1">Section at <eref target="https://www.iana.org/protocols" brackets="none"/>:</dt>
+          <dd pn="section-9.3-2.2">Registration Data Access Protocol (RDAP)</dd>
+          <dt pn="section-9.3-2.3">Registry Name:</dt>
+          <dd pn="section-9.3-2.4">Registration Data Access Protocol (RDAP) Query Purpose Values</dd>
+          <dt pn="section-9.3-2.5">Registration Procedure(s):</dt>
+          <dd pn="section-9.3-2.6">This registry is operated under the "Specification Required"
+	  policy defined in <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>. The designated expert
+	  must ensure that requests to add values to this registry meet the
+	  syntax, value, and description requirements described in this
+	  section.</dd>
+          <dt pn="section-9.3-2.7">Required Information:</dt>
+          <dd pn="section-9.3-2.8">Registration requests are described in a specification that's
+	  consistent with the "Specification Required" policy defined in
+	  <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>. The specification must include one or
+	  more purpose values as described below.</dd>
+        </dl>
+        <t indent="0" pn="section-9.3-3">Individual purpose values are registered with IANA. Each entry in the registry contains the following fields:</t>
+        <dl newline="false" spacing="compact" indent="3" pn="section-9.3-4">
+          <dt pn="section-9.3-4.1">Value:</dt>
+          <dd pn="section-9.3-4.2">The purpose string value being registered. Value strings can
+	  contain uppercase ASCII characters from "A" to "Z", lowercase
+	  ASCII characters from "a" to "z", and the underscore ("_")
+	  character. Value strings contain at least one character and no more
+	  than 64 characters.</dd>
+          <dt pn="section-9.3-4.3">Description:</dt>
+          <dd pn="section-9.3-4.4">One or two sentences in English describing the
+	  meaning of the purpose value, how it might be used, and/or how it
+	  should be interpreted by clients and servers.</dd>
+          <dt pn="section-9.3-4.5">Reference:</dt>
+          <dd pn="section-9.3-4.6">RFC 9560</dd>
+        </dl>
+        <t indent="0" pn="section-9.3-5">The set of initial values used to populate the registry as
+          described below are derived from the final report produced by the
+          Expert Working Group on gTLD Directory Services chartered by the
+          Internet Corporation for Assigned Names and Numbers (ICANN) <xref target="gTLD" format="default" sectionFormat="of" derivedContent="gTLD"/>.</t>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.3-6">
+          <dt pn="section-9.3-6.1">Value:</dt>
+          <dd pn="section-9.3-6.2">domainNameControl</dd>
+          <dt pn="section-9.3-6.3">Description:</dt>
+          <dd pn="section-9.3-6.4">Tasks within the scope of this purpose include, for a
+	  registrant's own domain name, creating the domain name, updating
+	  information about the domain name, transferring the domain name,
+	  renewing the domain name, deleting the domain name, maintaining a
+	  domain name portfolio, and detecting fraudulent use of the
+	  registrant's own contact information.</dd>
+          <dt pn="section-9.3-6.5">Reference:</dt>
+          <dd pn="section-9.3-6.6">RFC 9560</dd>
+        </dl>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.3-7">
+          <dt pn="section-9.3-7.1">Value:</dt>
+          <dd pn="section-9.3-7.2">personalDataProtection</dd>
+          <dt pn="section-9.3-7.3">Description:</dt>
+          <dd pn="section-9.3-7.4">Tasks within the scope of this purpose
+          include identifying the accredited privacy or proxy provider associated
+          with a domain name, reporting abuse, requesting reveal, or otherwise
+          contacting the provider.</dd>
+          <dt pn="section-9.3-7.5">Reference:</dt>
+          <dd pn="section-9.3-7.6">RFC 9560</dd>
+        </dl>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.3-8">
+          <dt pn="section-9.3-8.1">Value:</dt>
+          <dd pn="section-9.3-8.2">technicalIssueResolution</dd>
+          <dt pn="section-9.3-8.3">Description:</dt>
+          <dd pn="section-9.3-8.4"> Tasks within the scope of this purpose
+          include (but are not limited to) working to resolve technical issues,
+          including email delivery issues, DNS resolution failures, and
+          website functionality issues.</dd>
+          <dt pn="section-9.3-8.5">Reference:</dt>
+          <dd pn="section-9.3-8.6">RFC 9560</dd>
+        </dl>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.3-9">
+          <dt pn="section-9.3-9.1">Value:</dt>
+          <dd pn="section-9.3-9.2"> domainNameCertification</dd>
+          <dt pn="section-9.3-9.3">Description:</dt>
+          <dd pn="section-9.3-9.4"> Tasks within the scope of this purpose include a Certification Authority (CA) issuing an X.509 certificate to a subject identified by a domain name.</dd>
+          <dt pn="section-9.3-9.5">Reference:</dt>
+          <dd pn="section-9.3-9.6">RFC 9560</dd>
+        </dl>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.3-10">
+          <dt pn="section-9.3-10.1">Value:</dt>
+          <dd pn="section-9.3-10.2"> individualInternetUse</dd>
+          <dt pn="section-9.3-10.3">Description:</dt>
+          <dd pn="section-9.3-10.4"> Tasks within the scope of this purpose
+          include identifying the organization using a domain name to instill
+          consumer trust or contacting that organization to raise a customer
+          complaint to them or file a complaint about them.</dd>
+          <dt pn="section-9.3-10.5">Reference:</dt>
+          <dd pn="section-9.3-10.6">RFC 9560</dd>
+        </dl>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.3-11">
+          <dt pn="section-9.3-11.1">Value:</dt>
+          <dd pn="section-9.3-11.2"> businessDomainNamePurchaseOrSale</dd>
+          <dt pn="section-9.3-11.3">Description:</dt>
+          <dd pn="section-9.3-11.4"> Tasks within the scope of this purpose include making purchase queries about a domain name, acquiring a domain name from a registrant, and enabling due diligence research.</dd>
+          <dt pn="section-9.3-11.5">Reference:</dt>
+          <dd pn="section-9.3-11.6">RFC 9560</dd>
+        </dl>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.3-12">
+          <dt pn="section-9.3-12.1">Value:</dt>
+          <dd pn="section-9.3-12.2"> academicPublicInterestDNSResearch</dd>
+          <dt pn="section-9.3-12.3">Description:</dt>
+          <dd pn="section-9.3-12.4"> Tasks within the scope of this purpose include academic public interest research studies about domain names published in the registration data service, including public information about the registrant and designated contacts, the domain name's history and status, and domain names registered by a given registrant (reverse query).</dd>
+          <dt pn="section-9.3-12.5">Reference:</dt>
+          <dd pn="section-9.3-12.6">RFC 9560</dd>
+        </dl>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.3-13">
+          <dt pn="section-9.3-13.1">Value:</dt>
+          <dd pn="section-9.3-13.2"> legalActions</dd>
+          <dt pn="section-9.3-13.3">Description:</dt>
+          <dd pn="section-9.3-13.4"> Tasks within the scope of this purpose include investigating possible fraudulent use of a registrant's name or address by other domain names, investigating possible trademark infringement, contacting a registrant's or licensee's legal representative prior to taking legal action, and then taking a legal action if the concern is not satisfactorily addressed.</dd>
+          <dt pn="section-9.3-13.5">Reference:</dt>
+          <dd pn="section-9.3-13.6">RFC 9560</dd>
+        </dl>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.3-14">
+          <dt pn="section-9.3-14.1">Value:</dt>
+          <dd pn="section-9.3-14.2"> regulatoryAndContractEnforcement</dd>
+          <dt pn="section-9.3-14.3">Description:</dt>
+          <dd pn="section-9.3-14.4">Tasks within the scope of this purpose
+          include investigating the tax authority of businesses with online
+          presences, investigating Uniform Domain-Name Dispute-Resolution
+          Policy (UDRP), investigating contractual compliance, and registering
+          data escrow audits.</dd>
+          <dt pn="section-9.3-14.5">Reference:</dt>
+          <dd pn="section-9.3-14.6">RFC 9560</dd>
+        </dl>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.3-15">
+          <dt pn="section-9.3-15.1">Value:</dt>
+          <dd pn="section-9.3-15.2"> criminalInvestigationAndDNSAbuseMitigation</dd>
+          <dt pn="section-9.3-15.3">Description:</dt>
+          <dd pn="section-9.3-15.4"> Tasks within the scope of this purpose include reporting abuse to someone who can investigate and address that abuse or contacting entities associated with a domain name during an offline criminal investigation.</dd>
+          <dt pn="section-9.3-15.5">Reference:</dt>
+          <dd pn="section-9.3-15.6">RFC 9560</dd>
+        </dl>
+        <dl spacing="compact" newline="false" indent="3" pn="section-9.3-16">
+          <dt pn="section-9.3-16.1">Value:</dt>
+          <dd pn="section-9.3-16.2"> dnsTransparency</dd>
+          <dt pn="section-9.3-16.3">Description:</dt>
+          <dd pn="section-9.3-16.4"> Tasks within the scope of this purpose involve querying the registration data made public by registrants to satisfy a wide variety of use cases around informing the public.</dd>
+          <dt pn="section-9.3-16.5">Reference:</dt>
+          <dd pn="section-9.3-16.6">RFC 9560</dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="Security" numbered="true" removeInRFC="false" toc="include" pn="section-10">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-10-1">Security considerations for RDAP can be found in <xref target="RFC7481" format="default" sectionFormat="of" derivedContent="RFC7481"/>. Security considerations for OpenID Connect Core <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/> and OAuth 2.0 <xref target="RFC6749" format="default" sectionFormat="of" derivedContent="RFC6749"/> can be found in their reference specifications; best current security practice for OAuth 2.0 can be found in <xref target="I-D.ietf-oauth-security-topics" format="default" sectionFormat="of" derivedContent="OAUTH-SECURITY"/>. Additionally, the practices described in <xref target="RFC9325" format="default" sectionFormat="of" derivedContent="RFC9325"/> <bcp14>MUST</bcp14> be followed when the Transport Layer Security (TLS) protocol is used.</t>
+      <t indent="0" pn="section-10-2">As described in <xref target="auth-request" format="default" sectionFormat="of" derivedContent="Section 3.1.4.2"/>, the OAuth 2.0 Implicit Flow <xref target="RFC6749" format="default" sectionFormat="of" derivedContent="RFC6749"/> is considered insecure, and efforts are being made to deprecate the flow. It <bcp14>MUST NOT</bcp14> be used.</t>
+      <t indent="0" pn="section-10-3">Some of the responses described in this specification return information to a client from an RDAP server that is intended to help the client match responses to queries and manage sessions. Some of that information, such as the "userClaims" described in <xref target="session" format="default" sectionFormat="of" derivedContent="Section 5.1.1"/>, can be personally identifiable and considered sensitive if disclosed to unauthorized parties. An RDAP server operator must develop policies for information disclosure to ensure that personally identifiable information is disclosed only to clients that are authorized to process that information.</t>
+      <t indent="0" pn="section-10-4">The "do not track" claim relies on the good will of the RDAP server and associated proxies. As such, using and processing this claim depends on out-of-band trust relationships that need to be established before the claim is used in practice. If used and accepted by the RDAP server, there is a risk of information loss that could seriously impair audit capabilities.</t>
+      <section anchor="access" numbered="true" removeInRFC="false" toc="include" pn="section-10.1">
+        <name slugifiedName="name-authentication-and-access-c">Authentication and Access Control</name>
+        <t indent="0" pn="section-10.1-1">Having completed the client identification, authorization, and validation process, an RDAP server can make access control decisions based on a comparison of client-provided information (such as the set of "userClaims" described in <xref target="session" format="default" sectionFormat="of" derivedContent="Section 5.1.1"/>) and local policy. For example, a client who provides an email address (and nothing more) might be entitled to receive a subset of the information that would be available to a client who provides an email address, a full name, and a stated purpose. Development of these access control policies is beyond the scope of this document.</t>
+      </section>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-oauth-security-topics" to="OAUTH-SECURITY"/>
+    <references pn="section-11">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-11.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="HTMLURL" target="https://url.spec.whatwg.org/" quoteTitle="true" derivedAnchor="HTMLURL">
+          <front>
+            <title>URL (Living Standard)</title>
+            <author>
+              <organization showOnFrontPage="true">WHATWG</organization>
+            </author>
+            <date month="March" year="2024"/>
+          </front>
+        </reference>
+        <reference anchor="OIDCC" target="https://openid.net/specs/openid-connect-core-1_0.html" quoteTitle="true" derivedAnchor="OIDCC">
+          <front>
+            <title>OpenID Connect Core 1.0 incorporating errata set 2</title>
+            <author initials="N." surname="Sakimura"/>
+            <author initials="J." surname="Bradley"/>
+            <author initials="M." surname="Jones"/>
+            <author initials="B." surname="de Medeiros"/>
+            <author initials="C." surname="Mortimore"/>
+            <date month="December" year="2023"/>
+          </front>
+        </reference>
+        <reference anchor="OIDCD" target="https://openid.net/specs/openid-connect-discovery-1_0.html" quoteTitle="true" derivedAnchor="OIDCD">
+          <front>
+            <title>OpenID Connect Discovery 1.0 incorporating errata set 2</title>
+            <author initials="N." surname="Sakimura"/>
+            <author initials="J." surname="Bradley"/>
+            <author initials="M." surname="Jones"/>
+            <author initials="E." surname="Jay"/>
+            <date month="December" year="2023"/>
+          </front>
+        </reference>
+        <reference anchor="OIDCL" target="https://openid.net/specs/openid-connect-rpinitiated-1_0.html" quoteTitle="true" derivedAnchor="OIDCL">
+          <front>
+            <title>OpenID Connect RP-Initiated Logout 1.0</title>
+            <author surname="Jones" initials="M.">
+              <organization showOnFrontPage="true">Microsoft</organization>
+            </author>
+            <author surname="de Medeiros" initials="B.">
+              <organization showOnFrontPage="true">Google</organization>
+            </author>
+            <author surname="Agarwal" initials="N.">
+              <organization showOnFrontPage="true">Microsoft</organization>
+            </author>
+            <author surname="Sakimura" initials="N.">
+              <organization showOnFrontPage="true">NAT.Consulting</organization>
+            </author>
+            <author surname="Bradley" initials="J.">
+              <organization showOnFrontPage="true">Yubico</organization>
+            </author>
+            <date month="September" year="2022"/>
+          </front>
+        </reference>
+        <reference anchor="OIDCR" target="https://openid.net/specs/openid-connect-registration-1_0.html" quoteTitle="true" derivedAnchor="OIDCR">
+          <front>
+            <title>OpenID Connect Dynamic Client Registration 1.0 incorporating errata set 2</title>
+            <author initials="N." surname="Sakimura"/>
+            <author initials="J." surname="Bradley"/>
+            <author initials="M." surname="Jones"/>
+            <date month="December" year="2023"/>
+          </front>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC6265" target="https://www.rfc-editor.org/info/rfc6265" quoteTitle="true" derivedAnchor="RFC6265">
+          <front>
+            <title>HTTP State Management Mechanism</title>
+            <author fullname="A. Barth" initials="A." surname="Barth"/>
+            <date month="April" year="2011"/>
+            <abstract>
+              <t indent="0">This document defines the HTTP Cookie and Set-Cookie header fields. These header fields can be used by HTTP servers to store state (called cookies) at HTTP user agents, letting the servers maintain a stateful session over the mostly stateless HTTP protocol. Although cookies have many historical infelicities that degrade their security and privacy, the Cookie and Set-Cookie header fields are widely used on the Internet. This document obsoletes RFC 2965. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6265"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6265"/>
+        </reference>
+        <reference anchor="RFC6749" target="https://www.rfc-editor.org/info/rfc6749" quoteTitle="true" derivedAnchor="RFC6749">
+          <front>
+            <title>The OAuth 2.0 Authorization Framework</title>
+            <author fullname="D. Hardt" initials="D." role="editor" surname="Hardt"/>
+            <date month="October" year="2012"/>
+            <abstract>
+              <t indent="0">The OAuth 2.0 authorization framework enables a third-party application to obtain limited access to an HTTP service, either on behalf of a resource owner by orchestrating an approval interaction between the resource owner and the HTTP service, or by allowing the third-party application to obtain access on its own behalf. This specification replaces and obsoletes the OAuth 1.0 protocol described in RFC 5849. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6749"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6749"/>
+        </reference>
+        <reference anchor="RFC6750" target="https://www.rfc-editor.org/info/rfc6750" quoteTitle="true" derivedAnchor="RFC6750">
+          <front>
+            <title>The OAuth 2.0 Authorization Framework: Bearer Token Usage</title>
+            <author fullname="M. Jones" initials="M." surname="Jones"/>
+            <author fullname="D. Hardt" initials="D." surname="Hardt"/>
+            <date month="October" year="2012"/>
+            <abstract>
+              <t indent="0">This specification describes how to use bearer tokens in HTTP requests to access OAuth 2.0 protected resources. Any party in possession of a bearer token (a "bearer") can use it to get access to the associated resources (without demonstrating possession of a cryptographic key). To prevent misuse, bearer tokens need to be protected from disclosure in storage and in transport. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6750"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6750"/>
+        </reference>
+        <reference anchor="RFC7009" target="https://www.rfc-editor.org/info/rfc7009" quoteTitle="true" derivedAnchor="RFC7009">
+          <front>
+            <title>OAuth 2.0 Token Revocation</title>
+            <author fullname="T. Lodderstedt" initials="T." role="editor" surname="Lodderstedt"/>
+            <author fullname="S. Dronia" initials="S." surname="Dronia"/>
+            <author fullname="M. Scurtescu" initials="M." surname="Scurtescu"/>
+            <date month="August" year="2013"/>
+            <abstract>
+              <t indent="0">This document proposes an additional endpoint for OAuth authorization servers, which allows clients to notify the authorization server that a previously obtained refresh or access token is no longer needed. This allows the authorization server to clean up security credentials. A revocation request will invalidate the actual token and, if applicable, other tokens based on the same authorization grant.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7009"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7009"/>
+        </reference>
+        <reference anchor="RFC7480" target="https://www.rfc-editor.org/info/rfc7480" quoteTitle="true" derivedAnchor="RFC7480">
+          <front>
+            <title>HTTP Usage in the Registration Data Access Protocol (RDAP)</title>
+            <author fullname="A. Newton" initials="A." surname="Newton"/>
+            <author fullname="B. Ellacott" initials="B." surname="Ellacott"/>
+            <author fullname="N. Kong" initials="N." surname="Kong"/>
+            <date month="March" year="2015"/>
+            <abstract>
+              <t indent="0">This document is one of a collection that together describes the Registration Data Access Protocol (RDAP). It describes how RDAP is transported using the Hypertext Transfer Protocol (HTTP). RDAP is a successor protocol to the very old WHOIS protocol. The purpose of this document is to clarify the use of standard HTTP mechanisms for this application.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="95"/>
+          <seriesInfo name="RFC" value="7480"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7480"/>
+        </reference>
+        <reference anchor="RFC7481" target="https://www.rfc-editor.org/info/rfc7481" quoteTitle="true" derivedAnchor="RFC7481">
+          <front>
+            <title>Security Services for the Registration Data Access Protocol (RDAP)</title>
+            <author fullname="S. Hollenbeck" initials="S." surname="Hollenbeck"/>
+            <author fullname="N. Kong" initials="N." surname="Kong"/>
+            <date month="March" year="2015"/>
+            <abstract>
+              <t indent="0">The Registration Data Access Protocol (RDAP) provides "RESTful" web services to retrieve registration metadata from Domain Name and Regional Internet Registries. This document describes information security services, including access control, authentication, authorization, availability, data confidentiality, and data integrity for RDAP.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="95"/>
+          <seriesInfo name="RFC" value="7481"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7481"/>
+        </reference>
+        <reference anchor="RFC7519" target="https://www.rfc-editor.org/info/rfc7519" quoteTitle="true" derivedAnchor="RFC7519">
+          <front>
+            <title>JSON Web Token (JWT)</title>
+            <author fullname="M. Jones" initials="M." surname="Jones"/>
+            <author fullname="J. Bradley" initials="J." surname="Bradley"/>
+            <author fullname="N. Sakimura" initials="N." surname="Sakimura"/>
+            <date month="May" year="2015"/>
+            <abstract>
+              <t indent="0">JSON Web Token (JWT) is a compact, URL-safe means of representing claims to be transferred between two parties. The claims in a JWT are encoded as a JSON object that is used as the payload of a JSON Web Signature (JWS) structure or as the plaintext of a JSON Web Encryption (JWE) structure, enabling the claims to be digitally signed or integrity protected with a Message Authentication Code (MAC) and/or encrypted.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7519"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7519"/>
+        </reference>
+        <reference anchor="RFC7617" target="https://www.rfc-editor.org/info/rfc7617" quoteTitle="true" derivedAnchor="RFC7617">
+          <front>
+            <title>The 'Basic' HTTP Authentication Scheme</title>
+            <author fullname="J. Reschke" initials="J." surname="Reschke"/>
+            <date month="September" year="2015"/>
+            <abstract>
+              <t indent="0">This document defines the "Basic" Hypertext Transfer Protocol (HTTP) authentication scheme, which transmits credentials as user-id/ password pairs, encoded using Base64.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7617"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7617"/>
+        </reference>
+        <reference anchor="RFC7662" target="https://www.rfc-editor.org/info/rfc7662" quoteTitle="true" derivedAnchor="RFC7662">
+          <front>
+            <title>OAuth 2.0 Token Introspection</title>
+            <author fullname="J. Richer" initials="J." role="editor" surname="Richer"/>
+            <date month="October" year="2015"/>
+            <abstract>
+              <t indent="0">This specification defines a method for a protected resource to query an OAuth 2.0 authorization server to determine the active state of an OAuth 2.0 token and to determine meta-information about this token. OAuth 2.0 deployments can use this method to convey information about the authorization context of the token from the authorization server to the protected resource.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7662"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7662"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8628" target="https://www.rfc-editor.org/info/rfc8628" quoteTitle="true" derivedAnchor="RFC8628">
+          <front>
+            <title>OAuth 2.0 Device Authorization Grant</title>
+            <author fullname="W. Denniss" initials="W." surname="Denniss"/>
+            <author fullname="J. Bradley" initials="J." surname="Bradley"/>
+            <author fullname="M. Jones" initials="M." surname="Jones"/>
+            <author fullname="H. Tschofenig" initials="H." surname="Tschofenig"/>
+            <date month="August" year="2019"/>
+            <abstract>
+              <t indent="0">The OAuth 2.0 device authorization grant is designed for Internet- connected devices that either lack a browser to perform a user-agent- based authorization or are input constrained to the extent that requiring the user to input text in order to authenticate during the authorization flow is impractical. It enables OAuth clients on such devices (like smart TVs, media consoles, digital picture frames, and printers) to obtain user authorization to access protected resources by using a user agent on a separate device.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8628"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8628"/>
+        </reference>
+        <reference anchor="RFC8693" target="https://www.rfc-editor.org/info/rfc8693" quoteTitle="true" derivedAnchor="RFC8693">
+          <front>
+            <title>OAuth 2.0 Token Exchange</title>
+            <author fullname="M. Jones" initials="M." surname="Jones"/>
+            <author fullname="A. Nadalin" initials="A." surname="Nadalin"/>
+            <author fullname="B. Campbell" initials="B." role="editor" surname="Campbell"/>
+            <author fullname="J. Bradley" initials="J." surname="Bradley"/>
+            <author fullname="C. Mortimore" initials="C." surname="Mortimore"/>
+            <date month="January" year="2020"/>
+            <abstract>
+              <t indent="0">This specification defines a protocol for an HTTP- and JSON-based Security Token Service (STS) by defining how to request and obtain security tokens from OAuth 2.0 authorization servers, including security tokens employing impersonation and delegation.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8693"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8693"/>
+        </reference>
+        <reference anchor="RFC9068" target="https://www.rfc-editor.org/info/rfc9068" quoteTitle="true" derivedAnchor="RFC9068">
+          <front>
+            <title>JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens</title>
+            <author fullname="V. Bertocci" initials="V." surname="Bertocci"/>
+            <date month="October" year="2021"/>
+            <abstract>
+              <t indent="0">This specification defines a profile for issuing OAuth 2.0 access tokens in JSON Web Token (JWT) format. Authorization servers and resource servers from different vendors can leverage this profile to issue and consume access tokens in an interoperable manner.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9068"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9068"/>
+        </reference>
+        <reference anchor="RFC9082" target="https://www.rfc-editor.org/info/rfc9082" quoteTitle="true" derivedAnchor="RFC9082">
+          <front>
+            <title>Registration Data Access Protocol (RDAP) Query Format</title>
+            <author fullname="S. Hollenbeck" initials="S." surname="Hollenbeck"/>
+            <author fullname="A. Newton" initials="A." surname="Newton"/>
+            <date month="June" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes uniform patterns to construct HTTP URLs that may be used to retrieve registration information from registries (including both Regional Internet Registries (RIRs) and Domain Name Registries (DNRs)) using "RESTful" web access patterns. These uniform patterns define the query syntax for the Registration Data Access Protocol (RDAP). This document obsoletes RFC 7482.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="95"/>
+          <seriesInfo name="RFC" value="9082"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9082"/>
+        </reference>
+        <reference anchor="RFC9083" target="https://www.rfc-editor.org/info/rfc9083" quoteTitle="true" derivedAnchor="RFC9083">
+          <front>
+            <title>JSON Responses for the Registration Data Access Protocol (RDAP)</title>
+            <author fullname="S. Hollenbeck" initials="S." surname="Hollenbeck"/>
+            <author fullname="A. Newton" initials="A." surname="Newton"/>
+            <date month="June" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes JSON data structures representing registration information maintained by Regional Internet Registries (RIRs) and Domain Name Registries (DNRs). These data structures are used to form Registration Data Access Protocol (RDAP) query responses. This document obsoletes RFC 7483.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="95"/>
+          <seriesInfo name="RFC" value="9083"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9083"/>
+        </reference>
+        <reference anchor="RFC9110" target="https://www.rfc-editor.org/info/rfc9110" quoteTitle="true" derivedAnchor="RFC9110">
+          <front>
+            <title>HTTP Semantics</title>
+            <author fullname="R. Fielding" initials="R." role="editor" surname="Fielding"/>
+            <author fullname="M. Nottingham" initials="M." role="editor" surname="Nottingham"/>
+            <author fullname="J. Reschke" initials="J." role="editor" surname="Reschke"/>
+            <date month="June" year="2022"/>
+            <abstract>
+              <t indent="0">The Hypertext Transfer Protocol (HTTP) is a stateless application-level protocol for distributed, collaborative, hypertext information systems. This document describes the overall architecture of HTTP, establishes common terminology, and defines aspects of the protocol that are shared by all versions. In this definition are core protocol elements, extensibility mechanisms, and the "http" and "https" Uniform Resource Identifier (URI) schemes.</t>
+              <t indent="0">This document updates RFC 3864 and obsoletes RFCs 2818, 7231, 7232, 7233, 7235, 7538, 7615, 7694, and portions of 7230.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="97"/>
+          <seriesInfo name="RFC" value="9110"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9110"/>
+        </reference>
+        <reference anchor="RFC9325" target="https://www.rfc-editor.org/info/rfc9325" quoteTitle="true" derivedAnchor="RFC9325">
+          <front>
+            <title>Recommendations for Secure Use of Transport Layer Security (TLS) and Datagram Transport Layer Security (DTLS)</title>
+            <author fullname="Y. Sheffer" initials="Y." surname="Sheffer"/>
+            <author fullname="P. Saint-Andre" initials="P." surname="Saint-Andre"/>
+            <author fullname="T. Fossati" initials="T." surname="Fossati"/>
+            <date month="November" year="2022"/>
+            <abstract>
+              <t indent="0">Transport Layer Security (TLS) and Datagram Transport Layer Security (DTLS) are used to protect data exchanged over a wide range of application protocols and can also form the basis for secure transport protocols. Over the years, the industry has witnessed several serious attacks on TLS and DTLS, including attacks on the most commonly used cipher suites and their modes of operation. This document provides the latest recommendations for ensuring the security of deployed services that use TLS and DTLS. These recommendations are applicable to the majority of use cases.</t>
+              <t indent="0">RFC 7525, an earlier version of the TLS recommendations, was published when the industry was transitioning to TLS 1.2. Years later, this transition is largely complete, and TLS 1.3 is widely available. This document updates the guidance given the new environment and obsoletes RFC 7525. In addition, this document updates RFCs 5288 and 6066 in view of recent attacks.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="195"/>
+          <seriesInfo name="RFC" value="9325"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9325"/>
+        </reference>
+      </references>
+      <references pn="section-11.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="gTLD" target="https://www.icann.org/en/system/files/files/final-report-06jun14-en.pdf" quoteTitle="true" derivedAnchor="gTLD">
+          <front>
+            <title>Final Report from the Expert Working Group on gTLD Directory Services: A Next-Generation Registration Directory Service (RDS)</title>
+            <author>
+              <organization showOnFrontPage="true">Expert Working Group on gTLD Directory Services (EWG)</organization>
+            </author>
+            <date year="2014" month="June"/>
+          </front>
+        </reference>
+        <reference anchor="I-D.ietf-oauth-security-topics" target="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-26" quoteTitle="true" derivedAnchor="OAUTH-SECURITY">
+          <front>
+            <title>OAuth 2.0 Security Best Current Practice</title>
+            <author initials="T." surname="Lodderstedt" fullname="Torsten Lodderstedt">
+              <organization showOnFrontPage="true">SPRIND</organization>
+            </author>
+            <author initials="J." surname="Bradley" fullname="John Bradley">
+              <organization showOnFrontPage="true">Yubico</organization>
+            </author>
+            <author initials="A." surname="Labunets" fullname="Andrey Labunets">
+              <organization showOnFrontPage="true">Independent Researcher</organization>
+            </author>
+            <author initials="D." surname="Fett" fullname="Daniel Fett">
+              <organization showOnFrontPage="true">Authlete</organization>
+            </author>
+            <date month="April" day="21" year="2024"/>
+            <abstract>
+              <t indent="0">   This document describes best current security practice for OAuth 2.0.
+   It updates and extends the threat model and security advice given in
+   RFC 6749, RFC 6750, and RFC 6819 to incorporate practical experiences
+   gathered since OAuth 2.0 was published and covers new threats
+   relevant due to the broader application of OAuth 2.0.  It further
+   deprecates some modes of operation that are deemed less secure or
+   even insecure.
+
+              </t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-oauth-security-topics-26"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="OIDC" target="https://openid.net/developers/how-connect-works/" quoteTitle="true" derivedAnchor="OIDC">
+          <front>
+            <title>What is OpenID Connect</title>
+            <author>
+              <organization showOnFrontPage="true">OpenID</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="RFC4949" target="https://www.rfc-editor.org/info/rfc4949" quoteTitle="true" derivedAnchor="RFC4949">
+          <front>
+            <title>Internet Security Glossary, Version 2</title>
+            <author fullname="R. Shirey" initials="R." surname="Shirey"/>
+            <date month="August" year="2007"/>
+            <abstract>
+              <t indent="0">This Glossary provides definitions, abbreviations, and explanations of terminology for information system security. The 334 pages of entries offer recommendations to improve the comprehensibility of written material that is generated in the Internet Standards Process (RFC 2026). The recommendations follow the principles that such writing should (a) use the same term or definition whenever the same concept is mentioned; (b) use terms in their plainest, dictionary sense; (c) use terms that are already well-established in open publications; and (d) avoid terms that either favor a particular vendor or favor a particular technology or mechanism over other, competing techniques that already exist or could be developed. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="FYI" value="36"/>
+          <seriesInfo name="RFC" value="4949"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4949"/>
+        </reference>
+        <reference anchor="RFC8414" target="https://www.rfc-editor.org/info/rfc8414" quoteTitle="true" derivedAnchor="RFC8414">
+          <front>
+            <title>OAuth 2.0 Authorization Server Metadata</title>
+            <author fullname="M. Jones" initials="M." surname="Jones"/>
+            <author fullname="N. Sakimura" initials="N." surname="Sakimura"/>
+            <author fullname="J. Bradley" initials="J." surname="Bradley"/>
+            <date month="June" year="2018"/>
+            <abstract>
+              <t indent="0">This specification defines a metadata format that an OAuth 2.0 client can use to obtain the information needed to interact with an OAuth 2.0 authorization server, including its endpoint locations and authorization server capabilities.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8414"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8414"/>
+        </reference>
+        <reference anchor="RFC8792" target="https://www.rfc-editor.org/info/rfc8792" quoteTitle="true" derivedAnchor="RFC8792">
+          <front>
+            <title>Handling Long Lines in Content of Internet-Drafts and RFCs</title>
+            <author fullname="K. Watsen" initials="K." surname="Watsen"/>
+            <author fullname="E. Auerswald" initials="E." surname="Auerswald"/>
+            <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+            <author fullname="Q. Wu" initials="Q." surname="Wu"/>
+            <date month="June" year="2020"/>
+            <abstract>
+              <t indent="0">This document defines two strategies for handling long lines in width-bounded text content. One strategy, called the "single backslash" strategy, is based on the historical use of a single backslash ('\') character to indicate where line-folding has occurred, with the continuation occurring with the first character that is not a space character (' ') on the next line. The second strategy, called the "double backslash" strategy, extends the first strategy by adding a second backslash character to identify where the continuation begins and is thereby able to handle cases not supported by the first strategy. Both strategies use a self-describing header enabling automated reconstitution of the original content.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8792"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8792"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="acks" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">The author would like to acknowledge the following individuals for
+      their contributions to the development of this document: <contact fullname="Julien Bernard"/>, <contact fullname="Marc Blanchet"/>,
+      <contact fullname="Tom Harrison"/>, <contact fullname="Russ Housley"/>,
+      <contact fullname="Jasdip Singh"/>, <contact fullname="Rhys Smith"/>,
+      <contact fullname="Jaromir Talir"/>, <contact fullname="Rick Wilhelm"/>,
+      and <contact fullname="Alessandro Vesely"/>. In addition, the Verisign
+      Registry Services Lab development team of <contact fullname="Joseph       Harvey"/>, <contact fullname="Andrew Kaizer"/>, <contact fullname="Sai       Mogali"/>, <contact fullname="Anurag Saxena"/>, <contact fullname="Swapneel Sheth"/>, <contact fullname="Nitin Singh"/>, and
+      <contact fullname="Zhao Zhao"/> provided critical "proof of concept"
+      implementation experience that helped demonstrate the validity of the
+      concepts described in this document.</t>
+      <t indent="0" pn="section-appendix.a-2"><contact fullname="Pawel Kowalik"/> and <contact fullname="Mario       Loffredo"/> provided significant text contributions that led to welcome
+      improvements in several sections of this document. Their contributions
+      are greatly appreciated.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-address">Author's Address</name>
+      <author initials="S." surname="Hollenbeck" fullname="Scott Hollenbeck">
+        <organization showOnFrontPage="true">Verisign Labs</organization>
+        <address>
+          <postal>
+            <street>12061 Bluemont Way</street>
+            <city>Reston</city>
+            <region>VA</region>
+            <code>20190</code>
+            <country>United States of America</country>
+          </postal>
+          <email>shollenbeck@verisign.com</email>
+          <uri>https://www.verisignlabs.com/</uri>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

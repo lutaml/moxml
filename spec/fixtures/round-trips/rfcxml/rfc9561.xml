@@ -1,0 +1,644 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-nfsv4-scsi-layout-nvme-07" number="9561" category="std" consensus="true" submissionType="IETF" obsoletes="" updates="" tocInclude="true" sortRefs="true" symRefs="true" xml:lang="en" prepTime="2024-04-03T14:08:59" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-nfsv4-scsi-layout-nvme-07" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9561" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="pNFS SCSI Layout for NVMe">Using the Parallel NFS (pNFS) SCSI Layout to Access Non-Volatile Memory Express (NVMe) Storage Devices</title>
+    <seriesInfo name="RFC" value="9561" stream="IETF"/>
+    <author initials="C." surname="Hellwig" fullname="Christoph Hellwig" role="editor">
+      <organization showOnFrontPage="true"/>
+      <address>
+        <email>hch@lst.de</email>
+      </address>
+    </author>
+    <author initials="C." surname="Lever" fullname="Charles Lever">
+      <organization abbrev="Oracle" showOnFrontPage="true">Oracle Corporation</organization>
+      <address>
+        <postal>
+          <country>United States of America</country>
+        </postal>
+        <email>chuck.lever@oracle.com</email>
+      </address>
+    </author>
+    <author initials="S." surname="Faibish" fullname="Sorin Faibish">
+      <organization showOnFrontPage="true">Opendrives.com</organization>
+      <address>
+        <postal>
+          <street>11 Selwyn Road</street>
+          <city>Newton</city>
+          <region>MA</region>
+          <code>02461</code>
+          <country>United States of America</country>
+        </postal>
+        <phone>+1 617-510-0422</phone>
+        <email>s.faibish@opendrives.com</email>
+      </address>
+    </author>
+    <author initials="D." surname="Black" fullname="David L. Black">
+      <organization showOnFrontPage="true">Dell Technologies</organization>
+      <address>
+        <postal>
+          <street>176 South Street</street>
+          <city>Hopkinton</city>
+          <region>MA</region>
+          <code>01748</code>
+          <country>United States of America</country>
+        </postal>
+        <email>david.black@dell.com</email>
+      </address>
+    </author>
+    <date month="04" year="2024"/>
+    <area>Web and Internet Transport</area>
+    <workgroup>NFSv4</workgroup>
+    <keyword>NFSv4</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document specifies how to use the Parallel Network File System (pNFS)
+Small Computer System Interface (SCSI) Layout Type to access storage devices
+using the Non-Volatile Memory Express (NVMe) protocol family.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9561" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-general-definitions">General Definitions</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.3">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.3.1"><xref derivedContent="1.3" format="counter" sectionFormat="of" target="section-1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-numerical-conventions">Numerical Conventions</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-scsi-layout-mapping-to-nvme">SCSI Layout Mapping to NVMe</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-volume-identification">Volume Identification</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-client-fencing">Client Fencing</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2.2.2">
+                  <li pn="section-toc.1-1.2.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.1.1"><xref derivedContent="2.2.1" format="counter" sectionFormat="of" target="section-2.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-prs-key-registration">PRs - Key Registration</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.2.1"><xref derivedContent="2.2.2" format="counter" sectionFormat="of" target="section-2.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-prs-mds-registration-and-re">PRs - MDS Registration and Reservation</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.3.1"><xref derivedContent="2.2.3" format="counter" sectionFormat="of" target="section-2.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-fencing-action">Fencing Action</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.2.2.4">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.4.1"><xref derivedContent="2.2.4" format="counter" sectionFormat="of" target="section-2.2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-client-recovery-after-a-fen">Client Recovery after a Fence Action</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.2.2.3">
+                <t indent="0" pn="section-toc.1-1.2.2.3.1"><xref derivedContent="2.3" format="counter" sectionFormat="of" target="section-2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-volatile-write-caches">Volatile Write Caches</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="sec_intro" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">NFSv4.1 <xref target="RFC8881" format="default" sectionFormat="of" derivedContent="RFC8881"/> includes a pNFS feature that allows
+reads and writes to be performed by means other than directing read and
+write operations to the server.  Through use of this feature, the server,
+in the role of metadata server, is responsible for managing file and
+directory metadata while separate means are provided to execute 
+reads and writes.</t>
+      <t indent="0" pn="section-1-2">These other means of performing file reads and writes are defined by
+individual mapping types, which often have their own specifications.</t>
+      <t indent="0" pn="section-1-3">The pNFS Small Computer System Interface (SCSI) layout <xref target="RFC8154" format="default" sectionFormat="of" derivedContent="RFC8154"/> is a layout
+type that allows NFS clients to directly perform I⁠/⁠O to block storage devices
+while bypassing the Metadata Server (MDS).  It is specified by using
+concepts from the SCSI protocol family for the data path to the storage devices.</t>
+      <t indent="0" pn="section-1-4">NVM Express (NVMe), or the Non-Volatile Memory Host Controller Interface
+Specification, is a set of specifications to talk to storage devices over
+a number of protocols such as PCI Express (PCIe), Fibre Channel (FC),
+TCP/IP, or Remote Direct Memory Access (RDMA) networking.  NVMe is currently
+the predominantly used protocol to access PCIe Solid State Disks (SSDs),
+and it is increasingly being adopted for remote storage access to replace
+SCSI-based protocols such as iSCSI.</t>
+      <t indent="0" pn="section-1-5">This document defines how NVMe Namespaces using the NVM Command Set <xref target="NVME-NVM" format="default" sectionFormat="of" derivedContent="NVME-NVM"/>
+exported by NVMe Controllers implementing the
+NVMe Base specification <xref target="NVME-BASE" format="default" sectionFormat="of" derivedContent="NVME-BASE"/> are to be used as
+storage devices using the SCSI Layout Type.
+The definition is independent of the underlying transport used by the
+NVMe Controller and thus supports Controllers implementing a wide variety
+of transports, including PCIe, RDMA, TCP, and FC.</t>
+      <t indent="0" pn="section-1-6">This document does not amend the existing SCSI layout document.  Rather,
+it
+defines how NVMe Namespaces can be used within the SCSI Layout by
+establishing a mapping of the SCSI constructs used in the SCSI layout
+document to corresponding NVMe constructs.</t>
+      <section anchor="ssc_intro_reqlang" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.
+        </t>
+      </section>
+      <section anchor="ssc_intro_defs" numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-general-definitions">General Definitions</name>
+        <t indent="0" pn="section-1.2-1">The following definitions are included to provide context for the reader.</t>
+        <dl indent="3" newline="false" spacing="normal" pn="section-1.2-2">
+          <dt pn="section-1.2-2.1">Client:</dt>
+          <dd pn="section-1.2-2.2">
+            <t indent="0" pn="section-1.2-2.2.1">The "client" is the entity that accesses the NFS server's
+resources.  The client may be an application that contains the
+logic to access the NFS server directly, or it may be part of the operating
+system that provides remote file system services for a set of
+applications.</t>
+          </dd>
+          <dt pn="section-1.2-2.3">Metadata Server (MDS):</dt>
+          <dd pn="section-1.2-2.4">
+            <t indent="0" pn="section-1.2-2.4.1">The Metadata Server (MDS) is the entity responsible for coordinating
+client access to a set of file systems and is identified by a server
+owner.</t>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="ssc_intro_conv" numbered="true" removeInRFC="false" toc="include" pn="section-1.3">
+        <name slugifiedName="name-numerical-conventions">Numerical Conventions</name>
+        <t indent="0" pn="section-1.3-1">Numerical values defined in the SCSI specifications (e.g., <xref target="SPC5" format="default" sectionFormat="of" derivedContent="SPC5"/>) and the
+NVMe specifications (e.g., <xref target="NVME-BASE" format="default" sectionFormat="of" derivedContent="NVME-BASE"/>) are represented using the same
+conventions as those specifications wherein a 'b' suffix denotes a binary
+(base 2) number (e.g., 110b = 6 decimal) and an 'h' suffix denotes a
+hexadecimal (base 16) number (e.g., 1ch = 28 decimal).</t>
+      </section>
+    </section>
+    <section anchor="sec_slm" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-scsi-layout-mapping-to-nvme">SCSI Layout Mapping to NVMe</name>
+      <t indent="0" pn="section-2-1">The SCSI layout definition <xref target="RFC8154" format="default" sectionFormat="of" derivedContent="RFC8154"/> references only a
+few SCSI-specific concepts directly.  This document provides a mapping
+from these SCSI concepts to NVM Express concepts that are used
+when using the pNFS SCSI layout with NVMe namespaces.</t>
+      <section anchor="ssc_volident" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-volume-identification">Volume Identification</name>
+        <t indent="0" pn="section-2.1-1">The pNFS SCSI layout uses the Device Identification Vital Product Data (VPD)
+page (page code 83h) from <xref target="SPC5" format="default" sectionFormat="of" derivedContent="SPC5"/> to identify the devices used by
+a layout. Implementations that use NVMe namespaces as storage devices
+map NVMe namespace identifiers to a subset of the identifiers
+that the Device Identification VPD page supports for SCSI logical
+units.</t>
+        <t indent="0" pn="section-2.1-2">To be used as storage devices for the pNFS SCSI layout, NVMe namespaces
+<bcp14>MUST</bcp14> support either the IEEE Extended Unique Identifier (EUI64) or
+Namespace Globally Unique Identifier (NGUID) value reported in a Namespace
+Identification Descriptor, the I⁠/⁠O Command Set Independent Identify
+Namespace data structure, and the Identify Namespace data structure,
+NVM Command Set <xref target="NVME-BASE" format="default" sectionFormat="of" derivedContent="NVME-BASE"/>. If available, use of the NGUID value is
+preferred as it is the larger identifier.</t>
+        <aside pn="section-2.1-3">
+          <t indent="0" pn="section-2.1-3.1">Note: The PS_DESIGNATOR_T10 and PS_DESIGNATOR_NAME have no equivalent
+in NVMe and cannot be used to identify NVMe storage devices.</t>
+        </aside>
+        <t indent="0" pn="section-2.1-4">The pnfs_scsi_base_volume_info4 structure for an NVMe namespace
+<bcp14>SHALL</bcp14> be constructed as follows:</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-2.1-5"><li pn="section-2.1-5.1" derivedCounter="1.">
+            <t indent="0" pn="section-2.1-5.1.1">The "sbv_code_set" field <bcp14>SHALL</bcp14> be set to PS_CODE_SET_BINARY.</t>
+          </li>
+          <li pn="section-2.1-5.2" derivedCounter="2.">
+            <t indent="0" pn="section-2.1-5.2.1">The "pnfs_scsi_designator_type" field <bcp14>SHALL</bcp14> be set to
+  PS_DESIGNATOR_EUI64.</t>
+          </li>
+          <li pn="section-2.1-5.3" derivedCounter="3.">
+            <t indent="0" pn="section-2.1-5.3.1">The "sbv_designator" field <bcp14>SHALL</bcp14> contain either the NGUID or
+  the EUI64 identifier for the namespace.  If both NGUID and EUI64
+  identifiers are available, then the NGUID identifier <bcp14>SHOULD</bcp14> be
+  used as it is the larger identifier.</t>
+          </li>
+        </ol>
+        <t indent="0" pn="section-2.1-6">RFC 8154 <xref target="RFC8154" format="default" sectionFormat="of" derivedContent="RFC8154"/> specifies the "sbv_designator" field as an XDR variable
+length opaque&lt;&gt; (refer to Section <xref target="RFC4506" sectionFormat="bare" section="4.10" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4506#section-4.10" derivedContent="RFC4506"/> of RFC 4506 <xref target="RFC4506" format="default" sectionFormat="of" derivedContent="RFC4506"/>). The length of that XDR opaque&lt;&gt; value (part of
+its XDR representation) indicates which NVMe identifier is present.
+That length <bcp14>MUST</bcp14> be 16 octets for an NVMe NGUID identifier and
+<bcp14>MUST</bcp14> be 8 octets for an NVMe EUI64 identifier.  All other lengths
+<bcp14>MUST NOT</bcp14> be used with an NVMe namespace.</t>
+      </section>
+      <section anchor="ssc_fencing" numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-client-fencing">Client Fencing</name>
+        <t indent="0" pn="section-2.2-1">The SCSI layout uses Persistent Reservations (PRs) to provide client
+fencing.  For this to be achieved, both the MDS and the Clients have to
+register a key with the storage device, and the MDS has to create a
+reservation on the storage device.</t>
+        <t indent="0" pn="section-2.2-2">The following subsections provide a full mapping of the required
+PERSISTENT RESERVE IN and PERSISTENT RESERVE OUT SCSI commands <xref target="SPC5" format="default" sectionFormat="of" derivedContent="SPC5"/>
+to NVMe commands that <bcp14>MUST</bcp14> be used when using
+NVMe namespaces as storage devices for the pNFS SCSI layout.</t>
+        <section anchor="ssc_fencing_keys" numbered="true" removeInRFC="false" toc="include" pn="section-2.2.1">
+          <name slugifiedName="name-prs-key-registration">PRs - Key Registration</name>
+          <t indent="0" pn="section-2.2.1-1">On NVMe namespaces, reservation keys are registered using the
+Reservation Register command (refer to Section 7.3 of <xref target="NVME-BASE" format="default" sectionFormat="of" derivedContent="NVME-BASE"/>)
+with the Reservation Register Action
+(RREGA) field set to 000b (i.e., Register Reservation Key) and
+supplying the reservation key in the New Reservation Key (NRKEY)
+field.</t>
+          <t indent="0" pn="section-2.2.1-2">Reservation keys are unregistered using the Reservation Register
+command with the Reservation Register Action (RREGA) field set to
+001b (i.e., Unregister Reservation Key) and supplying the reservation
+key in the Current Reservation Key (CRKEY) field.</t>
+          <t indent="0" pn="section-2.2.1-3">One important difference between SCSI Persistent Reservations
+and NVMe Reservations is that NVMe reservation keys always apply
+to all controllers used by a host (as indicated by the NVMe Host
+Identifier). This behavior is analogous to setting the ALL_TG_PT
+bit when registering a SCSI Reservation Key, and it is always supported
+by NVMe Reservations, unlike the ALL_TG_PT for which SCSI support is
+inconsistent and cannot be relied upon.
+Registering a reservation key with a namespace creates an
+association between a host and a namespace. A host that is a
+registrant of a namespace may use any controller with which that
+host is associated (i.e., that has the same Host Identifier,
+refer to Section 5.27.1.25 of <xref target="NVME-BASE" format="default" sectionFormat="of" derivedContent="NVME-BASE"/>)
+to access that namespace as a registrant.</t>
+        </section>
+        <section anchor="ssc_fencing_reg" numbered="true" removeInRFC="false" toc="include" pn="section-2.2.2">
+          <name slugifiedName="name-prs-mds-registration-and-re">PRs - MDS Registration and Reservation</name>
+          <t indent="0" pn="section-2.2.2-1">Before returning a PNFS_SCSI_VOLUME_BASE volume to the client, the MDS
+needs to prepare the volume for fencing using PRs. This is done by
+registering the reservation generated for the MDS with the device
+(see <xref target="ssc_fencing_keys" format="default" sectionFormat="of" derivedContent="Section 2.2.1"/>) followed by a Reservation Acquire
+command (refer to Section 7.2 of <xref target="NVME-BASE" format="default" sectionFormat="of" derivedContent="NVME-BASE"/>) with
+the Reservation Acquire Action (RACQA) field set to 000b (i.e., Acquire)
+and the Reservation Type (RTYPE) field set to 4h (i.e., Exclusive Access
+- Registrants Only Reservation).</t>
+        </section>
+        <section anchor="ssc_fenceaction" numbered="true" removeInRFC="false" toc="include" pn="section-2.2.3">
+          <name slugifiedName="name-fencing-action">Fencing Action</name>
+          <t indent="0" pn="section-2.2.3-1">In case of a non-responding client, the MDS fences the client by
+executing a Reservation Acquire command (refer to Section 7.2 of <xref target="NVME-BASE" format="default" sectionFormat="of" derivedContent="NVME-BASE"/>),
+with the Reservation Acquire Action
+(RACQA) field set to 001b (i.e., Preempt) or 010b (i.e., Preempt and
+Abort), the Current Reservation Key (CRKEY) field set to the
+server's reservation key, the Preempt Reservation Key (PRKEY) field
+set to the reservation key associated with the non-responding client,
+and the Reservation Type (RTYPE) field set to 4h (i.e., Exclusive
+Access - Registrants Only Reservation).
+The client can distinguish I⁠/⁠O errors due to fencing from other
+errors based on the Reservation Conflict NVMe status code.</t>
+        </section>
+        <section anchor="ssc_recovery" numbered="true" removeInRFC="false" toc="include" pn="section-2.2.4">
+          <name slugifiedName="name-client-recovery-after-a-fen">Client Recovery after a Fence Action</name>
+          <t indent="0" pn="section-2.2.4-1">If an NVMe command issued by the client to the storage device returns
+a non-retryable error (refer to the DNR bit defined in Figure 92 in
+<xref target="NVME-BASE" format="default" sectionFormat="of" derivedContent="NVME-BASE"/>), the client <bcp14>MUST</bcp14> commit all layouts that
+use the storage device through the MDS, return all outstanding layouts
+for the device, forget the device ID, and unregister the reservation
+key.</t>
+        </section>
+      </section>
+      <section anchor="ssc_caches" numbered="true" removeInRFC="false" toc="include" pn="section-2.3">
+        <name slugifiedName="name-volatile-write-caches">Volatile Write Caches</name>
+        <t indent="0" pn="section-2.3-1">For NVMe controllers, a volatile write cache is enabled if bit 0 of the
+Volatile Write Cache (VWC) field in the Identify Controller data
+structure, I⁠/⁠O Command Set Independent (refer to Figure 275 in <xref target="NVME-BASE" format="default" sectionFormat="of" derivedContent="NVME-BASE"/>)
+is set and the Volatile Write Cache Enable (WCE) bit (i.e., bit 00) in
+the Volatile Write Cache Feature (Feature Identifier 06h)
+(refer to Section 5.27.1.4 of <xref target="NVME-BASE" format="default" sectionFormat="of" derivedContent="NVME-BASE"/>) is set.
+If a volatile write cache is enabled on an NVMe namespace used as a
+storage device for the pNFS SCSI layout, the pNFS server (MDS) <bcp14>MUST</bcp14>
+use the NVMe Flush command to flush the volatile write cache to
+stable storage before the LAYOUTCOMMIT operation returns by using the
+Flush command (refer to Section 7.1 of <xref target="NVME-BASE" format="default" sectionFormat="of" derivedContent="NVME-BASE"/>).
+The NVMe Flush command is the equivalent to the SCSI SYNCHRONIZE
+CACHE commands.</t>
+      </section>
+    </section>
+    <section anchor="sec_security" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-3-1">NFSv4 clients access NFSv4 metadata servers using the NFSv4
+protocol. The security considerations generally described in <xref target="RFC8881" format="default" sectionFormat="of" derivedContent="RFC8881"/>
+apply to a client's interactions with
+the metadata server. However, NFSv4 clients and servers access
+NVMe storage devices at a lower layer than NFSv4. NFSv4 and
+RPC security are not directly applicable to the I⁠/⁠Os to data servers
+using NVMe.
+Refer to Sections <xref target="RFC8154" section="2.4.6" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8154#section-2.4.6" derivedContent="RFC8154">Extents Are Permissions</xref> and <xref target="RFC8154" section="4" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8154#section-4" derivedContent="RFC8154">Security Considerations</xref> of <xref target="RFC8154" format="default" sectionFormat="of" derivedContent="RFC8154"/> for the
+security considerations of direct access to block storage from NFS clients.</t>
+      <t indent="0" pn="section-3-2">pNFS with an NVMe layout can be used with NVMe transports (e.g., NVMe
+over PCIe <xref target="NVME-PCIE" format="default" sectionFormat="of" derivedContent="NVME-PCIE"/>) that provide essentially no additional security
+functionality. Or, pNFS may be used with storage protocols such as NVMe
+over TCP <xref target="NVME-TCP" format="default" sectionFormat="of" derivedContent="NVME-TCP"/> that can provide significant transport layer
+security.</t>
+      <t indent="0" pn="section-3-3">It is the responsibility of those administering and deploying pNFS with
+an NVMe layout to ensure that appropriate protection is deployed to that
+protocol based on the deployment environment as well as the nature and
+sensitivity of the data and storage devices involved.  When using IP-based
+storage protocols such as NVMe over TCP, data confidentiality and
+integrity <bcp14>SHOULD</bcp14> be provided for traffic between pNFS clients and NVMe
+storage devices by using a secure communication protocol such as Transport
+Layer Security (TLS) <xref target="RFC8446" format="default" sectionFormat="of" derivedContent="RFC8446"/>. For NVMe over TCP, TLS <bcp14>SHOULD</bcp14> be used as
+described in <xref target="NVME-TCP" format="default" sectionFormat="of" derivedContent="NVME-TCP"/> to protect traffic between pNFS clients and NVMe
+namespaces used as storage devices.</t>
+      <t indent="0" pn="section-3-4">A secure communication protocol might not be needed for pNFS with NVMe
+layouts in environments where physical and/or logical security measures
+(e.g., air gaps, isolated VLANs) provide effective access control
+commensurate with the sensitivity and value of the storage devices and data
+involved (e.g., public website contents may be significantly less sensitive
+than a database containing personal identifying information, passwords,
+and other authentication credentials).</t>
+      <t indent="0" pn="section-3-5">Physical security is a common means for protocols not based on IP. In environments where the security requirements for the storage
+protocol cannot be met, pNFS with an NVMe layout <bcp14>SHOULD NOT</bcp14> be
+deployed.</t>
+      <t indent="0" pn="section-3-6">When security is available for the data server storage protocol,
+it is generally at a different granularity and with a different
+notion of identity than NFSv4 (e.g., NFSv4 controls user access
+to files, and NVMe controls initiator access to volumes).  As
+with pNFS with the block layout type <xref target="RFC5663" format="default" sectionFormat="of" derivedContent="RFC5663"/>,
+the pNFS client is responsible for enforcing appropriate
+correspondences between these security layers. In environments
+where the security requirements are such that client-side
+protection from access to storage outside of the layout is not
+sufficient, pNFS with a SCSI layout on a NVMe namespace <bcp14>SHOULD NOT</bcp14> be deployed.</t>
+      <t indent="0" pn="section-3-7">As with other block-oriented pNFS layout types, the metadata server
+is able to fence off a client's access to the data on an NVMe namespace
+used as a storage device.  If a metadata server revokes a layout, the
+client's access <bcp14>MUST</bcp14> be terminated at the storage devices via fencing
+as specified in <xref target="ssc_fencing" format="default" sectionFormat="of" derivedContent="Section 2.2"/>.  The client has a
+subsequent opportunity to acquire a new layout.</t>
+    </section>
+    <section anchor="sec_iana" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-4-1">This document has no IANA actions.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-5">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-5.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="NVME-BASE" target="https://nvmexpress.org/wp-content/uploads/NVM-Express-Base-Specification-2.0d-2024.01.11-Ratified.pdf" quoteTitle="true" derivedAnchor="NVME-BASE">
+          <front>
+            <title>NVM Express Base Specification</title>
+            <author>
+              <organization showOnFrontPage="true">NVM Express, Inc.</organization>
+            </author>
+            <date year="2024" month="January"/>
+          </front>
+          <refcontent>Revision 2.0d</refcontent>
+        </reference>
+        <reference anchor="NVME-NVM" target="https://nvmexpress.org/wp-content/uploads/NVM-Express-             NVM-Command-Set-Specification-1.0d-2023.12.28-Ratified.pdf" quoteTitle="true" derivedAnchor="NVME-NVM">
+          <front>
+            <title>NVM Express NVM Command Set Specification</title>
+            <author>
+              <organization showOnFrontPage="true">NVM Express, Inc.</organization>
+            </author>
+            <date year="2023" month="December"/>
+          </front>
+          <refcontent>Revision 1.0d</refcontent>
+        </reference>
+        <reference anchor="NVME-TCP" target="https://nvmexpress.org/wp-content/uploads/NVM-Express-TCP-Transport-Specification-1.0d-2023.12.27-Ratified.pdf" quoteTitle="true" derivedAnchor="NVME-TCP">
+          <front>
+            <title>NVM Express TCP Transport Specification</title>
+            <author>
+              <organization showOnFrontPage="true">NVM Express, Inc.</organization>
+            </author>
+            <date year="2023" month="December"/>
+          </front>
+          <refcontent>Revision 1.0d</refcontent>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC4506" target="https://www.rfc-editor.org/info/rfc4506" quoteTitle="true" derivedAnchor="RFC4506">
+          <front>
+            <title>XDR: External Data Representation Standard</title>
+            <author fullname="M. Eisler" initials="M." role="editor" surname="Eisler"/>
+            <date month="May" year="2006"/>
+            <abstract>
+              <t indent="0">This document describes the External Data Representation Standard (XDR) protocol as it is currently deployed and accepted. This document obsoletes RFC 1832. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="67"/>
+          <seriesInfo name="RFC" value="4506"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4506"/>
+        </reference>
+        <reference anchor="RFC5663" target="https://www.rfc-editor.org/info/rfc5663" quoteTitle="true" derivedAnchor="RFC5663">
+          <front>
+            <title>Parallel NFS (pNFS) Block/Volume Layout</title>
+            <author fullname="D. Black" initials="D." surname="Black"/>
+            <author fullname="S. Fridella" initials="S." surname="Fridella"/>
+            <author fullname="J. Glasgow" initials="J." surname="Glasgow"/>
+            <date month="January" year="2010"/>
+            <abstract>
+              <t indent="0">Parallel NFS (pNFS) extends Network File Sharing version 4 (NFSv4) to allow clients to directly access file data on the storage used by the NFSv4 server. This ability to bypass the server for data access can increase both performance and parallelism, but requires additional client functionality for data access, some of which is dependent on the class of storage used. The main pNFS operations document specifies storage-class-independent extensions to NFS; this document specifies the additional extensions (primarily data structures) for use of pNFS with block- and volume-based storage. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5663"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5663"/>
+        </reference>
+        <reference anchor="RFC8154" target="https://www.rfc-editor.org/info/rfc8154" quoteTitle="true" derivedAnchor="RFC8154">
+          <front>
+            <title>Parallel NFS (pNFS) Small Computer System Interface (SCSI) Layout</title>
+            <author fullname="C. Hellwig" initials="C." surname="Hellwig"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">The Parallel Network File System (pNFS) allows a separation between the metadata (onto a metadata server) and data (onto a storage device) for a file. The Small Computer System Interface (SCSI) layout type is defined in this document as an extension to pNFS to allow the use of SCSI-based block storage devices.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8154"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8154"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8446" target="https://www.rfc-editor.org/info/rfc8446" quoteTitle="true" derivedAnchor="RFC8446">
+          <front>
+            <title>The Transport Layer Security (TLS) Protocol Version 1.3</title>
+            <author fullname="E. Rescorla" initials="E." surname="Rescorla"/>
+            <date month="August" year="2018"/>
+            <abstract>
+              <t indent="0">This document specifies version 1.3 of the Transport Layer Security (TLS) protocol. TLS allows client/server applications to communicate over the Internet in a way that is designed to prevent eavesdropping, tampering, and message forgery.</t>
+              <t indent="0">This document updates RFCs 5705 and 6066, and obsoletes RFCs 5077, 5246, and 6961. This document also specifies new requirements for TLS 1.2 implementations.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8446"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8446"/>
+        </reference>
+        <reference anchor="RFC8881" target="https://www.rfc-editor.org/info/rfc8881" quoteTitle="true" derivedAnchor="RFC8881">
+          <front>
+            <title>Network File System (NFS) Version 4 Minor Version 1 Protocol</title>
+            <author fullname="D. Noveck" initials="D." role="editor" surname="Noveck"/>
+            <author fullname="C. Lever" initials="C." surname="Lever"/>
+            <date month="August" year="2020"/>
+            <abstract>
+              <t indent="0">This document describes the Network File System (NFS) version 4 minor version 1, including features retained from the base protocol (NFS version 4 minor version 0, which is specified in RFC 7530) and protocol extensions made subsequently. The later minor version has no dependencies on NFS version 4 minor version 0, and is considered a separate protocol.</t>
+              <t indent="0">This document obsoletes RFC 5661. It substantially revises the treatment of features relating to multi-server namespace, superseding the description of those features appearing in RFC 5661.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8881"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8881"/>
+        </reference>
+        <reference anchor="SPC5" quoteTitle="true" derivedAnchor="SPC5">
+          <front>
+            <title>SCSI Primary Commands - 5 (SPC-5)</title>
+            <author>
+              <organization showOnFrontPage="true">INCITS Technical Committee T10</organization>
+            </author>
+            <date year="2019"/>
+          </front>
+          <seriesInfo name="INCITS" value="502-2019"/>
+        </reference>
+      </references>
+      <references pn="section-5.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="NVME-PCIE" target="https://nvmexpress.org/wp-content/uploads/NVM-Express-PCIe-Transport-Specification-1.0d-2023.12.27-Ratified.pdf" quoteTitle="true" derivedAnchor="NVME-PCIE">
+          <front>
+            <title>NVMe over PCIe Transport Specification</title>
+            <author>
+              <organization showOnFrontPage="true">NVM Express, Inc.</organization>
+            </author>
+            <date year="2023" month="December"/>
+          </front>
+          <refcontent>Revision 1.0d</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" anchor="acknowledgements" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1"><contact fullname="Carsten Bormann"/> converted an earlier RFCXML v2 source for this document to a markdown source format.</t>
+      <t indent="0" pn="section-appendix.a-2">David Noveck provided ample feedback to various drafts of this document.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="C." surname="Hellwig" fullname="Christoph Hellwig" role="editor">
+        <organization showOnFrontPage="true"/>
+        <address>
+          <email>hch@lst.de</email>
+        </address>
+      </author>
+      <author initials="C." surname="Lever" fullname="Charles Lever">
+        <organization abbrev="Oracle" showOnFrontPage="true">Oracle Corporation</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>chuck.lever@oracle.com</email>
+        </address>
+      </author>
+      <author initials="S." surname="Faibish" fullname="Sorin Faibish">
+        <organization showOnFrontPage="true">Opendrives.com</organization>
+        <address>
+          <postal>
+            <street>11 Selwyn Road</street>
+            <city>Newton</city>
+            <region>MA</region>
+            <code>02461</code>
+            <country>United States of America</country>
+          </postal>
+          <phone>+1 617-510-0422</phone>
+          <email>s.faibish@opendrives.com</email>
+        </address>
+      </author>
+      <author initials="D." surname="Black" fullname="David L. Black">
+        <organization showOnFrontPage="true">Dell Technologies</organization>
+        <address>
+          <postal>
+            <street>176 South Street</street>
+            <city>Hopkinton</city>
+            <region>MA</region>
+            <code>01748</code>
+            <country>United States of America</country>
+          </postal>
+          <email>david.black@dell.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

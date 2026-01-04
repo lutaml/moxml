@@ -1,0 +1,700 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="pre5378Trust200902" docName="draft-ietf-lamps-rfc8399bis-05" number="9549" category="std" consensus="true" submissionType="IETF" obsoletes="8399" updates="5280" tocInclude="true" sortRefs="true" symRefs="true" xml:lang="en" prepTime="2024-03-11T22:02:38" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-lamps-rfc8399bis-05" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9549" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="I18n Updates to RFC 5280">Internationalization Updates to RFC 5280</title>
+    <seriesInfo name="RFC" value="9549" stream="IETF"/>
+    <author initials="R." surname="Housley" fullname="Russ Housley">
+      <organization abbrev="Vigil Security" showOnFrontPage="true">Vigil Security, LLC</organization>
+      <address>
+        <postal>
+          <city>Herndon</city>
+          <region>VA</region>
+          <country>United States of America</country>
+        </postal>
+        <email>housley@vigilsec.com</email>
+      </address>
+    </author>
+    <date month="03" year="2024"/>
+    <area>SEC</area>
+    <workgroup>lamps</workgroup>
+    <keyword>Internationalized Email Address</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">The updates to RFC 5280 described in this document provide alignment
+with the 2008 specification for Internationalized Domain Names (IDNs)
+and includes support for internationalized email addresses in X.509
+certificates.  The updates ensure that name constraints for 
+email addresses that contain only ASCII characters and internationalized email addresses are handled in
+the same manner.  This document obsoletes RFC 8399.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9549" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-3">
+            This document may contain material from IETF Documents or IETF
+            Contributions published or made publicly available before November
+            10, 2008. The person(s) controlling the copyright in some of this
+            material may not have granted the IETF Trust the right to allow
+            modifications of such material outside the IETF Standards Process.
+            Without obtaining an adequate license from the person(s)
+            controlling the copyright in such materials, this document may not
+            be modified outside the IETF Standards Process, and derivative
+            works of it may not be created outside the IETF Standards Process,
+            except to format it for publication as an RFC or to translate it
+            into languages other than English.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-changes-since-rfc-8399">Changes since RFC 8399</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-updates-to-rfc-5280">Updates to RFC 5280</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-update-in-the-introduction-">Update in the Introduction (Section 1)</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-update-in-name-constraints-">Update in Name Constraints (Section 4.2.1.10)</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.3">
+                <t indent="0" pn="section-toc.1-1.2.2.3.1"><xref derivedContent="2.3" format="counter" sectionFormat="of" target="section-2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-update-in-idns-in-generalna">Update in IDNs in GeneralName (Section 7.2)</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.4">
+                <t indent="0" pn="section-toc.1-1.2.2.4.1"><xref derivedContent="2.4" format="counter" sectionFormat="of" target="section-2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-update-in-idns-in-distingui">Update in IDNs in Distinguished Names (Section 7.3)</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.5">
+                <t indent="0" pn="section-toc.1-1.2.2.5.1"><xref derivedContent="2.5" format="counter" sectionFormat="of" target="section-2.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-update-in-internationalized">Update in Internationalized Electronic Mail Addresses (Section 7.5)</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-address">Author's Address</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="intro" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">This document updates the Introduction in Section <xref target="RFC5280" section="1" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-1" derivedContent="RFC5280"/>, the Name Constraints
+certificate extension discussion in Section <xref target="RFC5280" section="4.2.1.10" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-4.2.1.10" derivedContent="RFC5280"/>, and the Processing Rules
+for Internationalized Names in Section <xref target="RFC5280" section="7" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-7" derivedContent="RFC5280"/> of RFC 5280 <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="RFC5280"/> to provide
+alignment with the 2008 specification for Internationalized Domain Names (IDNs)
+and includes support for internationalized email addresses in X.509 certificates.</t>
+      <t indent="0" pn="section-1-2">An IDN in Unicode (native character) form contains at least one
+U-label <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/>.  IDNs are carried in certificates in ACE-encoded
+form.  That is, all U-labels within an IDN are converted to A-labels.  Conversion
+of a U-label to an A-label is described in <xref target="RFC5891" format="default" sectionFormat="of" derivedContent="RFC5891"/>.</t>
+      <t indent="0" pn="section-1-3">The GeneralName structure supports many different name forms, including
+otherName for extensibility.  RFC 8398 <xref target="RFC8398" format="default" sectionFormat="of" derivedContent="RFC8398"/> specifies the
+SmtpUTF8Mailbox for internationalized email addresses.</t>
+      <t indent="0" pn="section-1-4">Note that Internationalized Domain Names in Applications specifications
+published in 2003 (IDNA2003) <xref target="RFC3490" format="default" sectionFormat="of" derivedContent="RFC3490"/> and 2008 (IDNA2008) <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/> both
+refer to the Punycode algorithm for conversion <xref target="RFC3492" format="default" sectionFormat="of" derivedContent="RFC3492"/>.</t>
+      <t indent="0" pn="section-1-5">Note that characters in the Unicode Category "Symbol, Other" (So) are
+specifically not included in IDNA2003 <xref target="RFC3490" format="default" sectionFormat="of" derivedContent="RFC3490"/> or IDNA2008 <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/>;
+the derived property values for characters in this category are calculated as
+DISALLOWED.  Thus, some characters that are allowed under the Unicode IDNA
+Compatibility Processing <xref target="UTS46" format="default" sectionFormat="of" derivedContent="UTS46"/> are not allowed under this specification.  
+For instance, ♚.example, 
+which contains the Unicode character U+1F0A1 (BLACK CHESS KING), 
+results in a failure under this specification, but it becomes 
+xn‑‑45h.example under <xref target="UTS46" format="default" sectionFormat="of" derivedContent="UTS46"/>.</t>
+      <section anchor="terms" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-terminology">Terminology</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.
+        </t>
+      </section>
+      <section anchor="changes-since-rfc-8399" numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-changes-since-rfc-8399">Changes since RFC 8399</name>
+        <t indent="0" pn="section-1.2-1">In some cases, <xref target="RFC8399" format="default" sectionFormat="of" derivedContent="RFC8399"/> required conversion of A-labels to U-labels
+in order to process name constraints for internationalized email
+addresses.  This led to implementation complexity and at least two
+security vulnerabilities.  One summary of the vulnerabilities can be
+found in <xref target="DDHQ" format="default" sectionFormat="of" derivedContent="DDHQ"/>.  Now, all IDNs
+are carried and processed as A-labels.</t>
+        <t indent="0" pn="section-1.2-2">The Introduction provides a warning to implementers about the handling of
+characters in the Unicode Category "Symbol, Other" (So), which includes
+emoji characters.</t>
+      </section>
+    </section>
+    <section anchor="updates-to-rfc-5280" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-updates-to-rfc-5280">Updates to RFC 5280</name>
+      <t indent="0" pn="section-2-1">This section provides updates to several paragraphs of <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="RFC5280"/>.  For
+clarity, if the entire section is not replaced, then the original text and
+the replacement text are shown.</t>
+      <section anchor="update-in-the-introduction-section-1" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-update-in-the-introduction-">Update in the Introduction (Section 1)</name>
+        <t indent="0" pn="section-2.1-1">This update provides references for IDNA2008.</t>
+        <t indent="0" pn="section-2.1-2">OLD</t>
+        <blockquote pn="section-2.1-3">
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-2.1-3.1">
+            <li pn="section-2.1-3.1.1">
+  Enhanced support for internationalized names is specified in
+    Section 7, with rules for encoding and comparing
+    Internationalized Domain Names, Internationalized Resource
+    Identifiers (IRIs), and distinguished names.  These rules are
+    aligned with comparison rules established in current RFCs,
+    including <xref target="RFC3490" format="default" sectionFormat="of" derivedContent="RFC3490"/>, <xref target="RFC3987" format="default" sectionFormat="of" derivedContent="RFC3987"/>, and <xref target="RFC4518" format="default" sectionFormat="of" derivedContent="RFC4518"/>.
+  </li>
+          </ul>
+        </blockquote>
+        <t indent="0" pn="section-2.1-4">NEW</t>
+        <blockquote pn="section-2.1-5">
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-2.1-5.1">
+            <li pn="section-2.1-5.1.1">
+  Enhanced support for internationalized names is specified in
+    Section 7, with rules for encoding and comparing
+    Internationalized Domain Names, Internationalized Resource
+    Identifiers (IRIs), and distinguished names.  These rules are
+    aligned with comparison rules established in current RFCs,
+    including <xref target="RFC3987" format="default" sectionFormat="of" derivedContent="RFC3987"/>, <xref target="RFC4518" format="default" sectionFormat="of" derivedContent="RFC4518"/>, <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/>, and <xref target="RFC5891" format="default" sectionFormat="of" derivedContent="RFC5891"/>.
+</li>
+          </ul>
+        </blockquote>
+      </section>
+      <section anchor="update-in-name-constraints-section-42110" numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-update-in-name-constraints-">Update in Name Constraints (Section 4.2.1.10)</name>
+        <t indent="0" pn="section-2.2-1">This update removes the ability to include constraints for a
+particular mailbox.  This capability was not used, and removing it
+allows name constraints to apply to email addresses in rfc822Name and
+SmtpUTF8Mailbox <xref target="RFC8398" format="default" sectionFormat="of" derivedContent="RFC8398"/> within otherName.</t>
+        <t indent="0" pn="section-2.2-2">OLD</t>
+        <blockquote pn="section-2.2-3">
+   A name constraint for Internet mail addresses <bcp14>MAY</bcp14> specify a
+   particular mailbox, all addresses at a particular host, or all
+   mailboxes in a domain.  To indicate a particular mailbox, the
+   constraint is the complete mail address.  For example,
+   "root@example.com" indicates the root mailbox on the host
+   "example.com".  To indicate all Internet mail addresses on a
+   particular host, the constraint is specified as the host name.  For
+   example, the constraint "example.com" is satisfied by any mail
+   address at the host "example.com".  To specify any address within a
+   domain, the constraint is specified with a leading period (as with
+   URIs).  For example, ".example.com" indicates all the Internet mail
+   addresses in the domain "example.com", but not Internet mail
+   addresses on the host "example.com".
+      </blockquote>
+        <t indent="0" pn="section-2.2-4">NEW</t>
+        <blockquote pn="section-2.2-5"> 
+   A name constraint for Internet mail addresses <bcp14>MAY</bcp14> specify all
+   addresses at a particular host or all mailboxes in a domain.  To
+   indicate all Internet mail addresses on a particular host, the
+   constraint is specified as the host name.  For example, the
+   constraint "example.com" is satisfied by any mail address at the
+   host "example.com".  To specify any address within a domain, the
+   constraint is specified with a leading period (as with URIs).  For
+   example, ".example.com" indicates all the Internet mail addresses
+   in the domain "example.com" but not Internet mail addresses on
+   the host "example.com".
+</blockquote>
+      </section>
+      <section anchor="update-in-idns-in-generalname-section-72" numbered="true" removeInRFC="false" toc="include" pn="section-2.3">
+        <name slugifiedName="name-update-in-idns-in-generalna">Update in IDNs in GeneralName (Section 7.2)</name>
+        <t indent="0" pn="section-2.3-1">This update aligns with IDNA2008.  Since all of <xref target="RFC5280" section="7.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-7.2" derivedContent="RFC5280"/> is
+replaced, the OLD text is not provided.</t>
+        <t indent="0" pn="section-2.3-2">NEW</t>
+        <blockquote pn="section-2.3-3">
+          <t indent="0" pn="section-2.3-3.1">
+   Internationalized Domain Names (IDNs) may be included in certificates
+   and CRLs in the subjectAltName and issuerAltName extensions, name
+   constraints extension, authority information access extension,
+   subject information access extension, CRL distribution points
+   extension, and issuing distribution point extension.  Each of these
+   extensions uses the GeneralName type; one choice in GeneralName is
+   the dNSName field, which is defined as type IA5String.</t>
+          <t indent="0" pn="section-2.3-3.2">
+   IA5String is limited to the set of ASCII characters.  To accommodate
+   IDNs, U-labels are converted to A-labels.  The A-label is the
+   encoding of the U-label according to the Punycode algorithm <xref target="RFC3492" format="default" sectionFormat="of" derivedContent="RFC3492"/>
+   with the ACE prefix "xn--" added at the beginning of the string.</t>
+          <t indent="0" pn="section-2.3-3.3">
+   When comparing DNS names for equality, conforming implementations
+   <bcp14>MUST</bcp14> perform a case-insensitive exact match on the entire DNS name.
+   When evaluating name constraints, conforming implementations <bcp14>MUST</bcp14>
+   perform a case-insensitive exact match on a label-by-label basis.  As
+   noted in Section <xref target="RFC5280" section="4.2.1.10" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-4.2.1.10" derivedContent="RFC5280"/>, any DNS name that may be constructed by
+   adding labels to the left-hand side of the domain name given as the
+   constraint is considered to fall within the indicated subtree.</t>
+          <t indent="0" pn="section-2.3-3.4">   Implementations that have a user interface <bcp14>SHOULD</bcp14> convert IDNs to
+   Unicode for display.  Specifically, conforming implementations
+   convert A-labels to U-labels for display purposes.</t>
+          <t indent="0" pn="section-2.3-3.5">   Implementation consideration: There are increased memory requirements
+   for IDNs.  An IDN ACE label will begin with the four additional
+   characters "xn--", and an IDN can require as many as five ASCII
+   characters to specify a single international character.</t>
+        </blockquote>
+      </section>
+      <section anchor="update-in-idns-in-distinguished-names-section-73" numbered="true" removeInRFC="false" toc="include" pn="section-2.4">
+        <name slugifiedName="name-update-in-idns-in-distingui">Update in IDNs in Distinguished Names (Section 7.3)</name>
+        <t indent="0" pn="section-2.4-1">This update aligns with IDNA2008.</t>
+        <t indent="0" pn="section-2.4-2">OLD</t>
+        <blockquote pn="section-2.4-3">
+   Domain Names may also be represented as distinguished names using
+   domain components in the subject field, the issuer field, the
+   subjectAltName extension, or the issuerAltName extension.  As with
+   the dNSName in the GeneralName type, the value of this attribute is
+   defined as an IA5String.  Each domainComponent attribute represents a
+   single label.  To represent a label from an IDN in the distinguished
+   name, the implementation <bcp14>MUST</bcp14> perform the "ToASCII" label conversion
+   specified in Section 4.1 of RFC 3490.  The label <bcp14>SHALL</bcp14> be considered
+   a "stored string".  That is, the AllowUnassigned flag <bcp14>SHALL NOT</bcp14> be
+   set.
+</blockquote>
+        <t indent="0" pn="section-2.4-4">NEW</t>
+        <blockquote pn="section-2.4-5">
+   Domain names may also be represented as distinguished names using
+   domain components in the subject field, the issuer field, the
+   subjectAltName extension, or the issuerAltName extension.  As with
+   the dNSName in the GeneralName type, the value of this attribute is
+   defined as an IA5String.  Each domainComponent attribute represents a
+   single label.  To represent a label from an IDN in the distinguished
+   name, the implementation <bcp14>MUST</bcp14> convert all U-labels to A-labels.
+</blockquote>
+      </section>
+      <section anchor="update-in-internationalized-electronic-mail-addresses-section-75" numbered="true" removeInRFC="false" toc="include" pn="section-2.5">
+        <name slugifiedName="name-update-in-internationalized">Update in Internationalized Electronic Mail Addresses (Section 7.5)</name>
+        <t indent="0" pn="section-2.5-1">This update aligns with IDNA2008 and <xref target="RFC8398" format="default" sectionFormat="of" derivedContent="RFC8398"/>.  Since all
+of <xref target="RFC5280" section="7.5" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-7.5" derivedContent="RFC5280"/> is replaced, the OLD text is not provided.</t>
+        <t indent="0" pn="section-2.5-2">NEW</t>
+        <blockquote pn="section-2.5-3">
+          <t indent="0" pn="section-2.5-3.1">
+   Electronic Mail addresses may be included in certificates and CRLs in
+   the subjectAltName and issuerAltName extensions, name constraints
+   extension, authority information access extension, subject
+   information access extension, issuing distribution point extension,
+   or CRL distribution points extension.  Each of these extensions uses
+   the GeneralName construct.  If the email address includes an IDN but
+   the local-part of the email address can be represented in ASCII, then
+   the email address is placed in the rfc822Name choice of GeneralName,
+   which is defined as type IA5String.  If the local-part of the
+   internationalized email address cannot be represented in ASCII, then
+   the internationalized email address is placed in the otherName choice
+   of GeneralName using the conventions in RFC 8398 <xref target="RFC8398" format="default" sectionFormat="of" derivedContent="RFC8398"/>.
+</t>
+          <t indent="0" pn="section-2.5-3.2">
+   When the host-part contains an IDN, conforming implementations <bcp14>MUST</bcp14>
+   convert all U-labels to A-labels.
+</t>
+          <t indent="0" pn="section-2.5-3.3">7.5.1.  Local-Part Contains Only ASCII Characters</t>
+          <t indent="0" pn="section-2.5-3.4">   Two email addresses are considered to match if:</t>
+          <ol type="%d)" indent="adaptive" spacing="normal" start="1" pn="section-2.5-3.5"><li pn="section-2.5-3.5.1" derivedCounter="1)">The local-part of each name is an exact match, AND</li>
+            <li pn="section-2.5-3.5.2" derivedCounter="2)">The host-part of each name matches using a case-insensitive
+         ASCII comparison.</li>
+          </ol>
+          <t indent="0" pn="section-2.5-3.6">
+   Implementations that have a user interface <bcp14>SHOULD</bcp14> convert the
+   host-part of internationalized email addresses specified in these
+   extensions to Unicode before display.  Specifically, conforming
+   implementations convert A-labels to U-labels for display purposes.</t>
+          <t indent="0" pn="section-2.5-3.7">   7.5.2.  Local-Part Contains Non-ASCII Characters</t>
+          <t indent="0" pn="section-2.5-3.8">   When the local-part contains non-ASCII characters, conforming
+   implementations <bcp14>MUST</bcp14> place the internationalized email address in the
+   SmtpUTF8Mailbox within the otherName choice of GeneralName as
+   specified in Section <xref target="RFC8398" section="3" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8398#section-3" derivedContent="RFC8398"/> of RFC 8398 <xref target="RFC8398" format="default" sectionFormat="of" derivedContent="RFC8398"/>.  Note that the UTF8
+   encoding of the internationalized email address <bcp14>MUST NOT</bcp14> contain a
+   Byte-Order-Mark (BOM) <xref target="RFC3629" format="default" sectionFormat="of" derivedContent="RFC3629"/> to aid comparison.  The email address
+   local-part within the SmtpUTF8Mailbox <bcp14>MUST</bcp14> conform to the
+   requirements of <xref target="RFC6530" format="default" sectionFormat="of" derivedContent="RFC6530"/> and <xref target="RFC6531" format="default" sectionFormat="of" derivedContent="RFC6531"/>.</t>
+          <t indent="0" pn="section-2.5-3.9">   Two email addresses are considered to match if:</t>
+          <ol type="%d)" indent="adaptive" spacing="normal" start="1" pn="section-2.5-3.10"><li pn="section-2.5-3.10.1" derivedCounter="1)">The local-part of each name is an exact match, AND</li>
+            <li pn="section-2.5-3.10.2" derivedCounter="2)">The host-part of each name matches using a case-insensitive
+         ASCII comparison.</li>
+          </ol>
+          <t indent="0" pn="section-2.5-3.11">
+   Implementations that have a user interface <bcp14>SHOULD</bcp14> convert the
+   host-part of internationalized email addresses specified in these
+   extensions to Unicode before display.  Specifically, conforming
+   implementations convert A-labels to U-labels for display purposes.
+</t>
+        </blockquote>
+      </section>
+    </section>
+    <section anchor="sec-cons" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-3-1">The Security Considerations related to internationalized names in 
+<xref section="4" sectionFormat="of" target="RFC5890" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5890#section-4" derivedContent="RFC5890"/> are relevant to this specification.
+</t>
+      <t indent="0" pn="section-3-2">Conforming Certification Authorities (CAs) <bcp14>SHOULD</bcp14> ensure that IDNs are valid according to IDNA2008, which
+is defined in <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/>, <xref target="RFC5891" format="default" sectionFormat="of" derivedContent="RFC5891"/>, <xref target="RFC5892" format="default" sectionFormat="of" derivedContent="RFC5892"/>, <xref target="RFC5893" format="default" sectionFormat="of" derivedContent="RFC5893"/>, <xref target="RFC5894" format="default" sectionFormat="of" derivedContent="RFC5894"/>,
+and the updates to these documents.  Failure to use valid A-labels may yield a
+domain name that cannot be correctly represented in the Domain Name System
+(DNS).  In addition, the CA/Browser Forum offers some
+guidance regarding internal server names in certificates <xref target="CABF" format="default" sectionFormat="of" derivedContent="CABF"/>.</t>
+      <t indent="0" pn="section-3-3">An earlier version of this specification <xref target="RFC8399" format="default" sectionFormat="of" derivedContent="RFC8399"/> required conversion
+of A-labels to U-labels in order to process name constraints for
+internationalized email addresses in SmtpUTF8Mailbox other names.  This
+led to implementation complexity and at least two security vulnerabilities.
+Now, all IDNs are carried and processed
+as A-labels.</t>
+    </section>
+    <section anchor="iana" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-4-1">This document has no IANA actions.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-5">
+      <name slugifiedName="name-references">References</name>
+      <references anchor="sec-normative-references" pn="section-5.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC3492" target="https://www.rfc-editor.org/info/rfc3492" quoteTitle="true" derivedAnchor="RFC3492">
+          <front>
+            <title>Punycode: A Bootstring encoding of Unicode for Internationalized Domain Names in Applications (IDNA)</title>
+            <author fullname="A. Costello" initials="A." surname="Costello"/>
+            <date month="March" year="2003"/>
+            <abstract>
+              <t indent="0">Punycode is a simple and efficient transfer encoding syntax designed for use with Internationalized Domain Names in Applications (IDNA). It uniquely and reversibly transforms a Unicode string into an ASCII string. ASCII characters in the Unicode string are represented literally, and non-ASCII characters are represented by ASCII characters that are allowed in host name labels (letters, digits, and hyphens). This document defines a general algorithm called Bootstring that allows a string of basic code points to uniquely represent any string of code points drawn from a larger set. Punycode is an instance of Bootstring that uses particular parameter values specified by this document, appropriate for IDNA. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3492"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3492"/>
+        </reference>
+        <reference anchor="RFC3629" target="https://www.rfc-editor.org/info/rfc3629" quoteTitle="true" derivedAnchor="RFC3629">
+          <front>
+            <title>UTF-8, a transformation format of ISO 10646</title>
+            <author fullname="F. Yergeau" initials="F." surname="Yergeau"/>
+            <date month="November" year="2003"/>
+            <abstract>
+              <t indent="0">ISO/IEC 10646-1 defines a large character set called the Universal Character Set (UCS) which encompasses most of the world's writing systems. The originally proposed encodings of the UCS, however, were not compatible with many current applications and protocols, and this has led to the development of UTF-8, the object of this memo. UTF-8 has the characteristic of preserving the full US-ASCII range, providing compatibility with file systems, parsers and other software that rely on US-ASCII values but are transparent to other values. This memo obsoletes and replaces RFC 2279.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="63"/>
+          <seriesInfo name="RFC" value="3629"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3629"/>
+        </reference>
+        <reference anchor="RFC3987" target="https://www.rfc-editor.org/info/rfc3987" quoteTitle="true" derivedAnchor="RFC3987">
+          <front>
+            <title>Internationalized Resource Identifiers (IRIs)</title>
+            <author fullname="M. Duerst" initials="M." surname="Duerst"/>
+            <author fullname="M. Suignard" initials="M." surname="Suignard"/>
+            <date month="January" year="2005"/>
+            <abstract>
+              <t indent="0">This document defines a new protocol element, the Internationalized Resource Identifier (IRI), as a complement of the Uniform Resource Identifier (URI). An IRI is a sequence of characters from the Universal Character Set (Unicode/ISO 10646). A mapping from IRIs to URIs is defined, which means that IRIs can be used instead of URIs, where appropriate, to identify resources.</t>
+              <t indent="0">The approach of defining a new protocol element was chosen instead of extending or changing the definition of URIs. This was done in order to allow a clear distinction and to avoid incompatibilities with existing software. Guidelines are provided for the use and deployment of IRIs in various protocols, formats, and software components that currently deal with URIs.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3987"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3987"/>
+        </reference>
+        <reference anchor="RFC4518" target="https://www.rfc-editor.org/info/rfc4518" quoteTitle="true" derivedAnchor="RFC4518">
+          <front>
+            <title>Lightweight Directory Access Protocol (LDAP): Internationalized String Preparation</title>
+            <author fullname="K. Zeilenga" initials="K." surname="Zeilenga"/>
+            <date month="June" year="2006"/>
+            <abstract>
+              <t indent="0">The previous Lightweight Directory Access Protocol (LDAP) technical specifications did not precisely define how character string matching is to be performed. This led to a number of usability and interoperability problems. This document defines string preparation algorithms for character-based matching rules defined for use in LDAP. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4518"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4518"/>
+        </reference>
+        <reference anchor="RFC5280" target="https://www.rfc-editor.org/info/rfc5280" quoteTitle="true" derivedAnchor="RFC5280">
+          <front>
+            <title>Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile</title>
+            <author fullname="D. Cooper" initials="D." surname="Cooper"/>
+            <author fullname="S. Santesson" initials="S." surname="Santesson"/>
+            <author fullname="S. Farrell" initials="S." surname="Farrell"/>
+            <author fullname="S. Boeyen" initials="S." surname="Boeyen"/>
+            <author fullname="R. Housley" initials="R." surname="Housley"/>
+            <author fullname="W. Polk" initials="W." surname="Polk"/>
+            <date month="May" year="2008"/>
+            <abstract>
+              <t indent="0">This memo profiles the X.509 v3 certificate and X.509 v2 certificate revocation list (CRL) for use in the Internet. An overview of this approach and model is provided as an introduction. The X.509 v3 certificate format is described in detail, with additional information regarding the format and semantics of Internet name forms. Standard certificate extensions are described and two Internet-specific extensions are defined. A set of required certificate extensions is specified. The X.509 v2 CRL format is described in detail along with standard and Internet-specific extensions. An algorithm for X.509 certification path validation is described. An ASN.1 module and examples are provided in the appendices. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5280"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5280"/>
+        </reference>
+        <reference anchor="RFC5890" target="https://www.rfc-editor.org/info/rfc5890" quoteTitle="true" derivedAnchor="RFC5890">
+          <front>
+            <title>Internationalized Domain Names for Applications (IDNA): Definitions and Document Framework</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="August" year="2010"/>
+            <abstract>
+              <t indent="0">This document is one of a collection that, together, describe the protocol and usage context for a revision of Internationalized Domain Names for Applications (IDNA), superseding the earlier version. It describes the document collection and provides definitions and other material that are common to the set. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5890"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5890"/>
+        </reference>
+        <reference anchor="RFC5891" target="https://www.rfc-editor.org/info/rfc5891" quoteTitle="true" derivedAnchor="RFC5891">
+          <front>
+            <title>Internationalized Domain Names in Applications (IDNA): Protocol</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="August" year="2010"/>
+            <abstract>
+              <t indent="0">This document is the revised protocol definition for Internationalized Domain Names (IDNs). The rationale for changes, the relationship to the older specification, and important terminology are provided in other documents. This document specifies the protocol mechanism, called Internationalized Domain Names in Applications (IDNA), for registering and looking up IDNs in a way that does not require changes to the DNS itself. IDNA is only meant for processing domain names, not free text. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5891"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5891"/>
+        </reference>
+        <reference anchor="RFC5892" target="https://www.rfc-editor.org/info/rfc5892" quoteTitle="true" derivedAnchor="RFC5892">
+          <front>
+            <title>The Unicode Code Points and Internationalized Domain Names for Applications (IDNA)</title>
+            <author fullname="P. Faltstrom" initials="P." role="editor" surname="Faltstrom"/>
+            <date month="August" year="2010"/>
+            <abstract>
+              <t indent="0">This document specifies rules for deciding whether a code point, considered in isolation or in context, is a candidate for inclusion in an Internationalized Domain Name (IDN).</t>
+              <t indent="0">It is part of the specification of Internationalizing Domain Names in Applications 2008 (IDNA2008). [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5892"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5892"/>
+        </reference>
+        <reference anchor="RFC5893" target="https://www.rfc-editor.org/info/rfc5893" quoteTitle="true" derivedAnchor="RFC5893">
+          <front>
+            <title>Right-to-Left Scripts for Internationalized Domain Names for Applications (IDNA)</title>
+            <author fullname="H. Alvestrand" initials="H." role="editor" surname="Alvestrand"/>
+            <author fullname="C. Karp" initials="C." surname="Karp"/>
+            <date month="August" year="2010"/>
+            <abstract>
+              <t indent="0">The use of right-to-left scripts in Internationalized Domain Names (IDNs) has presented several challenges. This memo provides a new Bidi rule for Internationalized Domain Names for Applications (IDNA) labels, based on the encountered problems with some scripts and some shortcomings in the 2003 IDNA Bidi criterion. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5893"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5893"/>
+        </reference>
+        <reference anchor="RFC6530" target="https://www.rfc-editor.org/info/rfc6530" quoteTitle="true" derivedAnchor="RFC6530">
+          <front>
+            <title>Overview and Framework for Internationalized Email</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <author fullname="Y. Ko" initials="Y." surname="Ko"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">Full use of electronic mail throughout the world requires that (subject to other constraints) people be able to use close variations on their own names (written correctly in their own languages and scripts) as mailbox names in email addresses. This document introduces a series of specifications that define mechanisms and protocol extensions needed to fully support internationalized email addresses. These changes include an SMTP extension and extension of email header syntax to accommodate UTF-8 data. The document set also includes discussion of key assumptions and issues in deploying fully internationalized email. This document is a replacement for RFC 4952; it reflects additional issues identified since that document was published. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6530"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6530"/>
+        </reference>
+        <reference anchor="RFC6531" target="https://www.rfc-editor.org/info/rfc6531" quoteTitle="true" derivedAnchor="RFC6531">
+          <front>
+            <title>SMTP Extension for Internationalized Email</title>
+            <author fullname="J. Yao" initials="J." surname="Yao"/>
+            <author fullname="W. Mao" initials="W." surname="Mao"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">This document specifies an SMTP extension for transport and delivery of email messages with internationalized email addresses or header information. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6531"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6531"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8398" target="https://www.rfc-editor.org/info/rfc8398" quoteTitle="true" derivedAnchor="RFC8398">
+          <front>
+            <title>Internationalized Email Addresses in X.509 Certificates</title>
+            <author fullname="A. Melnikov" initials="A." role="editor" surname="Melnikov"/>
+            <author fullname="W. Chuang" initials="W." role="editor" surname="Chuang"/>
+            <date month="May" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a new name form for inclusion in the otherName field of an X.509 Subject Alternative Name and Issuer Alternative Name extension that allows a certificate subject to be associated with an internationalized email address.</t>
+              <t indent="0">This document updates RFC 5280.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8398"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8398"/>
+        </reference>
+      </references>
+      <references anchor="sec-informative-references" pn="section-5.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="CABF" target="https://cabforum.org/internal-names/" quoteTitle="true" derivedAnchor="CABF">
+          <front>
+            <title>Internal Server Names and IP Address Requirements for SSL: Guidance on the Deprecation of Internal Server Names and Reserved IP Addresses provided by the CA/Browser Forum</title>
+            <author>
+              <organization showOnFrontPage="true">CA/Browser Forum</organization>
+            </author>
+            <date year="2012" month="June"/>
+          </front>
+          <refcontent>Version 1.0</refcontent>
+        </reference>
+        <reference anchor="DDHQ" target="https://securitylabs.datadoghq.com/articles/openssl-november-1-vulnerabilities/" quoteTitle="true" derivedAnchor="DDHQ">
+          <front>
+            <title>The OpenSSL punycode vulnerability (CVE-2022-3602): Overview, detection, exploitation, and remediation</title>
+            <author>
+              <organization showOnFrontPage="true">Datadog Security Labs</organization>
+            </author>
+            <date year="2022" month="November" day="01"/>
+          </front>
+        </reference>
+        <reference anchor="RFC3490" target="https://www.rfc-editor.org/info/rfc3490" quoteTitle="true" derivedAnchor="RFC3490">
+          <front>
+            <title>Internationalizing Domain Names in Applications (IDNA)</title>
+            <author fullname="P. Faltstrom" initials="P." surname="Faltstrom"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="A. Costello" initials="A." surname="Costello"/>
+            <date month="March" year="2003"/>
+            <abstract>
+              <t indent="0">Until now, there has been no standard method for domain names to use characters outside the ASCII repertoire. This document defines internationalized domain names (IDNs) and a mechanism called Internationalizing Domain Names in Applications (IDNA) for handling them in a standard fashion. IDNs use characters drawn from a large repertoire (Unicode), but IDNA allows the non-ASCII characters to be represented using only the ASCII characters already allowed in so-called host names today. This backward-compatible representation is required in existing protocols like DNS, so that IDNs can be introduced with no changes to the existing infrastructure. IDNA is only meant for processing domain names, not free text. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3490"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3490"/>
+        </reference>
+        <reference anchor="RFC5894" target="https://www.rfc-editor.org/info/rfc5894" quoteTitle="true" derivedAnchor="RFC5894">
+          <front>
+            <title>Internationalized Domain Names for Applications (IDNA): Background, Explanation, and Rationale</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="August" year="2010"/>
+            <abstract>
+              <t indent="0">Several years have passed since the original protocol for Internationalized Domain Names (IDNs) was completed and deployed. During that time, a number of issues have arisen, including the need to update the system to deal with newer versions of Unicode. Some of these issues require tuning of the existing protocols and the tables on which they depend. This document provides an overview of a revised system and provides explanatory material for its components. This document is not an Internet Standards Track specification; it is published for informational purposes.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5894"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5894"/>
+        </reference>
+        <reference anchor="RFC8399" target="https://www.rfc-editor.org/info/rfc8399" quoteTitle="true" derivedAnchor="RFC8399">
+          <front>
+            <title>Internationalization Updates to RFC 5280</title>
+            <author fullname="R. Housley" initials="R." surname="Housley"/>
+            <date month="May" year="2018"/>
+            <abstract>
+              <t indent="0">The updates to RFC 5280 described in this document provide alignment with the 2008 specification for Internationalized Domain Names (IDNs) and add support for internationalized email addresses in X.509 certificates.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8399"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8399"/>
+        </reference>
+        <reference anchor="UTS46" target="https://www.unicode.org/reports/tr46" quoteTitle="true" derivedAnchor="UTS46">
+          <front>
+            <title>Unicode Technical Standard #46: Unicode IDNA Compatibility Processing</title>
+            <author initials="M." surname="Davis" fullname="Mark Davis">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="M." surname="Suignard" fullname="Michel Suignard">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2023" month="September"/>
+          </front>
+          <refcontent>Revision 31, The Unicode Consortium, Mountain View</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" anchor="acknowledgements" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">Thanks to <contact fullname="David Benjamin"/> and <contact fullname="Wei Chuang"/>
+for identifying the issue and a solution.</t>
+      <t indent="0" pn="section-appendix.a-2">Thanks to <contact fullname="Takahiro Nemoto"/>,
+<contact fullname="John Klensin"/>, <contact fullname="Mike Ounsworth"/>, and <contact fullname="Orie Steele"/> for their
+careful review and thoughtful comments.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-address">Author's Address</name>
+      <author initials="R." surname="Housley" fullname="Russ Housley">
+        <organization abbrev="Vigil Security" showOnFrontPage="true">Vigil Security, LLC</organization>
+        <address>
+          <postal>
+            <city>Herndon</city>
+            <region>VA</region>
+            <country>United States of America</country>
+          </postal>
+          <email>housley@vigilsec.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

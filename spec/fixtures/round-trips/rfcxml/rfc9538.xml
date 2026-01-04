@@ -1,0 +1,746 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" number="9538" docName="draft-ietf-cdni-delegation-acme-04" category="std" consensus="true" submissionType="IETF" tocInclude="true" obsoletes="" updates="" sortRefs="true" symRefs="true" xml:lang="en" prepTime="2024-02-22T12:45:38" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-cdni-delegation-acme-04" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9538" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="CDNI Delegation Using ACME">Content Delivery Network Interconnection (CDNI) Delegation Using the Automated Certificate Management Environment</title>
+    <seriesInfo name="RFC" value="9538" stream="IETF"/>
+    <author initials="F." surname="Fieau" fullname="Frédéric Fieau" role="editor">
+      <organization showOnFrontPage="true">Orange</organization>
+      <address>
+        <postal>
+          <street>40-48, avenue de la République</street>
+          <city>Châtillon</city>
+          <code>92320</code>
+          <country>France</country>
+        </postal>
+        <email>frederic.fieau@orange.com</email>
+      </address>
+    </author>
+    <author initials="E." surname="Stephan" fullname="Emile Stephan">
+      <organization showOnFrontPage="true">Orange</organization>
+      <address>
+        <postal>
+          <street>2, avenue Pierre Marzin</street>
+          <city>Lannion</city>
+          <code>22300</code>
+          <country>France</country>
+        </postal>
+        <email>emile.stephan@orange.com</email>
+      </address>
+    </author>
+    <author initials="S." surname="Mishra" fullname="Sanjay Mishra">
+      <organization showOnFrontPage="true">Verizon</organization>
+      <address>
+        <postal>
+          <street>13100 Columbia Pike</street>
+          <city>Silver Spring</city>
+          <region>MD</region>
+          <code>20904</code>
+          <country>United States of America</country>
+        </postal>
+        <email>sanjay.mishra@verizon.com</email>
+      </address>
+    </author>
+    <date month="02" year="2024"/>
+    <area>art</area>
+    <workgroup>cdni</workgroup>
+    <keyword>HTTPS</keyword>
+    <keyword>delegation</keyword>
+    <keyword>ACME</keyword>
+    <keyword>STAR</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document defines metadata to support delegating the
+    delivery of HTTPS content between two or more interconnected Content
+    Delivery Networks (CDNs).  Specifically, this document defines a Content
+    Delivery Network Interconnection (CDNI) Metadata interface object to
+    enable delegation of X.509 certificates leveraging delegation schemes
+    defined in RFC 9115.  Per RFC 9115, delegating entities can remain in full control of the delegation and can revoke it at any time. This avoids the need to share private cryptographic key material between the involved entities.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9538" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-advertising-delegation-meta">Advertising Delegation Metadata for CDNI through FCI</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-acme-delegation-metadata-fo">ACME Delegation Metadata for CDNI</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-acmedelegationmethod-object">ACMEDelegationMethod Object</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2.1.2">
+                  <li pn="section-toc.1-1.3.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.1.1"><xref derivedContent="3.1.1" format="counter" sectionFormat="of" target="section-3.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-examples">Examples</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-cdni-mi-acmedelegationmetho">CDNI MI ACMEDelegationMethod Payload Type</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">Content delivery over HTTPS using two or more cooperating CDNs along the path requires
+credential management, specifically when DNS-based redirection is used.  In such cases, an upstream CDN (uCDN) needs to delegate its credentials to a downstream CDN (dCDN) for content delivery.</t>
+      <t indent="0" pn="section-1-2"><xref target="RFC9115" format="default" sectionFormat="of" derivedContent="RFC9115"/> defines delegation methods that allow a uCDN on behalf of the content provider, the holder of the domain, to generate on-demand an X.509
+certificate that binds the designated domain name with a key pair owned by the dCDN.  For further details, please refer
+to Sections <xref section="1" sectionFormat="bare" target="RFC9115" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9115#section-1" derivedContent="RFC9115"/> and <xref section="5.1.2.1" sectionFormat="bare" target="RFC9115" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9115#section-5.1.2.1" derivedContent="RFC9115"/> of <xref target="RFC9115" format="default" sectionFormat="of" derivedContent="RFC9115"/>.</t>
+      <t indent="0" pn="section-1-3">This document defines CDNI Metadata to make use of HTTPS delegation between a
+uCDN and a dCDN based on the mechanism specified in <xref target="RFC9115" format="default" sectionFormat="of" derivedContent="RFC9115"/>.  Furthermore,
+it adds a delegation method to the "CDNI Payload Types" IANA registry.</t>
+      <t indent="0" pn="section-1-4"><xref target="fci-metadata" format="default" sectionFormat="of" derivedContent="Section 2"/> presents delegation metadata for the Footprint &amp; Capabilities Advertisement interface (FCI).  <xref target="mi-metadata" format="default" sectionFormat="of" derivedContent="Section 3"/> addresses the metadata for handling HTTPS delegation with the Metadata interface.</t>
+      <section anchor="terminology" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-terminology">Terminology</name>
+        <t indent="0" pn="section-1.1-1">This document uses terminology from CDNI framework documents such as: CDNI
+framework document <xref target="RFC7336" format="default" sectionFormat="of" derivedContent="RFC7336"/> and CDNI
+interface specifications documents: CDNI Metadata interface <xref target="RFC8006" format="default" sectionFormat="of" derivedContent="RFC8006"/> and
+CDNI Footprint and Capabilities Advertisement interface <xref target="RFC8008" format="default" sectionFormat="of" derivedContent="RFC8008"/>.  It also uses terminology from
+<xref section="1.2" sectionFormat="of" target="RFC8739" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8739#section-1.2" derivedContent="RFC8739"/> and <xref section="1.1" sectionFormat="of" target="RFC9115" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9115#section-1.1" derivedContent="RFC9115"/>, including Short-Term, Automatically Renewed (STAR), as applied to X.509 certificates.</t>
+        <t indent="0" pn="section-1.1-2">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+"<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they
+appear in all capitals, as shown here.
+
+        </t>
+      </section>
+    </section>
+    <section anchor="fci-metadata" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-advertising-delegation-meta">Advertising Delegation Metadata for CDNI through FCI</name>
+      <t indent="0" pn="section-2-1">The Footprint &amp; Capabilities Advertisement interface (FCI) defined in <xref target="RFC8008" format="default" sectionFormat="of" derivedContent="RFC8008"/> allows a
+dCDN to send a FCI capability type object to a uCDN.</t>
+      <t indent="0" pn="section-2-2">This document uses the CDNI Metadata capability object serialization from <xref target="RFC8008" format="default" sectionFormat="of" derivedContent="RFC8008"/> for a CDN that supports
+delegation methods.</t>
+      <t indent="0" pn="section-2-3">The following is an example of the supported delegated methods capability
+object for a dCDN implementing the ACME delegation method.</t>
+      <sourcecode type="json" markers="false" pn="section-2-4">
+{
+  "capabilities": [
+    {
+      "capability-type": "FCI.Metadata",
+      "capability-value": {
+        "metadata": [
+          // list of supported delegation methods
+          "ACMEDelegationMethod"
+        ]
+      },
+      "footprints": [
+        "Footprint objects"
+      ]
+    }
+  ]
+}
+</sourcecode>
+    </section>
+    <section anchor="mi-metadata" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-acme-delegation-metadata-fo">ACME Delegation Metadata for CDNI</name>
+      <t indent="0" pn="section-3-1">When a uCDN delegates the delivery of HTTPS traffic to a dCDN using DNS redirection
+<xref target="RFC7336" format="default" sectionFormat="of" derivedContent="RFC7336"/>, the dCDN must use a certificate bound to the origin's name to
+successfully authenticate to the end-user (see also <xref section="5.1.2.1" sectionFormat="of" target="RFC9115" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9115#section-5.1.2.1" derivedContent="RFC9115"/>).</t>
+      <t indent="0" pn="section-3-2">To that end, this section defines the AcmeDelegationMethod object, which
+describes metadata for using the ACME delegation interface <xref target="RFC9115" format="default" sectionFormat="of" derivedContent="RFC9115"/>.</t>
+      <t indent="0" pn="section-3-3">The ACMEDelegationMethod applies to both ACME STAR delegation, which provides a
+delegation model based on short-term certificates with automatic renewal (<xref section="2.3.2" sectionFormat="of" target="RFC9115" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9115#section-2.3.2" derivedContent="RFC9115"/>), and
+non-STAR delegation, which allows delegation between CDNs using long-term
+certificates (<xref section="2.3.3" sectionFormat="of" target="RFC9115" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9115#section-2.3.3" derivedContent="RFC9115"/>).</t>
+      <t indent="0" pn="section-3-4"><xref target="fig-call-flow" format="default" sectionFormat="of" derivedContent="Figure 1"/> provides a high-level view of the combined CDNI and ACME
+delegation message flows to obtain a STAR certificate from the Certification Authority (CA) bound to the Content Provider's (CP) name.</t>
+      <figure anchor="fig-call-flow" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-example-call-flow-of-star-d">Example Call Flow of STAR Delegation in CDNI Showing Two Levels of Delegation</name>
+        <artset pn="section-3-5.1">
+          <artwork type="svg" align="center" pn="section-3-5.1.1"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 584 656" class="diagram" text-anchor="middle" font-family="monospace" font-size="13px" stroke-linecap="round">
+              <path d="M 8,32 L 8,64" fill="none" stroke="black"/>
+              <path d="M 24,64 L 24,640" fill="none" stroke="black"/>
+              <path d="M 48,32 L 48,64" fill="none" stroke="black"/>
+              <path d="M 64,272 L 64,288" fill="none" stroke="black"/>
+              <path d="M 64,352 L 64,368" fill="none" stroke="black"/>
+              <path d="M 184,32 L 184,64" fill="none" stroke="black"/>
+              <path d="M 200,64 L 200,544" fill="none" stroke="black"/>
+              <path d="M 224,32 L 224,64" fill="none" stroke="black"/>
+              <path d="M 352,32 L 352,64" fill="none" stroke="black"/>
+              <path d="M 376,64 L 376,544" fill="none" stroke="black"/>
+              <path d="M 392,32 L 392,64" fill="none" stroke="black"/>
+              <path d="M 536,32 L 536,64" fill="none" stroke="black"/>
+              <path d="M 560,64 L 560,640" fill="none" stroke="black"/>
+              <path d="M 576,32 L 576,64" fill="none" stroke="black"/>
+              <path d="M 8,32 L 48,32" fill="none" stroke="black"/>
+              <path d="M 184,32 L 224,32" fill="none" stroke="black"/>
+              <path d="M 352,32 L 392,32" fill="none" stroke="black"/>
+              <path d="M 536,32 L 576,32" fill="none" stroke="black"/>
+              <path d="M 8,64 L 48,64" fill="none" stroke="black"/>
+              <path d="M 184,64 L 224,64" fill="none" stroke="black"/>
+              <path d="M 352,64 L 392,64" fill="none" stroke="black"/>
+              <path d="M 536,64 L 576,64" fill="none" stroke="black"/>
+              <path d="M 24,96 L 88,96" fill="none" stroke="black"/>
+              <path d="M 144,96 L 192,96" fill="none" stroke="black"/>
+              <path d="M 32,144 L 88,144" fill="none" stroke="black"/>
+              <path d="M 144,144 L 200,144" fill="none" stroke="black"/>
+              <path d="M 24,192 L 64,192" fill="none" stroke="black"/>
+              <path d="M 160,192 L 192,192" fill="none" stroke="black"/>
+              <path d="M 32,240 L 64,240" fill="none" stroke="black"/>
+              <path d="M 160,240 L 200,240" fill="none" stroke="black"/>
+              <path d="M 24,272 L 64,272" fill="none" stroke="black"/>
+              <path d="M 32,368 L 64,368" fill="none" stroke="black"/>
+              <path d="M 24,416 L 64,416" fill="none" stroke="black"/>
+              <path d="M 160,416 L 192,416" fill="none" stroke="black"/>
+              <path d="M 200,448 L 240,448" fill="none" stroke="black"/>
+              <path d="M 336,448 L 368,448" fill="none" stroke="black"/>
+              <path d="M 376,480 L 416,480" fill="none" stroke="black"/>
+              <path d="M 512,480 L 552,480" fill="none" stroke="black"/>
+              <path d="M 384,512 L 408,512" fill="none" stroke="black"/>
+              <path d="M 528,512 L 552,512" fill="none" stroke="black"/>
+              <path d="M 32,544 L 56,544" fill="none" stroke="black"/>
+              <path d="M 168,544 L 192,544" fill="none" stroke="black"/>
+              <path d="M 208,544 L 232,544" fill="none" stroke="black"/>
+              <path d="M 344,544 L 368,544" fill="none" stroke="black"/>
+              <path d="M 384,544 L 408,544" fill="none" stroke="black"/>
+              <path d="M 520,544 L 552,544" fill="none" stroke="black"/>
+              <path d="M 24,592 L 552,592" fill="none" stroke="black"/>
+              <path d="M 32,624 L 560,624" fill="none" stroke="black"/>
+              <polygon class="arrowhead" points="560,592 548,586.4 548,597.6" fill="black" transform="rotate(0,552,592)"/>
+              <polygon class="arrowhead" points="560,544 548,538.4 548,549.6" fill="black" transform="rotate(0,552,544)"/>
+              <polygon class="arrowhead" points="560,512 548,506.4 548,517.6" fill="black" transform="rotate(0,552,512)"/>
+              <polygon class="arrowhead" points="560,480 548,474.4 548,485.6" fill="black" transform="rotate(0,552,480)"/>
+              <polygon class="arrowhead" points="392,544 380,538.4 380,549.6" fill="black" transform="rotate(180,384,544)"/>
+              <polygon class="arrowhead" points="392,512 380,506.4 380,517.6" fill="black" transform="rotate(180,384,512)"/>
+              <polygon class="arrowhead" points="376,544 364,538.4 364,549.6" fill="black" transform="rotate(0,368,544)"/>
+              <polygon class="arrowhead" points="376,448 364,442.4 364,453.6" fill="black" transform="rotate(0,368,448)"/>
+              <polygon class="arrowhead" points="216,544 204,538.4 204,549.6" fill="black" transform="rotate(180,208,544)"/>
+              <polygon class="arrowhead" points="200,544 188,538.4 188,549.6" fill="black" transform="rotate(0,192,544)"/>
+              <polygon class="arrowhead" points="200,416 188,410.4 188,421.6" fill="black" transform="rotate(0,192,416)"/>
+              <polygon class="arrowhead" points="200,192 188,186.4 188,197.6" fill="black" transform="rotate(0,192,192)"/>
+              <polygon class="arrowhead" points="200,96 188,90.4 188,101.6" fill="black" transform="rotate(0,192,96)"/>
+              <polygon class="arrowhead" points="40,624 28,618.4 28,629.6" fill="black" transform="rotate(180,32,624)"/>
+              <polygon class="arrowhead" points="40,544 28,538.4 28,549.6" fill="black" transform="rotate(180,32,544)"/>
+              <polygon class="arrowhead" points="40,368 28,362.4 28,373.6" fill="black" transform="rotate(180,32,368)"/>
+              <polygon class="arrowhead" points="40,240 28,234.4 28,245.6" fill="black" transform="rotate(180,32,240)"/>
+              <polygon class="arrowhead" points="40,144 28,138.4 28,149.6" fill="black" transform="rotate(180,32,144)"/>
+              <g class="text">
+                <text x="28" y="52">dCDN</text>
+                <text x="204" y="52">uCDN</text>
+                <text x="372" y="52">CP</text>
+                <text x="556" y="52">CA</text>
+                <text x="80" y="84">GET</text>
+                <text x="132" y="84">metadata</text>
+                <text x="116" y="100">[CDNI]</text>
+                <text x="64" y="116">200</text>
+                <text x="96" y="116">OK,</text>
+                <text x="148" y="116">metadata</text>
+                <text x="64" y="132">(inc.</text>
+                <text x="108" y="132">dele</text>
+                <text x="160" y="132">config)</text>
+                <text x="116" y="148">[CDNI]</text>
+                <text x="72" y="180">GET</text>
+                <text x="132" y="180">delegation</text>
+                <text x="88" y="196">[ACME</text>
+                <text x="136" y="196">dele]</text>
+                <text x="48" y="212">200</text>
+                <text x="80" y="212">OK,</text>
+                <text x="140" y="212">delegation</text>
+                <text x="56" y="228">(inc.</text>
+                <text x="96" y="228">CSR</text>
+                <text x="152" y="228">template)</text>
+                <text x="88" y="244">[ACME</text>
+                <text x="136" y="244">dele]</text>
+                <text x="68" y="308">create</text>
+                <text x="112" y="308">key</text>
+                <text x="148" y="308">pair</text>
+                <text x="184" y="308">and</text>
+                <text x="56" y="324">CSR</text>
+                <text x="84" y="324">w/</text>
+                <text x="136" y="324">delegated</text>
+                <text x="60" y="340">name</text>
+                <text x="84" y="404">POST</text>
+                <text x="132" y="404">Order1</text>
+                <text x="88" y="420">[ACME</text>
+                <text x="136" y="420">dele]</text>
+                <text x="256" y="436">forward</text>
+                <text x="316" y="436">Order1</text>
+                <text x="264" y="452">[ACME</text>
+                <text x="312" y="452">dele]</text>
+                <text x="436" y="468">POST</text>
+                <text x="484" y="468">Order2</text>
+                <text x="440" y="484">[ACME</text>
+                <text x="488" y="484">STAR]</text>
+                <text x="468" y="516">authorizations</text>
+                <text x="76" y="548">wait</text>
+                <text x="132" y="548">issuance</text>
+                <text x="252" y="548">wait</text>
+                <text x="308" y="548">issuance</text>
+                <text x="428" y="548">wait</text>
+                <text x="484" y="548">issuance</text>
+                <text x="208" y="580">(unauthenticated)</text>
+                <text x="296" y="580">GET</text>
+                <text x="380" y="580">star-certificate</text>
+                <text x="280" y="612">certificate</text>
+                <text x="340" y="612">#1</text>
+                <text x="280" y="644">...</text>
+              </g>
+            </svg>
+          </artwork>
+          <artwork type="ascii-art" align="center" pn="section-3-5.1.2">
+.----.                .----.               .----.                 .----.
+|dCDN|                |uCDN|               | CP |                 | CA |
+'-+--'                '-+--'               '--+-'                 '--+-'
+  |     GET metadata    |                     |                      |
+  +--------[CDNI]------&gt;|                     |                      |
+  |   200 OK, metadata  |                     |                      |
+  |  (inc. dele config) |                     |                      |
+  |&lt;-------[CDNI]-------+                     |                      |
+  |                     |                     |                      |
+  |    GET delegation   |                     |                      |
+  +-----[ACME dele]----&gt;|                     |                      |
+  | 200 OK, delegation  |                     |                      |
+  | (inc. CSR template) |                     |                      |
+  |&lt;----[ACME dele]-----+                     |                      |
+  |                     |                     |                      |
+  +----.                |                     |                      |
+  |    |                |                     |                      |
+  |  create key pair and|                     |                      |
+  |  CSR w/ delegated   |                     |                      |
+  |  name               |                     |                      |
+  |    |                |                     |                      |
+  |&lt;---'                |                     |                      |
+  |                     |                     |                      |
+  |     POST Order1     |                     |                      |
+  +-----[ACME dele]----&gt;|                     |                      |
+  |                     |   forward Order1    |                      |
+  |                     +-----[ACME dele]----&gt;|                      |
+  |                     |                     |     POST Order2      |
+  |                     |                     +-----[ACME STAR]-----&gt;|
+  |                     |                     |                      |
+  |                     |                     |&lt;---authorizations---&gt;|
+  |                     |                     |                      |
+  |&lt;---wait issuance---&gt;|&lt;---wait issuance---&gt;|&lt;---wait issuance----&gt;|
+  |                                                                  |
+  |              (unauthenticated) GET star-certificate              |
+  +-----------------------------------------------------------------&gt;|
+  |                          certificate #1                          |
+  |&lt;-----------------------------------------------------------------+
+  |                              ...                                 |
+</artwork>
+        </artset>
+      </figure>
+      <aside pn="section-3-6">
+        <t indent="0" pn="section-3-6.1">Note: The delegation object defined in <xref section="2.3.1.3" sectionFormat="of" target="RFC9115" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9115#section-2.3.1.3" derivedContent="RFC9115"/> only allows DNS mappings to be specified using CNAME RRs.  A future document updating <xref target="RFC9115" format="default" sectionFormat="of" derivedContent="RFC9115"/> could expand the delegation object to also include SVCB/HTTPS-based mappings <xref target="RFC9460" format="default" sectionFormat="of" derivedContent="RFC9460"/>.</t>
+      </aside>
+      <t indent="0" pn="section-3-7"><xref target="acmedeleobj" format="default" sectionFormat="of" derivedContent="Section 3.1"/> defines the objects used for bootstrapping the ACME delegation
+method between a uCDN and a delegate dCDN.</t>
+      <section anchor="acmedeleobj" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-acmedelegationmethod-object">ACMEDelegationMethod Object</name>
+        <t indent="0" pn="section-3.1-1">The ACMEDelegationMethod object allows a uCDN to define both STAR and non-STAR delegations. The dCDN, the consumer of the delegation, can determine the type of delegation by the presence (or absence) of the "lifetime" property. That is, the presence of the "lifetime" property explicitly means a short-term delegation with lifetime of the certificate based on that property (and the optional "lifetime-adjust" attribute). A non-STAR delegation will not have the "lifetime" property in the delegation.  See also the examples in <xref target="examples" format="default" sectionFormat="of" derivedContent="Section 3.1.1"/>.</t>
+        <t indent="0" pn="section-3.1-2">The ACMEDelegationMethod object is defined with the properties shown below.</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1-3">
+          <li pn="section-3.1-3.1">
+            <t indent="0" pn="section-3.1-3.1.1">Property: acme-delegation  </t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1-3.1.2">
+              <li pn="section-3.1-3.1.2.1">
+                <t indent="0" pn="section-3.1-3.1.2.1.1">Description: A URL pointing at an ACME delegation object, either STAR or non-STAR, associated with the dCDN account on the uCDN ACME server (see <xref section="2.3.1.3" sectionFormat="of" target="RFC9115" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9115#section-2.3.1.3" derivedContent="RFC9115"/> for the details). The URL <bcp14>MUST</bcp14> use the https scheme.</t>
+              </li>
+              <li pn="section-3.1-3.1.2.2">
+                <t indent="0" pn="section-3.1-3.1.2.2.1">Type: String</t>
+              </li>
+              <li pn="section-3.1-3.1.2.3">
+                <t indent="0" pn="section-3.1-3.1.2.3.1">Mandatory-to-Specify: Yes</t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-3.1-3.2">
+            <t indent="0" pn="section-3.1-3.2.1">Property: time-window  </t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1-3.2.2">
+              <li pn="section-3.1-3.2.2.1">
+                <t indent="0" pn="section-3.1-3.2.2.1.1">Description: Validity period of the certificate. According to <xref section="4.3.4" sectionFormat="of" target="RFC8006" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8006#section-4.3.4" derivedContent="RFC8006"/>, a TimeWindow object is defined by a window "start" time and a window "end" time. In the case of a STAR method, the "start" and "end" properties of the window <bcp14>MUST</bcp14> be understood respectively as the start-date and end-date of the certificate validity. In the case of a non-STAR method, the "start" and "end" properties of the window <bcp14>MUST</bcp14> be understood, respectively, as the notBefore and notAfter fields of the certificate.</t>
+              </li>
+              <li pn="section-3.1-3.2.2.2">
+                <t indent="0" pn="section-3.1-3.2.2.2.1">Type: TimeWindow</t>
+              </li>
+              <li pn="section-3.1-3.2.2.3">
+                <t indent="0" pn="section-3.1-3.2.2.3.1">Mandatory-to-Specify: Yes</t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-3.1-3.3">
+            <t indent="0" pn="section-3.1-3.3.1">Property: lifetime  </t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1-3.3.2">
+              <li pn="section-3.1-3.3.2.1">
+                <t indent="0" pn="section-3.1-3.3.2.1.1">Description: See lifetime in <xref section="3.1.1" sectionFormat="of" target="RFC8739" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8739#section-3.1.1" derivedContent="RFC8739"/></t>
+              </li>
+              <li pn="section-3.1-3.3.2.2">
+                <t indent="0" pn="section-3.1-3.3.2.2.1">Type: Integer</t>
+              </li>
+              <li pn="section-3.1-3.3.2.3">
+                <t indent="0" pn="section-3.1-3.3.2.3.1">Mandatory-to-Specify: Yes, only if a STAR delegation method is specified</t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-3.1-3.4">
+            <t indent="0" pn="section-3.1-3.4.1">Property: lifetime-adjust  </t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1-3.4.2">
+              <li pn="section-3.1-3.4.2.1">
+                <t indent="0" pn="section-3.1-3.4.2.1.1">Description: See lifetime-adjust in <xref section="3.1.1" sectionFormat="of" target="RFC8739" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8739#section-3.1.1" derivedContent="RFC8739"/></t>
+              </li>
+              <li pn="section-3.1-3.4.2.2">
+                <t indent="0" pn="section-3.1-3.4.2.2.1">Type: Integer</t>
+              </li>
+              <li pn="section-3.1-3.4.2.3">
+                <t indent="0" pn="section-3.1-3.4.2.3.1">Mandatory-to-Specify: No</t>
+              </li>
+            </ul>
+          </li>
+        </ul>
+        <section anchor="examples" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.1">
+          <name slugifiedName="name-examples">Examples</name>
+          <t indent="0" pn="section-3.1.1-1">The following example shows an <tt>ACMEDelegationMethod</tt> object for a STAR-based
+ACME delegation.</t>
+          <sourcecode type="json" markers="false" pn="section-3.1.1-2">
+{
+  "generic-metadata-type": "MI.ACMEDelegationMethod",
+  "generic-metadata-value": {
+    "acme-delegation": "https://acme.ucdn.example/delegation/ogfr",
+    "time-window": {
+      "start": 1665417434,
+      "end": 1665676634
+    },
+    "lifetime": 345600,
+    "lifetime-adjust": 259200
+  }
+}
+</sourcecode>
+          <t indent="0" pn="section-3.1.1-3">The example below shows an <tt>ACMEDelegationMethod</tt> object for a non-STAR ACME
+delegation. The delegation object is defined as per <xref section="4.3" sectionFormat="of" target="RFC8006" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8006#section-4.3" derivedContent="RFC8006"/>.</t>
+          <sourcecode type="json" markers="false" pn="section-3.1.1-4">
+{
+  "generic-metadata-type": "MI.ACMEDelegationMethod",
+  "generic-metadata-value": {
+    "acme-delegation": "https://acme.ucdn.example/delegation/wSi5",
+    "time-window": {
+      "start": 1570982234,
+      "end": 1665417434
+    }
+  }
+}
+</sourcecode>
+        </section>
+      </section>
+    </section>
+    <section anchor="iana" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-4-1">Per this document, the following type has been registered in the
+"CDNI Payload Types" registry:</t>
+      <table align="center" pn="table-1">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Payload Type</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">MI.ACMEDelegationMethod</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9538</td>
+          </tr>
+        </tbody>
+      </table>
+      <section anchor="cdni-mi-acmedelegationmethod-payload-type" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-cdni-mi-acmedelegationmetho">CDNI MI ACMEDelegationMethod Payload Type</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.1-1">
+          <dt pn="section-4.1-1.1">Purpose:</dt>
+          <dd pn="section-4.1-1.2">
+            <t indent="0" pn="section-4.1-1.2.1">The purpose of this Payload Type is to distinguish AcmeDelegationMethod
+MI objects (and any associated capability advertisement)</t>
+          </dd>
+          <dt pn="section-4.1-1.3">Interface:</dt>
+          <dd pn="section-4.1-1.4">
+            <t indent="0" pn="section-4.1-1.4.1">MI/FCI</t>
+          </dd>
+          <dt pn="section-4.1-1.5">Encoding:</dt>
+          <dd pn="section-4.1-1.6">
+            <t indent="0" pn="section-4.1-1.6.1">See <xref target="acmedeleobj" format="default" sectionFormat="of" derivedContent="Section 3.1"/></t>
+          </dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="sec" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-5-1">The metadata object defined in this document does not introduce any new
+security or privacy concerns over those already discussed in <xref target="RFC9115" format="default" sectionFormat="of" derivedContent="RFC9115"/>,
+<xref target="RFC8006" format="default" sectionFormat="of" derivedContent="RFC8006"/>, and <xref target="RFC8008" format="default" sectionFormat="of" derivedContent="RFC8008"/>.</t>
+      <t indent="0" pn="section-5-2">The reader is expected to understand the ACME delegation trust model (<xref section="7.1" sectionFormat="of" target="RFC9115" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9115#section-7.1" derivedContent="RFC9115"/>) and security goal (<xref section="7.2" sectionFormat="of" target="RFC9115" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9115#section-7.2" derivedContent="RFC9115"/>). In particular, the reader is expected to understand that it is critical to protect the user account associated with the delegation; this account authorizes all the security-relevant operations between a dCDN and a uCDN over the ACME channel.
+The dCDN's ACME account is also relevant to the privacy of the entire scheme;
+for example, the <tt>acme-delegation</tt> resource in the Metadata object is only
+accessible to the holder of the account key, who is allowed to fetch its
+content exclusively via POST-as-GET (<xref section="2.3.1.2" sectionFormat="of" target="RFC9115" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9115#section-2.3.1.2" derivedContent="RFC9115"/>).</t>
+      <t indent="0" pn="section-5-3">In addition, the Metadata interface authentication and confidentiality
+requirements defined in <xref section="8" sectionFormat="of" target="RFC8006" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8006#section-8" derivedContent="RFC8006"/> <bcp14>MUST</bcp14> be followed.</t>
+      <t indent="0" pn="section-5-4">Implementers <bcp14>MUST</bcp14> adhere to the security considerations defined in <xref section="7" sectionFormat="of" target="RFC8008" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8008#section-7" derivedContent="RFC8008"/>, "Content Delivery Network Interconnection (CDNI) Request Routing: Footprint and Capabilities Semantics".</t>
+      <t indent="0" pn="section-5-5">When TLS is used to achieve the above security objectives, the general TLS
+usage guidance in <xref target="RFC9325" format="default" sectionFormat="of" derivedContent="RFC9325"/> <bcp14>MUST</bcp14> be followed.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-6">
+      <name slugifiedName="name-references">References</name>
+      <references anchor="sec-normative-references" pn="section-6.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC8006" target="https://www.rfc-editor.org/info/rfc8006" quoteTitle="true" derivedAnchor="RFC8006">
+          <front>
+            <title>Content Delivery Network Interconnection (CDNI) Metadata</title>
+            <author fullname="B. Niven-Jenkins" initials="B." surname="Niven-Jenkins"/>
+            <author fullname="R. Murray" initials="R." surname="Murray"/>
+            <author fullname="M. Caulfield" initials="M." surname="Caulfield"/>
+            <author fullname="K. Ma" initials="K." surname="Ma"/>
+            <date month="December" year="2016"/>
+            <abstract>
+              <t indent="0">The Content Delivery Network Interconnection (CDNI) Metadata interface enables interconnected Content Delivery Networks (CDNs) to exchange content distribution metadata in order to enable content acquisition and delivery. The CDNI Metadata associated with a piece of content provides a downstream CDN with sufficient information for the downstream CDN to service content requests on behalf of an upstream CDN. This document describes both a base set of CDNI Metadata and the protocol for exchanging that metadata.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8006"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8006"/>
+        </reference>
+        <reference anchor="RFC8008" target="https://www.rfc-editor.org/info/rfc8008" quoteTitle="true" derivedAnchor="RFC8008">
+          <front>
+            <title>Content Delivery Network Interconnection (CDNI) Request Routing: Footprint and Capabilities Semantics</title>
+            <author fullname="J. Seedorf" initials="J." surname="Seedorf"/>
+            <author fullname="J. Peterson" initials="J." surname="Peterson"/>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="R. van Brandenburg" initials="R." surname="van Brandenburg"/>
+            <author fullname="K. Ma" initials="K." surname="Ma"/>
+            <date month="December" year="2016"/>
+            <abstract>
+              <t indent="0">&lt;p&gt;This document captures the semantics of the "Footprint and Capabilities Advertisement" part of the Content Delivery Network Interconnection (CDNI) Request Routing interface, i.e., the desired meaning of "Footprint" and "Capabilities" in the CDNI context and what the "Footprint &amp; Capabilities Advertisement interface (FCI)" offers within CDNI. The document also provides guidelines for the CDNI FCI protocol. It further defines a Base Advertisement Object, the necessary registries for capabilities and footprints, and guidelines on how these registries can be extended in the future.&lt;/p&gt;</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8008"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8008"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8739" target="https://www.rfc-editor.org/info/rfc8739" quoteTitle="true" derivedAnchor="RFC8739">
+          <front>
+            <title>Support for Short-Term, Automatically Renewed (STAR) Certificates in the Automated Certificate Management Environment (ACME)</title>
+            <author fullname="Y. Sheffer" initials="Y." surname="Sheffer"/>
+            <author fullname="D. Lopez" initials="D." surname="Lopez"/>
+            <author fullname="O. Gonzalez de Dios" initials="O." surname="Gonzalez de Dios"/>
+            <author fullname="A. Pastor Perales" initials="A." surname="Pastor Perales"/>
+            <author fullname="T. Fossati" initials="T." surname="Fossati"/>
+            <date month="March" year="2020"/>
+            <abstract>
+              <t indent="0">Public key certificates need to be revoked when they are compromised, that is, when the associated private key is exposed to an unauthorized entity. However, the revocation process is often unreliable. An alternative to revocation is issuing a sequence of certificates, each with a short validity period, and terminating the sequence upon compromise. This memo proposes an Automated Certificate Management Environment (ACME) extension to enable the issuance of Short-Term, Automatically Renewed (STAR) X.509 certificates.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8739"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8739"/>
+        </reference>
+        <reference anchor="RFC9115" target="https://www.rfc-editor.org/info/rfc9115" quoteTitle="true" derivedAnchor="RFC9115">
+          <front>
+            <title>An Automatic Certificate Management Environment (ACME) Profile for Generating Delegated Certificates</title>
+            <author fullname="Y. Sheffer" initials="Y." surname="Sheffer"/>
+            <author fullname="D. López" initials="D." surname="López"/>
+            <author fullname="A. Pastor Perales" initials="A." surname="Pastor Perales"/>
+            <author fullname="T. Fossati" initials="T." surname="Fossati"/>
+            <date month="September" year="2021"/>
+            <abstract>
+              <t indent="0">This document defines a profile of the Automatic Certificate Management Environment (ACME) protocol by which the holder of an identifier (e.g., a domain name) can allow a third party to obtain an X.509 certificate such that the certificate subject is the delegated identifier while the certified public key corresponds to a private key controlled by the third party. A primary use case is that of a Content Delivery Network (CDN), the third party, terminating TLS sessions on behalf of a content provider (the holder of a domain name). The presented mechanism allows the holder of the identifier to retain control over the delegation and revoke it at any time. Importantly, this mechanism does not require any modification to the deployed TLS clients and servers.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9115"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9115"/>
+        </reference>
+        <reference anchor="RFC9325" target="https://www.rfc-editor.org/info/rfc9325" quoteTitle="true" derivedAnchor="RFC9325">
+          <front>
+            <title>Recommendations for Secure Use of Transport Layer Security (TLS) and Datagram Transport Layer Security (DTLS)</title>
+            <author fullname="Y. Sheffer" initials="Y." surname="Sheffer"/>
+            <author fullname="P. Saint-Andre" initials="P." surname="Saint-Andre"/>
+            <author fullname="T. Fossati" initials="T." surname="Fossati"/>
+            <date month="November" year="2022"/>
+            <abstract>
+              <t indent="0">Transport Layer Security (TLS) and Datagram Transport Layer Security (DTLS) are used to protect data exchanged over a wide range of application protocols and can also form the basis for secure transport protocols. Over the years, the industry has witnessed several serious attacks on TLS and DTLS, including attacks on the most commonly used cipher suites and their modes of operation. This document provides the latest recommendations for ensuring the security of deployed services that use TLS and DTLS. These recommendations are applicable to the majority of use cases.</t>
+              <t indent="0">RFC 7525, an earlier version of the TLS recommendations, was published when the industry was transitioning to TLS 1.2. Years later, this transition is largely complete, and TLS 1.3 is widely available. This document updates the guidance given the new environment and obsoletes RFC 7525. In addition, this document updates RFCs 5288 and 6066 in view of recent attacks.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="195"/>
+          <seriesInfo name="RFC" value="9325"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9325"/>
+        </reference>
+      </references>
+      <references anchor="sec-informative-references" pn="section-6.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC7336" target="https://www.rfc-editor.org/info/rfc7336" quoteTitle="true" derivedAnchor="RFC7336">
+          <front>
+            <title>Framework for Content Distribution Network Interconnection (CDNI)</title>
+            <author fullname="L. Peterson" initials="L." surname="Peterson"/>
+            <author fullname="B. Davie" initials="B." surname="Davie"/>
+            <author fullname="R. van Brandenburg" initials="R." role="editor" surname="van Brandenburg"/>
+            <date month="August" year="2014"/>
+            <abstract>
+              <t indent="0">This document presents a framework for Content Distribution Network Interconnection (CDNI). The purpose of the framework is to provide an overall picture of the problem space of CDNI and to describe the relationships among the various components necessary to interconnect CDNs. CDNI requires the specification of interfaces and mechanisms to address issues such as request routing, distribution metadata exchange, and logging information exchange across CDNs. The intent of this document is to outline what each interface needs to accomplish and to describe how these interfaces and mechanisms fit together, while leaving their detailed specification to other documents. This document, in combination with RFC 6707, obsoletes RFC 3466.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7336"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7336"/>
+        </reference>
+        <reference anchor="RFC9460" target="https://www.rfc-editor.org/info/rfc9460" quoteTitle="true" derivedAnchor="RFC9460">
+          <front>
+            <title>Service Binding and Parameter Specification via the DNS (SVCB and HTTPS Resource Records)</title>
+            <author fullname="B. Schwartz" initials="B." surname="Schwartz"/>
+            <author fullname="M. Bishop" initials="M." surname="Bishop"/>
+            <author fullname="E. Nygren" initials="E." surname="Nygren"/>
+            <date month="November" year="2023"/>
+            <abstract>
+              <t indent="0">This document specifies the "SVCB" ("Service Binding") and "HTTPS" DNS resource record (RR) types to facilitate the lookup of information needed to make connections to network services, such as for HTTP origins. SVCB records allow a service to be provided from multiple alternative endpoints, each with associated parameters (such as transport protocol configuration), and are extensible to support future uses (such as keys for encrypting the TLS ClientHello). They also enable aliasing of apex domains, which is not possible with CNAME. The HTTPS RR is a variation of SVCB for use with HTTP (see RFC 9110, "HTTP Semantics"). By providing more information to the client before it attempts to establish a connection, these records offer potential benefits to both performance and privacy.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9460"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9460"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" anchor="acknowledgments" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">We would like to thank authors of the <xref target="RFC9115" format="default" sectionFormat="of" derivedContent="RFC9115"/>, <contact fullname="Antonio Augustín Pastor Perales"/>, <contact fullname="Diego López"/>, <contact fullname="Thomas Fossati"/>, and <contact fullname="Yaron Sheffer"/>. Additionally, our gratitude to <contact fullname="Thomas Fossati"/> who participated in the drafting, reviewing, and giving his feedback in finalizing this document. We also thank CDNI co-chair <contact fullname="Kevin Ma"/> for his continual review and feedback during the development of this document.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="F." surname="Fieau" fullname="Frédéric Fieau" role="editor">
+        <organization showOnFrontPage="true">Orange</organization>
+        <address>
+          <postal>
+            <street>40-48, avenue de la République</street>
+            <city>Châtillon</city>
+            <code>92320</code>
+            <country>France</country>
+          </postal>
+          <email>frederic.fieau@orange.com</email>
+        </address>
+      </author>
+      <author initials="E." surname="Stephan" fullname="Emile Stephan">
+        <organization showOnFrontPage="true">Orange</organization>
+        <address>
+          <postal>
+            <street>2, avenue Pierre Marzin</street>
+            <city>Lannion</city>
+            <code>22300</code>
+            <country>France</country>
+          </postal>
+          <email>emile.stephan@orange.com</email>
+        </address>
+      </author>
+      <author initials="S." surname="Mishra" fullname="Sanjay Mishra">
+        <organization showOnFrontPage="true">Verizon</organization>
+        <address>
+          <postal>
+            <street>13100 Columbia Pike</street>
+            <city>Silver Spring</city>
+            <region>MD</region>
+            <code>20904</code>
+            <country>United States of America</country>
+          </postal>
+          <email>sanjay.mishra@verizon.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

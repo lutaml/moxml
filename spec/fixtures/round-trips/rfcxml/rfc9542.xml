@@ -1,0 +1,2465 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="bcp" consensus="true" docName="draft-ietf-intarea-rfc7042bis-11" number="9542" ipr="trust200902" updates="" obsoletes="7042" xml:lang="en" tocInclude="true" sortRefs="true" symRefs="true" prepTime="2024-04-11T13:27:28" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-intarea-rfc7042bis-11" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9542" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="IANA/IETF and IEEE 802 Parameters">IANA Considerations and IETF Protocol and Documentation Usage for IEEE 802 Parameters</title>
+    <seriesInfo name="RFC" value="9542" stream="IETF"/>
+    <seriesInfo name="BCP" value="141" stream="IETF"/>
+    <author fullname="Donald E. Eastlake 3rd" initials="D." surname="Eastlake 3rd">
+      <organization showOnFrontPage="true">Independent</organization>
+      <address>
+        <postal>
+          <street>2386 Panoramic Circle</street>
+          <city>Apopka</city>
+          <region>Florida</region>
+          <code>32703</code>
+          <country>United States of America</country>
+        </postal>
+        <phone>+1-508-333-2270</phone>
+        <email>d3e3e3@gmail.com</email>
+        <email>donald.eastlake@futurewei.com</email>
+      </address>
+    </author>
+    <author fullname="Joe Abley" initials="J." surname="Abley">
+      <organization showOnFrontPage="true">Cloudflare</organization>
+      <address>
+        <postal>
+          <postalLine>Amsterdam</postalLine>
+          <postalLine>The Netherlands</postalLine>
+        </postal>
+        <phone>+31 45 56 36 34</phone>
+        <email>jabley@strandkip.nl</email>
+      </address>
+    </author>
+    <author fullname="Yizhou Li" initials="Y." surname="Li">
+      <organization showOnFrontPage="true">Huawei Technologies</organization>
+      <address>
+        <postal>
+          <street>101 Software Avenue</street>
+          <city>Nanjing</city>
+          <region>Jiangsu</region>
+          <code>210012</code>
+          <country>China</country>
+        </postal>
+        <phone>+86-13809002299</phone>
+        <email>liyizhou@huawei.com</email>
+      </address>
+    </author>
+    <date month="04" year="2024"/>
+    <area>int</area>
+    <workgroup>intarea</workgroup>
+    <keyword>Ethernet</keyword>
+    <keyword>EtherType</keyword>
+    <keyword>802</keyword>
+    <keyword>OUI</keyword>
+    <keyword>EUI</keyword>
+    <keyword>LSAP</keyword>
+    <keyword>AFN</keyword>
+    <keyword>CBOR</keyword>
+    <keyword>LLC</keyword>
+    <keyword>SLAP</keyword>
+    <keyword>SNAP</keyword>
+    <keyword>CID</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">Some IETF protocols make use of Ethernet frame formats and IEEE
+  802 parameters.  This document discusses several aspects of such
+  parameters and their use in IETF protocols, specifies IANA
+  considerations for assignment of points under the IANA
+  Organizationally Unique Identifier (OUI), and provides some values for
+  use in documentation.  This document obsoletes RFC 7042.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This memo documents an Internet Best Current Practice.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further information
+            on BCPs is available in Section 2 of RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9542" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-notations-used-in-this-docu">Notations Used in This Document</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-ieee-registration-autho">The IEEE Registration Authority</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.3">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.3.1"><xref derivedContent="1.3" format="counter" sectionFormat="of" target="section-1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-iana-organizationally-u">The IANA Organizationally Unique Identifier</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.4">
+                <t indent="0" pn="section-toc.1-1.1.2.4.1"><xref derivedContent="1.4" format="counter" sectionFormat="of" target="section-1.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-cfm-code-points">CFM Code Points</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ethernet-identifier-paramet">Ethernet Identifier Parameters</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-48-bit-mac-identifiers-ouis">48-Bit MAC Identifiers, OUIs, and Other Prefixes</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2.1.2">
+                  <li pn="section-toc.1-1.2.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.2.2.1.2.1.1"><xref derivedContent="2.1.1" format="counter" sectionFormat="of" target="section-2.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-special-first-octet-bits">Special First Octet Bits</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.2.2.1.2.2.1"><xref derivedContent="2.1.2" format="counter" sectionFormat="of" target="section-2.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ouis-and-cids">OUIs and CIDs</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.1.2.3">
+                    <t indent="0" pn="section-toc.1-1.2.2.1.2.3.1"><xref derivedContent="2.1.3" format="counter" sectionFormat="of" target="section-2.1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-48-bit-mac-assignments-unde">48-Bit MAC Assignments under the IANA OUI</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.1.2.4">
+                    <t indent="0" pn="section-toc.1-1.2.2.1.2.4.1"><xref derivedContent="2.1.4" format="counter" sectionFormat="of" target="section-2.1.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-48-bit-mac-documentation-va">48-Bit MAC Documentation Values</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.1.2.5">
+                    <t indent="0" pn="section-toc.1-1.2.2.1.2.5.1"><xref derivedContent="2.1.5" format="counter" sectionFormat="of" target="section-2.1.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-48-bit-iana-mac-assignment-">48-Bit IANA MAC Assignment Considerations</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-64-bit-mac-identifiers">64-Bit MAC Identifiers</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2.2.2">
+                  <li pn="section-toc.1-1.2.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.1.1"><xref derivedContent="2.2.1" format="counter" sectionFormat="of" target="section-2.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipv6-use-of-modified-eui64-">IPv6 Use of Modified EUI‑64 Identifiers</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.2.1"><xref derivedContent="2.2.2" format="counter" sectionFormat="of" target="section-2.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-eui64-iana-assignment-consi">EUI‑64 IANA Assignment Considerations</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.3.1"><xref derivedContent="2.2.3" format="counter" sectionFormat="of" target="section-2.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-eui64-documentation-values">EUI‑64 Documentation Values</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.2.2.3">
+                <t indent="0" pn="section-toc.1-1.2.2.3.1"><xref derivedContent="2.3" format="counter" sectionFormat="of" target="section-2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-other-48-bit-mac-identifier">Other 48-Bit MAC Identifiers Used by the IETF</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2.3.2">
+                  <li pn="section-toc.1-1.2.2.3.2.1">
+                    <t indent="0" pn="section-toc.1-1.2.2.3.2.1.1"><xref derivedContent="2.3.1" format="counter" sectionFormat="of" target="section-2.3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-identifiers-with-a-33-33-pr">Identifiers with a '33-33' Prefix</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.3.2.2">
+                    <t indent="0" pn="section-toc.1-1.2.2.3.2.2.1"><xref derivedContent="2.3.2" format="counter" sectionFormat="of" target="section-2.3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-cf-series">The CF Series</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.2.2.4">
+                <t indent="0" pn="section-toc.1-1.2.2.4.1"><xref derivedContent="2.4" format="counter" sectionFormat="of" target="section-2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-cbor-tags">CBOR Tags</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ethernet-protocol-parameter">Ethernet Protocol Parameters</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ethernet-protocol-assignmen">Ethernet Protocol Assignment under the IANA OUI</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-documentation-protocol-numb">Documentation Protocol Number</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-other-oui-cid-based-paramet">Other OUI/CID-Based Parameters</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-lldp-ietf-organizationally-">LLDP IETF Organizationally Specific TLV Type</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-expert-review-and-iesg-rati">Expert Review and IESG Ratification</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2.1.2">
+                  <li pn="section-toc.1-1.5.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.1.1"><xref derivedContent="5.1.1" format="counter" sectionFormat="of" target="section-5.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-expert-review-guidance">Expert Review Guidance</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.2.1"><xref derivedContent="5.1.2" format="counter" sectionFormat="of" target="section-5.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-expert-review-and-iesg-ratif">Expert Review and IESG Ratification Procedure</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-registry-group-web-pag">IANA Registry Group (Web Page) Name Changes</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.3">
+                <t indent="0" pn="section-toc.1-1.5.2.3.1"><xref derivedContent="5.3" format="counter" sectionFormat="of" target="section-5.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-mac-address-afns-and-rrtype">MAC Address AFNs and RRTYPEs</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.4">
+                <t indent="0" pn="section-toc.1-1.5.2.4.1"><xref derivedContent="5.4" format="counter" sectionFormat="of" target="section-5.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informational-iana-registry">Informational IANA Registry Group Material</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.5">
+                <t indent="0" pn="section-toc.1-1.5.2.5.1"><xref derivedContent="5.5" format="counter" sectionFormat="of" target="section-5.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ethertype-assignment-proces">EtherType Assignment Process</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.6">
+                <t indent="0" pn="section-toc.1-1.5.2.6.1"><xref derivedContent="5.6" format="counter" sectionFormat="of" target="section-5.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-oui-exhaustion">OUI Exhaustion</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.7">
+                <t indent="0" pn="section-toc.1-1.5.2.7.1"><xref derivedContent="5.7" format="counter" sectionFormat="of" target="section-5.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-oui-mac-address-table">IANA OUI MAC Address Table</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.8">
+                <t indent="0" pn="section-toc.1-1.5.2.8.1"><xref derivedContent="5.8" format="counter" sectionFormat="of" target="section-5.8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-lldp-tlv-subtypes">IANA LLDP TLV Subtypes</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.9">
+                <t indent="0" pn="section-toc.1-1.5.2.9.1"><xref derivedContent="5.9" format="counter" sectionFormat="of" target="section-5.9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-cbor-tag-assignments">CBOR Tag Assignments</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-templates">Templates</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="A.1" format="counter" sectionFormat="of" target="section-appendix.a.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-eui48-eui64-identifier-or-i">EUI‑48/EUI‑64 Identifier or Identifier Block
+  Template</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="A.2" format="counter" sectionFormat="of" target="section-appendix.a.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-oui-cid-based-protocol">IANA OUI/CID-Based Protocol Number Template</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.3">
+                <t indent="0" pn="section-toc.1-1.8.2.3.1"><xref derivedContent="A.3" format="counter" sectionFormat="of" target="section-appendix.a.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-other-iana-oui-cid-based-pa">Other IANA OUI/CID-Based Parameter Template</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="Appendix B" format="default" sectionFormat="of" target="section-appendix.b"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ethertypes">EtherTypes</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="B.1" format="counter" sectionFormat="of" target="section-appendix.b.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iesg-statement-on-ethertype">IESG Statement on EtherTypes</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="Appendix C" format="default" sectionFormat="of" target="section-appendix.c"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-changes-from-rfc-7042">Changes from RFC 7042</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.d"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.e"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">Some IETF protocols use Ethernet or other communication frame formats
+  and parameters related to IEEE 802 <xref target="IEEE802" format="default" sectionFormat="of" derivedContent="IEEE802"/>.
+  These include Media Access Control (MAC) addresses and protocol
+  identifiers. The IEEE Registration Authority <xref target="IEEE_RA" format="default" sectionFormat="of" derivedContent="IEEE_RA"/> manages the assignment of identifiers used in
+  IEEE 802 networks, in some cases assigning blocks of such
+  identifiers whose sub-assignment is managed by the entity to which
+  the block is assigned. The IEEE RA also provides a number of
+  tutorials concerning these parameters <xref target="IEEEtutorials" format="default" sectionFormat="of" derivedContent="IEEEtutorials"/>.</t>
+      <t indent="0" pn="section-1-2">IANA has been assigned an Organizationally Unique Identifier
+  (OUI) by the IEEE RA and an associated set of MAC addresses and
+  other organizationally unique code points based on that OUI.  This
+  document specifies IANA considerations for the assignment of code
+  points under that IANA OUI, including MAC addresses and protocol
+  identifiers, and provides some values for use in documentation. As
+  noted in <xref target="RFC2606" format="default" sectionFormat="of" derivedContent="RFC2606"/> and <xref target="RFC5737" format="default" sectionFormat="of" derivedContent="RFC5737"/>, the
+  use of designated code values reserved for documentation and
+  examples reduces the likelihood of conflicts and confusion arising
+  from such code points conflicting with code points assigned for some
+  deployed use. This document also discusses several other uses by the
+  IETF of IEEE 802 code points, including IEEE 802 Connectivity Fault
+  Management (CFM) code points <xref target="RFC7319" format="default" sectionFormat="of" derivedContent="RFC7319"/> and IEEE 802
+  Link Local Discovery Protocol (LLDP) <xref target="IEEE802.1AB" format="default" sectionFormat="of" derivedContent="IEEE802.1AB"/>
+  Vendor-Specific TLV Sub-Types <xref target="RFC8520" format="default" sectionFormat="of" derivedContent="RFC8520"/>. It
+  also specifies Concise Binary Object Representation (CBOR) tags for MAC addresses and OUIs / Company Identifiers (CIDs).</t>
+      <t indent="0" pn="section-1-3">Descriptions herein of <xref target="IANA" format="default" sectionFormat="of" derivedContent="IANA"/> policies and
+  procedures are authoritative, but descriptions of IEEE registration
+  policies, procedures, and standards are only informative; for
+  authoritative IEEE information, consult the IEEE sources.</t>
+      <t indent="0" pn="section-1-4"><xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/> is incorporated herein except where
+  there are contrary provisions in this document.  In this document,
+  "IESG Ratification", specified in <xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>, refers to a
+  combination of Expert Review and IESG Approval as those are defined
+  in <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>, where IESG Approval is required only if
+  the Expert does not reject the request. It is NOT the same as just
+  "IESG Approval" in <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>.</t>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-notations-used-in-this-docu">Notations Used in This Document</name>
+        <t indent="0" pn="section-1.1-1">This document uses hexadecimal notation.  Each octet (that is,
+8-bit byte) is represented by two hexadecimal digits giving the value
+of the octet as an unsigned integer.  Successive octets are separated
+by a hyphen.  This document consistently uses IETF ("network") bit
+ordering although the physical order of bit transmission within an
+octet on an IEEE <xref target="IEEE.802.3_2012" format="default" sectionFormat="of" derivedContent="IEEE.802.3_2012"/> link is from the lowest
+order bit to the highest order bit (i.e., the reverse of the IETF's
+ordering).</t>
+        <t indent="0" pn="section-1.1-2">In this document:</t>
+        <dl newline="false" indent="12" spacing="normal" pn="section-1.1-3">
+          <dt pn="section-1.1-3.1">"AFN"</dt>
+          <dd pn="section-1.1-3.2">Address Family Number <xref target="RFC4760" format="default" sectionFormat="of" derivedContent="RFC4760"/>.</dd>
+          <dt pn="section-1.1-3.3">"CBOR"</dt>
+          <dd pn="section-1.1-3.4">Concise Binary Object Representation <xref target="RFC8949" format="default" sectionFormat="of" derivedContent="RFC8949"/>.</dd>
+          <dt pn="section-1.1-3.5">"CFM"</dt>
+          <dd pn="section-1.1-3.6">Connectivity Fault Management <xref target="RFC7319" format="default" sectionFormat="of" derivedContent="RFC7319"/>.</dd>
+          <dt pn="section-1.1-3.7">"CID"</dt>
+          <dd pn="section-1.1-3.8">Company Identifier. See <xref target="oui-cid" format="default" sectionFormat="of" derivedContent="Section 2.1.2"/>.</dd>
+          <dt pn="section-1.1-3.9">"DSAP"</dt>
+          <dd pn="section-1.1-3.10">Destination Service Access Point. See <xref target="eth-pro-param" format="default" sectionFormat="of" derivedContent="Section 3"/>.</dd>
+          <dt pn="section-1.1-3.11">"EUI"</dt>
+          <dd pn="section-1.1-3.12">Extended Unique Identifier.</dd>
+          <dt pn="section-1.1-3.13">"EUI-48"</dt>
+          <dd pn="section-1.1-3.14">48-bit EUI</dd>
+          <dt pn="section-1.1-3.15">"IEEE"</dt>
+          <dd pn="section-1.1-3.16">Institute of Electrical and Electronics Engineers
+<xref target="IEEE" format="default" sectionFormat="of" derivedContent="IEEE"/>.</dd>
+          <dt pn="section-1.1-3.17">"IEEE 802"</dt>
+          <dd pn="section-1.1-3.18">The LAN/MAN Standards Committee <xref target="IEEE802" format="default" sectionFormat="of" derivedContent="IEEE802"/>.</dd>
+          <dt pn="section-1.1-3.19">"IEEE RA"</dt>
+          <dd pn="section-1.1-3.20">IEEE Registration Authority <xref target="IEEE_RA" format="default" sectionFormat="of" derivedContent="IEEE_RA"/>.</dd>
+          <dt pn="section-1.1-3.21">"IEEE SA"</dt>
+          <dd pn="section-1.1-3.22">IEEE Standards Association <xref target="IEEE_SA" format="default" sectionFormat="of" derivedContent="IEEE_SA"/>.</dd>
+          <dt pn="section-1.1-3.23">"LLC"</dt>
+          <dd pn="section-1.1-3.24">Logical Link Control. The type of frame header where
+the protocol is identified by source and destination LSAP
+fields. See <xref target="eth-pro-param" format="default" sectionFormat="of" derivedContent="Section 3"/>.</dd>
+          <dt pn="section-1.1-3.25">"LSAP"</dt>
+          <dd pn="section-1.1-3.26">Link-Layer Service Access Point. See <xref target="eth-pro-param" format="default" sectionFormat="of" derivedContent="Section 3"/>.</dd>
+          <dt pn="section-1.1-3.27">"MA-L"</dt>
+          <dd pn="section-1.1-3.28">MAC Address Block Large.</dd>
+          <dt pn="section-1.1-3.29">"MA-M"</dt>
+          <dd pn="section-1.1-3.30">MAC Address Block Medium.</dd>
+          <dt pn="section-1.1-3.31">"MA-S"</dt>
+          <dd pn="section-1.1-3.32">MAC Address Block Small.</dd>
+          <dt pn="section-1.1-3.33">"MAC"</dt>
+          <dd pn="section-1.1-3.34">Media Access Control, not Message Authentication
+Code.</dd>
+          <dt pn="section-1.1-3.35">"MAC-48"</dt>
+          <dd pn="section-1.1-3.36">A 48-bit MAC address. This term is obsolete. If
+globally unique, use EUI‑48.</dd>
+          <dt pn="section-1.1-3.37">"OUI"</dt>
+          <dd pn="section-1.1-3.38">Organizationally Unique Identifier. See <xref target="oui-cid" format="default" sectionFormat="of" derivedContent="Section 2.1.2"/>.</dd>
+          <dt pn="section-1.1-3.39">"RRTYPE"</dt>
+          <dd pn="section-1.1-3.40">A DNS Resource Record type <xref target="RFC6895" format="default" sectionFormat="of" derivedContent="RFC6895"/>.</dd>
+          <dt pn="section-1.1-3.41">"SLAP"</dt>
+          <dd pn="section-1.1-3.42">IEEE 802 Structured Local Address Plan <xref target="IEEE802_OandA" format="default" sectionFormat="of" derivedContent="IEEE802_OandA"/>. See <xref target="first-oct-bit" format="default" sectionFormat="of" derivedContent="Section 2.1.1"/>.</dd>
+          <dt pn="section-1.1-3.43">"SNAP"</dt>
+          <dd pn="section-1.1-3.44">Subnetwork Access Protocol. See <xref target="eth-pro-param" format="default" sectionFormat="of" derivedContent="Section 3"/>.</dd>
+          <dt pn="section-1.1-3.45">"SSAP"</dt>
+          <dd pn="section-1.1-3.46">Source Service Access Point. See <xref target="eth-pro-param" format="default" sectionFormat="of" derivedContent="Section 3"/>.</dd>
+          <dt pn="section-1.1-3.47">"tag"</dt>
+          <dd pn="section-1.1-3.48">"Tag" is used in two contexts in this document. For
+"Ethernet tag", see <xref target="eth-pro-param" format="default" sectionFormat="of" derivedContent="Section 3"/>. For "CBOR tag", see <xref target="cbor-tags" format="default" sectionFormat="of" derivedContent="Section 2.4"/>.</dd>
+          <dt pn="section-1.1-3.49">"TLV"</dt>
+          <dd pn="section-1.1-3.50">Type-Length-Value.</dd>
+          <dt pn="section-1.1-3.51">"**"</dt>
+          <dd pn="section-1.1-3.52">The double asterisk symbol indicates exponentiation.
+For example, 2**24 is two to the twenty-fourth power.</dd>
+        </dl>
+      </section>
+      <section anchor="IEEEregAuth" numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-the-ieee-registration-autho">The IEEE Registration Authority</name>
+        <t indent="0" pn="section-1.2-1">Originally the responsibility of the Xerox Corporation, the
+registration authority for Ethernet parameters since 1986 has been the
+IEEE Registration Authority, available on the Web at <xref target="IEEE_RA" format="default" sectionFormat="of" derivedContent="IEEE_RA"/>.</t>
+        <t indent="0" pn="section-1.2-2">The IEEE Registration Authority operates under the direction of the
+IEEE Standards Association (IEEE SA) Board of Governors, with
+oversight by the IEEE Registration Authority Committee (IEEE RAC). The IEEE
+RAC is a committee of the Board of Governors.</t>
+        <t indent="0" pn="section-1.2-3">Anyone may apply to that authority for parameter assignments.  The
+IEEE Registration Authority may impose fees or other requirements but
+commonly waives fees for applications from standards development
+organizations. Lists of assignments and their holders are downloadable
+from the IEEE Registration Authority site.</t>
+      </section>
+      <section anchor="IANAOUI" numbered="true" removeInRFC="false" toc="include" pn="section-1.3">
+        <name slugifiedName="name-the-iana-organizationally-u">The IANA Organizationally Unique Identifier</name>
+        <t indent="0" pn="section-1.3-1">The Organizationally Unique Identifier (OUI) 00‑00‑5E has
+been assigned to IANA by the IEEE Registration Authority.</t>
+        <t indent="0" pn="section-1.3-2">There is no OUI value reserved at this time for documentation, but
+there are documentation code points under the IANA OUI specified
+below.</t>
+      </section>
+      <section anchor="CFM" numbered="true" removeInRFC="false" toc="include" pn="section-1.4">
+        <name slugifiedName="name-cfm-code-points">CFM Code Points</name>
+        <t indent="0" pn="section-1.4-1">IEEE Std 802.1Q <xref target="IEEE.802.1Q_2014" format="default" sectionFormat="of" derivedContent="IEEE.802.1Q_2014"/> allocates two
+blocks of 802 Connectivity Fault Management (CFM) code points to the
+IETF, one for CFM OpCodes and one for CFM TLV Types.  For further
+information, see <xref target="RFC7319" format="default" sectionFormat="of" derivedContent="RFC7319"/>. The IANA "Connectivity Fault
+Management (CFM) OAM IETF Parameters" registry has subregistries for
+these code points.  This document does not further discuss these
+blocks of code points.</t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-ethernet-identifier-paramet">Ethernet Identifier Parameters</name>
+      <t indent="0" pn="section-2-1">This section includes information summarized from <xref target="IEEE802_OandA" format="default" sectionFormat="of" derivedContent="IEEE802_OandA"/> that is being provided for context. The
+definitive information, which prevails in case of any discrepancy, is
+in <xref target="IEEE802_OandA" format="default" sectionFormat="of" derivedContent="IEEE802_OandA"/>.</t>
+      <t indent="0" pn="section-2-2"><xref target="bit-48" format="default" sectionFormat="of" derivedContent="Section 2.1"/> discusses 48-bit MAC identifiers, their relationship to
+OUIs and other prefixes, and assignment under the IANA OUI.  <xref target="bit-64" format="default" sectionFormat="of" derivedContent="Section 2.2"/> extends this to 64-bit identifiers.  <xref target="bit-48-ietf" format="default" sectionFormat="of" derivedContent="Section 2.3"/> discusses other
+IETF MAC identifier uses not under the IANA OUI. <xref target="cbor-tags" format="default" sectionFormat="of" derivedContent="Section 2.4"/> specifies
+CBOR tags for MAC addresses and OUIs/CIDs.</t>
+      <aside pn="section-2-3">
+        <t indent="0" pn="section-2-3.1">Historical Note: <xref target="I-D.ieee-rac-oui-restructuring" format="default" sectionFormat="of" derivedContent="RAC_OUI"/> is an expired
+Internet-Draft that provides additional historic information on <xref target="IEEE802" format="default" sectionFormat="of" derivedContent="IEEE802"/> registries.</t>
+      </aside>
+      <section anchor="bit-48" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-48-bit-mac-identifiers-ouis">48-Bit MAC Identifiers, OUIs, and Other Prefixes</name>
+        <t indent="0" pn="section-2.1-1">48-bit MAC "addresses" are the most commonly used Ethernet
+interface identifiers.  Those that are globally unique are also called
+EUI‑48 identifiers (Extended Unique Identifier 48).  An
+EUI‑48 is structured into an initial prefix assigned by the IEEE
+Registration Authority and additional bits assigned by the prefix
+owner.  As of 2024, there are three lengths of prefixes assigned, as
+shown in the table below; however, some prefix bits can have special
+meaning, as shown in <xref target="MACaddr" format="default" sectionFormat="of" derivedContent="Figure 1"/>.</t>
+        <table align="center" pn="table-1">
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Prefix Length in Bits</th>
+              <th align="left" colspan="1" rowspan="1">Name</th>
+              <th align="left" colspan="1" rowspan="1">Owner Supplied
+Bits for 48‑bit MAC Addresses</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="center" colspan="1" rowspan="1">24</td>
+              <td align="left" colspan="1" rowspan="1">MA-L</td>
+              <td align="center" colspan="1" rowspan="1">24</td>
+            </tr>
+            <tr>
+              <td align="center" colspan="1" rowspan="1">28</td>
+              <td align="left" colspan="1" rowspan="1">MA-M</td>
+              <td align="center" colspan="1" rowspan="1">20</td>
+            </tr>
+            <tr>
+              <td align="center" colspan="1" rowspan="1">36</td>
+              <td align="left" colspan="1" rowspan="1">MA-S</td>
+              <td align="center" colspan="1" rowspan="1">12</td>
+            </tr>
+          </tbody>
+        </table>
+        <t indent="0" pn="section-2.1-3">The bottom (least significant) four bits of the first octet of the
+6-octet 48-bit MAC have special meaning, as shown in <xref target="MACaddr" format="default" sectionFormat="of" derivedContent="Figure 1"/>, and are referred to below as the M, X, Y, and Z
+bits.</t>
+        <figure anchor="MACaddr" align="left" suppress-title="false" pn="figure-1">
+          <name slugifiedName="name-48-bit-mac-address-structur">48-Bit MAC Address Structure</name>
+          <artwork type="ascii-art" align="center" pn="section-2.1-4.1">
+
+  0  1  2  3  4  5  6  7  0  1  2  3  4  5  6  7
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+| .  .  .  .  Z  Y  X  M| .  .  .  .  .  .  .  .| octets 0+1
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+| .  .  .  .  .  .  .  .| .  .  .  .  .  .  .  .| octets 2+3
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+| .  .  .  .  .  .  .  .| .  .  .  .  .  .  .  .| octets 4+5
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-2.1-5">For global addresses, X = 0 and a MAC address begins with 3 octets or
+a larger initial prefix indicating the assignee of the block of MAC
+addresses. This prefix is followed by a sequence of additional octets
+so as to add up to the total MAC address length.  For example, the
+IEEE assigns MAC Address Block Small (MA-S), where the first four and
+a half octets (36 bits) are assigned, giving the holder of the MA-S
+one and a half octets (12 bits) they can control in constructing
+48-bit MAC addresses; other prefix lengths are also available <xref target="IEEEtutorials" format="default" sectionFormat="of" derivedContent="IEEEtutorials"/>.</t>
+        <t indent="0" pn="section-2.1-6">An AFN, a DNS RRTYPE, and a CBOR tag have been assigned for 48-bit
+MAC addresses, as discussed in Sections <xref target="cbor-tags" format="counter" sectionFormat="of" derivedContent="2.4"/>, <xref target="mac-addresses" format="counter" sectionFormat="of" derivedContent="5.3"/>, and <xref target="cbor-tag-assign" format="counter" sectionFormat="of" derivedContent="5.9"/>.</t>
+        <t indent="0" pn="section-2.1-7">IEEE Std 802 describes assignment procedures and policies for
+identifiers related to IEEE 802 <xref target="IEEE802_OandA" format="default" sectionFormat="of" derivedContent="IEEE802_OandA"/>. IEEE RA
+documentation on EUIs, OUIs, and CIDs is available at <xref target="IEEEtutorials" format="default" sectionFormat="of" derivedContent="IEEEtutorials"/>. </t>
+        <section anchor="first-oct-bit" numbered="true" removeInRFC="false" toc="include" pn="section-2.1.1">
+          <name slugifiedName="name-special-first-octet-bits">Special First Octet Bits</name>
+          <t indent="0" pn="section-2.1.1-1">There are bits within the initial octet of an IEEE MAC address that
+have special significance <xref target="IEEE802_OandA" format="default" sectionFormat="of" derivedContent="IEEE802_OandA"/>, as described as
+follows:</t>
+          <dl indent="3" newline="false" spacing="normal" pn="section-2.1.1-2">
+            <dt pn="section-2.1.1-2.1">M bit -</dt>
+            <dd pn="section-2.1.1-2.2">This bit is frequently referred to as the "group" or
+"multicast" bit.  If it is zero, the MAC address is unicast. If it is a
+one, the address is groupcast (multicast or broadcast). This meaning
+is independent of the values of the X, Y, and Z bits.</dd>
+            <dt pn="section-2.1.1-2.3">X bit -</dt>
+            <dd pn="section-2.1.1-2.4">This bit is also called the "universal/local"
+bit (formerly called the Local/Global bit). If it is zero, the MAC address is a global address under the
+control of the owner of the IEEE-assigned prefix. Previously, if it
+was a one, the MAC address was considered "local" and under the
+assignment and control of the local network operator (but see <xref target="bit-48-ietf" format="default" sectionFormat="of" derivedContent="Section 2.3"/>). If it is a one and if the IEEE 802 Structured Local Address Plan
+(SLAP) is in effect, the nature of the MAC address is optionally
+determined by the Y and Z bits, as described below.</dd>
+            <dt pn="section-2.1.1-2.5">Y&amp;Z bits -</dt>
+            <dd pn="section-2.1.1-2.6">These two bits have no special meaning if the X
+bit is zero. If the X bit is one and if the IEEE 802 Structured
+Local Address Plan (SLAP) is in effect, these two bits divide the
+formerly uniform "local" MAC address space into four quadrants as
+follows and further described below:</dd>
+          </dl>
+          <table align="center" pn="table-2">
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Y bit</th>
+                <th align="left" colspan="1" rowspan="1">Z bit</th>
+                <th align="left" colspan="1" rowspan="1">Quadrant</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="center" colspan="1" rowspan="1">0</td>
+                <td align="center" colspan="1" rowspan="1">0</td>
+                <td align="left" colspan="1" rowspan="1">Administratively Assigned</td>
+              </tr>
+              <tr>
+                <td align="center" colspan="1" rowspan="1">0</td>
+                <td align="center" colspan="1" rowspan="1">1</td>
+                <td align="left" colspan="1" rowspan="1">Extended
+Local</td>
+              </tr>
+              <tr>
+                <td align="center" colspan="1" rowspan="1">1</td>
+                <td align="center" colspan="1" rowspan="1">0</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+              </tr>
+              <tr>
+                <td align="center" colspan="1" rowspan="1">1</td>
+                <td align="center" colspan="1" rowspan="1">1</td>
+                <td align="left" colspan="1" rowspan="1">Standard
+Assigned</td>
+              </tr>
+            </tbody>
+          </table>
+          <t indent="0" pn="section-2.1.1-4">While a local network administrator can assign any addresses with
+the X bit a one, the optional SLAP characterizes the four quadrants of
+the "local" address space using the Y and Z bits as follows:</t>
+          <dl indent="3" newline="false" spacing="normal" pn="section-2.1.1-5">
+            <dt pn="section-2.1.1-5.1">Administratively Assigned -</dt>
+            <dd pn="section-2.1.1-5.2">MAC addresses in this quadrant are called Administratively
+  Assigned Identifiers. This is intended for arbitrary local
+  assignment, such as random assignment; however, see <xref target="id-33-33" format="default" sectionFormat="of" derivedContent="Section 2.3.1"/>.</dd>
+            <dt pn="section-2.1.1-5.3">Extended Local -</dt>
+            <dd pn="section-2.1.1-5.4">MAC addresses in this quadrant are called Extended Local
+  Identifiers. These addresses are not actually "local" under
+  SLAP. They are available to the organization that has been assigned
+  the CID (see <xref target="oui-cid" format="default" sectionFormat="of" derivedContent="Section 2.1.2"/>) specifying the other 20 bits of the
+  24-bit prefix with X, Y, and Z bits having the values 1, 0, and 1,
+  respectively.</dd>
+            <dt pn="section-2.1.1-5.5">Reserved -</dt>
+            <dd pn="section-2.1.1-5.6">MAC addresses in this quadrant are reserved for future use under
+  the SLAP. Until such future use, they could be locally assigned as
+  Administratively Assigned Identifiers are assigned, but there is a
+  danger that future SLAP use would conflict with such local
+  assignments.</dd>
+            <dt pn="section-2.1.1-5.7">Standard Assigned -</dt>
+            <dd pn="section-2.1.1-5.8">MAC addresses in this quadrant are called Standard Assigned
+  Identifiers (SAIs). An SAI is assigned by a protocol specified in an
+  IEEE 802 standard, for example, <xref target="IEEE802.1CQ" format="default" sectionFormat="of" derivedContent="IEEE802.1CQ"/> (but see
+  the first NOTE below).</dd>
+          </dl>
+          <t indent="6" pn="section-2.1.1-6">NOTE: While the SLAP has MAC addresses assigned through
+a local protocol in the SAI quadrant and assigned by a protocol
+specified in an IEEE 802 standard, the SLAP is optional. Local network
+administrators may use the IETF protocol provisions in <xref target="RFC8947" format="default" sectionFormat="of" derivedContent="RFC8947"/> and <xref target="RFC8948" format="default" sectionFormat="of" derivedContent="RFC8948"/>, which support
+assignment of a MAC address in the local MAC address space using
+DHCPv6 <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/> or other protocol methods.</t>
+          <t indent="0" pn="section-2.1.1-7">NOTE: There isn't any automated way to determine if or
+to what extent a local network is configured for and/or operating
+according to SLAP.</t>
+        </section>
+        <section anchor="oui-cid" numbered="true" removeInRFC="false" toc="include" pn="section-2.1.2">
+          <name slugifiedName="name-ouis-and-cids">OUIs and CIDs</name>
+          <t indent="0" pn="section-2.1.2-1">MA-L, MA-M, and MA-S MAC prefixes are assigned with the Local bit
+zero.  The assignee of an OUI is exclusively authorized to assign
+group MAC addresses by extending a modified version of the assigned
+OUI in which the M bit (see <xref target="MACaddr" format="default" sectionFormat="of" derivedContent="Figure 1"/>) is set to 1
+<xref target="IEEEtutorials" format="default" sectionFormat="of" derivedContent="IEEEtutorials"/>.</t>
+          <t indent="0" pn="section-2.1.2-2">The Local bit is zero for globally unique EUI‑48 identifiers
+assigned by the owner of a MAC-L or owner of a longer prefix.  If the
+Local bit is a one, the identifier has historically been a local
+identifier under the control of the local network administrator;
+however, there are now recommendations on optional management of the
+local address space, as discussed in <xref target="first-oct-bit" format="default" sectionFormat="of" derivedContent="Section 2.1.1"/>.  If the Local bit
+is a one, the holder of an OUI has no special authority over MAC
+identifiers whose first 3 octets correspond to their OUI or the
+beginning of their longer prefix.</t>
+          <t indent="0" pn="section-2.1.2-3">A CID is a 24-bit Company Identifier. It is assigned for
+organizations that need such an identifier that can be used in place
+of an OUI but do not need to assign subsidiary global MAC
+addresses. A CID has X and Z bits equal to 1 and its Y bit equal to 0
+(see <xref target="MACaddr" format="default" sectionFormat="of" derivedContent="Figure 1"/>).</t>
+          <t indent="0" pn="section-2.1.2-4">An AFN and a CBOR tag have been assigned for OUIs/CIDs, as discussed
+in Sections <xref target="cbor-tags" format="counter" sectionFormat="of" derivedContent="2.4"/>, <xref target="mac-addresses" format="counter" sectionFormat="of" derivedContent="5.3"/>, and <xref target="cbor-tag-assign" format="counter" sectionFormat="of" derivedContent="5.9"/>.</t>
+        </section>
+        <section anchor="bit-48-MAC" numbered="true" removeInRFC="false" toc="include" pn="section-2.1.3">
+          <name slugifiedName="name-48-bit-mac-assignments-unde">48-Bit MAC Assignments under the IANA OUI</name>
+          <t indent="0" pn="section-2.1.3-1">The OUI 00‑00‑5E has been assigned to IANA, as stated in
+<xref target="IANAOUI" format="default" sectionFormat="of" derivedContent="Section 1.3"/> above.  This includes 2**24 48‑bit
+multicast identifiers from 01‑00‑5E‑00‑00‑00
+to 01‑00‑5E‑FF‑FF‑FF and 2**24 EUI‑48
+unicast identifiers from 00‑00‑5E‑00‑00‑00 to
+00‑00‑5E‑FF‑FF‑FF. </t>
+          <t indent="0" pn="section-2.1.3-2">Of these identifiers, the sub-blocks reserved or thus far assigned
+are as follows: </t>
+          <dl newline="true" spacing="normal" indent="3" pn="section-2.1.3-3">
+            <dt pn="section-2.1.3-3.1">Unicast, all blocks of 2**8 addresses thus far: </dt>
+            <dd pn="section-2.1.3-3.2">
+              <dl indent="3" newline="false" spacing="normal" pn="section-2.1.3-3.2.1">
+                <dt pn="section-2.1.3-3.2.1.1">00‑00‑5E‑00‑00‑00 through
+  00‑00‑5E‑00‑00‑FF:</dt>
+                <dd pn="section-2.1.3-3.2.1.2">reserved and require IESG Ratification for assignment (see
+  <xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>).</dd>
+                <dt pn="section-2.1.3-3.2.1.3">00‑00‑5E‑00‑01‑00 through
+  00‑00‑5E‑00‑01‑FF:</dt>
+                <dd pn="section-2.1.3-3.2.1.4">assigned for the Virtual Router Redundancy Protocol (VRRP) <xref target="RFC5798" format="default" sectionFormat="of" derivedContent="RFC5798"/>.</dd>
+                <dt pn="section-2.1.3-3.2.1.5">00‑00‑5E‑00‑02‑00 through
+  00‑00‑5E‑00‑02‑FF:</dt>
+                <dd pn="section-2.1.3-3.2.1.6">assigned for the IPv6 Virtual Router Redundancy Protocol (IPv6
+  VRRP) <xref target="RFC5798" format="default" sectionFormat="of" derivedContent="RFC5798"/>.</dd>
+                <dt pn="section-2.1.3-3.2.1.7">00‑00‑5E‑00‑52‑00 through
+  00‑00‑5E‑00‑52‑FF:</dt>
+                <dd pn="section-2.1.3-3.2.1.8">used for very small assignments. As of 2024, 4 out of these 256
+  values have been assigned. See <xref target="EthernetNum" format="default" sectionFormat="of" derivedContent="EthernetNum"/>.</dd>
+                <dt pn="section-2.1.3-3.2.1.9">00‑00‑5E‑00‑53‑00 through
+  00‑00‑5E‑00‑53‑FF:</dt>
+                <dd pn="section-2.1.3-3.2.1.10">assigned for use
+  in documentation by this document.</dd>
+                <dt pn="section-2.1.3-3.2.1.11">00‑00‑5E‑90‑01‑00 through
+  00‑00‑5E‑90‑01‑FF:</dt>
+                <dd pn="section-2.1.3-3.2.1.12">used for very small assignments that need parallel unicast and
+  multicast MAC addresses. As of 2024, 1 out of these 256 values has
+  been assigned. See <xref target="EthernetNum" format="default" sectionFormat="of" derivedContent="EthernetNum"/>.</dd>
+              </dl>
+            </dd>
+            <dt pn="section-2.1.3-3.3">Multicast:</dt>
+            <dd pn="section-2.1.3-3.4">
+              <dl indent="3" newline="false" spacing="normal" pn="section-2.1.3-3.4.1">
+                <dt pn="section-2.1.3-3.4.1.1">01‑00‑5E‑00‑00‑00 through
+  01‑00‑5E‑7F‑FF‑FF:</dt>
+                <dd pn="section-2.1.3-3.4.1.2">2**23 addresses assigned for IPv4 multicast <xref target="RFC1112" format="default" sectionFormat="of" derivedContent="RFC1112"/>.</dd>
+                <dt pn="section-2.1.3-3.4.1.3">01‑00‑5E‑80‑00‑00 through
+  01‑00‑5E‑8F‑FF‑FF:</dt>
+                <dd pn="section-2.1.3-3.4.1.4">2**20 addresses assigned for MPLS multicast <xref target="RFC5332" format="default" sectionFormat="of" derivedContent="RFC5332"/>. </dd>
+                <dt pn="section-2.1.3-3.4.1.5">01‑00‑5E‑90‑00‑00 through
+  01‑00‑5E‑90‑00‑FF:</dt>
+                <dd pn="section-2.1.3-3.4.1.6">2**8 addresses being used for very small assignments.  As of
+  2024, 4 out of these 256 values have been assigned. See <xref target="EthernetNum" format="default" sectionFormat="of" derivedContent="EthernetNum"/>.</dd>
+                <dt pn="section-2.1.3-3.4.1.7">01‑00‑5E‑90‑01‑00 through
+  01‑00‑5E‑90‑01‑FF:</dt>
+                <dd pn="section-2.1.3-3.4.1.8">used for very small assignments that need parallel unicast and
+  multicast MAC addresses. As of 2024, 1 out of these 256 values has
+  been assigned. See <xref target="EthernetNum" format="default" sectionFormat="of" derivedContent="EthernetNum"/>.</dd>
+                <dt pn="section-2.1.3-3.4.1.9">01‑00‑5E‑90‑10‑00 through
+  01‑00‑5E‑90‑10‑FF:</dt>
+                <dd pn="section-2.1.3-3.4.1.10">2**8 addresses assigned for use in documentation by this
+  document.</dd>
+              </dl>
+            </dd>
+          </dl>
+          <t indent="0" pn="section-2.1.3-4">For more detailed and up-to-date information, see the "IANA OUI Ethernet Numbers" registry at <xref target="EthernetNum" format="default" sectionFormat="of" derivedContent="EthernetNum"/>.</t>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-2.1.4">
+          <name slugifiedName="name-48-bit-mac-documentation-va">48-Bit MAC Documentation Values</name>
+          <t indent="0" pn="section-2.1.4-1">The following values have been assigned for use in
+documentation:</t>
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-2.1.4-2">
+            <li pn="section-2.1.4-2.1">00‑00‑5E‑00‑53‑00 through
+  00‑00‑5E‑00‑53‑FF for unicast and</li>
+            <li pn="section-2.1.4-2.2">01‑00‑5E‑90‑10‑00 through
+  01‑00‑5E‑90‑10‑FF for multicast.</li>
+          </ul>
+        </section>
+        <section anchor="bit-48-assign-con" numbered="true" removeInRFC="false" toc="include" pn="section-2.1.5">
+          <name slugifiedName="name-48-bit-iana-mac-assignment-">48-Bit IANA MAC Assignment Considerations</name>
+          <t indent="0" pn="section-2.1.5-1">48-bit assignments under the current or a future IANA OUI (see
+<xref target="oui-ex" format="default" sectionFormat="of" derivedContent="Section 5.6"/>) must meet the following requirements:</t>
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-2.1.5-2">
+            <li pn="section-2.1.5-2.1">must be for standards purposes (either for an IETF Standard or
+  other standard related to IETF work),</li>
+            <li pn="section-2.1.5-2.2">must be for a power-of-two-sized block of identifiers starting at
+  a boundary that is an equal or greater power of two, including the
+  assignment of one (2**0) identifier, </li>
+            <li pn="section-2.1.5-2.3">must not be used to evade the requirement for network interface
+  vendors to obtain their own block of identifiers from the IEEE, and
+  </li>
+            <li pn="section-2.1.5-2.4">must be documented in an Internet-Draft or RFC. </li>
+          </ul>
+          <t indent="0" pn="section-2.1.5-3">In addition, approval must be obtained as follows (see the
+procedure in <xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>):</t>
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-2.1.5-4">
+            <li pn="section-2.1.5-4.1">Small to medium assignments of a block of 1, 2, 4, ..., 32768,
+  65536 (2**0, 2**1, 2**2, ..., 2**15, 2**16) EUI‑48 identifiers
+  require Expert Review (see <xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>).</li>
+            <li pn="section-2.1.5-4.2">Large assignments of 131072 (2**17) or more EUI‑48
+  identifiers require IESG Ratification (see <xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>).</li>
+          </ul>
+        </section>
+      </section>
+      <section anchor="bit-64" numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-64-bit-mac-identifiers">64-Bit MAC Identifiers</name>
+        <t indent="0" pn="section-2.2-1">IEEE also defines a system of 64-bit MAC identifiers, including
+EUI‑64s.  EUI‑64 identifiers are used as follows:</t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-2.2-2">
+          <li pn="section-2.2-2.1">In IEEE Std 1394 <xref target="IEEE1394" format="default" sectionFormat="of" derivedContent="IEEE1394"/> (also known as
+  FireWire and i.Link)</li>
+          <li pn="section-2.2-2.2">In IEEE Std 802.15.4 <xref target="IEEE802.15.4" format="default" sectionFormat="of" derivedContent="IEEE802.15.4"/> (also known
+  as Zigbee)</li>
+          <li pn="section-2.2-2.3">In <xref target="InfiniBand" format="default" sectionFormat="of" derivedContent="InfiniBand"/></li>
+          <li pn="section-2.2-2.4">In a modified form to construct some IPv6 Interface Identifiers,
+  as described in <xref target="ipv6" format="default" sectionFormat="of" derivedContent="Section 2.2.1"/>, although this use is now
+  deprecated</li>
+        </ul>
+        <t indent="0" pn="section-2.2-3">Adding a 5-octet (40-bit) extension to a 3-octet (24-bit)
+assignment, or a shorter extension to longer assigned prefixes <xref target="I-D.ieee-rac-oui-restructuring" format="default" sectionFormat="of" derivedContent="RAC_OUI"/> so as to total 64 bits, produces an EUI‑64
+identifier under that OUI or longer prefix.  As with EUI‑48
+identifiers, the first octet has the same special low-order bits.</t>
+        <t indent="0" pn="section-2.2-4">An AFN, a DNS RRTYPE, and CBOR tag have been assigned for 64-bit
+MAC addresses, as discussed in Sections <xref target="cbor-tags" format="counter" sectionFormat="of" derivedContent="2.4"/>, <xref target="mac-addresses" format="counter" sectionFormat="of" derivedContent="5.3"/>, and <xref target="cbor-tag-assign" format="counter" sectionFormat="of" derivedContent="5.9"/>. </t>
+        <t indent="0" pn="section-2.2-5">The discussion below is almost entirely in terms of the "Modified"
+form of EUI‑64 identifiers; however, anyone assigned such an
+identifier can also use the unmodified form as a MAC identifier on any
+link that uses such 64-bit identifiers for interfaces. </t>
+        <section anchor="ipv6" numbered="true" removeInRFC="false" toc="include" pn="section-2.2.1">
+          <name slugifiedName="name-ipv6-use-of-modified-eui64-">IPv6 Use of Modified EUI‑64 Identifiers</name>
+          <t indent="0" pn="section-2.2.1-1">The approach described below for constructing IPv6 Interface
+Identifiers is now deprecated, and the method specified in <xref target="RFC8064" format="default" sectionFormat="of" derivedContent="RFC8064"/> is recommended.</t>
+          <t indent="0" pn="section-2.2.1-2">EUI‑64 identifiers have been used to form the lower 64 bits of
+some IPv6 addresses (Section <xref target="RFC4291" section="2.5.1" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4291#section-2.5.1" derivedContent="RFC4291"/> and Appendix <xref target="RFC4291" section="A" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4291#appendix-A" derivedContent="RFC4291"/> of <xref target="RFC4291" format="default" sectionFormat="of" derivedContent="RFC4291"/> and <xref target="RFC5214" sectionFormat="of" section="A" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5214#appendix-A" derivedContent="RFC5214"/>).  When
+so used, the EUI‑64 is modified by inverting the X (universal/local)
+bit to form an IETF "Modified EUI‑64 identifier".  Below is an
+illustration of a Modified EUI‑64 unicast identifier under the
+IANA OUI, where aa-bb-cc-dd-ee is the extension. </t>
+          <t indent="3" pn="section-2.2.1-3">02-00-5E-aa-bb-cc-dd-ee</t>
+          <t indent="0" pn="section-2.2.1-4">The first octet is shown as 02 rather than 00 because, in Modified
+EUI‑64 identifiers, the sense of the X bit is inverted compared
+with EUI‑48 identifiers.  It is the globally unique values
+(universal scope) that have the 0x02 bit (also known as the X or
+universal/local bit) on in the first octet, while those with this bit
+off are typically locally assigned and out of scope for global
+assignment. </t>
+          <t indent="0" pn="section-2.2.1-5">The X (universal/local) bit was inverted to make it easier for network
+operators to type in local-scope identifiers.  Thus, such Modified
+EUI‑64 identifiers as 1, 2, etc. (ignoring leading zeros) are
+local.  Without the modification, they would have to be
+02-00-00-00-00-00-00-01, 02-00-00-00-00-00-00-02, etc. to be
+local.</t>
+          <t indent="0" pn="section-2.2.1-6">As with 48-bit MAC identifiers, the M bit (0x01) on in the first
+octet indicates a group identifier (multicast or broadcast). </t>
+          <t indent="0" pn="section-2.2.1-7">When the first two octets of the extension of a Modified
+EUI‑64 identifier are FF-FE, the remainder of the extension is a
+24-bit value, as assigned by the OUI owner for an EUI‑48.  For
+example: </t>
+          <t indent="3" pn="section-2.2.1-8">02-00-5E-FF-FE-yy-yy-yy</t>
+          <t indent="0" pn="section-2.2.1-9">or</t>
+          <t indent="3" pn="section-2.2.1-10">03-00-5E-FF-FE-yy-yy-yy</t>
+          <t indent="0" pn="section-2.2.1-11">where yy-yy-yy is the portion (of an EUI‑48 global unicast or
+multicast identifier) that is assigned by the OUI owner (IANA in this
+case).  Thus, any holder of one or more EUI‑48 identifiers under
+the IANA OUI also has an equal number of Modified EUI‑64
+identifiers that can be formed by inserting FF-FE in the middle of
+their EUI‑48 identifiers and inverting the universal/local bit.</t>
+          <t indent="0" pn="section-2.2.1-12">In addition, certain Modified EUI‑64 identifiers under the
+IANA OUI are reserved for holders of IPv4 addresses as follows:</t>
+          <t indent="3" pn="section-2.2.1-13">02-00-5E-FE-xx-xx-xx-xx</t>
+          <t indent="0" pn="section-2.2.1-14">where xx-xx-xx-xx is a 32-bit IPv4 address.  The owner of an IPv4
+address has both a unicast- and multicast-derived EUI‑64 address.
+Modified EUI‑64 identifiers from </t>
+          <t indent="3" pn="section-2.2.1-15">02-00-5E-FE-F0-00-00-00 to 02-00-5E-FE-FF-FF-FF-FF</t>
+          <t indent="0" pn="section-2.2.1-16">are effectively reserved pending the specification of IPv4 "Class
+E" addresses <xref target="RFC1112" format="default" sectionFormat="of" derivedContent="RFC1112"/>.  However, for Modified
+EUI‑64 identifiers based on an IPv4 address, the universal/local bit
+should be set to correspond to whether the IPv4 address is local or
+global.  (Keep in mind that the sense of the Modified EUI‑64
+identifier universal/local bit is reversed from that in (unmodified)
+EUI‑64 identifiers.)</t>
+        </section>
+        <section anchor="eui-64-assign-con" numbered="true" removeInRFC="false" toc="include" pn="section-2.2.2">
+          <name slugifiedName="name-eui64-iana-assignment-consi">EUI‑64 IANA Assignment Considerations</name>
+          <t indent="0" pn="section-2.2.2-1">The following table shows which Modified EUI‑64 identifiers
+under the IANA OUI are reserved, assigned, or available as indicated.
+As noted above, the corresponding MAC addresses can be determined by
+complementing the 02 bit in the first octet.  In all cases, the
+corresponding multicast 64-bit MAC addresses formed by complementing
+the 01 bit in the first octet have the same status as the modified
+64-bit unicast address blocks listed below. These values are prefixed with
+02-00-5E to form unicast modified EUI-64 addresses.</t>
+          <table anchor="table_iana_64_bit_macs" align="center" pn="table-3">
+            <name slugifiedName="name-iana-64-bit-mac-addresses">IANA 64-bit MAC Addresses </name>
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Addresses</th>
+                <th align="left" colspan="1" rowspan="1">Usage</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">00-00-00-00-00 to 0F-FF-FF-FF-FF</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">10-00-00-00-00 to 10-00-00-00-FF </td>
+                <td align="left" colspan="1" rowspan="1">Documentation</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">10-00-00-01-00 to EF-FF-FF-FF-FF</td>
+                <td align="left" colspan="1" rowspan="1">Unassigned</td>
+                <td align="left" colspan="1" rowspan="1"/>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">FD-00-00-00-00 to FD-FF-FF-FF-FF</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">FE-00-00-00-00 to FE-FF-FF-FF-FF</td>
+                <td align="left" colspan="1" rowspan="1">IPv4 Addr Holders</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">FF-00-00-00-00 to FF-FD-FF-FF-FF</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">FF-FE-00-00-00 to FF-FE-FF-FF-FF</td>
+                <td align="left" colspan="1" rowspan="1">IANA EUI-48 Holders</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">FF-FF-00-00-00 to FF-FF-FF-FF-FF</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+              </tr>
+            </tbody>
+          </table>
+          <t indent="0" pn="section-2.2.2-3">The reserved identifiers above require IESG Ratification (see
+<xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>) for assignment. IANA EUI‑64 identifier assignments
+under the IANA OUI must meet the following requirements:</t>
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-2.2.2-4">
+            <li pn="section-2.2.2-4.1">must be for standards purposes (either for an IETF Standard or
+  other standard related to IETF work), </li>
+            <li pn="section-2.2.2-4.2">must be for a power-of-two-sized block of identifiers starting at
+  a boundary that is an equal or greater power of two, including the
+  assignment of one (2**0) identifier, </li>
+            <li pn="section-2.2.2-4.3">must not be used to evade the requirement for network interface
+  vendors to obtain their own block of identifiers from the IEEE, and
+  </li>
+            <li pn="section-2.2.2-4.4">must be documented in an Internet-Draft or RFC. </li>
+          </ul>
+          <t indent="0" pn="section-2.2.2-5">In addition, approval must be obtained as follows (see the
+procedure in <xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>):</t>
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-2.2.2-6">
+            <li pn="section-2.2.2-6.1">Small to medium assignments of a block of 1, 2, 4, ...,
+  134217728, 268435456 (2**0, 2**1, 2**2, ..., 2**27, 2**28)
+  EUI‑64 identifiers require Expert Review (see <xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>).</li>
+            <li pn="section-2.2.2-6.2">Large assignments of 536870912 (2**29) or more EUI‑64
+  identifiers require IESG Ratification (see <xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>).</li>
+          </ul>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-2.2.3">
+          <name slugifiedName="name-eui64-documentation-values">EUI‑64 Documentation Values</name>
+          <t indent="0" pn="section-2.2.3-1">The following blocks of unmodified 64-bit MAC addresses are for
+documentation use.  The IPv4-derived addresses are based on the IPv4
+documentation addresses <xref target="RFC5737" format="default" sectionFormat="of" derivedContent="RFC5737"/>, and the MAC-derived
+addresses are based on the EUI‑48 documentation addresses
+above.</t>
+          <t indent="0" pn="section-2.2.3-2">Unicast values for documentation use:</t>
+          <t indent="3" pn="section-2.2.3-3">00‑00‑5E‑EF‑10‑00‑00‑00
+to 00‑00‑5E‑EF‑10‑00‑00‑FF
+general</t>
+          <t indent="3" pn="section-2.2.3-4">00‑00‑5E‑FE‑C0‑00‑02‑00
+to 00‑00‑5E‑FE‑C0‑00‑02‑FF and
+00‑00‑5E‑FE‑C6‑33‑64‑00 to
+00‑00‑5E‑FE‑C6‑33‑64‑FF and
+00‑00‑5E‑FE‑CB‑00‑71‑00 to
+00‑00‑5E‑FE‑CB‑00‑71‑FF IPv4
+derived</t>
+          <t indent="3" pn="section-2.2.3-5">00‑00‑5E‑FF‑FE‑00‑53‑00
+to 00‑00‑5E‑FF‑FE‑00‑53‑FF
+EUI‑48 derived</t>
+          <t indent="3" pn="section-2.2.3-6">00‑00‑5E‑FE‑EA‑C0‑00‑02
+and 00‑00‑5E‑FE‑EA‑C6‑33‑64 and
+00‑00‑5E‑FE‑EA‑CB‑00‑71 IPv4
+multicast derived from IPv4 unicast <xref target="RFC6034" format="default" sectionFormat="of" derivedContent="RFC6034"/></t>
+          <t indent="0" pn="section-2.2.3-7">Multicast values for documentation use:</t>
+          <t indent="3" pn="section-2.2.3-8">01‑00‑5E‑EF‑10‑00‑00‑00
+to 01‑00‑5E‑EF‑10‑00‑00‑FF
+general</t>
+          <t indent="3" pn="section-2.2.3-9">01‑00‑5E‑FE‑C0‑00‑02‑00
+to 01‑00‑5E‑FE‑C0‑00‑02‑FF and
+01‑00‑5E‑FE‑C6‑33‑64‑00 to
+01‑00‑5E‑FE‑C6‑33‑64‑FF and
+01‑00‑5E‑FE‑CB‑00‑71‑00 to
+01‑00‑5E‑FE‑CB‑00‑71‑FF IPv4
+derived</t>
+          <t indent="3" pn="section-2.2.3-10">01‑00‑5E‑FE‑EA‑C0‑00‑02
+and 01‑00‑5E‑FE‑EA‑C6‑33‑64 and
+01‑00‑5E‑FE‑EA‑CB‑00‑71 IPv4
+multicast derived from IPv4 unicast <xref target="RFC6034" format="default" sectionFormat="of" derivedContent="RFC6034"/></t>
+          <t indent="3" pn="section-2.2.3-11">01‑00‑5E‑FF‑FE‑90‑10‑00
+to 01‑00‑5E‑FF‑FE‑90‑10‑FF
+EUI‑48 derived</t>
+        </section>
+      </section>
+      <section anchor="bit-48-ietf" numbered="true" removeInRFC="false" toc="include" pn="section-2.3">
+        <name slugifiedName="name-other-48-bit-mac-identifier">Other 48-Bit MAC Identifiers Used by the IETF</name>
+        <t indent="0" pn="section-2.3-1">There are two other blocks of 48-bit MAC identifiers that are used
+by the IETF as described below.</t>
+        <section anchor="id-33-33" numbered="true" removeInRFC="false" toc="include" pn="section-2.3.1">
+          <name slugifiedName="name-identifiers-with-a-33-33-pr">Identifiers with a '33-33' Prefix</name>
+          <t indent="0" pn="section-2.3.1-1">All 48-bit multicast MAC identifiers prefixed with "33-33" (that is, the
+2**32 multicast MAC identifiers in the range from 33-33-00-00-00-00 to
+33-33-FF-FF-FF-FF) are used as specified in <xref target="RFC2464" format="default" sectionFormat="of" derivedContent="RFC2464"/>
+for IPv6 multicast.  In all of these identifiers, the Group bit (the
+bottom bit of the first octet) is on, as is required to work properly
+with existing hardware as a multicast identifier.  They also have the
+Local bit on, but any Ethernet using standard IPv6 multicast should
+note that these addresses will be used for that purpose. These
+multicast MAC addresses fall into the Administratively Assigned SLAP
+quadrant (see <xref target="first-oct-bit" format="default" sectionFormat="of" derivedContent="Section 2.1.1"/>).</t>
+          <aside pn="section-2.3.1-2">
+            <t indent="0" pn="section-2.3.1-2.1">Historical Notes: It was the custom during IPv6 design
+to use "3" for unknown or example values, and 3333 Coyote Hill Road,
+Palo Alto, California is the address of PARC (Palo Alto Research
+Center), formerly "Xerox PARC."  Ethernet was originally specified by
+the Digital Equipment Corporation, Intel Corporation, and Xerox
+Corporation.  The pre-IEEE <xref target="IEEE.802.3_2012" format="default" sectionFormat="of" derivedContent="IEEE.802.3_2012"/> Ethernet
+protocol has sometimes been known as "DIX" Ethernet from the first
+letters of the names of these companies.</t>
+          </aside>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-2.3.2">
+          <name slugifiedName="name-the-cf-series">The CF Series</name>
+          <t indent="0" pn="section-2.3.2-1">The Informational <xref target="RFC2153" format="default" sectionFormat="of" derivedContent="RFC2153"/> declared the 3-octet
+values from CF‑00‑00 through CF‑FF‑FF to be "OUIs"
+available for assignment by IANA to software vendors for use in PPP
+<xref target="RFC1661" format="default" sectionFormat="of" derivedContent="RFC1661"/> or for other uses where vendors do not
+otherwise need an IEEE-assigned OUI. When used as 48-bit MAC prefixes,
+these values have all of the Z, Y, X (Local) and M (Group) special
+bits at the bottom of the first octet equal to one, while all
+IEEE-assigned OUIs thus far have the X and M bits as zero and all CIDs
+have the Y and M bits as zero; thus, there can be no conflict between CF
+series "OUIs" and IEEE-assigned OUIs/CIDs. Multicast MAC addresses
+constructed with a CF series OUI would fall into the Standard
+Assigned SLAP quadrant (see <xref target="first-oct-bit" format="default" sectionFormat="of" derivedContent="Section 2.1.1"/>). The Group bit is
+meaningless in PPP.  To quote <xref target="RFC2153" format="default" sectionFormat="of" derivedContent="RFC2153"/>: "The 'CF0000'
+series was arbitrarily chosen to match the PPP NLPID 'CF', as a matter
+of mnemonic convenience."  (For further information on Network Layer Protocol Identifiers (NLPIDs), see
+<xref target="RFC6328" format="default" sectionFormat="of" derivedContent="RFC6328"/>.)</t>
+          <t indent="3" pn="section-2.3.2-2">CF‑00‑00 is reserved.  CF‑00‑00‑00‑00‑00 is a multicast identifier
+listed by IANA as used for Ethernet loopback tests.</t>
+          <t indent="0" pn="section-2.3.2-3">In over a decade of availability, only a handful of values in the
+CF series have been assigned.  (See the "IANA OUI Ethernet Numbers" <xref target="EthernetNum" format="default" sectionFormat="of" derivedContent="EthernetNum"/> and "Point-to-Point (PPP) Protocol Field Assignments" <xref target="PPPNum" format="default" sectionFormat="of" derivedContent="PPPNum"/> registry groups.)</t>
+          <section numbered="true" removeInRFC="false" toc="exclude" pn="section-2.3.2.1">
+            <name slugifiedName="name-changes-to-rfc-2153">Changes to RFC 2153</name>
+            <t indent="0" pn="section-2.3.2.1-1">The IANA Considerations in <xref target="RFC2153" format="default" sectionFormat="of" derivedContent="RFC2153"/> were updated as
+follows by the approval of <xref target="RFC5342" format="default" sectionFormat="of" derivedContent="RFC5342"/> and remain so updated (no
+technical changes have been made):</t>
+            <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-2.3.2.1-2">
+              <li pn="section-2.3.2.1-2.1">Use of these CF series identifiers based on IANA assignment was
+deprecated.</li>
+              <li pn="section-2.3.2.1-2.2">IANA was instructed not to assign any further values in the CF
+series.</li>
+            </ul>
+          </section>
+        </section>
+      </section>
+      <section anchor="cbor-tags" numbered="true" removeInRFC="false" toc="include" pn="section-2.4">
+        <name slugifiedName="name-cbor-tags">CBOR Tags</name>
+        <t indent="0" pn="section-2.4-1">The Concise Binary Object Representation (CBOR) <xref target="RFC8949" format="default" sectionFormat="of" derivedContent="RFC8949"/> is a data format whose design goals include the
+possibility of very small code size, fairly small message size, and
+extensibility. In CBOR, a data item can be enclosed by a CBOR tag to
+give it some additional semantics identified by that tag. CBOR-tagged
+data items (fields) are not used in actual IEEE 802 address fields but
+may be used in CBOR-encoded parts of protocol messages.</t>
+        <t indent="0" pn="section-2.4-2">IANA has assigned 48 as the CBOR tag to indicate a MAC
+address. The enclosed data item is an octet string. The length of the
+octet string indicates whether a 48-bit (6 octet) or 64-bit (8 octet) MAC
+address is encoded. Should some other multiple of 8 bits be used in the
+future for the length of MAC addresses, such as a 128-bit (16-octet) MAC
+address, the 48 tag will be used.</t>
+        <t indent="0" pn="section-2.4-3">IANA has assigned 1048 as the CBOR tag to indicate an OUI, CID, or
+CF series organizational identifier. The enclosed data item is an
+octet string of length 3 to hold the 24-bit OUI or CID (see <xref target="oui-cid" format="default" sectionFormat="of" derivedContent="Section 2.1.2"/>).</t>
+      </section>
+    </section>
+    <section anchor="eth-pro-param" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-ethernet-protocol-parameter">Ethernet Protocol Parameters</name>
+      <t indent="0" pn="section-3-1">Ethernet protocol parameters provide a means of indicating, near
+the beginning of a frame, the contents of that frame -- for example,
+that it contains IPv4 or IPv6.</t>
+      <t indent="0" pn="section-3-2">There are two types of protocol identifier parameters (see <xref target="EthernetNum" format="default" sectionFormat="of" derivedContent="EthernetNum"/>) that can occur in Ethernet frames:</t>
+      <dl newline="true" indent="3" spacing="normal" pn="section-3-3">
+        <dt pn="section-3-3.1">EtherTypes:</dt>
+        <dd pn="section-3-3.2">These are 16-bit identifiers that, when considered as an
+  unsigned integer, are equal to or larger than 0x0600. <xref target="EtherType" format="default" sectionFormat="of" derivedContent="Figure 2"/> shows the simplest case where the EtherType of the
+  protocol data in the frame appears immediately after the destination
+  and source MAC addresses. <xref target="IEEE802_OandA" format="default" sectionFormat="of" derivedContent="IEEE802_OandA"/> specifies
+  two EtherTypes for local, experimental use: 0x88B5 and 0x88B6.</dd>
+        <dt pn="section-3-3.3">LSAPs:</dt>
+        <dd pn="section-3-3.4">These are 8-bit protocol identifiers that occur in pairs after a
+  field that gives the frame length. Such a length must, when
+  considered as an unsigned integer, be less than 0x5DD, or it could
+  be mistaken as an EtherType. However, the LLC encapsulation
+  EtherType 0x8870 <xref target="IEEE802.1AC" format="default" sectionFormat="of" derivedContent="IEEE802.1AC"/> may also be used in
+  place of such a length as a "length indication" of nonspecific
+  length. LSAPs occur in pairs, where one is intended to indicate the
+  source protocol handler (SSAP) and the other the destination protocol
+  handler (DSAP); however, use cases where the two are different have
+  been relatively rare. See <xref target="LSAP" format="default" sectionFormat="of" derivedContent="Figure 3"/> for the simplest
+  case where the length field appears immediately after the
+  destination and source MAC addresses. In that figure, the CTL
+  (control) field value of 3 indicates datagram service. This type of
+  protocol identification is sometimes called "LLC" (Logical Link
+  Control).</dd>
+      </dl>
+      <figure anchor="EtherType" align="left" suppress-title="false" pn="figure-2">
+        <name slugifiedName="name-ethertype-frame-protocol-la">EtherType Frame Protocol Labeling</name>
+        <artwork type="ascii-art" align="center" pn="section-3-4.1">
+
+  0  1  2  3  4  5  6  7  0  1  2  3  4  5  6  7
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|  Destination MAC Address                     ///
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|  Source MAC Address                          ///
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|  EtherType, greater than or equal to 0x0600   |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|  Protocol Data                               ///
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+</artwork>
+      </figure>
+      <figure anchor="LSAP" align="left" suppress-title="false" pn="figure-3">
+        <name slugifiedName="name-lsap-frame-protocol-labelin">LSAP Frame Protocol Labeling</name>
+        <artwork type="ascii-art" align="center" pn="section-3-5.1">
+
+  0  1  2  3  4  5  6  7  0  1  2  3  4  5  6  7
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|  Destination MAC Address                     ///
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|  Source MAC Address                          ///
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|  Frame length (or 0x8870)                     |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|  DSAP                 |  SSAP                 |
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+|  CTL = 0x03           |  Protocol Data       ///
++--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-3-6">The concept of EtherType labeling has been extended to labeling by
+Ethernet "tags".  An Ethernet tag in this sense is a prefix whose type
+is identified by an EtherType that is then followed by either another
+tag, an EtherType, or an LLC Link-Layer Service Access Point (LSAP)
+protocol indicator for the "main" body of the frame.  Customarily,
+in the world of <xref target="IEEE802_OandA" format="default" sectionFormat="of" derivedContent="IEEE802_OandA"/>, tags are a fixed length
+and do not include any encoding of their own length.  An example is
+the C-Tag (formerly the Q-Tag) <xref target="IEEE.802.1Q_2014" format="default" sectionFormat="of" derivedContent="IEEE.802.1Q_2014"/>.  It
+provides customer VLAN and priority information for a frame. Any
+device that is processing a frame cannot, in general, safely process
+anything in the frame past an EtherType it does not understand. </t>
+      <t indent="0" pn="section-3-7">Neither EtherTypes nor LSAPs are assigned by IANA; they are
+assigned by the IEEE Registration Authority <xref target="IEEE_RA" format="default" sectionFormat="of" derivedContent="IEEE_RA"/>
+(see <xref target="IEEEregAuth" format="default" sectionFormat="of" derivedContent="Section 1.2"/> and <xref target="ethertypes" format="default" sectionFormat="of" derivedContent="Appendix B"/>).  However,
+both LSAPs and EtherTypes have extension mechanisms so that they can
+be used with five-octet Ethernet protocol identifiers under an OUI,
+including those assigned by IANA under the IANA OUI.</t>
+      <t indent="0" pn="section-3-8">When using the IEEE 802 Logical Link Control (LLC) format
+(Subnetwork Access Protocol (SNAP)) <xref target="IEEE802_OandA" format="default" sectionFormat="of" derivedContent="IEEE802_OandA"/> for
+a frame, an OUI-based protocol identifier can be expressed as
+follows:</t>
+      <t indent="3" pn="section-3-9">xx‑xx‑AA‑AA‑03‑yy‑yy‑yy‑zz‑zz
+</t>
+      <t indent="0" pn="section-3-10">where xx‑xx is the frame length and, as above, must be small
+enough not to be confused with an EtherType; "AA" is the LSAP that
+indicates this use and is sometimes referred to as the SNAP Service
+Access Point (SNAP SAP); "03" is the LLC control octet indicating
+datagram service; yy‑yy‑yy is an OUI; and zz‑zz is a
+protocol number, under that OUI, assigned by the OUI owner.  The
+five-octet length for such OUI-based protocol identifiers results,
+with the LLC control octet ("0x03"), in the preservation of 16-bit
+alignment.</t>
+      <t indent="0" pn="section-3-11">When using an EtherType to indicate the main type for a frame body,
+the special "OUI Extended EtherType" 0x88B7 is available.  Using this
+EtherType, a frame body can begin with </t>
+      <t indent="3" pn="section-3-12">88‑B7‑yy‑yy‑yy‑zz‑zz</t>
+      <t indent="0" pn="section-3-13">where yy‑yy‑yy and zz‑zz have the same meaning as in
+the SNAP format described above; however, this format with EtherType
+0x88B7 does not preserve 16-bit alignment. </t>
+      <t indent="0" pn="section-3-14">It is also possible, within the SNAP format, to use an arbitrary
+EtherType.  Putting the EtherType as the zz‑zz field after an
+all-zeros OUI (00‑00‑00) does this. It looks like </t>
+      <t indent="3" pn="section-3-15">xx‑xx‑AA‑AA‑03‑00‑00‑00‑zz‑zz
+</t>
+      <t indent="0" pn="section-3-16">where zz‑zz is the EtherType.</t>
+      <t indent="0" pn="section-3-17">As well as labeling frame contents, IEEE 802 protocol types appear
+within Non-Broadcast Multi-Access (NBMA) Next Hop Resolution Protocol
+<xref target="RFC2332" format="default" sectionFormat="of" derivedContent="RFC2332"/> messages.  Such messages have provisions for
+both two-octet EtherTypes and OUI-based protocol types. 16-bit
+EtherTypes also occur in the Generic Routing Encapsulation (GRE) <xref target="RFC2784" format="default" sectionFormat="of" derivedContent="RFC2784"/> header and in the Generic Network
+Virtualization Encapsulation (Geneve) <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/> encapsulation
+header.</t>
+      <section anchor="eth-pro-iana-oui" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-ethernet-protocol-assignmen">Ethernet Protocol Assignment under the IANA OUI</name>
+        <t indent="0" pn="section-3.1-1">Two-octet protocol numbers under the IANA OUI are available, as in
+</t>
+        <t indent="3" pn="section-3.1-2">88‑B7‑00‑00‑5E‑qq‑qq </t>
+        <t indent="0" pn="section-3.1-3">or</t>
+        <t indent="3" pn="section-3.1-4">xx‑xx‑AA‑AA‑03‑00‑00‑5E‑qq‑qq
+</t>
+        <t indent="0" pn="section-3.1-5">where qq‑qq is the protocol number. </t>
+        <t indent="0" pn="section-3.1-6">A number of such assignments have been made out of the 2**16
+protocol numbers available from 00‑00‑5E‑00‑00 to
+00‑00‑5E‑FF‑FF (see <xref target="EthernetNum" format="default" sectionFormat="of" derivedContent="EthernetNum"/>).
+The extreme values of this range, 00‑00‑5E‑00‑00
+and 00‑00‑5E‑FF‑FF, are reserved and require IESG
+Ratification for assignment (see <xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>).  New assignments of
+protocol numbers (qq‑qq) under the IANA OUI must meet the
+following requirements: </t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-3.1-7">
+          <li pn="section-3.1-7.1">the assignment must be for standards use (either for an IETF
+  Standard or other standard related to IETF work), </li>
+          <li pn="section-3.1-7.2">the protocol must include a version field at a fixed offset or
+  an equivalent marking such that later versions can be indicated in a
+  way recognizable by earlier versions, </li>
+          <li pn="section-3.1-7.3">the protocol must be documented in an Internet-Draft or RFC, and </li>
+          <li pn="section-3.1-7.4">such protocol numbers are not to be assigned for any protocol
+  that has an EtherType. (That EtherType can be used directly, or
+   -- in the LSAPs case -- it can be used with the SNAP SAP by putting
+   an all-zero "OUI" before the EtherType as described above.)</li>
+        </ul>
+        <t indent="0" pn="section-3.1-8">In addition, the Expert Review (or IESG Ratification for the two
+reserved values) must be obtained using the procedure specified in
+<xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-3.2">
+        <name slugifiedName="name-documentation-protocol-numb">Documentation Protocol Number</name>
+        <t indent="0" pn="section-3.2-1">0x0042 is a protocol number under the IANA OUI (that is,
+00‑00‑5E‑00‑42) to be used as an example for
+documentation purposes.</t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-other-oui-cid-based-paramet">Other OUI/CID-Based Parameters</name>
+      <t indent="0" pn="section-4-1">Some IEEE 802 and other protocols provide for parameters based on
+an OUI or CID beyond those discussed above.  Such parameters commonly
+consist of an OUI or CID plus one octet of additional value.  They are
+called Organizationally Specific parameters (sometimes informally and
+less accurately referred to as "vendor specific").  They would look
+like</t>
+      <t indent="3" pn="section-4-2">yy‑yy‑yy‑zz</t>
+      <t indent="0" pn="section-4-3">where yy‑yy‑yy is the OUI/CID and zz is the additional
+specifier.  An example is the Cipher Suite Selector in <xref target="IEEE.802.11_2012" format="default" sectionFormat="of" derivedContent="IEEE.802.11_2012"/>.</t>
+      <t indent="0" pn="section-4-4">Values may be assigned under the IANA OUI for other OUI-based
+parameter usage by Expert Review, except that, for each use, the
+additional specifier values consisting of all zero bits and all one
+bits (0x00 (00‑00‑5E‑00) and 0xFF
+(00‑00‑5E‑FF) for a one-octet specifier) are reserved
+and require IESG Ratification (see <xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/>) for assignment; also,
+the additional specifier value 0x42 (00‑00‑5E‑42 for a
+one octet specifier, right justified and filled with zeros on the left
+if the specifier is more than one octet) is assigned for use as an
+example in documentation.</t>
+      <t indent="0" pn="section-4-5">Assignments of other IANA OUI-based parameters must be for
+standards use (either for an IETF Standard or other standard related
+to IETF work) and be documented in an Internet-Draft or RFC.  The
+first time a value is assigned for a particular parameter of this
+type, an IANA registry will be created to contain that assignment and
+any subsequent assignments of values for that parameter under the IANA
+OUI.  The Expert may specify the name of the registry.</t>
+      <t indent="0" pn="section-4-6">If different policies from those above are required for such a
+parameter, a BCP or Standards Track RFC should be adopted to update
+this BCP and specify the new policy and parameter.</t>
+      <section anchor="lldp-ietf-tlv" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-lldp-ietf-organizationally-">LLDP IETF Organizationally Specific TLV Type</name>
+        <t indent="0" pn="section-4.1-1">An example of an "other IANA OUI-based parameter" is specified
+in <xref target="RFC8520" format="default" sectionFormat="of" derivedContent="RFC8520"/>. This provides for an
+Organizationally Specific TLV type for announcing a Manufacturer Usage
+Description (MUD) Uniform Resource Locator (URL) in the IEEE Link
+Local Discovery Protocol (LLDP) <xref target="IEEE802.1AB" format="default" sectionFormat="of" derivedContent="IEEE802.1AB"/>. Additional IETF use of code points in this
+space have been proposed <xref target="I-D.acee-idr-lldp-peer-discovery" format="default" sectionFormat="of" derivedContent="BGP11dp"/>. (See also <xref target="lldp-tlv" format="default" sectionFormat="of" derivedContent="Section 5.8"/>.)</t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-5-1">This document concerns IANA considerations for the assignment of
+Ethernet parameters in connection with the IANA OUI and related
+matters.</t>
+      <t indent="3" pn="section-5-2">Note: The "IANA OUI Ethernet Numbers" registry
+group (web page) is for registries of numbers assigned under the IANA
+OUI, while the "IEEE 802 Numbers" registry group has informational
+lists of numbers assigned by the IEEE Registration Authority.</t>
+      <t indent="0" pn="section-5-3">This document does not create any new IANA registries.</t>
+      <t indent="0" pn="section-5-4">The MAC address values assigned for documentation and the protocol
+number for documentation were both assigned by <xref target="RFC7042" format="default" sectionFormat="of" derivedContent="RFC7042"/>. </t>
+      <t indent="0" pn="section-5-5">No existing assignment is changed by this document.</t>
+      <section anchor="ex-rev-iesg-rat" numbered="true" removeInRFC="false" toc="include" pn="section-5.1">
+        <name slugifiedName="name-expert-review-and-iesg-rati">Expert Review and IESG Ratification</name>
+        <t indent="0" pn="section-5.1-1">This section specifies the procedures for Expert Review and IESG
+Ratification of MAC, protocol, and other IANA OUI-based identifiers.
+The Expert(s) referred to in this document shall consist of one or
+more persons appointed by and serving at the pleasure of the
+IESG. </t>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-5.1.1">
+          <name slugifiedName="name-expert-review-guidance">Expert Review Guidance</name>
+          <t indent="0" pn="section-5.1.1-1">The procedure described for Expert Review assignments in this
+document is consistent with the IANA Expert Review policy described in
+<xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>. </t>
+          <t indent="0" pn="section-5.1.1-2">While finite, the universe of MAC code points from which
+Expert-judged assignments will be made is considered to be large enough that
+the requirements given in this document and the Experts' good judgment
+are sufficient guidance.  The idea is for the Expert to provide a
+light reasonableness check for small assignments of MAC identifiers, with
+increased scrutiny by the Expert for medium-sized assignments of MAC
+identifiers and assignments of protocol identifiers and other IANA
+OUI-based parameters.</t>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-5.1.2">
+          <name slugifiedName="name-expert-review-and-iesg-ratif">Expert Review and IESG Ratification Procedure</name>
+          <t indent="0" pn="section-5.1.2-1">It can make sense to assign very large portions of the MAC
+identifier code point space.  (Note that existing assignments include
+one for half of the entire multicast IANA 48‑bit code point space
+and one for a sixteenth of that multicast code point space.)  In those
+cases, and in cases of the assignment of "reserved" values, IESG
+Ratification of an Expert Review approval recommendation is required
+as described below. This can be viewed as a combination of Expert
+Review and IESG Approval as defined in <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>. IESG
+Approval is required only when the Expert does not reject the
+request. The procedure is as follows: </t>
+          <t indent="3" pn="section-5.1.2-2">The applicant always completes the appropriate template
+from <xref target="templates" format="default" sectionFormat="of" derivedContent="Appendix A"/> below and sends it to IANA &lt;iana@iana.org&gt;.</t>
+          <t indent="3" pn="section-5.1.2-3">IANA always sends the template to an appointed Expert.
+If the Expert recuses themselves or is non-responsive, IANA may choose
+an alternative appointed Expert or, if none is available, will contact
+the IESG.</t>
+          <t indent="3" pn="section-5.1.2-4">In all cases, if IANA receives a disapproval from an
+Expert selected to review an application template, the application
+will be denied. The Expert should provide a reason for refusal, which
+IANA will communicate back to the applicant.</t>
+          <t indent="3" pn="section-5.1.2-5">If the assignment is based on Expert Review:</t>
+          <t indent="6" pn="section-5.1.2-6">If IANA receives approval and code points are available,
+IANA will make the requested assignment.</t>
+          <t indent="3" pn="section-5.1.2-7">If the assignment is based on IESG Ratification:</t>
+          <t indent="6" pn="section-5.1.2-8">The procedure starts with the first steps above for
+Expert Review.  If the Expert disapproves the application, they simply
+inform IANA, who in turn informs the applicant that their request is
+denied; however, if the Expert believes the application should be
+approved or is uncertain and believes that the circumstances warrant
+the attention of the IESG, the Expert will inform IANA about their
+advice, and IANA will forward the application, together with the
+reasons provided by the Expert for approval or uncertainty, to the
+IESG.  The IESG must decide whether the assignment will be granted.
+This can be accomplished by a management item in an IESG telechat, as
+is done for other types of requests.  If the IESG decides not to
+ratify a favorable opinion by the Expert or decides against an
+application where the Expert is uncertain, the application is denied;
+otherwise, it is granted.  The IESG will communicate its decision to
+the Expert and to IANA. In case of refusal, the IESG should provide a
+reason, which IANA will communicate to the applicant.</t>
+        </section>
+      </section>
+      <section anchor="iana-name-changes" numbered="true" removeInRFC="false" toc="include" pn="section-5.2">
+        <name slugifiedName="name-iana-registry-group-web-pag">IANA Registry Group (Web Page) Name Changes</name>
+        <t indent="0" pn="section-5.2-1">For clarity and parallelism with the IANA "IEEE 802 Numbers"
+registry group, the IANA "Ethernet Numbers" registry group has been 
+renamed the "IANA OUI Ethernet Numbers" registry. </t>
+        <t indent="0" pn="section-5.2-2">As this document replaces <xref target="RFC7042" format="default" sectionFormat="of" derivedContent="RFC7042"/>, references to
+<xref target="RFC7042" format="default" sectionFormat="of" derivedContent="RFC7042"/> in IANA registries in both the "IEEE 802
+Numbers" and the "IANA OUI Ethernet Numbers" registry groups have
+been replaced by references to this document. Other IANA registry
+references to <xref target="RFC7042" format="default" sectionFormat="of" derivedContent="RFC7042"/> are not changed. </t>
+      </section>
+      <section anchor="mac-addresses" numbered="true" removeInRFC="false" toc="include" pn="section-5.3">
+        <name slugifiedName="name-mac-address-afns-and-rrtype">MAC Address AFNs and RRTYPEs</name>
+        <t indent="0" pn="section-5.3-1">IANA has assigned Address Family Numbers (AFNs) for MAC addresses
+as follows:</t>
+        <table align="center" pn="table-4">
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">AFN</th>
+              <th align="left" colspan="1" rowspan="1">Decimal</th>
+              <th align="left" colspan="1" rowspan="1">Hex</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">48-bit MAC</td>
+              <td align="left" colspan="1" rowspan="1">16389</td>
+              <td align="left" colspan="1" rowspan="1">0x4005</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC7042" format="default" sectionFormat="of" derivedContent="RFC7042"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">64-bit MAC</td>
+              <td align="left" colspan="1" rowspan="1">16390</td>
+              <td align="left" colspan="1" rowspan="1">0x4006</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC7042" format="default" sectionFormat="of" derivedContent="RFC7042"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">OUI</td>
+              <td align="left" colspan="1" rowspan="1">16391</td>
+              <td align="left" colspan="1" rowspan="1">0x4007</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC7961" format="default" sectionFormat="of" derivedContent="RFC7961"/></td>
+            </tr>
+            <tr>
+              <th colspan="4" align="left" rowspan="1">Lower 24 bits of a 48-bit MAC address:</th>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">MAC/24</td>
+              <td align="left" colspan="1" rowspan="1">16392</td>
+              <td align="left" colspan="1" rowspan="1">0x4008</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC7961" format="default" sectionFormat="of" derivedContent="RFC7961"/></td>
+            </tr>
+            <tr>
+              <th colspan="4" align="left" rowspan="1">Lower 40 bits of a 64-bit MAC address:</th>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">MAC/40</td>
+              <td align="left" colspan="1" rowspan="1">16393</td>
+              <td align="left" colspan="1" rowspan="1">0x4009</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC7961" format="default" sectionFormat="of" derivedContent="RFC7961"/></td>
+            </tr>
+          </tbody>
+        </table>
+        <t indent="0" pn="section-5.3-3">IANA has assigned DNS RRTYPEs <xref target="RFC6895" format="default" sectionFormat="of" derivedContent="RFC6895"/> for MAC
+addresses as follows:</t>
+        <table align="center" pn="table-5">
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1"/>
+              <th align="left" colspan="1" rowspan="1"/>
+              <th colspan="2" align="center" rowspan="1">RRTYPE
+Code</th>
+              <th align="left" colspan="1" rowspan="1"/>
+            </tr>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Data</th>
+              <th align="left" colspan="1" rowspan="1">Mnemonic</th>
+              <th align="left" colspan="1" rowspan="1">Decimal</th>
+              <th align="left" colspan="1" rowspan="1">Hex</th>
+              <th align="left" colspan="1" rowspan="1">
+Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">48-bit MAC</td>
+              <td align="center" colspan="1" rowspan="1">EUI48</td>
+              <td align="center" colspan="1" rowspan="1">108</td>
+              <td align="left" colspan="1" rowspan="1">0x006C</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC7043" format="default" sectionFormat="of" derivedContent="RFC7043"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">64-bit MAC</td>
+              <td align="center" colspan="1" rowspan="1">EUI64</td>
+              <td align="center" colspan="1" rowspan="1">109</td>
+              <td align="left" colspan="1" rowspan="1">0x006D</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC7043" format="default" sectionFormat="of" derivedContent="RFC7043"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="info-iana" numbered="true" removeInRFC="false" toc="include" pn="section-5.4">
+        <name slugifiedName="name-informational-iana-registry">Informational IANA Registry Group Material</name>
+        <t indent="0" pn="section-5.4-1">IANA maintains an informational registry group, currently
+implemented as a web page, concerning EtherTypes, OUIs, and multicast
+addresses assigned under OUIs other than the IANA OUI.  The title of
+this informational registry group is "IEEE 802 Numbers". IANA 
+updates that informational registry group when changes are provided by
+or approved by the Expert(s).</t>
+      </section>
+      <section anchor="ethertype-assign-pro" numbered="true" removeInRFC="false" toc="include" pn="section-5.5">
+        <name slugifiedName="name-ethertype-assignment-proces">EtherType Assignment Process</name>
+        <t indent="0" pn="section-5.5-1">Applying to the IEEE Registration Authority for an EtherType needed
+by an IETF protocol requires IESG Approval, as stated in <xref target="ethertypes" format="default" sectionFormat="of" derivedContent="Appendix B"/>. To
+minimize confusion, this process will normally be done by the primary
+expert for the informational "EtherType" registry within the "IEEE 802 Numbers" registry group, as
+described below (see also <xref target="info-iana" format="default" sectionFormat="of" derivedContent="Section 5.4"/>).</t>
+        <t indent="0" pn="section-5.5-2">After IESG Approval of the requirement for an EtherType, the IESG
+should refer the matter to IANA. In any case, IANA will ask the "EtherType" registry expert to execute the IEEE
+Registration Authority <xref target="IEEE_RA" format="default" sectionFormat="of" derivedContent="IEEE_RA"/> EtherType request
+process. This path is specified because the IESG usually deals with
+IANA for assignment actions and because IANA should be aware of which
+"EtherType" registry expert(s) are available,
+normally referring the making of the EtherType assignment request to
+the primary expert.</t>
+        <t indent="0" pn="section-5.5-3">Here is sample text for an Internet-Draft where both IANA and IEEE
+assignments are required, where "YYY" would be replaced by an
+explanation of for what/why the EtherType is needed in whatever level
+of detail is necessary and would normally include a reference or
+references to other appropriate parts of the Internet-Draft:</t>
+        <blockquote pn="section-5.5-4">
+          <t indent="0" pn="section-5.5-4.1">X. Assignment Considerations</t>
+          <t indent="0" pn="section-5.5-4.2">X.1. IEEE Assignment Considerations</t>
+          <t indent="3" pn="section-5.5-4.3">The IESG is requested to approve applying to the IEEE
+  Registration Authority for an EtherType for YYY. (The IESG should
+  communicate its approval to IANA and to those concerned with this
+  document. IANA will forward the IESG Approval to the
+  registry expert of the "EtherType" registry from the "IEEE 802 Numbers" registry group who will make the application to
+  the IEEE Registration Authority, keeping IANA informed.)</t>
+          <t indent="0" pn="section-5.5-4.4">X.2. IANA Considerations</t>
+          <t indent="3" pn="section-5.5-4.5">...</t>
+        </blockquote>
+      </section>
+      <section anchor="oui-ex" numbered="true" removeInRFC="false" toc="include" pn="section-5.6">
+        <name slugifiedName="name-oui-exhaustion">OUI Exhaustion</name>
+        <t indent="0" pn="section-5.6-1">When the available space for either multicast or unicast
+EUI‑48 identifiers under OUI 00‑00‑5E has been 90% or
+more exhausted, IANA should request an additional OUI from the IEEE
+Registration Authority for further IANA assignment.  The appointed
+Expert(s) should monitor for this condition and notify IANA.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-5.7">
+        <name slugifiedName="name-iana-oui-mac-address-table">IANA OUI MAC Address Table</name>
+        <t indent="0" pn="section-5.7-1">The following changes are made by this document to the Notes for
+the "IANA Unicast 48-bit MAC Addresses", the "IANA Multicast 48-bit
+MAC Addresses", and the "IANA 64-bit MAC Addresses" registries. In
+addition, the references in those registries are updated, as specified
+in <xref target="iana-name-changes" format="default" sectionFormat="of" derivedContent="Section 5.2"/>.</t>
+        <t indent="0" pn="section-5.7-2">The Notes for the "IANA Unicast 48-bit MAC Addresses" registry and
+for the "IANA Multicast 48-bit MAC Addresses" registry are changed to
+the following:</t>
+        <blockquote pn="section-5.7-3">
+          <t indent="0" pn="section-5.7-3.1">These values are prefixed with 00-00-5E. See <xref target="bit-48-MAC" format="default" sectionFormat="of" derivedContent="Section 2.1.3"/> of RFC 9542.</t>
+        </blockquote>
+        <t indent="0" pn="section-5.7-4">The Note for the "IANA 64-bit MAC Addresses" registry is changed to
+the following:</t>
+        <blockquote pn="section-5.7-5">
+          <t indent="0" pn="section-5.7-5.1">These values are prefixed with 00-00-5E to form unicast
+MAC addresses, with 01-00-5E to form multicast MAC addresses, with
+02-00-5E to form unicast modified EUI-64 addresses, and with 03-00-5E
+to form multicast modified EUI-64 addresses. See RFC 9542,
+particularly <xref target="eui-64-assign-con" format="default" sectionFormat="of" derivedContent="Section 2.2.2"/>, for more details.</t>
+        </blockquote>
+      </section>
+      <section anchor="lldp-tlv" numbered="true" removeInRFC="false" toc="include" pn="section-5.8">
+        <name slugifiedName="name-iana-lldp-tlv-subtypes">IANA LLDP TLV Subtypes</name>
+        <t indent="0" pn="section-5.8-1">IANA has moved the "IANA Link Layer Discovery Protocol
+(LLDP) TLV Subtypes" registry from the "IEEE 802 Numbers" registry
+group to the "IANA OUI Ethernet Numbers" registry group, since code
+points within it are assigned by IANA, and has added RFC 9542 as
+an additional reference for that registry.</t>
+        <t indent="0" pn="section-5.8-2">In addition, IANA has updated three entries in that
+registry as follows:</t>
+        <table align="center" pn="table-6">
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="right" colspan="1" rowspan="1">0</td>
+              <td align="left" colspan="1" rowspan="1">Reserved</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+            </tr>
+            <tr>
+              <td align="right" colspan="1" rowspan="1">42</td>
+              <td align="left" colspan="1" rowspan="1">Example for use in
+documentation</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+            </tr>
+            <tr>
+              <td align="right" colspan="1" rowspan="1">255</td>
+              <td align="left" colspan="1" rowspan="1">Reserved</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+            </tr>
+          </tbody>
+        </table>
+        <t indent="0" pn="section-5.8-4">The entries for 1 (MUD), 2-41 (unassigned), and 43-254 (unassigned)
+are unchanged.</t>
+      </section>
+      <section anchor="cbor-tag-assign" numbered="true" removeInRFC="false" toc="include" pn="section-5.9">
+        <name slugifiedName="name-cbor-tag-assignments">CBOR Tag Assignments</name>
+        <t indent="0" pn="section-5.9-1">IANA has assigned two CBOR Tags as shown below in the
+"Concise Binary Object Representation (CBOR) Tags" registry.</t>
+        <table align="center" pn="table-7">
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Tag</th>
+              <th align="left" colspan="1" rowspan="1">Data
+Item</th>
+              <th align="left" colspan="1" rowspan="1">Semantics</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">48</td>
+              <td align="left" colspan="1" rowspan="1">byte string</td>
+              <td align="left" colspan="1" rowspan="1">IEEE MAC
+Address</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1048</td>
+              <td align="left" colspan="1" rowspan="1">byte string</td>
+              <td align="left" colspan="1" rowspan="1">IEEE OUI/CID</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9542</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-6-1">This document is concerned with assignment of IEEE 802 parameters
+allocated to IANA, particularly those under the IANA OUI, and closely
+related matters.  It is not directly concerned with security except as
+follows:</t>
+      <t indent="3" pn="section-6-2">Confusion and conflict can be caused by the use of MAC
+addresses or other OUI-derived protocol parameters as examples in
+documentation.  Examples that are "only" to be used in documentation
+can end up being coded and released or cause conflicts due to later
+real use and the possible acquisition of intellectual property rights
+in such addresses or parameters.  The reservation herein of MAC
+addresses and parameters for documentation purposes will minimize such
+confusion and conflict.</t>
+      <t indent="0" pn="section-6-3">MAC addresses are identifiers provided by a device to the
+network.  On certain devices, MAC addresses are not static and can be
+configured.  The network should exercise caution when using these
+addresses to enforce policy because addresses can be spoofed and
+previously seen devices can return to the network with a new
+address.</t>
+      <t indent="0" pn="section-6-4">MAC addresses identify a physical or virtual interface and can be
+used for tracking the device with that interface. Thus, they can be
+used to track users associated with that device.  See <xref target="I-D.ietf-madinas-mac-address-randomization" format="default" sectionFormat="of" derivedContent="madinas"/> for related privacy considerations and a discussion
+of MAC address randomization to partially mitigate this threat.  Also,
+see <xref target="RFC7043" format="default" sectionFormat="of" derivedContent="RFC7043"/> for the security and privacy
+considerations of publishing MAC addresses in DNS.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.acee-idr-lldp-peer-discovery" to="BGP11dp"/>
+    <displayreference target="I-D.ietf-madinas-mac-address-randomization" to="madinas"/>
+    <displayreference target="I-D.ieee-rac-oui-restructuring" to="RAC_OUI"/>
+    <references pn="section-7">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-7.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="IEEE.802.1Q_2014" target="http://ieeexplore.ieee.org/servlet/opac?punumber=6991460" quoteTitle="true" derivedAnchor="IEEE.802.1Q_2014">
+          <front>
+            <title>IEEE Standard for Local and metropolitan area networks--Bridges and Bridged Networks</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date day="18" month="December" year="2014"/>
+            <abstract>
+              <t indent="0">This standard specifies how the Media Access Control (MAC) Service is supported by Bridged Networks, the principles of operation of those networks, and the operation of MAC Bridges and VLAN Bridges, including management, protocols, and algorithms</t>
+            </abstract>
+          </front>
+          <seriesInfo name="IEEE" value="802.1Q-2014"/>
+          <seriesInfo name="DOI" value="10.1109/ieeestd.2014.6991462"/>
+        </reference>
+        <reference anchor="IEEE802.1AB" quoteTitle="true" target="https://doi.org/10.1109/IEEESTD.2016.7433915" derivedAnchor="IEEE802.1AB">
+          <front>
+            <title>IEEE Standard for Local and metropolitan area networks - Station and Media Access Control Connectivity Discovery</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date year="2016" month="March"/>
+          </front>
+          <seriesInfo name="IEEE Std" value="802.1AB-2016"/>
+          <seriesInfo name="DOI" value="10.1109/IEEESTD.2016.7433915"/>
+        </reference>
+        <referencegroup anchor="IEEE802_OandA" derivedAnchor="IEEE802_OandA">
+          <reference anchor="x" quoteTitle="true" target="https://doi.org/10.1109/IEEESTD.2014.6847097">
+            <front>
+              <title>IEEE Standard for Local and Metropolitan Area Networks: Overview and Architecture</title>
+              <author>
+                <organization showOnFrontPage="true">IEEE</organization>
+              </author>
+              <date year="2014" month="June"/>
+            </front>
+            <seriesInfo name="IEEE Std" value="802-2014"/>
+            <seriesInfo name="DOI" value="10.1109/IEEESTD.2014.6847097"/>
+          </reference>
+          <reference anchor="y" quoteTitle="true" target="https://doi.org/10.1109/IEEESTD.2017.8016709">
+            <front>
+              <title>IEEE Standard for Local and Metropolitan Area Networks: Overview and Architecture -- Amendment 2: Local Medium Access Control (MAC) Address Usage</title>
+              <author>
+                <organization showOnFrontPage="true">IEEE</organization>
+              </author>
+              <date year="2017" month="August"/>
+            </front>
+            <seriesInfo name="IEEE Std" value="802c-2017"/>
+            <seriesInfo name="DOI" value="10.1109/IEEESTD.2017.8016709"/>
+          </reference>
+        </referencegroup>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+      </references>
+      <references pn="section-7.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.acee-idr-lldp-peer-discovery" target="https://datatracker.ietf.org/doc/html/draft-acee-idr-lldp-peer-discovery-17" quoteTitle="true" derivedAnchor="BGP11dp">
+          <front>
+            <title>BGP Logical Link Discovery Protocol (LLDP) Peer Discovery</title>
+            <author initials="A." surname="Lindem" fullname="Acee Lindem">
+              <organization showOnFrontPage="true">LabN Consulting, L.L.C.</organization>
+            </author>
+            <author initials="K." surname="Patel" fullname="Keyur Patel">
+              <organization showOnFrontPage="true">Arrcus, Inc</organization>
+            </author>
+            <author initials="S." surname="Zandi" fullname="Shawn Zandi">
+              <organization showOnFrontPage="true">LinkedIn</organization>
+            </author>
+            <author initials="J." surname="Haas" fullname="Jeffrey Haas">
+              <organization showOnFrontPage="true">Juniper Networks, Inc</organization>
+            </author>
+            <author initials="X." surname="Xu" fullname="Xiaohu Xu">
+              <organization showOnFrontPage="true">China Mobile</organization>
+            </author>
+            <date month="January" day="4" year="2024"/>
+            <abstract>
+              <t indent="0">   Link Layer Discovery Protocol (LLDP) or IEEE Std 802.1AB is
+   implemented in networking equipment from many vendors.  It is natural
+   for IETF protocols to avail this protocol for simple discovery tasks.
+   This document describes how BGP would use LLDP to discover directly
+   connected and 2-hop peers when peering is based on loopback
+   addresses.
+
+              </t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-acee-idr-lldp-peer-discovery-17"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="EthernetNum" target="https://www.iana.org/assignments/ethernet-numbers" quoteTitle="true" derivedAnchor="EthernetNum">
+          <front>
+            <title>IANA OUI Ethernet Numbers</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="IANA" target="https://www.iana.org" quoteTitle="true" derivedAnchor="IANA">
+          <front>
+            <title>Internet Assigned Numbers Authority</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="IEEE" target="https://www.ieee.org" quoteTitle="true" derivedAnchor="IEEE">
+          <front>
+            <title>Institute of Electrical and Electronics Engineers</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="IEEE.802.11_2012" target="http://ieeexplore.ieee.org/servlet/opac?punumber=6178209" quoteTitle="true" derivedAnchor="IEEE.802.11_2012">
+          <front>
+            <title>IEEE Standard for Information technology--Telecommunications and information exchange between systems Local and metropolitan area networks--Specific requirements Part 11: Wireless LAN Medium Access Control (MAC) and Physical Layer (PHY) Specifications</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date day="5" month="April" year="2012"/>
+            <abstract>
+              <t indent="0">This revision specifies technical corrections and clarifications to IEEE Std 802.11 for wireless local area networks (WLANS) as well as enhancements to the existing medium access control (MAC) and physical layer (PHY) functions. It also incorporates Amendments 1 to 10 published in 2008 to 2011.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="IEEE" value="802.11-2012"/>
+          <seriesInfo name="DOI" value="10.1109/ieeestd.2012.6178212"/>
+        </reference>
+        <reference anchor="IEEE.802.3_2012" target="http://ieeexplore.ieee.org/servlet/opac?punumber=6419733" quoteTitle="true" derivedAnchor="IEEE.802.3_2012">
+          <front>
+            <title>IEEE Standard for Ethernet</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date day="24" month="January" year="2013"/>
+          </front>
+          <seriesInfo name="IEEE" value="802.3-2012"/>
+          <seriesInfo name="DOI" value="10.1109/ieeestd.2012.6419735"/>
+        </reference>
+        <reference anchor="IEEE1394" quoteTitle="true" target="https://doi.org/10.1109/IEEESTD.2008.4659233" derivedAnchor="IEEE1394">
+          <front>
+            <title>IEEE Standard for a High-Performance Serial Bus</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date year="2008" month="October"/>
+          </front>
+          <seriesInfo name="IEEE Std" value="1394-2008"/>
+          <seriesInfo name="DOI" value="10.1109/IEEESTD.2008.4659233"/>
+        </reference>
+        <reference anchor="IEEE802" target="https://www.ieee802.org" quoteTitle="true" derivedAnchor="IEEE802">
+          <front>
+            <title>IEEE 802 LMSC</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE 802</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="IEEE802.15.4" quoteTitle="true" target="https://doi.org/10.1109/IEEESTD.2020.9144691" derivedAnchor="IEEE802.15.4">
+          <front>
+            <title>IEEE Standard for Low-Rate Wireless Networks</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date year="2020" month="July"/>
+          </front>
+          <seriesInfo name="IEEE Std" value="802.15.4-2020"/>
+          <seriesInfo name="DOI" value="10.1109/IEEESTD.2020.9144691"/>
+        </reference>
+        <reference anchor="IEEE802.1AC" quoteTitle="true" target="https://doi.org/10.1109/IEEESTD.2017.7875381" derivedAnchor="IEEE802.1AC">
+          <front>
+            <title>IEEE Standard for Local and metropolitan area networks -- Media Access Control (MAC) Service Definition</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE 802</organization>
+            </author>
+            <date year="2017" month="March"/>
+          </front>
+          <seriesInfo name="IEEE Std" value="802.1AC-2016"/>
+          <seriesInfo name="DOI" value="10.1109/IEEESTD.2017.7875381"/>
+        </reference>
+        <reference anchor="IEEE802.1CQ" quoteTitle="true" derivedAnchor="IEEE802.1CQ">
+          <front>
+            <title>Draft Standard for Local and Metropolitan Area Networks: Multicast and Local Address Assignment</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date year="2022" month="July"/>
+          </front>
+          <refcontent>draft 0.8</refcontent>
+          <seriesInfo name="IEEE Std" value="802.1CQ/D0.8"/>
+        </reference>
+        <reference anchor="IEEEtutorials" target="https://standards.ieee.org/wp-content/uploads/import/documents/tutorials/eui.pdf" quoteTitle="true" derivedAnchor="IEEEtutorials">
+          <front>
+            <title>Guidelines for Use of Extended Unique Identifier (EUI), Organizationally Unique Identifier (OUI), and Company ID (CID)</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date year="2017" month="August"/>
+          </front>
+        </reference>
+        <reference anchor="IEEE_RA" target="https://standards.ieee.org/products-programs/regauth/" quoteTitle="true" derivedAnchor="IEEE_RA">
+          <front>
+            <title>Registration Authority</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="IEEE_SA" target="https://standards.ieee.org" quoteTitle="true" derivedAnchor="IEEE_SA">
+          <front>
+            <title>IEEE Standards Association</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="InfiniBand" target="https://www.infinibandta.org/" quoteTitle="true" derivedAnchor="InfiniBand">
+          <front>
+            <title>InfiniBand Architecture Specification Volume 1</title>
+            <author>
+              <organization showOnFrontPage="true">InfiniBand Trade Association</organization>
+            </author>
+            <date year="2007" month="November"/>
+          </front>
+        </reference>
+        <reference anchor="I-D.ietf-madinas-mac-address-randomization" target="https://datatracker.ietf.org/doc/html/draft-ietf-madinas-mac-address-randomization-12" quoteTitle="true" derivedAnchor="madinas">
+          <front>
+            <title>Randomized and Changing MAC Address state of affairs</title>
+            <author initials="JC." surname="Zúñiga" fullname="Juan-Carlos Zúñiga">
+              <organization showOnFrontPage="true">CISCO</organization>
+            </author>
+            <author initials="CJ." surname="Bernardos" fullname="Carlos J. Bernardos" role="editor">
+              <organization showOnFrontPage="true">Universidad Carlos III de Madrid</organization>
+            </author>
+            <author initials="A." surname="Andersdotter" fullname="Amelia Andersdotter">
+              <organization showOnFrontPage="true">Safespring AB</organization>
+            </author>
+            <date month="February" day="28" year="2024"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-madinas-mac-address-randomization-12"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="PPPNum" target="https://www.iana.org/assignments/ppp-numbers" quoteTitle="true" derivedAnchor="PPPNum">
+          <front>
+            <title>Point-to-Point (PPP) Protocol Field Assignments</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="I-D.ieee-rac-oui-restructuring" target="https://datatracker.ietf.org/doc/html/draft-ieee-rac-oui-restructuring-01" quoteTitle="true" derivedAnchor="RAC_OUI">
+          <front>
+            <title>OUI Registry Restructuring</title>
+            <author initials="G." surname="Parsons" fullname="Glenn Parsons">
+              <organization showOnFrontPage="true">Ericsson</organization>
+            </author>
+            <date month="September" day="9" year="2013"/>
+            <abstract>
+              <t indent="0">   The IEEE Registration Authority Committee, which has oversight
+   for the OUI based registries, is seeking IETF community input as
+   it finalizes restructuring the OUI registries.  This document
+   provides background on the RAC as well as explaining the proposed
+   restructuring and the rationale.
+
+              </t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ieee-rac-oui-restructuring-01"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC1112" target="https://www.rfc-editor.org/info/rfc1112" quoteTitle="true" derivedAnchor="RFC1112">
+          <front>
+            <title>Host extensions for IP multicasting</title>
+            <author fullname="S.E. Deering" initials="S.E." surname="Deering"/>
+            <date month="August" year="1989"/>
+            <abstract>
+              <t indent="0">This memo specifies the extensions required of a host implementation of the Internet Protocol (IP) to support multicasting. Recommended procedure for IP multicasting in the Internet. This RFC obsoletes RFCs 998 and 1054. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="5"/>
+          <seriesInfo name="RFC" value="1112"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1112"/>
+        </reference>
+        <reference anchor="RFC1661" target="https://www.rfc-editor.org/info/rfc1661" quoteTitle="true" derivedAnchor="RFC1661">
+          <front>
+            <title>The Point-to-Point Protocol (PPP)</title>
+            <author fullname="W. Simpson" initials="W." role="editor" surname="Simpson"/>
+            <date month="July" year="1994"/>
+            <abstract>
+              <t indent="0">This document defines the PPP organization and methodology, and the PPP encapsulation, together with an extensible option negotiation mechanism which is able to negotiate a rich assortment of configuration parameters and provides additional management functions. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="51"/>
+          <seriesInfo name="RFC" value="1661"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1661"/>
+        </reference>
+        <reference anchor="RFC2153" target="https://www.rfc-editor.org/info/rfc2153" quoteTitle="true" derivedAnchor="RFC2153">
+          <front>
+            <title>PPP Vendor Extensions</title>
+            <author fullname="W. Simpson" initials="W." surname="Simpson"/>
+            <date month="May" year="1997"/>
+            <abstract>
+              <t indent="0">The Point-to-Point Protocol (PPP) provides a standard method for transporting multi-protocol datagrams over point-to-point links. PPP defines an extensible Link Control Protocol (LCP) for establishing, configuring, and testing the data-link connection; and a family of Network Control Protocols (NCPs) for establishing and configuring different network-layer protocols. This document provides information for the Internet community. It does not specify an Internet standard of any kind.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2153"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2153"/>
+        </reference>
+        <reference anchor="RFC2332" target="https://www.rfc-editor.org/info/rfc2332" quoteTitle="true" derivedAnchor="RFC2332">
+          <front>
+            <title>NBMA Next Hop Resolution Protocol (NHRP)</title>
+            <author fullname="J. Luciani" initials="J." surname="Luciani"/>
+            <author fullname="D. Katz" initials="D." surname="Katz"/>
+            <author fullname="D. Piscitello" initials="D." surname="Piscitello"/>
+            <author fullname="B. Cole" initials="B." surname="Cole"/>
+            <author fullname="N. Doraswamy" initials="N." surname="Doraswamy"/>
+            <date month="April" year="1998"/>
+            <abstract>
+              <t indent="0">This document describes the NBMA Next Hop Resolution Protocol (NHRP). NHRP can be used by a source station (host or router) connected to a Non-Broadcast, Multi-Access (NBMA) subnetwork to determine the internetworking layer address and NBMA subnetwork addresses of the "NBMA next hop" towards a destination station. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2332"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2332"/>
+        </reference>
+        <reference anchor="RFC2464" target="https://www.rfc-editor.org/info/rfc2464" quoteTitle="true" derivedAnchor="RFC2464">
+          <front>
+            <title>Transmission of IPv6 Packets over Ethernet Networks</title>
+            <author fullname="M. Crawford" initials="M." surname="Crawford"/>
+            <date month="December" year="1998"/>
+            <abstract>
+              <t indent="0">This document specifies the frame format for transmission of IPv6 packets and the method of forming IPv6 link-local addresses and statelessly autoconfigured addresses on Ethernet networks. It also specifies the content of the Source/Target Link-layer Address option used in Router Solicitation, Router Advertisement, Neighbor Solicitation, Neighbor Advertisement and Redirect messages when those messages are transmitted on an Ethernet. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2464"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2464"/>
+        </reference>
+        <reference anchor="RFC2606" target="https://www.rfc-editor.org/info/rfc2606" quoteTitle="true" derivedAnchor="RFC2606">
+          <front>
+            <title>Reserved Top Level DNS Names</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <author fullname="A. Panitz" initials="A." surname="Panitz"/>
+            <date month="June" year="1999"/>
+            <abstract>
+              <t indent="0">To reduce the likelihood of conflict and confusion, a few top level domain names are reserved for use in private testing, as examples in documentation, and the like. In addition, a few second level domain names reserved for use as examples are documented. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="32"/>
+          <seriesInfo name="RFC" value="2606"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2606"/>
+        </reference>
+        <reference anchor="RFC2784" target="https://www.rfc-editor.org/info/rfc2784" quoteTitle="true" derivedAnchor="RFC2784">
+          <front>
+            <title>Generic Routing Encapsulation (GRE)</title>
+            <author fullname="D. Farinacci" initials="D." surname="Farinacci"/>
+            <author fullname="T. Li" initials="T." surname="Li"/>
+            <author fullname="S. Hanks" initials="S." surname="Hanks"/>
+            <author fullname="D. Meyer" initials="D." surname="Meyer"/>
+            <author fullname="P. Traina" initials="P." surname="Traina"/>
+            <date month="March" year="2000"/>
+            <abstract>
+              <t indent="0">This document specifies a protocol for encapsulation of an arbitrary network layer protocol over another arbitrary network layer protocol. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2784"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2784"/>
+        </reference>
+        <reference anchor="RFC3092" target="https://www.rfc-editor.org/info/rfc3092" quoteTitle="true" derivedAnchor="RFC3092">
+          <front>
+            <title>Etymology of "Foo"</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <author fullname="C. Manros" initials="C." surname="Manros"/>
+            <author fullname="E. Raymond" initials="E." surname="Raymond"/>
+            <date month="April" year="2001"/>
+            <abstract>
+              <t indent="0">Approximately 212 RFCs so far, starting with RFC 269, contain the terms `foo', `bar', or `foobar' as metasyntactic variables without any proper explanation or definition. This document rectifies that deficiency. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3092"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3092"/>
+        </reference>
+        <reference anchor="RFC4291" target="https://www.rfc-editor.org/info/rfc4291" quoteTitle="true" derivedAnchor="RFC4291">
+          <front>
+            <title>IP Version 6 Addressing Architecture</title>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <date month="February" year="2006"/>
+            <abstract>
+              <t indent="0">This specification defines the addressing architecture of the IP Version 6 (IPv6) protocol. The document includes the IPv6 addressing model, text representations of IPv6 addresses, definition of IPv6 unicast addresses, anycast addresses, and multicast addresses, and an IPv6 node's required addresses.</t>
+              <t indent="0">This document obsoletes RFC 3513, "IP Version 6 Addressing Architecture". [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4291"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4291"/>
+        </reference>
+        <reference anchor="RFC4760" target="https://www.rfc-editor.org/info/rfc4760" quoteTitle="true" derivedAnchor="RFC4760">
+          <front>
+            <title>Multiprotocol Extensions for BGP-4</title>
+            <author fullname="T. Bates" initials="T." surname="Bates"/>
+            <author fullname="R. Chandra" initials="R." surname="Chandra"/>
+            <author fullname="D. Katz" initials="D." surname="Katz"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <date month="January" year="2007"/>
+            <abstract>
+              <t indent="0">This document defines extensions to BGP-4 to enable it to carry routing information for multiple Network Layer protocols (e.g., IPv6, IPX, L3VPN, etc.). The extensions are backward compatible - a router that supports the extensions can interoperate with a router that doesn't support the extensions. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4760"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4760"/>
+        </reference>
+        <reference anchor="RFC5214" target="https://www.rfc-editor.org/info/rfc5214" quoteTitle="true" derivedAnchor="RFC5214">
+          <front>
+            <title>Intra-Site Automatic Tunnel Addressing Protocol (ISATAP)</title>
+            <author fullname="F. Templin" initials="F." surname="Templin"/>
+            <author fullname="T. Gleeson" initials="T." surname="Gleeson"/>
+            <author fullname="D. Thaler" initials="D." surname="Thaler"/>
+            <date month="March" year="2008"/>
+            <abstract>
+              <t indent="0">The Intra-Site Automatic Tunnel Addressing Protocol (ISATAP) connects dual-stack (IPv6/IPv4) nodes over IPv4 networks. ISATAP views the IPv4 network as a link layer for IPv6 and supports an automatic tunneling abstraction similar to the Non-Broadcast Multiple Access (NBMA) model. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5214"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5214"/>
+        </reference>
+        <reference anchor="RFC5332" target="https://www.rfc-editor.org/info/rfc5332" quoteTitle="true" derivedAnchor="RFC5332">
+          <front>
+            <title>MPLS Multicast Encapsulations</title>
+            <author fullname="T. Eckert" initials="T." surname="Eckert"/>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <date month="August" year="2008"/>
+            <abstract>
+              <t indent="0">RFC 3032 established two data link layer codepoints for MPLS, used to distinguish whether the data link layer frame is carrying an MPLS unicast or an MPLS multicast packet. However, this usage was never deployed. This specification updates RFC 3032 by redefining the meaning of these two codepoints. Both codepoints can now be used to carry multicast packets. The second codepoint (formerly the "multicast codepoint") is now to be used only on multiaccess media, and it is to mean "the top label of the following label stack is an upstream-assigned label".</t>
+              <t indent="0">RFC 3032 does not specify the destination address to be placed in the "MAC DA" (Medium Access Layer Destination Address) field of an ethernet frame that carries an MPLS multicast packet. This document provides that specification.</t>
+              <t indent="0">This document updates RFC 3032 and RFC 4023. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5332"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5332"/>
+        </reference>
+        <reference anchor="RFC5342" target="https://www.rfc-editor.org/info/rfc5342" quoteTitle="true" derivedAnchor="RFC5342">
+          <front>
+            <title>IANA Considerations and IETF Protocol Usage for IEEE 802 Parameters</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <date month="September" year="2008"/>
+            <abstract>
+              <t indent="0">Some IETF protocols make use of Ethernet frame formats and IEEE 802 parameters. This document discusses some use of such parameters in IETF protocols and specifies IANA considerations for allocation of code points under the IANA OUI (Organizationally Unique Identifier). This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5342"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5342"/>
+        </reference>
+        <reference anchor="RFC5737" target="https://www.rfc-editor.org/info/rfc5737" quoteTitle="true" derivedAnchor="RFC5737">
+          <front>
+            <title>IPv4 Address Blocks Reserved for Documentation</title>
+            <author fullname="J. Arkko" initials="J." surname="Arkko"/>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="L. Vegoda" initials="L." surname="Vegoda"/>
+            <date month="January" year="2010"/>
+            <abstract>
+              <t indent="0">Three IPv4 unicast address blocks are reserved for use in examples in specifications and other documents. This document describes the use of these blocks. This document is not an Internet Standards Track specification; it is published for informational purposes.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5737"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5737"/>
+        </reference>
+        <reference anchor="RFC5798" target="https://www.rfc-editor.org/info/rfc5798" quoteTitle="true" derivedAnchor="RFC5798">
+          <front>
+            <title>Virtual Router Redundancy Protocol (VRRP) Version 3 for IPv4 and IPv6</title>
+            <author fullname="S. Nadas" initials="S." role="editor" surname="Nadas"/>
+            <date month="March" year="2010"/>
+            <abstract>
+              <t indent="0">This memo defines the Virtual Router Redundancy Protocol (VRRP) for IPv4 and IPv6. It is version three (3) of the protocol, and it is based on VRRP (version 2) for IPv4 that is defined in RFC 3768 and in "Virtual Router Redundancy Protocol for IPv6". VRRP specifies an election protocol that dynamically assigns responsibility for a virtual router to one of the VRRP routers on a LAN. The VRRP router controlling the IPv4 or IPv6 address(es) associated with a virtual router is called the Master, and it forwards packets sent to these IPv4 or IPv6 addresses. VRRP Master routers are configured with virtual IPv4 or IPv6 addresses, and VRRP Backup routers infer the address family of the virtual addresses being carried based on the transport protocol. Within a VRRP router, the virtual routers in each of the IPv4 and IPv6 address families are a domain unto themselves and do not overlap. The election process provides dynamic failover in the forwarding responsibility should the Master become unavailable. For IPv4, the advantage gained from using VRRP is a higher-availability default path without requiring configuration of dynamic routing or router discovery protocols on every end-host. For IPv6, the advantage gained from using VRRP for IPv6 is a quicker switchover to Backup routers than can be obtained with standard IPv6 Neighbor Discovery mechanisms. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5798"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5798"/>
+        </reference>
+        <reference anchor="RFC6034" target="https://www.rfc-editor.org/info/rfc6034" quoteTitle="true" derivedAnchor="RFC6034">
+          <front>
+            <title>Unicast-Prefix-Based IPv4 Multicast Addresses</title>
+            <author fullname="D. Thaler" initials="D." surname="Thaler"/>
+            <date month="October" year="2010"/>
+            <abstract>
+              <t indent="0">This specification defines an extension to the multicast addressing architecture of the IP Version 4 protocol. The extension presented in this document allows for unicast-prefix-based assignment of multicast addresses. By delegating multicast addresses at the same time as unicast prefixes, network operators will be able to identify their multicast addresses without needing to run an inter-domain allocation protocol. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6034"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6034"/>
+        </reference>
+        <reference anchor="RFC6328" target="https://www.rfc-editor.org/info/rfc6328" quoteTitle="true" derivedAnchor="RFC6328">
+          <front>
+            <title>IANA Considerations for Network Layer Protocol Identifiers</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <date month="July" year="2011"/>
+            <abstract>
+              <t indent="0">Some protocols being developed or extended by the IETF make use of the ISO/IEC (International Organization for Standardization / International Electrotechnical Commission) Network Layer Protocol Identifier (NLPID). This document provides NLPID IANA considerations. This memo documents an Internet Best Current Practice.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="164"/>
+          <seriesInfo name="RFC" value="6328"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6328"/>
+        </reference>
+        <reference anchor="RFC6895" target="https://www.rfc-editor.org/info/rfc6895" quoteTitle="true" derivedAnchor="RFC6895">
+          <front>
+            <title>Domain Name System (DNS) IANA Considerations</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <date month="April" year="2013"/>
+            <abstract>
+              <t indent="0">This document specifies Internet Assigned Numbers Authority (IANA) parameter assignment considerations for the allocation of Domain Name System (DNS) resource record types, CLASSes, operation codes, error codes, DNS protocol message header bits, and AFSDB resource record subtypes. It obsoletes RFC 6195 and updates RFCs 1183, 2845, 2930, and 3597.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="42"/>
+          <seriesInfo name="RFC" value="6895"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6895"/>
+        </reference>
+        <reference anchor="RFC7042" target="https://www.rfc-editor.org/info/rfc7042" quoteTitle="true" derivedAnchor="RFC7042">
+          <front>
+            <title>IANA Considerations and IETF Protocol and Documentation Usage for IEEE 802 Parameters</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <author fullname="J. Abley" initials="J." surname="Abley"/>
+            <date month="October" year="2013"/>
+            <abstract>
+              <t indent="0">Some IETF protocols make use of Ethernet frame formats and IEEE 802 parameters. This document discusses several uses of such parameters in IETF protocols, specifies IANA considerations for assignment of points under the IANA OUI (Organizationally Unique Identifier), and provides some values for use in documentation. This document obsoletes RFC 5342.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="141"/>
+          <seriesInfo name="RFC" value="7042"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7042"/>
+        </reference>
+        <reference anchor="RFC7043" target="https://www.rfc-editor.org/info/rfc7043" quoteTitle="true" derivedAnchor="RFC7043">
+          <front>
+            <title>Resource Records for EUI-48 and EUI-64 Addresses in the DNS</title>
+            <author fullname="J. Abley" initials="J." surname="Abley"/>
+            <date month="October" year="2013"/>
+            <abstract>
+              <t indent="0">48-bit Extended Unique Identifier (EUI-48) and 64-bit Extended Unique Identifier (EUI-64) are address formats specified by the IEEE for use in various layer-2 networks, e.g., Ethernet.</t>
+              <t indent="0">This document describes two new DNS resource record types, EUI48 and EUI64, for encoding Ethernet addresses in the DNS.</t>
+              <t indent="0">This document describes potentially severe privacy implications resulting from indiscriminate publication of link-layer addresses in the DNS. EUI-48 or EUI-64 addresses SHOULD NOT be published in the public DNS. This document specifies an interoperable encoding of these address types for use in private DNS namespaces, where the privacy concerns can be constrained and mitigated.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7043"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7043"/>
+        </reference>
+        <reference anchor="RFC7319" target="https://www.rfc-editor.org/info/rfc7319" quoteTitle="true" derivedAnchor="RFC7319">
+          <front>
+            <title>IANA Considerations for Connectivity Fault Management (CFM) Code Points</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <date month="July" year="2014"/>
+            <abstract>
+              <t indent="0">IEEE 802.1 has specified Connectivity Fault Management (CFM) Operations, Administration, and Maintenance (OAM) facilities. CFM messages are structured with an OpCode field and have provision for the inclusion of TLV-structured information. IEEE 802.1 has allocated blocks of CFM OpCodes and TLV Types to the IETF. This document specifies the IANA considerations for the assignment of values from these blocks.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="191"/>
+          <seriesInfo name="RFC" value="7319"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7319"/>
+        </reference>
+        <reference anchor="RFC7961" target="https://www.rfc-editor.org/info/rfc7961" quoteTitle="true" derivedAnchor="RFC7961">
+          <front>
+            <title>Transparent Interconnection of Lots of Links (TRILL): Interface Addresses APPsub-TLV</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <author fullname="L. Yizhou" initials="L." surname="Yizhou"/>
+            <date month="August" year="2016"/>
+            <abstract>
+              <t indent="0">This document specifies a TRILL (Transparent Interconnection of Lots of Links) IS-IS application sub-TLV that enables the reporting by a TRILL switch of sets of addresses. Each set of addresses reports all of the addresses that designate the same interface (port) and also reports the TRILL switch by which that interface is reachable. For example, a 48-bit MAC (Media Access Control) address, IPv4 address, and IPv6 address can be reported as all corresponding to the same interface reachable by a particular TRILL switch. Such information could be used in some cases to synthesize responses to, or bypass the need for, the Address Resolution Protocol (ARP), the IPv6 Neighbor Discovery (ND) protocol, or the flooding of unknown MAC addresses.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7961"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7961"/>
+        </reference>
+        <reference anchor="RFC8064" target="https://www.rfc-editor.org/info/rfc8064" quoteTitle="true" derivedAnchor="RFC8064">
+          <front>
+            <title>Recommendation on Stable IPv6 Interface Identifiers</title>
+            <author fullname="F. Gont" initials="F." surname="Gont"/>
+            <author fullname="A. Cooper" initials="A." surname="Cooper"/>
+            <author fullname="D. Thaler" initials="D." surname="Thaler"/>
+            <author fullname="W. Liu" initials="W." surname="Liu"/>
+            <date month="February" year="2017"/>
+            <abstract>
+              <t indent="0">This document changes the recommended default Interface Identifier (IID) generation scheme for cases where Stateless Address Autoconfiguration (SLAAC) is used to generate a stable IPv6 address. It recommends using the mechanism specified in RFC 7217 in such cases, and recommends against embedding stable link-layer addresses in IPv6 IIDs. It formally updates RFC 2464, RFC 2467, RFC 2470, RFC 2491, RFC 2492, RFC 2497, RFC 2590, RFC 3146, RFC 3572, RFC 4291, RFC 4338, RFC 4391, RFC 5072, and RFC 5121. This document does not change any existing recommendations concerning the use of temporary addresses as specified in RFC 4941.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8064"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8064"/>
+        </reference>
+        <reference anchor="RFC8415" target="https://www.rfc-editor.org/info/rfc8415" quoteTitle="true" derivedAnchor="RFC8415">
+          <front>
+            <title>Dynamic Host Configuration Protocol for IPv6 (DHCPv6)</title>
+            <author fullname="T. Mrugalski" initials="T." surname="Mrugalski"/>
+            <author fullname="M. Siodelski" initials="M." surname="Siodelski"/>
+            <author fullname="B. Volz" initials="B." surname="Volz"/>
+            <author fullname="A. Yourtchenko" initials="A." surname="Yourtchenko"/>
+            <author fullname="M. Richardson" initials="M." surname="Richardson"/>
+            <author fullname="S. Jiang" initials="S." surname="Jiang"/>
+            <author fullname="T. Lemon" initials="T." surname="Lemon"/>
+            <author fullname="T. Winters" initials="T." surname="Winters"/>
+            <date month="November" year="2018"/>
+            <abstract>
+              <t indent="0">This document describes the Dynamic Host Configuration Protocol for IPv6 (DHCPv6): an extensible mechanism for configuring nodes with network configuration parameters, IP addresses, and prefixes. Parameters can be provided statelessly, or in combination with stateful assignment of one or more IPv6 addresses and/or IPv6 prefixes. DHCPv6 can operate either in place of or in addition to stateless address autoconfiguration (SLAAC).</t>
+              <t indent="0">This document updates the text from RFC 3315 (the original DHCPv6 specification) and incorporates prefix delegation (RFC 3633), stateless DHCPv6 (RFC 3736), an option to specify an upper bound for how long a client should wait before refreshing information (RFC 4242), a mechanism for throttling DHCPv6 clients when DHCPv6 service is not available (RFC 7083), and relay agent handling of unknown messages (RFC 7283). In addition, this document clarifies the interactions between models of operation (RFC 7550). As such, this document obsoletes RFC 3315, RFC 3633, RFC 3736, RFC 4242, RFC 7083, RFC 7283, and RFC 7550.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8415"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8415"/>
+        </reference>
+        <reference anchor="RFC8520" target="https://www.rfc-editor.org/info/rfc8520" quoteTitle="true" derivedAnchor="RFC8520">
+          <front>
+            <title>Manufacturer Usage Description Specification</title>
+            <author fullname="E. Lear" initials="E." surname="Lear"/>
+            <author fullname="R. Droms" initials="R." surname="Droms"/>
+            <author fullname="D. Romascanu" initials="D." surname="Romascanu"/>
+            <date month="March" year="2019"/>
+            <abstract>
+              <t indent="0">This memo specifies a component-based architecture for Manufacturer Usage Descriptions (MUDs). The goal of MUD is to provide a means for end devices to signal to the network what sort of access and network functionality they require to properly function. The initial focus is on access control. Later work can delve into other aspects.</t>
+              <t indent="0">This memo specifies two YANG modules, IPv4 and IPv6 DHCP options, a Link Layer Discovery Protocol (LLDP) TLV, a URL, an X.509 certificate extension, and a means to sign and verify the descriptions.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8520"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8520"/>
+        </reference>
+        <reference anchor="RFC8926" target="https://www.rfc-editor.org/info/rfc8926" quoteTitle="true" derivedAnchor="RFC8926">
+          <front>
+            <title>Geneve: Generic Network Virtualization Encapsulation</title>
+            <author fullname="J. Gross" initials="J." role="editor" surname="Gross"/>
+            <author fullname="I. Ganga" initials="I." role="editor" surname="Ganga"/>
+            <author fullname="T. Sridhar" initials="T." role="editor" surname="Sridhar"/>
+            <date month="November" year="2020"/>
+            <abstract>
+              <t indent="0">Network virtualization involves the cooperation of devices with a wide variety of capabilities such as software and hardware tunnel endpoints, transit fabrics, and centralized control clusters. As a result of their role in tying together different elements of the system, the requirements on tunnels are influenced by all of these components. Therefore, flexibility is the most important aspect of a tunneling protocol if it is to keep pace with the evolution of technology. This document describes Geneve, an encapsulation protocol designed to recognize and accommodate these changing capabilities and needs.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8926"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8926"/>
+        </reference>
+        <reference anchor="RFC8947" target="https://www.rfc-editor.org/info/rfc8947" quoteTitle="true" derivedAnchor="RFC8947">
+          <front>
+            <title>Link-Layer Address Assignment Mechanism for DHCPv6</title>
+            <author fullname="B. Volz" initials="B." surname="Volz"/>
+            <author fullname="T. Mrugalski" initials="T." surname="Mrugalski"/>
+            <author fullname="C. Bernardos" initials="C." surname="Bernardos"/>
+            <date month="December" year="2020"/>
+            <abstract>
+              <t indent="0">In certain environments, e.g., large-scale virtualization deployments, new devices are created in an automated manner. Such devices may have their link-layer addresses assigned in an automated fashion. With sufficient scale, the likelihood of a collision using random assignment without duplication detection is not acceptable. Therefore, an allocation mechanism is required. This document proposes an extension to DHCPv6 that allows a scalable approach to link-layer address assignments where preassigned link-layer address assignments (such as by a manufacturer) are not possible or are unnecessary.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8947"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8947"/>
+        </reference>
+        <reference anchor="RFC8948" target="https://www.rfc-editor.org/info/rfc8948" quoteTitle="true" derivedAnchor="RFC8948">
+          <front>
+            <title>Structured Local Address Plan (SLAP) Quadrant Selection Option for DHCPv6</title>
+            <author fullname="CJ. Bernardos" initials="CJ." surname="Bernardos"/>
+            <author fullname="A. Mourad" initials="A." surname="Mourad"/>
+            <date month="December" year="2020"/>
+            <abstract>
+              <t indent="0">The IEEE originally structured the 48-bit Media Access Control (MAC) address space in such a way that half of it was reserved for local use. In 2017, the IEEE published a new standard (IEEE Std 802c) with a new optional Structured Local Address Plan (SLAP). It specifies different assignment approaches in four specified regions of the local MAC address space.</t>
+              <t indent="0">The IEEE is developing protocols to assign addresses (IEEE P802.1CQ). There is also work in the IETF on specifying a new mechanism that extends DHCPv6 operation to handle the local MAC address assignments.</t>
+              <t indent="0">This document proposes extensions to DHCPv6 protocols to enable a DHCPv6 client or a DHCPv6 relay to indicate a preferred SLAP quadrant to the server so that the server may allocate MAC addresses in the quadrant requested by the relay or client. A new DHCPv6 option (QUAD) is defined for this purpose.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8948"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8948"/>
+        </reference>
+        <reference anchor="RFC8949" target="https://www.rfc-editor.org/info/rfc8949" quoteTitle="true" derivedAnchor="RFC8949">
+          <front>
+            <title>Concise Binary Object Representation (CBOR)</title>
+            <author fullname="C. Bormann" initials="C." surname="Bormann"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="December" year="2020"/>
+            <abstract>
+              <t indent="0">The Concise Binary Object Representation (CBOR) is a data format whose design goals include the possibility of extremely small code size, fairly small message size, and extensibility without the need for version negotiation. These design goals make it different from earlier binary serializations such as ASN.1 and MessagePack.</t>
+              <t indent="0">This document obsoletes RFC 7049, providing editorial improvements, new details, and errata fixes while keeping full compatibility with the interchange format of RFC 7049. It does not create a new version of the format.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="94"/>
+          <seriesInfo name="RFC" value="8949"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8949"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="templates" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-templates">Templates</name>
+      <t indent="0" pn="section-appendix.a-1">This appendix provides the specific templates for IANA assignments
+of parameters.  Explanatory words in parentheses in the templates
+below may be deleted in a completed template as submitted to IANA.</t>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.1">
+        <name slugifiedName="name-eui48-eui64-identifier-or-i">EUI‑48/EUI‑64 Identifier or Identifier Block
+  Template</name>
+        <t indent="0" pn="section-appendix.a.1-1">Applicant Name:</t>
+        <t indent="0" pn="section-appendix.a.1-2">Applicant Email: </t>
+        <t indent="0" pn="section-appendix.a.1-3">Applicant Telephone: (starting with the country code) </t>
+        <t indent="0" pn="section-appendix.a.1-4">Use Name: (brief name of Parameter use, such as "Foo Protocol"
+<xref target="RFC3092" format="default" sectionFormat="of" derivedContent="RFC3092"/>)</t>
+        <t indent="0" pn="section-appendix.a.1-5">Document: (I-D or RFC specifying use to which the identifier or block
+of identifiers will be put)</t>
+        <t indent="0" pn="section-appendix.a.1-6">Specify whether this is an application for EUI‑48 or EUI‑64
+identifiers:</t>
+        <t indent="0" pn="section-appendix.a.1-7">Size of Block requested: (must be a power-of-two-sized block, can be
+a block of size one (2**0))</t>
+        <t indent="0" pn="section-appendix.a.1-8">Specify multicast, unicast, or both:</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.2">
+        <name slugifiedName="name-iana-oui-cid-based-protocol">IANA OUI/CID-Based Protocol Number Template</name>
+        <t indent="0" pn="section-appendix.a.2-1">Applicant Name: </t>
+        <t indent="0" pn="section-appendix.a.2-2">Applicant Email: </t>
+        <t indent="0" pn="section-appendix.a.2-3">Applicant Telephone: (starting with the country code) </t>
+        <t indent="0" pn="section-appendix.a.2-4">Use Name: (brief name of use of code point, such as "Foo Protocol") </t>
+        <t indent="0" pn="section-appendix.a.2-5">Document: (I-D or RFC specifying use to which the protocol identifier
+will be put) </t>
+        <t indent="0" pn="section-appendix.a.2-6">Note: (any additional note) </t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.3">
+        <name slugifiedName="name-other-iana-oui-cid-based-pa">Other IANA OUI/CID-Based Parameter Template</name>
+        <t indent="0" pn="section-appendix.a.3-1">Applicant Name: </t>
+        <t indent="0" pn="section-appendix.a.3-2">Applicant Email: </t>
+        <t indent="0" pn="section-appendix.a.3-3">Applicant Telephone: (starting with the country code) </t>
+        <t indent="0" pn="section-appendix.a.3-4">Protocol where the OUI/CID-Based Parameter for which a value is being
+requested appears: (such as Cipher Suite selection in IEEE 802.11) </t>
+        <t indent="0" pn="section-appendix.a.3-5">Use Name: (brief name of use of code point to be assigned, such as
+"Foo Cipher Suite" <xref target="RFC3092" format="default" sectionFormat="of" derivedContent="RFC3092"/>) </t>
+        <t indent="0" pn="section-appendix.a.3-6">Document: (I-D or RFC specifying use to which the other IANA OUI-based
+parameter value will be put) </t>
+        <t indent="0" pn="section-appendix.a.3-7">Note: (any additional note) </t>
+      </section>
+    </section>
+    <section anchor="ethertypes" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-ethertypes">EtherTypes</name>
+      <t indent="0" pn="section-appendix.b-1">This appendix provides a copy of the IESG Statement issued in May
+2023 on obtaining new IETF EtherTypes in <xref target="iesg-ethertypes" format="default" sectionFormat="of" derivedContent="Appendix B.1"/>. Note that there
+is an informational IANA registry of some important EtherTypes
+specified for IETF protocols or by IEEE 802 available, currently at
+<xref target="IANA" format="default" sectionFormat="of" derivedContent="IANA"/>.  The IEEE Registration Authority page on
+EtherTypes <eref target="https://standards.ieee.org/regauth/ethertype/eth.txt" brackets="angle"/> may
+also be useful.  See <xref target="eth-pro-param" format="default" sectionFormat="of" derivedContent="Section 3"/> above. </t>
+      <section anchor="iesg-ethertypes" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.b.1">
+        <name slugifiedName="name-iesg-statement-on-ethertype">IESG Statement on EtherTypes</name>
+        <dl newline="false" spacing="compact" indent="3" pn="section-appendix.b.1-1">
+          <dt pn="section-appendix.b.1-1.1">From:</dt>
+          <dd pn="section-appendix.b.1-1.2">IESG</dd>
+          <dt pn="section-appendix.b.1-1.3">Date:</dt>
+          <dd pn="section-appendix.b.1-1.4">1 May 2023</dd>
+        </dl>
+        <t indent="0" pn="section-appendix.b.1-2">The IEEE Registration Authority (IEEE RA) assigns EtherTypes with
+oversight from the IEEE Registration Authority Committee (IEEE RAC).</t>
+        <t indent="0" pn="section-appendix.b.1-3">(See
+<eref target="https://standards.ieee.org/products-programs/regauth/ethertype/" brackets="none"/>.) Some
+IETF protocol specifications make use of EtherTypes. All EtherType
+applications are subject to IEEE RA technical review for consistency
+with policy.</t>
+        <t indent="0" pn="section-appendix.b.1-4">Since EtherTypes are a fairly scarce resource, the IEEE RAC has let
+us know that they will not assign a new EtherType to a new IETF
+protocol specification until the IESG has approved the protocol
+specification for publication as an RFC. In exceptional cases, the
+IEEE RA is willing to consider "early allocation" of an EtherType for
+an IETF protocol that is still under development as long as the
+request comes from and has been vetted by the IESG.</t>
+        <t indent="0" pn="section-appendix.b.1-5">To let the IEEE RAC know that the IESG has approved the request for
+an Ethernet assignment for an IETF protocol, all future requests for
+assignment of EtherTypes for IETF protocols will be made by the
+IESG.</t>
+        <t indent="0" pn="section-appendix.b.1-6">Note that Local Experimental ("playpen") EtherTypes have been
+assigned in IEEE 802 [1] use during protocol development and
+experimentation.</t>
+        <t indent="0" pn="section-appendix.b.1-7">[1] IEEE Std 802.  IEEE standard for Local and Metropolitan Area Networks: Overview and Architecture.</t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-changes-from-rfc-7042">Changes from RFC 7042</name>
+      <t indent="0" pn="section-appendix.c-1">This document obsoletes <xref target="RFC7042" format="default" sectionFormat="of" derivedContent="RFC7042"/> and makes the
+changes listed below. However, the completed application template
+based upon which an IANA OUI-based protocol number value was assigned
+for document use remains that in <xref target="RFC7042" sectionFormat="of" section="C" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7042#appendix-C" derivedContent="RFC7042"/>.</t>
+      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-appendix.c-2">
+        <li pn="section-appendix.c-2.1">Add information on MA-M (28-bit) and MA-S (36-bit) EUI prefixes
+that the IEEE Registration Authority assigns.</li>
+        <li pn="section-appendix.c-2.2">Add information on the restructuring of the "local" MAC address
+space into four quadrants under the Structured Local Address Plan
+(SLAP) <xref target="IEEE802_OandA" format="default" sectionFormat="of" derivedContent="IEEE802_OandA"/>.</li>
+        <li pn="section-appendix.c-2.3">Include the IESG Statement on EtherTypes (see <xref target="iesg-ethertypes" format="default" sectionFormat="of" derivedContent="Appendix B.1"/>) and
+more detailed IETF procedures for applying to the IEEE Registration
+Authority for an EtherType for use in an IETF protocol (see <xref target="ethertype-assign-pro" format="default" sectionFormat="of" derivedContent="Section 5.5"/>). </li>
+        <li pn="section-appendix.c-2.4">Mention that IEEE 802 CFM code points have been allocated to
+the IETF (see <xref target="CFM" format="default" sectionFormat="of" derivedContent="Section 1.4"/>).</li>
+        <li pn="section-appendix.c-2.5">Mention the Organizationally Specific LLDP data element that has
+been assigned under the IANA OUI and the registry set up for future
+such assignments (see <xref target="lldp-ietf-tlv" format="default" sectionFormat="of" derivedContent="Section 4.1"/>).</li>
+        <li pn="section-appendix.c-2.6">Clarify minor details in <xref target="ex-rev-iesg-rat" format="default" sectionFormat="of" derivedContent="Section 5.1"/> on Expert Review and IESG
+Ratification.</li>
+        <li pn="section-appendix.c-2.7">Specify CBOR tags for MAC addresses and OUIs/CIDs (see
+<xref target="cbor-tags" format="default" sectionFormat="of" derivedContent="Section 2.4"/>).</li>
+        <li pn="section-appendix.c-2.8">Add a version field requirement for the allocation of protocol
+numbers under the IANA OUI (see <xref target="eth-pro-iana-oui" format="default" sectionFormat="of" derivedContent="Section 3.1"/>).</li>
+        <li pn="section-appendix.c-2.9">Mention that EtherTypes are used in the Geneve <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/> encapsulation header (see <xref target="eth-pro-param" format="default" sectionFormat="of" derivedContent="Section 3"/>).</li>
+        <li pn="section-appendix.c-2.10">Add "a combination of Expert Review and IESG Approval" as part of
+the specification for "IESG Ratification".</li>
+      </ul>
+    </section>
+    <section anchor="Acknowledgements" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.d">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.d-1">The comments and suggestions of the following persons and
+  organizations are gratefully acknowledged:</t>
+      <t indent="3" pn="section-appendix.d-2">Comments and suggestions leading to this
+    document:</t>
+      <t indent="6" pn="section-appendix.d-3"><contact fullname="Carsten Bormann"/>, <contact fullname="Bob Hinden"/>, the IEEE 802.1
+      Working Group, <contact fullname="Éric Vyncke"/>, <contact fullname="Dale Worley"/>, and <contact fullname="Amanda Baber"/></t>
+      <t indent="3" pn="section-appendix.d-4">Comments and suggestions leading to <xref target="RFC7042" format="default" sectionFormat="of" derivedContent="RFC7042"/> (which
+    is obsoleted by this document):</t>
+      <t indent="6" pn="section-appendix.d-5"><contact fullname="David Black"/>, <contact fullname="Adrian Farrel"/>, <contact fullname="Bob Grow"/>, <contact fullname="Joel       Jaeggli"/>, <contact fullname="Pearl Liang"/>, <contact fullname="Glenn Parsons"/>, <contact fullname="Pete Resnick"/>, and <contact fullname="Dan Romascanu"/></t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.e">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Donald E. Eastlake 3rd" initials="D." surname="Eastlake 3rd">
+        <organization showOnFrontPage="true">Independent</organization>
+        <address>
+          <postal>
+            <street>2386 Panoramic Circle</street>
+            <city>Apopka</city>
+            <region>Florida</region>
+            <code>32703</code>
+            <country>United States of America</country>
+          </postal>
+          <phone>+1-508-333-2270</phone>
+          <email>d3e3e3@gmail.com</email>
+          <email>donald.eastlake@futurewei.com</email>
+        </address>
+      </author>
+      <author fullname="Joe Abley" initials="J." surname="Abley">
+        <organization showOnFrontPage="true">Cloudflare</organization>
+        <address>
+          <postal>
+            <postalLine>Amsterdam</postalLine>
+            <postalLine>The Netherlands</postalLine>
+          </postal>
+          <phone>+31 45 56 36 34</phone>
+          <email>jabley@strandkip.nl</email>
+        </address>
+      </author>
+      <author fullname="Yizhou Li" initials="Y." surname="Li">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <postal>
+            <street>101 Software Avenue</street>
+            <city>Nanjing</city>
+            <region>Jiangsu</region>
+            <code>210012</code>
+            <country>China</country>
+          </postal>
+          <phone>+86-13809002299</phone>
+          <email>liyizhou@huawei.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

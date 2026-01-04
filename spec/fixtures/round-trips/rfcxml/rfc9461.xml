@@ -1,0 +1,582 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-add-svcb-dns-09" number="9461" category="std" submissionType="IETF" consensus="true" tocInclude="true" sortRefs="true" symRefs="true" prepTime="2023-11-06T12:46:59" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-add-svcb-dns-09" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9461" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="SVCB for DNS">Service Binding Mapping for DNS Servers</title>
+    <seriesInfo name="RFC" value="9461" stream="IETF"/>
+    <author initials="B." surname="Schwartz" fullname="Benjamin Schwartz">
+      <organization showOnFrontPage="true">Meta Platforms, Inc.</organization>
+      <address>
+        <email>ietf@bemasc.net</email>
+      </address>
+    </author>
+    <date month="11" year="2023"/>
+    <area>int</area>
+    <workgroup>add</workgroup>
+    <keyword>DoH</keyword>
+    <keyword>DoT</keyword>
+    <keyword>DoQ</keyword>
+    <keyword>DDR</keyword>
+    <keyword>DNR</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">The SVCB DNS resource record type expresses a bound collection of endpoint metadata, for use when establishing a connection to a named service.  DNS itself can be such a service, when the server is identified by a domain name.  This document provides the SVCB mapping for named DNS servers, allowing them to indicate support for encrypted transport protocols.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9461" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-conventions-and-definitions">Conventions and Definitions</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-identities-and-names">Identities and Names</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-special-case-non-default-po">Special Case: Non-default Ports</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-applicable-existing-svcpara">Applicable Existing SvcParamKeys</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-alpn">"alpn"</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-port">"port"</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-other-applicable-svcparamke">Other Applicable SvcParamKeys</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-svcparamkey-dohpath">New SvcParamKey: "dohpath"</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-limitations">Limitations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-examples">Examples</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-adversary-on-the-query-path">Adversary on the Query Path</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2.1.2">
+                  <li pn="section-toc.1-1.8.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.8.2.1.2.1.1"><xref derivedContent="8.1.1" format="counter" sectionFormat="of" target="section-8.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-downgrade-attacks">Downgrade Attacks</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.8.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.8.2.1.2.2.1"><xref derivedContent="8.1.2" format="counter" sectionFormat="of" target="section-8.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-redirection-attacks">Redirection Attacks</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-adversary-on-the-transport-">Adversary on the Transport Path</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.10.2">
+              <li pn="section-toc.1-1.10.2.1">
+                <t indent="0" pn="section-toc.1-1.10.2.1.1"><xref derivedContent="10.1" format="counter" sectionFormat="of" target="section-10.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.10.2.2">
+                <t indent="0" pn="section-toc.1-1.10.2.2.1"><xref derivedContent="10.2" format="counter" sectionFormat="of" target="section-10.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-mapping-summary">Mapping Summary</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-address">Author's Address</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">The SVCB resource record (RR) type <xref target="SVCB" format="default" sectionFormat="of" derivedContent="SVCB"/> provides clients with information about how to reach alternative endpoints for a service.  These endpoints may offer improved performance or privacy properties.  The service is identified by a "scheme" indicating the service type, a hostname, and, optionally, other information such as a port number.  A DNS server is often identified only by its IP address (e.g., in DHCP), but in some contexts it can also be identified by a hostname (e.g., "NS" records, manual resolver configuration) and sometimes also a non-default port number.</t>
+      <t indent="0" pn="section-1-2">The use of the SVCB RR type requires a mapping document for each service type (<xref section="2.4.3" sectionFormat="of" target="SVCB" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.4.3" derivedContent="SVCB"/>), indicating how a client for that service can interpret the contents of the SVCB SvcParams.  This document provides the mapping for the "dns" service type, allowing DNS servers to offer alternative endpoints and transports, including encrypted transports like DNS over TLS (DoT) <xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/>, DNS over HTTPS (DoH) <xref target="RFC8484" format="default" sectionFormat="of" derivedContent="RFC8484"/>, and DNS over QUIC (DoQ) <xref target="RFC9250" format="default" sectionFormat="of" derivedContent="RFC9250"/>.</t>
+      <t indent="0" pn="section-1-3">The SVCB mapping described in this document is intended as a general-purpose baseline.  Subsequent specifications will adapt this mechanism as needed to support specific configurations (e.g., for communication between stub resolvers and recursive resolvers).</t>
+    </section>
+    <section anchor="conventions-and-definitions" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-conventions-and-definitions">Conventions and Definitions</name>
+      <t indent="0" pn="section-2-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+       "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>",
+       "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>",
+       "<bcp14>SHOULD NOT</bcp14>",
+       "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+       "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+       are to be interpreted as described in BCP 14
+       <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only
+       when, they appear in all capitals, as shown here.</t>
+    </section>
+    <section anchor="identity" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-identities-and-names">Identities and Names</name>
+      <t indent="0" pn="section-3-1">SVCB record names (i.e., QNAMEs) for DNS services are formed using Port Prefix Naming (<xref section="2.3" sectionFormat="of" target="SVCB" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.3" derivedContent="SVCB"/>), with a scheme of "dns".  For example, SVCB records for a DNS service identified as <tt>dns1.example.com</tt> would be queried at <tt>_dns.dns1.example.com</tt>.</t>
+      <t indent="0" pn="section-3-2">In some use cases, the name used for retrieving these DNS records is different from the server identity used to authenticate the secure transport.  To distinguish between these, this document uses the following terms:</t>
+      <dl spacing="normal" indent="3" newline="false" pn="section-3-3">
+        <dt pn="section-3-3.1">Binding authority:</dt>
+        <dd pn="section-3-3.2">The service name (<xref section="1.3" sectionFormat="of" target="SVCB" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-1.3" derivedContent="SVCB"/>) and optional port number used as input to Port Prefix Naming.</dd>
+        <dt pn="section-3-3.3">Authentication name:</dt>
+        <dd pn="section-3-3.4">The name used for secure transport authentication.  This <bcp14>MUST</bcp14> be a DNS hostname or a literal IP address.  Unless otherwise specified, this is the service name from the binding authority.</dd>
+      </dl>
+      <section anchor="special-case-non-default-ports" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-special-case-non-default-po">Special Case: Non-default Ports</name>
+        <t indent="0" pn="section-3.1-1">Normally, a DNS service is identified by an IP address or a domain name.  When connecting to the service using unencrypted DNS over UDP or TCP, clients use the default port number for DNS (53).  However, in rare cases, a DNS service might be identified by both a name and a port number.  For example, the DNS URI scheme <xref target="RFC4501" format="default" sectionFormat="of" derivedContent="DNSURI"/> optionally includes an authority, comprised of a host and a port number (with a default of 53).  DNS URIs normally omit the authority or specify an IP address, but a hostname and non-default port number are allowed.</t>
+        <t indent="0" pn="section-3.1-2">When the binding authority specifies a non-default port number, Port Prefix Naming places the port number in an additional prefix on the name.  For example, if the binding authority is "<tt>dns1.example.com:9953</tt>", the client would query for SVCB records at <tt>_9953._dns.dns1.example.com</tt>.  If two DNS services operating on different port numbers provide different behaviors, this arrangement allows them to preserve the distinction when specifying alternative endpoints.</t>
+      </section>
+    </section>
+    <section anchor="applicable-existing-svcparamkeys" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-applicable-existing-svcpara">Applicable Existing SvcParamKeys</name>
+      <section anchor="alpn" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-alpn">"alpn"</name>
+        <t indent="0" pn="section-4.1-1">This key indicates the set of supported protocols (<xref section="7.1" sectionFormat="of" target="SVCB" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-7.1" derivedContent="SVCB"/>).  There is no default protocol, so the "<tt>no-default-alpn</tt>" key does not apply.  If the "<tt>alpn</tt>" SvcParamKey is absent, the client <bcp14>MUST</bcp14> treat the SVCB record as "incompatible" (as defined in <xref section="8" sectionFormat="of" target="SVCB" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-8" derivedContent="SVCB"/>) unless some other recognized SvcParam indicates a supported protocol.</t>
+        <t indent="0" pn="section-4.1-2">If the protocol set contains any HTTP versions (e.g., "h2", "h3"), then the record indicates support for DoH and the "dohpath" key <bcp14>MUST</bcp14> be present (<xref target="dohpath" format="default" sectionFormat="of" derivedContent="Section 5"/>).  All keys specified for use with the HTTPS record are also permissible and apply to the resulting HTTP connection.</t>
+        <t indent="0" pn="section-4.1-3">If the protocol set contains protocols with different default ports and no "port" key is specified, then protocols are contacted separately on their default ports.  Note that in this configuration, Application-Layer Protocol Negotiation (ALPN) negotiation does not defend against cross-protocol downgrade attacks.</t>
+      </section>
+      <section anchor="port" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-port">"port"</name>
+        <t indent="0" pn="section-4.2-1">This key is used to indicate the target port for connection (<xref section="7.2" sectionFormat="of" target="SVCB" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-7.2" derivedContent="SVCB"/>).  If omitted, the client <bcp14>SHALL</bcp14> use the default port number for each transport protocol (853 for DoT and DoQ, 443 for DoH).</t>
+        <t indent="0" pn="section-4.2-2">This key is automatically mandatory for this binding.  This means that a client that does not respect the "<tt>port</tt>" key <bcp14>MUST</bcp14> ignore any SVCB record that contains this key.  (See <xref section="8" sectionFormat="of" target="SVCB" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-8" derivedContent="SVCB"/> for the definition of "automatically mandatory".)</t>
+        <t indent="0" pn="section-4.2-3">Support for the "<tt>port</tt>" key can be unsafe if the client has implicit elevated access to some network service (e.g., a local service that is inaccessible to remote parties) and that service uses a TCP-based protocol other than TLS.  A hostile DNS server might be able to manipulate this service by causing the client to send a specially crafted TLS Server Name Indication (SNI) or session ticket that can be misparsed as a command or exploit.  To avoid such attacks, clients <bcp14>SHOULD NOT</bcp14> support the "<tt>port</tt>" key unless one of the following conditions applies:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.2-4">
+          <li pn="section-4.2-4.1">The client is being used with a DNS server that it trusts not to attempt this attack.</li>
+          <li pn="section-4.2-4.2">The client is being used in a context where implicit elevated access cannot apply.</li>
+          <li pn="section-4.2-4.3">The client restricts the set of allowed TCP port values to exclude any ports where a confusion attack is likely to be possible (e.g., the "bad ports" list from Section <xref target="FETCH" section="2.9" relative="https://fetch.spec.whatwg.org/#port-blocking" sectionFormat="bare" format="default" derivedLink="https://fetch.spec.whatwg.org/#port-blocking" derivedContent="FETCH">"Port blocking"</xref> of <xref target="FETCH" format="default" sectionFormat="of" derivedContent="FETCH"/>).</li>
+        </ul>
+      </section>
+      <section anchor="other-applicable-svcparamkeys" numbered="true" removeInRFC="false" toc="include" pn="section-4.3">
+        <name slugifiedName="name-other-applicable-svcparamke">Other Applicable SvcParamKeys</name>
+        <t indent="0" pn="section-4.3-1">These SvcParamKeys from <xref target="SVCB" format="default" sectionFormat="of" derivedContent="SVCB"/> apply to the "dns" scheme without modification:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.3-2">
+          <li pn="section-4.3-2.1">mandatory</li>
+          <li pn="section-4.3-2.2">ipv4hint</li>
+          <li pn="section-4.3-2.3">ipv6hint</li>
+        </ul>
+        <t indent="0" pn="section-4.3-3">Future SvcParamKeys might also be applicable.</t>
+      </section>
+    </section>
+    <section anchor="dohpath" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-new-svcparamkey-dohpath">New SvcParamKey: "dohpath"</name>
+      <t indent="0" pn="section-5-1">"<tt>dohpath</tt>" is a single-valued SvcParamKey whose value (in both presentation format and wire format) <bcp14>MUST</bcp14> be a URI Template in relative form (<xref section="1.1" sectionFormat="comma" target="RFC6570" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6570#section-1.1" derivedContent="RFC6570"/>) encoded in UTF-8 <xref target="RFC3629" format="default" sectionFormat="of" derivedContent="RFC3629"/>.  If the "<tt>alpn</tt>" SvcParam indicates support for HTTP, "<tt>dohpath</tt>" <bcp14>MUST</bcp14> be present.  The URI Template <bcp14>MUST</bcp14> contain a "<tt>dns</tt>" variable, and <bcp14>MUST</bcp14> be chosen such that the result after DoH URI Template expansion (<xref section="6" sectionFormat="of" target="RFC8484" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8484#section-6" derivedContent="RFC8484"/>) is always a valid and functional "<tt>:path</tt>" value (<xref section="8.3.1" sectionFormat="comma" target="RFC9113" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9113#section-8.3.1" derivedContent="RFC9113"/>).</t>
+      <t indent="0" pn="section-5-2">When using this SVCB record, the client <bcp14>MUST</bcp14> send any DoH requests to the HTTP origin identified by the "<tt>https</tt>" scheme, the authentication name, and the port from the "<tt>port</tt>" SvcParam (if present).  HTTP requests <bcp14>MUST</bcp14> be directed to the resource resulting from DoH URI Template expansion of the "<tt>dohpath</tt>" value.</t>
+      <t indent="0" pn="section-5-3">Clients <bcp14>SHOULD NOT</bcp14> query for any HTTPS RRs when using "<tt>dohpath</tt>".  Instead, the SvcParams and address records associated with this SVCB record <bcp14>SHOULD</bcp14> be used for the HTTPS connection, with the same semantics as an HTTPS RR.  However, for consistency, service operators <bcp14>SHOULD</bcp14> publish an equivalent HTTPS RR, especially if clients might learn about this DoH service through a different channel.</t>
+    </section>
+    <section anchor="limitations" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-limitations">Limitations</name>
+      <t indent="0" pn="section-6-1">This document is concerned exclusively with the DNS transport and does not affect or inform the construction or interpretation of DNS messages.  For example, nothing in this document indicates whether the service is intended for use as a recursive or authoritative DNS server.  Clients need to know the intended use of services based on their context.</t>
+      <t indent="0" pn="section-6-2">Not all features of this specification will be applicable or effective in all contexts:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6-3">
+        <li pn="section-6-3.1">If the authentication name is received over an insecure channel (e.g., a glue NS record), this specification cannot prevent the client from connecting to an attacker.</li>
+        <li pn="section-6-3.2">Different transports might prove to be popular for different purposes (e.g., querying a recursive resolver vs. an authoritative server).  Implementors are not obligated to implement all the defined transports, although doing so is beneficial for compatibility.</li>
+        <li pn="section-6-3.3">Where resolution speed is a high priority, the SVCB TargetName <bcp14>SHOULD</bcp14> follow the convention described in <xref section="10.2" sectionFormat="of" target="SVCB" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-10.2" derivedContent="SVCB"/>, and the use of AliasMode records (<xref section="2.4.2" sectionFormat="of" target="SVCB" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.4.2" derivedContent="SVCB"/>) is <bcp14>NOT RECOMMENDED</bcp14>.</li>
+      </ul>
+    </section>
+    <section anchor="examples" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-examples">Examples</name>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-7-1">
+        <li pn="section-7-1.1">
+          <t indent="0" pn="section-7-1.1.1">A resolver known as <tt>simple.example</tt> that supports DNS over TLS on port 853 (implicitly, as this is its default port):  </t>
+          <sourcecode type="dns-rr" markers="false" pn="section-7-1.1.2">
+_dns.simple.example. 7200 IN SVCB 1 simple.example. alpn=dot
+</sourcecode>
+        </li>
+        <li pn="section-7-1.2">
+          <t indent="0" pn="section-7-1.2.1">A DoH-only resolver at <tt>https://doh.example/dns-query{?dns}</tt>. (DNS over TLS is not supported.):  </t>
+          <sourcecode type="dns-rr" markers="false" pn="section-7-1.2.2">
+_dns.doh.example. 7200 IN SVCB 1 doh.example. (
+      alpn=h2 dohpath=/dns-query{?dns} )
+</sourcecode>
+        </li>
+        <li pn="section-7-1.3">
+          <t indent="0" pn="section-7-1.3.1">A resolver known as <tt>resolver.example</tt> that supports:  </t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-7-1.3.2">
+            <li pn="section-7-1.3.2.1">DoT on <tt>resolver.example</tt> ports 853 (implicit in record 1) and 8530 (explicit in record 2), with "<tt>resolver.example</tt>" as the Authentication Domain Name,</li>
+            <li pn="section-7-1.3.2.2">DoQ on <tt>resolver.example</tt> port 853 (record 1),</li>
+            <li pn="section-7-1.3.2.3">DoH at <tt>https://resolver.example/q{?dns}</tt> (record 1), and</li>
+            <li pn="section-7-1.3.2.4">
+              <t indent="0" pn="section-7-1.3.2.4.1">an experimental protocol on <tt>fooexp.resolver.example:5353</tt> (record 3):      </t>
+              <sourcecode type="dns-rr" markers="false" pn="section-7-1.3.2.4.2">
+_dns.resolver.example.  7200 IN \
+  SVCB 1 resolver.example. alpn=dot,doq,h2,h3 dohpath=/q{?dns}
+  SVCB 2 resolver.example. alpn=dot port=8530
+  SVCB 3 fooexp.resolver.example. \
+    port=5353 alpn=foo foo-info=...
+</sourcecode>
+            </li>
+          </ul>
+        </li>
+        <li pn="section-7-1.4">
+          <t indent="0" pn="section-7-1.4.1">A name server named <tt>ns.example.</tt> whose service configuration is published on a different domain:  </t>
+          <sourcecode type="dns-rr" markers="false" pn="section-7-1.4.2">
+_dns.ns.example. 7200 IN SVCB 0 _dns.ns.nic.example.
+</sourcecode>
+        </li>
+      </ul>
+    </section>
+    <section anchor="security-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <section anchor="adversary-on-the-query-path" numbered="true" removeInRFC="false" toc="include" pn="section-8.1">
+        <name slugifiedName="name-adversary-on-the-query-path">Adversary on the Query Path</name>
+        <t indent="0" pn="section-8.1-1">This section considers an adversary who can add or remove responses to the SVCB query.</t>
+        <t indent="0" pn="section-8.1-2">During secure transport establishment, clients <bcp14>MUST</bcp14> authenticate the server to its authentication name, which is not influenced by the SVCB record contents.  Accordingly, this document does not mandate the use of DNSSEC.  This document also does not specify how clients authenticate the name (e.g., selection of roots of trust), as this procedure might vary according to the context.</t>
+        <section anchor="downgrade-attacks" numbered="true" removeInRFC="false" toc="include" pn="section-8.1.1">
+          <name slugifiedName="name-downgrade-attacks">Downgrade Attacks</name>
+          <t indent="0" pn="section-8.1.1-1">This attacker cannot impersonate the secure endpoint, but it can forge a response indicating that the requested SVCB records do not exist.  For a SVCB-reliant client (<xref section="3" sectionFormat="comma" target="SVCB" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-3" derivedContent="SVCB"/>), this only results in a denial of service.  However, SVCB-optional clients will generally fall back to insecure DNS in this case, exposing all DNS traffic to attacks.</t>
+        </section>
+        <section anchor="redirection-attacks" numbered="true" removeInRFC="false" toc="include" pn="section-8.1.2">
+          <name slugifiedName="name-redirection-attacks">Redirection Attacks</name>
+          <t indent="0" pn="section-8.1.2-1">SVCB-reliant clients always enforce the Authentication Domain Name, but they are still subject to attacks using the transport, port number, and "dohpath" value, which are controlled by this adversary.  By changing these values in the SVCB answers, the adversary can direct DNS queries for $HOSTNAME to any port on $HOSTNAME and any path on "<tt>https://$HOSTNAME</tt>".  If the DNS client uses shared TLS or HTTP state, the client could be correctly authenticated (e.g., using a TLS client certificate or HTTP cookie).</t>
+          <t indent="0" pn="section-8.1.2-2">This behavior creates a number of possible attacks for certain server configurations.  For example, if <tt>https://$HOSTNAME/upload</tt> accepts any POST request as a public file upload, the adversary could forge a SVCB record containing <tt>dohpath=/upload{?dns}</tt>.  This would cause the client to upload and publish every query, resulting in unexpected storage costs for the server and privacy loss for the client.  Similarly, if two DoH endpoints are available on the same origin and the service has designated one of them for use with this specification, this adversary can cause clients to use the other endpoint instead.</t>
+          <t indent="0" pn="section-8.1.2-3">To mitigate redirection attacks, a client of this SVCB mapping <bcp14>MUST NOT</bcp14> identify or authenticate itself when performing DNS queries, except to servers that it specifically knows are not vulnerable to such attacks.  If an endpoint sends an invalid response to a DNS query, the client <bcp14>SHOULD NOT</bcp14> send more queries to that endpoint and <bcp14>MAY</bcp14> log this error.  Multiple DNS services <bcp14>MUST NOT</bcp14> share a hostname identifier (<xref target="identity" format="default" sectionFormat="of" derivedContent="Section 3"/>) unless they are so similar that it is safe to allow an attacker to choose which one is used.</t>
+        </section>
+      </section>
+      <section anchor="adversary-on-the-transport-path" numbered="true" removeInRFC="false" toc="include" pn="section-8.2">
+        <name slugifiedName="name-adversary-on-the-transport-">Adversary on the Transport Path</name>
+        <t indent="0" pn="section-8.2-1">This section considers an adversary who can modify network traffic between the client and the alternative service (identified by the TargetName).</t>
+        <t indent="0" pn="section-8.2-2">For a SVCB-reliant client, this adversary can only cause a denial of service.  However, because DNS is unencrypted by default, this adversary can execute a downgrade attack against SVCB-optional clients.  Accordingly, when the use of this specification is optional, clients <bcp14>SHOULD</bcp14> switch to SVCB-reliant behavior if SVCB resolution succeeds.  Specifications making use of this mapping <bcp14>MAY</bcp14> adjust this fallback behavior to suit their requirements.</t>
+      </section>
+    </section>
+    <section anchor="iana-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-9">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-9-1">Per <xref target="SVCB" format="default" sectionFormat="of" derivedContent="SVCB"/>, IANA has added the following entry to the "Service Parameter Keys (SvcParamKeys)" registry.</t>
+      <table align="center" pn="table-1">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Number</th>
+            <th align="left" colspan="1" rowspan="1">Name</th>
+            <th align="left" colspan="1" rowspan="1">Meaning</th>
+            <th align="left" colspan="1" rowspan="1">Format Reference</th>
+            <th align="left" colspan="1" rowspan="1">Change Controller</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="center" colspan="1" rowspan="1">7</td>
+            <td align="left" colspan="1" rowspan="1">dohpath</td>
+            <td align="left" colspan="1" rowspan="1">DNS-over-HTTPS path template</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9461</td>
+            <td align="left" colspan="1" rowspan="1">IETF</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9461</td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-9-3">Per <xref target="RFC8552" format="default" sectionFormat="of" derivedContent="Attrleaf"/>, IANA has added the following entry to the DNS "Underscored and Globally Scoped DNS Node Names" registry:</t>
+      <table align="center" pn="table-2">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">RR Type</th>
+            <th align="left" colspan="1" rowspan="1">_NODE NAME</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">SVCB</td>
+            <td align="left" colspan="1" rowspan="1">_dns</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9461</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="RFC8552" to="Attrleaf"/>
+    <displayreference target="RFC4501" to="DNSURI"/>
+    <references pn="section-10">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-10.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC3629" target="https://www.rfc-editor.org/info/rfc3629" quoteTitle="true" derivedAnchor="RFC3629">
+          <front>
+            <title>UTF-8, a transformation format of ISO 10646</title>
+            <author fullname="F. Yergeau" initials="F." surname="Yergeau"/>
+            <date month="November" year="2003"/>
+            <abstract>
+              <t indent="0">ISO/IEC 10646-1 defines a large character set called the Universal Character Set (UCS) which encompasses most of the world's writing systems. The originally proposed encodings of the UCS, however, were not compatible with many current applications and protocols, and this has led to the development of UTF-8, the object of this memo. UTF-8 has the characteristic of preserving the full US-ASCII range, providing compatibility with file systems, parsers and other software that rely on US-ASCII values but are transparent to other values. This memo obsoletes and replaces RFC 2279.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="63"/>
+          <seriesInfo name="RFC" value="3629"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3629"/>
+        </reference>
+        <reference anchor="RFC6570" target="https://www.rfc-editor.org/info/rfc6570" quoteTitle="true" derivedAnchor="RFC6570">
+          <front>
+            <title>URI Template</title>
+            <author fullname="J. Gregorio" initials="J." surname="Gregorio"/>
+            <author fullname="R. Fielding" initials="R." surname="Fielding"/>
+            <author fullname="M. Hadley" initials="M." surname="Hadley"/>
+            <author fullname="M. Nottingham" initials="M." surname="Nottingham"/>
+            <author fullname="D. Orchard" initials="D." surname="Orchard"/>
+            <date month="March" year="2012"/>
+            <abstract>
+              <t indent="0">A URI Template is a compact sequence of characters for describing a range of Uniform Resource Identifiers through variable expansion. This specification defines the URI Template syntax and the process for expanding a URI Template into a URI reference, along with guidelines for the use of URI Templates on the Internet. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6570"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6570"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8484" target="https://www.rfc-editor.org/info/rfc8484" quoteTitle="true" derivedAnchor="RFC8484">
+          <front>
+            <title>DNS Queries over HTTPS (DoH)</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="P. McManus" initials="P." surname="McManus"/>
+            <date month="October" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a protocol for sending DNS queries and getting DNS responses over HTTPS. Each DNS query-response pair is mapped into an HTTP exchange.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8484"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8484"/>
+        </reference>
+        <reference anchor="RFC9113" target="https://www.rfc-editor.org/info/rfc9113" quoteTitle="true" derivedAnchor="RFC9113">
+          <front>
+            <title>HTTP/2</title>
+            <author fullname="M. Thomson" initials="M." role="editor" surname="Thomson"/>
+            <author fullname="C. Benfield" initials="C." role="editor" surname="Benfield"/>
+            <date month="June" year="2022"/>
+            <abstract>
+              <t indent="0">This specification describes an optimized expression of the semantics of the Hypertext Transfer Protocol (HTTP), referred to as HTTP version 2 (HTTP/2). HTTP/2 enables a more efficient use of network resources and a reduced latency by introducing field compression and allowing multiple concurrent exchanges on the same connection.</t>
+              <t indent="0">This document obsoletes RFCs 7540 and 8740.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9113"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9113"/>
+        </reference>
+        <reference anchor="SVCB" target="https://www.rfc-editor.org/info/rfc9460" quoteTitle="true" derivedAnchor="SVCB">
+          <front>
+            <title>Service Binding and Parameter Specification via the DNS (SVCB and HTTPS Resource Records)</title>
+            <author fullname="Ben Schwartz" initials="B." surname="Schwartz"/>
+            <author fullname="Mike Bishop" initials="M." surname="Bishop">
+            </author>
+            <author fullname="Erik Nygren" initials="E." surname="Nygren">
+            </author>
+            <date month="November" year="2023"/>
+          </front>
+          <seriesInfo name="RFC" value="9460"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9460"/>
+        </reference>
+      </references>
+      <references pn="section-10.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC8552" target="https://www.rfc-editor.org/info/rfc8552" quoteTitle="true" derivedAnchor="Attrleaf">
+          <front>
+            <title>Scoped Interpretation of DNS Resource Records through "Underscored" Naming of Attribute Leaves</title>
+            <author fullname="D. Crocker" initials="D." surname="Crocker"/>
+            <date month="March" year="2019"/>
+            <abstract>
+              <t indent="0">Formally, any DNS Resource Record (RR) may occur under any domain name. However, some services use an operational convention for defining specific interpretations of an RRset by locating the records in a DNS branch under the parent domain to which the RRset actually applies. The top of this subordinate branch is defined by a naming convention that uses a reserved node name, which begins with the underscore character (e.g., "_name"). The underscored naming construct defines a semantic scope for DNS record types that are associated with the parent domain above the underscored branch. This specification explores the nature of this DNS usage and defines the "Underscored and Globally Scoped DNS Node Names" registry with IANA. The purpose of this registry is to avoid collisions resulting from the use of the same underscored name for different services.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="222"/>
+          <seriesInfo name="RFC" value="8552"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8552"/>
+        </reference>
+        <reference anchor="RFC4501" target="https://www.rfc-editor.org/info/rfc4501" quoteTitle="true" derivedAnchor="DNSURI">
+          <front>
+            <title>Domain Name System Uniform Resource Identifiers</title>
+            <author fullname="S. Josefsson" initials="S." surname="Josefsson"/>
+            <date month="May" year="2006"/>
+            <abstract>
+              <t indent="0">This document defines Uniform Resource Identifiers for Domain Name System resources. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4501"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4501"/>
+        </reference>
+        <reference anchor="FETCH" target="https://fetch.spec.whatwg.org/" quoteTitle="true" derivedAnchor="FETCH">
+          <front>
+            <title>Fetch Living Standard</title>
+            <author>
+              <organization showOnFrontPage="true">WHATWG</organization>
+            </author>
+            <date year="2023" month="October"/>
+          </front>
+        </reference>
+        <reference anchor="RFC7858" target="https://www.rfc-editor.org/info/rfc7858" quoteTitle="true" derivedAnchor="RFC7858">
+          <front>
+            <title>Specification for DNS over Transport Layer Security (TLS)</title>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <author fullname="L. Zhu" initials="L." surname="Zhu"/>
+            <author fullname="J. Heidemann" initials="J." surname="Heidemann"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This document describes the use of Transport Layer Security (TLS) to provide privacy for DNS. Encryption provided by TLS eliminates opportunities for eavesdropping and on-path tampering with DNS queries in the network, such as discussed in RFC 7626. In addition, this document specifies two usage profiles for DNS over TLS and provides advice on performance considerations to minimize overhead from using TCP and TLS with DNS.</t>
+              <t indent="0">This document focuses on securing stub-to-recursive traffic, as per the charter of the DPRIVE Working Group. It does not prevent future applications of the protocol to recursive-to-authoritative traffic.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7858"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7858"/>
+        </reference>
+        <reference anchor="RFC9250" target="https://www.rfc-editor.org/info/rfc9250" quoteTitle="true" derivedAnchor="RFC9250">
+          <front>
+            <title>DNS over Dedicated QUIC Connections</title>
+            <author fullname="C. Huitema" initials="C." surname="Huitema"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <date month="May" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes the use of QUIC to provide transport confidentiality for DNS. The encryption provided by QUIC has similar properties to those provided by TLS, while QUIC transport eliminates the head-of-line blocking issues inherent with TCP and provides more efficient packet-loss recovery than UDP. DNS over QUIC (DoQ) has privacy properties similar to DNS over TLS (DoT) specified in RFC 7858, and latency characteristics similar to classic DNS over UDP. This specification describes the use of DoQ as a general-purpose transport for DNS and includes the use of DoQ for stub to recursive, recursive to authoritative, and zone transfer scenarios.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9250"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9250"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="mapping-summary" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-mapping-summary">Mapping Summary</name>
+      <t indent="0" pn="section-appendix.a-1">This table serves as a non-normative summary of the DNS mapping for SVCB.</t>
+      <table align="center" pn="table-3">
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">
+              <strong>Mapped scheme</strong></td>
+            <td align="left" colspan="1" rowspan="1">"dns"</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">
+              <strong>RR type</strong></td>
+            <td align="left" colspan="1" rowspan="1">SVCB (64)</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">
+              <strong>Name prefix</strong></td>
+            <td align="left" colspan="1" rowspan="1">
+              <tt>_dns</tt> for port 53, else <tt>_$PORT._dns</tt></td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">
+              <strong>Required keys</strong></td>
+            <td align="left" colspan="1" rowspan="1">
+              <tt>alpn</tt> or equivalent</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">
+              <strong>Automatically mandatory keys</strong></td>
+            <td align="left" colspan="1" rowspan="1">
+              <tt>port</tt></td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">
+              <strong>Special behaviors</strong></td>
+            <td align="left" colspan="1" rowspan="1">Supports all HTTPS RR SvcParamKeys</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1"/>
+            <td align="left" colspan="1" rowspan="1">Overrides the HTTPS RR for DoH</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1"/>
+            <td align="left" colspan="1" rowspan="1">Default port is per-transport</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1"/>
+            <td align="left" colspan="1" rowspan="1">Cleartext fallback is discouraged</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section numbered="false" anchor="acknowledgments" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.b-1">Thanks to the many reviewers and contributors, including <contact fullname="Andrew Campling"/>, <contact fullname="Peter van Dijk"/>, <contact fullname="Paul Hoffman"/>, <contact fullname="Daniel Migault"/>, <contact fullname="Matt Nordhoff"/>, <contact fullname="Eric Rescorla"/>, <contact fullname="Andreas Schulze"/>, and <contact fullname="Éric Vyncke"/>.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-address">Author's Address</name>
+      <author initials="B." surname="Schwartz" fullname="Benjamin Schwartz">
+        <organization showOnFrontPage="true">Meta Platforms, Inc.</organization>
+        <address>
+          <email>ietf@bemasc.net</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

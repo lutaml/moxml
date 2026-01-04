@@ -1,0 +1,629 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-core-target-attr-06" number="9423" submissionType="IETF" category="info" consensus="true" tocInclude="true" sortRefs="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2024-04-11T14:14:30" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-core-target-attr-06" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9423" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="CoRE Target Attributes Registry">Constrained RESTful Environments (CoRE) Target Attributes Registry</title>
+    <seriesInfo name="RFC" value="9423" stream="IETF"/>
+    <author initials="C." surname="Bormann" fullname="Carsten Bormann">
+      <organization showOnFrontPage="true">Universität Bremen TZI</organization>
+      <address>
+        <postal>
+          <street>Postfach 330440</street>
+          <city>Bremen</city>
+          <code>D-28359</code>
+          <country>Germany</country>
+        </postal>
+        <phone>+49-421-218-63921</phone>
+        <email>cabo@tzi.org</email>
+      </address>
+    </author>
+    <date month="04" year="2024"/>
+    <area>art</area>
+    <workgroup>core</workgroup>
+    <keyword>CoAP</keyword>
+    <keyword>Web Linking</keyword>
+    <keyword>Resource Discovery</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">The Constrained RESTful Environments (CoRE) specifications apply web
+technologies to constrained environments.
+One such important technology is Web Linking (RFC 8288), which CoRE
+specifications use as the basis for a number of discovery protocols, such as the
+Link Format (RFC 6690) in the Constrained Application Protocol's (CoAP's) resource discovery process (Section 7.2
+of RFC 7252) and the Resource Directory (RD) (RFC 9176).
+</t>
+      <t indent="0" pn="section-abstract-2">Web Links can have target attributes, the names of which are not
+generally coordinated by the Web Linking specification (Section 2.2 of
+RFC 8288).
+This document introduces an IANA registry for coordinating names of target
+attributes when used in CoRE.
+It updates the "RD Parameters" IANA registry created by RFC 9176 to coordinate with
+this registry.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for informational purposes.  
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by the
+            Internet Engineering Steering Group (IESG).  Not all documents
+            approved by the IESG are candidates for any level of Internet
+            Standard; see Section 2 of RFC 7841. 
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9423" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-instructions-for-the-design">Instructions for the Designated Expert</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-structure-of-entries">Structure of Entries</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.3">
+                <t indent="0" pn="section-toc.1-1.2.2.3.1"><xref derivedContent="2.3" format="counter" sectionFormat="of" target="section-2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-initial-entries">Initial Entries</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-address">Author's Address</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="intro" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">The Constrained RESTful Environments (CoRE) specifications apply web
+technologies to constrained environments.
+One such important technology is Web Linking <xref target="RFC8288" format="default" sectionFormat="of" derivedContent="RFC8288"/>, which CoRE
+specifications use as the basis for a number of discovery protocols, such as the
+Link Format <xref target="RFC6690" format="default" sectionFormat="of" derivedContent="RFC6690"/> in the Constrained Application Protocol's (CoAP's) resource discovery process (<xref section="7.2" sectionFormat="of" target="RFC7252" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7252#section-7.2" derivedContent="RFC7252"/>) and the Resource Directory (RD)
+<xref target="RFC9176" format="default" sectionFormat="of" derivedContent="RFC9176"/>.</t>
+      <t indent="0" pn="section-1-2">Web Links can have target attributes.
+The original Web Linking specification (<xref section="3" sectionFormat="of" target="RFC5988" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5988#section-3" derivedContent="RFC5988"/>) did not attempt
+to coordinate names of target attributes except for providing common
+target attributes for use in the Link HTTP header.
+The current revision of that specification (<xref section="2.2" sectionFormat="of" target="RFC8288" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8288#section-2.2" derivedContent="RFC8288"/>) clarifies as follows:</t>
+      <blockquote pn="section-1-3">
+        <t indent="0" pn="section-1-3.1">This specification does not attempt to coordinate the name of target
+   attributes, their cardinality, or use.  Those creating and
+   maintaining serialisations <bcp14>SHOULD</bcp14> coordinate their target attributes
+   to avoid conflicts in semantics or syntax and <bcp14>MAY</bcp14> define their own
+   registries of target attributes.</t>
+      </blockquote>
+      <t indent="0" pn="section-1-4">This document introduces an IANA registry for coordinating names of target
+attributes when used in CoRE, with
+specific instructions for the designated expert for this registry (<xref target="de-instructions" format="default" sectionFormat="of" derivedContent="Section 2.1"/>).
+It updates the "RD Parameters" IANA registry created by <xref target="RFC9176" format="default" sectionFormat="of" derivedContent="RFC9176"/> to coordinate with
+this registry.</t>
+      <t indent="0" pn="section-1-5">With this registry now available, registration of target attributes is strongly encouraged.
+The incentive is that an unregistered attribute name might be registered with a different meaning at any time.</t>
+      <section anchor="terminology" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-terminology">Terminology</name>
+        <t indent="0" pn="section-1.1-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+       "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>",
+       "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>",
+       "<bcp14>SHOULD NOT</bcp14>",
+       "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+       "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+       are to be interpreted as described in BCP 14
+       <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only
+       when, they appear in all capitals, as shown here.</t>
+      </section>
+    </section>
+    <section anchor="iana-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-2-1">Per this specification, IANA has created a new "Target Attributes" registry in
+the "Constrained RESTful Environments (CoRE) Parameters" registry group <xref target="IANA.core-parameters" format="default" sectionFormat="of" derivedContent="IANA.core-parameters"/>, with the policy
+"Expert Review" (Section <xref section="4.5" sectionFormat="bare" target="RFC8126" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8126#section-4.5" derivedContent="RFC8126"/> of RFC 8126 <xref target="BCP26" format="default" sectionFormat="of" derivedContent="BCP26"/>).</t>
+      <section anchor="de-instructions" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-instructions-for-the-design">Instructions for the Designated Expert</name>
+        <t indent="0" pn="section-2.1-1">The expert is requested to guide the registrant towards reasonably
+short target attribute names where the shortness will help conserve
+resources in constrained systems, but to also be frugal in the
+allocation of very short names, keeping them in reserve for
+applications that are likely to enjoy wide use and can make good use
+of their shortness.</t>
+        <t indent="0" pn="section-2.1-2">The expert is also instructed to direct the registrant to provide a
+specification (Section <xref section="4.6" sectionFormat="bare" target="RFC8126" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8126#section-4.6" derivedContent="RFC8126"/> of RFC 8126 <xref target="BCP26" format="default" sectionFormat="of" derivedContent="BCP26"/>) but can make exceptions --
+for instance, when a specification is not available at the time of
+registration but is likely forthcoming.</t>
+        <t indent="0" pn="section-2.1-3">Any questions or issues that might interest a wider audience might be
+raised by the expert on the core-parameters@ietf.org mailing list for
+a time-limited discussion.
+This might include security considerations, or opportunities for
+orchestration, e.g., when different names with similar intent are
+being or could be registered.</t>
+        <t indent="0" pn="section-2.1-4">If the expert becomes aware of target attributes that are deployed and
+in use, they may also initiate a registration on their own if
+they deem that such a registration can avert potential future collisions.</t>
+      </section>
+      <section anchor="structure-of-entries" numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-structure-of-entries">Structure of Entries</name>
+        <t indent="0" pn="section-2.2-1">Each entry in the registry must include the following:</t>
+        <dl newline="true" indent="3" spacing="normal" pn="section-2.2-2">
+          <dt pn="section-2.2-2.1">Attribute Name:</dt>
+          <dd pn="section-2.2-2.2">
+            <t indent="0" pn="section-2.2-2.2.1">A lowercase ASCII string <xref target="STD80" format="default" sectionFormat="of" derivedContent="STD80"/> that starts with a letter and can
+contain digits and hyphen-minus characters afterward
+(<tt>[a-z][-a-z0-9]*</tt>).
+(Note that <xref target="RFC8288" format="default" sectionFormat="of" derivedContent="RFC8288"/> requires target attribute names to be
+interpreted in a case-insensitive way; the restriction to lowercase
+here ensures that they are registered in a predictable form.)</t>
+          </dd>
+          <dt pn="section-2.2-2.3">Brief Description:</dt>
+          <dd pn="section-2.2-2.4">
+            <t indent="0" pn="section-2.2-2.4.1">A brief description.</t>
+          </dd>
+          <dt pn="section-2.2-2.5">Change Controller:</dt>
+          <dd pn="section-2.2-2.6">
+            <t indent="0" pn="section-2.2-2.6.1">See Section <xref section="2.3" sectionFormat="bare" target="RFC8126" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8126#section-2.3" derivedContent="RFC8126"/> of RFC 8126 <xref target="BCP26" format="default" sectionFormat="of" derivedContent="BCP26"/>.</t>
+          </dd>
+          <dt pn="section-2.2-2.7">Reference:</dt>
+          <dd pn="section-2.2-2.8">
+            <t indent="0" pn="section-2.2-2.8.1">A reference document that provides a description of the target
+attribute, including the semantics for when the target attribute
+appears more than once in a link.</t>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="initial-entries" numbered="true" removeInRFC="false" toc="include" pn="section-2.3">
+        <name slugifiedName="name-initial-entries">Initial Entries</name>
+        <t indent="0" pn="section-2.3-1">Initial entries in this registry are listed in <xref target="pre-reg" format="default" sectionFormat="of" derivedContent="Table 1"/>.</t>
+        <table anchor="pre-reg" align="center" pn="table-1">
+          <name slugifiedName="name-initial-entries-in-the-targ">Initial Entries in the Target Attributes Registry</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Attribute Name</th>
+              <th align="left" colspan="1" rowspan="1">Brief Description</th>
+              <th align="left" colspan="1" rowspan="1">Change Controller</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">href</td>
+              <td align="left" colspan="1" rowspan="1">reserved (not useful as target attribute name)</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC6690" format="default" sectionFormat="of" derivedContent="RFC6690"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">anchor</td>
+              <td align="left" colspan="1" rowspan="1">reserved (not useful as target attribute name)</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC6690" format="default" sectionFormat="of" derivedContent="RFC6690"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">rel</td>
+              <td align="left" colspan="1" rowspan="1">reserved (not useful as target attribute name)</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC6690" format="default" sectionFormat="of" derivedContent="RFC6690"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">rev</td>
+              <td align="left" colspan="1" rowspan="1">reserved (not useful as target attribute name)</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC6690" format="default" sectionFormat="of" derivedContent="RFC6690"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">hreflang</td>
+              <td align="left" colspan="1" rowspan="1">(Web Linking)</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC8288" format="default" sectionFormat="of" derivedContent="RFC8288"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">media</td>
+              <td align="left" colspan="1" rowspan="1">(Web Linking)</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC8288" format="default" sectionFormat="of" derivedContent="RFC8288"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">title</td>
+              <td align="left" colspan="1" rowspan="1">(Web Linking)</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC8288" format="default" sectionFormat="of" derivedContent="RFC8288"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">type</td>
+              <td align="left" colspan="1" rowspan="1">(Web Linking)</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC8288" format="default" sectionFormat="of" derivedContent="RFC8288"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">rt</td>
+              <td align="left" colspan="1" rowspan="1">resource type</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref section="3.1" sectionFormat="of" target="RFC6690" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6690#section-3.1" derivedContent="RFC6690"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">if</td>
+              <td align="left" colspan="1" rowspan="1">interface description</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref section="3.2" sectionFormat="of" target="RFC6690" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6690#section-3.2" derivedContent="RFC6690"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">sz</td>
+              <td align="left" colspan="1" rowspan="1">maximum size estimate</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref section="3.3" sectionFormat="of" target="RFC6690" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6690#section-3.3" derivedContent="RFC6690"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">ct</td>
+              <td align="left" colspan="1" rowspan="1">Content-Format hint</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref section="7.2.1" sectionFormat="of" target="RFC7252" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7252#section-7.2.1" derivedContent="RFC7252"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">obs</td>
+              <td align="left" colspan="1" rowspan="1">observable resource</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref section="6" sectionFormat="of" target="RFC7641" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7641#section-6" derivedContent="RFC7641"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">hct</td>
+              <td align="left" colspan="1" rowspan="1">HTTP-CoAP URI mapping template</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref section="5.5" sectionFormat="of" target="RFC8075" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8075#section-5.5" derivedContent="RFC8075"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">osc</td>
+              <td align="left" colspan="1" rowspan="1">hint: resource only accessible using OSCORE</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref section="9" sectionFormat="of" target="RFC8613" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8613#section-9" derivedContent="RFC8613"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">ep</td>
+              <td align="left" colspan="1" rowspan="1">Endpoint Name (with rt="core.rd-ep")</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref section="9.3" sectionFormat="of" target="RFC9176" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9176#section-9.3" derivedContent="RFC9176"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">d</td>
+              <td align="left" colspan="1" rowspan="1">Sector (with rt="core.rd-ep")</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref section="9.3" sectionFormat="of" target="RFC9176" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9176#section-9.3" derivedContent="RFC9176"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">base</td>
+              <td align="left" colspan="1" rowspan="1">Registration Base URI (with rt="core.rd-ep")</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref section="9.3" sectionFormat="of" target="RFC9176" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9176#section-9.3" derivedContent="RFC9176"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">et</td>
+              <td align="left" colspan="1" rowspan="1">Endpoint Type (with rt="core.rd-ep")</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref section="9.3" sectionFormat="of" target="RFC9176" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9176#section-9.3" derivedContent="RFC9176"/></td>
+            </tr>
+          </tbody>
+        </table>
+        <t indent="0" pn="section-2.3-3">A number of names are reserved, as they are used for parameters in
+links other than target attributes.
+A further set of target attributes is predefined in <xref target="RFC8288" format="default" sectionFormat="of" derivedContent="RFC8288"/> and is
+imported into this registry.</t>
+        <t indent="0" pn="section-2.3-4"><xref section="9.3" sectionFormat="of" target="RFC9176" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9176#section-9.3" derivedContent="RFC9176"/> created the "RD Parameters" IANA registry.
+Per this document, IANA has added the following note to that registry:</t>
+        <blockquote pn="section-2.3-5">Note: In accordance with RFC 9423, all entries with the "A" flag set, including new ones, <bcp14>MUST</bcp14> also be registered in the "Target Attributes" registry <xref target="IANA.core-parameters" format="default" sectionFormat="of" derivedContent="IANA.core-parameters"/>.</blockquote>
+      </section>
+    </section>
+    <section anchor="security-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-3-1">The security considerations of <xref target="RFC8288" format="default" sectionFormat="of" derivedContent="RFC8288"/> apply, as do those of the
+discovery specifications <xref target="RFC6690" format="default" sectionFormat="of" derivedContent="RFC6690"/>, <xref target="RFC7252" format="default" sectionFormat="of" derivedContent="RFC7252"/>, and <xref target="RFC9176" format="default" sectionFormat="of" derivedContent="RFC9176"/>.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-4">
+      <name slugifiedName="name-references">References</name>
+      <references anchor="sec-normative-references" pn="section-4.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <referencegroup anchor="BCP26" target="https://www.rfc-editor.org/info/bcp26" derivedAnchor="BCP26">
+          <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true">
+            <front>
+              <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+              <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+              <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+              <author fullname="T. Narten" initials="T." surname="Narten"/>
+              <date month="June" year="2017"/>
+              <abstract>
+                <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+                <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+                <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+              </abstract>
+            </front>
+            <seriesInfo name="BCP" value="26"/>
+            <seriesInfo name="RFC" value="8126"/>
+            <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+          </reference>
+        </referencegroup>
+        <reference anchor="IANA.core-parameters" target="https://www.iana.org/assignments/core-parameters" quoteTitle="true" derivedAnchor="IANA.core-parameters">
+          <front>
+            <title>Constrained RESTful Environments (CoRE) Parameters</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8288" target="https://www.rfc-editor.org/info/rfc8288" quoteTitle="true" derivedAnchor="RFC8288">
+          <front>
+            <title>Web Linking</title>
+            <author fullname="M. Nottingham" initials="M." surname="Nottingham"/>
+            <date month="October" year="2017"/>
+            <abstract>
+              <t indent="0">This specification defines a model for the relationships between resources on the Web ("links") and the type of those relationships ("link relation types").</t>
+              <t indent="0">It also defines the serialisation of such links in HTTP headers with the Link header field.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8288"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8288"/>
+        </reference>
+        <referencegroup anchor="STD80" target="https://www.rfc-editor.org/info/std80" derivedAnchor="STD80">
+          <reference anchor="RFC0020" target="https://www.rfc-editor.org/info/rfc20" quoteTitle="true">
+            <front>
+              <title>ASCII format for network interchange</title>
+              <author fullname="V.G. Cerf" initials="V.G." surname="Cerf"/>
+              <date month="October" year="1969"/>
+            </front>
+            <seriesInfo name="STD" value="80"/>
+            <seriesInfo name="RFC" value="20"/>
+            <seriesInfo name="DOI" value="10.17487/RFC0020"/>
+          </reference>
+        </referencegroup>
+      </references>
+      <references anchor="sec-informative-references" pn="section-4.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC5988" target="https://www.rfc-editor.org/info/rfc5988" quoteTitle="true" derivedAnchor="RFC5988">
+          <front>
+            <title>Web Linking</title>
+            <author fullname="M. Nottingham" initials="M." surname="Nottingham"/>
+            <date month="October" year="2010"/>
+            <abstract>
+              <t indent="0">This document specifies relation types for Web links, and defines a registry for them. It also defines the use of such links in HTTP headers with the Link header field. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5988"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5988"/>
+        </reference>
+        <reference anchor="RFC6690" target="https://www.rfc-editor.org/info/rfc6690" quoteTitle="true" derivedAnchor="RFC6690">
+          <front>
+            <title>Constrained RESTful Environments (CoRE) Link Format</title>
+            <author fullname="Z. Shelby" initials="Z." surname="Shelby"/>
+            <date month="August" year="2012"/>
+            <abstract>
+              <t indent="0">This specification defines Web Linking using a link format for use by constrained web servers to describe hosted resources, their attributes, and other relationships between links. Based on the HTTP Link Header field defined in RFC 5988, the Constrained RESTful Environments (CoRE) Link Format is carried as a payload and is assigned an Internet media type. "RESTful" refers to the Representational State Transfer (REST) architecture. A well-known URI is defined as a default entry point for requesting the links hosted by a server. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6690"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6690"/>
+        </reference>
+        <reference anchor="RFC7252" target="https://www.rfc-editor.org/info/rfc7252" quoteTitle="true" derivedAnchor="RFC7252">
+          <front>
+            <title>The Constrained Application Protocol (CoAP)</title>
+            <author fullname="Z. Shelby" initials="Z." surname="Shelby"/>
+            <author fullname="K. Hartke" initials="K." surname="Hartke"/>
+            <author fullname="C. Bormann" initials="C." surname="Bormann"/>
+            <date month="June" year="2014"/>
+            <abstract>
+              <t indent="0">The Constrained Application Protocol (CoAP) is a specialized web transfer protocol for use with constrained nodes and constrained (e.g., low-power, lossy) networks. The nodes often have 8-bit microcontrollers with small amounts of ROM and RAM, while constrained networks such as IPv6 over Low-Power Wireless Personal Area Networks (6LoWPANs) often have high packet error rates and a typical throughput of 10s of kbit/s. The protocol is designed for machine- to-machine (M2M) applications such as smart energy and building automation.</t>
+              <t indent="0">CoAP provides a request/response interaction model between application endpoints, supports built-in discovery of services and resources, and includes key concepts of the Web such as URIs and Internet media types. CoAP is designed to easily interface with HTTP for integration with the Web while meeting specialized requirements such as multicast support, very low overhead, and simplicity for constrained environments.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7252"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7252"/>
+        </reference>
+        <reference anchor="RFC7641" target="https://www.rfc-editor.org/info/rfc7641" quoteTitle="true" derivedAnchor="RFC7641">
+          <front>
+            <title>Observing Resources in the Constrained Application Protocol (CoAP)</title>
+            <author fullname="K. Hartke" initials="K." surname="Hartke"/>
+            <date month="September" year="2015"/>
+            <abstract>
+              <t indent="0">The Constrained Application Protocol (CoAP) is a RESTful application protocol for constrained nodes and networks. The state of a resource on a CoAP server can change over time. This document specifies a simple protocol extension for CoAP that enables CoAP clients to "observe" resources, i.e., to retrieve a representation of a resource and keep this representation updated by the server over a period of time. The protocol follows a best-effort approach for sending new representations to clients and provides eventual consistency between the state observed by each client and the actual resource state at the server.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7641"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7641"/>
+        </reference>
+        <reference anchor="RFC8075" target="https://www.rfc-editor.org/info/rfc8075" quoteTitle="true" derivedAnchor="RFC8075">
+          <front>
+            <title>Guidelines for Mapping Implementations: HTTP to the Constrained Application Protocol (CoAP)</title>
+            <author fullname="A. Castellani" initials="A." surname="Castellani"/>
+            <author fullname="S. Loreto" initials="S." surname="Loreto"/>
+            <author fullname="A. Rahman" initials="A." surname="Rahman"/>
+            <author fullname="T. Fossati" initials="T." surname="Fossati"/>
+            <author fullname="E. Dijk" initials="E." surname="Dijk"/>
+            <date month="February" year="2017"/>
+            <abstract>
+              <t indent="0">This document provides reference information for implementing a cross-protocol network proxy that performs translation from the HTTP protocol to the Constrained Application Protocol (CoAP). This will enable an HTTP client to access resources on a CoAP server through the proxy. This document describes how an HTTP request is mapped to a CoAP request and how a CoAP response is mapped back to an HTTP response. This includes guidelines for status code, URI, and media type mappings, as well as additional interworking advice.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8075"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8075"/>
+        </reference>
+        <reference anchor="RFC8613" target="https://www.rfc-editor.org/info/rfc8613" quoteTitle="true" derivedAnchor="RFC8613">
+          <front>
+            <title>Object Security for Constrained RESTful Environments (OSCORE)</title>
+            <author fullname="G. Selander" initials="G." surname="Selander"/>
+            <author fullname="J. Mattsson" initials="J." surname="Mattsson"/>
+            <author fullname="F. Palombini" initials="F." surname="Palombini"/>
+            <author fullname="L. Seitz" initials="L." surname="Seitz"/>
+            <date month="July" year="2019"/>
+            <abstract>
+              <t indent="0">This document defines Object Security for Constrained RESTful Environments (OSCORE), a method for application-layer protection of the Constrained Application Protocol (CoAP), using CBOR Object Signing and Encryption (COSE). OSCORE provides end-to-end protection between endpoints communicating using CoAP or CoAP-mappable HTTP. OSCORE is designed for constrained nodes and networks supporting a range of proxy operations, including translation between different transport protocols.</t>
+              <t indent="0">Although an optional functionality of CoAP, OSCORE alters CoAP options processing and IANA registration. Therefore, this document updates RFC 7252.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8613"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8613"/>
+        </reference>
+        <reference anchor="RFC9176" target="https://www.rfc-editor.org/info/rfc9176" quoteTitle="true" derivedAnchor="RFC9176">
+          <front>
+            <title>Constrained RESTful Environments (CoRE) Resource Directory</title>
+            <author fullname="C. Amsüss" initials="C." role="editor" surname="Amsüss"/>
+            <author fullname="Z. Shelby" initials="Z." surname="Shelby"/>
+            <author fullname="M. Koster" initials="M." surname="Koster"/>
+            <author fullname="C. Bormann" initials="C." surname="Bormann"/>
+            <author fullname="P. van der Stok" initials="P." surname="van der Stok"/>
+            <date month="April" year="2022"/>
+            <abstract>
+              <t indent="0">In many Internet of Things (IoT) applications, direct discovery of resources is not practical due to sleeping nodes or networks where multicast traffic is inefficient. These problems can be solved by employing an entity called a Resource Directory (RD), which contains information about resources held on other servers, allowing lookups to be performed for those resources. The input to an RD is composed of links, and the output is composed of links constructed from the information stored in the RD. This document specifies the web interfaces that an RD supports for web servers to discover the RD and to register, maintain, look up, and remove information on resources. Furthermore, new target attributes useful in conjunction with an RD are defined.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9176"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9176"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" anchor="acknowledgements" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">The CoRE Working Group had been discussing setting up a registry for target
+attributes since the final touches were made on <xref target="RFC6690" format="default" sectionFormat="of" derivedContent="RFC6690"/>.
+The update of the Web Linking specification to <xref target="RFC8288" format="default" sectionFormat="of" derivedContent="RFC8288"/> provided the
+formal setting, but it took until <contact fullname="Jaime Jiménez"/> provided the set of
+initial registrations to generate a first draft version of this specification.
+The current document addresses additional input and Working Group Last
+Call comments by
+<contact fullname="Esko Dijk"/>,
+<contact fullname="Marco Tiloca"/>,
+<contact fullname="Thomas Fossati"/>,
+and
+<contact fullname="Mohamed Boucadair"/>,
+as well as Area Director review comments from
+<contact fullname="Rob Wilton"/>.</t>
+    </section>
+    <section anchor="contributors" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.b">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <contact initials="J." surname="Jiménez" fullname="Jaime Jiménez">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <email>jaime@iki.fi</email>
+        </address>
+      </contact>
+      <t indent="0" pn="section-appendix.b-1">Jaime provided the list of initial registrations.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-address">Author's Address</name>
+      <author initials="C." surname="Bormann" fullname="Carsten Bormann">
+        <organization showOnFrontPage="true">Universität Bremen TZI</organization>
+        <address>
+          <postal>
+            <street>Postfach 330440</street>
+            <city>Bremen</city>
+            <code>D-28359</code>
+            <country>Germany</country>
+          </postal>
+          <phone>+49-421-218-63921</phone>
+          <email>cabo@tzi.org</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

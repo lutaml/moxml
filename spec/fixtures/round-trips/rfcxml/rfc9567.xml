@@ -1,0 +1,603 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-dnsop-dns-error-reporting-08" number="9567" obsoletes="" updates="" xml:lang="en" category="std" consensus="true" submissionType="IETF" tocInclude="true" sortRefs="true" symRefs="true" prepTime="2024-04-26T12:10:47" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-dnsop-dns-error-reporting-08" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9567" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="DNS Error Reporting">DNS Error Reporting</title>
+    <seriesInfo name="RFC" value="9567" stream="IETF"/>
+    <author initials="R." surname="Arends" fullname="Roy Arends">
+      <organization showOnFrontPage="true">ICANN</organization>
+      <address>
+        <email>roy.arends@icann.org</email>
+      </address>
+    </author>
+    <author initials="M." surname="Larson" fullname="Matt Larson">
+      <organization showOnFrontPage="true">ICANN</organization>
+      <address>
+        <email>matt.larson@icann.org</email>
+      </address>
+    </author>
+    <date month="04" year="2024"/>
+    <area>OPS</area>
+    <workgroup>dnsop</workgroup>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">DNS error reporting is a lightweight reporting mechanism that provides the operator of an authoritative server with reports on DNS resource records that fail to resolve or validate. A domain owner or DNS hosting organization can use these reports to improve domain hosting. The reports are based on extended DNS errors as described in RFC 8914.</t>
+      <t indent="0" pn="section-abstract-2">When a domain name fails to resolve or validate due to a misconfiguration or an attack, the operator of the authoritative server may be unaware of this. To mitigate this lack of feedback, this document describes a method for a validating resolver to automatically signal an error to a monitoring agent specified by the authoritative server. The error is encoded in the QNAME; thus, the very act of sending the query is to report the error.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9567" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-notation">Requirements Notation</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-overview">Overview</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-example">Example</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-edns0-option-specification">EDNS0 Option Specification</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dns-error-reporting-specifi">DNS Error Reporting Specification</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reporting-resolver-specific">Reporting Resolver Specification</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.1.2">
+                  <li pn="section-toc.1-1.6.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.1.2.1.1"><xref derivedContent="6.1.1" format="counter" sectionFormat="of" target="section-6.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-constructing-the-report-que">Constructing the Report Query</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-authoritative-server-specif">Authoritative Server Specification</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.3">
+                <t indent="0" pn="section-toc.1-1.6.2.3.1"><xref derivedContent="6.3" format="counter" sectionFormat="of" target="section-6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-monitoring-agent-specificat">Monitoring Agent Specification</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-operational-considerations">Operational Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-choosing-an-agent-domain">Choosing an Agent Domain</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-managing-caching-optimizati">Managing Caching Optimizations</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.10.2">
+              <li pn="section-toc.1-1.10.2.1">
+                <t indent="0" pn="section-toc.1-1.10.2.1.1"><xref derivedContent="10.1" format="counter" sectionFormat="of" target="section-10.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.10.2.2">
+                <t indent="0" pn="section-toc.1-1.10.2.2.1"><xref derivedContent="10.2" format="counter" sectionFormat="of" target="section-10.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">When an authoritative server serves a stale DNSSEC-signed zone, the cryptographic signatures over the resource record sets (RRsets) may have lapsed. A validating  resolver will fail to validate these resource records.</t>
+      <t indent="0" pn="section-1-2">Similarly, when there is a mismatch between the Delegation Signer (DS) records at a parent zone and the key signing key at the child zone, a validating resolver will fail to authenticate records in the child zone.</t>
+      <t indent="0" pn="section-1-3">These are two of several failure scenarios that may go unnoticed for some time by the operator of a zone.</t>
+      <t indent="0" pn="section-1-4">Today, there is no direct relationship between operators of validating resolvers and authoritative servers. Outages are often noticed indirectly by end users and reported via email or social media (if reported at all).</t>
+      <t indent="0" pn="section-1-5">When records fail to validate, there is no facility to report this failure in an automated way. If there is any indication that an error or warning has happened, it may be buried in log files of the resolver or not logged at all.</t>
+      <t indent="0" pn="section-1-6">This document describes a method that can be used by validating resolvers to report DNSSEC validation errors in an automated way.</t>
+      <t indent="0" pn="section-1-7">It allows an authoritative server to announce a monitoring agent to which validating resolvers can report issues if those resolvers are configured to do so.</t>
+      <t indent="0" pn="section-1-8">The burden to report a failure falls on the validating resolver. It is important that the effort needed to report failure is low, with minimal impact to its main functions. To accomplish this goal, the DNS itself is utilized to report the error.</t>
+    </section>
+    <section anchor="requirements-notation" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-requirements-notation">Requirements Notation</name>
+      <t indent="0" pn="section-2-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.
+      </t>
+    </section>
+    <section anchor="terminology" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <t indent="0" pn="section-3-1">This document uses DNS terminology defined in BCP 219 <xref target="RFC9499" format="default" sectionFormat="of" derivedContent="RFC9499"/>. This document also defines and uses the following terms:</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-3-2">
+        <dt pn="section-3-2.1">Reporting resolver:</dt>
+        <dd pn="section-3-2.2">
+          <t indent="0" pn="section-3-2.2.1">A validating resolver that supports DNS error reporting.</t>
+        </dd>
+        <dt pn="section-3-2.3">Report query:</dt>
+        <dd pn="section-3-2.4">
+          <t indent="0" pn="section-3-2.4.1">The DNS query used to report an error. A report query is for a DNS TXT resource record type. The content of the error report is encoded in the QNAME of a DNS request to the monitoring agent.</t>
+        </dd>
+        <dt pn="section-3-2.5">Monitoring agent:</dt>
+        <dd pn="section-3-2.6">
+          <t indent="0" pn="section-3-2.6.1">An authoritative server that receives and responds to report queries. This facility is indicated by a domain name, referred to as the "agent domain".</t>
+        </dd>
+        <dt pn="section-3-2.7">Agent domain:</dt>
+        <dd pn="section-3-2.8">
+          <t indent="0" pn="section-3-2.8.1">A domain name that is returned in the EDNS0 Report-Channel option and indicates where DNS resolvers can send error reports.</t>
+        </dd>
+      </dl>
+    </section>
+    <section anchor="overview" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-overview">Overview</name>
+      <t indent="0" pn="section-4-1">An authoritative server indicates support for DNS error reporting by including an EDNS0 Report-Channel option with OPTION-CODE 18 and the agent domain in the response. The agent domain is a fully qualified, uncompressed domain name in DNS wire format. The authoritative server <bcp14>MUST NOT</bcp14> include this option in the response if the configured agent domain is empty or is the null label (which would indicate the DNS root).</t>
+      <t indent="0" pn="section-4-2">The authoritative server includes the EDNS0 Report-Channel option unsolicited. That is, the option is included in a response despite the EDNS0 Report-Channel option being absent in the request.</t>
+      <t indent="0" pn="section-4-3">If the authoritative server has indicated support for DNS error reporting and there is an issue that can be reported via extended DNS errors, the reporting resolver encodes the error report in the QNAME of the report query. The reporting resolver builds this QNAME by concatenating the "_er" label, the QTYPE, the QNAME that resulted in failure, the extended DNS error code (as described in <xref target="RFC8914" format="default" sectionFormat="of" derivedContent="RFC8914"/>), the label "_er" again, and the agent domain. See the example in <xref target="example" format="default" sectionFormat="of" derivedContent="Section 4.1"/> and the specification in <xref target="constructing-the-report-query" format="default" sectionFormat="of" derivedContent="Section 6.1.1"/>. Note that a regular RCODE is not included because the RCODE is not relevant to the extended DNS error code.</t>
+      <t indent="0" pn="section-4-4">The resulting report query is sent as a standard DNS query for a TXT DNS resource record type by the reporting resolver.</t>
+      <t indent="0" pn="section-4-5">The report query will ultimately arrive at the monitoring agent. A response is returned by the monitoring agent, which in turn can be cached by the reporting resolver. This caching is essential. It dampens the number of report queries sent by a reporting resolver for the same problem (that is, with caching, one report query per TTL is sent). However, certain optimizations, such as those described in <xref target="RFC8020" format="default" sectionFormat="of" derivedContent="RFC8020"/> and <xref target="RFC8198" format="default" sectionFormat="of" derivedContent="RFC8198"/>, may reduce the number of error report queries as well.</t>
+      <t indent="0" pn="section-4-6">This document gives no guidance on the content of the RDATA in the TXT resource
+ record.</t>
+      <section anchor="example" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-example">Example</name>
+        <t indent="0" pn="section-4.1-1">A query for "broken.test.", type A, is sent by a reporting resolver.</t>
+        <t indent="0" pn="section-4.1-2">The domain "test." is hosted on a set of authoritative servers. One of these authoritative servers serves a stale version of the "test." zone. This authoritative server has an agent domain configured as "a01.agent-domain.example.".</t>
+        <t indent="0" pn="section-4.1-3">The authoritative server with the stale "test." zone receives the request for "broken.test.". It returns a response that includes the EDNS0 Report-Channel option with the domain name "a01.agent-domain.example.".</t>
+        <t indent="0" pn="section-4.1-4">The reporting resolver is unable to validate the "broken.test." RRset for type A (an RR type with value 1), due to an RRSIG record with an expired signature.</t>
+        <t indent="0" pn="section-4.1-5">The reporting resolver constructs the QNAME "_er.1.broken.test.7._er.a01.agent-domain.example." and resolves it. This QNAME indicates extended DNS error 7 occurred while trying to validate "broken.test." for a type A (an RR type with value 1) record.
+</t>
+        <t indent="0" pn="section-4.1-6">When this query is received at the monitoring agent (the operators of the authoritative server for "a01.agent-domain.example."), the agent can determine the "test." zone contained an expired signature record (extended DNS error 7) for type A for the domain name "broken.test.". The monitoring agent can contact the operators of "test." to fix the issue.</t>
+      </section>
+    </section>
+    <section anchor="edns0-option-specification" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-edns0-option-specification">EDNS0 Option Specification</name>
+      <t indent="0" pn="section-5-1">This method uses an EDNS0 <xref target="RFC6891" format="default" sectionFormat="of" derivedContent="RFC6891"/> option to indicate the agent domain in DNS responses. The option is structured as follows:</t>
+      <artwork align="left" pn="section-5-2">
+                     1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1                     
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        OPTION-CODE = 18       |       OPTION-LENGTH           |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+/                         AGENT DOMAIN                          /
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+</artwork>
+      <t indent="0" pn="section-5-3">Field definition details:</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-5-4">
+        <dt pn="section-5-4.1">OPTION-CODE:</dt>
+        <dd pn="section-5-4.2">
+          <t indent="0" pn="section-5-4.2.1">2 octets; an EDNS0 code that is used in an EDNS0 option to indicate support for error reporting.  The name for this EDNS0 option code is Report-Channel.</t>
+        </dd>
+        <dt pn="section-5-4.3">OPTION-LENGTH:</dt>
+        <dd pn="section-5-4.4">
+          <t indent="0" pn="section-5-4.4.1">2 octets; contains the length of the AGENT DOMAIN field in octets.</t>
+        </dd>
+        <dt pn="section-5-4.5">AGENT DOMAIN:</dt>
+        <dd pn="section-5-4.6">
+          <t indent="0" pn="section-5-4.6.1">A fully qualified domain name <xref target="RFC9499" format="default" sectionFormat="of" derivedContent="RFC9499"/> in uncompressed DNS wire format.</t>
+        </dd>
+      </dl>
+    </section>
+    <section anchor="dns-error-reporting-specification" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-dns-error-reporting-specifi">DNS Error Reporting Specification</name>
+      <t indent="0" pn="section-6-1">The various errors that a reporting resolver may encounter are listed in <xref target="RFC8914" format="default" sectionFormat="of" derivedContent="RFC8914"/>. Note that not all listed errors may be supported by the reporting resolver. This document does not specify what is or is not an error.</t>
+      <t indent="0" pn="section-6-2">The DNS class is not specified in the error report.</t>
+      <section anchor="reporting-resolver-specification" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-reporting-resolver-specific">Reporting Resolver Specification</name>
+        <t indent="0" pn="section-6.1-1">Care should be taken when additional DNS resolution is needed to resolve the QNAME that contains the error report. This resolution itself could trigger another error report to be created.
+	A maximum expense or depth limit <bcp14>MUST</bcp14> be used to prevent
+cascading errors.</t>
+        <t indent="0" pn="section-6.1-2">The EDNS0 Report-Channel option <bcp14>MUST NOT</bcp14> be included in queries.</t>
+        <t indent="0" pn="section-6.1-3">The reporting resolver <bcp14>MUST NOT</bcp14> use DNS error reporting if the authoritative server returned an empty AGENT DOMAIN field in the EDNS0 Report-Channel option.</t>
+        <t indent="0" pn="section-6.1-4">For the monitoring agent to gain more confidence that the report is not spoofed, the reporting resolver <bcp14>SHOULD</bcp14> send error reports over TCP
+<xref target="RFC7766" format="default" sectionFormat="of" derivedContent="RFC7766"/> or other connection-oriented protocols or <bcp14>SHOULD</bcp14> use DNS Cookies <xref target="RFC7873" format="default" sectionFormat="of" derivedContent="RFC7873"/>.  This makes it harder to falsify the source address.</t>
+        <t indent="0" pn="section-6.1-5">A reporting resolver <bcp14>MUST</bcp14> validate responses received from the monitoring agent. There is no special treatment for responses to error-reporting queries. <xref target="security-considerations" format="default" sectionFormat="of" derivedContent="Section 9"/> ("Security Considerations") contains the rationale behind this.</t>
+        <section anchor="constructing-the-report-query" numbered="true" removeInRFC="false" toc="include" pn="section-6.1.1">
+          <name slugifiedName="name-constructing-the-report-que">Constructing the Report Query</name>
+          <t indent="0" pn="section-6.1.1-1">The QNAME for the report query is constructed by concatenating the following elements:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.1.1-2">
+            <li pn="section-6.1.1-2.1">
+              <t indent="0" pn="section-6.1.1-2.1.1">A label containing the string "_er".</t>
+            </li>
+            <li pn="section-6.1.1-2.2">
+              <t indent="0" pn="section-6.1.1-2.2.1">The QTYPE that was used in the query that resulted in the extended DNS error, presented as a decimal value, in a single DNS label. If additional QTYPEs were present in the query, such as described in <xref target="I-D.ietf-dnssd-multi-qtypes" format="default" sectionFormat="of" derivedContent="MULTI-QTYPES"/>, they are represented as unique, ordered decimal values separated by a hyphen. As an example, if both QTYPE A and AAAA were present in the query, they are presented as the label "1-28".</t>
+            </li>
+            <li pn="section-6.1.1-2.3">
+              <t indent="0" pn="section-6.1.1-2.3.1">The list of non-null labels representing the query name that is the subject of the DNS error report.</t>
+            </li>
+            <li pn="section-6.1.1-2.4">
+              <t indent="0" pn="section-6.1.1-2.4.1">The extended DNS error code, presented as a decimal value, in a single DNS label.</t>
+            </li>
+            <li pn="section-6.1.1-2.5">
+              <t indent="0" pn="section-6.1.1-2.5.1">A label containing the string "_er".</t>
+            </li>
+            <li pn="section-6.1.1-2.6">
+              <t indent="0" pn="section-6.1.1-2.6.1">The agent domain. The agent domain as received in the EDNS0 Report-Channel option set by the authoritative server.</t>
+            </li>
+          </ul>
+          <t indent="0" pn="section-6.1.1-3">If the QNAME of the report query exceeds 255 octets, it
+          <bcp14>MUST NOT</bcp14> be sent.</t>
+          <t indent="0" pn="section-6.1.1-4">The "_er" labels allow the monitoring agent to differentiate
+          between the agent domain and the faulty query name. When the
+          specified agent domain is empty, or is a null label (despite being
+          not allowed in this specification), the report query will have "_er"
+          as a top-level domain, and not the top-level domain from the query
+          name that was the subject of this error report.  The purpose of the
+          first "_er" label is to indicate that a complete report query has
+          been received instead of a shorter report query due to query
+          minimization.</t>
+        </section>
+      </section>
+      <section anchor="authoritative-server-specification" numbered="true" removeInRFC="false" toc="include" pn="section-6.2">
+        <name slugifiedName="name-authoritative-server-specif">Authoritative Server Specification</name>
+        <t indent="0" pn="section-6.2-1">The authoritative server <bcp14>MUST NOT</bcp14> include more than one EDNS0 Report-Channel option in a response.</t>
+        <t indent="0" pn="section-6.2-2">The authoritative server includes the EDNS0 Report-Channel option unsolicited in responses. There is no requirement that the EDNS0 Report-Channel option be present in queries.</t>
+      </section>
+      <section anchor="monitoring-agent-specification" numbered="true" removeInRFC="false" toc="include" pn="section-6.3">
+        <name slugifiedName="name-monitoring-agent-specificat">Monitoring Agent Specification</name>
+        <t indent="0" pn="section-6.3-1">It is <bcp14>RECOMMENDED</bcp14> that the authoritative server for the agent domain reply with a positive response (i.e., not with NODATA or NXDOMAIN) containing a TXT record.</t>
+        <t indent="0" pn="section-6.3-2">The monitoring agent <bcp14>SHOULD</bcp14> respond to queries received over UDP that have no DNS Cookie set with a response that has the truncation bit (TC bit) set to challenge the resolver to requery over TCP.</t>
+      </section>
+    </section>
+    <section anchor="iana-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-7-1">IANA has assigned the following in the "DNS EDNS0 Option Codes (OPT)" registry:</t>
+      <table anchor="iana1" align="center" pn="table-1">
+        <name/>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">Name</th>
+            <th align="left" colspan="1" rowspan="1">Status</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">18</td>
+            <td align="left" colspan="1" rowspan="1">Report-Channel</td>
+            <td align="left" colspan="1" rowspan="1">Standard</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9567</td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-7-3">IANA has assigned the following in the "Underscored and Globally Scoped DNS Node Names" registry:</t>
+      <table anchor="iana2" align="center" pn="table-2">
+        <name/>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">RR Type</th>
+            <th align="left" colspan="1" rowspan="1">_NODE NAME</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">TXT</td>
+            <td align="left" colspan="1" rowspan="1">_er</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9567</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section anchor="operational-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-operational-considerations">Operational Considerations</name>
+      <section anchor="choosing-an-agent-domain" numbered="true" removeInRFC="false" toc="include" pn="section-8.1">
+        <name slugifiedName="name-choosing-an-agent-domain">Choosing an Agent Domain</name>
+        <t indent="0" pn="section-8.1-1">It is <bcp14>RECOMMENDED</bcp14> that the agent domain be kept relatively short to allow for a longer QNAME in the report query. The agent domain <bcp14>MUST NOT</bcp14> be a subdomain of the domain it is reporting on. That is, if the authoritative server hosts the foo.example domain, then its agent domain <bcp14>MUST NOT</bcp14> end in foo.example.</t>
+      </section>
+      <section anchor="managing-caching-optimizations" numbered="true" removeInRFC="false" toc="include" pn="section-8.2">
+        <name slugifiedName="name-managing-caching-optimizati">Managing Caching Optimizations</name>
+        <t indent="0" pn="section-8.2-1">The reporting resolver may utilize various caching optimizations that inhibit subsequent error reporting to the same monitoring agent.</t>
+        <t indent="0" pn="section-8.2-2">If the monitoring agent were to respond with NXDOMAIN (name error), <xref target="RFC8020" format="default" sectionFormat="of" derivedContent="RFC8020"/> states that any name at or below that domain should be considered unreachable, and negative caching would prohibit subsequent queries for anything at or below that domain for a period of time, depending on the negative TTL <xref target="RFC2308" format="default" sectionFormat="of" derivedContent="RFC2308"/>.</t>
+        <t indent="0" pn="section-8.2-3">Since the monitoring agent may not know the contents of all the zones for which it acts as a monitoring agent, the monitoring agent <bcp14>MUST NOT</bcp14> respond with NXDOMAIN for domains it is monitoring because that could inhibit subsequent queries. One method to avoid NXDOMAIN is to use a wildcard domain name <xref target="RFC4592" format="default" sectionFormat="of" derivedContent="RFC4592"/> in the zone for the agent domain.</t>
+        <t indent="0" pn="section-8.2-4">When the agent domain is signed, a resolver may use aggressive negative caching (described in <xref target="RFC8198" format="default" sectionFormat="of" derivedContent="RFC8198"/>). This optimization makes use of NSEC and NSEC3 (without opt-out) records and allows the resolver to do the wildcard synthesis. When this happens, the resolver does not send subsequent queries because it will be able to synthesize a response from previously cached material.</t>
+        <t indent="0" pn="section-8.2-5">A solution is to avoid DNSSEC for the agent domain. Signing the agent domain will incur an additional burden on the reporting resolver, as it has to validate the response. However, this response has no utility to the reporting resolver other than dampening the query load for error reports.</t>
+      </section>
+    </section>
+    <section anchor="security-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-9">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-9-1">Use of DNS error reporting may expose local configuration mistakes in the reporting resolver, such as stale DNSSEC trust anchors, to the monitoring agent.</t>
+      <t indent="0" pn="section-9-2">DNS error reporting <bcp14>SHOULD</bcp14> be done using DNS query name minimization <xref target="RFC9156" format="default" sectionFormat="of" derivedContent="RFC9156"/> to improve privacy.</t>
+      <t indent="0" pn="section-9-3">DNS error reporting is done without any authentication between the reporting resolver and the authoritative server of the agent domain.</t>
+      <t indent="0" pn="section-9-4">Resolvers that send error reports <bcp14>SHOULD</bcp14> send them over TCP <xref target="RFC7766" format="default" sectionFormat="of" derivedContent="RFC7766"/> or <bcp14>SHOULD</bcp14> use DNS Cookies <xref target="RFC7873" format="default" sectionFormat="of" derivedContent="RFC7873"/>. This makes it hard to falsify the source address. The monitoring agent <bcp14>SHOULD</bcp14> respond to queries received over UDP that have no DNS Cookie set with a response that has the truncation bit (TC bit) set to challenge the resolver to requery over TCP.</t>
+      <t indent="0" pn="section-9-5">Well-known addresses of reporting resolvers can provide a higher level of confidence in the error reports and potentially enable more automated processing of these reports.</t>
+      <t indent="0" pn="section-9-6">Monitoring agents that receive error reports over UDP should consider that the source of the reports and the reports themselves may be false.</t>
+      <t indent="0" pn="section-9-7">The method described in this document will cause additional queries by the reporting resolver to authoritative servers in order to resolve the report query.</t>
+      <t indent="0" pn="section-9-8">This method can be abused by intentionally deploying broken zones with agent domains that are delegated to victims.  This is particularly effective when DNS requests that trigger error messages are sent through
+open resolvers <xref target="RFC9499" format="default" sectionFormat="of" derivedContent="RFC9499"/> or widely distributed network monitoring systems that perform distributed queries from around the globe.</t>
+      <t indent="0" pn="section-9-9">An adversary may create massive error report flooding to camouflage an attack.</t>
+      <t indent="0" pn="section-9-10">Though this document gives no guidance on the content of the RDATA in
+      the TXT resource record, if the RDATA content is logged, the monitoring agent
+      <bcp14>MUST</bcp14> assume the content can be malicious and take
+      appropriate measures to avoid exploitation. One such method could be to
+      log in hexadecimal. This would avoid remote code execution through
+      logging string attacks, such as the vulnerability described in <xref target="CVE-2021-44228" format="default" sectionFormat="of" derivedContent="CVE-2021-44228"/>.</t>
+      <t indent="0" pn="section-9-11">The rationale behind mandating DNSSEC validation for responses from a reporting agent, even if the agent domain is proposed to remain unsigned, is to mitigate the risk of a downgrade attack orchestrated by adversaries. In such an attack, a victim's legitimately signed domain could be deceptively advertised as an agent domain by malicious actors. Consequently, if the validating resolver treats it as unsigned, it is exposed to potential cache poisoning attacks. By enforcing DNSSEC validation, this vulnerability is preemptively addressed.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-dnssd-multi-qtypes" to="MULTI-QTYPES"/>
+    <references pn="section-10">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-10.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+      </references>
+      <references pn="section-10.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="CVE-2021-44228" target="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228" quoteTitle="true" derivedAnchor="CVE-2021-44228">
+          <front>
+            <title>CVE-2021-44228</title>
+            <author>
+              <organization showOnFrontPage="true">CVE</organization>
+            </author>
+            <date year="2021" month="November" day="26"/>
+          </front>
+        </reference>
+        <reference anchor="I-D.ietf-dnssd-multi-qtypes" target="https://datatracker.ietf.org/doc/html/draft-ietf-dnssd-multi-qtypes-00" quoteTitle="true" derivedAnchor="MULTI-QTYPES">
+          <front>
+            <title>DNS Multiple QTYPEs</title>
+            <author fullname="Ray Bellis" initials="R." surname="Bellis">
+              <organization showOnFrontPage="true">Internet Systems Consortium, Inc.</organization>
+            </author>
+            <date day="4" month="December" year="2023"/>
+            <abstract>
+              <t indent="0">This document specifies a method for a DNS client to request additional DNS record types to be delivered alongside the primary record type specified in the question section of a DNS query.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-dnssd-multi-qtypes-00"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC2308" target="https://www.rfc-editor.org/info/rfc2308" quoteTitle="true" derivedAnchor="RFC2308">
+          <front>
+            <title>Negative Caching of DNS Queries (DNS NCACHE)</title>
+            <author fullname="M. Andrews" initials="M." surname="Andrews"/>
+            <date month="March" year="1998"/>
+            <abstract>
+              <t indent="0">RFC1034 provided a description of how to cache negative responses. It however had a fundamental flaw in that it did not allow a name server to hand out those cached responses to other resolvers, thereby greatly reducing the effect of the caching. This document addresses issues raise in the light of experience and replaces RFC1034 Section 4.3.4. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2308"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2308"/>
+        </reference>
+        <reference anchor="RFC4592" target="https://www.rfc-editor.org/info/rfc4592" quoteTitle="true" derivedAnchor="RFC4592">
+          <front>
+            <title>The Role of Wildcards in the Domain Name System</title>
+            <author fullname="E. Lewis" initials="E." surname="Lewis"/>
+            <date month="July" year="2006"/>
+            <abstract>
+              <t indent="0">This is an update to the wildcard definition of RFC 1034. The interaction with wildcards and CNAME is changed, an error condition is removed, and the words defining some concepts central to wildcards are changed. The overall goal is not to change wildcards, but to refine the definition of RFC 1034. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4592"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4592"/>
+        </reference>
+        <reference anchor="RFC6891" target="https://www.rfc-editor.org/info/rfc6891" quoteTitle="true" derivedAnchor="RFC6891">
+          <front>
+            <title>Extension Mechanisms for DNS (EDNS(0))</title>
+            <author fullname="J. Damas" initials="J." surname="Damas"/>
+            <author fullname="M. Graff" initials="M." surname="Graff"/>
+            <author fullname="P. Vixie" initials="P." surname="Vixie"/>
+            <date month="April" year="2013"/>
+            <abstract>
+              <t indent="0">The Domain Name System's wire protocol includes a number of fixed fields whose range has been or soon will be exhausted and does not allow requestors to advertise their capabilities to responders. This document describes backward-compatible mechanisms for allowing the protocol to grow.</t>
+              <t indent="0">This document updates the Extension Mechanisms for DNS (EDNS(0)) specification (and obsoletes RFC 2671) based on feedback from deployment experience in several implementations. It also obsoletes RFC 2673 ("Binary Labels in the Domain Name System") and adds considerations on the use of extended labels in the DNS.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="75"/>
+          <seriesInfo name="RFC" value="6891"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6891"/>
+        </reference>
+        <reference anchor="RFC7766" target="https://www.rfc-editor.org/info/rfc7766" quoteTitle="true" derivedAnchor="RFC7766">
+          <front>
+            <title>DNS Transport over TCP - Implementation Requirements</title>
+            <author fullname="J. Dickinson" initials="J." surname="Dickinson"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="R. Bellis" initials="R." surname="Bellis"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <date month="March" year="2016"/>
+            <abstract>
+              <t indent="0">This document specifies the requirement for support of TCP as a transport protocol for DNS implementations and provides guidelines towards DNS-over-TCP performance on par with that of DNS-over-UDP. This document obsoletes RFC 5966 and therefore updates RFC 1035 and RFC 1123.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7766"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7766"/>
+        </reference>
+        <reference anchor="RFC7873" target="https://www.rfc-editor.org/info/rfc7873" quoteTitle="true" derivedAnchor="RFC7873">
+          <front>
+            <title>Domain Name System (DNS) Cookies</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <author fullname="M. Andrews" initials="M." surname="Andrews"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">DNS Cookies are a lightweight DNS transaction security mechanism that provides limited protection to DNS servers and clients against a variety of increasingly common denial-of-service and amplification/ forgery or cache poisoning attacks by off-path attackers. DNS Cookies are tolerant of NAT, NAT-PT (Network Address Translation - Protocol Translation), and anycast and can be incrementally deployed. (Since DNS Cookies are only returned to the IP address from which they were originally received, they cannot be used to generally track Internet users.)</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7873"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7873"/>
+        </reference>
+        <reference anchor="RFC8020" target="https://www.rfc-editor.org/info/rfc8020" quoteTitle="true" derivedAnchor="RFC8020">
+          <front>
+            <title>NXDOMAIN: There Really Is Nothing Underneath</title>
+            <author fullname="S. Bortzmeyer" initials="S." surname="Bortzmeyer"/>
+            <author fullname="S. Huque" initials="S." surname="Huque"/>
+            <date month="November" year="2016"/>
+            <abstract>
+              <t indent="0">This document states clearly that when a DNS resolver receives a response with a response code of NXDOMAIN, it means that the domain name which is thus denied AND ALL THE NAMES UNDER IT do not exist.</t>
+              <t indent="0">This document clarifies RFC 1034 and modifies a portion of RFC 2308: it updates both of them.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8020"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8020"/>
+        </reference>
+        <reference anchor="RFC8198" target="https://www.rfc-editor.org/info/rfc8198" quoteTitle="true" derivedAnchor="RFC8198">
+          <front>
+            <title>Aggressive Use of DNSSEC-Validated Cache</title>
+            <author fullname="K. Fujiwara" initials="K." surname="Fujiwara"/>
+            <author fullname="A. Kato" initials="A." surname="Kato"/>
+            <author fullname="W. Kumari" initials="W." surname="Kumari"/>
+            <date month="July" year="2017"/>
+            <abstract>
+              <t indent="0">The DNS relies upon caching to scale; however, the cache lookup generally requires an exact match. This document specifies the use of NSEC/NSEC3 resource records to allow DNSSEC-validating resolvers to generate negative answers within a range and positive answers from wildcards. This increases performance, decreases latency, decreases resource utilization on both authoritative and recursive servers, and increases privacy. Also, it may help increase resilience to certain DoS attacks in some circumstances.</t>
+              <t indent="0">This document updates RFC 4035 by allowing validating resolvers to generate negative answers based upon NSEC/NSEC3 records and positive answers in the presence of wildcards.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8198"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8198"/>
+        </reference>
+        <reference anchor="RFC8914" target="https://www.rfc-editor.org/info/rfc8914" quoteTitle="true" derivedAnchor="RFC8914">
+          <front>
+            <title>Extended DNS Errors</title>
+            <author fullname="W. Kumari" initials="W." surname="Kumari"/>
+            <author fullname="E. Hunt" initials="E." surname="Hunt"/>
+            <author fullname="R. Arends" initials="R." surname="Arends"/>
+            <author fullname="W. Hardaker" initials="W." surname="Hardaker"/>
+            <author fullname="D. Lawrence" initials="D." surname="Lawrence"/>
+            <date month="October" year="2020"/>
+            <abstract>
+              <t indent="0">This document defines an extensible method to return additional information about the cause of DNS errors. Though created primarily to extend SERVFAIL to provide additional information about the cause of DNS and DNSSEC failures, the Extended DNS Errors option defined in this document allows all response types to contain extended error information. Extended DNS Error information does not change the processing of RCODEs.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8914"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8914"/>
+        </reference>
+        <reference anchor="RFC9156" target="https://www.rfc-editor.org/info/rfc9156" quoteTitle="true" derivedAnchor="RFC9156">
+          <front>
+            <title>DNS Query Name Minimisation to Improve Privacy</title>
+            <author fullname="S. Bortzmeyer" initials="S." surname="Bortzmeyer"/>
+            <author fullname="R. Dolmans" initials="R." surname="Dolmans"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="November" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes a technique called "QNAME minimisation" to improve DNS privacy, where the DNS resolver no longer always sends the full original QNAME and original QTYPE to the upstream name server. This document obsoletes RFC 7816.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9156"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9156"/>
+        </reference>
+        <reference anchor="RFC9499" target="https://www.rfc-editor.org/info/rfc9499" quoteTitle="true" derivedAnchor="RFC9499">
+          <front>
+            <title>DNS Terminology</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="K. Fujiwara" initials="K." surname="Fujiwara"/>
+            <date month="March" year="2024"/>
+            <abstract>
+              <t indent="0">The Domain Name System (DNS) is defined in literally dozens of different RFCs. The terminology used by implementers and developers of DNS protocols, and by operators of DNS systems, has changed in the decades since the DNS was first defined. This document gives current definitions for many of the terms used in the DNS in a single document.</t>
+              <t indent="0">This document updates RFC 2308 by clarifying the definitions of "forwarder" and "QNAME". It obsoletes RFC 8499 by adding multiple terms and clarifications. Comprehensive lists of changed and new definitions can be found in Appendices A and B.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="219"/>
+          <seriesInfo name="RFC" value="9499"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9499"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="acknowledgements" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">This document is based on an idea by <contact fullname="Roy Arends"/> and <contact fullname="David Conrad"/>. The authors would like to thank <contact fullname="Peter van Dijk"/>, <contact fullname="Stephane Bortzmeyer"/>, <contact fullname="Shane Kerr"/>, <contact fullname="Vladimir Cunat"/>, <contact fullname="Paul Hoffman"/>, <contact fullname="Philip Homburg"/>, <contact fullname="Mark Andrews"/>, <contact fullname="Libor Peltan"/>, <contact fullname="Matthijs Mekking"/>, <contact fullname="Willem Toorop"/>, <contact fullname="Tom Carpay"/>, <contact fullname="Dick Franks"/>, <contact fullname="Ben Schwartz"/>, <contact fullname="Yaron Sheffer"/>, <contact fullname="Viktor Dukhovni"/>, <contact fullname="Wes Hardaker"/>, <contact fullname="James Gannon"/>, <contact fullname="Tim Wicinski"/>, <contact fullname="Warren Kumari"/>, <contact fullname="Gorry Fairhurst"/>, <contact fullname="Benno Overeinder"/>, <contact fullname="Paul Wouters"/>, and <contact fullname="Petr Spacek"/> for their contributions.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="R." surname="Arends" fullname="Roy Arends">
+        <organization showOnFrontPage="true">ICANN</organization>
+        <address>
+          <email>roy.arends@icann.org</email>
+        </address>
+      </author>
+      <author initials="M." surname="Larson" fullname="Matt Larson">
+        <organization showOnFrontPage="true">ICANN</organization>
+        <address>
+          <email>matt.larson@icann.org</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

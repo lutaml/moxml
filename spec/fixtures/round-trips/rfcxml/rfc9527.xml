@@ -1,0 +1,763 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-homenet-naming-architecture-dhc-options-24" number="9527" submissionType="IETF" category="std" consensus="true" obsoletes="" updates="" xml:lang="en" tocInclude="true" sortRefs="true" symRefs="true" prepTime="2024-01-28T21:13:00" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-homenet-naming-architecture-dhc-options-24" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9527" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="DHCPv6 Options for the HNA">DHCPv6 Options for the Homenet Naming Authority</title>
+    <seriesInfo name="RFC" value="9527" stream="IETF"/>
+    <author initials="D." surname="Migault" fullname="Daniel Migault">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <street>8275 Trans Canada Route</street>
+          <city>Saint Laurent</city>
+          <region>QC</region>
+          <code>4S 0B6</code>
+          <country>Canada</country>
+        </postal>
+        <email>daniel.migault@ericsson.com</email>
+      </address>
+    </author>
+    <author initials="R." surname="Weber" fullname="Ralf Weber">
+      <organization showOnFrontPage="true">Akamai</organization>
+      <address>
+        <email>ralf.weber@akamai.com</email>
+      </address>
+    </author>
+    <author initials="T." surname="Mrugalski" fullname="Tomek Mrugalski">
+      <organization abbrev="ISC" showOnFrontPage="true">Internet Systems Consortium, Inc.</organization>
+      <address>
+        <postal>
+          <street>PO Box 360</street>
+          <city>Newmarket</city>
+          <region>NH</region>
+          <code>03857</code>
+          <country>United States of America</country>
+        </postal>
+        <email>tomasz.mrugalski@gmail.com</email>
+      </address>
+    </author>
+    <date month="01" year="2024"/>
+    <area>int</area>
+    <workgroup>homenet</workgroup>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document defines DHCPv6 options so that a Homenet Naming Authority (HNA) can automatically set the appropriate configuration and outsource the authoritative naming service for the home network.
+In most cases, the outsourcing mechanism is transparent for the end user.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9527" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-procedure-overview">Procedure Overview</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv6-options">DHCPv6 Options</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-registered-homenet-domain-o">Registered Homenet Domain Option</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-forward-distribution-manage">Forward Distribution Manager Option</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reverse-distribution-manage">Reverse Distribution Manager Server Option</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.4">
+                <t indent="0" pn="section-toc.1-1.4.2.4.1"><xref derivedContent="4.4" format="counter" sectionFormat="of" target="section-4.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-supported-transport">Supported Transport</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv6-behavior">DHCPv6 Behavior</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv6-server-behavior">DHCPv6 Server Behavior</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv6-client-behavior">DHCPv6 Client Behavior</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.3">
+                <t indent="0" pn="section-toc.1-1.5.2.3.1"><xref derivedContent="5.3" format="counter" sectionFormat="of" target="section-5.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv6-relay-agent-behavior">DHCPv6 Relay Agent Behavior</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv6-option-codes">DHCPv6 Option Codes</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-supported-transport-paramet">Supported Transport Parameter</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-scenarios-and-impact-on-the">Scenarios and Impact on the End User</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="A.1" format="counter" sectionFormat="of" target="section-appendix.a.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-base-scenario">Base Scenario</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="A.2" format="counter" sectionFormat="of" target="section-appendix.a.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-third-party-registered-home">Third-Party Registered Homenet Domain</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.3">
+                <t indent="0" pn="section-toc.1-1.9.2.3.1"><xref derivedContent="A.3" format="counter" sectionFormat="of" target="section-appendix.a.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-third-party-dns-infrastruct">Third-Party DNS Infrastructure</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.4">
+                <t indent="0" pn="section-toc.1-1.9.2.4.1"><xref derivedContent="A.4" format="counter" sectionFormat="of" target="section-appendix.a.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-multiple-isps">Multiple ISPs</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.5">
+                <t indent="0" pn="section-toc.1-1.9.2.5.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a.5"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.6">
+                <t indent="0" pn="section-toc.1-1.9.2.6.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a.6"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1"><xref target="RFC9526" format="default" sectionFormat="of" derivedContent="RFC9526"/> specifies how an entity designated as the Homenet Naming Authority (HNA) outsources a Public Homenet Zone to a DNS Outsourcing Infrastructure (DOI).</t>
+      <t indent="0" pn="section-1-2">This document describes how a network can provision the HNA with a specific DOI.
+This could be particularly useful for a DOI partly managed by an ISP or to make home networks resilient to HNA replacement. The ISP delegates an IP prefix and the associated reverse zone to the home network.
+The ISP is thus aware of the owner of that IP prefix and, as such, becomes a natural candidate for hosting the Homenet Reverse Zone -- that is, the Reverse Distribution Manager (RDM) and potentially the Reverse Public Authoritative Servers.</t>
+      <t indent="0" pn="section-1-3">In addition, ISPs often identify the line of the home network with a name. 
+Such name is used for their internal network management operations and is not a name the home network owner has registered to. ISPs may leverage such infrastructure and provide the home network with a specific domain name designated per a Registered Homenet Domain <xref target="RFC9526" format="default" sectionFormat="of" derivedContent="RFC9526"/>.
+Similarly to the reverse zone, ISPs are aware of who owns that domain name and may become a natural candidate for hosting the Homenet Zone -- that is, the Distribution Manager (DM) and the Public Authoritative Servers.</t>
+      <t indent="0" pn="section-1-4">This document describes DHCPv6 options that enable an ISP to provide the necessary parameters to the HNA to proceed. More specifically, the ISP provides the Registered Homenet Domain and the necessary information on the DM and the RDM so the HNA can manage and upload the Public Homenet Zone and the Reverse Public Homenet Zone as described in <xref target="RFC9526" format="default" sectionFormat="of" derivedContent="RFC9526"/>.</t>
+      <t indent="0" pn="section-1-5">The use of DHCPv6 options may make the configuration completely transparent to the end user and provides a similar level of trust as the one used to provide the IP prefix, when provisioned via DHCP.</t>
+    </section>
+    <section anchor="terminology" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <t indent="0" pn="section-2-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+"<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they
+appear in all capitals, as shown here.</t>
+      <t indent="0" pn="section-2-2">The reader should be familiar with <xref target="RFC9526" format="default" sectionFormat="of" derivedContent="RFC9526"/>.</t>
+    </section>
+    <section anchor="sec-overview" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-procedure-overview">Procedure Overview</name>
+      <t indent="0" pn="section-3-1">This section illustrates how an HNA receives the necessary information via DHCPv6 options to outsource its authoritative naming service to the DOI. For the sake of simplicity, and similarly to <xref target="RFC9526" format="default" sectionFormat="of" derivedContent="RFC9526"/>, this section assumes that the HNA and the home network DHCPv6 client are colocated on the  Customer Premises Equipment (CPE) router <xref target="RFC7368" format="default" sectionFormat="of" derivedContent="RFC7368"/>. Also, note that this is not mandatory, and the DHCPv6 client may remotely instruct the HNA with a protocol that will be standardized in the future.
+In addition, this section assumes that the responsible entity for the DHCPv6 server is provisioned with the DM and RDM information, which is associated with the requested Registered Homenet Domain.
+This means a Registered Homenet Domain can be associated with the DHCPv6 client.</t>
+      <t indent="0" pn="section-3-2">This scenario is believed to be the most popular scenario. 
+This document does not ignore scenarios where the DHCPv6 server does not have privileged relations with the DM or RDM.
+These cases are discussed in <xref target="sec-scenario" format="default" sectionFormat="of" derivedContent="Appendix A"/>.
+Such scenarios do not necessarily require configuration for the end user and can also be zero configuration.</t>
+      <t indent="0" pn="section-3-3">The scenario considered in this section is as follows:</t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-3-4">
+	<li pn="section-3-4.1" derivedCounter="1.">The HNA is willing to outsource the Public Homenet Zone or Homenet Reverse Zone. 
+The DHCPv6 client is configured to include in its Option Request Option (ORO) the Registered Homenet Domain Option (OPTION_REGISTERED_DOMAIN), the Forward Distribution Manager Option (OPTION_FORWARD_DIST_MANAGER), and the Reverse Distribution Manager Option (OPTION_REVERSE_DIST_MANAGER) option codes.</li>
+        <li pn="section-3-4.2" derivedCounter="2.">The DHCPv6 server responds to the DHCPv6 client with the requested DHCPv6 options based on the identified homenet. The DHCPv6 client passes the information to the HNA.</li>
+        <li pn="section-3-4.3" derivedCounter="3.">The HNA is authenticated (see "Securing the Control Channel" (Section <xref target="RFC9526" sectionFormat="bare" section="6.6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9526#section-6.6" derivedContent="RFC9526"/>) of <xref target="RFC9526" sectionFormat="bare" format="default" derivedContent="RFC9526"/>) by the DM and the RDM. The HNA builds the Homenet Zone (or the Homenet Reverse Zone) and proceeds as described in <xref target="RFC9526" format="default" sectionFormat="of" derivedContent="RFC9526"/>. The DHCPv6 options provide the necessary non-optional parameters described in Appendix B of <xref target="RFC9526" format="default" sectionFormat="of" derivedContent="RFC9526"/>.
+The HNA may complement the configurations with additional parameters via means not yet defined.
+Appendix B of <xref target="RFC9526" format="default" sectionFormat="of" derivedContent="RFC9526"/> describes such parameters that may take some specific non-default value.</li>
+      </ol>
+    </section>
+    <section anchor="sec-format" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-dhcpv6-options">DHCPv6 Options</name>
+      <t indent="0" pn="section-4-1">This section details the payload of the DHCPv6 options following the guidelines of <xref target="RFC7227" format="default" sectionFormat="of" derivedContent="RFC7227"/>.</t>
+      <section anchor="o_rd" numbered="true" toc="include" removeInRFC="false" pn="section-4.1">
+        <name slugifiedName="name-registered-homenet-domain-o">Registered Homenet Domain Option</name>
+        <t indent="0" pn="section-4.1-1">The Registered Domain Option (OPTION_REGISTERED_DOMAIN) indicates the fully qualified domain name (FQDN) associated with the home network.</t>
+        <figure anchor="fig-rhd" align="left" suppress-title="false" pn="figure-1">
+          <name slugifiedName="name-registered-domain-option">Registered Domain Option</name>
+          <artwork name="" type="" align="left" alt="" pn="section-4.1-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   OPTION_REGISTERED_DOMAIN    |         option-len            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+/                   Registered Homenet Domain                   /
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <dl spacing="normal" indent="3" newline="false" pn="section-4.1-3">
+          <dt pn="section-4.1-3.1">option-code (16 bits):</dt>
+          <dd pn="section-4.1-3.2">OPTION_REGISTERED_DOMAIN; the option code for the Registered Homenet Domain (145).</dd>
+          <dt pn="section-4.1-3.3">option-len (16 bits):</dt>
+          <dd pn="section-4.1-3.4">Length in octets of the Registered Homenet Domain field as described in <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/>.</dd>
+          <dt pn="section-4.1-3.5">Registered Homenet Domain (variable):</dt>
+          <dd pn="section-4.1-3.6">The FQDN registered for the homenet encoded as described in <xref target="RFC8415" sectionFormat="of" section="10" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-10" derivedContent="RFC8415"/>.</dd>
+        </dl>
+      </section>
+      <section anchor="o_dm" numbered="true" toc="include" removeInRFC="false" pn="section-4.2">
+        <name slugifiedName="name-forward-distribution-manage">Forward Distribution Manager Option</name>
+        <t indent="0" pn="section-4.2-1">The Forward Distribution Manager Option (OPTION_FORWARD_DIST_MANAGER) provides the HNA with the FQDN of the DM as well as the transport protocols for the communication between the HNA and the DM.
+As opposed to IP addresses, the FQDN requires a DNS resolution before establishing the communication between the HNA and the DM. However, the use of an FQDN provides multiple advantages over IP addresses. Firstly, it makes the DHCPv6 option easier to parse and smaller, especially when IPv4 and IPv6 addresses are expected to be provided. Then, the FQDN can reasonably be seen as a more stable identifier than IP addresses as well as a pointer to additional information that may be useful, in the future, to establish the communication between the HNA and the DM.</t>
+        <figure anchor="fig-dm" align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-forward-distribution-manager">Forward Distribution Manager Option</name>
+          <artwork name="" type="" align="left" alt="" pn="section-4.2-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  OPTION_FORWARD_DIST_MANAGER  |          option-len           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Supported Transport       |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
+|                                                               |
+/                  Distribution Manager FQDN                    /
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <dl spacing="normal" indent="3" newline="false" pn="section-4.2-3">
+          <dt pn="section-4.2-3.1">option-code (16 bits):</dt>
+          <dd pn="section-4.2-3.2">OPTION_FORWARD_DIST_MANAGER; the option code for the Forward Distribution Manager Option (146).</dd>
+          <dt pn="section-4.2-3.3">option-len (16 bits):</dt>
+          <dd pn="section-4.2-3.4">Length in octets of the enclosed data as described in <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/>.</dd>
+          <dt pn="section-4.2-3.5">Supported Transport (16 bits):</dt>
+          <dd pn="section-4.2-3.6">Defines the Supported Transport by the DM (see <xref target="sec-st" format="default" sectionFormat="of" derivedContent="Section 4.4"/>).
+Each bit represents a supported transport, and a DM <bcp14>MAY</bcp14> indicate the support of multiple modes.
+The bit for DNS over mutually authenticated TLS (DomTLS) <bcp14>MUST</bcp14> be set.</dd>
+          <dt pn="section-4.2-3.7">Distribution Manager FQDN (variable):</dt>
+          <dd pn="section-4.2-3.8">The FQDN of the DM encoded as described in <xref target="RFC8415" sectionFormat="of" section="10" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-10" derivedContent="RFC8415"/>.</dd>
+        </dl>
+        <t indent="0" pn="section-4.2-4">It is worth noting that the DHCPv6 option specifies the Supported Transport without specifying any explicit port. Unless the HNA and the DM have agreed on using a specific port -- for example, by configuration, or any out-of-band mechanism -- the default port is used and must be specified. The specification of such default port may be defined in the specification of the designated Supported Transport or in any other document. In the case of DomTLS, the default port value is 853 per DNS over TLS <xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/> and DNS Zone Transfer over TLS <xref target="RFC9103" format="default" sectionFormat="of" derivedContent="RFC9103"/>.</t>
+        <t indent="0" pn="section-4.2-5">The need to associate the port value to each Supported Transport in the DHCPv6 option has been balanced with the difficulty of handling a list of tuples (transport, port) and the possibility of using a dedicated IP address for the DM in case the default port is already in use.</t>
+      </section>
+      <section anchor="reverse-distribution-manager-server-option" numbered="true" toc="include" removeInRFC="false" pn="section-4.3">
+        <name slugifiedName="name-reverse-distribution-manage">Reverse Distribution Manager Server Option</name>
+        <t indent="0" pn="section-4.3-1">The Reverse Distribution Manager Option (OPTION_REVERSE_DIST_MANAGER) provides the HNA with the FQDN of the DM as well as the transport protocols for the communication between the HNA and the DM.</t>
+        <figure anchor="fig-rdm" align="left" suppress-title="false" pn="figure-3">
+          <name slugifiedName="name-reverse-distribution-manager">Reverse Distribution Manager Option</name>
+          <artwork name="" type="" align="left" alt="" pn="section-4.3-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| OPTION_REVERSE_DIST_MANAGER   |          option-len           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Supported Transport       |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
+|                                                               |
+/              Reverse Distribution Manager FQDN                /
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <dl spacing="normal" indent="3" newline="false" pn="section-4.3-3">
+          <dt pn="section-4.3-3.1">option-code (16 bits):</dt>
+          <dd pn="section-4.3-3.2">OPTION_REVERSE_DIST_MANAGER; the option code for the Reverse Distribution Manager Option (147).</dd>
+          <dt pn="section-4.3-3.3">option-len (16 bits):</dt>
+          <dd pn="section-4.3-3.4">Length in octets of the option-data field as described in <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/>.</dd>
+          <dt pn="section-4.3-3.5">Supported Transport (16 bits):</dt>
+          <dd pn="section-4.3-3.6">Defines the Supported Transport by the RDM (see <xref target="sec-st" format="default" sectionFormat="of" derivedContent="Section 4.4"/>). Each bit represents a supported transport, and an RDM <bcp14>MAY</bcp14> indicate the support of multiple modes.
+	  The bit for DomTLS <xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/> <bcp14>MUST</bcp14> be set.</dd>
+          <dt pn="section-4.3-3.7">Reverse Distribution Manager FQDN (variable):</dt>
+          <dd pn="section-4.3-3.8">The FQDN of the RDM encoded as described in <xref target="RFC8415" sectionFormat="of" section="10" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-10" derivedContent="RFC8415"/>.</dd>
+        </dl>
+        <t indent="0" pn="section-4.3-4">For the port number associated to the Supported Transport, the same considerations as described in <xref target="o_dm" format="default" sectionFormat="of" derivedContent="Section 4.2"/> apply.</t>
+      </section>
+      <section anchor="sec-st" numbered="true" toc="include" removeInRFC="false" pn="section-4.4">
+        <name slugifiedName="name-supported-transport">Supported Transport</name>
+        <t indent="0" pn="section-4.4-1">The Supported Transport field of the DHCPv6 option indicates the Supported Transport protocols. Each bit represents a specific transport mechanism. A bit set to 1 indicates the associated transport protocol is supported. The corresponding bits are assigned as described in <xref target="tab-iana" format="default" sectionFormat="of" derivedContent="Table 2"/>.</t>
+        <dl spacing="normal" indent="3" newline="false" pn="section-4.4-2">
+          <dt pn="section-4.4-2.1"> DNS over mutually authenticated TLS (DomTLS):</dt>
+          <dd pn="section-4.4-2.2"> Indicates the support of DNS over TLS <xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/> and DNS Zone Transfer over TLS <xref target="RFC9103" format="default" sectionFormat="of" derivedContent="RFC9103"/> as described in <xref target="RFC9526" format="default" sectionFormat="of" derivedContent="RFC9526"/>.</dd>
+        </dl>
+        <t indent="0" pn="section-4.4-3">As an example, the Supported Transport field expressing support for
+DomTLS looks as follows and has a numeric value of 0x0001:</t>
+        <artwork name="" type="" align="left" alt="" pn="section-4.4-4">
+ 0                   1
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        must be zero         |1|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  </artwork>
+      </section>
+    </section>
+    <section anchor="sec-dhcp-behavior" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-dhcpv6-behavior">DHCPv6 Behavior</name>
+      <section anchor="dhcpv6-server-behavior" numbered="true" toc="include" removeInRFC="false" pn="section-5.1">
+        <name slugifiedName="name-dhcpv6-server-behavior">DHCPv6 Server Behavior</name>
+        <t indent="0" pn="section-5.1-1"><xref target="RFC8415" sectionFormat="of" section="18.3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-18.3" derivedContent="RFC8415"/> governs server operation regarding option assignment. As a convenience to the reader, we mention here that the server will send option foo only if configured with specific values for foo and if the client requested it.
+In particular, when configured, the DHCPv6 server sends the Registered Homenet Domain Option, Distribution Manager Option, and Reverse Distribution Manager Option when requested by the DHCPv6 client by including necessary option codes in its ORO.</t>
+      </section>
+      <section anchor="dhcpv6-client-behavior" numbered="true" toc="include" removeInRFC="false" pn="section-5.2">
+        <name slugifiedName="name-dhcpv6-client-behavior">DHCPv6 Client Behavior</name>
+        <t indent="0" pn="section-5.2-1">The DHCPv6 client includes the Registered Homenet Domain Option, Distribution Manager Option, and Reverse Distribution Manager Option in an ORO as specified in Sections <xref target="RFC8415" sectionFormat="bare" section="18.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-18.2" derivedContent="RFC8415"/> and <xref target="RFC8415" sectionFormat="bare" section="21.7" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-21.7" derivedContent="RFC8415"/> of <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/>.</t>
+        <t indent="0" pn="section-5.2-2">Upon receiving a DHCPv6 option, as described in this document, in the Reply
+message, the HNA <bcp14>SHOULD</bcp14> proceed as described in <xref target="RFC9526" format="default" sectionFormat="of" derivedContent="RFC9526"/>.</t>
+      </section>
+      <section anchor="sec-dhcp-relay" numbered="true" toc="include" removeInRFC="false" pn="section-5.3">
+        <name slugifiedName="name-dhcpv6-relay-agent-behavior">DHCPv6 Relay Agent Behavior</name>
+        <t indent="0" pn="section-5.3-1">There are no additional requirements for the DHCPv6 Relay agents.</t>
+      </section>
+    </section>
+    <section anchor="sec-iana" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section anchor="dhcpv6-option-codes" numbered="true" toc="include" removeInRFC="false" pn="section-6.1">
+        <name slugifiedName="name-dhcpv6-option-codes">DHCPv6 Option Codes</name>
+        <t indent="0" pn="section-6.1-1">IANA has assigned the following new DHCPv6 Option Codes in the "Option Codes" registry maintained at <eref target="https://www.iana.org/assignments/dhcpv6-parameters" brackets="angle"/>.</t>
+        <table anchor="tab-2" align="center" pn="table-1">
+          <name slugifiedName="name-option-codes-registry">Option Codes Registry</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Client ORO</th>
+              <th align="left" colspan="1" rowspan="1">Singleton Option</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">145</td>
+              <td align="left" colspan="1" rowspan="1">OPTION_REGISTERED_DOMAIN</td>
+              <td align="left" colspan="1" rowspan="1">Yes</td>
+              <td align="left" colspan="1" rowspan="1">No</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9527, Section 4.1</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">146</td>
+              <td align="left" colspan="1" rowspan="1">OPTION_FORWARD_DIST_MANAGER</td>
+              <td align="left" colspan="1" rowspan="1">Yes</td>
+              <td align="left" colspan="1" rowspan="1">Yes</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9527, Section 4.2</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">147</td>
+              <td align="left" colspan="1" rowspan="1">OPTION_REVERSE_DIST_MANAGER</td>
+              <td align="left" colspan="1" rowspan="1">Yes</td>
+              <td align="left" colspan="1" rowspan="1">Yes</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9527, Section 4.3</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="supported-transport-parameter" numbered="true" toc="include" removeInRFC="false" pn="section-6.2">
+        <name slugifiedName="name-supported-transport-paramet">Supported Transport Parameter</name>
+        <t indent="0" pn="section-6.2-1">IANA has created and maintains a new registry called "Supported Transport" under the "Dynamic Host Configuration Protocol for IPv6 (DHCPv6)" registry at <eref target="https://www.iana.org/assignments/dhcpv6-parameters" brackets="angle"/>. This registry contains Supported Transport parameters in the Distributed Manager Option (OPTION_FORWARD_DIST_MANAGER) or the Reverse Distribution Manager Option (OPTION_REVERSE_DIST_MANAGER). The different parameters are defined in <xref target="tab-iana" format="default" sectionFormat="of" derivedContent="Table 2"/> (<xref target="supported-transport-parameter" format="default" sectionFormat="of" derivedContent="Section 6.2"/>).</t>
+        <t indent="0" pn="section-6.2-2">The Supported Transport field of the DHCPv6 option is a two-octet field that indicates the Supported Transport protocols. Each bit represents a specific transport mechanism.</t>
+        <t indent="0" pn="section-6.2-3">New entries <bcp14>MUST</bcp14> specify the bit position, the transport protocol description, a mnemonic, and a reference as shown in <xref target="tab-iana" format="default" sectionFormat="of" derivedContent="Table 2"/>.</t>
+        <t indent="0" pn="section-6.2-4">Changes to the format or policies of the registry are managed by the IETF via the IESG.</t>
+        <t indent="0" pn="section-6.2-5">Future code points are assigned under RFC Required per <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>. The initial registry is as specified in <xref target="tab-iana" format="default" sectionFormat="of" derivedContent="Table 2"/> below.</t>
+        <table anchor="tab-iana" align="center" pn="table-2">
+          <name slugifiedName="name-supported-transport-registr">Supported Transport Registry</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Bit Position (least to most significant)</th>
+              <th align="left" colspan="1" rowspan="1">Transport Protocol Description</th>
+              <th align="left" colspan="1" rowspan="1">Mnemonic</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">0</td>
+              <td align="left" colspan="1" rowspan="1">DNS over mutually authenticated TLS</td>
+              <td align="left" colspan="1" rowspan="1">DomTLS</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9527</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1-15</td>
+              <td align="left" colspan="1" rowspan="1">Unassigned</td>
+              <td align="left" colspan="1" rowspan="1"/>
+              <td align="left" colspan="1" rowspan="1"/>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+    <section anchor="security-considerations" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-7-1">The security considerations in <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/> are to be considered.
+The trust associated with the information carried by the DHCPv6 options described in this document is similar to the one associated with the IP prefix, when configured via DHCPv6.</t>
+      <t indent="0" pn="section-7-2">In some cases, the ISP <bcp14>MAY</bcp14> identify the HNA by its wire line (i.e., physically), which may not require relying on TLS to authenticate the HNA. As the use of TLS is mandatory, it is expected that the HNA will be provisioned with a certificate. 
+In some cases, the HNA may use a self-signed certificate.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.andrews-dnsop-pd-reverse" to="PD-REVERSE"/>
+    <displayreference target="I-D.sury-dnsop-cname-plus-dname" to="CNAME-PLUS-DNAME"/>
+    <references pn="section-8">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-8.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC7858" target="https://www.rfc-editor.org/info/rfc7858" quoteTitle="true" derivedAnchor="RFC7858">
+          <front>
+            <title>Specification for DNS over Transport Layer Security (TLS)</title>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <author fullname="L. Zhu" initials="L." surname="Zhu"/>
+            <author fullname="J. Heidemann" initials="J." surname="Heidemann"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This document describes the use of Transport Layer Security (TLS) to provide privacy for DNS. Encryption provided by TLS eliminates opportunities for eavesdropping and on-path tampering with DNS queries in the network, such as discussed in RFC 7626. In addition, this document specifies two usage profiles for DNS over TLS and provides advice on performance considerations to minimize overhead from using TCP and TLS with DNS.</t>
+              <t indent="0">This document focuses on securing stub-to-recursive traffic, as per the charter of the DPRIVE Working Group. It does not prevent future applications of the protocol to recursive-to-authoritative traffic.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7858"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7858"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8415" target="https://www.rfc-editor.org/info/rfc8415" quoteTitle="true" derivedAnchor="RFC8415">
+          <front>
+            <title>Dynamic Host Configuration Protocol for IPv6 (DHCPv6)</title>
+            <author fullname="T. Mrugalski" initials="T." surname="Mrugalski"/>
+            <author fullname="M. Siodelski" initials="M." surname="Siodelski"/>
+            <author fullname="B. Volz" initials="B." surname="Volz"/>
+            <author fullname="A. Yourtchenko" initials="A." surname="Yourtchenko"/>
+            <author fullname="M. Richardson" initials="M." surname="Richardson"/>
+            <author fullname="S. Jiang" initials="S." surname="Jiang"/>
+            <author fullname="T. Lemon" initials="T." surname="Lemon"/>
+            <author fullname="T. Winters" initials="T." surname="Winters"/>
+            <date month="November" year="2018"/>
+            <abstract>
+              <t indent="0">This document describes the Dynamic Host Configuration Protocol for IPv6 (DHCPv6): an extensible mechanism for configuring nodes with network configuration parameters, IP addresses, and prefixes. Parameters can be provided statelessly, or in combination with stateful assignment of one or more IPv6 addresses and/or IPv6 prefixes. DHCPv6 can operate either in place of or in addition to stateless address autoconfiguration (SLAAC).</t>
+              <t indent="0">This document updates the text from RFC 3315 (the original DHCPv6 specification) and incorporates prefix delegation (RFC 3633), stateless DHCPv6 (RFC 3736), an option to specify an upper bound for how long a client should wait before refreshing information (RFC 4242), a mechanism for throttling DHCPv6 clients when DHCPv6 service is not available (RFC 7083), and relay agent handling of unknown messages (RFC 7283). In addition, this document clarifies the interactions between models of operation (RFC 7550). As such, this document obsoletes RFC 3315, RFC 3633, RFC 3736, RFC 4242, RFC 7083, RFC 7283, and RFC 7550.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8415"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8415"/>
+        </reference>
+        <reference anchor="RFC9103" target="https://www.rfc-editor.org/info/rfc9103" quoteTitle="true" derivedAnchor="RFC9103">
+          <front>
+            <title>DNS Zone Transfer over TLS</title>
+            <author fullname="W. Toorop" initials="W." surname="Toorop"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="S. Sahib" initials="S." surname="Sahib"/>
+            <author fullname="P. Aras" initials="P." surname="Aras"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <date month="August" year="2021"/>
+            <abstract>
+              <t indent="0">DNS zone transfers are transmitted in cleartext, which gives attackers the opportunity to collect the content of a zone by eavesdropping on network connections. The DNS Transaction Signature (TSIG) mechanism is specified to restrict direct zone transfer to authorized clients only, but it does not add confidentiality. This document specifies the use of TLS, rather than cleartext, to prevent zone content collection via passive monitoring of zone transfers: XFR over TLS (XoT). Additionally, this specification updates RFC 1995 and RFC 5936 with respect to efficient use of TCP connections and RFC 7766 with respect to the recommended number of connections between a client and server for each transport.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9103"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9103"/>
+        </reference>
+        <reference anchor="RFC9526" target="https://www.rfc-editor.org/info/rfc9526" quoteTitle="true" derivedAnchor="RFC9526">
+          <front>
+            <title>Simple Provisioning of Public Names for Residential Networks</title>
+            <author initials="D" surname="Migault" fullname="Daniel Migault">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="R" surname="Weber" fullname="Ralf Weber">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="M" surname="Richardson" fullname="Michael Richardson">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="R" surname="Hunter" fullname="Ray Hunter">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2024" month="January"/>
+          </front>
+          <seriesInfo name="RFC" value="9526"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9526"/>
+        </reference>
+      </references>
+      <references pn="section-8.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.sury-dnsop-cname-plus-dname" target="https://datatracker.ietf.org/doc/html/draft-sury-dnsop-cname-plus-dname-01" quoteTitle="true" derivedAnchor="CNAME-PLUS-DNAME">
+          <front>
+            <title>CNAME+DNAME Name Redirection</title>
+            <author initials="O." surname="Surý" fullname="Ondřej Surý">
+              <organization showOnFrontPage="true">Internet Systems Consortium</organization>
+            </author>
+            <date month="July" day="15" year="2018"/>
+            <abstract>
+              <t indent="0">   This document updates RFC1034 to allow coexistence of the CNAME
+   Resource Record with DNAME Resource Record at the same owner node,
+   which provides redirection for a sub-tree of the domain name tree in
+   the DNS system, in a parent zone.  By allowing this cooexistence, DNS
+   system will have a way how to create a sub-tree redirection together
+   that includes the Resource Records owner name.  This would allow
+   parent zones to create full domain aliases.
+
+              </t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-sury-dnsop-cname-plus-dname-01"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="I-D.andrews-dnsop-pd-reverse" target="https://datatracker.ietf.org/doc/html/draft-andrews-dnsop-pd-reverse-02" quoteTitle="true" derivedAnchor="PD-REVERSE">
+          <front>
+            <title>Automated Delegation of IP6.ARPA reverse zones with Prefix Delegation</title>
+            <author fullname="Mark P. Andrews" initials="M." surname="Andrews">
+              <organization showOnFrontPage="true">ISC</organization>
+            </author>
+            <date day="5" month="November" year="2013"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-andrews-dnsop-pd-reverse-02"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC1034" target="https://www.rfc-editor.org/info/rfc1034" quoteTitle="true" derivedAnchor="RFC1034">
+          <front>
+            <title>Domain names - concepts and facilities</title>
+            <author fullname="P. Mockapetris" initials="P." surname="Mockapetris"/>
+            <date month="November" year="1987"/>
+            <abstract>
+              <t indent="0">This RFC is the revised basic definition of The Domain Name System. It obsoletes RFC-882. This memo describes the domain style names and their used for host address look up and electronic mail forwarding. It discusses the clients and servers in the domain name system and the protocol used between them.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="13"/>
+          <seriesInfo name="RFC" value="1034"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1034"/>
+        </reference>
+        <reference anchor="RFC2181" target="https://www.rfc-editor.org/info/rfc2181" quoteTitle="true" derivedAnchor="RFC2181">
+          <front>
+            <title>Clarifications to the DNS Specification</title>
+            <author fullname="R. Elz" initials="R." surname="Elz"/>
+            <author fullname="R. Bush" initials="R." surname="Bush"/>
+            <date month="July" year="1997"/>
+            <abstract>
+              <t indent="0">This document considers some areas that have been identified as problems with the specification of the Domain Name System, and proposes remedies for the defects identified. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2181"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2181"/>
+        </reference>
+        <reference anchor="RFC6672" target="https://www.rfc-editor.org/info/rfc6672" quoteTitle="true" derivedAnchor="RFC6672">
+          <front>
+            <title>DNAME Redirection in the DNS</title>
+            <author fullname="S. Rose" initials="S." surname="Rose"/>
+            <author fullname="W. Wijngaards" initials="W." surname="Wijngaards"/>
+            <date month="June" year="2012"/>
+            <abstract>
+              <t indent="0">The DNAME record provides redirection for a subtree of the domain name tree in the DNS. That is, all names that end with a particular suffix are redirected to another part of the DNS. This document obsoletes the original specification in RFC 2672 as well as updates the document on representing IPv6 addresses in DNS (RFC 3363). [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6672"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6672"/>
+        </reference>
+        <reference anchor="RFC7227" target="https://www.rfc-editor.org/info/rfc7227" quoteTitle="true" derivedAnchor="RFC7227">
+          <front>
+            <title>Guidelines for Creating New DHCPv6 Options</title>
+            <author fullname="D. Hankins" initials="D." surname="Hankins"/>
+            <author fullname="T. Mrugalski" initials="T." surname="Mrugalski"/>
+            <author fullname="M. Siodelski" initials="M." surname="Siodelski"/>
+            <author fullname="S. Jiang" initials="S." surname="Jiang"/>
+            <author fullname="S. Krishnan" initials="S." surname="Krishnan"/>
+            <date month="May" year="2014"/>
+            <abstract>
+              <t indent="0">This document provides guidance to prospective DHCPv6 option developers to help them create option formats that are easily adoptable by existing DHCPv6 software. It also provides guidelines for expert reviewers to evaluate new registrations. This document updates RFC 3315.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="187"/>
+          <seriesInfo name="RFC" value="7227"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7227"/>
+        </reference>
+        <reference anchor="RFC7368" target="https://www.rfc-editor.org/info/rfc7368" quoteTitle="true" derivedAnchor="RFC7368">
+          <front>
+            <title>IPv6 Home Networking Architecture Principles</title>
+            <author fullname="T. Chown" initials="T." role="editor" surname="Chown"/>
+            <author fullname="J. Arkko" initials="J." surname="Arkko"/>
+            <author fullname="A. Brandt" initials="A." surname="Brandt"/>
+            <author fullname="O. Troan" initials="O." surname="Troan"/>
+            <author fullname="J. Weil" initials="J." surname="Weil"/>
+            <date month="October" year="2014"/>
+            <abstract>
+              <t indent="0">This text describes evolving networking technology within residential home networks with increasing numbers of devices and a trend towards increased internal routing. The goal of this document is to define a general architecture for IPv6-based home networking, describing the associated principles, considerations, and requirements. The text briefly highlights specific implications of the introduction of IPv6 for home networking, discusses the elements of the architecture, and suggests how standard IPv6 mechanisms and addressing can be employed in home networking. The architecture describes the need for specific protocol extensions for certain additional functionality. It is assumed that the IPv6 home network is not actively managed and runs as an IPv6-only or dual-stack network. There are no recommendations in this text for the IPv4 part of the network.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7368"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7368"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="sec-scenario" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-scenarios-and-impact-on-the">Scenarios and Impact on the End User</name>
+      <t indent="0" pn="section-appendix.a-1">This appendix details various scenarios and discusses their impact on the end user.
+This appendix is not normative and limits the description of a limited scope of scenarios that are assumed to be representative. Many other scenarios may be derived from these.</t>
+      <section anchor="sec-scenario-1" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.1">
+        <name slugifiedName="name-base-scenario">Base Scenario</name>
+        <t indent="0" pn="section-appendix.a.1-1">The base scenario, as described in <xref target="sec-overview" format="default" sectionFormat="of" derivedContent="Section 3"/>, is one in which an ISP manages the DHCPv6 server, DM, and RDM.</t>
+        <t indent="0" pn="section-appendix.a.1-2">The end user subscribes to the ISP (foo), and at subscription time, it registers foo.example as its Registered Homenet Domain.</t>
+        <t indent="0" pn="section-appendix.a.1-3">In this scenario, the DHCPv6 server, DM, and RDM are managed by the ISP, so the DHCPv6 server and such can provide authentication credentials of the HNA to enable secure authenticated transaction with the DM and the Reverse DM.</t>
+        <t indent="0" pn="section-appendix.a.1-4">The main advantage of this scenario is that the naming architecture is configured automatically and transparently for the end user. The drawbacks are that the end user uses a Registered Homenet Domain managed by the ISP and that it relies on the ISP naming infrastructure.</t>
+      </section>
+      <section anchor="scenario-2" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.2">
+        <name slugifiedName="name-third-party-registered-home">Third-Party Registered Homenet Domain</name>
+        <t indent="0" pn="section-appendix.a.2-1">This appendix considers the case where the end user wants its home network to use example.com but does not want it to be managed by the ISP (foo) as a Registered Homenet Domain, and the ISP manages the home network and still provides foo.example as a Registered Homenet Domain.</t>
+        <t indent="0" pn="section-appendix.a.2-2">When the end user buys the domain name example.com, it may request to redirect example.com to foo.example using static redirection with CNAME <xref target="RFC1034" format="default" sectionFormat="of" derivedContent="RFC1034"/> <xref target="RFC2181" format="default" sectionFormat="of" derivedContent="RFC2181"/>, DNAME <xref target="RFC6672" format="default" sectionFormat="of" derivedContent="RFC6672"/>, or CNAME+DNAME <xref target="I-D.sury-dnsop-cname-plus-dname" format="default" sectionFormat="of" derivedContent="CNAME-PLUS-DNAME"/>.
+The only information the end user needs to know is the domain name assigned by the ISP. Once the redirection has been configured, the HNA may be changed, and the zone can be updated as described in <xref target="sec-scenario-1" format="default" sectionFormat="of" derivedContent="Appendix A.1"/> without any additional configuration from the end user.</t>
+        <t indent="0" pn="section-appendix.a.2-3">The main advantage of this scenario is that the end user benefits from the zero configuration of the base scenario in <xref target="sec-scenario-1" format="default" sectionFormat="of" derivedContent="Appendix A.1"/>. Then, the end user is able to register an unlimited number of domain names provided by an unlimited number of different third-party providers for its home network. The drawback of this scenario may be that the end user still needs to rely on the ISP naming infrastructure. Note that this may be inconvenient in the case where the DNS servers provided by the ISPs result in high latency.</t>
+      </section>
+      <section anchor="scenario-3" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.3">
+        <name slugifiedName="name-third-party-dns-infrastruct">Third-Party DNS Infrastructure</name>
+        <t indent="0" pn="section-appendix.a.3-1">This scenario involves the end user using example.com as a Registered Homenet Domain and not relying on the authoritative servers provided by the ISP.</t>
+        <t indent="0" pn="section-appendix.a.3-2">In this appendix, we limit the outsourcing of the DM and Public Authoritative Server(s) to a third party. The Reverse Public Authoritative Server(s) and the RDM remain managed by the ISP as the IP prefix is managed by the ISP.</t>
+        <t indent="0" pn="section-appendix.a.3-3">Outsourcing to a third-party DM can be performed in the following ways:</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-appendix.a.3-4">	  
+	  <li pn="section-appendix.a.3-4.1" derivedCounter="1.">Updating the DHCPv6 server information. One can imagine a GUI interface that enables the end user to modify its profile parameters. Again, this configuration update only needs to be performed one time.</li>
+          <li pn="section-appendix.a.3-4.2" derivedCounter="2.">Uploading the configuration of the DM to the HNA. In some cases, the provider of the CPE router hosting the HNA may be the registrar, and the registrar may provide the CPE router already configured. In other cases, the CPE router may request the end user to log into the registrar to validate the ownership of the Registered Homenet Domain and agree on the necessary credentials to secure the communication between the HNA and the DM. As described in <xref target="RFC9526" format="default" sectionFormat="of" derivedContent="RFC9526"/>, such settings could be performed in an almost automatic way as to limit the necessary interactions with the end user.</li>
+        </ol>
+      </section>
+      <section anchor="scenario-4" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.4">
+        <name slugifiedName="name-multiple-isps">Multiple ISPs</name>
+        <t indent="0" pn="section-appendix.a.4-1">This scenario involves an HNA connected to multiple ISPs.</t>
+        <t indent="0" pn="section-appendix.a.4-2">Suppose the HNA has configured each of its interfaces independently with each ISP as described in <xref target="sec-scenario-1" format="default" sectionFormat="of" derivedContent="Appendix A.1"/>.
+Each ISP provides a different Registered Homenet Domain.</t>
+        <t indent="0" pn="section-appendix.a.4-3">The protocol and DHCPv6 options described in this document are fully compatible with an HNA connected to multiple ISPs with multiple Registered Homenet Domains.
+However, the HNA should be able to handle different Registered Homenet Domains.
+This is an implementation issue, which is outside the scope of this document.</t>
+        <t indent="0" pn="section-appendix.a.4-4">If an HNA is not able to handle multiple Registered Homenet Domains, the HNA may remain connected to multiple ISPs with a single Registered Homenet Domain. In this case, one entity is chosen to host the Registered Homenet Domain. This entity may be an ISP or a third party.
+Note that having multiple ISPs can be motivation for bandwidth aggregation or connectivity failover.
+In the case of connectivity failover, the failover concerns the access network, and a failure of the access network may not impact the core network where the DM and Public Authoritative Primaries are hosted. In that sense, choosing one of the ISPs even in a scenario of multiple ISPs may make sense.
+However, for the sake of simplicity, this scenario assumes that a third party has been chosen to host the Registered Homenet Domain. Configuration is performed as described in Appendices <xref target="scenario-2" format="counter" sectionFormat="of" derivedContent="A.2"/> and <xref target="scenario-3" format="counter" sectionFormat="of" derivedContent="A.3"/>.</t>
+        <t indent="0" pn="section-appendix.a.4-5">With the configuration described in <xref target="scenario-2" format="default" sectionFormat="of" derivedContent="Appendix A.2"/>, the HNA is expected to be able to handle multiple Registered Homenet Domains as the third-party redirect to one of the ISP's servers. With the configuration described in <xref target="scenario-3" format="default" sectionFormat="of" derivedContent="Appendix A.3"/>, DNS zones are hosted and maintained by the third party. A single DNS(SEC) Homenet Zone is built and maintained by the HNA. This latter configuration is likely to match most HNA implementations.</t>
+        <t indent="0" pn="section-appendix.a.4-6">The protocol and DHCPv6 options described in this document are fully compatible with an HNA connected to multiple ISPs. Whether to configure the HNA or not, and how to configure the HNA, depends on the HNA facilities. Appendices <xref target="sec-scenario-1" format="counter" sectionFormat="of" derivedContent="A.1"/> and <xref target="scenario-2" format="counter" sectionFormat="of" derivedContent="A.2"/> require the HNA to handle multiple Registered Homenet Domains, whereas <xref target="scenario-3" format="default" sectionFormat="of" derivedContent="Appendix A.3"/> does not have such a requirement.</t>
+      </section>
+      <section anchor="acknowledgments" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a.5">
+        <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+        <t indent="0" pn="section-appendix.a.5-1">We would like to thank <contact fullname="Marcin Siodelski"/>, <contact fullname="Bernie Volz"/>, and <contact fullname="Ted Lemon"/> for their comments on the design of the DHCPv6 options. We would also like to thank <contact fullname="Mark Andrews"/>, <contact fullname="Andrew Sullivan"/>, and <contact fullname="Lorenzo Colliti"/> for their remarks on the architecture design. The designed solution has been largely inspired by <contact fullname="Mark Andrews's"/> document <xref target="I-D.andrews-dnsop-pd-reverse" format="default" sectionFormat="of" derivedContent="PD-REVERSE"/> as well as discussions with <contact fullname="Mark"/>. We also thank <contact fullname="Ray Hunter"/> and <contact fullname="Michael Richardson"/> for their reviews and comments and for suggesting appropriate terminology.</t>
+      </section>
+      <section anchor="contributors" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a.6">
+        <name slugifiedName="name-contributors">Contributors</name>
+        <t indent="0" pn="section-appendix.a.6-1">The coauthors would like to thank <contact fullname="Chris Griffiths"/> and <contact fullname="Wouter Cloetens"/> for providing significant contributions to the early draft versions of this document.</t>
+      </section>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="D." surname="Migault" fullname="Daniel Migault">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <street>8275 Trans Canada Route</street>
+            <city>Saint Laurent</city>
+            <region>QC</region>
+            <code>4S 0B6</code>
+            <country>Canada</country>
+          </postal>
+          <email>daniel.migault@ericsson.com</email>
+        </address>
+      </author>
+      <author initials="R." surname="Weber" fullname="Ralf Weber">
+        <organization showOnFrontPage="true">Akamai</organization>
+        <address>
+          <email>ralf.weber@akamai.com</email>
+        </address>
+      </author>
+      <author initials="T." surname="Mrugalski" fullname="Tomek Mrugalski">
+        <organization abbrev="ISC" showOnFrontPage="true">Internet Systems Consortium, Inc.</organization>
+        <address>
+          <postal>
+            <street>PO Box 360</street>
+            <city>Newmarket</city>
+            <region>NH</region>
+            <code>03857</code>
+            <country>United States of America</country>
+          </postal>
+          <email>tomasz.mrugalski@gmail.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

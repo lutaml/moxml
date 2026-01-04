@@ -1,0 +1,288 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" category="info" number="9564" docName="draft-blanchet-flip-01" ipr="trust200902" obsoletes="" updates="" submissionType="independent" xml:lang="en" symRefs="true" sortRefs="true" prepTime="2024-04-01T10:13:48" indexInclude="true" scripts="Common,Latin" tocDepth="3" tocInclude="true">
+  <link href="https://datatracker.ietf.org/doc/draft-blanchet-flip-01" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9564" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="FLIP">Faster Than Light Speed Protocol (FLIP)</title>
+    <seriesInfo name="RFC" value="9564" stream="independent"/>
+    <author fullname="Marc Blanchet" initials="M" surname="Blanchet">
+      <organization showOnFrontPage="true">Viagenie</organization>
+      <address>
+        <email>marc.blanchet@viagenie.ca</email>
+      </address>
+    </author>
+    <date month="04" year="2024" day="1"/>
+    <keyword>LLM</keyword>
+    <keyword>IP</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">The recent advances in artificial intelligence (AI) such as large language models enable the design of the Faster than LIght speed Protocol (FLIP) for Internet. FLIP provides a way to avoid congestion, enhance security, and deliver faster packets on the Internet by using AI to predict future packets at the receiving peer before they arrive. This document describes the protocol, its various encapsulations, and some operational considerations.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for informational purposes.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This is a contribution to the RFC Series, independently of any
+            other RFC stream.  The RFC Editor has chosen to publish this
+            document at its discretion and makes no statement about its value
+            for implementation or deployment.  Documents approved for
+            publication by the RFC Editor are not candidates for any level of
+            Internet Standard; see Section 2 of RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9564" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-protocol-peer-preparation">Protocol Peer Preparation</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-flip-header">FLIP Header</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-protocol-operation">Protocol Operation</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-versioning">Versioning</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-future-work">Future Work</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-address">Author's Address</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">ChatGPT was introduced to the public on 30 November 2022 <xref target="CHATGPT" format="default" sectionFormat="of" derivedContent="CHATGPT"/>. Since then, large language models (LLMs) have been used for a large variety of applications. It demonstrates the powerful ability to generate precise output based on the input and based on the appropriate training of the LLM. This protocol specification uses this ability to predict future packets before they arrive at the receiving peer, therefore achieving  faster-than-light-speed delivery, hence the protocol name: Faster than LIght speed Protocol (FLIP).</t>
+      <t indent="0" pn="section-1-2">Since FLIP can predict packets, frames, strings, or byte streams, it could be used at any layer of the IP protocol stack. Moreover, with proper training, FLIP can also predict future encrypted packets, as encryption is just strings of bytes. This specification shows FLIP as a Layer 2 shim as well as a transport shim layer. Since FLIP can be used at any layer, it is expected that additional specifications will be created, such as predicting HTTP requests and answers, email content, and more.</t>
+      <t indent="0" pn="section-1-3">Since communications in deep space are unfortunately limited to light speed, and given the very large distances between spacecrafts and Earth, the consequence is very long delays. By offering faster-than-light-speed delivery, FLIP is a key enabler and addition to deep-space IP networking <xref target="I-D.many-deepspace-ip-assessment" format="default" sectionFormat="of" derivedContent="IP-DEEP-SPACE"/>.</t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-protocol-peer-preparation">Protocol Peer Preparation</name>
+      <t indent="0" pn="section-2-1">In order to successfully achieve faster than light speed, the peers of any protocol layer used by FLIP must prepare their side of the connection with the right model trained for the specific case. This document does not dictate any specific LLM, as the implementations may choose the one that best works for their use case and train them accordingly. As with any LLM, it is paramount to use a lot of training data, such as packet captures, in a variety of conditions to produce the best trained model. To avoid security, privacy, and legal issues, the specifics of which LLM is used, how it was trained, and what is the data set used, shall not be published nor disclosed in the protocol.</t>
+      <t indent="0" pn="section-2-2">As an example, an implementation may elect to collect a significant number of Packet Capture (PCAP) files from tcpdump wiretapping at various vantage points on the Internet. The fact that traffic may be encrypted is not an issue, since a well-trained LLM will be able to predict encrypted traffic as accurately as unencrypted traffic.</t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-flip-header">FLIP Header</name>
+      <t indent="0" pn="section-3-1">Wherever FLIP is used (below IP, above IP or other transport, or at the application layer), a FLIP shim header is inserted.</t>
+      <artwork type="ascii-art" name="FLIPheader.txt" align="left" pn="section-3-2">
+   +----------+---------+----------------+----------------+
+   |  Version | Command | Inner Protocol | Optional Data  |
+   +----------+---------+----------------+----------------+
+</artwork>
+      <t indent="0" pn="section-3-3">The header contains the following fields:</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-3-4">
+        <dt pn="section-3-4.1">Version:</dt>
+        <dd pn="section-3-4.2">A field of variable and unspecified length that contains the SHA-256 hash of the model, used as the version, as described in <xref target="versioning" format="default" sectionFormat="of" derivedContent="Section 5"/>.</dd>
+        <dt pn="section-3-4.3">Command:</dt>
+        <dd pn="section-3-4.4">
+          <t indent="0" pn="section-3-4.4.1">The codepoint identifying the operation of this FLIP frame. Commands are described in <xref target="commands" format="default" sectionFormat="of" derivedContent="Section 4"/>. The initial list of valid FLIP commands is below.</t>
+          <t indent="0" pn="section-3-4.4.2">The maximum number size is infinite, given that artificial
+        intelligence peers can support an infinite number of commands, by just
+        updating their models without the need to update their protocol
+        implementation.</t>
+          <table align="center" pn="table-1">
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Command</th>
+                <th align="left" colspan="1" rowspan="1">Codepoint</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">model</td>
+                <td align="left" colspan="1" rowspan="1">0x01</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9564</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">data</td>
+                <td align="left" colspan="1" rowspan="1">0x02</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9564</td>
+              </tr>
+            </tbody>
+          </table>
+        </dd>
+        <dt pn="section-3-4.5">Inner Protocol:</dt>
+        <dd pn="section-3-4.6"> As the FLIP header is a shim header, the inner protocol is specified in this field. For example, for a FLIP shim header inserted between IP and TCP, the IP packet will contain the FLIP codepoint as the transport protocol. The FLIP inner protocol field will then contain the TCP codepoint that would otherwise be in the IP packet.</dd>
+        <dt pn="section-3-4.7">Optional Data:</dt>
+        <dd pn="section-3-4.8"> Some commands have additional data that are following the Command field.</dd>
+      </dl>
+      <t indent="0" pn="section-3-5">The header length is variable and depends on which command is used. Given the use of artificial intelligence by implementations of this protocol, the actual length of the header, and the length of each of its fields, is not specified in the header. Instead, it is expected that the proper neural network on the receiver side will be able to find the actual header termination, thus saving many header bits.</t>
+      <t indent="0" pn="section-3-6">To properly signal the upper layer about the presence of the FLIP
+        header, a specific codepoint is reserved at the layer below FLIP. 
+        <xref target="IANA" format="default" sectionFormat="of" derivedContent="Section 7"/> lists the registrations for IP and transport codepoints for this use.</t>
+    </section>
+    <section anchor="commands" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-protocol-operation">Protocol Operation</name>
+      <t indent="0" pn="section-4-1">Prior to sending a first packet using FLIP, the sender and the receiver should be configured with the appropriate model trained as discussed before. It is left to the implementation to choose the right LLM and the right training data set.</t>
+      <t indent="0" pn="section-4-2">The following commands are defined:</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-4-3">
+        <dt pn="section-4-3.1">Model:</dt>
+        <dd pn="section-4-3.2"> (codepoint 0x01). This command provides a way for peers to send their model in-band of the FLIP protocol. The model itself is carried in the Optional Data field of the FLIP header. Prior to the actual model data, a MIME header is inserted with the proper media type. If the media type for the model does not exist, it should be registered in the IANA Media Type registry.</dd>
+        <dt pn="section-4-3.3">Data:</dt>
+        <dd pn="section-4-3.4"> (codepoint 0x02). This command tells the receiving peer that the data that follows can be predicted and therefore achieves faster-than-light-speed performance.</dd>
+      </dl>
+      <t indent="0" pn="section-4-4">Sending the model in-band to the other peer is an operation that should be done rarely, as models may be large in size. Moreover, it actually discloses the model for any wiretapping adversary. Implementors may consider using a post-quantum cryptographic algorithm that is also immune to AI prediction, therefore a post-Quantum-AI cryptographic algorithm.</t>
+    </section>
+    <section anchor="versioning" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-versioning">Versioning</name>
+      <t indent="0" pn="section-5-1">As described in <xref target="RFC6709" format="default" sectionFormat="of" derivedContent="RFC6709"/>, most protocols should be designed to enable future enhancements, such as providing a way to signal a new version of the protocol. In the case of FLIP, trained models will always be enhanced by new training. A SHA-256 <xref target="RFC6234" format="default" sectionFormat="of" derivedContent="RFC6234"/> hash of the trained model is used as a version number so each peer knows which FLIP version is being used. The SHA-256 hash is put in version field in the FLIP header as described previously. Given that new SHA-256 hashes are not sequential but fully random,  replay attacks of future predictions are prevented.</t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-future-work">Future Work</name>
+      <t indent="0" pn="section-6-1">This new protocol may revolutionize how we design Internet protocols and how we use the Internet. For example, it is envisioned that this protocol may be used for video streaming, augmented reality, virtual reality, and post-quantum cryptography to name a few. By predicting the future packets, all these protocols and applications can benefit the use of FLIP.</t>
+    </section>
+    <section anchor="IANA" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-7-1">For FLIP, codepoints could be registered in the following IANA registries.</t>
+      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-7-2">
+        <li pn="section-7-2.1">Protocol Numbers <xref target="IANA-PN" format="default" sectionFormat="of" derivedContent="IANA-PN"/>: 345, FLIP, Faster than LIght speed Protocol, RFC 9564</li>
+        <li pn="section-7-2.2">
+       Service Name and Transport Protocol Port Number Registry <xref target="IANA-SN" format="default" sectionFormat="of" derivedContent="IANA-SN"/>: FLIP, 68534, udp and tcp, RFC 9564</li>
+      </ul>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-8-1">The ability to predict future packets based on LLMs can be used by adversaries that are listening to the traffic via wiretapping. If they have access to the same model used by the destination peer, they could use it to predict the next packets and then initiate various attacks, including novel ones such as the "futureplay attack." Compared to the typical replay attack, this attack is where the adversary will predict future packets and then send them in advance to the destination. While it may not be obvious at this time, these novel attacks should be investigated before they become a problem. Therefore, further research in this field is suggested.</t>
+      <t indent="0" pn="section-8-2">The ability for a peer to predict future packets enhances the overall security of the Internet because adversaries will not be able to inject bad packets in a connection, as the destination will be able to compare the received bad packet with the calculated prediction and therefore will easily identify and deny any bad packets.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.many-deepspace-ip-assessment" to="IP-DEEP-SPACE"/>
+    <references pn="section-9">
+      <name slugifiedName="name-informative-references">Informative References</name>
+      <reference anchor="CHATGPT" target="https://en.wikipedia.org/w/index.php?title=ChatGPT&amp;oldid=1214732037" quoteTitle="true" derivedAnchor="CHATGPT">
+        <front>
+          <title>ChatGPT</title>
+          <author>
+            <organization showOnFrontPage="true">Wikipedia</organization>
+          </author>
+          <date day="20" month="March" year="2024"/>
+        </front>
+      </reference>
+      <reference anchor="IANA-PN" target="https://www.iana.org/assignments/protocol-numbers/" quoteTitle="true" derivedAnchor="IANA-PN">
+        <front>
+          <title>Protocol Numbers</title>
+          <author>
+            <organization showOnFrontPage="true">IANA</organization>
+          </author>
+        </front>
+      </reference>
+      <reference anchor="IANA-SN" target="https://www.iana.org/assignments/service-names-port-numbers/" quoteTitle="true" derivedAnchor="IANA-SN">
+        <front>
+          <title>Service Name and Transport Protocol Port Number Registry</title>
+          <author>
+            <organization showOnFrontPage="true">IANA</organization>
+          </author>
+        </front>
+      </reference>
+      <reference anchor="I-D.many-deepspace-ip-assessment" target="https://datatracker.ietf.org/doc/html/draft-many-deepspace-ip-assessment-01" quoteTitle="true" derivedAnchor="IP-DEEP-SPACE">
+        <front>
+          <title>Revisiting the Use of the IP Protocol Stack in Deep Space: Assessment and Possible Solutions</title>
+          <author fullname="Marc Blanchet" initials="M." surname="Blanchet">
+            <organization showOnFrontPage="true">Viagenie</organization>
+          </author>
+          <author fullname="Christian Huitema" initials="C." surname="Huitema">
+            <organization showOnFrontPage="true">Private Octopus Inc.</organization>
+          </author>
+          <author fullname="Dean Bogdanović" initials="D." surname="Bogdanović">
+            <organization showOnFrontPage="true">AlefEdge, Inc</organization>
+          </author>
+          <date day="4" month="March" year="2024"/>
+          <abstract>
+            <t indent="0">Deep space communications involve long delays (e.g., Earth to Mars is 4-20 minutes) and intermittent communications, because of orbital dynamics. Up to now, communications have been done on a layer-2 point to point basis, with sometimes the use of relays, therefore no layer-3 networking was possible. RFC4838 reports an assessment done around 25 years ago concluding that the IP protocol stack was not suitable for deep space networking. This result lead to the definition of a new protocol stack based on a store-and-forward paradigm implemented in the Bundle Protocol(BP). More recently, space agencies are planning to deploy IP networks on celestial bodies, such as Moon or Mars, ground, and vicinity. This document revisits the initial assessment of not using IP and provides solution paths to use the IP protocol stack, from IP forwarding to transport to applications to network management, in deep space communications.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="Internet-Draft" value="draft-many-deepspace-ip-assessment-01"/>
+        <refcontent>Work in Progress</refcontent>
+      </reference>
+      <reference anchor="RFC6234" target="https://www.rfc-editor.org/info/rfc6234" quoteTitle="true" derivedAnchor="RFC6234">
+        <front>
+          <title>US Secure Hash Algorithms (SHA and SHA-based HMAC and HKDF)</title>
+          <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+          <author fullname="T. Hansen" initials="T." surname="Hansen"/>
+          <date month="May" year="2011"/>
+          <abstract>
+            <t indent="0">Federal Information Processing Standard, FIPS</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="6234"/>
+        <seriesInfo name="DOI" value="10.17487/RFC6234"/>
+      </reference>
+      <reference anchor="RFC6709" target="https://www.rfc-editor.org/info/rfc6709" quoteTitle="true" derivedAnchor="RFC6709">
+        <front>
+          <title>Design Considerations for Protocol Extensions</title>
+          <author fullname="B. Carpenter" initials="B." surname="Carpenter"/>
+          <author fullname="B. Aboba" initials="B." role="editor" surname="Aboba"/>
+          <author fullname="S. Cheshire" initials="S." surname="Cheshire"/>
+          <date month="September" year="2012"/>
+          <abstract>
+            <t indent="0">This document discusses architectural issues related to the extensibility of Internet protocols, with a focus on design considerations. It is intended to assist designers of both base protocols and extensions. Case studies are included. A companion document, RFC 4775 (BCP 125), discusses procedures relating to the extensibility of IETF protocols. This document is not an Internet Standards Track specification; it is published for informational purposes.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="6709"/>
+        <seriesInfo name="DOI" value="10.17487/RFC6709"/>
+      </reference>
+    </references>
+    <section anchor="Acknowledgements" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">Since this protocol specification is using artificial intelligence and large language models, it was deemed that dumb humans must not review this specification. Instead, the specification has been submitted to multiple LLM chat services and was enhanced by their comments and suggestions, hence acknowledged here. In fact, this specification may have been produced entirely by LLM chat services. Moreover, given the specifications being produced by the IETF relying upon human intelligence, using LLMs to produce specifications should be envisioned. Finally, given the difficulty to find experts for management positions such as in the IESG or IAB, the use of LLMs should be considered to replace those roles. Unfortunately, given privacy, security, and legal considerations, the LLM chat services used for this specification cannot be named here.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-address">Author's Address</name>
+      <author fullname="Marc Blanchet" initials="M" surname="Blanchet">
+        <organization showOnFrontPage="true">Viagenie</organization>
+        <address>
+          <email>marc.blanchet@viagenie.ca</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

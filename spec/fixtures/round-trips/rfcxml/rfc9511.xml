@@ -1,0 +1,598 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-opsec-probe-attribution-09" number="9511" submissionType="IETF" category="info" consensus="true" tocInclude="true" sortRefs="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2023-11-28T18:00:56" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-opsec-probe-attribution-09" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9511" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Attribution of Internet Probes">Attribution of Internet Probes</title>
+    <seriesInfo name="RFC" value="9511" stream="IETF"/>
+    <author initials="É." surname="Vyncke" fullname="Éric Vyncke">
+      <organization showOnFrontPage="true">Cisco</organization>
+      <address>
+        <postal>
+          <street>De Kleetlaan 6A</street>
+          <city>Diegem</city>
+          <code>1831</code>
+          <country>Belgium</country>
+        </postal>
+        <email>evyncke@cisco.com</email>
+      </address>
+    </author>
+    <author initials="B." surname="Donnet" fullname="Benoît Donnet">
+      <organization showOnFrontPage="true">Université de Liège</organization>
+      <address>
+        <postal>
+          <country>Belgium</country>
+        </postal>
+        <email>benoit.donnet@uliege.be</email>
+      </address>
+    </author>
+    <author initials="J." surname="Iurman" fullname="Justin Iurman">
+      <organization showOnFrontPage="true">Université de Liège</organization>
+      <address>
+        <postal>
+          <country>Belgium</country>
+        </postal>
+        <email>justin.iurman@uliege.be</email>
+      </address>
+    </author>
+    <date month="11" year="2023"/>
+    <area>ops</area>
+    <workgroup>opsec</workgroup>
+    <keyword>research</keyword>
+    <keyword>measurement</keyword>
+    <keyword>identification</keyword>
+    <keyword>probing</keyword>
+    <keyword>out-of-band</keyword>
+    <keyword>in-band</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">Active measurements over the public Internet can target either collaborating parties or non-collaborating ones. Sometimes these measurements, also called "probes", are viewed as unwelcome or aggressive.</t>
+      <t indent="0" pn="section-abstract-2">This document suggests some simple techniques for a source to identify its probes. This allows any party or organization to understand what an unsolicited probe packet is, what its purpose is, and, most importantly, who to contact. The technique relies on offline analysis of the probe; therefore, it does not require any change in the data or control plane. It has been designed mainly for layer 3 measurements.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for informational purposes.  
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by the
+            Internet Engineering Steering Group (IESG).  Not all documents
+            approved by the IESG are candidates for any level of Internet
+            Standard; see Section 2 of RFC 7841. 
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9511" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-probe-description">Probe Description</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-probe-description-uri">Probe Description URI</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-probe-description-file">Probe Description File</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2.2.2">
+                  <li pn="section-toc.1-1.2.2.2.2.1">
+                    <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.2.2.1.1"><xref derivedContent="2.2.1" format="counter" sectionFormat="of" target="section-2.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-example">Example</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-out-of-band-probe-attributi">Out-of-Band Probe Attribution</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-in-band-probe-attribution">In-Band Probe Attribution</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-operational-and-technical-c">Operational and Technical Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ethical-considerations">Ethical Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-examples-of-in-band-attribu">Examples of In-Band Attribution</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">Most measurement research (e.g., <xref target="LARGE_SCALE" format="default" sectionFormat="of" derivedContent="LARGE_SCALE"/>, <xref target="RFC7872" format="default" sectionFormat="of" derivedContent="RFC7872"/>, and <xref target="I-D.vyncke-v6ops-james" format="default" sectionFormat="of" derivedContent="JAMES"/>) is about sending IP packets (sometimes with extension headers or layer 4 headers) over the public Internet, and those packets can be destined to either collaborating parties or non-collaborating ones. Such packets are called "probes" in this document.</t>
+      <t indent="0" pn="section-1-2">Sending unsolicited probes should obviously be done at a rate low enough to not unduly impact the other parties' resources. But even at a low rate, those probes could trigger an alarm that will request some investigations by either the party receiving the probe (i.e., when the probe destination address is one address assigned to the receiving party) or a third party having some devices through which those probes are transiting (e.g., an Internet transit router). The investigation will be done offline by using packet captures; therefore, probe attribution does not require any change in the data or control planes.</t>
+      <t indent="0" pn="section-1-3">This document suggests some simple techniques for a source to identify its probes. This allows any party or organization to understand:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1-4">
+        <li pn="section-1-4.1">what an unsolicited probe packet is,</li>
+        <li pn="section-1-4.2">what its purpose is, and</li>
+        <li pn="section-1-4.3">most importantly, who to contact for further information.</li>
+      </ul>
+      <t indent="0" pn="section-1-5">It is expected that only researchers with good intentions will use these techniques, although anyone might use them. This is discussed in <xref target="security" format="default" sectionFormat="of" derivedContent="Section 7"/>.</t>
+      <t indent="0" pn="section-1-6">While the technique could be used to mark measurements done at any layer of the protocol stack, it is mainly designed to work for measurements done at layer 3 (and its associated options or extension headers).</t>
+    </section>
+    <section anchor="probe-description" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-probe-description">Probe Description</name>
+      <t indent="0" pn="section-2-1">This section provides a way for a source to describe (i.e., to identify) its probes.</t>
+      <section anchor="uri" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-probe-description-uri">Probe Description URI</name>
+        <t indent="0" pn="section-2.1-1">This document defines a Probe Description URI as a URI pointing to one of the following:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2.1-2">
+          <li pn="section-2.1-2.1">a Probe Description File (see <xref target="file" format="default" sectionFormat="of" derivedContent="Section 2.2"/>) as defined in <xref target="iana" format="default" sectionFormat="of" derivedContent="Section 8"/>, e.g., "https://example.net/.well-known/probing.txt";</li>
+          <li pn="section-2.1-2.2">an email address, e.g., "mailto:lab@example.net"; or</li>
+          <li pn="section-2.1-2.3">a phone number, e.g., "tel:+1-201-555-0123".</li>
+        </ul>
+      </section>
+      <section anchor="file" numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-probe-description-file">Probe Description File</name>
+        <t indent="0" pn="section-2.2-1">As defined in <xref target="iana" format="default" sectionFormat="of" derivedContent="Section 8"/>, the Probe Description File must be made available at "/.well-known/probing.txt". The Probe Description File must follow the format defined in <xref target="RFC9116" section="4" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9116#section-4" derivedContent="RFC9116"/> and should contain the following fields defined in <xref target="RFC9116" section="2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9116#section-2" derivedContent="RFC9116"/>:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2.2-2">
+          <li pn="section-2.2-2.1">Canonical</li>
+          <li pn="section-2.2-2.2">Contact</li>
+          <li pn="section-2.2-2.3">Expires</li>
+          <li pn="section-2.2-2.4">Preferred-Languages</li>
+        </ul>
+        <t indent="0" pn="section-2.2-3">A new field "Description" should also be included to describe the measurement. To match the format defined in <xref target="RFC9116" section="4" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9116#section-4" derivedContent="RFC9116"/>, this field must be a one-line string with no line break.</t>
+        <section anchor="example" numbered="true" removeInRFC="false" toc="include" pn="section-2.2.1">
+          <name slugifiedName="name-example">Example</name>
+          <artwork align="left" pn="section-2.2.1-1">
+# Canonical URI (if any)
+Canonical: https://example.net/measurement.txt
+
+# Contact address
+Contact: mailto:lab@example.net
+
+# Validity
+Expires: 2023-12-31T18:37:07z
+
+# Languages
+Preferred-Languages: en, es, fr
+
+# Probes description
+Description: This is a one-line string description of the probes.
+</artwork>
+        </section>
+      </section>
+    </section>
+    <section anchor="out-of-band-probe-attribution" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-out-of-band-probe-attributi">Out-of-Band Probe Attribution</name>
+      <t indent="0" pn="section-3-1">A possibility for probe attribution is to build a specific URI based on the source address of the probe packet, following <xref target="RFC8615" format="default" sectionFormat="of" derivedContent="RFC8615"/>. For example, with a probe source address 2001:db8:dead::1, the following URI is built:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3-2">
+        <li pn="section-3-2.1">If the reverse DNS record for 2001:db8:dead::1 exists, e.g., "example.net", then the Probe Description URI is "https://example.net/.well-known/probing.txt". There should be only one reverse DNS record; otherwise, the Probe Description File should also exist for all reverse DNS records and be identical.</li>
+        <li pn="section-3-2.2">Else (or in addition), the Probe Description URI is "https://[2001:db8:dead::1]/.well-known/probing.txt".</li>
+      </ul>
+      <t indent="0" pn="section-3-3">The built URI must be a reference to the Probe Description File (see <xref target="file" format="default" sectionFormat="of" derivedContent="Section 2.2"/>).</t>
+      <t indent="0" pn="section-3-4">As an example, the UK National Cyber Security Centre <xref target="NCSC" format="default" sectionFormat="of" derivedContent="NCSC"/> uses a similar attribution. They scan for vulnerabilities across Internet-connected systems in the UK and publish information on their scanning <xref target="NCSC_SCAN_INFO" format="default" sectionFormat="of" derivedContent="NCSC_SCAN_INFO"/>, providing the address of the web page in reverse DNS.</t>
+    </section>
+    <section anchor="in-band-probe-attribution" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-in-band-probe-attribution">In-Band Probe Attribution</name>
+      <t indent="0" pn="section-4-1">Another possibility for probe attribution is to include a Probe Description URI in the probe itself. Here is a non-exhaustive list of examples:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-2">
+        <li pn="section-4-2.1">For an ICMPv6 echo request <xref target="RFC4443" format="default" sectionFormat="of" derivedContent="RFC4443"/>, include it in the data field.</li>
+        <li pn="section-4-2.2">For an ICMPv4 echo request <xref target="RFC0792" format="default" sectionFormat="of" derivedContent="RFC0792"/>, include it in the data field.</li>
+        <li pn="section-4-2.3">For a UDP datagram <xref target="RFC0768" format="default" sectionFormat="of" derivedContent="RFC0768"/>, include it in the data payload if there is no upper-layer protocol after the transport layer.</li>
+        <li pn="section-4-2.4">For a TCP segment <xref target="RFC9293" format="default" sectionFormat="of" derivedContent="RFC9293"/>, include it in the data payload if there is no upper-layer protocol after the transport layer.</li>
+        <li pn="section-4-2.5">For an IPv6 packet <xref target="RFC8200" format="default" sectionFormat="of" derivedContent="RFC8200"/>, include it in a PadN option inside either a Hop-by-Hop or Destination Options header.</li>
+      </ul>
+      <t indent="0" pn="section-4-3">The Probe Description URI must start at the first octet of the payload and must be terminated by an octet of 0x00, i.e., it must be null terminated. If the Probe Description URI cannot be placed at the beginning of the payload, then it must be preceded by an octet of 0x00. Inserting the Probe Description URI could obviously bias the measurement itself if the probe packet becomes larger than the path MTU. Some examples are given in <xref target="examples" format="default" sectionFormat="of" derivedContent="Appendix A"/>.</t>
+      <t indent="0" pn="section-4-4">Using a magic string (i.e., a unique, special opaque marker) to signal the presence of the Probe Description URI is not recommended as some transit nodes could apply different processing for packets containing this magic string.</t>
+      <t indent="0" pn="section-4-5">For the record, in-band probe attribution was used in <xref target="I-D.vyncke-v6ops-james" format="default" sectionFormat="of" derivedContent="JAMES"/>.</t>
+    </section>
+    <section anchor="operational-and-technical-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-operational-and-technical-c">Operational and Technical Considerations</name>
+      <t indent="0" pn="section-5-1">Using either the out-of-band or in-band technique, or even both combined, highly depends on intent or context. This section describes the upsides and downsides of each technique so that probe owners or probe makers can freely decide what works best for their cases.</t>
+      <t indent="0" pn="section-5-2">The advantages of using the out-of-band technique are that the probing measurement is not impacted by probe attribution and that it is easy to set up, i.e., by running a web server on a probe device to describe the measurements. Unfortunately, there are some disadvantages too. In some cases, using the out-of-band technique might not be possible due to several conditions: the presence of a NAT, too many endpoints to run a web server on, the probe source IP address cannot be known (e.g., RIPE Atlas <xref target="RIPE_ATLAS" format="default" sectionFormat="of" derivedContent="RIPE_ATLAS"/> probes are sent from IP addresses not owned by the probe owner), dynamic source addresses, etc.</t>
+      <t indent="0" pn="section-5-3">The primary advantage of using the in-band technique is that it covers the cases where the out-of-band technique is not feasible (as described above). The primary disadvantage is that it could potentially bias the measurements, since packets with the Probe Description URI might be discarded. For example, data is allowed in TCP segments with the SYN flag <xref target="RFC9293" format="default" sectionFormat="of" derivedContent="RFC9293"/> but may change the way they are processed, i.e., TCP segments with the SYN flag containing the Probe Description URI might be discarded. Another example is the Probe Description URI included in a Hop-by-Hop or Destination Options header inside a PadN option. <xref target="RFC4942" section="2.1.9.5" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4942#section-2.1.9.5" derivedContent="RFC4942"/> (an Informational RFC) suggests that a PadN option should only contain 0s and be smaller than 8 octets, thus limiting its use for probe attribution. If a PadN option does not respect the recommendation, it is suggested that one may consider dropping such packets. For example, since version 3.5, the Linux Kernel follows these
+   recommendations and discards such packets.</t>
+      <t indent="0" pn="section-5-4">Having both the out-of-band and in-band techniques combined also has a big advantage, i.e., it could be used as an indirect means of "authenticating" the Probe Description URI in the in-band probe, thanks to a correlation with the out-of-band technique (e.g., a reverse DNS lookup). While the out-of-band technique alone is less prone to spoofing, the combination with the in-band technique offers a more complete solution.</t>
+    </section>
+    <section anchor="ethical-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-ethical-considerations">Ethical Considerations</name>
+      <t indent="0" pn="section-6-1">Executing measurement experiences over the global Internet obviously requires ethical consideration, which is discussed in <xref target="ANRW_PAPER" format="default" sectionFormat="of" derivedContent="ANRW_PAPER"/>, especially when unsolicited transit or destination parties are involved.</t>
+      <t indent="0" pn="section-6-2">This document proposes a common way to identify the source and the purpose of active probing in order to reduce the potential burden on the unsolicited parties.</t>
+      <t indent="0" pn="section-6-3">But there are other considerations to be taken into account, from the payload content (e.g., is the encoding valid?) to the transmission rate (see also <xref target="IPV6_TOPOLOGY" format="default" sectionFormat="of" derivedContent="IPV6_TOPOLOGY"/> and <xref target="IPV4_TOPOLOGY" format="default" sectionFormat="of" derivedContent="IPV4_TOPOLOGY"/> for some probing speed impacts). Those considerations are out of scope of this document.</t>
+    </section>
+    <section anchor="security" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-7-1">This document proposes simple techniques for probe attribution. It is expected that only ethical researchers would use them, which would simplify and reduce the time to identify probes across the Internet. In fact, these techniques could be used by anyone, malicious or not, which means that the information obtained cannot be blindly trusted. Using these techniques should not mean that a probe can be trusted. Instead, third parties should use this solution to potentially understand the origin and context of such probes. This solution is not perfect, but it provides a way for probe attribution, which is better than no solution at all.</t>
+      <t indent="0" pn="section-7-2">Probe attribution is provided to identify the source and intent of specific probes, but there is no authentication possible for the inline information.  Therefore, a malevolent actor could provide false information while conducting the probes or spoof them so that the action is attributed to a third party. In that case, not only would this third party be wrongly accused, but it might also be exposed to unwanted solicitations (e.g., angry emails or phone calls if the malevolent actor used someone else's email address or phone number). As a consequence, the recipient of this information cannot trust it without confirmation.  If a recipient cannot confirm the information or does not wish to do so, it should treat the flows as if there were no probe attribution. Note that using probe attribution does not create a new DDoS vector since there is no expectation that third parties would automatically confirm the information obtained.</t>
+      <t indent="0" pn="section-7-3">As the Probe Description URI is transmitted in the clear and as the Probe Description File is publicly readable, Personally Identifiable Information (PII) should not be used for an email address and a phone number; a generic or group email address and phone number should be preferred. Also, the Probe Description File could contain malicious data (e.g., links) and therefore should not be blindly trusted.</t>
+    </section>
+    <section anchor="iana" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-8-1">IANA has added the following URI suffix to the "Well-Known URIs" registry in accordance with <xref target="RFC8615" format="default" sectionFormat="of" derivedContent="RFC8615"/>:</t>
+      <dl newline="false" spacing="normal" indent="3" pn="section-8-2">
+        <dt pn="section-8-2.1">URI Suffix:</dt>
+        <dd pn="section-8-2.2">probing.txt</dd>
+        <dt pn="section-8-2.3">Change Controller:</dt>
+        <dd pn="section-8-2.4">IETF</dd>
+        <dt pn="section-8-2.5">Reference:</dt>
+        <dd pn="section-8-2.6">RFC 9511</dd>
+        <dt pn="section-8-2.7">Status:</dt>
+        <dd pn="section-8-2.8">permanent</dd>
+      </dl>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.vyncke-v6ops-james" to="JAMES"/>
+    <references pn="section-9">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-9.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC0768" target="https://www.rfc-editor.org/info/rfc768" quoteTitle="true" derivedAnchor="RFC0768">
+          <front>
+            <title>User Datagram Protocol</title>
+            <author fullname="J. Postel" initials="J." surname="Postel"/>
+            <date month="August" year="1980"/>
+          </front>
+          <seriesInfo name="STD" value="6"/>
+          <seriesInfo name="RFC" value="768"/>
+          <seriesInfo name="DOI" value="10.17487/RFC0768"/>
+        </reference>
+        <reference anchor="RFC0792" target="https://www.rfc-editor.org/info/rfc792" quoteTitle="true" derivedAnchor="RFC0792">
+          <front>
+            <title>Internet Control Message Protocol</title>
+            <author fullname="J. Postel" initials="J." surname="Postel"/>
+            <date month="September" year="1981"/>
+          </front>
+          <seriesInfo name="STD" value="5"/>
+          <seriesInfo name="RFC" value="792"/>
+          <seriesInfo name="DOI" value="10.17487/RFC0792"/>
+        </reference>
+        <reference anchor="RFC4443" target="https://www.rfc-editor.org/info/rfc4443" quoteTitle="true" derivedAnchor="RFC4443">
+          <front>
+            <title>Internet Control Message Protocol (ICMPv6) for the Internet Protocol Version 6 (IPv6) Specification</title>
+            <author fullname="A. Conta" initials="A." surname="Conta"/>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <author fullname="M. Gupta" initials="M." role="editor" surname="Gupta"/>
+            <date month="March" year="2006"/>
+            <abstract>
+              <t indent="0">This document describes the format of a set of control messages used in ICMPv6 (Internet Control Message Protocol). ICMPv6 is the Internet Control Message Protocol for Internet Protocol version 6 (IPv6). [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="89"/>
+          <seriesInfo name="RFC" value="4443"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4443"/>
+        </reference>
+        <reference anchor="RFC8200" target="https://www.rfc-editor.org/info/rfc8200" quoteTitle="true" derivedAnchor="RFC8200">
+          <front>
+            <title>Internet Protocol, Version 6 (IPv6) Specification</title>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <date month="July" year="2017"/>
+            <abstract>
+              <t indent="0">This document specifies version 6 of the Internet Protocol (IPv6). It obsoletes RFC 2460.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="86"/>
+          <seriesInfo name="RFC" value="8200"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8200"/>
+        </reference>
+        <reference anchor="RFC8615" target="https://www.rfc-editor.org/info/rfc8615" quoteTitle="true" derivedAnchor="RFC8615">
+          <front>
+            <title>Well-Known Uniform Resource Identifiers (URIs)</title>
+            <author fullname="M. Nottingham" initials="M." surname="Nottingham"/>
+            <date month="May" year="2019"/>
+            <abstract>
+              <t indent="0">This memo defines a path prefix for "well-known locations", "/.well-known/", in selected Uniform Resource Identifier (URI) schemes.</t>
+              <t indent="0">In doing so, it obsoletes RFC 5785 and updates the URI schemes defined in RFC 7230 to reserve that space. It also updates RFC 7595 to track URI schemes that support well-known URIs in their registry.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8615"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8615"/>
+        </reference>
+        <reference anchor="RFC9116" target="https://www.rfc-editor.org/info/rfc9116" quoteTitle="true" derivedAnchor="RFC9116">
+          <front>
+            <title>A File Format to Aid in Security Vulnerability Disclosure</title>
+            <author fullname="E. Foudil" initials="E." surname="Foudil"/>
+            <author fullname="Y. Shafranovich" initials="Y." surname="Shafranovich"/>
+            <date month="April" year="2022"/>
+            <abstract>
+              <t indent="0">When security vulnerabilities are discovered by researchers, proper reporting channels are often lacking. As a result, vulnerabilities may be left unreported. This document defines a machine-parsable format ("security.txt") to help organizations describe their vulnerability disclosure practices to make it easier for researchers to report vulnerabilities.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9116"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9116"/>
+        </reference>
+        <reference anchor="RFC9293" target="https://www.rfc-editor.org/info/rfc9293" quoteTitle="true" derivedAnchor="RFC9293">
+          <front>
+            <title>Transmission Control Protocol (TCP)</title>
+            <author fullname="W. Eddy" initials="W." role="editor" surname="Eddy"/>
+            <date month="August" year="2022"/>
+            <abstract>
+              <t indent="0">This document specifies the Transmission Control Protocol (TCP). TCP is an important transport-layer protocol in the Internet protocol stack, and it has continuously evolved over decades of use and growth of the Internet. Over this time, a number of changes have been made to TCP as it was specified in RFC 793, though these have only been documented in a piecemeal fashion. This document collects and brings those changes together with the protocol specification from RFC 793. This document obsoletes RFC 793, as well as RFCs 879, 2873, 6093, 6429, 6528, and 6691 that updated parts of RFC 793. It updates RFCs 1011 and 1122, and it should be considered as a replacement for the portions of those documents dealing with TCP requirements. It also updates RFC 5961 by adding a small clarification in reset handling while in the SYN-RECEIVED state. The TCP header control bits from RFC 793 have also been updated based on RFC 3168.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="7"/>
+          <seriesInfo name="RFC" value="9293"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9293"/>
+        </reference>
+      </references>
+      <references pn="section-9.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="ANRW_PAPER" target="https://pure.mpg.de/rest/items/item_3517635/component/file_3517636/content" quoteTitle="true" derivedAnchor="ANRW_PAPER">
+          <front>
+            <title>Crisis, Ethics, Reliability &amp; a measurement.network - Reflections on Active Network Measurements in Academia</title>
+            <author initials="T." surname="Fiebig" fullname="Tobias Fiebig">
+              <organization showOnFrontPage="true">Max-Planck-Institut für Informatik</organization>
+            </author>
+            <date year="2023" month="July"/>
+          </front>
+          <seriesInfo name="DOI" value="10.1145/3606464.3606483"/>
+        </reference>
+        <reference anchor="IPV4_TOPOLOGY" target="http://www.cmand.org/papers/yarrp-imc16.pdf" quoteTitle="true" derivedAnchor="IPV4_TOPOLOGY">
+          <front>
+            <title>Yarrp'ing the Internet: Randomized High-Speed Active Topology Discovery</title>
+            <author initials="R." surname="Beverly" fullname="Robert Beverly">
+              <organization showOnFrontPage="true">Naval Postgraduate School</organization>
+            </author>
+            <date year="2016" month="November"/>
+          </front>
+          <seriesInfo name="DOI" value="10.1145/2987443.2987479"/>
+        </reference>
+        <reference anchor="IPV6_TOPOLOGY" target="http://www.cmand.org/papers/beholder-imc18.pdf" quoteTitle="true" derivedAnchor="IPV6_TOPOLOGY">
+          <front>
+            <title>In the IP of the Beholder: Strategies for Active IPv6 Topology Discovery</title>
+            <author initials="R." surname="Beverly" fullname="Robert Beverly">
+              <organization showOnFrontPage="true">Naval Postgraduate School</organization>
+            </author>
+            <author initials="R." surname="Durairajan" fullname="Ramakrishnan Durairajan">
+              <organization showOnFrontPage="true">University of Oregon</organization>
+            </author>
+            <author initials="D." surname="Plonka" fullname="David Plonka">
+              <organization showOnFrontPage="true">Akamai Technologies</organization>
+            </author>
+            <author initials="J." surname="Rohrer" fullname="Justin P. Rohrer">
+              <organization showOnFrontPage="true">Naval Postgraduate School</organization>
+            </author>
+            <date year="2018" month="October"/>
+          </front>
+          <seriesInfo name="DOI" value="10.1145/3278532.3278559"/>
+        </reference>
+        <reference anchor="I-D.vyncke-v6ops-james" target="https://datatracker.ietf.org/doc/html/draft-vyncke-v6ops-james-03" quoteTitle="true" derivedAnchor="JAMES">
+          <front>
+            <title>Just Another Measurement of Extension header Survivability (JAMES)</title>
+            <author initials="É." surname="Vyncke" fullname="Éric Vyncke">
+</author>
+            <author initials="R." surname="Léas" fullname="Raphaël Léas">
+              <organization showOnFrontPage="true">Université de Liège</organization>
+            </author>
+            <author initials="J." surname="Iurman" fullname="Justin Iurman">
+              <organization showOnFrontPage="true">Université de Liège</organization>
+            </author>
+            <date month="January" day="9" year="2023"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-vyncke-v6ops-james-03"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="LARGE_SCALE" target="https://dl.acm.org/doi/pdf/10.1145/1071690.1064256" quoteTitle="true" derivedAnchor="LARGE_SCALE">
+          <front>
+            <title>Efficient Algorithms for Large-Scale Topology Discovery</title>
+            <seriesInfo name="DOI" value="10.1145/1071690.1064256"/>
+            <author initials="B." surname="Donnet" fullname="Benoît Donnet">
+              <organization showOnFrontPage="true">Université Pierre &amp; Marie Curie Laboratoire LiP6-CNRS</organization>
+            </author>
+            <author initials="P." surname="Raoult" fullname="Philippe Raoult">
+              <organization showOnFrontPage="true">Université Pierre &amp; Marie Curie Laboratoire LiP6-CNRS</organization>
+            </author>
+            <author initials="T." surname="Friedman" fullname="Timur Friedman">
+              <organization showOnFrontPage="true">Université Pierre &amp; Marie Curie Laboratoire LiP6-CNRS</organization>
+            </author>
+            <author initials="M." surname="Crovella" fullname="Mark Crovella">
+              <organization showOnFrontPage="true">Boston University Computer Science Department</organization>
+            </author>
+            <date year="2005" month="June"/>
+          </front>
+          <seriesInfo name="DOI" value="10.1145/1071690.1064256"/>
+        </reference>
+        <reference anchor="NCSC" target="https://www.ncsc.gov.uk/" quoteTitle="true" derivedAnchor="NCSC">
+          <front>
+            <title>The National Cyber Security Centre</title>
+            <author>
+              <organization showOnFrontPage="true">UK NCSC</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="NCSC_SCAN_INFO" target="https://www.ncsc.gov.uk/information/ncsc-scanning-information" quoteTitle="true" derivedAnchor="NCSC_SCAN_INFO">
+          <front>
+            <title>NCSC Scanning information</title>
+            <author>
+              <organization showOnFrontPage="true">UK NCSC</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="RFC4942" target="https://www.rfc-editor.org/info/rfc4942" quoteTitle="true" derivedAnchor="RFC4942">
+          <front>
+            <title>IPv6 Transition/Co-existence Security Considerations</title>
+            <author fullname="E. Davies" initials="E." surname="Davies"/>
+            <author fullname="S. Krishnan" initials="S." surname="Krishnan"/>
+            <author fullname="P. Savola" initials="P." surname="Savola"/>
+            <date month="September" year="2007"/>
+            <abstract>
+              <t indent="0">The transition from a pure IPv4 network to a network where IPv4 and IPv6 coexist brings a number of extra security considerations that need to be taken into account when deploying IPv6 and operating the dual-protocol network and the associated transition mechanisms. This document attempts to give an overview of the various issues grouped into three categories:</t>
+              <t indent="0">o issues due to the IPv6 protocol itself, o issues due to transition mechanisms, and o issues due to IPv6 deployment.</t>
+              <t indent="0">This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4942"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4942"/>
+        </reference>
+        <reference anchor="RFC7872" target="https://www.rfc-editor.org/info/rfc7872" quoteTitle="true" derivedAnchor="RFC7872">
+          <front>
+            <title>Observations on the Dropping of Packets with IPv6 Extension Headers in the Real World</title>
+            <author fullname="F. Gont" initials="F." surname="Gont"/>
+            <author fullname="J. Linkova" initials="J." surname="Linkova"/>
+            <author fullname="T. Chown" initials="T." surname="Chown"/>
+            <author fullname="W. Liu" initials="W." surname="Liu"/>
+            <date month="June" year="2016"/>
+            <abstract>
+              <t indent="0">This document presents real-world data regarding the extent to which packets with IPv6 Extension Headers (EHs) are dropped in the Internet (as originally measured in August 2014 and later in June 2015, with similar results) and where in the network such dropping occurs. The aforementioned results serve as a problem statement that is expected to trigger operational advice on the filtering of IPv6 packets carrying IPv6 EHs so that the situation improves over time. This document also explains how the results were obtained, such that the corresponding measurements can be reproduced by other members of the community and repeated over time to observe changes in the handling of packets with IPv6 EHs.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7872"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7872"/>
+        </reference>
+        <reference anchor="RIPE_ATLAS" target="https://atlas.ripe.net/" quoteTitle="true" derivedAnchor="RIPE_ATLAS">
+          <front>
+            <title>RIPE Atlas</title>
+            <author>
+              <organization showOnFrontPage="true">RIPE Network Coordination Centre (RIPE NCC)</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="SCAPY" target="https://scapy.net/" quoteTitle="true" derivedAnchor="SCAPY">
+          <front>
+            <title>Scapy</title>
+            <author>
+              <organization showOnFrontPage="true"/>
+            </author>
+          </front>
+        </reference>
+      </references>
+    </references>
+    <section anchor="examples" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-examples-of-in-band-attribu">Examples of In-Band Attribution</name>
+      <t indent="0" pn="section-appendix.a-1">Here are several examples generated by <xref target="SCAPY" format="default" sectionFormat="of" derivedContent="SCAPY"/> and displayed in the 'tcpdump' format:</t>
+      <t indent="0" pn="section-appendix.a-2">IP packet with Probe Description URI inside a Destination Options extension header:</t>
+      <artwork align="left" pn="section-appendix.a-3">
+IP6 2001:db8:dead::1 &gt; 2001:db8:beef::1: DSTOPT 60878 &gt; traceroute:
+Flags [S], seq 0, win 8192, length 0
+
+0x0000:  6000 0000 0044 3c40 2001 0db8 dead 0000  `....D&lt;@........
+0x0010:  0000 0000 0000 0001 2001 0db8 beef 0000  ................
+0x0020:  0000 0000 0000 0001 0605 012c 6874 7470  ...........,http
+0x0030:  733a 2f2f 6578 616d 706c 652e 6e65 742f  s://example.net/
+0x0040:  2e77 656c 6c2d 6b6e 6f77 6e2f 7072 6f62  .well-known/prob
+0x0050:  696e 672e 7478 7400 edce 829a 0000 0000  ing.txt.........
+0x0060:  0000 0000 5002 2000 2668 0000            ....P...&amp;h..
+</artwork>
+      <t indent="0" pn="section-appendix.a-4">IP packet with the URI in the data payload of a TCP SYN:</t>
+      <artwork align="left" pn="section-appendix.a-5">      
+IP6 2001:db8:dead::1.15581 &gt; 2001:db8:beef::1.traceroute:
+Flags [S], seq 0:23, win 8192, length 23
+
+0x0000:  6000 0000 002b 0640 2001 0db8 dead 0000  `....+.@........
+0x0010:  0000 0000 0000 0001 2001 0db8 beef 0000  ................
+0x0020:  0000 0000 0000 0001 3cdd 829a 0000 0000  ........&lt;.......
+0x0030:  0000 0000 5002 2000 c9b7 0000 6d61 696c  ....P.......mail
+0x0040:  746f 3a6c 6162 4065 7861 6d70 6c65 2e6e  to:lab@example.n
+0x0050:  6574 00                                  et.
+</artwork>
+      <t indent="0" pn="section-appendix.a-6">IP echo request with another URI in the data part of the ICMP ECHO_REQUEST:</t>
+      <artwork align="left" pn="section-appendix.a-7">      
+IP6 2001:db8:dead::1 &gt; 2001:db8:beef::1: ICMP6, echo request, id 0,
+seq 0, length 28
+
+0x0000:  6000 0000 001c 3a40 2001 0db8 dead 0000  `.....:@........
+0x0010:  0000 0000 0000 0001 2001 0db8 beef 0000  ................
+0x0020:  0000 0000 0000 0001 8000 2996 0000 0000  ..........).....
+0x0030:  7465 6c3a 2b31 2d32 3031 2d35 3535 2d30  tel:+1-201-555-0
+0x0040:  3132 3300                                123.
+</artwork>
+      <t indent="0" pn="section-appendix.a-8">IPv4 echo request with a URI in the data part of the ICMP ECHO_REQUEST:</t>
+      <artwork align="left" pn="section-appendix.a-9">
+IP 192.0.2.1 &gt; 198.51.10.1: ICMP echo request, id 0, seq 0, length 31
+
+0x0000:  4500 0033 0001 0000 4001 8e93 c000 0201  E..3....@.......
+0x0010:  c633 0a01 0800 ea74 0000 0000 6d61 696c  .3d....t....mail
+0x0020:  746f 3a6c 6162 4065 7861 6d70 6c65 2e6e  to:lab@example.n
+0x0030:  6574 00                                  et.
+</artwork>
+    </section>
+    <section anchor="acknowledgments" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.b-1">The authors would like to thank <contact fullname="Alain Fiocco"/>, <contact fullname="Fernando Gont"/>, <contact fullname="Ted Hardie"/>, <contact fullname="Mehdi Kouhen"/>, and <contact fullname="Mark Townsley"/> for helpful discussions as well as <contact fullname="Raphael Leas"/> for an early implementation.</t>
+      <t indent="0" pn="section-appendix.b-2">The authors would also like to gracefully acknowledge useful reviews and comments received from <contact fullname="Warren Kumari"/>, <contact fullname="Jen Linkova"/>, <contact fullname="Mark Nottingham"/>, <contact fullname="Prapanch Ramamoorthy"/>, <contact fullname="Tirumaleswar Reddy.K"/>, <contact fullname="Andrew Shaw"/>, and <contact fullname="Magnus Westerlund"/>.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="É." surname="Vyncke" fullname="Éric Vyncke">
+        <organization showOnFrontPage="true">Cisco</organization>
+        <address>
+          <postal>
+            <street>De Kleetlaan 6A</street>
+            <city>Diegem</city>
+            <code>1831</code>
+            <country>Belgium</country>
+          </postal>
+          <email>evyncke@cisco.com</email>
+        </address>
+      </author>
+      <author initials="B." surname="Donnet" fullname="Benoît Donnet">
+        <organization showOnFrontPage="true">Université de Liège</organization>
+        <address>
+          <postal>
+            <country>Belgium</country>
+          </postal>
+          <email>benoit.donnet@uliege.be</email>
+        </address>
+      </author>
+      <author initials="J." surname="Iurman" fullname="Justin Iurman">
+        <organization showOnFrontPage="true">Université de Liège</organization>
+        <address>
+          <postal>
+            <country>Belgium</country>
+          </postal>
+          <email>justin.iurman@uliege.be</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

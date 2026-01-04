@@ -1,0 +1,763 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-freed-smtp-limits-07" number="9422" submissionType="IETF" category="std" consensus="true" obsoletes="" updates="" xml:lang="en" tocInclude="true" sortRefs="true" symRefs="true" prepTime="2024-02-07T17:00:08" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-freed-smtp-limits-07" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9422" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="LIMITS Extension">The LIMITS SMTP Service Extension</title>
+    <seriesInfo name="RFC" value="9422" stream="IETF"/>
+    <author initials="N." surname="Freed" fullname="Ned Freed">
+      <organization showOnFrontPage="true"/>
+      <address/>
+    </author>
+    <author initials="J." surname="Klensin" fullname="John C. Klensin">
+      <organization showOnFrontPage="true"/>
+      <address>
+        <postal>
+          <street>1770 Massachusetts Ave, Suite 322</street>
+          <city>Cambridge</city>
+          <region>MA</region>
+          <code>02140</code>
+          <country>United States of America</country>
+        </postal>
+        <email>john-ietf@jck.com</email>
+      </address>
+    </author>
+    <date month="02" year="2024"/>
+    <area>ART</area>
+    <keyword>SMTP</keyword>
+    <keyword>LMTP</keyword>
+    <keyword>Message Submission</keyword>
+    <keyword>ESMTP</keyword>
+    <keyword>Extension</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document defines a LIMITS extension for the Simple Mail
+		Transfer Protocol (SMTP), including submission, as well as the
+		Local Mail Transfer Protocol (LMTP). It also defines an associated
+		limit registry. The extension provides the means for an SMTP, submission,
+		or LMTP server to inform the client of limits the server intends to apply
+		to the protocol during the current session. The client is then able to adapt
+		its behavior in order to conform to those limits.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9422" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-limits-smtp-extension">The LIMITS SMTP Extension</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-limits">Limits</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-limit-naming-conventions">Limit Naming Conventions</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-interaction-with-pipelining">Interaction with Pipelining</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.4">
+                <t indent="0" pn="section-toc.1-1.3.2.4.1"><xref derivedContent="3.4" format="counter" sectionFormat="of" target="section-3.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-varying-limits">Varying Limits</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.5">
+                <t indent="0" pn="section-toc.1-1.3.2.5.1"><xref derivedContent="3.5" format="counter" sectionFormat="of" target="section-3.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-interaction-with-smtp-minim">Interaction with SMTP Minimums</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.6">
+                <t indent="0" pn="section-toc.1-1.3.2.6.1"><xref derivedContent="3.6" format="counter" sectionFormat="of" target="section-3.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-multiple-ehlo-commands">Multiple EHLO Commands</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.7">
+                <t indent="0" pn="section-toc.1-1.3.2.7.1"><xref derivedContent="3.7" format="counter" sectionFormat="of" target="section-3.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-syntax-errors-in-the-limits">Syntax Errors in the LIMITS Parameter Value</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.8">
+                <t indent="0" pn="section-toc.1-1.3.2.8.1"><xref derivedContent="3.8" format="counter" sectionFormat="of" target="section-3.8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-caching-of-limit-settings-b">Caching of Limit Settings between Sessions Involving the
+		   Same Client and Server SMTP</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-initial-limits">Initial Limits</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-mailmax-limit">MAILMAX Limit</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rcptmax-limit">RCPTMAX Limit</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rcptdomainmax-limit">RCPTDOMAINMAX Limit</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-example">Example</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-smtp-service-extension-regi">SMTP Service Extension Registry</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-smtp-server-limits-registry">SMTP Server Limits Registry</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="problems" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">The Simple Mail Transfer Protocol  provides the ability to
+		 transfer <xref target="RFC5321" format="default" sectionFormat="of" derivedContent="SMTP"/> or submit
+		 <xref target="RFC6409" format="default" sectionFormat="of" derivedContent="SUBMIT"/> multiple email messages
+         from one host to another, each with one or more recipients,
+		 using a single or multiple connections.</t>
+      <t indent="0" pn="section-1-2">The Local Mail Transfer Protocol
+		 <xref target="RFC2033" format="default" sectionFormat="of" derivedContent="LMTP"/> provides the ability
+		 to deliver messages to a system without its own mail queues. Like
+SMTP, it allows multiple messages with multiple recipients.</t>
+      <t indent="0" pn="section-1-3">In order to conserve resources as well as protect themselves from
+malicious clients, it is necessary for servers to enforce limits
+on various aspects of the protocol, e.g., a limit on the number
+of recipients that can be specified in a single transaction.</t>
+      <t indent="0" pn="section-1-4">Additionally, servers may also wish to alter the limits they
+apply depending on their assessment of the reputation of a particular
+client.</t>
+      <t indent="0" pn="section-1-5">The variability of the limits that may be in effect creates a
+situation where clients may inadvertently exceed a particular server's
+limits, causing servers to respond with temporary (or in some
+cases, permanent) errors. This in turn can lead to delays or even
+failures in message transfer.</t>
+      <t indent="0" pn="section-1-6">The LIMITS extension provides the means for a server
+to inform a client about specific limits in effect for
+a particular SMTP or LMTP session in the EHLO or LHLO command response.
+This information, combined with the
+inherent flexibility of these protocols, makes it possible for clients
+to avoid server errors and the problems they cause.</t>
+      <t indent="0" pn="section-1-7">SMTP and LMTP servers have always been able to announce a limit using
+distinguished syntax in a reply, but this approach requires that the
+client first needs to issue a command.  The mechanism specified here
+avoids the overhead of that approach by announcing limits prior to any
+substantive interaction.</t>
+      <t indent="0" pn="section-1-8">Limits are registered with the IANA. Each registration includes
+the limit name, value syntax, and a description of its semantics.</t>
+    </section>
+    <section anchor="Terminology" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <t indent="0" pn="section-2-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.
+      </t>
+      <t indent="0" pn="section-2-2">This specification uses the Augmented Backus-Naur Form
+			   <xref target="RFC5234" format="default" sectionFormat="of" derivedContent="ABNF"/> notation and
+			   its core rules to define the formal syntax of the LIMITS extension.</t>
+      <t indent="0" pn="section-2-3">This specification makes extensive use of the terminology specified
+and used in <xref target="RFC5321" format="default" sectionFormat="of" derivedContent="SMTP"/>.</t>
+    </section>
+    <section anchor="Extension" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-the-limits-smtp-extension">The LIMITS SMTP Extension</name>
+      <t indent="0" pn="section-3-1">The extension mechanism for SMTP is defined in Section 2.2 of the current
+		 SMTP specification <xref target="RFC5321a" format="default" sectionFormat="of" derivedContent="RFC5321a"/>.
+		 <xref target="RFC2033" format="default" sectionFormat="of" derivedContent="LMTP">LMTP</xref>
+inherits SMTP's extension mechanism.</t>
+      <t indent="0" pn="section-3-2">The name of the extension is LIMITS. Servers implementing this
+extension advertise a LIMITS as a keyword in the response to EHLO
+(LHLO for LMTP). The
+associated parameter is used by the server to communicate one or
+more limits, each with an optional value, to the client. The syntax
+of the parameter is:</t>
+      <sourcecode type="abnf" markers="false" pn="section-3-3">
+  limits-param = limit-name-value 0*[SP limit-name-value]
+  limit-name-value = limit-name ["=" limit-value]
+  limit-name = 1*(ALPHA / DIGIT / "-" / "_")
+  limit-value = 1*(%x21-3A / %x3C-7E) ; Any VCHAR except ";"
+</sourcecode>
+      <t indent="0" pn="section-3-4">This extension introduces no new SMTP commands and does not
+alter any existing command. However, it is possible for a
+LIMITS parameter to be associated with another SMTP extension
+that does these things.</t>
+      <section anchor="limits" numbered="true" toc="include" removeInRFC="false" pn="section-3.1">
+        <name slugifiedName="name-limits">Limits</name>
+        <t indent="0" pn="section-3.1-1">In order to achieve consistent behavior, all limits
+			<bcp14>MUST</bcp14> be
+registered with the IANA, as described below.</t>
+      </section>
+      <section anchor="limit-naming-conventions" numbered="true" toc="include" removeInRFC="false" pn="section-3.2">
+        <name slugifiedName="name-limit-naming-conventions">Limit Naming Conventions</name>
+        <t indent="0" pn="section-3.2-1">Limit names <bcp14>MUST</bcp14> be comprehensible, but also should
+be kept as short as possible. The use of commonly understood
+abbreviations, e.g., "MAX" for "maximum", is encouraged.</t>
+        <t indent="0" pn="section-3.2-2">When a limit is associated with a particular command, its name
+<bcp14>SHOULD</bcp14> begin with the name of that command.</t>
+        <t indent="0" pn="section-3.2-3">Limit names <bcp14>SHOULD</bcp14> end with one or more terms that describe
+the type of limit.</t>
+      </section>
+      <section anchor="interaction-with-pipelining" numbered="true" toc="include" removeInRFC="false" pn="section-3.3">
+        <name slugifiedName="name-interaction-with-pipelining">Interaction with Pipelining</name>
+        <t indent="0" pn="section-3.3-1">The "Pipelining" extension <xref target="RFC2920" format="default" sectionFormat="of" derivedContent="PIPELINING"/> is commonly used 
+to improve performance, especially over high latency
+connections. Pipelining allows an entire transaction
+to be sent without checking responses, and in some cases it may be
+possible to send multiple transactions.</t>
+        <t indent="0" pn="section-3.3-2">The use of pipelining affects the LIMITS extension in an important way: Since
+a pipelining client cannot check intermediate command responses
+without stalling the pipeline, it cannot count the number of
+successful versus failed responses and adjust its behavior accordingly.
+Limit designers need to take this into account.</t>
+        <t indent="0" pn="section-3.3-3">For example, it may seem like it would be better to impose a limit
+on the number of successful RCPT TO commands as opposed to the
+way the RCPTMAX limit is specified in <xref target="RCPTMAX" format="default" sectionFormat="of" derivedContent="Section 4.2"/> below. But
+counting the total number of RCPT TOs is simple, whereas
+counting the number of successful RCPT TO stalls the pipeline.</t>
+      </section>
+      <section anchor="varying-limits" numbered="true" toc="include" removeInRFC="false" pn="section-3.4">
+        <name slugifiedName="name-varying-limits">Varying Limits</name>
+        <t indent="0" pn="section-3.4-1">This extension provides an announcement as part of the reply to
+		   an EHLO command.</t>
+        <t indent="0" pn="section-3.4-2">Some servers vary their limits, as a session
+progresses, based  on their obtaining more information.
+This extension does not attempt to handle in-session limit changes.</t>
+      </section>
+      <section anchor="interaction-with-smtp-minimums" numbered="true" toc="include" removeInRFC="false" pn="section-3.5">
+        <name slugifiedName="name-interaction-with-smtp-minim">Interaction with SMTP Minimums</name>
+        <t indent="0" pn="section-3.5-1">SMTP specifies minimum values for 
+		   various server sizes, limits, and timeouts
+		   <xref format="default" target="RFC5321b" sectionFormat="of" derivedContent="RFC5321b"/>, e.g., servers must
+			accept a minimum of 100 RCPT TO commands
+			<xref target="RFC5321c" format="default" sectionFormat="of" derivedContent="RFC5321c"/>).
+			Unfortunately, the reality is that servers routinely impose smaller
+			limits than what SMTP requires, and when this is done it is especially
+			important for clients to be aware that this is happening.</t>
+        <t indent="0" pn="section-3.5-2">For this reason there is no requirement that the limits
+advertised by this extension comply with the minimums imposed
+by SMTP.</t>
+      </section>
+      <section anchor="multiple-ehlo-commands" numbered="true" toc="include" removeInRFC="false" pn="section-3.6">
+        <name slugifiedName="name-multiple-ehlo-commands">Multiple EHLO Commands</name>
+        <t indent="0" pn="section-3.6-1">These protocols require that the EHLO command (LHLO in LMTP) be
+			  reissued under certain circumstances, e.g., after successful
+authentication <xref target="RFC4954" format="default" sectionFormat="of" derivedContent="AUTH"/> or negotiation of a security layer <xref target="RFC3207" format="default" sectionFormat="of" derivedContent="STARTTLS"/>.</t>
+        <t indent="0" pn="section-3.6-2">Servers <bcp14>MAY</bcp14> return updated limits any time the protocol requires
+		   clients to reissue the EHLO command.</t>
+        <t indent="0" pn="section-3.6-3">Clients <bcp14>MUST</bcp14> discard any
+previous limits in favor of those provided by the most recent
+EHLO. This includes the case where the original EHLO provided
+a set of limits but the subsequent EHLO did not; in this
+case, the client <bcp14>MUST</bcp14> act as if no limits were communicated.</t>
+      </section>
+      <section anchor="syntax-errors-in-the-limits-parameter-value" numbered="true" toc="include" removeInRFC="false" pn="section-3.7">
+        <name slugifiedName="name-syntax-errors-in-the-limits">Syntax Errors in the LIMITS Parameter Value</name>
+        <t indent="0" pn="section-3.7-1">Syntax errors in the basic parameter syntax are best handled by
+ignoring the value in its entirety; in this case, clients <bcp14>SHOULD</bcp14>
+proceed as if the LIMITS extension had not been used.</t>
+        <t indent="0" pn="section-3.7-2">Syntax or other errors in the value syntax of a specific
+		   limit, including unrecognized value keywords, are
+			best handled by ignoring that limit; in this case, the client
+			<bcp14>MUST</bcp14> 
+			proceed as if that limit had not been specified.</t>
+        <t indent="0" pn="section-3.7-3">It is possible that a future specification may create
+			multiple limits that are interrelated in some way; in this case,
+			that specification <bcp14>MUST</bcp14> specify how an error in the value syntax of
+			one limit affects the other limits.</t>
+      </section>
+      <section anchor="caching-of-limit-settings-between-sessions" numbered="true" toc="include" removeInRFC="false" pn="section-3.8">
+        <name slugifiedName="name-caching-of-limit-settings-b">Caching of Limit Settings between Sessions Involving the
+		   Same Client and Server SMTP</name>
+        <t indent="0" pn="section-3.8-1">Clients <bcp14>MAY</bcp14> cache limits determined during one session
+and use them to optimize their behavior for subsequent
+sessions. However, since servers are free to adjust their
+limits at any time, clients <bcp14>MUST</bcp14> be able to accommodate
+any limit changes that occur between sessions.</t>
+      </section>
+    </section>
+    <section anchor="initial-limits" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-initial-limits">Initial Limits</name>
+      <t indent="0" pn="section-4-1">An initial set of limits is specified in the following sections.</t>
+      <section anchor="mailmax-limit" numbered="true" toc="include" removeInRFC="false" pn="section-4.1">
+        <name slugifiedName="name-mailmax-limit">MAILMAX Limit</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.1-1">
+          <dt pn="section-4.1-1.1">Name:</dt>
+          <dd pn="section-4.1-1.2">MAILMAX</dd>
+          <dt pn="section-4.1-1.3">Value syntax:</dt>
+          <dd pn="section-4.1-1.4">%x31-39 0*5DIGIT ; "0" not allowed, six-digit maximum</dd>
+          <dt pn="section-4.1-1.5">Description:</dt>
+          <dd pn="section-4.1-1.6">MAILMAX specifies the maximum number of transactions
+(MAIL FROM commands) the server will accept in a single session. The
+count includes all MAIL FROM commands, regardless of whether they
+succeed or fail.</dd>
+          <dt pn="section-4.1-1.7">Restrictions:</dt>
+          <dd pn="section-4.1-1.8"> None.</dd>
+          <dt pn="section-4.1-1.9">Security Considerations:</dt>
+          <dd pn="section-4.1-1.10"> See <xref target="Seccons" format="default" sectionFormat="of" derivedContent="Section 6"/></dd>
+        </dl>
+      </section>
+      <section anchor="RCPTMAX" numbered="true" toc="include" removeInRFC="false" pn="section-4.2">
+        <name slugifiedName="name-rcptmax-limit">RCPTMAX Limit</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.2-1">
+          <dt pn="section-4.2-1.1">Name:</dt>
+          <dd pn="section-4.2-1.2">RCPTMAX</dd>
+          <dt pn="section-4.2-1.3">Value syntax:</dt>
+          <dd pn="section-4.2-1.4"> %x31-39 0*5DIGIT ; "0" not allowed, six-digit maximum</dd>
+          <dt pn="section-4.2-1.5">Description:</dt>
+          <dd pn="section-4.2-1.6">RCPTMAX specifies the maximum number of RCPT TO commands
+the server will accept in a single transaction. It is not a limit
+on the actual number of recipients the message ends up being sent to;
+a single RCPT TO command may produce multiple recipients or, in the
+event of an error, none.</dd>
+          <dt pn="section-4.2-1.7">Restrictions:</dt>
+          <dd pn="section-4.2-1.8">None.</dd>
+          <dt pn="section-4.2-1.9">Security Considerations:</dt>
+          <dd pn="section-4.2-1.10">See <xref target="Seccons" format="default" sectionFormat="of" derivedContent="Section 6"/></dd>
+        </dl>
+      </section>
+      <section anchor="rcptdomainmax-limit" numbered="true" toc="include" removeInRFC="false" pn="section-4.3">
+        <name slugifiedName="name-rcptdomainmax-limit">RCPTDOMAINMAX Limit</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.3-1">
+          <dt pn="section-4.3-1.1">Name:</dt>
+          <dd pn="section-4.3-1.2">RCPTDOMAINMAX</dd>
+          <dt pn="section-4.3-1.3">Value syntax:</dt>
+          <dd pn="section-4.3-1.4"> %x31-39 0*5DIGIT ; "0" not allowed, six-digit maximum</dd>
+          <dt pn="section-4.3-1.5">Description:</dt>
+          <dd pn="section-4.3-1.6">RCPTDOMAINMAX specifies the maximum number of different domains
+that can appear in a recipient (RCPT TO) address within a single
+session. This limit is imposed by some servers that bind to
+a specific internal delivery mechanism on receipt of the first
+RCPT TO command.</dd>
+          <dt pn="section-4.3-1.7">Restrictions:</dt>
+          <dd pn="section-4.3-1.8">None.</dd>
+          <dt pn="section-4.3-1.9">Security Considerations:</dt>
+          <dd pn="section-4.3-1.10">See <xref target="Seccons" format="default" sectionFormat="of" derivedContent="Section 6"/></dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="example" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-example">Example</name>
+      <t indent="0" pn="section-5-1">A server announces two limits it implements to the client, along
+with various other supported extensions, as follows:</t>
+      <artwork name="" type="" align="left" alt="" pn="section-5-2">
+S: [wait for open connection]
+C: [open connection to server]
+S: 220 mail.example.com ESMTP service ready
+C: EHLO example.org
+S: 250-mail.example.com
+S: 250-SMTPUTF8
+S: 250-LIMITS RCPTMAX=20 MAILMAX=5
+S: 250-SIZE 100000000
+S: 250-8BITMIME
+S: 250-ENHANCEDSTATUSCODES
+S: 250-PIPELINING
+S: 250-CHUNKING
+S: 250 STARTTLS
+</artwork>
+      <t indent="0" pn="section-5-3">The client now knows to limit the number of recipients in a transaction
+to twenty and the number of transactions in a session to five.</t>
+    </section>
+    <section anchor="Seccons" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-6-1">A malicious server can use limits to overly constrain client behavior,
+		 causing excessive use of client resources.</t>
+      <t indent="0" pn="section-6-2">A malicious client may use the limits a server advertises to optimize
+		 the delivery of unwanted messages.</t>
+      <t indent="0" pn="section-6-3">A man-in-the-middle attack on unprotected SMTP connections can
+		be used to cause clients to misbehave, which in turn could result
+		in delivery delays or failures. Loss of reputation for the client
+		could also occur.</t>
+      <t indent="0" pn="section-6-4">All that said, decades of operational experience with the
+		SMTP "SIZE" extension <xref target="RFC1870" format="default" sectionFormat="of" derivedContent="SIZE"/>,
+		which provides servers with the 
+		ability to indicate message size, indicates that such abuse is
+		rare and unlikely to be a significant problem.</t>
+      <t indent="0" pn="section-6-5">Use of the LIMITS extension to provide client-specific information - as
+		opposed to general server limits - unavoidably provides senders with
+		feedback about their reputation. Malicious senders can exploit this
+		in various ways, e.g., start by sending good email and then, once their
+		reputation is established, sending bad email.</t>
+    </section>
+    <section anchor="iana-considerations" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section anchor="smtp-service-extension-registry" numbered="true" toc="include" removeInRFC="false" pn="section-7.1">
+        <name slugifiedName="name-smtp-service-extension-regi">SMTP Service Extension Registry</name>
+        <t indent="0" pn="section-7.1-1">The IANA has added "LIMITS" to the "SMTP Service
+Extensions" registry:</t>
+        <dl indent="3" newline="false" spacing="normal" pn="section-7.1-2">
+          <dt pn="section-7.1-2.1">EHLO Keyword:</dt>
+          <dd pn="section-7.1-2.2">LIMITS</dd>
+          <dt pn="section-7.1-2.3">Description:</dt>
+          <dd pn="section-7.1-2.4">Server limits</dd>
+          <dt pn="section-7.1-2.5">Reference:</dt>
+          <dd pn="section-7.1-2.6">RFC 9422</dd>
+          <dt pn="section-7.1-2.7">Note:</dt>
+          <dd pn="section-7.1-2.8">See "SMTP Server Limits" registry.</dd>
+        </dl>
+      </section>
+      <section anchor="smtp-server-limits-registry" numbered="true" toc="include" removeInRFC="false" pn="section-7.2">
+        <name slugifiedName="name-smtp-server-limits-registry">SMTP Server Limits Registry</name>
+        <t indent="0" pn="section-7.2-1">The IANA has created a new registry in the "MAIL
+		   Parameters" group for SMTP server limits. The policy for
+		   this registry is "Specification Required". 
+			Registry entries consist of these required values:</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-7.2-2">
+			<li pn="section-7.2-2.1" derivedCounter="1.">The name of the limit.</li>
+          <li pn="section-7.2-2.2" derivedCounter="2.">The syntax of the limit value, if the limit has one.
+			   This syntax <bcp14>MUST</bcp14> conform to the provisions of
+			   <xref target="Extension" format="default" sectionFormat="of" derivedContent="Section 3"/> above.
+			  In most cases, the syntax will consist of a keyword
+			  designating the limit type followed by a limit value,
+			  using a "name=value" form as illustrated by the
+			  registrations created by this specification in
+			  <xref target="initial-limits" format="default" sectionFormat="of" derivedContent="Section 4"/> above.
+			  Use of ABNF <xref target="RFC5234" format="default" sectionFormat="of" derivedContent="ABNF"/>
+			  is preferred but not required.  If there is no limit
+			  value, that should be explicit in the registration
+			  request and the registry.</li>
+          <li pn="section-7.2-2.3" derivedCounter="3.">A description of the limit's semantics.</li>
+          <li pn="section-7.2-2.4" derivedCounter="4.">Restrictions, if any, on the use of the limit. If the limit is specific
+			to any of SMTP, message submission, or LMTP, it should be documented
+			here.</li>
+          <li pn="section-7.2-2.5" derivedCounter="5.">Security considerations for the limit.</li>
+        </ol>
+        <t indent="0" pn="section-7.2-3"> The Designated Expert(s) appointed under the
+		   "Specification Required" procedure should check that 
+		   registration requests are consistent with the requirements
+		   and intent of the extension mechanisms associated with
+		   SMTP <xref target="RFC5321" format="default" sectionFormat="of" derivedContent="SMTP"/>, 
+		   <xref target="Extension" format="default" sectionFormat="of" derivedContent="Section 3"/> above, and the provision of this
+		   specification more generally and offer advice
+		   accordingly.</t>
+        <t indent="0" pn="section-7.2-4">The IANA has registered the limits
+		   specified in <xref target="initial-limits" format="default" sectionFormat="of" derivedContent="Section 4"/> of this
+		   document.</t>
+      </section>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="RFC2920" to="PIPELINING"/>
+    <displayreference target="RFC5234" to="ABNF"/>
+    <displayreference target="RFC5321" to="SMTP"/>
+    <displayreference target="RFC1870" to="SIZE"/>
+    <displayreference target="RFC2033" to="LMTP"/>
+    <displayreference target="RFC3207" to="STARTTLS"/>
+    <displayreference target="RFC4954" to="AUTH"/>
+    <displayreference target="RFC6409" to="SUBMIT"/>
+    <references pn="section-8">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-8.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC5234" target="https://www.rfc-editor.org/info/rfc5234" quoteTitle="true" derivedAnchor="ABNF">
+          <front>
+            <title>Augmented BNF for Syntax Specifications: ABNF</title>
+            <author fullname="D. Crocker" initials="D." role="editor" surname="Crocker"/>
+            <author fullname="P. Overell" initials="P." surname="Overell"/>
+            <date month="January" year="2008"/>
+            <abstract>
+              <t indent="0">Internet technical specifications often need to define a formal syntax. Over the years, a modified version of Backus-Naur Form (BNF), called Augmented BNF (ABNF), has been popular among many Internet specifications. The current specification documents ABNF. It balances compactness and simplicity with reasonable representational power. The differences between standard BNF and ABNF involve naming rules, repetition, alternatives, order-independence, and value ranges. This specification also supplies additional rule definitions and encoding for a core lexical analyzer of the type common to several Internet specifications. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="68"/>
+          <seriesInfo name="RFC" value="5234"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5234"/>
+        </reference>
+        <reference anchor="RFC2920" target="https://www.rfc-editor.org/info/rfc2920" quoteTitle="true" derivedAnchor="PIPELINING">
+          <front>
+            <title>SMTP Service Extension for Command Pipelining</title>
+            <author fullname="N. Freed" initials="N." surname="Freed"/>
+            <date month="September" year="2000"/>
+            <abstract>
+              <t indent="0">This memo defines an extension to the Simple Mail Transfer Protocol (SMTP) service whereby a server can indicate the extent of its ability to accept multiple commands in a single Transmission Control Protocol (TCP) send operation. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="60"/>
+          <seriesInfo name="RFC" value="2920"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2920"/>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC5321a" quoteTitle="true" target="https://www.rfc-editor.org/rfc/rfc5321" derivedAnchor="RFC5321a">
+          <front>
+            <title>Simple Mail Transfer Protocol</title>
+            <author initials="J." surname="Klensin" fullname="John C. Klensin"/>
+            <date year="2008" month="October"/>
+          </front>
+          <seriesInfo name="RFC" value="5321"/>
+          <refcontent>Section 2.2</refcontent>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC5321" target="https://www.rfc-editor.org/info/rfc5321" quoteTitle="true" derivedAnchor="SMTP">
+          <front>
+            <title>Simple Mail Transfer Protocol</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="October" year="2008"/>
+            <abstract>
+              <t indent="0">This document is a specification of the basic protocol for Internet electronic mail transport. It consolidates, updates, and clarifies several previous documents, making all or parts of most of them obsolete. It covers the SMTP extension mechanisms and best practices for the contemporary Internet, but does not provide details about particular extensions. Although SMTP was designed as a mail transport and delivery protocol, this specification also contains information that is important to its use as a "mail submission" protocol for "split-UA" (User Agent) mail reading systems and mobile environments. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5321"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5321"/>
+        </reference>
+      </references>
+      <references pn="section-8.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC4954" target="https://www.rfc-editor.org/info/rfc4954" quoteTitle="true" derivedAnchor="AUTH">
+          <front>
+            <title>SMTP Service Extension for Authentication</title>
+            <author fullname="R. Siemborski" initials="R." role="editor" surname="Siemborski"/>
+            <author fullname="A. Melnikov" initials="A." role="editor" surname="Melnikov"/>
+            <date month="July" year="2007"/>
+            <abstract>
+              <t indent="0">This document defines a Simple Mail Transport Protocol (SMTP) extension whereby an SMTP client may indicate an authentication mechanism to the server, perform an authentication protocol exchange, and optionally negotiate a security layer for subsequent protocol interactions during this session. This extension includes a profile of the Simple Authentication and Security Layer (SASL) for SMTP.</t>
+              <t indent="0">This document obsoletes RFC 2554. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4954"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4954"/>
+        </reference>
+        <reference anchor="RFC2033" target="https://www.rfc-editor.org/info/rfc2033" quoteTitle="true" derivedAnchor="LMTP">
+          <front>
+            <title>Local Mail Transfer Protocol</title>
+            <author fullname="J. Myers" initials="J." surname="Myers"/>
+            <date month="October" year="1996"/>
+            <abstract>
+              <t indent="0">SMTP [SMTP] [HOST-REQ] and its service extensions [ESMTP] provide a mechanism for transferring mail reliably and efficiently. The design of the SMTP protocol effectively requires the server to manage a mail delivery queue. This memo provides information for the Internet community. This memo does not specify an Internet standard of any kind.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2033"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2033"/>
+        </reference>
+        <reference anchor="RFC5321b" quoteTitle="true" target="https://www.rfc-editor.org/rfc/rfc5321" derivedAnchor="RFC5321b">
+          <front>
+            <title>Simple Mail Transfer Protocol</title>
+            <author initials="J." surname="Klensin" fullname="John C. Klensin"/>
+            <date year="2008" month="October"/>
+          </front>
+          <seriesInfo name="RFC" value="5321"/>
+          <refcontent>Section 4.5.3.1</refcontent>
+        </reference>
+        <reference anchor="RFC5321c" quoteTitle="true" target="https://www.rfc-editor.org/rfc/rfc5321" derivedAnchor="RFC5321c">
+          <front>
+            <title>Simple Mail Transfer Protocol</title>
+            <author initials="J." surname="Klensin" fullname="John C. Klensin"/>
+            <date year="2008" month="October"/>
+          </front>
+          <seriesInfo name="RFC" value="5321"/>
+          <refcontent>Section 4.5.3.1.8 </refcontent>
+        </reference>
+        <reference anchor="RFC1870" target="https://www.rfc-editor.org/info/rfc1870" quoteTitle="true" derivedAnchor="SIZE">
+          <front>
+            <title>SMTP Service Extension for Message Size Declaration</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <author fullname="N. Freed" initials="N." surname="Freed"/>
+            <author fullname="K. Moore" initials="K." surname="Moore"/>
+            <date month="November" year="1995"/>
+            <abstract>
+              <t indent="0">This memo defines an extension to the SMTP service whereby an SMTP client and server may interact to give the server an opportunity to decline to accept a message (perhaps temporarily) based on the client's estimate of the message size. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="10"/>
+          <seriesInfo name="RFC" value="1870"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1870"/>
+        </reference>
+        <reference anchor="RFC3207" target="https://www.rfc-editor.org/info/rfc3207" quoteTitle="true" derivedAnchor="STARTTLS">
+          <front>
+            <title>SMTP Service Extension for Secure SMTP over Transport Layer Security</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="February" year="2002"/>
+            <abstract>
+              <t indent="0">This document describes an extension to the SMTP (Simple Mail Transfer Protocol) service that allows an SMTP server and client to use TLS (Transport Layer Security) to provide private, authenticated communication over the Internet. This gives SMTP agents the ability to protect some or all of their communications from eavesdroppers and attackers. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3207"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3207"/>
+        </reference>
+        <reference anchor="RFC6409" target="https://www.rfc-editor.org/info/rfc6409" quoteTitle="true" derivedAnchor="SUBMIT">
+          <front>
+            <title>Message Submission for Mail</title>
+            <author fullname="R. Gellens" initials="R." surname="Gellens"/>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="November" year="2011"/>
+            <abstract>
+              <t indent="0">This memo splits message submission from message relay, allowing each service to operate according to its own rules (for security, policy, etc.), and specifies what actions are to be taken by a submission server.</t>
+              <t indent="0">Message relay is unaffected, and continues to use SMTP over port 25.</t>
+              <t indent="0">When conforming to this document, message submission uses the protocol specified here, normally over port 587.</t>
+              <t indent="0">This separation of function offers a number of benefits, including the ability to apply specific security or policy requirements. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="72"/>
+          <seriesInfo name="RFC" value="6409"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6409"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="acknowledgments" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1"> The concept for this extension came from, and was developed
+		  by, Ned Freed and most of this specification, including
+		  substantially all of the technical details, was written by him.
+		  Unfortunately, he became ill and eventually passed away in
+		  May 2022 without being able to complete the document and
+		  manage it through IETF Last Call.  His contributions to the
+		  Internet, work in the IETF, and the personal style that
+		  made both possible are irreplaceable and greatly missed.
+		  With the support of the
+		  community, John Klensin picked the document up, responded to
+		  some additional feedback, and got the document into what is
+		  believed to be a finished state.  In the interest of
+		  preserving this as Ned's document, a few comments that
+		  proposed additional features and options were set aside for
+		  future work rather than our having to guess at whether Ned
+		  would have approved of them.</t>
+      <t indent="0" pn="section-appendix.a-2"> The acknowledgments below are divided into two parts, those
+		  written by Ned and those associated with input to the
+		  document after his passing.</t>
+      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-appendix.a-3">
+        <li pn="section-appendix.a-3.1">
+          <t indent="0" pn="section-appendix.a-3.1.1">Acknowledgments from the Last Version Prepared by
+			 Ned Freed</t>
+          <t indent="0" pn="section-appendix.a-3.1.2">A lot of people have helped make this specification
+		  possible. The author wishes to thank <contact fullname="Claus Assmann"/>, <contact fullname="Laura Atkins"/>,
+		  <contact fullname="Alex Brotman"/>, <contact fullname="Richard Clayton"/>, 
+		  <contact fullname="Dave Crocker"/>, <contact fullname="Viktor Dukhovni"/>, 
+		  <contact fullname="Arnt Gulbrandsen"/>, <contact fullname="Jeremy Harris"/>, 
+		  <contact fullname="Todd Herr"/>, <contact fullname="Mike Hillyer"/>, 
+		  <contact fullname="Matthias Leisi"/>, <contact fullname="John Klensin"/>, 
+		  <contact fullname="Valdis Klētnieks"/>, <contact fullname="John Levine"/>, 
+		  <contact fullname="Alexey Melnikov"/>, <contact fullname="Keith Moore"/>, 
+		  <contact fullname="Michael Peddemors"/>, <contact fullname="Hector Santos"/>, 
+		  <contact fullname="George Schlossnagle"/>, <contact fullname="Rolf E. Sonneveld"/>, 
+		  and <contact fullname="Alessandro Vesely"/> for their contributions and reviews.</t>
+        </li>
+        <li pn="section-appendix.a-3.2">
+          <t indent="0" pn="section-appendix.a-3.2.1">Acknowledgments from Versions Subsequent to Ned
+			 Freed's Passing</t>
+          <t indent="0" pn="section-appendix.a-3.2.2"> Additional helpful suggestions were received when the draft
+			was requeued in the last part of 2022 and thereafter.  Reviews and
+			suggestions from <contact fullname="Alex Brotman"/>, <contact fullname="Dave Crocker"/>, 
+			<contact fullname="Gene Hightower"/>, <contact fullname="Murray S. Kucherawy"/>, 
+			<contact fullname="Barry Leiba"/>, <contact fullname="John Levine"/>, and
+			<contact fullname="Phil Pennock"/> were 
+			especially helpful in identifying errors and suggesting
+			clarifying some issues with the document without changing
+			Ned's fundamental issues or very much of his text.</t>
+          <t indent="0" pn="section-appendix.a-3.2.3"> IETF Last Call comments (and comments immediately before
+			it started) from people not listed above that resulted in
+			document changes were received from
+			<contact fullname="Amanda Baber"/> (for IANA), <contact fullname="Linda Dunbar"/>, and
+			<contact fullname="Paul Kyzivat"/>.</t>
+        </li>
+      </ul>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="N." surname="Freed" fullname="Ned Freed">
+        <organization showOnFrontPage="true"/>
+        <address/>
+      </author>
+      <author initials="J." surname="Klensin" fullname="John C. Klensin">
+        <organization showOnFrontPage="true"/>
+        <address>
+          <postal>
+            <street>1770 Massachusetts Ave, Suite 322</street>
+            <city>Cambridge</city>
+            <region>MA</region>
+            <code>02140</code>
+            <country>United States of America</country>
+          </postal>
+          <email>john-ietf@jck.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

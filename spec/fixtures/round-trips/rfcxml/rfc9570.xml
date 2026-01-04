@@ -1,0 +1,656 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" category="std" docName="draft-ietf-mpls-lspping-norao-08" number="9570" consensus="true" ipr="trust200902" updates="8029" obsoletes="" submissionType="IETF" xml:lang="en" tocInclude="true" sortRefs="true" symRefs="true" prepTime="2024-05-22T08:11:11" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-mpls-lspping-norao-08" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9570" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="RAO-less Label Switched Path (LSP) Ping">Deprecating the Use of Router Alert in LSP Ping</title>
+    <seriesInfo name="RFC" value="9570" stream="IETF"/>
+    <author fullname="Kireeti Kompella" initials="K." surname="Kompella">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <postal>
+          <street>1133 Innovation Way</street>
+          <city>Sunnyvale</city>
+          <region>CA</region>
+          <code>94089</code>
+          <country>United States of America</country>
+        </postal>
+        <email>kireeti.ietf@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Ron Bonica" initials="R." surname="Bonica">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <postal>
+          <street>1133 Innovation Way</street>
+          <city>Sunnyvale</city>
+          <region>CA</region>
+          <code>94089</code>
+          <country>United States of America</country>
+        </postal>
+        <email>rbonica@juniper.net</email>
+      </address>
+    </author>
+    <author fullname="Greg Mirsky" initials="G." surname="Mirsky" role="editor">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <email>gregimirsky@gmail.com</email>
+      </address>
+    </author>
+    <date month="05" year="2024"/>
+    <area>RTG</area>
+    <workgroup>mpls</workgroup>
+    <keyword>LSP ping</keyword>
+    <keyword>router alert</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">The MPLS echo request and MPLS echo response messages, defined in RFC
+      8029, "Detecting Multiprotocol Label Switched (MPLS) Data-Plane
+      Failures" (usually referred to as LSP ping), are encapsulated in IP
+      packets with headers that include a Router Alert Option (RAO). In actual
+      deployments, the RAO was neither required nor used.  Furthermore, RFC
+      6398 identifies security vulnerabilities associated with the RAO in
+      non-controlled environments, e.g., the case of using the MPLS echo
+      request/reply as inter-area Operations, Administration, and Maintenance
+      (OAM), and recommends against its use outside of controlled
+      environments.</t>
+      <t indent="0" pn="section-abstract-2">Therefore, this document retires the RAO for MPLS OAM and updates RFC
+      8029 to remove the RAO from LSP ping message
+      encapsulations. Furthermore, this document explains why RFC 7506 has
+      been reclassified as Historic.</t>
+      <t indent="0" pn="section-abstract-3">Also, this document recommends the use of an IPv6 loopback address
+      (::1/128) as the IPv6 destination address for an MPLS echo request
+      message.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9570" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-router-alert-for-lsp-ping-r">Router Alert for LSP Ping (RFC 8029)</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-mpls-echo-request">MPLS Echo Request</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-mpls-echo-reply">MPLS Echo Reply</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reclassification-of-rfc-750">Reclassification of RFC 7506 as Historic</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-update-to-rfc-8029">Update to RFC 8029</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-backwards-compatibility">Backwards Compatibility</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">"Detecting Multiprotocol Label Switched (MPLS) Data-Plane
+  Failures" (usually referred to as LSP ping) <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/> detects data plane failures in
+  MPLS Label Switched Paths (LSPs). It can operate in "ping mode" or
+  "traceroute mode." When operating in ping mode, it checks LSP connectivity.
+  When operating in traceroute mode, it can trace an LSP
+   and localize failures to a particular node along an LSP.</t>
+      <t indent="0" pn="section-1-2">The reader is assumed be familiar with <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/> and its terminology.</t>
+      <t indent="0" pn="section-1-3">LSP ping defines a probe message called the "MPLS echo
+      request." It also defines a response message called the
+      "MPLS echo reply." Both messages are encapsulated in UDP and
+      IP. The MPLS echo request message is further encapsulated in an MPLS label
+      stack, except when all of the Forwarding Equivalency Classes in the
+   stack correspond to Implicit Null labels.</t>
+      <t indent="0" pn="section-1-4">When operating in ping mode, LSP ping sends a single MPLS echo request
+      message, with the MPLS TTL set to 255. This message
+      is intended to reach the egress Label Switching Router (LSR). When
+      operating in traceroute mode, MPLS ping sends multiple MPLS echo request
+      messages as defined in <xref target="RFC8029" format="default" section="4.3" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-4.3" derivedContent="RFC8029"/>.
+      It manipulates the MPLS TTL so that the first message expires
+      on the first LSR along the path, and subsequent messages expire on
+      subsequent LSRs.</t>
+      <t indent="0" pn="section-1-5">According to <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>, the IP header that encapsulates an MPLS echo
+   request message must include a Router Alert Option (RAO). Furthermore,
+   <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/> also says that the IP header that encapsulates an MPLS echo
+   reply message must include an RAO if the value of the Reply Mode in
+   the corresponding MPLS echo request message is "Reply via an
+   IPv4/IPv6 UDP packet with Router Alert." This document explains why an RAO was not needed in both cases.
+   Furthermore, <xref target="RFC6398" format="default" sectionFormat="of" derivedContent="RFC6398"/>
+      identifies security vulnerabilities associated with the RAO in non-controlled environments, e.g., the case of
+   using the MPLS echo request/reply as inter-domain OAM over the public Internet, and recommends against its use outside of controlled
+   environments, e.g., outside a single administrative domain.</t>
+      <t indent="0" pn="section-1-6">Therefore, this document updates RFC 8029 <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/> to retire the RAO from both
+   LSP ping message encapsulations and explains why RFC 7506 <xref target="RFC7506" format="default" sectionFormat="of" derivedContent="RFC7506"/> has been reclassified as Historic.</t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.1">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.
+        </t>
+      </section>
+    </section>
+    <section anchor="router-alert-for-lsp-ping-rfc-8029" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-router-alert-for-lsp-ping-r">Router Alert for LSP Ping (RFC 8029)</name>
+      <section anchor="echo-request" numbered="true" toc="include" removeInRFC="false" pn="section-2.1">
+        <name slugifiedName="name-mpls-echo-request">MPLS Echo Request</name>
+        <t indent="0" pn="section-2.1-1">While the MPLS echo request message must traverse every node in the
+        LSP under test, it must not traverse any other nodes. Specifically, the
+        message must not be forwarded beyond the egress Label Switching Router
+        (LSR). To achieve this, a set of the mechanisms that are used concurrently
+        to prevent leaking MPLS echo request messages has been defined in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>:</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-2.1-2">
+	  <li pn="section-2.1-2.1" derivedCounter="1.">When the MPLS echo request message is encapsulated in IPv4, the IPv4
+            destination address must be chosen from the subnet 127/8. When the
+            MPLS echo request message is encapsulated in IPv6, the IPv6 destination
+            address must be chosen from the subnet
+            0:0:0:0:0:FFFF:7F00:0/104.</li>
+          <li pn="section-2.1-2.2" derivedCounter="2.">When the MPLS echo request message is encapsulated in IPv4, the IPv4
+        TTL must be equal to 1.  When the MPLS echo request message is
+        encapsulated in IPv6, the IPv6 Hop Limit must be equal to 1.
+        For further information on the encoding of the TTL / Hop Limit in an
+        MPLS echo request message, see <xref target="RFC8029" format="default" section="4.3" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-4.3" derivedContent="RFC8029"/>.</li>
+          <li pn="section-2.1-2.3" derivedCounter="3.">When the MPLS echo request message is encapsulated in IPv4, the IPv4
+            header must include an RAO with the option value set to "Router shall examine packet" <xref target="RFC2113" format="default" sectionFormat="of" derivedContent="RFC2113"/>.
+            When the MPLS echo request message is
+            encapsulated in IPv6, the IPv6 header chain must include a
+            hop-by-hop extension header and the hop-by-hop extension header
+            must include an RAO with the option value set to MPLS OAM <xref target="RFC7506" format="default" sectionFormat="of" derivedContent="RFC7506"/>.</li>
+        </ol>
+        <t indent="0" pn="section-2.1-3">Currently, all of these are required. However, any one is
+        sufficient to prevent forwarding the packet beyond the egress LSR.</t>
+        <t indent="0" pn="section-2.1-4">Therefore, this document updates RFC 8029 <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/> in that Requirement 3 is
+        removed.</t>
+        <t indent="0" pn="section-2.1-5">No implementation that relies on the RAO to prevent packets from being
+   forwarded beyond the egress LSR has been reported to the MPLS Working Group.</t>
+      </section>
+      <section anchor="echo-reply" numbered="true" toc="include" removeInRFC="false" pn="section-2.2">
+        <name slugifiedName="name-mpls-echo-reply">MPLS Echo Reply</name>
+        <t indent="0" pn="section-2.2-1">An LSP ping replies to the MPLS echo request message with an MPLS echo
+        reply message. Four reply modes are defined in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>:</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-2.2-2"><li pn="section-2.2-2.1" derivedCounter="1.">Do not reply</li>
+          <li pn="section-2.2-2.2" derivedCounter="2.">Reply via an IPv4/IPv6 UDP packet</li>
+          <li pn="section-2.2-2.3" derivedCounter="3.">Reply via an IPv4/IPv6 UDP packet with Router Alert</li>
+          <li pn="section-2.2-2.4" derivedCounter="4.">Reply via application-level control channel</li>
+        </ol>
+        <t indent="0" pn="section-2.2-3">The rationale for mode 3 is questionable, if not wholly misguided.
+        According to RFC 8029 <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>, "If the normal IP return path is deemed
+        unreliable, one may use 3 (Reply via an IPv4/IPv6 UDP packet with
+        Router Alert)."</t>
+        <t indent="0" pn="section-2.2-4">However, it is not clear that the use of the RAO increases the
+        reliability of the return path. In fact, one can argue it decreases
+        the reliability in many instances, due to the additional burden of
+        processing the RAO. This document updates RFC 8029 <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/> in that mode 3 is removed.</t>
+        <t indent="0" pn="section-2.2-5">No implementations of mode 3 have been reported to the MPLS Working Group.</t>
+        <t indent="0" pn="section-2.2-6"/>
+      </section>
+    </section>
+    <section anchor="update-to-rfc-7506" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-reclassification-of-rfc-750">Reclassification of RFC 7506 as Historic</name>
+      <t indent="0" pn="section-3-1">RFC 7506 <xref target="RFC7506" format="default" sectionFormat="of" derivedContent="RFC7506"/> defines the IPv6 Router Alert Option for MPLS Operations,
+      Administration, and Maintenance. This document explains why RFC 7506 <xref target="RFC7506" format="default" sectionFormat="of" derivedContent="RFC7506"/> has been reclassified as
+      Historic.</t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-update-to-rfc-8029">Update to RFC 8029</name>
+      <t indent="0" pn="section-4-1"><xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/> requires that the IPv6 Destination Address
+      used in IP/UDP encapsulation of an MPLS echo request packet be selected from
+      the IPv4 loopback address range mapped to IPv6. Such packets do not have
+      the same behavior as prescribed in <xref target="RFC1122" format="default" sectionFormat="of" derivedContent="RFC1122"/> for an IPv4
+      loopback addressed packet.</t>
+      <t indent="0" pn="section-4-2"><xref target="RFC4291" format="default" sectionFormat="of" derivedContent="RFC4291"/> defines ::1/128 as the single IPv6 loopback
+      address. Considering that, this specification updates <xref target="RFC8029" section="2.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-2.1" derivedContent="RFC8029"/> regarding the selection of an IPv6 destination
+      address for an MPLS echo request message as follows:</t>
+      <t indent="0" pn="section-4-3">OLD:</t>
+      <blockquote pn="section-4-4">
+        <t indent="0" pn="section-4-4.1">The 127/8 range for IPv4 and that same range embedded in an
+   IPv4-mapped IPv6 address for IPv6 was chosen for a number of reasons.</t>
+        <t indent="0" pn="section-4-4.2">RFC 1122 allocates the 127/8 as the "Internal host loopback address"
+   and states: "Addresses of this form <bcp14>MUST NOT</bcp14> appear outside a host."
+   Thus, the default behavior of hosts is to discard such packets.  This
+   helps to ensure that if a diagnostic packet is misdirected to a host,
+   it will be silently discarded.</t>
+        <t indent="0" pn="section-4-4.3">RFC 1812 <xref target="RFC1812" format="default" sectionFormat="of" derivedContent="RFC1812"/> states:</t>
+        <t indent="3" pn="section-4-4.4">
+     A router <bcp14>SHOULD NOT</bcp14> forward, except over a loopback
+     interface, any packet that has a destination address on network 127.  A
+     router <bcp14>MAY</bcp14> have a switch that allows the network manager to
+     disable these checks.  If such a switch is provided, it <bcp14>MUST</bcp14>
+     default to performing the checks.
+        </t>
+        <t indent="0" pn="section-4-4.5">This helps to ensure that diagnostic packets are never IP forwarded.</t>
+        <t indent="0" pn="section-4-4.6">   The 127/8 address range provides 16M addresses allowing wide
+   flexibility in varying addresses to exercise ECMP paths. Finally, as
+   an implementation optimization, the 127/8 range provides an easy
+   means of identifying possible LSP packets.</t>
+      </blockquote>
+      <t indent="0" pn="section-4-5">NEW:</t>
+      <blockquote pn="section-4-6">
+        <t indent="0" pn="section-4-6.1">The 127/8 range for IPv4 was chosen for a number of reasons.</t>
+        <t indent="0" pn="section-4-6.2">RFC 1122 <xref target="RFC1122" format="default" sectionFormat="of" derivedContent="RFC1122"/> allocates the 127/8 as the "Internal host loopback address"
+   and states: "Addresses of this form <bcp14>MUST NOT</bcp14> appear outside a host."
+   Thus, the default behavior of hosts is to discard such packets.  This
+   helps to ensure that if a diagnostic packet is misdirected to a host,
+   it will be silently discarded.</t>
+        <t indent="0" pn="section-4-6.3">RFC 1812 <xref target="RFC1812" format="default" sectionFormat="of" derivedContent="RFC1812"/> states:</t>
+        <t indent="3" pn="section-4-6.4">
+     A router <bcp14>SHOULD NOT</bcp14> forward, except over a
+     loopback interface, any packet that has a destination address on network
+     127.  A router <bcp14>MAY</bcp14> have a switch that allows the network
+     manager to disable these checks.  If such a switch is provided, it
+     <bcp14>MUST</bcp14> default to performing the checks.
+        </t>
+        <t indent="0" pn="section-4-6.5">This helps to ensure that diagnostic packets are never IP forwarded.</t>
+        <t indent="0" pn="section-4-6.6">The 127/8 address range provides 16M addresses allowing wide
+   flexibility in varying addresses to exercise ECMP paths.  Finally, as
+   an implementation optimization, the 127/8 range provides an easy
+   means of identifying possible LSP packets.</t>
+        <t indent="0" pn="section-4-6.7">   The IPv6 destination address for an MPLS echo request message is
+   selected as follows:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-6.8">
+          <li pn="section-4-6.8.1">The IPv6 loopback address ::1/128 <bcp14>SHOULD</bcp14> be used.</li>
+          <li pn="section-4-6.8.2">The sender of an MPLS echo request <bcp14>MAY</bcp14> select the IPv6 destination
+          address from the 0:0:0:0:0:FFFF:7F00/104 range.</li>
+          <li pn="section-4-6.8.3">To exercise all paths in an ECMP environment, the source of entropy other
+          than the IP destination address <bcp14>SHOULD</bcp14> be used. For example, the MPLS Entropy Label <xref target="RFC6790" format="default" sectionFormat="of" derivedContent="RFC6790"/>
+          or IPv6 Flow Label <xref target="RFC6438" format="default" sectionFormat="of" derivedContent="RFC6438"/> can be used as the source of entropy.</li>
+        </ul>
+      </blockquote>
+      <t indent="0" pn="section-4-7">Additionally, this specification updates <xref target="RFC8029" section="2.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-2.2" derivedContent="RFC8029"/> to
+   replace the whole of the section with the following text:</t>
+      <blockquote pn="section-4-8">
+        <t indent="0" pn="section-4-8.1">LSP Ping implementations <bcp14>SHOULD</bcp14> ignore RAO options when they arrive
+      on incoming MPLS echo request and MPLS echo reply messages.</t>
+      </blockquote>
+      <t indent="0" pn="section-4-9">
+      Resulting from the removal of the Reply mode 3 "Reply via an IPv4/IPv6 UDP packet with Router Alert" (see <xref target="echo-reply" format="default" sectionFormat="of" derivedContent="Section 2.2"/>),
+      this specification updates <xref target="RFC8029" section="4.5" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-4.5" derivedContent="RFC8029"/> by removing the following text:</t>
+      <blockquote pn="section-4-10">
+   If the Reply Mode in the echo request is "Reply via an
+   IPv4 UDP packet with Router Alert", then the IP header <bcp14>MUST</bcp14> contain
+   the Router Alert IP Option of value 0x0 <xref target="RFC2113" format="default" sectionFormat="of" derivedContent="RFC2113"/> for IPv4 or 69
+   <xref target="RFC7506" format="default" sectionFormat="of" derivedContent="RFC7506"/> for IPv6. If the reply is sent over an LSP, the topmost
+   label <bcp14>MUST</bcp14> in this case be the Router Alert label (1) (see <xref target="RFC3032" format="default" sectionFormat="of" derivedContent="RFC3032"/>).
+</blockquote>
+      <t indent="0" pn="section-4-11">Furthermore, this specification updates <xref target="RFC8029" section="4.3" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-4.3" derivedContent="RFC8029"/> as follows:</t>
+      <t indent="0" pn="section-4-12">OLD:</t>
+      <blockquote pn="section-4-13">
+        <t indent="0" pn="section-4-13.1">The Router Alert IP Option of value 0x0 <xref target="RFC2113" format="default" sectionFormat="of" derivedContent="RFC2113"/> for IPv4 or value 69 <xref target="RFC7506" format="default" sectionFormat="of" derivedContent="RFC7506"/> for IPv6
+   <bcp14>MUST</bcp14> be set in the IP header.</t>
+      </blockquote>
+      <t indent="0" pn="section-4-14">NEW:</t>
+      <blockquote pn="section-4-15">
+        <t indent="0" pn="section-4-15.1">The Router Alert IP Option of value 0x0  <xref target="RFC2113" format="default" sectionFormat="of" derivedContent="RFC2113"/> for IPv4 or value 69 <xref target="RFC7506" format="default" sectionFormat="of" derivedContent="RFC7506"/> for IPv6
+   <bcp14>MUST NOT</bcp14> be set in the IP header.</t>
+      </blockquote>
+    </section>
+    <section anchor="backwards-compatibility" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-backwards-compatibility">Backwards Compatibility</name>
+      <t indent="0" pn="section-5-1">LSP Ping implementations that conform to this specification <bcp14>SHOULD</bcp14>
+   ignore RAO options when they arrive on incoming MPLS echo request and
+   MPLS echo reply messages. However, this will not harm backwards
+   compatibility because other mechanisms will also be in use by all
+   legacy implementations in the messages they send and receive.</t>
+      <t indent="0" pn="section-5-2">
+   <xref target="iana-considerations" format="default" sectionFormat="of" derivedContent="Section 6"/> of this document deprecates the IPv6 RAO value for MPLS OAM
+   (69) in <xref target="IANA-IPV6-RAO" format="default" sectionFormat="of" derivedContent="IANA-IPV6-RAO"/> and the Reply Mode 3 ("Reply via an IPv4/IPv6
+   UDP packet with Router Alert") in <xref target="IANA-LSP-PING" format="default" sectionFormat="of" derivedContent="IANA-LSP-PING"/>.
+      </t>
+      <t indent="0" pn="section-5-3">
+   <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/> offers a formal description of the word "Deprecated". In
+   this context, "Deprecated" means that the deprecated values <bcp14>SHOULD NOT</bcp14> be used in new implementations, and that deployed implementations
+   that already use these values continue to work seamlessly.
+      </t>
+    </section>
+    <section anchor="iana-considerations" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-6-1">   IANA has marked the IPv6 RAO value of MPLS OAM (69) in
+   <xref target="IANA-IPV6-RAO" format="default" sectionFormat="of" derivedContent="IANA-IPV6-RAO"/> as "DEPRECATED".</t>
+      <t indent="0" pn="section-6-2">   IANA has marked Reply Mode 3 ("Reply via an IPv4/IPv6
+   UDP packet with Router Alert") in "Multiprotocol Label Switching (MPLS) Label Switched Paths (LSPs)
+   Ping Parameters" <xref target="IANA-LSP-PING" format="default" sectionFormat="of" derivedContent="IANA-LSP-PING"/> as "DEPRECATED".</t>
+    </section>
+    <section anchor="security-considerations" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-7-1">The recommendations this document makes do not compromise
+      security. 
+   Using the IPv6 loopback address ::1/128 strengthens security
+   for LSP ping because it is standardized and has well-defined behavior.
+      </t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-8">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-8.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC1122" target="https://www.rfc-editor.org/info/rfc1122" quoteTitle="true" derivedAnchor="RFC1122">
+          <front>
+            <title>Requirements for Internet Hosts - Communication Layers</title>
+            <author fullname="R. Braden" initials="R." role="editor" surname="Braden"/>
+            <date month="October" year="1989"/>
+            <abstract>
+              <t indent="0">This RFC is an official specification for the Internet community. It incorporates by reference, amends, corrects, and supplements the primary protocol standards documents relating to hosts. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="3"/>
+          <seriesInfo name="RFC" value="1122"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1122"/>
+        </reference>
+        <reference anchor="RFC1812" target="https://www.rfc-editor.org/info/rfc1812" quoteTitle="true" derivedAnchor="RFC1812">
+          <front>
+            <title>Requirements for IP Version 4 Routers</title>
+            <author fullname="F. Baker" initials="F." role="editor" surname="Baker"/>
+            <date month="June" year="1995"/>
+            <abstract>
+              <t indent="0">This memo defines and discusses requirements for devices that perform the network layer forwarding function of the Internet protocol suite. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="1812"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1812"/>
+        </reference>
+        <reference anchor="RFC2113" target="https://www.rfc-editor.org/info/rfc2113" quoteTitle="true" derivedAnchor="RFC2113">
+          <front>
+            <title>IP Router Alert Option</title>
+            <author fullname="D. Katz" initials="D." surname="Katz"/>
+            <date month="February" year="1997"/>
+            <abstract>
+              <t indent="0">This memo describes a new IP Option type that alerts transit routers to more closely examine the contents of an IP packet. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2113"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2113"/>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC4291" target="https://www.rfc-editor.org/info/rfc4291" quoteTitle="true" derivedAnchor="RFC4291">
+          <front>
+            <title>IP Version 6 Addressing Architecture</title>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <date month="February" year="2006"/>
+            <abstract>
+              <t indent="0">This specification defines the addressing architecture of the IP Version 6 (IPv6) protocol. The document includes the IPv6 addressing model, text representations of IPv6 addresses, definition of IPv6 unicast addresses, anycast addresses, and multicast addresses, and an IPv6 node's required addresses.</t>
+              <t indent="0">This document obsoletes RFC 3513, "IP Version 6 Addressing Architecture". [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4291"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4291"/>
+        </reference>
+        <reference anchor="RFC6398" target="https://www.rfc-editor.org/info/rfc6398" quoteTitle="true" derivedAnchor="RFC6398">
+          <front>
+            <title>IP Router Alert Considerations and Usage</title>
+            <author fullname="F. Le Faucheur" initials="F." role="editor" surname="Le Faucheur"/>
+            <date month="October" year="2011"/>
+            <abstract>
+              <t indent="0">The IP Router Alert Option is an IP option that alerts transit routers to more closely examine the contents of an IP packet. The Resource reSerVation Protocol (RSVP), Pragmatic General Multicast (PGM), the Internet Group Management Protocol (IGMP), Multicast Listener Discovery (MLD), Multicast Router Discovery (MRD), and General Internet Signaling Transport (GIST) are some of the protocols that make use of the IP Router Alert Option. This document discusses security aspects and usage guidelines around the use of the current IP Router Alert Option, thereby updating RFC 2113 and RFC 2711. Specifically, it provides recommendations against using the Router Alert in the end-to-end open Internet and identifies controlled environments where protocols depending on Router Alert can be used safely. It also provides recommendations about protection approaches for service providers. Finally, it provides brief guidelines for Router Alert implementation on routers. This memo documents an Internet Best Current Practice.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="168"/>
+          <seriesInfo name="RFC" value="6398"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6398"/>
+        </reference>
+        <reference anchor="RFC7506" target="https://www.rfc-editor.org/info/rfc7506" quoteTitle="true" derivedAnchor="RFC7506">
+          <front>
+            <title>IPv6 Router Alert Option for MPLS Operations, Administration, and Maintenance (OAM)</title>
+            <author fullname="K. Raza" initials="K." surname="Raza"/>
+            <author fullname="N. Akiya" initials="N." surname="Akiya"/>
+            <author fullname="C. Pignataro" initials="C." surname="Pignataro"/>
+            <date month="April" year="2015"/>
+            <abstract>
+              <t indent="0">RFC 4379 defines the MPLS Label Switched Path (LSP) Ping/Traceroute mechanism in which the Router Alert Option (RAO) MUST be set in the IP header of the MPLS Echo Request messages and may conditionally be set in the IP header of the MPLS Echo Reply messages depending on the Reply Mode used. While a generic "Router shall examine packet" Option Value is used for the IPv4 RAO, there is no generic RAO value defined for IPv6 that can be used. This document allocates a new, generic IPv6 RAO value that can be used by MPLS Operations, Administration, and Maintenance (OAM) tools, including the MPLS Echo Request and MPLS Echo Reply messages for MPLS in IPv6 environments. Consequently, it updates RFC 4379.</t>
+              <t indent="0">The initial motivation to request an IPv6 RAO value for MPLS OAM comes from the MPLS LSP Ping/Traceroute. However, this value is applicable to all MPLS OAM and not limited to MPLS LSP Ping/ Traceroute.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7506"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7506"/>
+        </reference>
+        <reference anchor="RFC8029" target="https://www.rfc-editor.org/info/rfc8029" quoteTitle="true" derivedAnchor="RFC8029">
+          <front>
+            <title>Detecting Multiprotocol Label Switched (MPLS) Data-Plane Failures</title>
+            <author fullname="K. Kompella" initials="K." surname="Kompella"/>
+            <author fullname="G. Swallow" initials="G." surname="Swallow"/>
+            <author fullname="C. Pignataro" initials="C." role="editor" surname="Pignataro"/>
+            <author fullname="N. Kumar" initials="N." surname="Kumar"/>
+            <author fullname="S. Aldrin" initials="S." surname="Aldrin"/>
+            <author fullname="M. Chen" initials="M." surname="Chen"/>
+            <date month="March" year="2017"/>
+            <abstract>
+              <t indent="0">This document describes a simple and efficient mechanism to detect data-plane failures in Multiprotocol Label Switching (MPLS) Label Switched Paths (LSPs). It defines a probe message called an "MPLS echo request" and a response message called an "MPLS echo reply" for returning the result of the probe. The MPLS echo request is intended to contain sufficient information to check correct operation of the data plane and to verify the data plane against the control plane, thereby localizing faults.</t>
+              <t indent="0">This document obsoletes RFCs 4379, 6424, 6829, and 7537, and updates RFC 1122.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8029"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8029"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+      </references>
+      <references pn="section-8.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="IANA-IPV6-RAO" target="https://www.iana.org/assignments/ipv6-routeralert-values" quoteTitle="true" derivedAnchor="IANA-IPV6-RAO">
+          <front>
+            <title>IPv6 Router Alert Option Values</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="IANA-LSP-PING" target="https://www.iana.org/assignments/mpls-lsp-ping-parameters" quoteTitle="true" derivedAnchor="IANA-LSP-PING">
+          <front>
+            <title>Multiprotocol Label Switching (MPLS) Label Switched Paths (LSPs) Ping Parameters</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="RFC3032" target="https://www.rfc-editor.org/info/rfc3032" quoteTitle="true" derivedAnchor="RFC3032">
+          <front>
+            <title>MPLS Label Stack Encoding</title>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <author fullname="D. Tappan" initials="D." surname="Tappan"/>
+            <author fullname="G. Fedorkow" initials="G." surname="Fedorkow"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <author fullname="D. Farinacci" initials="D." surname="Farinacci"/>
+            <author fullname="T. Li" initials="T." surname="Li"/>
+            <author fullname="A. Conta" initials="A." surname="Conta"/>
+            <date month="January" year="2001"/>
+            <abstract>
+              <t indent="0">This document specifies the encoding to be used by an LSR in order to transmit labeled packets on Point-to-Point Protocol (PPP) data links, on LAN data links, and possibly on other data links as well. This document also specifies rules and procedures for processing the various fields of the label stack encoding. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3032"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3032"/>
+        </reference>
+        <reference anchor="RFC6438" target="https://www.rfc-editor.org/info/rfc6438" quoteTitle="true" derivedAnchor="RFC6438">
+          <front>
+            <title>Using the IPv6 Flow Label for Equal Cost Multipath Routing and Link Aggregation in Tunnels</title>
+            <author fullname="B. Carpenter" initials="B." surname="Carpenter"/>
+            <author fullname="S. Amante" initials="S." surname="Amante"/>
+            <date month="November" year="2011"/>
+            <abstract>
+              <t indent="0">The IPv6 flow label has certain restrictions on its use. This document describes how those restrictions apply when using the flow label for load balancing by equal cost multipath routing and for link aggregation, particularly for IP-in-IPv6 tunneled traffic. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6438"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6438"/>
+        </reference>
+        <reference anchor="RFC6790" target="https://www.rfc-editor.org/info/rfc6790" quoteTitle="true" derivedAnchor="RFC6790">
+          <front>
+            <title>The Use of Entropy Labels in MPLS Forwarding</title>
+            <author fullname="K. Kompella" initials="K." surname="Kompella"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <author fullname="S. Amante" initials="S." surname="Amante"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <author fullname="L. Yong" initials="L." surname="Yong"/>
+            <date month="November" year="2012"/>
+            <abstract>
+              <t indent="0">Load balancing is a powerful tool for engineering traffic across a network. This memo suggests ways of improving load balancing across MPLS networks using the concept of "entropy labels". It defines the concept, describes why entropy labels are useful, enumerates properties of entropy labels that allow maximal benefit, and shows how they can be signaled and used for various applications. This document updates RFCs 3031, 3107, 3209, and 5036. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6790"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6790"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">
+The authors express their appreciation to <contact fullname="Adrian Farrel"/> and <contact fullname="Gyan Mishra"/> for their suggestions that improved the readability of the document.
+      </t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Kireeti Kompella" initials="K." surname="Kompella">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <postal>
+            <street>1133 Innovation Way</street>
+            <city>Sunnyvale</city>
+            <region>CA</region>
+            <code>94089</code>
+            <country>United States of America</country>
+          </postal>
+          <email>kireeti.ietf@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Ron Bonica" initials="R." surname="Bonica">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <postal>
+            <street>1133 Innovation Way</street>
+            <city>Sunnyvale</city>
+            <region>CA</region>
+            <code>94089</code>
+            <country>United States of America</country>
+          </postal>
+          <email>rbonica@juniper.net</email>
+        </address>
+      </author>
+      <author fullname="Greg Mirsky" initials="G." surname="Mirsky" role="editor">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <email>gregimirsky@gmail.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

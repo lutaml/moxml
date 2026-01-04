@@ -1,0 +1,1403 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="pre5378Trust200902" submissionType="IETF" category="std" consensus="true" xml:lang="en" docName="draft-ietf-calext-vcard-jscontact-extensions-11" number="9554" obsoletes="" updates="6350" tocInclude="true" symRefs="true" sortRefs="true" prepTime="2024-05-07T07:31:29" indexInclude="true" scripts="Common,Han,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-calext-vcard-jscontact-extensions-11" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9554" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="vCard JSContact Extensions">vCard Format Extensions for JSContact</title>
+    <seriesInfo name="RFC" value="9554" stream="IETF"/>
+    <author initials="R." surname="Stepanek" fullname="Robert Stepanek">
+      <organization showOnFrontPage="true">Fastmail</organization>
+      <address>
+        <postal>
+          <extaddr>PO Box 234</extaddr>
+          <street>Collins St. West</street>
+          <city>Melbourne</city>
+          <region>VIC</region>
+          <code>8007</code>
+          <country>Australia</country>
+        </postal>
+        <email>rsto@fastmailteam.com</email>
+      </address>
+    </author>
+    <author initials="M." surname="Loffredo" fullname="Mario Loffredo">
+      <organization showOnFrontPage="true">IIT-CNR</organization>
+      <address>
+        <postal>
+          <street>Via Moruzzi, 1</street>
+          <city>Pisa</city>
+          <code>56124</code>
+          <country>Italy</country>
+          <region/>
+        </postal>
+        <email>mario.loffredo@iit.cnr.it</email>
+      </address>
+    </author>
+    <date month="05" year="2024"/>
+    <area>art</area>
+    <workgroup>calext</workgroup>
+    <keyword>addressbook</keyword>
+    <keyword>contacts</keyword>
+    <keyword>cards</keyword>
+    <keyword>vCard</keyword>
+    <keyword>JSContact</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">
+        This document defines a set of new properties for vCard and extends the use of existing ones. Their primary purpose is to align the same set of features between the JSContact and vCard formats, but the new definitions also aim to be useful within just the vCard format.  This document updates RFC 6350 ("vCard Format Specification").
+      </t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9554" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-3">
+            This document may contain material from IETF Documents or IETF
+            Contributions published or made publicly available before November
+            10, 2008. The person(s) controlling the copyright in some of this
+            material may not have granted the IETF Trust the right to allow
+            modifications of such material outside the IETF Standards Process.
+            Without obtaining an adequate license from the person(s)
+            controlling the copyright in such materials, this document may not
+            be modified outside the IETF Standards Process, and derivative
+            works of it may not be created outside the IETF Standards Process,
+            except to format it for publication as an RFC or to translate it
+            into languages other than English.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-notational-conventions">Notational Conventions</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-abnf-notations">ABNF Notations</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-updated-properties">Updated Properties</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-adr">ADR</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-n">N</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-properties">New Properties</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-created">CREATED</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-gramgender">GRAMGENDER</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-language">LANGUAGE</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.4">
+                <t indent="0" pn="section-toc.1-1.3.2.4.1"><xref derivedContent="3.4" format="counter" sectionFormat="of" target="section-3.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-pronouns">PRONOUNS</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.5">
+                <t indent="0" pn="section-toc.1-1.3.2.5.1"><xref derivedContent="3.5" format="counter" sectionFormat="of" target="section-3.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-socialprofile">SOCIALPROFILE</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-parameters">New Parameters</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-author">AUTHOR</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-author-name">AUTHOR-NAME</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-created-2">CREATED</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.4">
+                <t indent="0" pn="section-toc.1-1.4.2.4.1"><xref derivedContent="4.4" format="counter" sectionFormat="of" target="section-4.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-derived">DERIVED</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.5">
+                <t indent="0" pn="section-toc.1-1.4.2.5.1"><xref derivedContent="4.5" format="counter" sectionFormat="of" target="section-4.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-label">LABEL</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.6">
+                <t indent="0" pn="section-toc.1-1.4.2.6.1"><xref derivedContent="4.6" format="counter" sectionFormat="of" target="section-4.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-phonetic">PHONETIC</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.7">
+                <t indent="0" pn="section-toc.1-1.4.2.7.1"><xref derivedContent="4.7" format="counter" sectionFormat="of" target="section-4.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-prop-id">PROP-ID</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.8">
+                <t indent="0" pn="section-toc.1-1.4.2.8.1"><xref derivedContent="4.8" format="counter" sectionFormat="of" target="section-4.8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-script">SCRIPT</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.9">
+                <t indent="0" pn="section-toc.1-1.4.2.9.1"><xref derivedContent="4.9" format="counter" sectionFormat="of" target="section-4.9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-service-type">SERVICE-TYPE</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.10">
+                <t indent="0" pn="section-toc.1-1.4.2.10.1"><xref derivedContent="4.10" format="counter" sectionFormat="of" target="section-4.10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-username">USERNAME</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-values">New Values</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-billing-address-type-value">Billing Address Type Value</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-delivery-address-type-value">Delivery Address Type Value</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-changes-to-the-vcard-proper">Changes to the vCard Properties Registry</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2.1.2">
+                  <li pn="section-toc.1-1.7.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.7.2.1.2.1.1"><xref derivedContent="7.1.1" format="counter" sectionFormat="of" target="section-7.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-vcard-property-definiti">New vCard Property Definitions</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.7.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.7.2.1.2.2.1"><xref derivedContent="7.1.2" format="counter" sectionFormat="of" target="section-7.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-updated-vcard-properties">Updated vCard Properties </xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-changes-to-the-vcard-parame">Changes to the vCard Parameters Registry</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.3">
+                <t indent="0" pn="section-toc.1-1.7.2.3.1"><xref derivedContent="7.3" format="counter" sectionFormat="of" target="section-7.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-changes-to-the-vcard-propert">Changes to the vCard Property Values Registry</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.4">
+                <t indent="0" pn="section-toc.1-1.7.2.4.1"><xref derivedContent="7.4" format="counter" sectionFormat="of" target="section-7.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-changes-to-the-vcard-paramet">Changes to the vCard Parameter Values Registry</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">
+        The JSContact <xref target="RFC9553" format="default" sectionFormat="of" derivedContent="RFC9553"/> format aims to be an alternative to the
+        vCard <xref target="RFC6350" format="default" sectionFormat="of" derivedContent="RFC6350"/> format for representation of contact and address book
+        data.  As such, it introduces new semantics that are not covered in the current
+        definition of vCard and its various extensions.  Converting contact data between
+        the two formats is defined in <xref target="RFC9555" format="default" sectionFormat="of" derivedContent="RFC9555"/> with the goal of
+        not losing any semantics during conversion. To achieve this, this document
+        defines a new set of properties for vCard and extends existing definitions.
+      </t>
+      <section anchor="notational-conventions" numbered="true" toc="include" removeInRFC="false" pn="section-1.1">
+        <name slugifiedName="name-notational-conventions">Notational Conventions</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.
+        </t>
+      </section>
+      <section anchor="abnf-notations" numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-abnf-notations">ABNF Notations</name>
+        <t indent="0" pn="section-1.2-1">The ABNF definitions in this document use the notations of <xref target="RFC5234" format="default" sectionFormat="of" derivedContent="RFC5234"/>. ABNF rules not defined in this document are defined in either <xref target="RFC5234" format="default" sectionFormat="of" derivedContent="RFC5234"/> (such as the ABNF for CRLF, WSP, DQUOTE, VCHAR, ALPHA, and DIGIT) or <xref target="RFC6350" format="default" sectionFormat="of" derivedContent="RFC6350"/>.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-updated-properties">Updated Properties</name>
+      <section anchor="prop-adr" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-adr">ADR</name>
+        <t indent="0" pn="section-2.1-1">This specification modifies the definition of the ADR property.  It extends its structured value with additional address components to better support the variety of international addresses.  It separates the address parts, which currently are typically combined in street address component values, into distinct components.</t>
+        <t indent="0" pn="section-2.1-2">Implementations <bcp14>SHOULD</bcp14> write a combined value of these components in the street address component for backwards compatibility, but they <bcp14>SHOULD</bcp14> ignore the street component during reads if the ADR property value contains any of the new components.</t>
+        <t indent="0" pn="section-2.1-3">The following change is made to the first paragraph under "Special note", as originally specified in <xref target="RFC6350" sectionFormat="of" section="6.3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-6.3.1" derivedContent="RFC6350"/>.  The remaining paragraphs of that section in the original specification still apply.</t>
+        <t indent="0" pn="section-2.1-4">
+
+             Special note: The structured type value consists of a sequence of
+             address components. The component values <bcp14>MUST</bcp14> be specified in
+             their corresponding position. The structured type value
+             corresponds, in sequence, to the</t>
+        <ul spacing="compact" empty="true" bare="false" indent="3" pn="section-2.1-5">
+          <li pn="section-2.1-5.1"> post office box;</li>
+          <li pn="section-2.1-5.2"> extended address (e.g., apartment or suite number);</li>
+          <li pn="section-2.1-5.3"> street address;</li>
+          <li pn="section-2.1-5.4"> locality (e.g., city);</li>
+          <li pn="section-2.1-5.5"> region (e.g., state or province);</li>
+          <li pn="section-2.1-5.6"> postal code;</li>
+          <li pn="section-2.1-5.7"> country name (full name in the language specified in
+                    <xref target="RFC6350" sectionFormat="of" section="5.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-5.1" derivedContent="RFC6350"/>);</li>
+          <li pn="section-2.1-5.8"> room, suite number, or identifier;</li>
+          <li pn="section-2.1-5.9"> apartment number, extension designation, or box number;</li>
+          <li pn="section-2.1-5.10"> building floor or level;</li>
+          <li pn="section-2.1-5.11"> street number;</li>
+          <li pn="section-2.1-5.12"> street name;</li>
+          <li pn="section-2.1-5.13"> building, tower, or condominium;</li>
+          <li pn="section-2.1-5.14"> block name or number;</li>
+          <li pn="section-2.1-5.15"> subdistrict;</li>
+          <li pn="section-2.1-5.16"> district;</li>
+          <li pn="section-2.1-5.17"> landmark or another publicly known prominent feature that can substitute the street name and number (e.g., "White House" and "Taj Mahal"); and </li>
+          <li pn="section-2.1-5.18"> the cardinal direction or quadrant (e.g., "north").</li>
+        </ul>
+        <t indent="0" pn="section-2.1-6">The following change is made to the definition of "ADR-value" under "ABNF", as originally specified in <xref target="RFC6350" sectionFormat="of" section="6.3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-6.3.1" derivedContent="RFC6350"/>.</t>
+        <t indent="0" pn="section-2.1-7">ABNF</t>
+        <sourcecode type="abnf" markers="false" pn="section-2.1-8">
+ADR-value = ; defined in RFC 6350, Section 6.3.1.:
+            ADR-component-pobox ";"
+            ADR-component-ext ";"
+            ADR-component-street ";"
+            ADR-component-locality ";"
+            ADR-component-region ";"
+            ADR-component-code ";"
+            ADR-component-country ";"
+            ; defined in this document:
+            ADR-component-room ";"
+            ADR-component-apartment ";"
+            ADR-component-floor ";"
+            ADR-component-streetnumber ";"
+            ADR-component-streetname ";"
+            ADR-component-building ";"
+            ADR-component-block ";"
+            ADR-component-subdistrict ";"
+            ADR-component-district ";"
+            ADR-component-landmark ";"
+            ADR-component-direction
+
+ADR-component-pobox    = list-component
+ADR-component-ext      = list-component
+ADR-component-street   = list-component
+ADR-component-locality = list-component
+ADR-component-region   = list-component
+ADR-component-code     = list-component
+ADR-component-country  = list-component
+ADR-component-room     = list-component
+ADR-component-apartment = list-component
+ADR-component-floor    = list-component
+ADR-component-streetnumber = list-component
+ADR-component-streetname = list-component
+ADR-component-building = list-component
+ADR-component-block    = list-component
+ADR-component-subdistrict = list-component
+ADR-component-district = list-component
+ADR-component-landmark = list-component
+ADR-component-direction = list-component
+</sourcecode>
+        <t indent="0" pn="section-2.1-9">The following change is made under "Example", as originally specified in <xref target="RFC6350" sectionFormat="of" section="6.3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-6.3.1" derivedContent="RFC6350"/>.</t>
+        <t indent="0" pn="section-2.1-10">Example: In this example, the post office box and the extended address components are absent.  The street number and name are both added as separate components and are combined in the street component for backwards compatibility.</t>
+        <sourcecode name="" markers="false" pn="section-2.1-11">
+ADR;GEO="geo:12.3457,78.910":
+  ;;123 Main Street;Any Town;CA;91921-1234;U.S.A
+  ;;;;123;Main Street;;;;;;
+</sourcecode>
+      </section>
+      <section anchor="prop-n" numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-n">N</name>
+        <t indent="0" pn="section-2.2-1">This specification modifies the definition of the N property.  It extends its structured value with additional name components to better support international names and generation markers.  In doing so, this also facilitates formatting N property values using the Unicode Common Locale Data Repository (CLDR) Person Name <xref target="CLDRPersonName" format="default" sectionFormat="of" derivedContent="CLDRPersonName"/> formatting standard.</t>
+        <t indent="0" pn="section-2.2-2">One new component is for secondary surnames, because in some cultures, such secondary surname kinds are used to indicate the paternal and maternal family names or generational names indicating father or grandfather.  Another new component indicates a generation ("II", "XVI") or parental relation ("Jr.", "Sr.").</t>
+        <t indent="0" pn="section-2.2-3">Currently, implementations typically place secondary surnames in the family name component and generational markers in the honorific suffixes component.  For backwards compatibility, implementations <bcp14>SHOULD</bcp14> add such values to both the newly defined components and their backwards-compatible counterpart.  Reading N property values, implementations <bcp14>SHOULD</bcp14> ignore any value in the backwards-compatible component if an equal value is set in the new component accordingly.  For example, a "Jr." that occurs in both honorific suffixes and generation should only be handled as a generational marker.</t>
+        <t indent="0" pn="section-2.2-4">The following change is made to the first paragraph under "Special note", as originally specified in <xref target="RFC6350" sectionFormat="of" section="6.2.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-6.2.2" derivedContent="RFC6350"/>. The remaining paragraphs of that section in the original specification still apply.</t>
+        <t indent="0" pn="section-2.2-5">Special note: The structured property value corresponds, in
+	  sequence, to the</t>
+        <ul spacing="compact" empty="true" bare="false" indent="3" pn="section-2.2-6">
+          <li pn="section-2.2-6.1">family names (also known as surnames);</li>
+          <li pn="section-2.2-6.2">given names;</li>
+          <li pn="section-2.2-6.3">additional names;</li>
+          <li pn="section-2.2-6.4">honorific prefixes;</li>
+          <li pn="section-2.2-6.5">honorific suffixes;</li>
+          <li pn="section-2.2-6.6">secondary surname; and</li>
+          <li pn="section-2.2-6.7">generation.</li>
+        </ul>
+        <t indent="0" pn="section-2.2-7">The following change is made under "ABNF", as originally specified in <xref target="RFC6350" sectionFormat="of" section="6.2.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-6.2.2" derivedContent="RFC6350"/>.</t>
+        <t indent="0" pn="section-2.2-8">ABNF</t>
+        <sourcecode type="abnf" markers="false" pn="section-2.2-9">
+N-param = "VALUE=text" / sort-as-param / language-param
+             / altid-param / any-param
+N-value = list-component 6(";" list-component)
+</sourcecode>
+        <t indent="0" pn="section-2.2-10">The following change is made under "Examples", as originally specified in <xref target="RFC6350" section="6.2.2" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-6.2.2" derivedContent="RFC6350"/>.</t>
+        <t indent="0" pn="section-2.2-11">Examples</t>
+        <sourcecode name="" markers="false" pn="section-2.2-12">
+N:Public;John;Quinlan;Mr.;Esq.
+
+N:Stevenson;John;Philip,Paul;Dr.;Jr.,M.D.,A.C.P.;;Jr.
+</sourcecode>
+        <t indent="0" pn="section-2.2-13">No change is required for the definition of the SORT-AS parameter, but the new components also apply for use with this parameter.</t>
+      </section>
+    </section>
+    <section anchor="new-properties" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-new-properties">New Properties</name>
+      <section anchor="prop-created" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-created">CREATED</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-3.1-1">
+          <dt pn="section-3.1-1.1">Property name:</dt>
+          <dd pn="section-3.1-1.2">CREATED</dd>
+          <dt pn="section-3.1-1.3">Purpose:</dt>
+          <dd pn="section-3.1-1.4">Defines the date and time when the vCard was created.</dd>
+          <dt pn="section-3.1-1.5">Value type:</dt>
+          <dd pn="section-3.1-1.6">A single timestamp value.</dd>
+          <dt pn="section-3.1-1.7">Cardinality:</dt>
+          <dd pn="section-3.1-1.8">*1</dd>
+          <dt pn="section-3.1-1.9">Property parameters:</dt>
+          <dd pn="section-3.1-1.10">VALUE</dd>
+          <dt pn="section-3.1-1.11">Description:</dt>
+          <dd pn="section-3.1-1.12">
+            This is the timestamp when the vCard was created.  Copying the
+            vCard across systems does not count as a new creation nor
+            a new revision.  Instead, the timestamp value typically
+            stays unchanged for the existence of the vCard.
+          </dd>
+          <dt pn="section-3.1-1.13">Format definition:</dt>
+          <dd pn="section-3.1-1.14">
+            <sourcecode type="abnf" markers="false" pn="section-3.1-1.14.1">
+created       = "CREATED" createdparam ":" timestamp
+
+createdparam  = *(
+                 ;
+                 ; The following are OPTIONAL
+                 ; but MUST NOT occur more than once.
+                 ;
+                 (";" "VALUE" "=" "timestamp") /
+                 ;
+                 ; The following are OPTIONAL
+                 ; and MAY occur more than once.
+                 ;
+                 (";" any-param)
+                 ;
+                 )
+</sourcecode>
+          </dd>
+          <dt pn="section-3.1-1.15">Example(s):</dt>
+          <dd pn="section-3.1-1.16">
+            <sourcecode name="" markers="false" pn="section-3.1-1.16.1">
+CREATED:20220705T093412Z
+CREATED;VALUE=TIMESTAMP:20211022T140000-05
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="prop-gramgender" numbered="true" removeInRFC="false" toc="include" pn="section-3.2">
+        <name slugifiedName="name-gramgender">GRAMGENDER</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-3.2-1">
+          <dt pn="section-3.2-1.1">Property name:</dt>
+          <dd pn="section-3.2-1.2">GRAMGENDER</dd>
+          <dt pn="section-3.2-1.3">Purpose:</dt>
+          <dd pn="section-3.2-1.4">Defines which grammatical gender to use in salutations and other grammatical constructs.
+          </dd>
+          <dt pn="section-3.2-1.5">Value type:</dt>
+          <dd pn="section-3.2-1.6">A single text value that is restricted to an enumerated list of allowed values.</dd>
+          <dt pn="section-3.2-1.7">Cardinality:</dt>
+          <dd pn="section-3.2-1.8">*</dd>
+          <dt pn="section-3.2-1.9">Property parameters:</dt>
+          <dd pn="section-3.2-1.10">LANGUAGE</dd>
+          <dt pn="section-3.2-1.11">Description:</dt>
+          <dd pn="section-3.2-1.12">
+            <t indent="0" pn="section-3.2-1.12.1">
+              This property defines the grammatical gender that the contact prefers
+              to be addressed by or referred to as in written or spoken form.
+              For example, the German language distinguishes by grammatical gender in salutations such as "Sehr geehrte" (feminine) and "Sehr geehrter" (masculine).
+              Multiple occurrences of this property
+              <bcp14>MUST</bcp14> be distinguished by the LANGUAGE parameter.
+            </t>
+          </dd>
+          <dt pn="section-3.2-1.13">Format definition:</dt>
+          <dd pn="section-3.2-1.14">
+            <sourcecode type="abnf" markers="false" pn="section-3.2-1.14.1">
+gramgender       = "GRAMGENDER" gramgender-param
+                      ":" gramgender-value
+
+gramgender-param =
+                *(
+                 ;
+                 ; The following are OPTIONAL
+                 ; but MUST NOT occur more than once.
+                 ;
+                 (";" language-param) /
+                 ;
+                 ; The following are OPTIONAL
+                 ; and MAY occur more than once.
+                 ;
+                 (";" any-param)
+                 ;
+                 )
+
+gramgender-value = "animate" /
+                   "common" /
+                   "feminine" /
+                   "inanimate" /
+                   "masculine" /
+                   "neuter" /
+                   iana-token /
+                   x-name
+</sourcecode>
+          </dd>
+          <dt pn="section-3.2-1.15">Example(s):</dt>
+          <dd pn="section-3.2-1.16">
+            <sourcecode name="" markers="false" pn="section-3.2-1.16.1">
+GRAMGENDER;LANGUAGE=de:feminine
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="prop-language" numbered="true" removeInRFC="false" toc="include" pn="section-3.3">
+        <name slugifiedName="name-language">LANGUAGE</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-3.3-1">
+          <dt pn="section-3.3-1.1">Property name:</dt>
+          <dd pn="section-3.3-1.2">LANGUAGE</dd>
+          <dt pn="section-3.3-1.3">Purpose:</dt>
+          <dd pn="section-3.3-1.4">Defines the default language that human-readable text values in this vCard are assumed to be written in.</dd>
+          <dt pn="section-3.3-1.5">Value type:</dt>
+          <dd pn="section-3.3-1.6">A single Language-Tag value as defined in <xref target="RFC6350" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-4" derivedContent="RFC6350"/>.</dd>
+          <dt pn="section-3.3-1.7">Cardinality:</dt>
+          <dd pn="section-3.3-1.8">*1</dd>
+          <dt pn="section-3.3-1.9">Property parameters:</dt>
+          <dd pn="section-3.3-1.10">The LANGUAGE parameter <bcp14>MUST NOT</bcp14> be assigned to this property.</dd>
+          <dt pn="section-3.3-1.11">Description:</dt>
+          <dd pn="section-3.3-1.12">
+            This property defines the language that property values of type
+            TEXT are assumed to be written in for this vCard.
+            If a vCard property includes the LANGUAGE parameter, then the
+            parameter value has higher precedence than the LANGUAGE
+            property value.
+          </dd>
+          <dt pn="section-3.3-1.13">Format definition:</dt>
+          <dd pn="section-3.3-1.14">
+            <sourcecode type="abnf" markers="false" pn="section-3.3-1.14.1">
+language-prop       = "LANGUAGE" any-param ":" Language-Tag
+               ; Language-Tag is defined in RFC 6350, Section 4.
+</sourcecode>
+          </dd>
+          <dt pn="section-3.3-1.15">Example(s):</dt>
+          <dd pn="section-3.3-1.16">
+            <sourcecode name="" markers="false" pn="section-3.3-1.16.1">
+LANGUAGE:de-AT
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="prop-pronouns" numbered="true" removeInRFC="false" toc="include" pn="section-3.4">
+        <name slugifiedName="name-pronouns">PRONOUNS</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-3.4-1">
+          <dt pn="section-3.4-1.1">Property name:</dt>
+          <dd pn="section-3.4-1.2">PRONOUNS</dd>
+          <dt pn="section-3.4-1.3">Purpose:</dt>
+          <dd pn="section-3.4-1.4">
+            Defines the pronouns that shall be used
+            to refer to the entity represented by this vCard.
+          </dd>
+          <dt pn="section-3.4-1.5">Value type:</dt>
+          <dd pn="section-3.4-1.6">A single text value.</dd>
+          <dt pn="section-3.4-1.7">Cardinality:</dt>
+          <dd pn="section-3.4-1.8">*</dd>
+          <dt pn="section-3.4-1.9">Property parameters:</dt>
+          <dd pn="section-3.4-1.10">LANGUAGE, PREF, TYPE, ALTID</dd>
+          <dt pn="section-3.4-1.11">Description:</dt>
+          <dd pn="section-3.4-1.12">
+            This property contains the pronouns that the contact chooses to use for themselves.
+            The value is free-form text.  These pronouns shall be used
+            when addressing or referring to the contact.  Multiple occurrences of
+            this property <bcp14>MAY</bcp14> define pronouns for multiple languages,
+            preferences, and contexts.  Multiple pronouns in the same language
+            <bcp14>SHOULD</bcp14> use the PREF parameter; otherwise, the order of
+            preference is implementation-specific.
+          </dd>
+          <dt pn="section-3.4-1.13">Format definition:</dt>
+          <dd pn="section-3.4-1.14">
+            <sourcecode type="abnf" markers="false" pn="section-3.4-1.14.1">
+pronouns       = "PRONOUNS" pronouns-param ":" text
+
+pronouns-param =
+                *(
+                 ;
+                 ; The following are OPTIONAL
+                 ; but MUST NOT occur more than once.
+                 ;
+                 (";" language-param) /
+                 (";" pref-param) /
+                 (";" type-param) /
+                 (";" altid-param) /
+                 ;
+                 ; The following are OPTIONAL
+                 ; and MAY occur more than once.
+                 ;
+                 (";" any-param)
+                 ;
+                 )
+</sourcecode>
+          </dd>
+          <dt pn="section-3.4-1.15">Example(s):</dt>
+          <dd pn="section-3.4-1.16">
+            <sourcecode name="" markers="false" pn="section-3.4-1.16.1">
+PRONOUNS;LANGUAGE=en;PREF=1:xe/xir
+PRONOUNS;LANGUAGE=en;PREF=2:they/them
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="prop-socialprofile" numbered="true" removeInRFC="false" toc="include" pn="section-3.5">
+        <name slugifiedName="name-socialprofile">SOCIALPROFILE</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-3.5-1">
+          <dt pn="section-3.5-1.1">Property name:</dt>
+          <dd pn="section-3.5-1.2">SOCIALPROFILE</dd>
+          <dt pn="section-3.5-1.3">Purpose:</dt>
+          <dd pn="section-3.5-1.4">Specifies the URI or username for social media profiles associated with the object the vCard represents.</dd>
+          <dt pn="section-3.5-1.5">Value type:</dt>
+          <dd pn="section-3.5-1.6">A single URI or TEXT value.  The default value type is URI.</dd>
+          <dt pn="section-3.5-1.7">Cardinality:</dt>
+          <dd pn="section-3.5-1.8">*</dd>
+          <dt pn="section-3.5-1.9">Property parameters:</dt>
+          <dd pn="section-3.5-1.10">The SERVICE-TYPE parameter <bcp14>MUST</bcp14> be assigned to this property if the value type is TEXT, and it <bcp14>MAY</bcp14> be assigned if the value type is URI.  In either case, it <bcp14>MUST NOT</bcp14> be assigned more than once.</dd>
+          <dt pn="section-3.5-1.11">Description:</dt>
+          <dd pn="section-3.5-1.12">
+            Several vCard address book implementations currently use an experimental X-SOCIALPROFILE property to store social media profiles for contacts.  This specification provides an IANA-registered property for the same purpose.  In addition to the typical use of this property with URI values, it also allows setting usernames for social media services as free-text TEXT values, in which case the service name <bcp14>MUST</bcp14> be provided as a parameter.  Names <bcp14>MUST</bcp14> be considered equal if they match case-insensitively.
+          </dd>
+          <dt pn="section-3.5-1.13">Format definition:</dt>
+          <dd pn="section-3.5-1.14">
+            <sourcecode type="abnf" markers="false" pn="section-3.5-1.14.1">
+socialpr       = "SOCIALPROFILE" socialpr-param ":"
+                                 socialpr-value
+
+socialpr-param = "VALUE=uri" / "VALUE=text" /
+                 service-type-param / any-param
+
+socialpr-value = URI / text
+</sourcecode>
+          </dd>
+          <dt pn="section-3.5-1.15">Example(s):</dt>
+          <dd pn="section-3.5-1.16">
+            <sourcecode name="" markers="false" pn="section-3.5-1.16.1">
+SOCIALPROFILE;SERVICE-TYPE=Mastodon:https://example.com/@foo
+SOCIALPROFILE:https://example.com/ietf
+SOCIALPROFILE;SERVICE-TYPE=SomeSite;VALUE=text:peter94
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="new-parameters" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-new-parameters">New Parameters</name>
+      <section anchor="param-author" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-author">AUTHOR</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.1-1">
+          <dt pn="section-4.1-1.1">Parameter name:</dt>
+          <dd pn="section-4.1-1.2">AUTHOR</dd>
+          <dt pn="section-4.1-1.3">Purpose:</dt>
+          <dd pn="section-4.1-1.4">Identifies the author of the associated property value.</dd>
+          <dt pn="section-4.1-1.5">Description:</dt>
+          <dd pn="section-4.1-1.6">
+            <t indent="0" pn="section-4.1-1.6.1">This parameter <bcp14>MAY</bcp14> be set on any property where conveying authorship is desired.  It identifies the author as a URI <xref target="RFC3986" format="default" sectionFormat="of" derivedContent="RFC3986"/>.  Since every valid URI includes the COLON (U+003A) character, the parameter value <bcp14>MUST</bcp14> be quoted.  As an alternative or in addition to this parameter, the AUTHOR-NAME parameter allows naming an author as a free-text value (see <xref target="param-author-name" format="default" sectionFormat="of" derivedContent="Section 4.2"/>).</t>
+          </dd>
+          <dt pn="section-4.1-1.7">Format definition:</dt>
+          <dd pn="section-4.1-1.8">
+            <sourcecode type="abnf" markers="false" pn="section-4.1-1.8.1">
+author-param    = "AUTHOR" "=" DQUOTE URI DQUOTE
+</sourcecode>
+          </dd>
+          <dt pn="section-4.1-1.9">Example(s):</dt>
+          <dd pn="section-4.1-1.10">
+            <sourcecode name="" markers="false" pn="section-4.1-1.10.1">
+NOTE;AUTHOR="mailto:john@example.com":This is some note.
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="param-author-name" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-author-name">AUTHOR-NAME</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.2-1">
+          <dt pn="section-4.2-1.1">Parameter name:</dt>
+          <dd pn="section-4.2-1.2">AUTHOR-NAME</dd>
+          <dt pn="section-4.2-1.3">Purpose:</dt>
+          <dd pn="section-4.2-1.4">Names the author of the associated property value.</dd>
+          <dt pn="section-4.2-1.5">Description:</dt>
+          <dd pn="section-4.2-1.6">
+            <t indent="0" pn="section-4.2-1.6.1">This parameter <bcp14>MAY</bcp14> be set on any property where conveying authorship is desired.  It names the author as a free-text value.  The parameter value <bcp14>MUST NOT</bcp14> be empty.
+	    Implementations <bcp14>MUST</bcp14> take care to quote the name part; if otherwise, the part will not be a valid "param-value" (see <xref target="RFC6350" sectionFormat="of" section="3.3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-3.3" derivedContent="RFC6350"/>).  As an alternative or in addition to this parameter, the AUTHOR parameter allows identifying an author by URI (see <xref target="param-author" format="default" sectionFormat="of" derivedContent="Section 4.1"/>).</t>
+          </dd>
+          <dt pn="section-4.2-1.7">Format definition:</dt>
+          <dd pn="section-4.2-1.8">
+            <sourcecode type="abnf" markers="false" pn="section-4.2-1.8.1">
+author-name-param    = "AUTHOR-NAME" "=" param-value ; not empty
+</sourcecode>
+          </dd>
+          <dt pn="section-4.2-1.9">Example(s):</dt>
+          <dd pn="section-4.2-1.10">
+            <sourcecode name="" markers="false" pn="section-4.2-1.10.1">
+NOTE;AUTHOR-NAME=John Doe:This is some note.
+NOTE;AUTHOR-NAME="_:l33tHckr:_":A note by an unusual author name.
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="param-created" numbered="true" removeInRFC="false" toc="include" pn="section-4.3">
+        <name slugifiedName="name-created-2">CREATED</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.3-1">
+          <dt pn="section-4.3-1.1">Parameter name:</dt>
+          <dd pn="section-4.3-1.2">CREATED</dd>
+          <dt pn="section-4.3-1.3">Purpose:</dt>
+          <dd pn="section-4.3-1.4">Defines the date and time when a property was created in a vCard.</dd>
+          <dt pn="section-4.3-1.5">Description:</dt>
+          <dd pn="section-4.3-1.6">
+            <t indent="0" pn="section-4.3-1.6.1">This parameter <bcp14>MAY</bcp14> be set on any property to define the point in time when the property was created.  The value <bcp14>MUST</bcp14> be a valid TIMESTAMP value as defined in <xref target="RFC6350" sectionFormat="of" section="4.3.5" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-4.3.5" derivedContent="RFC6350"/>.  Generally, updating a property value <bcp14>SHOULD NOT</bcp14> change the creation timestamp.</t>
+          </dd>
+          <dt pn="section-4.3-1.7">Format definition:</dt>
+          <dd pn="section-4.3-1.8">
+            <sourcecode type="abnf" markers="false" pn="section-4.3-1.8.1">
+created-param = "CREATED" "=" param-value
+             ; a valid TIMESTAMP of Section 4.3.5 of RFC 6350
+</sourcecode>
+          </dd>
+          <dt pn="section-4.3-1.9">Example(s):</dt>
+          <dd pn="section-4.3-1.10">
+            <sourcecode name="" markers="false" pn="section-4.3-1.10.1">
+NOTE;CREATED=20221122T151823Z:This is some note.
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="param-derived" numbered="true" removeInRFC="false" toc="include" pn="section-4.4">
+        <name slugifiedName="name-derived">DERIVED</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.4-1">
+          <dt pn="section-4.4-1.1">Parameter name:</dt>
+          <dd pn="section-4.4-1.2">DERIVED</dd>
+          <dt pn="section-4.4-1.3">Purpose:</dt>
+          <dd pn="section-4.4-1.4">Specifies that the value of the associated property is derived from some other property values in the same vCard.</dd>
+          <dt pn="section-4.4-1.5">Description:</dt>
+          <dd pn="section-4.4-1.6">
+            <t indent="0" pn="section-4.4-1.6.1">This property parameter <bcp14>SHOULD</bcp14> be specified on a property if the property value is derived from some other properties in the same vCard.  When present with a value of "true", clients <bcp14>MUST NOT</bcp14> update the property.</t>
+            <t indent="0" pn="section-4.4-1.6.2">As an example, an implementation may derive the value of the FN property from the name components of the N property.  It indicates this fact by setting the DERIVED parameter on the FN property to "true".</t>
+          </dd>
+          <dt pn="section-4.4-1.7">Format definition:</dt>
+          <dd pn="section-4.4-1.8">
+            <sourcecode type="abnf" markers="false" pn="section-4.4-1.8.1">
+derived-param    = "DERIVED" "=" ("true" / "false")
+; Default is false
+</sourcecode>
+          </dd>
+          <dt pn="section-4.4-1.9">Example(s):</dt>
+          <dd pn="section-4.4-1.10">
+            <sourcecode name="" markers="false" pn="section-4.4-1.10.1">
+N:;John;Quinlan;Mr.;
+FN;DERIVED=TRUE:Mr. John Quinlan
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="param-label" numbered="true" removeInRFC="false" toc="include" pn="section-4.5">
+        <name slugifiedName="name-label">LABEL</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.5-1">
+          <dt pn="section-4.5-1.1">Parameter name:</dt>
+          <dd pn="section-4.5-1.2">LABEL</dd>
+          <dt pn="section-4.5-1.3">Purpose:</dt>
+          <dd pn="section-4.5-1.4">Used with the ADR property.  Its value contains a formatted text representation of that address, e.g., for delivery.</dd>
+          <dt pn="section-4.5-1.5">Description:</dt>
+          <dd pn="section-4.5-1.6">
+            <t indent="0" pn="section-4.5-1.6.1"><xref target="RFC6350" sectionFormat="of" section="6.3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-6.3.1" derivedContent="RFC6350"/> defines the ADR property, noting that the property can also include a LABEL parameter to present a delivery address label for the address.  But this parameter was not included in the IANA "vCard Parameters" registry (<xref target="RFC6350" sectionFormat="of" section="10.3.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-10.3.2" derivedContent="RFC6350"/>) and, accordingly, is not a registered standard vCard element.  This specification defines and registers the LABEL parameter for use with the ADR property as originally intended.</t>
+          </dd>
+          <dt pn="section-4.5-1.7">Format definition:</dt>
+          <dd pn="section-4.5-1.8">
+            <sourcecode type="abnf" markers="false" pn="section-4.5-1.8.1">
+label-param    = "LABEL" "=" param-value
+</sourcecode>
+          </dd>
+          <dt pn="section-4.5-1.9">Example(s):</dt>
+          <dd pn="section-4.5-1.10">
+            <t indent="0" pn="section-4.5-1.10.1">The LABEL parameter as illustrated in the ADR property example in <xref target="RFC6350" sectionFormat="of" section="6.3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-6.3.1" derivedContent="RFC6350"/>.</t>
+            <sourcecode name="" markers="false" pn="section-4.5-1.10.2">
+ADR;LABEL="Mr. John Q. Public, Esq.\nMail Drop: TNE QB\n123
+  Main Street\nAny Town, CA  91921-1234\nU.S.A.":
+  ;;123 Main Street;Any Town;CA;91921-1234;U.S.A.
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="param-phonetic" numbered="true" removeInRFC="false" toc="include" pn="section-4.6">
+        <name slugifiedName="name-phonetic">PHONETIC</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.6-1">
+          <dt pn="section-4.6-1.1">Parameter name:</dt>
+          <dd pn="section-4.6-1.2">PHONETIC</dd>
+          <dt pn="section-4.6-1.3">Purpose:</dt>
+          <dd pn="section-4.6-1.4">Defines how to pronounce the value of another property in the same vCard.</dd>
+          <dt pn="section-4.6-1.5">Description:</dt>
+          <dd pn="section-4.6-1.6">
+            <t indent="0" pn="section-4.6-1.6.1">This property parameter indicates that the value of its property contains the phonetic representation of another same-named property in the same vCard.  Exemplary uses are defining how to pronounce Japanese names and romanizing Mandarin or Cantonese names and address components.</t>
+            <t indent="0" pn="section-4.6-1.6.2">The parameter value indicates the phonetic system and <bcp14>MUST</bcp14> be one of the values enumerated in the IANA <xref target="iana-vcard-param-values" format="default" sectionFormat="of" derivedContent="Section 7.4">"vCard Parameter Values" registry</xref>.  This specification defines the following values:</t>
+            <dl indent="3" newline="false" spacing="normal" pn="section-4.6-1.6.3">
+              <dt pn="section-4.6-1.6.3.1">"ipa":</dt>
+              <dd pn="section-4.6-1.6.3.2"> denotes the <xref target="IPA" format="default" sectionFormat="of" derivedContent="IPA">International Phonetic Alphabet</xref>.</dd>
+              <dt pn="section-4.6-1.6.3.3">"jyut":</dt>
+              <dd pn="section-4.6-1.6.3.4"> denotes the Cantonese romanization system "Jyutping".</dd>
+              <dt pn="section-4.6-1.6.3.5">"piny":</dt>
+              <dd pn="section-4.6-1.6.3.6"> denotes the Standard Mandarin romanization system "Hanyu Pinyin".</dd>
+              <dt pn="section-4.6-1.6.3.7">"script":</dt>
+              <dd pn="section-4.6-1.6.3.8"> denotes the unknown phonetic system.  The <xref target="param-script" format="default" sectionFormat="of" derivedContent="Section 4.8">SCRIPT</xref> parameter <bcp14>MUST</bcp14> be set in addition to the PHONETIC parameter.</dd>
+            </dl>
+            <t indent="0" pn="section-4.6-1.6.4">The value type of the property on which the PHONETIC parameter is set <bcp14>MUST</bcp14> be of the same type as its related property.  If a component value is set in the property on which the PHONETIC parameter is set, then a component value also <bcp14>MUST</bcp14> be set at that same position in the related property.  On the other hand, not every component value in the related property needs to have a phonetic representation.</t>
+            <t indent="0" pn="section-4.6-1.6.5">The ALTID (<xref target="RFC6350" sectionFormat="of" section="5.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-5.4" derivedContent="RFC6350"/>) parameter <bcp14>MUST</bcp14> be set with equal values on both the related property and the property having the PHONETIC parameter set. If more than one same-named property has both the PHONETIC parameter set and an equal ALTID parameter value, then at most, one of these properties <bcp14>MAY</bcp14> not have the LANGUAGE parameter set, and all others <bcp14>MUST</bcp14> have the LANGUAGE parameter set.  The LANGUAGE parameters <bcp14>MUST NOT</bcp14> have equal values.  The LANGUAGE parameter value <bcp14>SHOULD NOT</bcp14> contain a script subtag in its Language-Tag value, and any such subtag <bcp14>MUST</bcp14> be ignored in favor of the <xref target="param-script" format="default" sectionFormat="of" derivedContent="Section 4.8">SCRIPT</xref> parameter value.</t>
+            <t indent="0" pn="section-4.6-1.6.6">This specification defines the PHONETIC parameter for use with the ADR and N properties.</t>
+          </dd>
+          <dt pn="section-4.6-1.7">Format definition:</dt>
+          <dd pn="section-4.6-1.8">
+            <sourcecode type="abnf" markers="false" pn="section-4.6-1.8.1">
+phonetic-param = "PHONETIC=" phonetic-value
+
+phonetic-value = "ipa" / "piny" / "jyut" / "script" /
+                 iana-token / x-name
+</sourcecode>
+          </dd>
+          <dt pn="section-4.6-1.9">Example(s):</dt>
+          <dd pn="section-4.6-1.10">
+            <sourcecode name="" markers="false" pn="section-4.6-1.10.1">
+N;ALTID=1;LANGUAGE=zh-Hant:孫;中山;文,逸仙;;;;
+N;ALTID=1;PHONETIC=jyut;
+  SCRIPT=Latn;LANGUAGE=yue:syun1;zung1saan1;man4,jat6sin1;;;;
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="param-propid" numbered="true" removeInRFC="false" toc="include" pn="section-4.7">
+        <name slugifiedName="name-prop-id">PROP-ID</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.7-1">
+          <dt pn="section-4.7-1.1">Parameter name:</dt>
+          <dd pn="section-4.7-1.2">PROP-ID</dd>
+          <dt pn="section-4.7-1.3">Purpose:</dt>
+          <dd pn="section-4.7-1.4">Identifies a property among all its siblings of the same property name.</dd>
+          <dt pn="section-4.7-1.5">Description:</dt>
+          <dd pn="section-4.7-1.6">
+            <t indent="0" pn="section-4.7-1.6.1">
+              This parameter uniquely identifies a property among all of its siblings with the same name within a vCard.  A valid PROP-ID value must be of 1 and a maximum of 255 octets in size, and it <bcp14>MUST</bcp14> only contain the ASCII alphanumeric characters ("A-Za-z0-9"), hyphen (-), and underscore ("_").  The identifier's only purpose is to uniquely identify siblings; its value has no other meaning.  If an application makes use of PROP-ID, it <bcp14>SHOULD</bcp14> assign a unique identifier to each sibling property of the same name within their embedding component.  The same identifier <bcp14>MAY</bcp14> be used for properties of a different name, and it <bcp14>MAY</bcp14> also be assigned to a same-named property that is not a sibling.
+            </t>
+            <t indent="0" pn="section-4.7-1.6.2">
+              Resolving duplicate identifier conflicts is specific to the application.  Similarly, handling properties where some but not all siblings have a PROP-ID assigned is application-specific.
+            </t>
+          </dd>
+          <dt pn="section-4.7-1.7">Format definition:</dt>
+          <dd pn="section-4.7-1.8">
+            <sourcecode type="abnf" markers="false" pn="section-4.7-1.8.1">
+prop-id-param  = "PROP-ID" "=" 1*255(ALPHA / DIGIT / "-"/ "_")
+</sourcecode>
+          </dd>
+          <dt pn="section-4.7-1.9">Example(s):</dt>
+          <dd pn="section-4.7-1.10">
+            <sourcecode name="" markers="false" pn="section-4.7-1.10.1">
+PHOTO;PROP-ID=p827:data:image/jpeg;base64,MIICajCCAdOgAwIBAg
+        &lt;...remainder of base64-encoded data...&gt;
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="param-script" numbered="true" removeInRFC="false" toc="include" pn="section-4.8">
+        <name slugifiedName="name-script">SCRIPT</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.8-1">
+          <dt pn="section-4.8-1.1">Parameter name:</dt>
+          <dd pn="section-4.8-1.2">SCRIPT</dd>
+          <dt pn="section-4.8-1.3">Purpose:</dt>
+          <dd pn="section-4.8-1.4">Defines the script that a property value is written in.</dd>
+          <dt pn="section-4.8-1.5">Description:</dt>
+          <dd pn="section-4.8-1.6">
+            <t indent="0" pn="section-4.8-1.6.1">This parameter allows defining a script for a property value without also defining a language as the LANGUAGE parameter would.  The value <bcp14>MUST</bcp14> be a script subtag as defined in <xref target="RFC5646" sectionFormat="of" section="2.2.3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5646#section-2.2.3" derivedContent="RFC5646"/>.  This specification makes use of the SCRIPT parameter in combination with the <xref target="param-phonetic" format="default" sectionFormat="of" derivedContent="Section 4.6">PHONETIC</xref> parameter. </t>
+          </dd>
+          <dt pn="section-4.8-1.7">Format definition:</dt>
+          <dd pn="section-4.8-1.8">
+            <sourcecode type="abnf" markers="false" pn="section-4.8-1.8.1">
+script-param = 4ALPHA
+</sourcecode>
+          </dd>
+          <dt pn="section-4.8-1.9">Example(s):</dt>
+          <dd pn="section-4.8-1.10">
+            <sourcecode name="" markers="false" pn="section-4.8-1.10.1">
+SCRIPT=Latn
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="param-service-type" numbered="true" removeInRFC="false" toc="include" pn="section-4.9">
+        <name slugifiedName="name-service-type">SERVICE-TYPE</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.9-1">
+          <dt pn="section-4.9-1.1">Parameter name:</dt>
+          <dd pn="section-4.9-1.2">SERVICE-TYPE</dd>
+          <dt pn="section-4.9-1.3">Purpose:</dt>
+          <dd pn="section-4.9-1.4">Defines the online service name associated with a messaging or social media profile.</dd>
+          <dt pn="section-4.9-1.5">Description:</dt>
+          <dd pn="section-4.9-1.6">
+            <t indent="0" pn="section-4.9-1.6.1">This parameter <bcp14>MAY</bcp14> be specified on an Instant Messaging and Presence Protocol (IMPP) or a SOCIALPROFILE property to name the online service associated with that property value.  Its value is case-sensitive; its letter cases <bcp14>MUST</bcp14> be preserved.</t>
+            <t indent="0" pn="section-4.9-1.6.2">Several vCard address book implementations currently use an experimental X-SERVICE-TYPE parameter.  This specification provides an IANA-registered parameter for the same purpose.</t>
+          </dd>
+          <dt pn="section-4.9-1.7">Format definition:</dt>
+          <dd pn="section-4.9-1.8">
+            <sourcecode type="abnf" markers="false" pn="section-4.9-1.8.1">
+service-type-param    = "SERVICE-TYPE" "=" param-value
+</sourcecode>
+          </dd>
+          <dt pn="section-4.9-1.9">Example(s):</dt>
+          <dd pn="section-4.9-1.10">
+            <sourcecode name="" markers="false" pn="section-4.9-1.10.1">
+SOCIALPROFILE;SERVICE-TYPE=Mastodon:https://example.com/@foo
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="param-username" numbered="true" removeInRFC="false" toc="include" pn="section-4.10">
+        <name slugifiedName="name-username">USERNAME</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-4.10-1">
+          <dt pn="section-4.10-1.1">Parameter name:</dt>
+          <dd pn="section-4.10-1.2">USERNAME</dd>
+          <dt pn="section-4.10-1.3">Purpose:</dt>
+          <dd pn="section-4.10-1.4">Defines a username such as the user of a messaging or social media service.</dd>
+          <dt pn="section-4.10-1.5">Description:</dt>
+          <dd pn="section-4.10-1.6">
+            <t indent="0" pn="section-4.10-1.6.1">This parameter <bcp14>MAY</bcp14> be specified on an IMPP or a SOCIALPROFILE property to name the user with that property value.  Its value is case-sensitive; its letter cases <bcp14>MUST</bcp14> be preserved.  The IMPP or SOCIALPROFILE value type <bcp14>MUST</bcp14> be URI.</t>
+          </dd>
+          <dt pn="section-4.10-1.7">Format definition:</dt>
+          <dd pn="section-4.10-1.8">
+            <sourcecode type="abnf" markers="false" pn="section-4.10-1.8.1">
+username-param    = "USERNAME" "=" param-value
+</sourcecode>
+          </dd>
+          <dt pn="section-4.10-1.9">Example(s):</dt>
+          <dd pn="section-4.10-1.10">
+            <sourcecode name="" markers="false" pn="section-4.10-1.10.1">
+SOCIALPROFILE;USERNAME="The Foo":https://example.com/@foo
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="new-values" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-new-values">New Values</name>
+      <section anchor="value-adr-type-billing" numbered="true" removeInRFC="false" toc="include" pn="section-5.1">
+        <name slugifiedName="name-billing-address-type-value">Billing Address Type Value</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-5.1-1">
+          <dt pn="section-5.1-1.1">Value:</dt>
+          <dd pn="section-5.1-1.2">billing</dd>
+          <dt pn="section-5.1-1.3">Purpose:</dt>
+          <dd pn="section-5.1-1.4">Indicates using this address for billing, e.g., to send invoices to.</dd>
+          <dt pn="section-5.1-1.5">Conformance:</dt>
+          <dd pn="section-5.1-1.6">
+            <t indent="0" pn="section-5.1-1.6.1">This value can be used with the TYPE parameter applied on the ADR property.</t>
+          </dd>
+          <dt pn="section-5.1-1.7">Example(s):</dt>
+          <dd pn="section-5.1-1.8">
+            <sourcecode name="" markers="false" pn="section-5.1-1.8.1">
+ADR;TYPE=billing:;;123 Main Street;Any Town;CA;91921-1234;U.S.A.
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="value-adr-type-delivery" numbered="true" removeInRFC="false" toc="include" pn="section-5.2">
+        <name slugifiedName="name-delivery-address-type-value">Delivery Address Type Value</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-5.2-1">
+          <dt pn="section-5.2-1.1">Value:</dt>
+          <dd pn="section-5.2-1.2">delivery</dd>
+          <dt pn="section-5.2-1.3">Purpose:</dt>
+          <dd pn="section-5.2-1.4">Indicates using this address for delivery, e.g., to send packages to.</dd>
+          <dt pn="section-5.2-1.5">Conformance:</dt>
+          <dd pn="section-5.2-1.6">
+            <t indent="0" pn="section-5.2-1.6.1">This value can be used with the TYPE parameter applied on the ADR property.</t>
+          </dd>
+          <dt pn="section-5.2-1.7">Example(s):</dt>
+          <dd pn="section-5.2-1.8">
+            <sourcecode name="" markers="false" pn="section-5.2-1.8.1">
+ADR;TYPE=delivery:;;123 Main Street;Any Town;CA;91921-1234;U.S.A.
+</sourcecode>
+          </dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="security-considerations" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-6-1">This specification extends "vCard Format Specification" <xref target="RFC6350" format="default" sectionFormat="of" derivedContent="RFC6350"/>.  The same security considerations as outlined in <xref target="RFC6350" sectionFormat="of" section="9" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-9" derivedContent="RFC6350"/> apply.</t>
+    </section>
+    <section anchor="IANA" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-7.1">
+        <name slugifiedName="name-changes-to-the-vcard-proper">Changes to the vCard Properties Registry</name>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-7.1.1">
+          <name slugifiedName="name-new-vcard-property-definiti">New vCard Property Definitions</name>
+          <t indent="0" pn="section-7.1.1-1">IANA has added the following entries to the "vCard Properties" registry, as defined in <xref target="RFC6350" sectionFormat="of" section="10.3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-10.3.1" derivedContent="RFC6350"/>.</t>
+          <table anchor="new_properties" align="center" pn="table-1">
+            <name slugifiedName="name-new-vcard-properties">New vCard Properties</name>
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Namespace</th>
+                <th align="left" colspan="1" rowspan="1">Property</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1"/>
+                <td align="left" colspan="1" rowspan="1">CREATED</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="prop-created" format="default" sectionFormat="of" derivedContent="Section 3.1"/></td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1"/>
+                <td align="left" colspan="1" rowspan="1">GRAMGENDER</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="prop-gramgender" format="default" sectionFormat="of" derivedContent="Section 3.2"/></td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1"/>
+                <td align="left" colspan="1" rowspan="1">LANGUAGE</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="prop-language" format="default" sectionFormat="of" derivedContent="Section 3.3"/></td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1"/>
+                <td align="left" colspan="1" rowspan="1">PRONOUNS</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="prop-pronouns" format="default" sectionFormat="of" derivedContent="Section 3.4"/></td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1"/>
+                <td align="left" colspan="1" rowspan="1">SOCIALPROFILE</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="prop-socialprofile" format="default" sectionFormat="of" derivedContent="Section 3.5"/></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-7.1.2">
+          <name slugifiedName="name-updated-vcard-properties">Updated vCard Properties </name>
+          <t indent="0" pn="section-7.1.2-1">
+   IANA has added <xref target="prop-adr" format="default" sectionFormat="of" derivedContent="Section 2.1"/> of this document as a reference for the ADR
+   property and <xref target="prop-n" format="default" sectionFormat="of" derivedContent="Section 2.2"/> of this document as a reference for the N
+   property in the "vCard Properties" registry.
+          </t>
+        </section>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-7.2">
+        <name slugifiedName="name-changes-to-the-vcard-parame">Changes to the vCard Parameters Registry</name>
+        <t indent="0" pn="section-7.2-1">IANA has added the following entries to the "vCard Parameters" registry, as defined in <xref target="RFC6350" sectionFormat="of" section="10.3.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-10.3.2" derivedContent="RFC6350"/>.</t>
+        <table anchor="new_parameters" align="center" pn="table-2">
+          <name slugifiedName="name-new-vcard-parameters">New vCard Parameters</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Namespace</th>
+              <th align="left" colspan="1" rowspan="1">Parameter</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1"/>
+              <td align="left" colspan="1" rowspan="1">AUTHOR</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-author" format="default" sectionFormat="of" derivedContent="Section 4.1"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1"/>
+              <td align="left" colspan="1" rowspan="1">AUTHOR-NAME</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-author-name" format="default" sectionFormat="of" derivedContent="Section 4.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1"/>
+              <td align="left" colspan="1" rowspan="1">CREATED</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-created" format="default" sectionFormat="of" derivedContent="Section 4.3"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1"/>
+              <td align="left" colspan="1" rowspan="1">DERIVED</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-derived" format="default" sectionFormat="of" derivedContent="Section 4.4"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1"/>
+              <td align="left" colspan="1" rowspan="1">LABEL</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC6350" sectionFormat="comma" section="6.3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-6.3.1" derivedContent="RFC6350"/> and
+                  RFC 9554, <xref target="param-label" format="default" sectionFormat="of" derivedContent="Section 4.5"/>
+              </td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1"/>
+              <td align="left" colspan="1" rowspan="1">PHONETIC</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-phonetic" format="default" sectionFormat="of" derivedContent="Section 4.6"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1"/>
+              <td align="left" colspan="1" rowspan="1">PROP-ID</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-propid" format="default" sectionFormat="of" derivedContent="Section 4.7"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1"/>
+              <td align="left" colspan="1" rowspan="1">SCRIPT</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-script" format="default" sectionFormat="of" derivedContent="Section 4.8"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1"/>
+              <td align="left" colspan="1" rowspan="1">SERVICE-TYPE</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-service-type" format="default" sectionFormat="of" derivedContent="Section 4.9"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1"/>
+              <td align="left" colspan="1" rowspan="1">USERNAME</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-username" format="default" sectionFormat="of" derivedContent="Section 4.10"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-7.3">
+        <name slugifiedName="name-changes-to-the-vcard-propert">Changes to the vCard Property Values Registry</name>
+        <t indent="0" pn="section-7.3-1">IANA has added the following entries to the "vCard Property Values" registry, as defined in <xref target="RFC6350" sectionFormat="of" section="10.3.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-10.3.4" derivedContent="RFC6350"/>.</t>
+        <table anchor="new_values" align="center" pn="table-3">
+          <name slugifiedName="name-new-vcard-property-values">New vCard Property Values</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Property</th>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">GRAMGENDER</td>
+              <td align="left" colspan="1" rowspan="1">animate</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="prop-gramgender" format="default" sectionFormat="of" derivedContent="Section 3.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">GRAMGENDER</td>
+              <td align="left" colspan="1" rowspan="1">common</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="prop-gramgender" format="default" sectionFormat="of" derivedContent="Section 3.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">GRAMGENDER</td>
+              <td align="left" colspan="1" rowspan="1">feminine</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="prop-gramgender" format="default" sectionFormat="of" derivedContent="Section 3.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">GRAMGENDER</td>
+              <td align="left" colspan="1" rowspan="1">inanimate</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="prop-gramgender" format="default" sectionFormat="of" derivedContent="Section 3.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">GRAMGENDER</td>
+              <td align="left" colspan="1" rowspan="1">masculine</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="prop-gramgender" format="default" sectionFormat="of" derivedContent="Section 3.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">GRAMGENDER</td>
+              <td align="left" colspan="1" rowspan="1">neuter</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="prop-gramgender" format="default" sectionFormat="of" derivedContent="Section 3.2"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="iana-vcard-param-values" numbered="true" removeInRFC="false" toc="include" pn="section-7.4">
+        <name slugifiedName="name-changes-to-the-vcard-paramet">Changes to the vCard Parameter Values Registry</name>
+        <t indent="0" pn="section-7.4-1">IANA has added the following entries to the "vCard Parameter Values" registry, as defined in <xref target="RFC6350" sectionFormat="of" section="10.3.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-10.3.4" derivedContent="RFC6350"/>.</t>
+        <table anchor="new_param_values" align="center" pn="table-4">
+          <name slugifiedName="name-new-vcard-property-and-para">New vCard Property and Parameter Values</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Property</th>
+              <th align="left" colspan="1" rowspan="1">Parameter</th>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">ADR</td>
+              <td align="left" colspan="1" rowspan="1">TYPE</td>
+              <td align="left" colspan="1" rowspan="1">billing</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="value-adr-type-billing" format="default" sectionFormat="of" derivedContent="Section 5.1"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">ADR</td>
+              <td align="left" colspan="1" rowspan="1">TYPE</td>
+              <td align="left" colspan="1" rowspan="1">delivery</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="value-adr-type-delivery" format="default" sectionFormat="of" derivedContent="Section 5.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">ADR, N</td>
+              <td align="left" colspan="1" rowspan="1">PHONETIC</td>
+              <td align="left" colspan="1" rowspan="1">ipa</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-phonetic" format="default" sectionFormat="of" derivedContent="Section 4.6"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">ADR, N</td>
+              <td align="left" colspan="1" rowspan="1">PHONETIC</td>
+              <td align="left" colspan="1" rowspan="1">jyut</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-phonetic" format="default" sectionFormat="of" derivedContent="Section 4.6"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">ADR, N</td>
+              <td align="left" colspan="1" rowspan="1">PHONETIC</td>
+              <td align="left" colspan="1" rowspan="1">piny</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-phonetic" format="default" sectionFormat="of" derivedContent="Section 4.6"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">ADR, N</td>
+              <td align="left" colspan="1" rowspan="1">PHONETIC</td>
+              <td align="left" colspan="1" rowspan="1">script</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9554, <xref target="param-phonetic" format="default" sectionFormat="of" derivedContent="Section 4.6"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.calconnect-vobject" to="CALCONNECT-VOBJECT"/>
+    <references pn="section-8">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-8.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC3986" target="https://www.rfc-editor.org/info/rfc3986" quoteTitle="true" derivedAnchor="RFC3986">
+          <front>
+            <title>Uniform Resource Identifier (URI): Generic Syntax</title>
+            <author fullname="T. Berners-Lee" initials="T." surname="Berners-Lee"/>
+            <author fullname="R. Fielding" initials="R." surname="Fielding"/>
+            <author fullname="L. Masinter" initials="L." surname="Masinter"/>
+            <date month="January" year="2005"/>
+            <abstract>
+              <t indent="0">A Uniform Resource Identifier (URI) is a compact sequence of characters that identifies an abstract or physical resource. This specification defines the generic URI syntax and a process for resolving URI references that might be in relative form, along with guidelines and security considerations for the use of URIs on the Internet. The URI syntax defines a grammar that is a superset of all valid URIs, allowing an implementation to parse the common components of a URI reference without knowing the scheme-specific requirements of every possible identifier. This specification does not define a generative grammar for URIs; that task is performed by the individual specifications of each URI scheme. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="66"/>
+          <seriesInfo name="RFC" value="3986"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3986"/>
+        </reference>
+        <reference anchor="RFC5234" target="https://www.rfc-editor.org/info/rfc5234" quoteTitle="true" derivedAnchor="RFC5234">
+          <front>
+            <title>Augmented BNF for Syntax Specifications: ABNF</title>
+            <author fullname="D. Crocker" initials="D." role="editor" surname="Crocker"/>
+            <author fullname="P. Overell" initials="P." surname="Overell"/>
+            <date month="January" year="2008"/>
+            <abstract>
+              <t indent="0">Internet technical specifications often need to define a formal syntax. Over the years, a modified version of Backus-Naur Form (BNF), called Augmented BNF (ABNF), has been popular among many Internet specifications. The current specification documents ABNF. It balances compactness and simplicity with reasonable representational power. The differences between standard BNF and ABNF involve naming rules, repetition, alternatives, order-independence, and value ranges. This specification also supplies additional rule definitions and encoding for a core lexical analyzer of the type common to several Internet specifications. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="68"/>
+          <seriesInfo name="RFC" value="5234"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5234"/>
+        </reference>
+        <reference anchor="RFC5646" target="https://www.rfc-editor.org/info/rfc5646" quoteTitle="true" derivedAnchor="RFC5646">
+          <front>
+            <title>Tags for Identifying Languages</title>
+            <author fullname="A. Phillips" initials="A." role="editor" surname="Phillips"/>
+            <author fullname="M. Davis" initials="M." role="editor" surname="Davis"/>
+            <date month="September" year="2009"/>
+            <abstract>
+              <t indent="0">This document describes the structure, content, construction, and semantics of language tags for use in cases where it is desirable to indicate the language used in an information object. It also describes how to register values for use in language tags and the creation of user-defined extensions for private interchange. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="47"/>
+          <seriesInfo name="RFC" value="5646"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5646"/>
+        </reference>
+        <reference anchor="RFC6350" target="https://www.rfc-editor.org/info/rfc6350" quoteTitle="true" derivedAnchor="RFC6350">
+          <front>
+            <title>vCard Format Specification</title>
+            <author fullname="S. Perreault" initials="S." surname="Perreault"/>
+            <date month="August" year="2011"/>
+            <abstract>
+              <t indent="0">This document defines the vCard data format for representing and exchanging a variety of information about individuals and other entities (e.g., formatted and structured name and delivery addresses, email address, multiple telephone numbers, photograph, logo, audio clips, etc.). This document obsoletes RFCs 2425, 2426, and 4770, and updates RFC 2739. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6350"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6350"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC9553" target="https://www.rfc-editor.org/info/rfc9553" quoteTitle="true" derivedAnchor="RFC9553">
+          <front>
+            <title>JSContact: A JSON Representation of Contact Data</title>
+            <author initials="R" surname="Stepanek" fullname="Robert Stepanek">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="M" surname="Loffredo" fullname="Mario Loffredo">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date month="May" year="2024"/>
+          </front>
+          <seriesInfo name="RFC" value="9553"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9553"/>
+        </reference>
+        <reference anchor="RFC9555" target="https://www.rfc-editor.org/info/rfc9555" quoteTitle="true" derivedAnchor="RFC9555">
+          <front>
+            <title>JSContact: Converting from and to vCard</title>
+            <author initials="M." surname="Loffredo" fullname="Mario Loffredo">
+              <organization showOnFrontPage="true">IIT-CNR/Registro.it</organization>
+            </author>
+            <author initials="R." surname="Stepanek" fullname="Robert Stepanek">
+              <organization showOnFrontPage="true">Fastmail</organization>
+            </author>
+            <date month="May" year="2024"/>
+          </front>
+          <seriesInfo name="RFC" value="9555"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9555"/>
+        </reference>
+      </references>
+    </references>
+    <references pn="section-9">
+      <name slugifiedName="name-informative-references">Informative References</name>
+      <reference anchor="I-D.calconnect-vobject" target="https://datatracker.ietf.org/doc/html/draft-calconnect-vobject-i18n-00" quoteTitle="true" derivedAnchor="CALCONNECT-VOBJECT">
+        <front>
+          <title>vObject Internationalization</title>
+          <author fullname="Ronald Henry Tse" initials="R." surname="Tse">
+            <organization showOnFrontPage="true">Ribose</organization>
+          </author>
+          <author fullname="Peter Tam" initials="P." surname="Tam">
+            <organization showOnFrontPage="true">Ribose</organization>
+          </author>
+          <author fullname="Michael Douglass" initials="M." surname="Douglass">
+            <organization showOnFrontPage="true">Spherical Cow Group</organization>
+          </author>
+          <date day="8" month="June" year="2018"/>
+        </front>
+        <seriesInfo name="Internet-Draft" value="draft-calconnect-vobject-i18n-00"/>
+        <refcontent>Work in Progress</refcontent>
+      </reference>
+      <reference anchor="CLDRPersonName" target="https://www.unicode.org/reports/tr35/tr35-personNames.html" quoteTitle="true" derivedAnchor="CLDRPersonName">
+        <front>
+          <title>Unicode Locale Data Markup Language (LDML) Part 8: Person Names</title>
+          <author fullname="M. Davis">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author fullname="P. Edberg">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author fullname="R. Gillam">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author fullname="A. Kolisnychenko">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author fullname="M. McKenna">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author>
+            <organization showOnFrontPage="true">other CLDR committee members</organization>
+          </author>
+          <date year="2023" month="July"/>
+        </front>
+        <seriesInfo name="Unicode Technical Standard" value="#35"/>
+        <seriesInfo name="Version" value="44.1"/>
+      </reference>
+      <reference anchor="IPA" target="https://www.internationalphoneticalphabet.org/" quoteTitle="true" derivedAnchor="IPA">
+        <front>
+          <title>International Phonetic Alphabet</title>
+          <author>
+            <organization showOnFrontPage="true">IPA</organization>
+          </author>
+        </front>
+      </reference>
+    </references>
+    <section anchor="Acknowledgements" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">The definition and examples of the <xref target="param-phonetic" format="default" sectionFormat="of" derivedContent="Section 4.6">PHONETIC</xref> and <xref target="param-script" format="default" sectionFormat="of" derivedContent="Section 4.8">SCRIPT</xref> parameters are based on the early draft version of <xref target="I-D.calconnect-vobject" format="default" sectionFormat="of" derivedContent="CALCONNECT-VOBJECT"/>.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="R." surname="Stepanek" fullname="Robert Stepanek">
+        <organization showOnFrontPage="true">Fastmail</organization>
+        <address>
+          <postal>
+            <extaddr>PO Box 234</extaddr>
+            <street>Collins St. West</street>
+            <city>Melbourne</city>
+            <region>VIC</region>
+            <code>8007</code>
+            <country>Australia</country>
+          </postal>
+          <email>rsto@fastmailteam.com</email>
+        </address>
+      </author>
+      <author initials="M." surname="Loffredo" fullname="Mario Loffredo">
+        <organization showOnFrontPage="true">IIT-CNR</organization>
+        <address>
+          <postal>
+            <street>Via Moruzzi, 1</street>
+            <city>Pisa</city>
+            <code>56124</code>
+            <country>Italy</country>
+            <region/>
+          </postal>
+          <email>mario.loffredo@iit.cnr.it</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

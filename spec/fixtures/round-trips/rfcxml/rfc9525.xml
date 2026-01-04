@@ -1,0 +1,1940 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-uta-rfc6125bis-15" number="9525" submissionType="IETF" category="std" consensus="true" obsoletes="6125" updates="" tocDepth="4" tocInclude="true" sortRefs="true" symRefs="true" xml:lang="en" prepTime="2023-11-08T03:33:57" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-uta-rfc6125bis-15" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9525" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Service Identity in TLS">Service Identity in TLS</title>
+    <seriesInfo name="RFC" value="9525" stream="IETF"/>
+    <author initials="P." surname="Saint-Andre" fullname="Peter Saint-Andre">
+      <organization showOnFrontPage="true">Independent</organization>
+      <address>
+        <postal>
+          <country>United States of America</country>
+        </postal>
+        <email>stpeter@stpeter.im</email>
+      </address>
+    </author>
+    <author initials="R." surname="Salz" fullname="Rich Salz">
+      <organization showOnFrontPage="true">Akamai Technologies</organization>
+      <address>
+        <postal>
+          <country>United States of America</country>
+        </postal>
+        <email>rsalz@akamai.com</email>
+      </address>
+    </author>
+    <date month="11" year="2023"/>
+    <area>art</area>
+    <workgroup>uta</workgroup>
+    <keyword>TLS</keyword>
+    <keyword>server</keyword>
+    <keyword>X509</keyword>
+    <keyword>identity</keyword>
+    <keyword>naming</keyword>
+    <keyword>verifying</keyword>
+    <keyword>representing</keyword>
+    <keyword>PKIX</keyword>
+    <keyword>certificates</keyword>
+    <keyword>validation</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">Many application technologies enable secure communication between two entities
+by means of Transport Layer Security (TLS) with
+Internet Public Key Infrastructure using X.509 (PKIX) certificates.
+This document specifies
+procedures for representing and verifying the identity of application services
+in such interactions.</t>
+      <t indent="0" pn="section-abstract-2">This document obsoletes RFC 6125.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9525" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-motivation">Motivation</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-applicability">Applicability</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.3">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.3.1"><xref derivedContent="1.3" format="counter" sectionFormat="of" target="section-1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-overview-of-recommendations">Overview of Recommendations</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.4">
+                <t indent="0" pn="section-toc.1-1.1.2.4.1"><xref derivedContent="1.4" format="counter" sectionFormat="of" target="section-1.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-scope">Scope</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2.4.2">
+                  <li pn="section-toc.1-1.1.2.4.2.1">
+                    <t indent="0" pn="section-toc.1-1.1.2.4.2.1.1"><xref derivedContent="1.4.1" format="counter" sectionFormat="of" target="section-1.4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-in-scope">In Scope</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.1.2.4.2.2">
+                    <t indent="0" pn="section-toc.1-1.1.2.4.2.2.1"><xref derivedContent="1.4.2" format="counter" sectionFormat="of" target="section-1.4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-out-of-scope">Out of Scope</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.1.2.5">
+                <t indent="0" pn="section-toc.1-1.1.2.5.1"><xref derivedContent="1.5" format="counter" sectionFormat="of" target="section-1.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-identifying-application-ser">Identifying Application Services</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-designing-application-proto">Designing Application Protocols</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-representing-server-identit">Representing Server Identity</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rules">Rules</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-examples">Examples</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requesting-server-certifica">Requesting Server Certificates</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-verifying-service-identity">Verifying Service Identity</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-constructing-a-list-of-refe">Constructing a List of Reference Identifiers</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.1.2">
+                  <li pn="section-toc.1-1.6.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.1.2.1.1"><xref derivedContent="6.1.1" format="counter" sectionFormat="of" target="section-6.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rules-2">Rules</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.6.2.1.2.2.1"><xref derivedContent="6.1.2" format="counter" sectionFormat="of" target="section-6.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-examples-2">Examples</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-preparing-to-seek-a-match">Preparing to Seek a Match</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.3">
+                <t indent="0" pn="section-toc.1-1.6.2.3.1"><xref derivedContent="6.3" format="counter" sectionFormat="of" target="section-6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-matching-the-dns-domain-nam">Matching the DNS Domain Name Portion</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.4">
+                <t indent="0" pn="section-toc.1-1.6.2.4.1"><xref derivedContent="6.4" format="counter" sectionFormat="of" target="section-6.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-matching-an-ip-address-port">Matching an IP Address Portion</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.5">
+                <t indent="0" pn="section-toc.1-1.6.2.5.1"><xref derivedContent="6.5" format="counter" sectionFormat="of" target="section-6.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-matching-the-application-se">Matching the Application Service Type Portion</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.6">
+                <t indent="0" pn="section-toc.1-1.6.2.6.1"><xref derivedContent="6.6" format="counter" sectionFormat="of" target="section-6.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-outcome">Outcome</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-wildcard-certificates">Wildcard Certificates</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-uniform-resource-identifier">Uniform Resource Identifiers</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.3">
+                <t indent="0" pn="section-toc.1-1.7.2.3.1"><xref derivedContent="7.3" format="counter" sectionFormat="of" target="section-7.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-internationalized-domain-na">Internationalized Domain Names</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.4">
+                <t indent="0" pn="section-toc.1-1.7.2.4.1"><xref derivedContent="7.4" format="counter" sectionFormat="of" target="section-7.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ip-addresses">IP Addresses</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.5">
+                <t indent="0" pn="section-toc.1-1.7.2.5.1"><xref derivedContent="7.5" format="counter" sectionFormat="of" target="section-7.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-multiple-presented-identifi">Multiple Presented Identifiers</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.6">
+                <t indent="0" pn="section-toc.1-1.7.2.6.1"><xref derivedContent="7.6" format="counter" sectionFormat="of" target="section-7.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-multiple-reference-identifi">Multiple Reference Identifiers</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.7">
+                <t indent="0" pn="section-toc.1-1.7.2.7.1"><xref derivedContent="7.7" format="counter" sectionFormat="of" target="section-7.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-certificate-trust">Certificate Trust</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-changes-from-rfc-6125">Changes from RFC 6125</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.d"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="intro" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <section anchor="motivation" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-motivation">Motivation</name>
+        <t indent="0" pn="section-1.1-1">The visible face of the Internet largely consists of services that employ a
+client-server architecture in which a client
+communicates with an application service.  When a client communicates with an
+application service using <xref target="RFC8446" format="default" sectionFormat="of" derivedContent="TLS"/>, <xref target="RFC9147" format="default" sectionFormat="of" derivedContent="DTLS"/>, or a protocol built on those
+(<xref target="RFC9001" format="default" sectionFormat="of" derivedContent="QUIC"/> being a notable example),
+it has some notion of the server's
+identity (e.g., "the website at bigcompany.example") while attempting to establish
+secure communication.  Likewise, during TLS negotiation, the server presents
+its notion of the service's identity in the form of a public key certificate
+that was issued by a certification authority (CA) in the context of the
+Internet Public Key Infrastructure using X.509 <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="PKIX"/>.  Informally, we can
+think of these identities as the client's "reference identity" and the
+server's "presented identity"; more formal definitions are given later.  A
+client needs to verify that the server's presented identity matches its
+reference identity so it can deterministically and automatically authenticate the communication.</t>
+        <t indent="0" pn="section-1.1-2">This document defines procedures for how clients perform this verification.
+It therefore defines requirements on other parties, such as
+the certification authorities that issue certificates, the service administrators requesting
+	them, and the protocol designers defining interactions between clients and servers.</t>
+        <t indent="0" pn="section-1.1-3">This document obsoletes RFC 6125 <xref target="RFC6125" format="default" sectionFormat="of" derivedContent="VERIFY"/>. Changes from RFC 6125 <xref target="RFC6125" format="default" sectionFormat="of" derivedContent="VERIFY"/> are described under <xref target="changes" format="default" sectionFormat="of" derivedContent="Appendix A"/>.</t>
+      </section>
+      <section anchor="applicability" numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-applicability">Applicability</name>
+        <t indent="0" pn="section-1.2-1">This document does not supersede the rules for certificate issuance or
+validation specified by <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="PKIX"/>.  That document also governs any
+certificate-related topic on which this document is silent.  This includes
+certificate syntax, extensions such as name constraints or
+extended key usage, and handling of certification paths.</t>
+        <t indent="0" pn="section-1.2-2">This document addresses only name forms in the leaf "end entity" server
+certificate.  It does not address the name forms in the chain of certificates
+used to validate a certificate, nor does it create or check the validity
+of such a chain.  In order to ensure proper authentication, applications need
+to verify the entire certification path.</t>
+      </section>
+      <section anchor="overview" numbered="true" removeInRFC="false" toc="include" pn="section-1.3">
+        <name slugifiedName="name-overview-of-recommendations">Overview of Recommendations</name>
+        <t indent="0" pn="section-1.3-1">The previous version of this specification, <xref target="RFC6125" format="default" sectionFormat="of" derivedContent="VERIFY"/>, surveyed the then-current
+practice from many IETF standards and tried to generalize best practices
+(see <xref target="RFC6125" section="A" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6125#appendix-A" derivedContent="VERIFY"/> for details).</t>
+        <t indent="0" pn="section-1.3-2">This document takes the lessons learned since then and codifies them.
+The following is a summary of the rules, which are described at greater
+length in the remainder of this document:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1.3-3">
+          <li pn="section-1.3-3.1">Only check DNS domain names via the subjectAltName
+extension designed for that purpose: dNSName.</li>
+          <li pn="section-1.3-3.2">Allow use of even more specific
+subjectAltName extensions where appropriate such as
+uniformResourceIdentifier, iPAddress, and the otherName form SRVName.</li>
+          <li pn="section-1.3-3.3">Wildcard support is now the default in certificates.
+Constrain wildcard certificates so that the wildcard can only
+be the complete left-most label of a domain name.</li>
+          <li pn="section-1.3-3.4">Do not include or check strings that look like domain names
+in the subject's Common Name.</li>
+        </ul>
+      </section>
+      <section anchor="scope" numbered="true" removeInRFC="false" toc="include" pn="section-1.4">
+        <name slugifiedName="name-scope">Scope</name>
+        <section anchor="in-scope" numbered="true" removeInRFC="false" toc="include" pn="section-1.4.1">
+          <name slugifiedName="name-in-scope">In Scope</name>
+          <t indent="0" pn="section-1.4.1-1">This document applies only to service identities that are used in TLS or DTLS
+and that are included in PKIX certificates.</t>
+          <t indent="0" pn="section-1.4.1-2">With regard to TLS and DTLS, these security protocols are used to
+protect data exchanged over a wide variety of application protocols,
+which use both the TLS or DTLS handshake protocol and the TLS or
+DTLS record layer, either directly or through a profile as in Network
+Time Security <xref target="RFC8915" format="default" sectionFormat="of" derivedContent="NTS"/>.  The TLS handshake protocol can also be used
+with different record layers to define secure transport protocols;
+at present, the most prominent example is QUIC <xref target="RFC9000" format="default" sectionFormat="of" derivedContent="RFC9000"/>.  The
+rules specified here are intended to apply to all protocols in this
+extended TLS "family".</t>
+          <t indent="0" pn="section-1.4.1-3">With regard to PKIX certificates, the primary usage is in the
+context of the public key infrastructure described in <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="PKIX"/>.
+In addition, technologies such as DNS-Based Authentication
+of Named Entities (DANE) <xref target="RFC6698" format="default" sectionFormat="of" derivedContent="DANE"/> sometimes use certificates based
+on PKIX (more precisely, certificates structured via <xref target="X.509" format="default" sectionFormat="of" derivedContent="X.509"/> or
+specific encodings thereof such as <xref target="X.690" format="default" sectionFormat="of" derivedContent="X.690"/>), at least in certain
+modes.  Alternatively, a TLS peer could issue delegated credentials
+that are based on a CA-issued certificate, as in <xref target="RFC9345" format="default" sectionFormat="of" derivedContent="TLS-SUBCERTS"/>.
+In both cases, a TLS client could learn of a service identity
+through its inclusion in the relevant certificate.  The rules specified
+here are intended to apply whenever service identities are included in
+X.509 certificates or credentials that are derived from such certificates.</t>
+        </section>
+        <section anchor="out-of-scope" numbered="true" removeInRFC="false" toc="include" pn="section-1.4.2">
+          <name slugifiedName="name-out-of-scope">Out of Scope</name>
+          <t indent="0" pn="section-1.4.2-1">The following topics are out of scope for this specification:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1.4.2-2">
+            <li pn="section-1.4.2-2.1">Security protocols other than those
+described above.</li>
+            <li pn="section-1.4.2-2.2">Keys or certificates employed outside the context of PKIX-based systems.</li>
+            <li pn="section-1.4.2-2.3">Client or end-user identities.
+Other than as described above, certificates representing client identities
+	    (e.g., rfc822Name) are beyond the scope of this document.</li>
+            <li pn="section-1.4.2-2.4">Identification of servers using other than a domain name, an IP address, or an SRV service name.
+This document discusses Uniform Resource Identifiers <xref target="RFC3986" format="default" sectionFormat="of" derivedContent="URI"/> only to the
+extent that they are expressed in certificates. Other aspects of a service
+such as a specific resource (the URI "path" component) or parameters (the URI
+"query" component) are the responsibility of specific protocols or URI
+schemes.</li>
+            <li pn="section-1.4.2-2.5">
+              <t indent="0" pn="section-1.4.2-2.5.1">Certification authority policies.
+This includes items such as the following:  </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1.4.2-2.5.2">
+                <li pn="section-1.4.2-2.5.2.1">How to certify or validate fully qualified domain names (FQDNs) and application
+service types (see <xref target="RFC8555" format="default" sectionFormat="of" derivedContent="ACME"/>).</li>
+                <li pn="section-1.4.2-2.5.2.2">What types or "classes" of certificates to issue and whether to apply different
+policies for them.</li>
+                <li pn="section-1.4.2-2.5.2.3">How to certify or validate other kinds of information that might be
+included in a certificate (e.g., organization name).</li>
+              </ul>
+            </li>
+            <li pn="section-1.4.2-2.6">Resolution of DNS domain names.
+Although the process whereby a client resolves the DNS domain name of an
+application service can involve several steps, for the purposes of this
+specification, the only relevant consideration is that the client needs to
+verify the identity of the entity with which it will communicate once the
+resolution process is complete.  Thus, the resolution process itself is
+out of scope for this specification.</li>
+            <li pn="section-1.4.2-2.7">User interface issues.
+In general, such issues are properly the responsibility of client
+software developers and standards development organizations
+dedicated to particular application technologies (for example, see
+<xref target="WSC-UI" format="default" sectionFormat="of" derivedContent="WSC-UI"/>).</li>
+          </ul>
+        </section>
+      </section>
+      <section anchor="terminology" numbered="true" removeInRFC="false" toc="include" pn="section-1.5">
+        <name slugifiedName="name-terminology">Terminology</name>
+        <t indent="0" pn="section-1.5-1">Because many concepts related to "identity" are often too vague to be
+actionable in application protocols, we define a set of more concrete terms
+for use in this specification.</t>
+        <dl indent="3" newline="false" spacing="normal" pn="section-1.5-2">
+          <dt pn="section-1.5-2.1">application service:</dt>
+          <dd pn="section-1.5-2.2">
+            <t indent="0" pn="section-1.5-2.2.1">A service on the Internet that enables clients to connect for the
+purpose of retrieving or uploading information, communicating with other
+entities, or connecting to a broader network of services.</t>
+          </dd>
+          <dt pn="section-1.5-2.3">application service provider:</dt>
+          <dd pn="section-1.5-2.4">
+            <t indent="0" pn="section-1.5-2.4.1">An entity that hosts or deploys an application service.</t>
+          </dd>
+          <dt pn="section-1.5-2.5">application service type:</dt>
+          <dd pn="section-1.5-2.6">
+            <t indent="0" pn="section-1.5-2.6.1">A formal identifier for the application protocol used to provide a
+particular kind of application service at a domain.  This often appears as
+a URI scheme <xref target="RFC3986" format="default" sectionFormat="of" derivedContent="URI"/>, a DNS SRV Service <xref target="RFC2782" format="default" sectionFormat="of" derivedContent="DNS-SRV"/>, or an Application-Layer Protocol Negotiation (ALPN) <xref target="RFC7301" format="default" sectionFormat="of" derivedContent="ALPN"/>
+identifier.</t>
+          </dd>
+          <dt pn="section-1.5-2.7">identifier:</dt>
+          <dd pn="section-1.5-2.8">
+            <t indent="0" pn="section-1.5-2.8.1">A particular instance of an identifier type that is either presented by a
+server in a certificate or referenced by a client for matching purposes.</t>
+          </dd>
+          <dt pn="section-1.5-2.9">identifier type:</dt>
+          <dd pn="section-1.5-2.10">
+            <t indent="0" pn="section-1.5-2.10.1">A formally defined category of identifier that can be included in a
+certificate and therefore be used for matching purposes. For
+conciseness and convenience, we define the following identifier types of
+interest:
+</t>
+            <dl spacing="normal" indent="3" newline="false" pn="section-1.5-2.10.2">
+              <dt pn="section-1.5-2.10.2.1">DNS-ID:</dt>
+              <dd pn="section-1.5-2.10.2.2"> A subjectAltName entry of type dNSName as defined in <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="PKIX"/>.</dd>
+              <dt pn="section-1.5-2.10.2.3">IP-ID:</dt>
+              <dd pn="section-1.5-2.10.2.4"> A subjectAltName entry of type iPAddress as defined in <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="PKIX"/>.</dd>
+              <dt pn="section-1.5-2.10.2.5">SRV-ID:</dt>
+              <dd pn="section-1.5-2.10.2.6"> A subjectAltName entry of type otherName whose name form is
+SRVName as defined in <xref target="RFC4985" format="default" sectionFormat="of" derivedContent="SRVNAME"/>.</dd>
+              <dt pn="section-1.5-2.10.2.7">URI-ID:</dt>
+              <dd pn="section-1.5-2.10.2.8"> A subjectAltName entry of type uniformResourceIdentifier
+as defined in <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="PKIX"/>. See further discussion in <xref target="security-uri" format="default" sectionFormat="of" derivedContent="Section 7.2"/>.</dd>
+            </dl>
+          </dd>
+          <dt pn="section-1.5-2.11">PKIX:</dt>
+          <dd pn="section-1.5-2.12">
+            <t indent="0" pn="section-1.5-2.12.1">The short name for the Internet Public Key Infrastructure using X.509
+defined in <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="PKIX"/>.  That document provides a profile of the X.509v3
+certificate specifications and X.509v2 certificate revocation list (CRL)
+specifications for use on the Internet.</t>
+          </dd>
+          <dt pn="section-1.5-2.13">presented identifier:</dt>
+          <dd pn="section-1.5-2.14">
+            <t indent="0" pn="section-1.5-2.14.1">An identifier presented by a server to a client within a PKIX certificate
+when the client attempts to establish secure communication with the server.
+The certificate can include one or more presented identifiers of different
+types, and if the server hosts more than one domain, then the certificate
+might present distinct identifiers for each domain.</t>
+          </dd>
+          <dt pn="section-1.5-2.15">reference identifier:</dt>
+          <dd pn="section-1.5-2.16">
+            <t indent="0" pn="section-1.5-2.16.1">An identifier expected by the client when examining presented identifiers.
+It is constructed from the source domain and, optionally, an application
+service type.</t>
+          </dd>
+          <dt pn="section-1.5-2.17">Relative Distinguished Name (RDN):</dt>
+          <dd pn="section-1.5-2.18">
+            <t indent="0" pn="section-1.5-2.18.1">An ASN.1-based construction that is itself a building-block component of
+Distinguished Names. See <xref section="2" sectionFormat="comma" target="RFC4514" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4514#section-2" derivedContent="LDAP-DN"/>.</t>
+          </dd>
+          <dt pn="section-1.5-2.19">source domain:</dt>
+          <dd pn="section-1.5-2.20">
+            <t indent="0" pn="section-1.5-2.20.1">The FQDN that a client expects an application
+service to present in the certificate. This is typically input by
+a human user, configured into a client, or provided by reference such as
+a URL. The combination of a source domain and, optionally, an application
+service type enables a client to construct one or more reference
+identifiers. This specification covers FQDNs. Use of any names that
+are not fully qualified is out of scope and may result in unexpected
+or undefined behavior.</t>
+          </dd>
+          <dt pn="section-1.5-2.21">subjectAltName entry:</dt>
+          <dd pn="section-1.5-2.22">
+            <t indent="0" pn="section-1.5-2.22.1">An identifier placed in a subjectAltName extension.</t>
+          </dd>
+          <dt pn="section-1.5-2.23">subjectAltName extension:</dt>
+          <dd pn="section-1.5-2.24">
+            <t indent="0" pn="section-1.5-2.24.1">A standard PKIX extension enabling identifiers of various types to be
+bound to the certificate subject.</t>
+          </dd>
+          <dt pn="section-1.5-2.25">subjectName:</dt>
+          <dd pn="section-1.5-2.26">
+            <t indent="0" pn="section-1.5-2.26.1">The name of a PKIX certificate's subject, encoded in a certificate's
+subject field (see <xref section="4.1.2.6" sectionFormat="comma" target="RFC5280" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-4.1.2.6" derivedContent="PKIX"/>).</t>
+          </dd>
+        </dl>
+        <t indent="0" pn="section-1.5-3">TLS uses the words "client" and "server", where the client is the entity
+that initiates the connection.  In many cases, this is consistent with common practice,
+such as a browser connecting to a web origin.
+For the sake of clarity, and to follow the usage in <xref target="RFC8446" format="default" sectionFormat="of" derivedContent="TLS"/> and related
+specifications, we will continue
+to use the terms client and server in this document.
+However, these are TLS-layer roles, and the application protocol
+could support the TLS server making requests to the TLS client after the
+TLS handshake; there is no requirement that the roles at the application
+layer match the TLS layer.</t>
+        <t indent="0" pn="section-1.5-4">Security-related terms used in this document, but not defined here or in
+<xref target="RFC5280" format="default" sectionFormat="of" derivedContent="PKIX"/>, should be understood in the sense defined in <xref target="RFC4949" format="default" sectionFormat="of" derivedContent="SECTERMS"/>. Such
+terms include "attack", "authentication", "identity", "trust", "validate",
+	and "verify".</t>
+        <t indent="0" pn="section-1.5-5">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+"<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they
+appear in all capitals, as shown here.</t>
+      </section>
+    </section>
+    <section anchor="names" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-identifying-application-ser">Identifying Application Services</name>
+      <t indent="0" pn="section-2-1">This document assumes that an application service is identified by a DNS domain
+name (e.g., <tt>bigcompany.example</tt>), an IP address (IPv4 or IPv6), or an identifier
+that contains additional supplementary information.  Supplementary information
+is limited to the application service type as expressed in a DNS SRV record
+(e.g., "the IMAP server at isp.example" for "_imap.isp.example") or a URI.</t>
+      <t indent="0" pn="section-2-2">In a DNS-ID -- and in the DNS domain name portion of an SRV-ID or URI-ID -- any
+characters outside the range described in <xref target="US-ASCII" format="default" sectionFormat="of" derivedContent="US-ASCII"/> are prohibited, and internationalized
+domain labels are represented as A-labels <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="IDNA-DEFS"/>.</t>
+      <t indent="0" pn="section-2-3">An IP address is either a 4-octet IPv4 address <xref target="RFC0791" format="default" sectionFormat="of" derivedContent="IPv4"/> or a 16-octet
+IPv6 address <xref target="RFC4291" format="default" sectionFormat="of" derivedContent="IPv6"/>.  The identifier might need to be converted from a
+textual representation to obtain this value.</t>
+      <t indent="0" pn="section-2-4">From the perspective of the application client or user, some identifiers are
+<em>direct</em> because they are provided directly by a human user.  This includes
+runtime input, prior configuration, or explicit acceptance of a client
+communication attempt.  Other names are <em>indirect</em> because they are
+automatically resolved by the application based on user input, such as a
+target name resolved from a source name using DNS SRV or the records described in <xref target="RFC3403" format="default" sectionFormat="of" derivedContent="NAPTR"/>.
+The distinction matters most for certificate consumption, specifically
+verification as discussed in this document.</t>
+      <t indent="0" pn="section-2-5">From the perspective of the application service, some identifiers are
+<em>unrestricted</em> because they can be used in any type of service, such as a
+single certificate being used for both the HTTP and IMAP services at the host
+"bigcompany.example".  Other identifiers are <em>restricted</em> because they can only be used for
+one type of service, such as a special-purpose certificate that can only be
+used for an IMAP service.  This distinction matters most for certificate
+issuance.</t>
+      <t indent="0" pn="section-2-6">The four identifier types can be categorized as follows:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-7">
+        <li pn="section-2-7.1">A DNS-ID is direct and unrestricted.</li>
+        <li pn="section-2-7.2">An IP-ID is direct and unrestricted.</li>
+        <li pn="section-2-7.3">An SRV-ID is typically indirect but can be direct, and it is restricted.</li>
+        <li pn="section-2-7.4">A URI-ID is direct and restricted.</li>
+      </ul>
+      <t indent="0" pn="section-2-8">It is important to keep these distinctions in mind because best practices
+for the deployment and use of the identifiers differ.
+Note that cross-protocol attacks such as those described in <xref target="ALPACA" format="default" sectionFormat="of" derivedContent="ALPACA"/>
+are possible when two
+different protocol services use the same certificate.
+This can be addressed by using restricted identifiers or deploying
+services so that they do not share certificates.
+Protocol specifications <bcp14>MUST</bcp14> specify which identifiers are
+mandatory to implement and <bcp14>SHOULD</bcp14> provide operational guidance when necessary.</t>
+      <t indent="0" pn="section-2-9">The Common Name RDN <bcp14>MUST NOT</bcp14> be used to identify a service because
+it is not strongly typed (it is essentially free-form text) and therefore
+suffers from ambiguities in interpretation.</t>
+      <t indent="0" pn="section-2-10">For similar reasons, other RDNs within the subjectName <bcp14>MUST NOT</bcp14> be used to
+identify a service.</t>
+      <t indent="0" pn="section-2-11">An IP address that is the result of a DNS query is indirect. Use of IP-IDs
+that are indirect is out of scope for this document.</t>
+      <t indent="0" pn="section-2-12">The IETF continues to define methods for looking up information needed
+to make connections to network services. One recent example is service
+binding via the "SVCB" and "HTTPS" DNS resource record (RR) types. This
+document does not define any identity representation or verification procedures
+that are specific to SVCB-compatible records, because the use of such records during
+connection establishment does not currently alter any of the PKIX validation
+requirements specified herein or in any other relevant specification.
+For example,
+the PKIX validation rules for <xref target="RFC9110" format="default" sectionFormat="of" derivedContent="HTTP"/> and <xref target="RFC7858" format="default" sectionFormat="of" derivedContent="DNS-OVER-TLS"/> do not change
+when the client uses the DNS resource records defined in <xref target="RFC9460" format="default" sectionFormat="of" derivedContent="SVCB-FOR-HTTPS"/> or <xref target="RFC9461" format="default" sectionFormat="of" derivedContent="SVCB-FOR-DNS"/> to look up connection information. However, it is possible
+that future SVCB mapping documents could specify altered PKIX rules for new use cases.</t>
+    </section>
+    <section anchor="design" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-designing-application-proto">Designing Application Protocols</name>
+      <t indent="0" pn="section-3-1">This section defines how protocol designers should reference this document,
+      which would typically be a normative reference in their specification.</t>
+      <t indent="0" pn="section-3-2">A specification
+<bcp14>MAY</bcp14> choose to allow only one of the identifier types defined here.</t>
+      <t indent="0" pn="section-3-3">If the technology does not use DNS SRV records to resolve the DNS domain
+names of application services, then the specification <bcp14>MUST</bcp14> state that SRV-ID
+as defined in this document is not supported.  Note that many existing
+application technologies use DNS SRV records to resolve the DNS domain names
+of application services, but they do not rely on representations of those records
+in PKIX certificates by means of SRV-IDs as defined in <xref target="RFC4985" format="default" sectionFormat="of" derivedContent="SRVNAME"/>.</t>
+      <t indent="0" pn="section-3-4">If the technology does not use URIs to identify application services, then
+the specification <bcp14>MUST</bcp14> state that URI-ID as defined in this document is not
+supported.  Note that many existing application technologies use URIs to
+identify application services, but they do not rely on representation of those
+URIs in PKIX certificates by means of URI-IDs.</t>
+      <t indent="0" pn="section-3-5">A technology <bcp14>MAY</bcp14> disallow the use of the wildcard character in presented identifiers. If
+it does so, then the specification <bcp14>MUST</bcp14> state that wildcard certificates as
+defined in this document are not supported.</t>
+      <t indent="0" pn="section-3-6">A protocol can allow the use of an IP address in place of a DNS name.  This
+might use the same field without distinguishing the type of identifier as, for
+example, in the "host" components of a URI.  In this case, applications need to be aware that the textual
+representation of an IPv4 address is a valid DNS name. The two
+types can be distinguished by first testing if the identifier is a valid IPv4
+address, as is done by the "first-match-wins" algorithm in <xref section="3.2.2" sectionFormat="of" target="RFC3986" format="default" derivedLink="https://rfc-editor.org/rfc/rfc3986#section-3.2.2" derivedContent="URI"/>.</t>
+    </section>
+    <section anchor="represent" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-representing-server-identit">Representing Server Identity</name>
+      <t indent="0" pn="section-4-1">This section provides instructions for issuers of
+certificates.</t>
+      <section anchor="represent-rules" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-rules">Rules</name>
+        <t indent="0" pn="section-4.1-1">When a certification authority issues a certificate based on the FQDN
+at which the application service provider
+will provide the relevant application, the following rules apply to
+the representation of application service identities.
+Note that some of these rules are cumulative
+and can interact in important ways that are illustrated later in this
+document.</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-4.1-2"><li pn="section-4.1-2.1" derivedCounter="1.">The certificate <bcp14>MUST</bcp14> include at least one identifier.</li>
+          <li pn="section-4.1-2.2" derivedCounter="2.">The certificate <bcp14>SHOULD</bcp14> include a DNS-ID as a baseline
+for interoperability.  This is not mandatory because
+it is legitimate for a certificate to include only an SRV-ID or
+URI-ID so as to scope its use to a particular application type.</li>
+          <li pn="section-4.1-2.3" derivedCounter="3.">If the service using the certificate deploys a technology for which
+the relevant specification stipulates that certificates should
+include identifiers of type SRV-ID (e.g., this is true of the Extensible Messaging and Presence Protocol (XMPP) as described in <xref target="RFC6120" format="default" sectionFormat="of" derivedContent="XMPP"/>),
+then the certificate <bcp14>SHOULD</bcp14> include an SRV-ID.  This
+identifier type could supplement the DNS-ID, unless the certificate
+is meant to be scoped to only the protocol in question.</li>
+          <li pn="section-4.1-2.4" derivedCounter="4.">If the service using the certificate deploys a technology for which
+the relevant specification stipulates that certificates should include
+identifiers of type URI-ID (e.g., this is true of the Session Initiation Protocol <xref target="RFC3261" format="default" sectionFormat="of" derivedContent="SIP"/> as specified by
+<xref target="RFC5922" format="default" sectionFormat="of" derivedContent="SIP-CERTS"/>), then the certificate <bcp14>SHOULD</bcp14> include a URI-ID.  The scheme
+<bcp14>MUST</bcp14> be that of the protocol associated with the application service type,
+and the "host" component <bcp14>MUST</bcp14> be the FQDN
+of the service.  The application protocol specification
+<bcp14>MUST</bcp14> specify which URI schemes are acceptable in URI-IDs contained in PKIX
+certificates used for the application protocol (e.g., <tt>sip</tt> but not <tt>sips</tt>
+or <tt>tel</tt> for SIP as described in <xref target="RFC5630" format="default" sectionFormat="of" derivedContent="SIP-SIPS"/>). Typically, this
+identifier type would supplement the DNS-ID, unless the certificate
+is meant to be scoped to only the protocol in question.</li>
+          <li pn="section-4.1-2.5" derivedCounter="5.">The certificate <bcp14>MAY</bcp14> contain more than one DNS-ID, SRV-ID, URI-ID, or IP-ID
+as further explained in <xref target="security-multi" format="default" sectionFormat="of" derivedContent="Section 7.5"/>.</li>
+          <li pn="section-4.1-2.6" derivedCounter="6.">The certificate <bcp14>MAY</bcp14> include other application-specific identifiers
+for compatibility with a deployed base, especially identifiers for
+types that were defined before publication of <xref target="RFC4985" format="default" sectionFormat="of" derivedContent="SRVNAME"/> or for which
+SRV service names or URI schemes do not exist. Such identifiers are out
+of scope for this specification.</li>
+        </ol>
+      </section>
+      <section anchor="represent-examples" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-examples">Examples</name>
+        <t indent="0" pn="section-4.2-1">Consider a simple website at <tt>&lt;www.bigcompany.example&gt;</tt>, which is not discoverable via
+DNS SRV lookups.  Because HTTP does not specify the use of URIs in server
+certificates, a certificate for this service might include only a DNS-ID of
+<tt>&lt;www.bigcompany.example&gt;</tt>.</t>
+        <t indent="0" pn="section-4.2-2">Consider another website, which is reachable by a fixed IP address of
+<tt>2001:db8::5c</tt>.  If the two sites refer to the same web service, then
+the certificate might also include this value in an IP-ID to allow
+clients to use the fixed IP address as a reference identity.</t>
+        <t indent="0" pn="section-4.2-3">Consider an IMAP-accessible email server at the host <tt>mail.isp.example</tt>
+servicing email addresses of the form <tt>user@isp.example</tt> and discoverable via
+DNS SRV lookups on the application service name of <tt>isp.example</tt>. A
+certificate for this service might include SRV-IDs of <tt>_imap.isp.example</tt> and
+<tt>_imaps.isp.example</tt> (see <xref target="RFC6186" format="default" sectionFormat="of" derivedContent="EMAIL-SRV"/>) along with DNS-IDs of <tt>isp.example</tt>
+	and <tt>mail.isp.example</tt>.</t>
+        <t indent="0" pn="section-4.2-4">Consider a SIP-accessible voice-over-IP (VoIP) server at the host
+<tt>voice.college.example</tt> servicing SIP addresses of the form
+<tt>user@voice.college.example</tt> and identified by a URI of &lt;sip:voice.college.example&gt;.
+A certificate for this service would include a URI-ID of
+<tt>&lt;sip:voice.college.example&gt;</tt> (see <xref target="RFC5922" format="default" sectionFormat="of" derivedContent="SIP-CERTS"/>) along with a DNS-ID of
+	<tt>voice.college.example</tt>.</t>
+        <t indent="0" pn="section-4.2-5">Consider an XMPP-compatible instant messaging (IM) server at the host
+<tt>messenger.example</tt> that services IM addresses of the form <tt>user@messenger.example</tt> and that is
+discoverable via DNS SRV lookups on the <tt>messenger.example</tt> domain.  A
+certificate for this service might include SRV-IDs of
+<tt>_xmpp-client.messenger.example</tt> and <tt>_xmpp-server.messenger.example</tt> (see
+<xref target="RFC6120" format="default" sectionFormat="of" derivedContent="XMPP"/>), as well as a DNS-ID of <tt>messenger.example</tt>.</t>
+      </section>
+    </section>
+    <section anchor="request" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-requesting-server-certifica">Requesting Server Certificates</name>
+      <t indent="0" pn="section-5-1">This section provides instructions for service providers regarding
+the information to include in certificate signing requests (CSRs).
+In general, service providers <bcp14>SHOULD</bcp14> request certificates that
+include all the identifier types that are required or recommended for
+the application service type that will be secured using the certificate to
+be issued.</t>
+      <t indent="0" pn="section-5-2">A service provider <bcp14>SHOULD</bcp14> request certificates with as few identifiers as
+necessary to identify a single service; see <xref target="security-multi" format="default" sectionFormat="of" derivedContent="Section 7.5"/>.</t>
+      <t indent="0" pn="section-5-3">If the certificate will be used for only a single type of application
+service, the service provider <bcp14>SHOULD</bcp14> request a certificate that includes
+DNS-ID or IP-ID values that identify that service or,
+if appropriate for the application service type, SRV-ID or
+URI-ID values that limit the deployment scope of the certificate to only the
+defined application service type.</t>
+      <t indent="0" pn="section-5-4">If the certificate might be used for any type of application service, 
+the service provider <bcp14>SHOULD</bcp14> request a certificate that includes
+only DNS-IDs or IP-IDs. Again, because of multiprotocol attacks, this practice is
+discouraged; it can be mitigated by deploying only one service on
+a host.</t>
+      <t indent="0" pn="section-5-5">If a service provider offers multiple application service types and wishes to
+limit the applicability of certificates using SRV-IDs or URI-IDs, it <bcp14>SHOULD</bcp14>
+request that multiple certificates rather than a single certificate containing
+multiple SRV-IDs or URI-IDs each identify a different application service
+type. This rule does not apply to application service type "bundles" that
+identify distinct access methods to the same underlying application such as
+an email application with access methods denoted by the application service
+types of <tt>imap</tt>, <tt>imaps</tt>, <tt>pop3</tt>, <tt>pop3s</tt>, and <tt>submission</tt> as described in
+<xref target="RFC6186" format="default" sectionFormat="of" derivedContent="EMAIL-SRV"/>.</t>
+    </section>
+    <section anchor="verify" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-verifying-service-identity">Verifying Service Identity</name>
+      <t indent="0" pn="section-6-1">At a high level, the client verifies the application service's
+identity by performing the following actions:</t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-6-2"><li pn="section-6-2.1" derivedCounter="1.">The client constructs a list of reference identifiers it would find acceptable
+based on the source domain and, if applicable, the type of service to
+which the client is connecting.</li>
+        <li pn="section-6-2.2" derivedCounter="2.">The server provides its presented identifiers in the form of a PKIX
+certificate.</li>
+        <li pn="section-6-2.3" derivedCounter="3.">The client checks each of its reference identifiers against the
+server's presented identifiers for the purpose of finding a match. When checking a
+reference identifier against a presented identifier, the client matches the
+source domain of the identifiers and, optionally, their application service
+type.</li>
+      </ol>
+      <t indent="0" pn="section-6-3">Naturally, in addition to checking identifiers, a client should perform
+further checks, such as expiration and revocation, to ensure that the server
+is authorized to provide the requested service.  Because such checking is not a
+matter of verifying the application service identity presented in a
+certificate, methods for doing so are out of scope for
+this document.</t>
+      <section anchor="verify-reference" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-constructing-a-list-of-refe">Constructing a List of Reference Identifiers</name>
+        <section anchor="verify-reference-rules" numbered="true" removeInRFC="false" toc="include" pn="section-6.1.1">
+          <name slugifiedName="name-rules-2">Rules</name>
+          <t indent="0" pn="section-6.1.1-1">The client <bcp14>MUST</bcp14> construct a list of acceptable reference identifiers
+and <bcp14>MUST</bcp14> do so independently of the identifiers presented by the
+server.</t>
+          <t indent="0" pn="section-6.1.1-2">The inputs used by the client to construct its list of reference identifiers
+might be a URI that a user has typed into an interface (e.g., an HTTPS URL
+for a website), configured account information (e.g., the domain name of a
+host for retrieving email, which might be different from the DNS domain name
+portion of a username), a hyperlink in a web page that triggers a browser to
+retrieve a media object or script, or some other combination of information
+that can yield a source domain and an application service type.</t>
+          <t indent="0" pn="section-6.1.1-3">This document does not precisely define how reference identifiers are generated.
+Defining reference identifiers is the responsibility of applications or protocols that use this
+document. Because the security of a system that uses this document will depend
+on how reference identifiers are generated, great care should be taken in this
+process. For example, a protocol or application could specify that the application
+service type is obtained through a one-to-one mapping of URI schemes to service
+types or that the protocol or application supports only a restricted set of URI schemes.
+Similarly, it could
+specify that a domain name or an IP address taken as input to the reference
+identifier must be obtained in a secure context such as a hyperlink embedded in
+a web page that was delivered over an authenticated and encrypted channel
+(for instance, see <xref target="SECURE-CONTEXTS" format="default" sectionFormat="of" derivedContent="SECURE-CONTEXTS"/> with regard to the web platform).</t>
+          <t indent="0" pn="section-6.1.1-4">Naturally, if the inputs themselves are invalid or corrupt (e.g., a user has
+clicked a hyperlink provided by a malicious entity in a phishing attack),
+then the client might end up communicating with an unexpected application
+service.</t>
+          <t indent="0" pn="section-6.1.1-5">During the course of processing, a client might be exposed to identifiers that
+look like, but are not, reference identifiers. For example, DNS resolution that
+starts at a DNS-ID reference identifier might produce intermediate domain names
+that need to be further resolved. Unless an application defines a process
+for authenticating intermediate identifiers in a way that then allows
+them to be used as a reference identifier (for example, see <xref target="RFC8689" format="default" sectionFormat="of" derivedContent="SMTP-TLS"/>),
+any intermediate values are not reference
+identifiers and <bcp14>MUST NOT</bcp14> be treated as such.
+In the DNS case, not treating intermediate domain names as reference identifiers
+removes DNS and DNS resolution from the attack surface.</t>
+          <t indent="0" pn="section-6.1.1-6">As one example of the process of generating a reference identifier, from the user
+input of the URI &lt;sip:alice@voice.college.example&gt;, a client could derive the application
+service type <tt>sip</tt> from the URI scheme and parse the domain name <tt>college.example</tt>
+	  from the "host" component.</t>
+          <t indent="0" pn="section-6.1.1-7">Using the combination of one or more FQDNs or IP addresses, plus optionally an application service type, the client
+<bcp14>MUST</bcp14> construct its list of reference identifiers in accordance with the
+following rules:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.1.1-8">
+            <li pn="section-6.1.1-8.1">If a server for the application service type is typically associated
+with a URI for security purposes (i.e., a formal protocol document
+specifies the use of URIs in server certificates), the reference identifier
+<bcp14>SHOULD</bcp14> be a URI-ID.</li>
+            <li pn="section-6.1.1-8.2">If a server for the application service type is typically discovered
+by means of DNS SRV records, the reference identifier <bcp14>SHOULD</bcp14> be an SRV-ID.</li>
+            <li pn="section-6.1.1-8.3">If the reference identifier is an IP address, the reference identifier is an
+IP-ID.</li>
+            <li pn="section-6.1.1-8.4">In the absence of more specific identifiers, the reference identifier is a DNS-ID.
+A reference identifier of type DNS-ID can be directly constructed from an
+FQDN that is (a) contained in or securely derived from the inputs or
+(b) explicitly associated with the source domain by means of user
+configuration.</li>
+          </ul>
+          <t indent="0" pn="section-6.1.1-9">Which identifier types a client includes in its list of reference
+identifiers, and their priority, is a matter of local policy.  For example, a
+client that is built to connect only to a particular kind of service might be
+configured to accept as valid only certificates that include an SRV-ID for
+that application service type.  By contrast, a more lenient client, even if
+built to connect only to a particular kind of service, might include
+SRV-IDs, DNS-IDs, and IP-IDs in its list of reference identifiers.</t>
+        </section>
+        <section anchor="verify-reference-examples" numbered="true" removeInRFC="false" toc="include" pn="section-6.1.2">
+          <name slugifiedName="name-examples-2">Examples</name>
+          <t indent="0" pn="section-6.1.2-1">The following examples are for illustrative purposes only and are not
+intended to be comprehensive.</t>
+          <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-6.1.2-2"><li pn="section-6.1.2-2.1" derivedCounter="1.">A web browser that is connecting via HTTPS to the website at
+<tt>&lt;https://www.bigcompany.example/&gt;</tt> would have a single reference identifier:
+a DNS-ID of <tt>www.bigcompany.example</tt>.</li>
+            <li pn="section-6.1.2-2.2" derivedCounter="2.">A web browser connecting to <tt>&lt;https://192.0.2.107/&gt;</tt> would have a single
+IP-ID reference identifier of <tt>192.0.2.107</tt>. Likewise, if connecting
+to <tt>&lt;https://[2001:db8::abcd]&gt;</tt>, it would have a single IP-ID
+reference identifier of <tt>2001:db8::abcd</tt>.</li>
+            <li pn="section-6.1.2-2.3" derivedCounter="3.">A mail user agent that is connecting via IMAPS to the email service at
+<tt>isp.example</tt> (resolved as <tt>mail.isp.example</tt>) might have three reference
+identifiers: an SRV-ID of <tt>_imaps.isp.example</tt> (see <xref target="RFC6186" format="default" sectionFormat="of" derivedContent="EMAIL-SRV"/>) and
+DNS-IDs of <tt>isp.example</tt> and <tt>mail.isp.example</tt>.  An email user agent that
+does not support <xref target="RFC6186" format="default" sectionFormat="of" derivedContent="EMAIL-SRV"/> would probably be explicitly configured to
+connect to <tt>mail.isp.example</tt>, whereas an SRV-aware user agent would derive
+<tt>isp.example</tt> from an email address of the form <tt>user@isp.example</tt> but might
+also accept <tt>mail.isp.example</tt> as the DNS domain name portion of reference
+identifiers for the service.</li>
+            <li pn="section-6.1.2-2.4" derivedCounter="4.">A VoIP user agent that is connecting via SIP to the voice
+service at <tt>voice.college.example</tt> might have only one reference identifier:
+a URI-ID of <tt>sip:voice.college.example</tt> (see <xref target="RFC5922" format="default" sectionFormat="of" derivedContent="SIP-CERTS"/>).</li>
+            <li pn="section-6.1.2-2.5" derivedCounter="5.">An IM client that is connecting via XMPP to the IM
+service at <tt>messenger.example</tt> might have three reference identifiers: an
+SRV-ID of <tt>_xmpp-client.messenger.example</tt> (see <xref target="RFC6120" format="default" sectionFormat="of" derivedContent="XMPP"/>), a DNS-ID of
+<tt>messenger.example</tt>, and an XMPP-specific <tt>XmppAddr</tt> of <tt>messenger.example</tt>
+(see <xref target="RFC6120" format="default" sectionFormat="of" derivedContent="XMPP"/>).</li>
+          </ol>
+          <t indent="0" pn="section-6.1.2-3">In all these cases, presented identifiers that do not match the reference
+identifier(s) would be rejected; for instance:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.1.2-4">
+            <li pn="section-6.1.2-4.1">With regard to the first example, a DNS-ID of <tt>web.bigcompany.example</tt> would
+be rejected because the DNS domain name portion does not match
+<tt>www.bigcompany.example</tt>.</li>
+            <li pn="section-6.1.2-4.2">With regard to the third example, a URI-ID of &lt;sip:www.college.example&gt;
+would be rejected because the DNS domain name portion does not match
+"voice.college.example", and a DNS-ID of "voice.college.example" would be
+rejected because it lacks the appropriate application service type
+portion (i.e., it does not specify a "sip:" URI).</li>
+          </ul>
+        </section>
+      </section>
+      <section anchor="verify-seek" numbered="true" removeInRFC="false" toc="include" pn="section-6.2">
+        <name slugifiedName="name-preparing-to-seek-a-match">Preparing to Seek a Match</name>
+        <t indent="0" pn="section-6.2-1">Once the client has constructed its list of reference identifiers and has
+received the server's presented identifiers,
+the client checks its reference identifiers against the presented identifiers
+for the purpose of finding a match.
+The search fails if the client exhausts
+its list of reference identifiers without finding a match.  The search succeeds
+if any presented identifier matches one of the reference identifiers, at
+which point the client <bcp14>SHOULD</bcp14> stop the search.</t>
+        <t indent="0" pn="section-6.2-2">Before applying the comparison rules provided in the following
+sections, the client might need to split the reference identifier into
+components.
+Each reference identifier produces either a domain name or an IP address and
+optionally an application service type as follows:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.2-3">
+          <li pn="section-6.2-3.1">A DNS-ID reference identifier <bcp14>MUST</bcp14> be used directly as the DNS domain
+	  name, and there is no application service type.</li>
+          <li pn="section-6.2-3.2">An IP-ID reference identifier <bcp14>MUST</bcp14> exactly match the value of an
+iPAddress entry in subjectAltName, with no partial (e.g., network-level) matching. There is no application service type.</li>
+          <li pn="section-6.2-3.3">For an SRV-ID reference identifier, the DNS domain name portion is
+the Name and the application service type portion is the Service.  For
+example, an SRV-ID of <tt>_imaps.isp.example</tt> has a DNS domain name portion
+of <tt>isp.example</tt> and an application service type portion of
+<tt>imaps</tt>, which maps to the IMAP application protocol as explained in
+<xref target="RFC6186" format="default" sectionFormat="of" derivedContent="EMAIL-SRV"/>.</li>
+          <li pn="section-6.2-3.4">For a reference identifier of type URI-ID, the DNS domain name
+portion is the "reg-name" part of the "host" component and the application
+service type portion is the scheme, as defined above.  Matching only the
+"reg-name" rule from <xref target="RFC3986" format="default" sectionFormat="of" derivedContent="URI"/> limits the additional domain name validation
+(<xref target="verify-domain" format="default" sectionFormat="of" derivedContent="Section 6.3"/>) to DNS domain names or non-IP hostnames.
+A URI that contains an IP address might be matched against an IP-ID in place
+of a URI-ID by some lenient clients.  This document does not describe how a
+URI that contains no "host" component can be matched.  Note that extraction of the
+"reg-name" might necessitate normalization of the URI (as explained in
+<xref section="6" sectionFormat="of" target="RFC3986" format="default" derivedLink="https://rfc-editor.org/rfc/rfc3986#section-6" derivedContent="URI"/>).  For example, a URI-ID of <tt>&lt;sip:voice.college.example&gt;</tt> would be split
+into a DNS domain name portion of <tt>voice.college.example</tt> and an application
+service type of <tt>sip</tt> (associated with an application protocol of SIP as
+explained in <xref target="RFC5922" format="default" sectionFormat="of" derivedContent="SIP-CERTS"/>).</li>
+        </ul>
+        <t indent="0" pn="section-6.2-4">If the reference identifier produces a domain name, the client <bcp14>MUST</bcp14> match the
+DNS name; see <xref target="verify-domain" format="default" sectionFormat="of" derivedContent="Section 6.3"/>.
+If the reference identifier produces an IP address, the client <bcp14>MUST</bcp14> match the IP
+address; see <xref target="verify-ip" format="default" sectionFormat="of" derivedContent="Section 6.4"/>.
+If an application service type is present, it <bcp14>MUST</bcp14> also match the
+service type; see <xref target="verify-app" format="default" sectionFormat="of" derivedContent="Section 6.5"/>.</t>
+      </section>
+      <section anchor="verify-domain" numbered="true" removeInRFC="false" toc="include" pn="section-6.3">
+        <name slugifiedName="name-matching-the-dns-domain-nam">Matching the DNS Domain Name Portion</name>
+        <t indent="0" pn="section-6.3-1">This section describes how the client must determine if the presented DNS
+name matches the reference DNS name.  The rules differ depending on whether
+the domain to be checked is an
+internationalized domain name, as defined in <xref target="names" format="default" sectionFormat="of" derivedContent="Section 2"/>, or not.
+For clients
+that support presented identifiers containing the wildcard character "*", this section
+also specifies a supplemental rule for such "wildcard certificates".
+This section uses the description of labels and domain names in
+	<xref target="RFC1034" format="default" sectionFormat="of" derivedContent="DNS-CONCEPTS"/>.</t>
+        <t indent="0" pn="section-6.3-2">If the DNS domain name portion of a reference identifier
+	is not an internationalized domain name
+	(i.e., an FQDN that conforms to "preferred name syntax" as
+described in <xref section="3.5" sectionFormat="of" target="RFC1034" format="default" derivedLink="https://rfc-editor.org/rfc/rfc1034#section-3.5" derivedContent="DNS-CONCEPTS"/>),
+then the matching of the reference identifier against the presented
+identifier <bcp14>MUST</bcp14> be performed by comparing the set of domain name labels using
+a case-insensitive ASCII comparison, as clarified by <xref target="RFC4343" format="default" sectionFormat="of" derivedContent="DNS-CASE"/>.  For
+example, <tt>WWW.BigCompany.Example</tt> would be lower-cased to <tt>www.bigcompany.example</tt> for
+comparison purposes.  Each label <bcp14>MUST</bcp14> match in order for the names to be
+considered a match, except as supplemented by the rule about checking
+wildcard labels in presented identifiers given below.</t>
+        <t indent="0" pn="section-6.3-3">If the DNS domain name portion of a reference identifier is an
+internationalized domain name, then the client <bcp14>MUST</bcp14> convert any U-labels
+<xref target="RFC5890" format="default" sectionFormat="of" derivedContent="IDNA-DEFS"/> in the domain name to A-labels before checking the domain name
+or comparing it with others.  In accordance with <xref target="RFC5891" format="default" sectionFormat="of" derivedContent="IDNA-PROTO"/>, A-labels
+<bcp14>MUST</bcp14> be compared as case-insensitive ASCII.  Each label <bcp14>MUST</bcp14> match in order
+for the domain names to be considered to match, except as supplemented by
+the rule about checking wildcard labels in presented identifiers given below.</t>
+        <t indent="0" pn="section-6.3-4">If the technology specification supports wildcards in presented identifiers, then the client <bcp14>MUST</bcp14>
+match the reference identifier against a presented identifier whose DNS
+domain name portion contains the wildcard character "*" in a label, provided
+these requirements are met:</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-6.3-5"><li pn="section-6.3-5.1" derivedCounter="1.">There is only one wildcard character.</li>
+          <li pn="section-6.3-5.2" derivedCounter="2.">The wildcard character appears only as the complete content of the left-most label.</li>
+        </ol>
+        <t indent="0" pn="section-6.3-6">If the requirements are not met, the presented identifier is invalid and <bcp14>MUST</bcp14>
+be ignored.</t>
+        <t indent="0" pn="section-6.3-7">A wildcard in a presented identifier can only match one label in a
+reference identifier.  This specification covers only wildcard characters in
+presented identifiers, not wildcard characters in reference identifiers or in
+DNS domain names more generally.  Therefore, the use of wildcard characters
+as described herein is not to be confused with DNS wildcard
+matching, where the "*" label always matches at least one whole label and
+sometimes more; see <xref section="4.3.3" sectionFormat="comma" target="RFC1034" format="default" derivedLink="https://rfc-editor.org/rfc/rfc1034#section-4.3.3" derivedContent="DNS-CONCEPTS"/> and <xref target="RFC4592" format="default" sectionFormat="of" derivedContent="DNS-WILDCARDS"/>.
+In particular, it also deviates from <xref section="2.1.3" sectionFormat="comma" target="RFC4592" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4592#section-2.1.3" derivedContent="DNS-WILDCARDS"/>.</t>
+        <t indent="0" pn="section-6.3-8">For information regarding the security characteristics of wildcard
+certificates, see <xref target="security-wildcards" format="default" sectionFormat="of" derivedContent="Section 7.1"/>.</t>
+      </section>
+      <section anchor="verify-ip" numbered="true" removeInRFC="false" toc="include" pn="section-6.4">
+        <name slugifiedName="name-matching-an-ip-address-port">Matching an IP Address Portion</name>
+        <t indent="0" pn="section-6.4-1">Matching of an IP-ID is based on an octet-for-octet comparison of the bytes of the
+reference identity with the bytes contained in the iPAddress subjectAltName.</t>
+        <t indent="0" pn="section-6.4-2">For an IP address that appears in a URI-ID, the "host" component of both the
+reference identity and the presented identifier must match.  These are parsed as either
+an "IPv6address" (following <xref section="3.2.2" sectionFormat="comma" target="RFC3986" format="default" derivedLink="https://rfc-editor.org/rfc/rfc3986#section-3.2.2" derivedContent="URI"/>) or an "IPv4address" (following <xref target="RFC0791" format="default" sectionFormat="of" derivedContent="IPv4"/>).
+If the resulting octets are equal, the IP address matches.</t>
+        <t indent="0" pn="section-6.4-3">This document does not specify how an SRV-ID reference identity can include an
+IP address, as <xref target="RFC4985" format="default" sectionFormat="of" derivedContent="SRVNAME"/> only defines string names, not octet identifiers
+such as an IP address.</t>
+      </section>
+      <section anchor="verify-app" numbered="true" removeInRFC="false" toc="include" pn="section-6.5">
+        <name slugifiedName="name-matching-the-application-se">Matching the Application Service Type Portion</name>
+        <t indent="0" pn="section-6.5-1">The rules for matching the application service type depend on whether
+the identifier is an SRV-ID or a URI-ID.</t>
+        <t indent="0" pn="section-6.5-2">These identifiers provide an application service type portion to be checked,
+but that portion is combined only with the DNS domain name portion of the
+SRV-ID or URI-ID itself.  Consider the example of a messaging client that has two reference
+identifiers: (1) an SRV-ID of <tt>_xmpp-client.messenger.example</tt> and (2) a DNS-ID
+of <tt>app.example</tt>.  The client <bcp14>MUST</bcp14> check (1) the combination of (a) an
+application service type of <tt>xmpp-client</tt> and (b) a DNS domain name of
+<tt>messenger.example</tt> as well as (2)
+a DNS domain name of <tt>app.example</tt>.  However, the
+client <bcp14>MUST NOT</bcp14> check the combination of an application service type of
+<tt>xmpp-client</tt> and a DNS domain name of <tt>app.example</tt> because it does not
+have an SRV-ID of <tt>_xmpp-client.app.example</tt> in its list of reference
+identifiers.</t>
+        <t indent="0" pn="section-6.5-3">If the identifier is an SRV-ID, then the application service name <bcp14>MUST</bcp14>
+be matched in a case-insensitive manner, in accordance with <xref target="RFC2782" format="default" sectionFormat="of" derivedContent="DNS-SRV"/>.
+Note that per <xref target="RFC4985" format="default" sectionFormat="of" derivedContent="SRVNAME"/>, the underscore "_" is part of the service name in
+DNS SRV records and in SRV-IDs.</t>
+        <t indent="0" pn="section-6.5-4">If the identifier is a URI-ID, then the scheme name portion <bcp14>MUST</bcp14> be
+matched in a case-insensitive manner, in accordance with <xref target="RFC3986" format="default" sectionFormat="of" derivedContent="URI"/>.
+Note that the colon ":" is a separator between the scheme name
+and the rest of the URI and thus does not need to be included in any
+comparison.</t>
+      </section>
+      <section anchor="outcome" numbered="true" removeInRFC="false" toc="include" pn="section-6.6">
+        <name slugifiedName="name-outcome">Outcome</name>
+        <t indent="0" pn="section-6.6-1">If the client has found a presented identifier that matches a reference
+identifier, then the service identity check has succeeded.  In this case, the
+client <bcp14>MUST</bcp14> use the matched reference identifier as the validated identity of
+the application service.</t>
+        <t indent="0" pn="section-6.6-2">If the client does not find a presented identifier matching any of the
+reference identifiers, then the client <bcp14>MUST</bcp14> proceed as follows.</t>
+        <t indent="0" pn="section-6.6-3">If the client is an automated application,
+then it <bcp14>SHOULD</bcp14> terminate the communication attempt with a bad
+certificate error and log the error appropriately.  The application <bcp14>MAY</bcp14>
+provide a configuration setting to disable this behavior, but it <bcp14>MUST NOT</bcp14>
+disable this security control by default.</t>
+        <t indent="0" pn="section-6.6-4">If the client is one that is directly controlled by a human
+user, then it <bcp14>SHOULD</bcp14> inform the user of the identity mismatch and
+automatically terminate the communication attempt with a bad certificate
+error in order to prevent users from inadvertently bypassing security
+protections in hostile situations.
+Such clients <bcp14>MAY</bcp14> give advanced users the option of proceeding
+with acceptance despite the identity mismatch.  Although this behavior can be
+appropriate in certain specialized circumstances, it needs to be handled with
+extreme caution, for example by first encouraging even an advanced user to
+terminate the communication attempt and, if they choose to proceed anyway, by
+forcing the user to view the entire certification path before proceeding.</t>
+        <t indent="0" pn="section-6.6-5">The application <bcp14>MAY</bcp14> also present the user with the ability to accept the
+presented certificate as valid for subsequent connections.  Such ad hoc
+"pinning" <bcp14>SHOULD NOT</bcp14> restrict future connections to just the pinned
+certificate. Local policy that statically enforces a given certificate for a
+given peer <bcp14>SHOULD</bcp14> be made available only as prior configuration rather than a
+just-in-time override for a failed connection.</t>
+      </section>
+    </section>
+    <section anchor="security" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <section anchor="security-wildcards" numbered="true" removeInRFC="false" toc="include" pn="section-7.1">
+        <name slugifiedName="name-wildcard-certificates">Wildcard Certificates</name>
+        <t indent="0" pn="section-7.1-1">Wildcard certificates automatically vouch for any single-label hostnames
+within their domain, but not multiple levels of domains.  This can be
+convenient for administrators but also poses the risk of vouching for rogue
+or buggy hosts. For example, see <xref target="Defeating-SSL" format="default" sectionFormat="of" derivedContent="Defeating-SSL"/> (beginning at slide 91) and
+<xref target="HTTPSbytes" format="default" sectionFormat="of" derivedContent="HTTPSbytes"/> (slides 38-40).</t>
+        <t indent="0" pn="section-7.1-2">As specified in <xref target="verify-domain" format="default" sectionFormat="of" derivedContent="Section 6.3"/>, restricting the presented identifiers in certificates to only one
+wildcard character (e.g., "*.bigcompany.example" but not "*.*.bigcompany.example") and
+restricting the use of wildcards to only the left-most domain label can
+help to mitigate certain aspects of the attack described in <xref target="Defeating-SSL" format="default" sectionFormat="of" derivedContent="Defeating-SSL"/>.</t>
+        <t indent="0" pn="section-7.1-3">That same attack also relies on the initial use of a cleartext HTTP connection,
+which is hijacked by an active on-path attacker and subsequently upgraded to
+HTTPS.  In order to mitigate such an attack, administrators and software
+developers are advised to follow the strict TLS guidelines provided in
+<xref section="3.2" sectionFormat="comma" target="RFC9325" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9325#section-3.2" derivedContent="TLS-REC"/>.</t>
+        <t indent="0" pn="section-7.1-4">Because the attack described in <xref target="HTTPSbytes" format="default" sectionFormat="of" derivedContent="HTTPSbytes"/> relies on an underlying
+cross-site scripting (XSS) attack, web browsers and applications are advised
+to follow best practices to prevent XSS attacks; for example, see <xref target="XSS" format="default" sectionFormat="of" derivedContent="XSS"/>, which was
+published by the Open Web Application Security Project (OWASP).</t>
+        <t indent="0" pn="section-7.1-5">Protection against a wildcard that identifies a public suffix
+<xref target="Public-Suffix" format="default" sectionFormat="of" derivedContent="Public-Suffix"/>, such as <tt>*.co.uk</tt> or <tt>*.com</tt>, is beyond the scope of this
+document.</t>
+        <t indent="0" pn="section-7.1-6">As noted in <xref target="design" format="default" sectionFormat="of" derivedContent="Section 3"/>, application protocols can disallow the use of
+wildcard certificates entirely as a more foolproof mitigation.</t>
+      </section>
+      <section anchor="security-uri" numbered="true" removeInRFC="false" toc="include" pn="section-7.2">
+        <name slugifiedName="name-uniform-resource-identifier">Uniform Resource Identifiers</name>
+        <t indent="0" pn="section-7.2-1">The URI-ID type is a subjectAltName entry of type uniformResourceIdentifier
+as defined in <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="PKIX"/>.  For the purposes of this specification, the URI-ID
+<bcp14>MUST</bcp14> include both a "scheme" and a "host" component that matches the "reg-name"
+rule; if the entry does not include both, it is not a valid URI-ID and <bcp14>MUST</bcp14> be
+ignored.  Any other components are ignored because only the "scheme" and "host"
+components are used for certificate matching as specified under <xref target="verify" format="default" sectionFormat="of" derivedContent="Section 6"/>.</t>
+        <t indent="0" pn="section-7.2-2">The quoted component names in the previous paragraph represent the associated
+<xref target="RFC5234" format="default" sectionFormat="of" derivedContent="ABNF"/> productions from the IETF Proposed Standard for Uniform Resource Identifiers
+<xref target="RFC3986" format="default" sectionFormat="of" derivedContent="URI"/>.  Although the reader should be aware that some applications (e.g.,
+web browsers) might instead conform to the Uniform Resource Locator (URL)
+specification maintained by the WHATWG <xref target="URL" format="default" sectionFormat="of" derivedContent="URL"/>, it is not expected that
+differences between the URI and URL specifications would manifest themselves
+in certificate matching.</t>
+      </section>
+      <section anchor="security-idn" numbered="true" removeInRFC="false" toc="include" pn="section-7.3">
+        <name slugifiedName="name-internationalized-domain-na">Internationalized Domain Names</name>
+        <t indent="0" pn="section-7.3-1">This document specifies only matching between reference identifiers and
+presented identifiers, not the visual presentation of domain names. 
+Specifically, the matching of internationalized domain names is performed on
+A-labels only (<xref target="verify-domain" format="default" sectionFormat="of" derivedContent="Section 6.3"/>). The limited scope of this specification likely
+mitigates potential confusion caused by the use of visually similar characters
+in domain names (for example, as described in <xref section="4.4" sectionFormat="of" target="RFC5890" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5890#section-4.4" derivedContent="IDNA-DEFS"/>,
+<xref target="UTS-36" format="default" sectionFormat="of" derivedContent="UTS-36"/>, and <xref target="UTS-39" format="default" sectionFormat="of" derivedContent="UTS-39"/>); in any case, such concerns are a matter for
+application-level protocols and user interfaces, not the matching of certificates.</t>
+      </section>
+      <section anchor="ip-addresses" numbered="true" removeInRFC="false" toc="include" pn="section-7.4">
+        <name slugifiedName="name-ip-addresses">IP Addresses</name>
+        <t indent="0" pn="section-7.4-1">The TLS Server Name Indication (SNI) extension only conveys domain names.
+Therefore, a client with an IP-ID reference identity cannot present any
+information about its reference identity when connecting to a server.  Servers
+that wish to present an IP-ID therefore need to present this identity when a
+connection is made without SNI.</t>
+        <t indent="0" pn="section-7.4-2">The textual representation of an IPv4 address might be misinterpreted
+as a valid FQDN in some contexts.  This can result in different
+security treatment that might cause different components of a system
+to classify the value differently, which might lead to
+vulnerabilities.  Consider a system in which one component enforces a
+security rule that is conditional on the type of identifier but 
+misclassifies an IP address as an FQDN, whereas a second component 
+correctly classifies the identifier but incorrectly assumes that 
+rules regarding IP addresses have been enforced by the first 
+component. As a result, the system as a whole might behave in an 
+insecure manner.  Consistent classification of identifiers avoids 
+this problem.</t>
+        <t indent="0" pn="section-7.4-3">See also <xref target="design" format="default" sectionFormat="of" derivedContent="Section 3"/>, particularly the last paragraph.</t>
+      </section>
+      <section anchor="security-multi" numbered="true" removeInRFC="false" toc="include" pn="section-7.5">
+        <name slugifiedName="name-multiple-presented-identifi">Multiple Presented Identifiers</name>
+        <t indent="0" pn="section-7.5-1">A given application service might be addressed by multiple DNS domain names
+for a variety of reasons, and a given deployment might service multiple
+domains or protocols.
+TLS extensions such as the Server Name Indication (SNI), as discussed in <xref section="3" sectionFormat="comma" target="RFC6066" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6066#section-3" derivedContent="TLS-EXT"/>, and ALPN, as discussed in <xref target="RFC7301" format="default" sectionFormat="of" derivedContent="ALPN"/>, provide a way for the application
+to indicate the desired identifier and protocol to the server, which it
+can then use to select the most appropriate certificate.</t>
+        <t indent="0" pn="section-7.5-2">This specification allows multiple DNS-IDs, IP-IDs, SRV-IDs, or URI-IDs in a
+certificate.  As a result, an application service can use the same
+certificate for multiple hostnames, such as when a client does not support
+the TLS SNI extension, or for multiple protocols, such as SMTP and HTTP, on a
+single hostname.  Note that the set of names in a certificate is the set of
+names that could be affected by a compromise of any other server named in
+the set: the strength of any server in the set of names is determined by the
+weakest of those servers that offer the names.</t>
+        <t indent="0" pn="section-7.5-3">The way to mitigate this risk is to limit the number of names that
+any server can speak for and to ensure that all servers in the set
+have a strong minimum configuration as described in <xref target="RFC9325" sectionFormat="comma" section="3.9" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9325#section-3.9" derivedContent="TLS-REC"/>.</t>
+      </section>
+      <section anchor="multiple-reference-identifiers" numbered="true" removeInRFC="false" toc="include" pn="section-7.6">
+        <name slugifiedName="name-multiple-reference-identifi">Multiple Reference Identifiers</name>
+        <t indent="0" pn="section-7.6-1">This specification describes how a client may construct multiple acceptable
+reference identifiers and may match any of those reference identifiers with
+the set of presented identifiers. <xref section="4.2.1.10" sectionFormat="comma" target="RFC5280" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-4.2.1.10" derivedContent="PKIX"/> describes a
+mechanism to allow CA certificates to be constrained in the set of presented
+identifiers that they may include within server certificates.  However, these
+constraints only apply to the explicitly enumerated name forms. For example,
+a CA that is only name-constrained for DNS-IDs is not constrained for SRV-IDs
+and URI-IDs, unless those name forms are also explicitly included within the
+name constraints extension.</t>
+        <t indent="0" pn="section-7.6-2">A client that constructs multiple reference identifiers of different types,
+such as both DNS-IDs and SRV-IDs as described in <xref target="verify-reference-rules" format="default" sectionFormat="of" derivedContent="Section 6.1.1"/>,
+<bcp14>SHOULD</bcp14> take care to ensure that CAs issuing such certificates are
+appropriately constrained. This <bcp14>MAY</bcp14> take the form of local policy through
+agreement with the issuing CA or <bcp14>MAY</bcp14> be enforced by the client requiring
+that if one form of presented identifier is constrained, such as a dNSName
+name constraint for DNS-IDs, then all other forms of acceptable reference
+identities are also constrained, such as requiring a uniformResourceIndicator
+name constraint for URI-IDs.</t>
+      </section>
+      <section anchor="certificate-trust" numbered="true" removeInRFC="false" toc="include" pn="section-7.7">
+        <name slugifiedName="name-certificate-trust">Certificate Trust</name>
+        <t indent="0" pn="section-7.7-1">This document assumes that if a client trusts a given CA, it trusts all
+certificates issued by that CA.  The certificate checking process does not
+include additional checks for bad behavior by the hosts identified with
+such certificates, for instance, rogue servers or buggy applications.  Any
+additional checks (e.g., checking the server name against trusted block
+lists) are the responsibility of the application protocol or the client
+itself.</t>
+      </section>
+    </section>
+    <section anchor="iana-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-8-1">This document has no IANA actions.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="RFC1034" to="DNS-CONCEPTS"/>
+    <displayreference target="RFC2782" to="DNS-SRV"/>
+    <displayreference target="RFC4592" to="DNS-WILDCARDS"/>
+    <displayreference target="RFC5890" to="IDNA-DEFS"/>
+    <displayreference target="RFC5891" to="IDNA-PROTO"/>
+    <displayreference target="RFC4514" to="LDAP-DN"/>
+    <displayreference target="RFC5280" to="PKIX"/>
+    <displayreference target="RFC4985" to="SRVNAME"/>
+    <displayreference target="RFC3986" to="URI"/>
+    <displayreference target="RFC9325" to="TLS-REC"/>
+    <displayreference target="RFC0791" to="IPv4"/>
+    <displayreference target="RFC4291" to="IPv6"/>
+    <displayreference target="RFC5234" to="ABNF"/>
+    <displayreference target="RFC8555" to="ACME"/>
+    <displayreference target="RFC7301" to="ALPN"/>
+    <displayreference target="RFC6698" to="DANE"/>
+    <displayreference target="RFC4343" to="DNS-CASE"/>
+    <displayreference target="RFC7858" to="DNS-OVER-TLS"/>
+    <displayreference target="RFC9147" to="DTLS"/>
+    <displayreference target="RFC6186" to="EMAIL-SRV"/>
+    <displayreference target="RFC9110" to="HTTP"/>
+    <displayreference target="RFC3403" to="NAPTR"/>
+    <displayreference target="RFC8915" to="NTS"/>
+    <displayreference target="RFC9001" to="QUIC"/>
+    <displayreference target="RFC4949" to="SECTERMS"/>
+    <displayreference target="RFC3261" to="SIP"/>
+    <displayreference target="RFC5922" to="SIP-CERTS"/>
+    <displayreference target="RFC5630" to="SIP-SIPS"/>
+    <displayreference target="RFC8689" to="SMTP-TLS"/>
+    <displayreference target="RFC8446" to="TLS"/>
+    <displayreference target="RFC9345" to="TLS-SUBCERTS"/>
+    <displayreference target="RFC9461" to="SVCB-FOR-DNS"/>
+    <displayreference target="RFC9460" to="SVCB-FOR-HTTPS"/>
+    <displayreference target="RFC6125" to="VERIFY"/>
+    <displayreference target="RFC6120" to="XMPP"/>
+    <displayreference target="RFC6066" to="TLS-EXT"/>
+    <references pn="section-9">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-9.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC1034" target="https://www.rfc-editor.org/info/rfc1034" quoteTitle="true" derivedAnchor="DNS-CONCEPTS">
+          <front>
+            <title>Domain names - concepts and facilities</title>
+            <author fullname="P. Mockapetris" initials="P." surname="Mockapetris"/>
+            <date month="November" year="1987"/>
+            <abstract>
+              <t indent="0">This RFC is the revised basic definition of The Domain Name System. It obsoletes RFC-882. This memo describes the domain style names and their used for host address look up and electronic mail forwarding. It discusses the clients and servers in the domain name system and the protocol used between them.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="13"/>
+          <seriesInfo name="RFC" value="1034"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1034"/>
+        </reference>
+        <reference anchor="RFC2782" target="https://www.rfc-editor.org/info/rfc2782" quoteTitle="true" derivedAnchor="DNS-SRV">
+          <front>
+            <title>A DNS RR for specifying the location of services (DNS SRV)</title>
+            <author fullname="A. Gulbrandsen" initials="A." surname="Gulbrandsen"/>
+            <author fullname="P. Vixie" initials="P." surname="Vixie"/>
+            <author fullname="L. Esibov" initials="L." surname="Esibov"/>
+            <date month="February" year="2000"/>
+            <abstract>
+              <t indent="0">This document describes a DNS RR which specifies the location of the server(s) for a specific protocol and domain. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2782"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2782"/>
+        </reference>
+        <reference anchor="RFC4592" target="https://www.rfc-editor.org/info/rfc4592" quoteTitle="true" derivedAnchor="DNS-WILDCARDS">
+          <front>
+            <title>The Role of Wildcards in the Domain Name System</title>
+            <author fullname="E. Lewis" initials="E." surname="Lewis"/>
+            <date month="July" year="2006"/>
+            <abstract>
+              <t indent="0">This is an update to the wildcard definition of RFC 1034. The interaction with wildcards and CNAME is changed, an error condition is removed, and the words defining some concepts central to wildcards are changed. The overall goal is not to change wildcards, but to refine the definition of RFC 1034. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4592"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4592"/>
+        </reference>
+        <reference anchor="RFC5890" target="https://www.rfc-editor.org/info/rfc5890" quoteTitle="true" derivedAnchor="IDNA-DEFS">
+          <front>
+            <title>Internationalized Domain Names for Applications (IDNA): Definitions and Document Framework</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="August" year="2010"/>
+            <abstract>
+              <t indent="0">This document is one of a collection that, together, describe the protocol and usage context for a revision of Internationalized Domain Names for Applications (IDNA), superseding the earlier version. It describes the document collection and provides definitions and other material that are common to the set. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5890"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5890"/>
+        </reference>
+        <reference anchor="RFC5891" target="https://www.rfc-editor.org/info/rfc5891" quoteTitle="true" derivedAnchor="IDNA-PROTO">
+          <front>
+            <title>Internationalized Domain Names in Applications (IDNA): Protocol</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="August" year="2010"/>
+            <abstract>
+              <t indent="0">This document is the revised protocol definition for Internationalized Domain Names (IDNs). The rationale for changes, the relationship to the older specification, and important terminology are provided in other documents. This document specifies the protocol mechanism, called Internationalized Domain Names in Applications (IDNA), for registering and looking up IDNs in a way that does not require changes to the DNS itself. IDNA is only meant for processing domain names, not free text. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5891"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5891"/>
+        </reference>
+        <reference anchor="RFC0791" target="https://www.rfc-editor.org/info/rfc791" quoteTitle="true" derivedAnchor="IPv4">
+          <front>
+            <title>Internet Protocol</title>
+            <author fullname="J. Postel" initials="J." surname="Postel"/>
+            <date month="September" year="1981"/>
+          </front>
+          <seriesInfo name="STD" value="5"/>
+          <seriesInfo name="RFC" value="791"/>
+          <seriesInfo name="DOI" value="10.17487/RFC0791"/>
+        </reference>
+        <reference anchor="RFC4291" target="https://www.rfc-editor.org/info/rfc4291" quoteTitle="true" derivedAnchor="IPv6">
+          <front>
+            <title>IP Version 6 Addressing Architecture</title>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <date month="February" year="2006"/>
+            <abstract>
+              <t indent="0">This specification defines the addressing architecture of the IP Version 6 (IPv6) protocol. The document includes the IPv6 addressing model, text representations of IPv6 addresses, definition of IPv6 unicast addresses, anycast addresses, and multicast addresses, and an IPv6 node's required addresses.</t>
+              <t indent="0">This document obsoletes RFC 3513, "IP Version 6 Addressing Architecture". [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4291"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4291"/>
+        </reference>
+        <reference anchor="RFC4514" target="https://www.rfc-editor.org/info/rfc4514" quoteTitle="true" derivedAnchor="LDAP-DN">
+          <front>
+            <title>Lightweight Directory Access Protocol (LDAP): String Representation of Distinguished Names</title>
+            <author fullname="K. Zeilenga" initials="K." role="editor" surname="Zeilenga"/>
+            <date month="June" year="2006"/>
+            <abstract>
+              <t indent="0">The X.500 Directory uses distinguished names (DNs) as primary keys to entries in the directory. This document defines the string representation used in the Lightweight Directory Access Protocol (LDAP) to transfer distinguished names. The string representation is designed to give a clean representation of commonly used distinguished names, while being able to represent any distinguished name. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4514"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4514"/>
+        </reference>
+        <reference anchor="RFC5280" target="https://www.rfc-editor.org/info/rfc5280" quoteTitle="true" derivedAnchor="PKIX">
+          <front>
+            <title>Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile</title>
+            <author fullname="D. Cooper" initials="D." surname="Cooper"/>
+            <author fullname="S. Santesson" initials="S." surname="Santesson"/>
+            <author fullname="S. Farrell" initials="S." surname="Farrell"/>
+            <author fullname="S. Boeyen" initials="S." surname="Boeyen"/>
+            <author fullname="R. Housley" initials="R." surname="Housley"/>
+            <author fullname="W. Polk" initials="W." surname="Polk"/>
+            <date month="May" year="2008"/>
+            <abstract>
+              <t indent="0">This memo profiles the X.509 v3 certificate and X.509 v2 certificate revocation list (CRL) for use in the Internet. An overview of this approach and model is provided as an introduction. The X.509 v3 certificate format is described in detail, with additional information regarding the format and semantics of Internet name forms. Standard certificate extensions are described and two Internet-specific extensions are defined. A set of required certificate extensions is specified. The X.509 v2 CRL format is described in detail along with standard and Internet-specific extensions. An algorithm for X.509 certification path validation is described. An ASN.1 module and examples are provided in the appendices. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5280"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5280"/>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC4985" target="https://www.rfc-editor.org/info/rfc4985" quoteTitle="true" derivedAnchor="SRVNAME">
+          <front>
+            <title>Internet X.509 Public Key Infrastructure Subject Alternative Name for Expression of Service Name</title>
+            <author fullname="S. Santesson" initials="S." surname="Santesson"/>
+            <date month="August" year="2007"/>
+            <abstract>
+              <t indent="0">This document defines a new name form for inclusion in the otherName field of an X.509 Subject Alternative Name extension that allows a certificate subject to be associated with the service name and domain name components of a DNS Service Resource Record. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4985"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4985"/>
+        </reference>
+        <reference anchor="RFC9325" target="https://www.rfc-editor.org/info/rfc9325" quoteTitle="true" derivedAnchor="TLS-REC">
+          <front>
+            <title>Recommendations for Secure Use of Transport Layer Security (TLS) and Datagram Transport Layer Security (DTLS)</title>
+            <author fullname="Y. Sheffer" initials="Y." surname="Sheffer"/>
+            <author fullname="P. Saint-Andre" initials="P." surname="Saint-Andre"/>
+            <author fullname="T. Fossati" initials="T." surname="Fossati"/>
+            <date month="November" year="2022"/>
+            <abstract>
+              <t indent="0">Transport Layer Security (TLS) and Datagram Transport Layer Security (DTLS) are used to protect data exchanged over a wide range of application protocols and can also form the basis for secure transport protocols. Over the years, the industry has witnessed several serious attacks on TLS and DTLS, including attacks on the most commonly used cipher suites and their modes of operation. This document provides the latest recommendations for ensuring the security of deployed services that use TLS and DTLS. These recommendations are applicable to the majority of use cases.</t>
+              <t indent="0">RFC 7525, an earlier version of the TLS recommendations, was published when the industry was transitioning to TLS 1.2. Years later, this transition is largely complete, and TLS 1.3 is widely available. This document updates the guidance given the new environment and obsoletes RFC 7525. In addition, this document updates RFCs 5288 and 6066 in view of recent attacks.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="195"/>
+          <seriesInfo name="RFC" value="9325"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9325"/>
+        </reference>
+        <reference anchor="RFC3986" target="https://www.rfc-editor.org/info/rfc3986" quoteTitle="true" derivedAnchor="URI">
+          <front>
+            <title>Uniform Resource Identifier (URI): Generic Syntax</title>
+            <author fullname="T. Berners-Lee" initials="T." surname="Berners-Lee"/>
+            <author fullname="R. Fielding" initials="R." surname="Fielding"/>
+            <author fullname="L. Masinter" initials="L." surname="Masinter"/>
+            <date month="January" year="2005"/>
+            <abstract>
+              <t indent="0">A Uniform Resource Identifier (URI) is a compact sequence of characters that identifies an abstract or physical resource. This specification defines the generic URI syntax and a process for resolving URI references that might be in relative form, along with guidelines and security considerations for the use of URIs on the Internet. The URI syntax defines a grammar that is a superset of all valid URIs, allowing an implementation to parse the common components of a URI reference without knowing the scheme-specific requirements of every possible identifier. This specification does not define a generative grammar for URIs; that task is performed by the individual specifications of each URI scheme. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="66"/>
+          <seriesInfo name="RFC" value="3986"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3986"/>
+        </reference>
+      </references>
+      <references pn="section-9.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC5234" target="https://www.rfc-editor.org/info/rfc5234" quoteTitle="true" derivedAnchor="ABNF">
+          <front>
+            <title>Augmented BNF for Syntax Specifications: ABNF</title>
+            <author fullname="D. Crocker" initials="D." role="editor" surname="Crocker"/>
+            <author fullname="P. Overell" initials="P." surname="Overell"/>
+            <date month="January" year="2008"/>
+            <abstract>
+              <t indent="0">Internet technical specifications often need to define a formal syntax. Over the years, a modified version of Backus-Naur Form (BNF), called Augmented BNF (ABNF), has been popular among many Internet specifications. The current specification documents ABNF. It balances compactness and simplicity with reasonable representational power. The differences between standard BNF and ABNF involve naming rules, repetition, alternatives, order-independence, and value ranges. This specification also supplies additional rule definitions and encoding for a core lexical analyzer of the type common to several Internet specifications. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="68"/>
+          <seriesInfo name="RFC" value="5234"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5234"/>
+        </reference>
+        <reference anchor="RFC8555" target="https://www.rfc-editor.org/info/rfc8555" quoteTitle="true" derivedAnchor="ACME">
+          <front>
+            <title>Automatic Certificate Management Environment (ACME)</title>
+            <author fullname="R. Barnes" initials="R." surname="Barnes"/>
+            <author fullname="J. Hoffman-Andrews" initials="J." surname="Hoffman-Andrews"/>
+            <author fullname="D. McCarney" initials="D." surname="McCarney"/>
+            <author fullname="J. Kasten" initials="J." surname="Kasten"/>
+            <date month="March" year="2019"/>
+            <abstract>
+              <t indent="0">Public Key Infrastructure using X.509 (PKIX) certificates are used for a number of purposes, the most significant of which is the authentication of domain names. Thus, certification authorities (CAs) in the Web PKI are trusted to verify that an applicant for a certificate legitimately represents the domain name(s) in the certificate. As of this writing, this verification is done through a collection of ad hoc mechanisms. This document describes a protocol that a CA and an applicant can use to automate the process of verification and certificate issuance. The protocol also provides facilities for other certificate management functions, such as certificate revocation.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8555"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8555"/>
+        </reference>
+        <reference anchor="ALPACA" target="https://alpaca-attack.com/ALPACA.pdf" quoteTitle="true" derivedAnchor="ALPACA">
+          <front>
+            <title>ALPACA: Application Layer Protocol Confusion - Analyzing and Mitigating Cracks in TLS Authentication</title>
+            <author initials="M." surname="Brinkmann" fullname="Marcus Brinkmann">
+              <organization showOnFrontPage="true">Ruhr University Bochum</organization>
+            </author>
+            <author initials="C." surname="Dresen" fullname="Christian Dresen">
+              <organization showOnFrontPage="true">Münster University of Applied Sciences</organization>
+            </author>
+            <author initials="R." surname="Merget" fullname="Robert Merget">
+              <organization showOnFrontPage="true">Ruhr University Bochum</organization>
+            </author>
+            <author initials="D." surname="Poddebniak" fullname="Damian Poddebniak">
+              <organization showOnFrontPage="true">Münster University of Applied Sciences</organization>
+            </author>
+            <author initials="J." surname="Müller" fullname="Jens Müller">
+              <organization showOnFrontPage="true">Ruhr University Bochum</organization>
+            </author>
+            <author initials="J." surname="Somorovsky" fullname="Juraj Somorovsky">
+              <organization showOnFrontPage="true">Paderborn University</organization>
+            </author>
+            <author initials="J." surname="Schwenk" fullname="Jörg Schwenk">
+              <organization showOnFrontPage="true">Ruhr University Bochum</organization>
+            </author>
+            <author initials="S." surname="Schinzel" fullname="Sebastian Schinzel">
+              <organization showOnFrontPage="true">Ruhr University Bochum</organization>
+            </author>
+            <date year="2021" month="September"/>
+          </front>
+          <refcontent>30th USENIX Security Symposium (USENIX Security 21)</refcontent>
+        </reference>
+        <reference anchor="RFC7301" target="https://www.rfc-editor.org/info/rfc7301" quoteTitle="true" derivedAnchor="ALPN">
+          <front>
+            <title>Transport Layer Security (TLS) Application-Layer Protocol Negotiation Extension</title>
+            <author fullname="S. Friedl" initials="S." surname="Friedl"/>
+            <author fullname="A. Popov" initials="A." surname="Popov"/>
+            <author fullname="A. Langley" initials="A." surname="Langley"/>
+            <author fullname="E. Stephan" initials="E." surname="Stephan"/>
+            <date month="July" year="2014"/>
+            <abstract>
+              <t indent="0">This document describes a Transport Layer Security (TLS) extension for application-layer protocol negotiation within the TLS handshake. For instances in which multiple application protocols are supported on the same TCP or UDP port, this extension allows the application layer to negotiate which protocol will be used within the TLS connection.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7301"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7301"/>
+        </reference>
+        <reference anchor="RFC6698" target="https://www.rfc-editor.org/info/rfc6698" quoteTitle="true" derivedAnchor="DANE">
+          <front>
+            <title>The DNS-Based Authentication of Named Entities (DANE) Transport Layer Security (TLS) Protocol: TLSA</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="J. Schlyter" initials="J." surname="Schlyter"/>
+            <date month="August" year="2012"/>
+            <abstract>
+              <t indent="0">Encrypted communication on the Internet often uses Transport Layer Security (TLS), which depends on third parties to certify the keys used. This document improves on that situation by enabling the administrators of domain names to specify the keys used in that domain's TLS servers. This requires matching improvements in TLS client software, but no change in TLS server software. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6698"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6698"/>
+        </reference>
+        <reference anchor="Defeating-SSL" target="https://www.blackhat.com/presentations/bh-dc-09/Marlinspike/BlackHat-DC-09-Marlinspike-Defeating-SSL.pdf" quoteTitle="true" derivedAnchor="Defeating-SSL">
+          <front>
+            <title>New Tricks for Defeating SSL in Practice</title>
+            <author initials="M." surname="Marlinspike" fullname="Moxie Marlinspike">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2009" month="February"/>
+          </front>
+          <refcontent>Black Hat DC</refcontent>
+        </reference>
+        <reference anchor="RFC4343" target="https://www.rfc-editor.org/info/rfc4343" quoteTitle="true" derivedAnchor="DNS-CASE">
+          <front>
+            <title>Domain Name System (DNS) Case Insensitivity Clarification</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <date month="January" year="2006"/>
+            <abstract>
+              <t indent="0">Domain Name System (DNS) names are "case insensitive". This document explains exactly what that means and provides a clear specification of the rules. This clarification updates RFCs 1034, 1035, and 2181. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4343"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4343"/>
+        </reference>
+        <reference anchor="RFC7858" target="https://www.rfc-editor.org/info/rfc7858" quoteTitle="true" derivedAnchor="DNS-OVER-TLS">
+          <front>
+            <title>Specification for DNS over Transport Layer Security (TLS)</title>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <author fullname="L. Zhu" initials="L." surname="Zhu"/>
+            <author fullname="J. Heidemann" initials="J." surname="Heidemann"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This document describes the use of Transport Layer Security (TLS) to provide privacy for DNS. Encryption provided by TLS eliminates opportunities for eavesdropping and on-path tampering with DNS queries in the network, such as discussed in RFC 7626. In addition, this document specifies two usage profiles for DNS over TLS and provides advice on performance considerations to minimize overhead from using TCP and TLS with DNS.</t>
+              <t indent="0">This document focuses on securing stub-to-recursive traffic, as per the charter of the DPRIVE Working Group. It does not prevent future applications of the protocol to recursive-to-authoritative traffic.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7858"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7858"/>
+        </reference>
+        <reference anchor="RFC9147" target="https://www.rfc-editor.org/info/rfc9147" quoteTitle="true" derivedAnchor="DTLS">
+          <front>
+            <title>The Datagram Transport Layer Security (DTLS) Protocol Version 1.3</title>
+            <author fullname="E. Rescorla" initials="E." surname="Rescorla"/>
+            <author fullname="H. Tschofenig" initials="H." surname="Tschofenig"/>
+            <author fullname="N. Modadugu" initials="N." surname="Modadugu"/>
+            <date month="April" year="2022"/>
+            <abstract>
+              <t indent="0">This document specifies version 1.3 of the Datagram Transport Layer Security (DTLS) protocol. DTLS 1.3 allows client/server applications to communicate over the Internet in a way that is designed to prevent eavesdropping, tampering, and message forgery.</t>
+              <t indent="0">The DTLS 1.3 protocol is based on the Transport Layer Security (TLS) 1.3 protocol and provides equivalent security guarantees with the exception of order protection / non-replayability. Datagram semantics of the underlying transport are preserved by the DTLS protocol.</t>
+              <t indent="0">This document obsoletes RFC 6347.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9147"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9147"/>
+        </reference>
+        <reference anchor="RFC6186" target="https://www.rfc-editor.org/info/rfc6186" quoteTitle="true" derivedAnchor="EMAIL-SRV">
+          <front>
+            <title>Use of SRV Records for Locating Email Submission/Access Services</title>
+            <author fullname="C. Daboo" initials="C." surname="Daboo"/>
+            <date month="March" year="2011"/>
+            <abstract>
+              <t indent="0">This specification describes how SRV records can be used to locate email services. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6186"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6186"/>
+        </reference>
+        <reference anchor="RFC9110" target="https://www.rfc-editor.org/info/rfc9110" quoteTitle="true" derivedAnchor="HTTP">
+          <front>
+            <title>HTTP Semantics</title>
+            <author fullname="R. Fielding" initials="R." role="editor" surname="Fielding"/>
+            <author fullname="M. Nottingham" initials="M." role="editor" surname="Nottingham"/>
+            <author fullname="J. Reschke" initials="J." role="editor" surname="Reschke"/>
+            <date month="June" year="2022"/>
+            <abstract>
+              <t indent="0">The Hypertext Transfer Protocol (HTTP) is a stateless application-level protocol for distributed, collaborative, hypertext information systems. This document describes the overall architecture of HTTP, establishes common terminology, and defines aspects of the protocol that are shared by all versions. In this definition are core protocol elements, extensibility mechanisms, and the "http" and "https" Uniform Resource Identifier (URI) schemes.</t>
+              <t indent="0">This document updates RFC 3864 and obsoletes RFCs 2818, 7231, 7232, 7233, 7235, 7538, 7615, 7694, and portions of 7230.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="97"/>
+          <seriesInfo name="RFC" value="9110"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9110"/>
+        </reference>
+        <reference anchor="HTTPSbytes" target="https://media.blackhat.com/bh-ad-10/Hansen/Blackhat-AD-2010-Hansen-Sokol-HTTPS-Can-Byte-Me-slides.pdf" quoteTitle="true" derivedAnchor="HTTPSbytes">
+          <front>
+            <title>HTTPS Can Byte Me</title>
+            <author initials="J." surname="Sokol" fullname="Josh Sokol">
+              <organization showOnFrontPage="true">SecTheory Ltd.</organization>
+            </author>
+            <author initials="R." surname="Hansen" fullname="Robert Hansen">
+              <organization showOnFrontPage="true">SecTheory Ltd.</organization>
+            </author>
+            <date year="2010" month="November"/>
+          </front>
+          <refcontent>Black Hat Briefings</refcontent>
+        </reference>
+        <reference anchor="RFC3403" target="https://www.rfc-editor.org/info/rfc3403" quoteTitle="true" derivedAnchor="NAPTR">
+          <front>
+            <title>Dynamic Delegation Discovery System (DDDS) Part Three: The Domain Name System (DNS) Database</title>
+            <author fullname="M. Mealling" initials="M." surname="Mealling"/>
+            <date month="October" year="2002"/>
+            <abstract>
+              <t indent="0">This document describes a Dynamic Delegation Discovery System (DDDS) Database using the Domain Name System (DNS) as a distributed database of Rules. The Keys are domain-names and the Rules are encoded using the Naming Authority Pointer (NAPTR) Resource Record (RR). Since this document obsoletes RFC 2915, it is the official specification for the NAPTR DNS Resource Record. It is also part of a series that is completely specified in "Dynamic Delegation Discovery System (DDDS) Part One: The Comprehensive DDDS" (RFC 3401). It is very important to note that it is impossible to read and understand any document in this series without reading the others. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3403"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3403"/>
+        </reference>
+        <reference anchor="RFC8915" target="https://www.rfc-editor.org/info/rfc8915" quoteTitle="true" derivedAnchor="NTS">
+          <front>
+            <title>Network Time Security for the Network Time Protocol</title>
+            <author fullname="D. Franke" initials="D." surname="Franke"/>
+            <author fullname="D. Sibold" initials="D." surname="Sibold"/>
+            <author fullname="K. Teichel" initials="K." surname="Teichel"/>
+            <author fullname="M. Dansarie" initials="M." surname="Dansarie"/>
+            <author fullname="R. Sundblad" initials="R." surname="Sundblad"/>
+            <date month="September" year="2020"/>
+            <abstract>
+              <t indent="0">This memo specifies Network Time Security (NTS), a mechanism for using Transport Layer Security (TLS) and Authenticated Encryption with Associated Data (AEAD) to provide cryptographic security for the client-server mode of the Network Time Protocol (NTP).</t>
+              <t indent="0">NTS is structured as a suite of two loosely coupled sub-protocols. The first (NTS Key Establishment (NTS-KE)) handles initial authentication and key establishment over TLS. The second (NTS Extension Fields for NTPv4) handles encryption and authentication during NTP time synchronization via extension fields in the NTP packets, and holds all required state only on the client via opaque cookies.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8915"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8915"/>
+        </reference>
+        <reference anchor="Public-Suffix" target="https://publicsuffix.org" quoteTitle="true" derivedAnchor="Public-Suffix">
+          <front>
+            <title>Public Suffix List</title>
+            <author>
+              <organization showOnFrontPage="true">Mozilla Foundation</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="RFC9001" target="https://www.rfc-editor.org/info/rfc9001" quoteTitle="true" derivedAnchor="QUIC">
+          <front>
+            <title>Using TLS to Secure QUIC</title>
+            <author fullname="M. Thomson" initials="M." role="editor" surname="Thomson"/>
+            <author fullname="S. Turner" initials="S." role="editor" surname="Turner"/>
+            <date month="May" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes how Transport Layer Security (TLS) is used to secure QUIC.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9001"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9001"/>
+        </reference>
+        <reference anchor="RFC9000" target="https://www.rfc-editor.org/info/rfc9000" quoteTitle="true" derivedAnchor="RFC9000">
+          <front>
+            <title>QUIC: A UDP-Based Multiplexed and Secure Transport</title>
+            <author fullname="J. Iyengar" initials="J." role="editor" surname="Iyengar"/>
+            <author fullname="M. Thomson" initials="M." role="editor" surname="Thomson"/>
+            <date month="May" year="2021"/>
+            <abstract>
+              <t indent="0">This document defines the core of the QUIC transport protocol. QUIC provides applications with flow-controlled streams for structured communication, low-latency connection establishment, and network path migration. QUIC includes security measures that ensure confidentiality, integrity, and availability in a range of deployment circumstances. Accompanying documents describe the integration of TLS for key negotiation, loss detection, and an exemplary congestion control algorithm.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9000"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9000"/>
+        </reference>
+        <reference anchor="RFC4949" target="https://www.rfc-editor.org/info/rfc4949" quoteTitle="true" derivedAnchor="SECTERMS">
+          <front>
+            <title>Internet Security Glossary, Version 2</title>
+            <author fullname="R. Shirey" initials="R." surname="Shirey"/>
+            <date month="August" year="2007"/>
+            <abstract>
+              <t indent="0">This Glossary provides definitions, abbreviations, and explanations of terminology for information system security. The 334 pages of entries offer recommendations to improve the comprehensibility of written material that is generated in the Internet Standards Process (RFC 2026). The recommendations follow the principles that such writing should (a) use the same term or definition whenever the same concept is mentioned; (b) use terms in their plainest, dictionary sense; (c) use terms that are already well-established in open publications; and (d) avoid terms that either favor a particular vendor or favor a particular technology or mechanism over other, competing techniques that already exist or could be developed. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="FYI" value="36"/>
+          <seriesInfo name="RFC" value="4949"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4949"/>
+        </reference>
+        <reference anchor="SECURE-CONTEXTS" target="https://www.w3.org/TR/secure-contexts/" quoteTitle="true" derivedAnchor="SECURE-CONTEXTS">
+          <front>
+            <title>Secure Contexts</title>
+            <author initials="M." surname="West" fullname="Mike West">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date month="September" year="2021"/>
+          </front>
+          <refcontent>W3C Candidate Recommendation Draft</refcontent>
+        </reference>
+        <reference anchor="RFC3261" target="https://www.rfc-editor.org/info/rfc3261" quoteTitle="true" derivedAnchor="SIP">
+          <front>
+            <title>SIP: Session Initiation Protocol</title>
+            <author fullname="J. Rosenberg" initials="J." surname="Rosenberg"/>
+            <author fullname="H. Schulzrinne" initials="H." surname="Schulzrinne"/>
+            <author fullname="G. Camarillo" initials="G." surname="Camarillo"/>
+            <author fullname="A. Johnston" initials="A." surname="Johnston"/>
+            <author fullname="J. Peterson" initials="J." surname="Peterson"/>
+            <author fullname="R. Sparks" initials="R." surname="Sparks"/>
+            <author fullname="M. Handley" initials="M." surname="Handley"/>
+            <author fullname="E. Schooler" initials="E." surname="Schooler"/>
+            <date month="June" year="2002"/>
+            <abstract>
+              <t indent="0">This document describes Session Initiation Protocol (SIP), an application-layer control (signaling) protocol for creating, modifying, and terminating sessions with one or more participants. These sessions include Internet telephone calls, multimedia distribution, and multimedia conferences. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3261"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3261"/>
+        </reference>
+        <reference anchor="RFC5922" target="https://www.rfc-editor.org/info/rfc5922" quoteTitle="true" derivedAnchor="SIP-CERTS">
+          <front>
+            <title>Domain Certificates in the Session Initiation Protocol (SIP)</title>
+            <author fullname="V. Gurbani" initials="V." surname="Gurbani"/>
+            <author fullname="S. Lawrence" initials="S." surname="Lawrence"/>
+            <author fullname="A. Jeffrey" initials="A." surname="Jeffrey"/>
+            <date month="June" year="2010"/>
+            <abstract>
+              <t indent="0">This document describes how to construct and interpret certain information in a PKIX-compliant (Public Key Infrastructure using X.509) certificate for use in a Session Initiation Protocol (SIP) over Transport Layer Security (TLS) connection. More specifically, this document describes how to encode and extract the identity of a SIP domain in a certificate and how to use that identity for SIP domain authentication. As such, this document is relevant both to implementors of SIP and to issuers of certificates. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5922"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5922"/>
+        </reference>
+        <reference anchor="RFC5630" target="https://www.rfc-editor.org/info/rfc5630" quoteTitle="true" derivedAnchor="SIP-SIPS">
+          <front>
+            <title>The Use of the SIPS URI Scheme in the Session Initiation Protocol (SIP)</title>
+            <author fullname="F. Audet" initials="F." surname="Audet"/>
+            <date month="October" year="2009"/>
+            <abstract>
+              <t indent="0">This document provides clarifications and guidelines concerning the use of the SIPS URI scheme in the Session Initiation Protocol (SIP). It also makes normative changes to SIP. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5630"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5630"/>
+        </reference>
+        <reference anchor="RFC8689" target="https://www.rfc-editor.org/info/rfc8689" quoteTitle="true" derivedAnchor="SMTP-TLS">
+          <front>
+            <title>SMTP Require TLS Option</title>
+            <author fullname="J. Fenton" initials="J." surname="Fenton"/>
+            <date month="November" year="2019"/>
+            <abstract>
+              <t indent="0">The SMTP STARTTLS option, used in negotiating transport-level encryption of SMTP connections, is not as useful from a security standpoint as it might be because of its opportunistic nature; message delivery is, by default, prioritized over security. This document describes an SMTP service extension, REQUIRETLS, and a message header field, TLS-Required. If the REQUIRETLS option or TLS-Required message header field is used when sending a message, it asserts a request on the part of the message sender to override the default negotiation of TLS, either by requiring that TLS be negotiated when the message is relayed or by requesting that recipient-side policy mechanisms such as MTA-STS and DNS-Based Authentication of Named Entities (DANE) be ignored when relaying a message for which security is unimportant.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8689"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8689"/>
+        </reference>
+        <reference anchor="RFC9461" target="https://www.rfc-editor.org/info/rfc9461" quoteTitle="true" derivedAnchor="SVCB-FOR-DNS">
+          <front>
+            <title>Service Binding Mapping for DNS Servers</title>
+            <author fullname="B. Schwartz" initials="B." surname="Schwartz"/>
+            <date month="November" year="2023"/>
+            <abstract>
+              <t indent="0">The SVCB DNS resource record type expresses a bound collection of endpoint metadata, for use when establishing a connection to a named service. DNS itself can be such a service, when the server is identified by a domain name. This document provides the SVCB mapping for named DNS servers, allowing them to indicate support for encrypted transport protocols.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9461"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9461"/>
+        </reference>
+        <reference anchor="RFC9460" target="https://www.rfc-editor.org/info/rfc9460" quoteTitle="true" derivedAnchor="SVCB-FOR-HTTPS">
+          <front>
+            <title>Service Binding and Parameter Specification via the DNS (SVCB and HTTPS Resource Records)</title>
+            <author fullname="B. Schwartz" initials="B." surname="Schwartz"/>
+            <author fullname="M. Bishop" initials="M." surname="Bishop"/>
+            <author fullname="E. Nygren" initials="E." surname="Nygren"/>
+            <date month="November" year="2023"/>
+            <abstract>
+              <t indent="0">This document specifies the "SVCB" ("Service Binding") and "HTTPS" DNS resource record (RR) types to facilitate the lookup of information needed to make connections to network services, such as for HTTP origins. SVCB records allow a service to be provided from multiple alternative endpoints, each with associated parameters (such as transport protocol configuration), and are extensible to support future uses (such as keys for encrypting the TLS ClientHello). They also enable aliasing of apex domains, which is not possible with CNAME. The HTTPS RR is a variation of SVCB for use with HTTP (see RFC 9110, "HTTP Semantics"). By providing more information to the client before it attempts to establish a connection, these records offer potential benefits to both performance and privacy.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9460"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9460"/>
+        </reference>
+        <reference anchor="RFC8446" target="https://www.rfc-editor.org/info/rfc8446" quoteTitle="true" derivedAnchor="TLS">
+          <front>
+            <title>The Transport Layer Security (TLS) Protocol Version 1.3</title>
+            <author fullname="E. Rescorla" initials="E." surname="Rescorla"/>
+            <date month="August" year="2018"/>
+            <abstract>
+              <t indent="0">This document specifies version 1.3 of the Transport Layer Security (TLS) protocol. TLS allows client/server applications to communicate over the Internet in a way that is designed to prevent eavesdropping, tampering, and message forgery.</t>
+              <t indent="0">This document updates RFCs 5705 and 6066, and obsoletes RFCs 5077, 5246, and 6961. This document also specifies new requirements for TLS 1.2 implementations.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8446"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8446"/>
+        </reference>
+        <reference anchor="RFC6066" target="https://www.rfc-editor.org/info/rfc6066" quoteTitle="true" derivedAnchor="TLS-EXT">
+          <front>
+            <title>Transport Layer Security (TLS) Extensions: Extension Definitions</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <date month="January" year="2011"/>
+            <abstract>
+              <t indent="0">This document provides specifications for existing TLS extensions. It is a companion document for RFC 5246, "The Transport Layer Security (TLS) Protocol Version 1.2". The extensions specified are server_name, max_fragment_length, client_certificate_url, trusted_ca_keys, truncated_hmac, and status_request. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6066"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6066"/>
+        </reference>
+        <reference anchor="RFC9345" target="https://www.rfc-editor.org/info/rfc9345" quoteTitle="true" derivedAnchor="TLS-SUBCERTS">
+          <front>
+            <title>Delegated Credentials for TLS and DTLS</title>
+            <author fullname="R. Barnes" initials="R." surname="Barnes"/>
+            <author fullname="S. Iyengar" initials="S." surname="Iyengar"/>
+            <author fullname="N. Sullivan" initials="N." surname="Sullivan"/>
+            <author fullname="E. Rescorla" initials="E." surname="Rescorla"/>
+            <date month="July" year="2023"/>
+            <abstract>
+              <t indent="0">The organizational separation between operators of TLS and DTLS endpoints and the certification authority can create limitations. For example, the lifetime of certificates, how they may be used, and the algorithms they support are ultimately determined by the Certification Authority (CA). This document describes a mechanism to overcome some of these limitations by enabling operators to delegate their own credentials for use in TLS and DTLS without breaking compatibility with peers that do not support this specification.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9345"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9345"/>
+        </reference>
+        <reference anchor="URL" target="https://url.spec.whatwg.org/" quoteTitle="true" derivedAnchor="URL">
+          <front>
+            <title>URL</title>
+            <author initials="A." surname="van Kesteren" fullname="Anne van Kesteren">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date month="September" year="2023"/>
+          </front>
+          <refcontent>WHATWG Living Standard</refcontent>
+        </reference>
+        <reference anchor="US-ASCII" quoteTitle="true" derivedAnchor="US-ASCII">
+          <front>
+            <title>Coded Character Sets - 7-bit American Standard Code for Information Interchange (7-Bit ASCII)</title>
+            <author>
+              <organization showOnFrontPage="true">American National Standards Institute</organization>
+            </author>
+            <date year="2007" month="June"/>
+          </front>
+          <seriesInfo name="ANSI INCITS" value="4-1986 (R2007)"/>
+        </reference>
+        <reference anchor="UTS-36" target="https://unicode.org/reports/tr36/" quoteTitle="true" derivedAnchor="UTS-36">
+          <front>
+            <title>Unicode Security Considerations</title>
+            <author initials="M." surname="Davis" fullname="Mark Davis">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="M." surname="Suignard" fullname="Michel Suignard">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date month="September" year="2014"/>
+          </front>
+          <seriesInfo name="Unicode Technical Report" value="#36"/>
+          <refcontent>Revision 15</refcontent>
+        </reference>
+        <reference anchor="UTS-39" target="https://unicode.org/reports/tr39/" quoteTitle="true" derivedAnchor="UTS-39">
+          <front>
+            <title>Unicode Security Mechanisms</title>
+            <author initials="M." surname="Davis" fullname="Mark Davis">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="M." surname="Suignard" fullname="Michel Suignard">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date month="September" year="2023"/>
+          </front>
+          <seriesInfo name="Unicode Technical Standard" value="#39"/>
+          <refcontent>Version 15.1.0, Revision 28</refcontent>
+        </reference>
+        <reference anchor="RFC6125" target="https://www.rfc-editor.org/info/rfc6125" quoteTitle="true" derivedAnchor="VERIFY">
+          <front>
+            <title>Representation and Verification of Domain-Based Application Service Identity within Internet Public Key Infrastructure Using X.509 (PKIX) Certificates in the Context of Transport Layer Security (TLS)</title>
+            <author fullname="P. Saint-Andre" initials="P." surname="Saint-Andre"/>
+            <author fullname="J. Hodges" initials="J." surname="Hodges"/>
+            <date month="March" year="2011"/>
+            <abstract>
+              <t indent="0">Many application technologies enable secure communication between two entities by means of Internet Public Key Infrastructure Using X.509 (PKIX) certificates in the context of Transport Layer Security (TLS). This document specifies procedures for representing and verifying the identity of application services in such interactions. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6125"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6125"/>
+        </reference>
+        <reference anchor="WSC-UI" target="https://www.w3.org/TR/2010/REC-wsc-ui-20100812/" quoteTitle="true" derivedAnchor="WSC-UI">
+          <front>
+            <title>Web Security Context: User Interface Guidelines</title>
+            <author initials="A." surname="Saldhana" fullname="Anil Saldhana">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="T." surname="Roessler" fullname="Thomas Roessler">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2010" month="August"/>
+          </front>
+          <seriesInfo name="W3C Recommendation" value="REC-wsc-ui-20100812"/>
+        </reference>
+        <reference anchor="X.509" quoteTitle="true" derivedAnchor="X.509">
+          <front>
+            <title>Information Technology - Open Systems Interconnection - The Directory: Public-key and attribute certificate frameworks</title>
+            <author>
+              <organization showOnFrontPage="true">ITU-T</organization>
+            </author>
+            <date month="October" year="2019"/>
+          </front>
+          <seriesInfo name="ISO/IEC" value="9594-8"/>
+          <seriesInfo name="ITU-T Recommendation" value="X.509"/>
+        </reference>
+        <reference anchor="X.690" quoteTitle="true" derivedAnchor="X.690">
+          <front>
+            <title>Information Technology - ASN.1 encoding rules: Specification of Basic Encoding Rules (BER), Canonical Encoding Rules (CER) and Distinguished Encoding Rules (DER)</title>
+            <author>
+              <organization showOnFrontPage="true">ITU-T</organization>
+            </author>
+            <date month="February" year="2021"/>
+          </front>
+          <seriesInfo name="ISO/IEC" value="8825-1:2021 (E)"/>
+          <seriesInfo name="ITU-T Recommendation" value="X.690"/>
+        </reference>
+        <reference anchor="RFC6120" target="https://www.rfc-editor.org/info/rfc6120" quoteTitle="true" derivedAnchor="XMPP">
+          <front>
+            <title>Extensible Messaging and Presence Protocol (XMPP): Core</title>
+            <author fullname="P. Saint-Andre" initials="P." surname="Saint-Andre"/>
+            <date month="March" year="2011"/>
+            <abstract>
+              <t indent="0">The Extensible Messaging and Presence Protocol (XMPP) is an application profile of the Extensible Markup Language (XML) that enables the near-real-time exchange of structured yet extensible data between any two or more network entities. This document defines XMPP's core protocol methods: setup and teardown of XML streams, channel encryption, authentication, error handling, and communication primitives for messaging, network availability ("presence"), and request-response interactions. This document obsoletes RFC 3920. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6120"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6120"/>
+        </reference>
+        <reference anchor="XSS" target="https://owasp.org/www-community/attacks/xss/" quoteTitle="true" derivedAnchor="XSS">
+          <front>
+            <title>Cross Site Scripting (XSS)</title>
+            <author>
+              <organization showOnFrontPage="true">Kirsten, S., et al.</organization>
+            </author>
+            <date year="2020"/>
+          </front>
+          <refcontent>OWASP Foundation</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section anchor="changes" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-changes-from-rfc-6125">Changes from RFC 6125</name>
+      <t indent="0" pn="section-appendix.a-1">This document revises and obsoletes <xref target="RFC6125" format="default" sectionFormat="of" derivedContent="VERIFY"/> based
+on the decade of experience and changes since it was published.
+The major changes, in no particular order, include:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a-2">
+        <li pn="section-appendix.a-2.1">The only legal place for a certificate wildcard is as the complete left-most
+label in a domain name.</li>
+        <li pn="section-appendix.a-2.2">The server identity can only be expressed in the subjectAltNames
+extension; it is no longer valid to use the commonName RDN,
+known as <tt>CN-ID</tt> in <xref target="RFC6125" format="default" sectionFormat="of" derivedContent="VERIFY"/>.</li>
+        <li pn="section-appendix.a-2.3">Detailed discussion of pinning (configuring use of a certificate that
+doesn't match the criteria in this document) has been removed and replaced
+with two paragraphs in <xref target="outcome" format="default" sectionFormat="of" derivedContent="Section 6.6"/>.</li>
+        <li pn="section-appendix.a-2.4">The sections detailing different target audiences and which sections
+to read (first) have been removed.</li>
+        <li pn="section-appendix.a-2.5">References to the X.500 directory, the survey of prior art, and the
+sample text in Appendix A have been removed.</li>
+        <li pn="section-appendix.a-2.6">All references have been updated to the latest versions.</li>
+        <li pn="section-appendix.a-2.7">The TLS SNI extension is no longer new; it is commonplace.</li>
+        <li pn="section-appendix.a-2.8">Additional text on multiple identifiers, and their security considerations,
+has been added.</li>
+        <li pn="section-appendix.a-2.9">IP-ID reference identifiers have been added.  This builds on the definition in <xref section="4.3.5" sectionFormat="comma" target="RFC9110" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9110#section-4.3.5" derivedContent="HTTP"/>.</li>
+        <li pn="section-appendix.a-2.10">The document title has been shortened because the previous title was difficult to cite.</li>
+      </ul>
+    </section>
+    <section numbered="false" anchor="acknowledgements" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.b-1">We gratefully acknowledge everyone who contributed to the previous
+version of this specification <xref target="RFC6125" format="default" sectionFormat="of" derivedContent="VERIFY"/>.
+Thanks also to <contact fullname="Carsten Bormann"/> for converting the previous version of this specification to Markdown so that we could more easily use <contact fullname="Martin Thomson's"/> <tt>i-d-template</tt>
+software.</t>
+      <t indent="0" pn="section-appendix.b-2">In addition to discussions within the UTA Working Group, the following people
+provided official reviews or especially significant feedback:
+<contact fullname="Corey Bonnell"/>,
+<contact fullname="Roman Danyliw"/>,
+<contact fullname="Viktor Dukhovni"/>,
+<contact fullname="Lars Eggert"/>,
+<contact fullname="Patrik Fältström"/>,
+<contact fullname="Jim Fenton"/>,
+<contact fullname="Olle Johansson"/>,
+<contact fullname="John Klensin"/>,
+<contact fullname="Murray Kucherawy"/>,
+<contact fullname="Warren Kumari"/>,
+<contact fullname="John Mattson"/>,
+<contact fullname="Alexey Melnikov"/>,
+<contact fullname="Derrell Piper"/>,
+<contact fullname="Maria Ines Robles"/>,
+<contact fullname="Rob Sayre"/>,
+<contact fullname="Yaron Sheffer"/>,
+<contact fullname="Ryan Sleevi"/>,
+<contact fullname="Brian Smith"/>,
+<contact fullname="Petr Špaček"/>,
+<contact fullname="Orie Steele"/>,
+<contact fullname="Martin Thomson"/>,
+<contact fullname="Joe Touch"/>,
+<contact fullname="Éric Vyncke"/>,
+<contact fullname="Paul Wouters"/>,
+and
+<contact fullname="Qin Wu"/>.</t>
+      <t indent="0" pn="section-appendix.b-3">A few descriptive sentences were borrowed from <xref target="RFC9325" format="default" sectionFormat="of" derivedContent="TLS-REC"/>.</t>
+    </section>
+    <section anchor="contributors" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <t indent="0" pn="section-appendix.c-1"><contact fullname="Jeff Hodges"/> coauthored the previous version of this specification <xref target="RFC6125" format="default" sectionFormat="of" derivedContent="VERIFY"/>.
+The authors gratefully acknowledge his essential contributions to this work.</t>
+      <t indent="0" pn="section-appendix.c-2"><contact fullname="Martin Thomson"/> contributed the text on the handling of IP-IDs.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.d">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="P." surname="Saint-Andre" fullname="Peter Saint-Andre">
+        <organization showOnFrontPage="true">Independent</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>stpeter@stpeter.im</email>
+        </address>
+      </author>
+      <author initials="R." surname="Salz" fullname="Rich Salz">
+        <organization showOnFrontPage="true">Akamai Technologies</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>rsalz@akamai.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

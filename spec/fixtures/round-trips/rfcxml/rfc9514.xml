@@ -1,0 +1,1583 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-idr-bgpls-srv6-ext-14" number="9514" ipr="trust200902" obsoletes="" updates="" xml:lang="en" tocInclude="true" symRefs="true" sortRefs="true" prepTime="2023-12-05T16:11:28" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-idr-bgpls-srv6-ext-14" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9514" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="BGP-LS Extensions for SRv6">Border Gateway Protocol - Link State (BGP-LS) Extensions for Segment Routing over IPv6 (SRv6)</title>
+    <seriesInfo name="RFC" value="9514" stream="IETF"/>
+    <author fullname="Gaurav Dawra" initials="G" surname="Dawra">
+      <organization showOnFrontPage="true">LinkedIn</organization>
+      <address>
+        <postal>
+          <street/>
+          <country>United States of America</country>
+        </postal>
+        <email>gdawra.ietf@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Clarence Filsfils" initials="C" surname="Filsfils">
+      <organization showOnFrontPage="true">Cisco Systems</organization>
+      <address>
+        <postal>
+          <street/>
+          <country>Belgium</country>
+        </postal>
+        <email>cfilsfil@cisco.com</email>
+      </address>
+    </author>
+    <author fullname="Ketan Talaulikar" initials="K" role="editor" surname="Talaulikar">
+      <organization showOnFrontPage="true">Cisco Systems</organization>
+      <address>
+        <postal>
+          <street/>
+          <country>India</country>
+        </postal>
+        <email>ketant.ietf@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Mach(Guoyi) Chen" initials="M." surname="Chen">
+      <organization showOnFrontPage="true">Huawei</organization>
+      <address>
+        <postal>
+          <street/>
+          <country>China</country>
+        </postal>
+        <email>mach.chen@huawei.com</email>
+      </address>
+    </author>
+    <author fullname="Daniel Bernier" initials="D." surname="Bernier">
+      <organization showOnFrontPage="true">Bell Canada</organization>
+      <address>
+        <postal>
+          <street/>
+          <country>Canada</country>
+        </postal>
+        <email>daniel.bernier@bell.ca</email>
+      </address>
+    </author>
+    <author fullname="Bruno Decraene" initials="B." surname="Decraene">
+      <organization showOnFrontPage="true">Orange</organization>
+      <address>
+        <postal>
+          <street/>
+          <country>France</country>
+        </postal>
+        <email>bruno.decraene@orange.com</email>
+      </address>
+    </author>
+    <date month="12" year="2023"/>
+    <area>rtg</area>
+    <workgroup>idr</workgroup>
+    <keyword>BGP</keyword>
+    <keyword>BGP-LS</keyword>
+    <keyword>Segment Routing</keyword>
+    <keyword>SRv6</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">Segment Routing over IPv6 (SRv6) allows for a flexible definition of
+      end-to-end paths within various topologies by encoding paths as
+      sequences of topological or functional sub-paths called "segments".
+      These segments are advertised by various protocols such as BGP, IS-IS,
+      and OSPFv3.</t>
+      <t indent="0" pn="section-abstract-2">This document defines extensions to BGP - Link State (BGP-LS) to
+      advertise SRv6 segments along with their behaviors and other attributes
+      via BGP. The BGP-LS address-family solution for SRv6 described in this
+      document is similar to BGP-LS for SR for the MPLS data plane, which is defined in
+      RFC 9085.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9514" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-bgp-ls-extensions-for-srv6">BGP-LS Extensions for SRv6</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-node-attributes">SRv6 Node Attributes</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-capabilities-tlv">SRv6 Capabilities TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-node-msd-types">SRv6 Node MSD Types</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-link-attributes">SRv6 Link Attributes</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-endx-sid-tlv">SRv6 End.X SID TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-lan-endx-sid-tlv">SRv6 LAN End.X SID TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-link-msd-types">SRv6 Link MSD Types</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-prefix-attributes">SRv6 Prefix Attributes</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-locator-tlv">SRv6 Locator TLV</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-sid-nlri">SRv6 SID NLRI</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-sid-information-tlv">SRv6 SID Information TLV</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-sid-attributes">SRv6 SID Attributes</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-endpoint-behavior-tlv">SRv6 Endpoint Behavior TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-bgp-peernode-sid-tlv">SRv6 BGP PeerNode SID TLV</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-sid-structure-tlv">SRv6 SID Structure TLV</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-bgp-ls-nlri-types">BGP-LS NLRI Types</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-bgp-ls-nlri-and-attribute-t">BGP-LS NLRI and Attribute TLVs</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.3">
+                <t indent="0" pn="section-toc.1-1.9.2.3.1"><xref derivedContent="9.3" format="counter" sectionFormat="of" target="section-9.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-bgp-epe-sid-flags">SRv6 BGP EPE SID Flags</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-manageability-consideration">Manageability Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="11" format="counter" sectionFormat="of" target="section-11"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="12" format="counter" sectionFormat="of" target="section-12"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.12.2">
+              <li pn="section-toc.1-1.12.2.1">
+                <t indent="0" pn="section-toc.1-1.12.2.1.1"><xref derivedContent="12.1" format="counter" sectionFormat="of" target="section-12.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.12.2.2">
+                <t indent="0" pn="section-toc.1-1.12.2.2.1"><xref derivedContent="12.2" format="counter" sectionFormat="of" target="section-12.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-differences-with-bgp-epe-fo">Differences with BGP-EPE for SR-MPLS</xref></t>
+          </li>
+          <li pn="section-toc.1-1.14">
+            <t indent="0" pn="section-toc.1-1.14.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.15">
+            <t indent="0" pn="section-toc.1-1.15.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.16">
+            <t indent="0" pn="section-toc.1-1.16.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.d"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="INTROLSSRV6" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">SRv6 refers to Segment Routing instantiated on the IPv6 data plane
+      <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>. An SRv6 segment is often referred to by its
+      SRv6 Segment Identifier (SID).</t>
+      <t indent="0" pn="section-1-2">The network programming paradigm <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/> is central
+      to SRv6. It describes how different behaviors can be bound to SIDs and
+      how a network program can be expressed as a combination of SIDs.</t>
+      <t indent="0" pn="section-1-3">An SRv6-capable node maintains all the SRv6 segments explicitly
+      instantiated locally.</t>
+      <t indent="0" pn="section-1-4">The IS-IS and OSPFv3 link-state routing protocols have been extended
+      to advertise some of these SRv6 SIDs and SRv6-related information <xref target="RFC9352" format="default" sectionFormat="of" derivedContent="RFC9352"/> <xref target="RFC9513" format="default" sectionFormat="of" derivedContent="RFC9513"/>. Other SRv6 SIDs may be
+      instantiated on a node via other mechanisms for topological or service
+      functionalities.</t>
+      <t indent="0" pn="section-1-5">The advertisement of SR-related information along with the topology is specified in <xref target="RFC9085" format="default" sectionFormat="of" derivedContent="RFC9085"/>
+      for the MPLS data plane instantiation (SR-MPLS) and in <xref target="RFC9086" format="default" sectionFormat="of" derivedContent="RFC9086"/> for BGP Egress Peer Engineering (EPE). On similar lines, introducing the
+      SRv6-related information in BGP-LS allows consumer applications that
+      require topological visibility to also receive the SRv6 SIDs from nodes
+      across an IGP domain or even across Autonomous Systems (ASes) as
+      required. This allows applications to leverage the SRv6 capabilities for
+      network programming.</t>
+      <t indent="0" pn="section-1-6">The identifying key of each link-state object, namely a node, link,
+      or prefix, is encoded in the Network Layer Reachability Information
+      (NLRI), and the properties of the object are encoded in the BGP-LS
+      Attribute <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/>.</t>
+      <t indent="0" pn="section-1-7">This document describes extensions to BGP-LS to advertise the SRv6
+      SIDs and other SRv6 information from all the SRv6-capable nodes in the
+      IGP domain when sourced from link-state routing protocols and directly
+      from individual SRv6-capable nodes (e.g., when sourced from BGP for
+      EPE).</t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.1">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+        </t>
+      </section>
+    </section>
+    <section anchor="BGP-LS-SRv6" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-bgp-ls-extensions-for-srv6">BGP-LS Extensions for SRv6</name>
+      <t indent="0" pn="section-2-1">BGP-LS <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/> defines the Node, Link, and Prefix
+      Link-State NLRI types and the
+      advertisement of their attributes via BGP.</t>
+      <t indent="0" pn="section-2-2">When a BGP-LS router advertises topology information that it sources
+      from the underlying link-state routing protocol, it derives the
+      corresponding SRv6 information from the SRv6 extensions for IS-IS <xref target="RFC9352" format="default" sectionFormat="of" derivedContent="RFC9352"/> or OSPFv3 <xref target="RFC9513" format="default" sectionFormat="of" derivedContent="RFC9513"/> as applicable. In
+      practice, this derivation comprises a simple copy of the relevant fields
+      from the IS-IS or OSPFv3 TLV/sub-TLV into the fields of the corresponding
+      BGP-LS TLV/sub-TLV. 
+
+When a BGP-LS router advertises topology information
+      from the BGP routing protocol (e.g., for EPE) or advertises SRv6
+      SIDs associated with a node using Direct as the Protocol-ID, it
+      derives the SRv6 information from the local node. Such information is
+      advertised only on behalf of the local router, in contrast to the
+      advertisement of information from all nodes of an IGP domain when
+      sourced from a link-state routing protocol.</t>
+      <t indent="0" pn="section-2-3">The SRv6 information pertaining to a node is advertised via the
+      BGP-LS Node NLRI using the BGP-LS Attribute TLVs as follows:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-4">
+        <li pn="section-2-4.1">The SRv6 capabilities of the node are advertised via the SRv6
+          Capabilities TLV (<xref target="SRCAPATTR" format="default" sectionFormat="of" derivedContent="Section 3.1"/>).</li>
+        <li pn="section-2-4.2">Maximum SID Depth (MSD) types introduced for SRv6 are advertised
+          (<xref target="SRNODEMSD" format="default" sectionFormat="of" derivedContent="Section 3.2"/>) using the Node MSD TLV specified in
+          <xref target="RFC8814" format="default" sectionFormat="of" derivedContent="RFC8814"/>.</li>
+        <li pn="section-2-4.3">Algorithm support for SRv6 is advertised via the SR-Algorithm TLV
+          specified in <xref target="RFC9085" format="default" sectionFormat="of" derivedContent="RFC9085"/>.</li>
+      </ul>
+      <t indent="0" pn="section-2-5">The SRv6 information pertaining to a link is advertised via the
+      BGP-LS Link NLRI using the BGP-LS Attribute TLVs as follows:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-6">
+        <li pn="section-2-6.1">The SRv6 SID of the IGP Adjacency SID or the BGP EPE Peer Adjacency
+          SID <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/> is advertised via the SRv6 End.X SID
+          TLV introduced in this document (<xref target="SRENDXTLV" format="default" sectionFormat="of" derivedContent="Section 4.1"/>).</li>
+        <li pn="section-2-6.2">The SRv6 SID of the IGP Adjacency SID to a non-Designated Router (DR)
+          or non-Designated Intermediate System (DIS) <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>
+          is advertised via the SRv6 LAN End.X SID TLV introduced in this
+          document (<xref target="SRLANENDXTLV" format="default" sectionFormat="of" derivedContent="Section 4.2"/>).</li>
+        <li pn="section-2-6.3">MSD types introduced for SRv6 are advertised (<xref target="SRLINKMSD" format="default" sectionFormat="of" derivedContent="Section 4.3"/>) using the Link MSD TLV specified in <xref target="RFC8814" format="default" sectionFormat="of" derivedContent="RFC8814"/>.</li>
+      </ul>
+      <t indent="0" pn="section-2-7">The SRv6 information pertaining to a prefix is advertised via the
+      BGP-LS Prefix NLRI using the BGP-LS Attribute TLVs as follows:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-8">
+        <li pn="section-2-8.1">The SRv6 Locator is advertised via the SRv6 Locator TLV introduced in
+          this document (<xref target="SRLOCTLV" format="default" sectionFormat="of" derivedContent="Section 5.1"/>).</li>
+        <li pn="section-2-8.2">The attributes of the SRv6 Locator are advertised via the Prefix
+          Attribute Flags TLV specified in <xref target="RFC9085" format="default" sectionFormat="of" derivedContent="RFC9085"/>.</li>
+      </ul>
+      <t indent="0" pn="section-2-9">The SRv6 SIDs associated with the node are advertised using the
+      BGP-LS SRv6 SID NLRI introduced in this document (<xref target="SRSIDNLRI" format="default" sectionFormat="of" derivedContent="Section 6"/>). 
+This enables the BGP-LS encoding to scale to
+      cover a potentially large set of SRv6 SIDs instantiated on a node with
+      the granularity of individual SIDs and without affecting the size and
+      scalability of the BGP-LS updates. 
+If the SRv6 SIDs had been advertised
+      within the BGP-LS Link Attribute associated with the existing Node NLRI,
+      the BGP-LS update would have grown rather large with the increase in
+      SRv6 SIDs on the node and would have also required a large update
+      message to be generated for any change, even a change to a single SRv6 SID. BGP-LS
+      Attribute TLVs for the SRv6 SID NLRI are introduced in this document as follows:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-10">
+        <li pn="section-2-10.1">The Endpoint behavior of the SRv6 SID is advertised via the SRv6
+          Endpoint Behavior TLV (<xref target="SRFUNCTLV" format="default" sectionFormat="of" derivedContent="Section 7.1"/>).</li>
+        <li pn="section-2-10.2">The BGP EPE Peer Node context for a PeerNode SID and the Peer
+          Set context for a PeerSet SID <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/> are
+          advertised via the SRv6 BGP PeerNode SID TLV (<xref target="SRPEERTLV" format="default" sectionFormat="of" derivedContent="Section 7.2"/>).</li>
+      </ul>
+      <t indent="0" pn="section-2-11">Subsequent sections of this document specify the encoding and usage
+      of these extensions. All the TLVs introduced follow the formats and
+      common field definitions provided in <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/>.</t>
+    </section>
+    <section anchor="SRNODEATTR" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-srv6-node-attributes">SRv6 Node Attributes</name>
+      <t indent="0" pn="section-3-1">The SRv6 attributes of a node are advertised using the BGP-LS
+      Attribute TLVs defined in this section and associated with the BGP-LS
+      Node NLRI.</t>
+      <section anchor="SRCAPATTR" numbered="true" toc="include" removeInRFC="false" pn="section-3.1">
+        <name slugifiedName="name-srv6-capabilities-tlv">SRv6 Capabilities TLV</name>
+        <t indent="0" pn="section-3.1-1">This BGP-LS Attribute TLV is used to announce the SRv6 capabilities
+        of the node along with the BGP-LS Node NLRI and indicates the SRv6
+        support by the node. A single instance of this TLV <bcp14>MUST</bcp14>
+        be included in the BGP-LS Attribute for each SRv6-capable node. The
+        IS-IS SRv6 Capabilities sub-TLV <xref target="RFC9352" format="default" sectionFormat="of" derivedContent="RFC9352"/> and the OSPFv3 SRv6 Capabilities TLV <xref target="RFC9513" format="default" sectionFormat="of" derivedContent="RFC9513"/> that map to this BGP-LS TLV are
+        specified with the ability to carry optional
+        sub-sub-TLVs and sub-TLVs. However, no such extensions are currently
+        defined. Moreover, the SRv6 Capabilities TLV defined below is not
+        extensible. As a result, it is expected that any extensions will be
+        introduced as top-level TLVs in the BGP-LS Attribute. 
+The SRv6 Capabilities
+	TLV has the following format:</t>
+        <figure anchor="SRCAPTLVFIG" align="left" suppress-title="false" pn="figure-1">
+          <name slugifiedName="name-srv6-capabilities-tlv-forma">SRv6 Capabilities TLV Format</name>
+          <artwork name="" type="" align="left" alt="" pn="section-3.1-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Flags             |         Reserved              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-3.1-3">where:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-3.1-4">
+          <dt pn="section-3.1-4.1">Type:</dt>
+          <dd pn="section-3.1-4.2">1038</dd>
+          <dt pn="section-3.1-4.3">Length:</dt>
+          <dd pn="section-3.1-4.4">4</dd>
+          <dt pn="section-3.1-4.5">Flags:</dt>
+          <dd pn="section-3.1-4.6">2-octet field. The flags are copied from the IS-IS SRv6
+            Capabilities sub-TLV (<xref target="RFC9352" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-2" derivedContent="RFC9352"/>) or from the OSPFv3
+            SRv6 Capabilities TLV (<xref target="RFC9513" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9513#section-2" derivedContent="RFC9513"/>) in the case of
+            IS-IS or OSPFv3, respectively.</dd>
+          <dt pn="section-3.1-4.7">Reserved:</dt>
+          <dd pn="section-3.1-4.8">2-octet field that <bcp14>MUST</bcp14> be set to 0 when originated and
+            ignored on receipt.</dd>
+        </dl>
+      </section>
+      <section anchor="SRNODEMSD" numbered="true" toc="include" removeInRFC="false" pn="section-3.2">
+        <name slugifiedName="name-srv6-node-msd-types">SRv6 Node MSD Types</name>
+        <t indent="0" pn="section-3.2-1">The Node MSD TLV <xref target="RFC8814" format="default" sectionFormat="of" derivedContent="RFC8814"/> of the BGP-LS Attribute
+        of the Node NLRI is also used to advertise the limits and the Segment
+        Routing Header (SRH) <xref target="RFC8754" format="default" sectionFormat="of" derivedContent="RFC8754"/> operations supported by
+        the SRv6-capable node. The SRv6 MSD types specified in
+        <xref target="RFC9352" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-4" derivedContent="RFC9352"/> are also used with
+        the BGP-LS Node MSD TLV, as these code points are shared between the IS-IS,
+        OSPF, and BGP-LS protocols. The description and semantics of these new
+        MSD types for BGP-LS are identical to those specified in <xref target="RFC9352" format="default" sectionFormat="of" derivedContent="RFC9352"/>.</t>
+        <t indent="0" pn="section-3.2-2">Each MSD type is encoded in the BGP-LS Node MSD TLV as a one-octet
+        type followed by a one-octet value as derived from the IS-IS or OSPFv3
+        Node MSD advertisements specified in <xref target="RFC8814" format="default" sectionFormat="of" derivedContent="RFC8814"/>.</t>
+      </section>
+    </section>
+    <section anchor="SRLINKATTR" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-srv6-link-attributes">SRv6 Link Attributes</name>
+      <t indent="0" pn="section-4-1">SRv6 attributes and SIDs associated with a link or adjacency are
+      advertised using the BGP-LS Attribute TLVs defined in this section and
+      associated with the BGP-LS Link NLRI.</t>
+      <section anchor="SRENDXTLV" numbered="true" toc="include" removeInRFC="false" pn="section-4.1">
+        <name slugifiedName="name-srv6-endx-sid-tlv">SRv6 End.X SID TLV</name>
+        <t indent="0" pn="section-4.1-1">The SRv6 End.X SID TLV is used to advertise the SRv6 SIDs
+        associated with an IGP Adjacency SID behavior that correspond to a
+        point-to-point or point-to-multipoint link or adjacency of the node
+        running the IS-IS or OSPFv3 protocols. The information advertised via
+        this TLV is derived from the IS-IS SRv6 End.X SID sub-TLV (<xref target="RFC9352" sectionFormat="of" section="8.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-8.1" derivedContent="RFC9352"/>) or the OSPFv3
+        SRv6 End.X SID sub-TLV (<xref target="RFC9513" sectionFormat="of" section="9.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9513#section-9.1" derivedContent="RFC9513"/>) in the case of IS-IS
+        or OSPFv3, respectively. This TLV can also be used to advertise the
+        SRv6 SID corresponding to the underlying Layer 2 member links for a
+        Layer 3 bundle interface as a sub-TLV of the L2 Bundle Member
+        Attribute TLV <xref target="RFC9085" format="default" sectionFormat="of" derivedContent="RFC9085"/>.</t>
+        <t indent="0" pn="section-4.1-2">This TLV is also used by BGP-LS to advertise the BGP EPE Peer
+        Adjacency SID for SRv6 on the same lines as specified for SR-MPLS in
+        <xref target="RFC9086" format="default" sectionFormat="of" derivedContent="RFC9086"/>. The SRv6 SID for the BGP Peer Adjacency
+        using End.X behaviors (viz. End.X, End.X with PSP, End.X with USP, and
+        End.X with PSP &amp; USP) <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/> indicates the
+        cross-connect to a specific Layer 3 link to the specific BGP session
+        peer (neighbor).</t>
+        <t indent="0" pn="section-4.1-3">More than one instance of this TLV (one for each SRv6 End.X SID) can be included in the BGP-LS
+        Attribute.</t>
+        <t indent="0" pn="section-4.1-4">The TLV has the following format:</t>
+        <figure anchor="ENDXTLV" align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-srv6-endx-sid-tlv-format">SRv6 End.X SID TLV Format</name>
+          <artwork name="" type="" align="left" alt="" pn="section-4.1-5.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Endpoint Behavior      |      Flags    |   Algorithm   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Weight    |   Reserved    |  SID (16 octets) ...          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (cont ...)                                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (cont ...)                                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (cont ...)                                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (cont ...)             | Sub-TLVs (variable) . . .   
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-4.1-6">where:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-4.1-7">
+          <dt pn="section-4.1-7.1">Type:</dt>
+          <dd pn="section-4.1-7.2">1106</dd>
+          <dt pn="section-4.1-7.3">Length:</dt>
+          <dd pn="section-4.1-7.4">variable</dd>
+          <dt pn="section-4.1-7.5">Endpoint Behavior:</dt>
+          <dd pn="section-4.1-7.6">2-octet field. The Endpoint behavior code
+            point for this SRv6 SID as defined in <xref target="RFC8986" sectionFormat="of" section="10.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8986#section-10.2" derivedContent="RFC8986"/>.</dd>
+          <dt pn="section-4.1-7.7">Flags:</dt>
+          <dd pn="section-4.1-7.8">1 octet of flags. The flags are copied from the
+          IS-IS SRv6 End.X SID sub-TLV (<xref target="RFC9352" sectionFormat="of" section="8.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-8.1" derivedContent="RFC9352"/>) or the OSPFv3 SRv6 End.X SID
+          sub-TLV (<xref target="RFC9513" sectionFormat="of" section="9.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9513#section-9.1" derivedContent="RFC9513"/>)
+          in the case of IS-IS or OSPFv3, respectively. In the case of the BGP EPE
+          Peer Adjacency SID, the flags are as defined in <xref target="SRPEERTLV" format="default" sectionFormat="of" derivedContent="Section 7.2"/>.</dd>
+          <dt pn="section-4.1-7.9">Algorithm:</dt>
+          <dd pn="section-4.1-7.10">1-octet field. Algorithm associated with the
+            SID.</dd>
+          <dt pn="section-4.1-7.11">Weight:</dt>
+          <dd pn="section-4.1-7.12">1-octet field. The value represents the weight of the
+            SID for the purpose of load balancing. The use of the weight is
+            defined in <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>.</dd>
+          <dt pn="section-4.1-7.13">Reserved:</dt>
+          <dd pn="section-4.1-7.14">1-octet field that <bcp14>MUST</bcp14> be set to 0 when originated
+            and ignored on receipt.</dd>
+          <dt pn="section-4.1-7.15">SID:</dt>
+          <dd pn="section-4.1-7.16">16-octet field. This field encodes the advertised SRv6 SID
+            as a 128-bit value.</dd>
+          <dt pn="section-4.1-7.17">Sub-TLVs:</dt>
+          <dd pn="section-4.1-7.18">Used to advertise sub-TLVs that provide additional
+            attributes for the specific SRv6 SID. This document defines one in
+            <xref target="SRSTRUCTTLV" format="default" sectionFormat="of" derivedContent="Section 8"/>.</dd>
+        </dl>
+      </section>
+      <section anchor="SRLANENDXTLV" numbered="true" toc="include" removeInRFC="false" pn="section-4.2">
+        <name slugifiedName="name-srv6-lan-endx-sid-tlv">SRv6 LAN End.X SID TLV</name>
+        <t indent="0" pn="section-4.2-1">For a LAN interface, an IGP node ordinarily announces only its
+        adjacency to the IS-IS pseudonode (or the equivalent OSPF DR). The
+        information advertised via this TLV is derived from the IS-IS SRv6 LAN
+        End.X SID sub-TLV (<xref target="RFC9352" sectionFormat="of" section="8.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-8.2" derivedContent="RFC9352"/>) or the OSPFv3 SRv6 LAN
+        End.X SID sub-TLV (<xref target="RFC9513" sectionFormat="of" section="9.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9513#section-9.2" derivedContent="RFC9513"/>) in the case of IS-IS
+        or OSPFv3, respectively. The SRv6 LAN End.X SID TLV allows a node to
+        announce the SRv6 SID corresponding to its adjacencies to all other
+        (i.e., non-DIS or non-DR) nodes attached to the LAN in a single
+        instance of the BGP-LS Link NLRI. Without this TLV, multiple BGP-LS
+        Link NLRIs would need to be originated, one for each neighbor, to
+        advertise the SRv6 End.X SID TLVs for those non-DIS/non-DR neighbors.
+        The SRv6 SID for these IGP adjacencies using the End.X behaviors (viz. End.X, End.X with PSP, End.X with USP, and End.X with PSP &amp; USP)
+        <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/> are advertised using the SRv6 LAN End.X SID
+        TLV.</t>
+        <t indent="0" pn="section-4.2-2">More than one instance of this TLV (one for each SRv6 LAN End.X SID) can be included in the BGP-LS
+        Attribute.</t>
+        <t indent="0" pn="section-4.2-3">The BGP-LS IS-IS SRv6 LAN End.X SID and BGP-LS OSPFv3 SRv6 LAN
+        End.X SID TLVs have the following format:</t>
+        <figure anchor="ENDLXTLV" align="left" suppress-title="false" pn="figure-3">
+          <name slugifiedName="name-srv6-lan-endx-sid-tlv-forma">SRv6 LAN End.X SID TLV Format</name>
+          <artwork name="" type="" align="left" alt="" pn="section-4.2-4.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       Endpoint Behavior       |      Flags    |   Algorithm   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Weight    |   Reserved    |   Neighbor ID -               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
+| IS-IS System-ID (6 octets) or OSPFv3 Router-ID (4 octets)     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (16 octets) ...                                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (cont ...)                                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (cont ...)                                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (cont ...)                                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Sub-TLVs (variable) . . .             
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-4.2-5">where:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-4.2-6">
+          <dt pn="section-4.2-6.1">Type:</dt>
+          <dd pn="section-4.2-6.2">1107 for IS-IS and 1108 for OSPFv3</dd>
+          <dt pn="section-4.2-6.3">Length:</dt>
+          <dd pn="section-4.2-6.4">variable</dd>
+          <dt pn="section-4.2-6.5">Endpoint Behavior:</dt>
+          <dd pn="section-4.2-6.6">2-octet field. The Endpoint behavior code
+            point for this SRv6 SID as defined in <xref target="RFC8986" sectionFormat="of" section="10.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8986#section-10.2" derivedContent="RFC8986"/>.</dd>
+          <dt pn="section-4.2-6.7">Flags:</dt>
+          <dd pn="section-4.2-6.8">1 octet of flags. The flags are copied from the IS-IS
+            SRv6 LAN End.X SID sub-TLV (<xref target="RFC9352" sectionFormat="of" section="8.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-8.2" derivedContent="RFC9352"/>) or the OSPFv3 SRv6
+            LAN End.X SID sub-TLV (<xref target="RFC9513" sectionFormat="of" section="9.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9513#section-9.2" derivedContent="RFC9513"/>) in the case of
+            IS-IS or OSPFv3, respectively.</dd>
+          <dt pn="section-4.2-6.9">Algorithm:</dt>
+          <dd pn="section-4.2-6.10">1-octet field. Algorithm associated with the
+            SID.</dd>
+          <dt pn="section-4.2-6.11">Weight:</dt>
+          <dd pn="section-4.2-6.12">1-octet field. The value represents the weight of the
+            SID for the purpose of load balancing.</dd>
+          <dt pn="section-4.2-6.13">Reserved:</dt>
+          <dd pn="section-4.2-6.14">1-octet field that <bcp14>MUST</bcp14> be set to 0 when originated
+            and ignored on receipt.</dd>
+          <dt pn="section-4.2-6.15">Neighbor ID:</dt>
+          <dd pn="section-4.2-6.16">6 octets of Neighbor System-ID in the IS-IS SRv6 LAN
+            End.X SID TLV or 4 octets of Neighbor Router-ID in the OSPFv3 SRv6
+            LAN End.X SID TLV.</dd>
+          <dt pn="section-4.2-6.17">SID:</dt>
+          <dd pn="section-4.2-6.18">16-octet field. This field encodes the advertised SRv6 SID
+            as a 128-bit value.</dd>
+          <dt pn="section-4.2-6.19">Sub-TLVs:</dt>
+          <dd pn="section-4.2-6.20">Used to advertise sub-TLVs that provide additional
+            attributes for the specific SRv6 SID. This document defines one in
+            <xref target="SRSTRUCTTLV" format="default" sectionFormat="of" derivedContent="Section 8"/>.</dd>
+        </dl>
+      </section>
+      <section anchor="SRLINKMSD" numbered="true" toc="include" removeInRFC="false" pn="section-4.3">
+        <name slugifiedName="name-srv6-link-msd-types">SRv6 Link MSD Types</name>
+        <t indent="0" pn="section-4.3-1">The Link MSD TLV <xref target="RFC8814" format="default" sectionFormat="of" derivedContent="RFC8814"/> of the BGP-LS Attribute
+        of the Link NLRI is also used to advertise the limits and the SRH
+        operations supported on the specific link by the SRv6-capable node.
+        The SRv6 MSD types specified in <xref target="RFC9352" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-4" derivedContent="RFC9352"> </xref> are also used with
+        the BGP-LS Link MSD TLV, as these code points are shared between the IS-IS,
+        OSPF, and BGP-LS protocols. The description and semantics of these new
+        MSD types for BGP-LS are identical as specified in <xref target="RFC9352" format="default" sectionFormat="of" derivedContent="RFC9352"/>.</t>
+        <t indent="0" pn="section-4.3-2">Each MSD type is encoded in the BGP-LS Link MSD TLV as a one-octet
+        type followed by a one-octet value as derived from the IS-IS or OSPFv3
+        Link MSD advertisements specified in <xref target="RFC8814" format="default" sectionFormat="of" derivedContent="RFC8814"/>.</t>
+      </section>
+    </section>
+    <section anchor="SRPFXATTR" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-srv6-prefix-attributes">SRv6 Prefix Attributes</name>
+      <t indent="0" pn="section-5-1">SRv6 attributes with an IPv6 prefix are advertised using the BGP-LS
+      Attribute TLVs defined in this section and associated with the BGP-LS
+      Prefix NLRI.</t>
+      <section anchor="SRLOCTLV" numbered="true" toc="include" removeInRFC="false" pn="section-5.1">
+        <name slugifiedName="name-srv6-locator-tlv">SRv6 Locator TLV</name>
+        <t indent="0" pn="section-5.1-1">As specified in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>, an SRv6 SID comprises
+        locator, function, and argument parts.</t>
+        <t indent="0" pn="section-5.1-2">A node is provisioned with one or more locators supported by that
+        node. Locators are covering prefixes for the set of SIDs provisioned
+        on that node. Each locator is advertised as a BGP-LS Prefix NLRI
+        object along with the SRv6 Locator TLV in its BGP-LS Attribute.</t>
+        <t indent="0" pn="section-5.1-3">The information advertised via this TLV is derived from the IS-IS
+        SRv6 Locator TLV (<xref target="RFC9352" sectionFormat="of" section="7.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-7.1" derivedContent="RFC9352"/>) or the OSPFv3 SRv6
+        Locator TLV (<xref target="RFC9513" sectionFormat="of" section="7.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9513#section-7.1" derivedContent="RFC9513"/>) in the case of IS-IS
+        or OSPFv3, respectively.</t>
+        <t indent="0" pn="section-5.1-4">The IPv6 Prefix matching the locator may also be advertised as
+        prefix reachability by the underlying routing protocol. In this case,
+        the Prefix NLRI would also be associated with the Prefix Metric TLV
+        <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/> that carries the routing metric for this
+        prefix. A Prefix NLRI that has been advertised with a SRv6 Locator
+        TLV is also considered a normal routing prefix (i.e., prefix
+        reachability) only when there is also an IGP Metric TLV (TLV 1095)
+        associated it. Otherwise, it is only considered an SRv6 Locator
+        advertisement.</t>
+        <t indent="0" pn="section-5.1-5">The SRv6 Locator TLV has the following format: </t>
+        <figure anchor="SRV6LOCFIG" align="left" suppress-title="false" pn="figure-4">
+          <name slugifiedName="name-srv6-locator-tlv-format">SRv6 Locator TLV Format</name>
+          <artwork name="" type="" align="left" alt="" pn="section-5.1-6.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Flags    |   Algorithm   |           Reserved            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Metric                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Sub-TLVs (variable) . . .             
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-5.1-7">where:</t>
+        <dl newline="false" indent="3" spacing="normal" pn="section-5.1-8">
+          <dt pn="section-5.1-8.1">Type:</dt>
+          <dd pn="section-5.1-8.2">1162</dd>
+          <dt pn="section-5.1-8.3">Length:</dt>
+          <dd pn="section-5.1-8.4">variable</dd>
+          <dt pn="section-5.1-8.5">Flags:</dt>
+          <dd pn="section-5.1-8.6">1 octet of flags. The flags are copied from the IS-IS
+            SRv6 Locator TLV (<xref target="RFC9352" sectionFormat="of" section="7.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-7.1" derivedContent="RFC9352"/>) or the OSPFv3 SRv6
+            Locator TLV (<xref target="RFC9513" sectionFormat="of" section="7.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9513#section-7.1" derivedContent="RFC9513"/>) in the case of
+            IS-IS or OSPFv3, respectively.</dd>
+          <dt pn="section-5.1-8.7">Algorithm:</dt>
+          <dd pn="section-5.1-8.8">1-octet field. Algorithm associated with the
+            SID.</dd>
+          <dt pn="section-5.1-8.9">Reserved:</dt>
+          <dd pn="section-5.1-8.10">2-octet field. The value <bcp14>MUST</bcp14> be set to 0 when
+            originated and ignored on receipt.</dd>
+          <dt pn="section-5.1-8.11">Metric:</dt>
+          <dd pn="section-5.1-8.12">4-octet field. The value of the metric for the locator
+            copied from the IS-IS SRv6 Locator TLV (<xref target="RFC9352" sectionFormat="of" section="7.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-7.1" derivedContent="RFC9352"/>) or the OSPFv3 SRv6
+            Locator TLV (<xref target="RFC9513" sectionFormat="of" section="7.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9513#section-7.1" derivedContent="RFC9513"/>) in the case of
+            IS-IS or OSPFv3, respectively.</dd>
+          <dt pn="section-5.1-8.13">Sub-TLVs:</dt>
+          <dd pn="section-5.1-8.14">Used to advertise sub-TLVs that provide additional
+            attributes for the given SRv6 Locator. Currently, none are
+            defined.</dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="SRSIDNLRI" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-srv6-sid-nlri">SRv6 SID NLRI</name>
+      <t indent="0" pn="section-6-1">The Link-State NLRI defined in <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/> is extended
+      to carry the SRv6 SID information.</t>
+      <t indent="0" pn="section-6-2">This document defines the following new Link-State NLRI type for SRv6 SID information: SRv6 SID NLRI (type 6).
+      </t>
+      <t indent="0" pn="section-6-3">The SRv6 SIDs associated with the node are advertised using the
+      BGP-LS SRv6 SID NLRI.</t>
+      <t indent="0" pn="section-6-4">This new NLRI type has the following format:</t>
+      <figure anchor="SRSIDNLRIFIG" align="left" suppress-title="false" pn="figure-5">
+        <name slugifiedName="name-srv6-sid-nlri-format">SRv6 SID NLRI Format</name>
+        <artwork name="" type="" align="left" alt="" pn="section-6-5.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+
+|  Protocol-ID  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Identifier                             |
+|                        (8 octets)                             | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Local Node Descriptors (variable)              //
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               SRv6 SID Descriptors (variable)                //
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-6-6">where:</t>
+      <dl newline="false" spacing="normal" indent="3" pn="section-6-7">
+        <dt pn="section-6-7.1">Protocol-ID:</dt>
+        <dd pn="section-6-7.2">1-octet field that specifies the information source
+          protocol <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/>.</dd>
+        <dt pn="section-6-7.3">Identifier:</dt>
+        <dd pn="section-6-7.4">8-octet value as defined in <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/>.</dd>
+        <dt pn="section-6-7.5">Local Node Descriptors TLV:</dt>
+        <dd pn="section-6-7.6">Set of Node Descriptor TLVs for the
+          local node as defined in <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/> for IGPs, the Direct Protocol-ID,                                       
+      and the Static configuration Protocol-ID or as defined in <xref target="RFC9086" format="default" sectionFormat="of" derivedContent="RFC9086"/>
+          for BGP.</dd>
+        <dt pn="section-6-7.7">SRv6 SID Descriptors:</dt>
+        <dd pn="section-6-7.8">Set of SRv6 SID Descriptor TLVs. This field
+          <bcp14>MUST</bcp14> contain a single SRv6 SID Information TLV (<xref target="SRSIDINFO" format="default" sectionFormat="of" derivedContent="Section 6.1"/>) and <bcp14>MAY</bcp14> contain the Multi-Topology Identifier
+          TLV <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/>.</dd>
+      </dl>
+      <t indent="0" pn="section-6-8">New TLVs for advertisement within the BGP-LS Attribute <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/> are defined in <xref target="SRSIDATTR" format="default" sectionFormat="of" derivedContent="Section 7"/> to carry
+      the attributes of an SRv6 SID.</t>
+      <section anchor="SRSIDINFO" numbered="true" toc="include" removeInRFC="false" pn="section-6.1">
+        <name slugifiedName="name-srv6-sid-information-tlv">SRv6 SID Information TLV</name>
+        <t indent="0" pn="section-6.1-1">An SRv6 SID that is associated with the node and advertised using
+        the SRv6 SID NLRI is encoded using the SRv6 SID Information TLV.</t>
+        <t indent="0" pn="section-6.1-2">When advertising the SRv6 SIDs from the IGPs, the SID information
+        is derived from the IS-IS SRv6 End SID sub-TLV (<xref target="RFC9352" sectionFormat="of" section="7.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-7.2" derivedContent="RFC9352"/>) or the OSPFv3 SRv6 End
+        SID sub-TLV (<xref target="RFC9513" sectionFormat="of" section="8" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9513#section-8" derivedContent="RFC9513"/>) in the case of IS-IS
+        or OSPFv3, respectively.</t>
+        <t indent="0" pn="section-6.1-3">The TLV carries the SRv6 SIDs corresponding to the BGP PeerNode and
+        PeerSet SIDs <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/> when SRv6 BGP EPE functionality
+        is enabled in BGP.</t>
+        <t indent="0" pn="section-6.1-4">The TLV has the following format: </t>
+        <figure anchor="SRV6SIDDESC" align="left" suppress-title="false" pn="figure-6">
+          <name slugifiedName="name-srv6-sid-information-tlv-fo">SRv6 SID Information TLV Format</name>
+          <artwork name="" type="" align="left" alt="" pn="section-6.1-5.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (16 octets) ...                                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (cont ...)                                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (cont ...)                                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    SID (cont ...)                                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-6.1-6">where:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-6.1-7">
+          <dt pn="section-6.1-7.1">Type:</dt>
+          <dd pn="section-6.1-7.2">518</dd>
+          <dt pn="section-6.1-7.3">Length:</dt>
+          <dd pn="section-6.1-7.4">16</dd>
+          <dt pn="section-6.1-7.5">SID:</dt>
+          <dd pn="section-6.1-7.6">16-octet field. This field encodes the advertised SRv6 SID
+            as a 128-bit value.</dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="SRSIDATTR" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-srv6-sid-attributes">SRv6 SID Attributes</name>
+      <t indent="0" pn="section-7-1">This section specifies the TLVs to be carried in the BGP Link State
+      Attribute associated with the BGP-LS SRv6 SID NLRI.</t>
+      <section anchor="SRFUNCTLV" numbered="true" toc="include" removeInRFC="false" pn="section-7.1">
+        <name slugifiedName="name-srv6-endpoint-behavior-tlv">SRv6 Endpoint Behavior TLV</name>
+        <t indent="0" pn="section-7.1-1">Each SRv6 SID instantiated on an SRv6-capable node has specific
+        instructions (called "behavior") bound to it. <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>
+        describes how behaviors are bound to a SID and also defines the
+        initial set of well-known behaviors.</t>
+        <t indent="0" pn="section-7.1-2">The SRv6 Endpoint Behavior TLV is a mandatory TLV that <bcp14>MUST</bcp14> be
+        included in the BGP-LS Attribute associated with the BGP-LS SRv6 SID
+        NLRI.</t>
+        <t indent="0" pn="section-7.1-3">When advertising the SRv6 SIDs from the IGPs, the Endpoint
+        behavior, Flags, and Algorithm are derived from the IS-IS SRv6 End SID
+        sub-TLV (<xref target="RFC9352" sectionFormat="of" section="7.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-7.2" derivedContent="RFC9352"/>) or the OSPFv3 SRv6 End
+        SID sub-TLV (<xref target="RFC9513" sectionFormat="of" section="8" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9513#section-8" derivedContent="RFC9513"/>) in the case of IS-IS
+        or OSPFv3, respectively.</t>
+        <t indent="0" pn="section-7.1-4">When advertising the SRv6 SIDs corresponding to the BGP EPE
+        functionality, the Endpoint behavior corresponds to End.X and similar
+        behaviors. When advertising the SRv6 SIDs that are locally
+        instantiated on the node using Direct as the Protocol-ID, the Endpoint
+        behavior corresponds to any SRv6 Endpoint behavior associated with the
+        node. Flags are currently not defined. The algorithm value <bcp14>MUST</bcp14> be 0
+        unless an algorithm is associated locally with the SRv6 Locator from
+        which the SID is allocated.</t>
+        <t indent="0" pn="section-7.1-5">The TLV has the following format:</t>
+        <figure anchor="SRENDFUNC" align="left" suppress-title="false" pn="figure-7">
+          <name slugifiedName="name-srv6-endpoint-behavior-tlv-2">SRv6 Endpoint Behavior TLV</name>
+          <artwork name="" type="" align="left" alt="" pn="section-7.1-6.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Endpoint Behavior      |      Flags    |   Algorithm   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-7.1-7">where:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-7.1-8">
+          <dt pn="section-7.1-8.1">Type:</dt>
+          <dd pn="section-7.1-8.2">1250</dd>
+          <dt pn="section-7.1-8.3">Length:</dt>
+          <dd pn="section-7.1-8.4">4</dd>
+          <dt pn="section-7.1-8.5">Endpoint Behavior:</dt>
+          <dd pn="section-7.1-8.6">2-octet field. The Endpoint behavior code
+            point for this SRv6 SID. Values are from the "SRv6
+            Endpoint Behaviors" IANA registry (<xref target="RFC8986" sectionFormat="of" section="10.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8986#section-10.2" derivedContent="RFC8986"/>).</dd>
+          <dt pn="section-7.1-8.7">Flags:</dt>
+          <dd pn="section-7.1-8.8">1 octet of flags. The flags map to the IS-IS or
+            OSPFv3 encodings when advertising SRv6 SIDs corresponding to IGPs.
+            No flags are currently defined for SRv6 SIDs corresponding to BGP
+            EPE or for advertisement of a SRv6 SID using Direct as the
+            Protocol-ID. Undefined flags <bcp14>MUST</bcp14> be set to 0 when originating and ignored on
+            receipt. </dd>
+          <dt pn="section-7.1-8.9">Algorithm:</dt>
+          <dd pn="section-7.1-8.10">1-octet field. Algorithm associated with the
+            SID.</dd>
+        </dl>
+      </section>
+      <section anchor="SRPEERTLV" numbered="true" toc="include" removeInRFC="false" pn="section-7.2">
+        <name slugifiedName="name-srv6-bgp-peernode-sid-tlv">SRv6 BGP PeerNode SID TLV</name>
+        <t indent="0" pn="section-7.2-1">The BGP PeerNode and PeerSet SIDs for SR-MPLS are specified in
+        <xref target="RFC9086" format="default" sectionFormat="of" derivedContent="RFC9086"/>. Similar Peer Node and Peer Set functionality
+        can be realized with SRv6 using SIDs with END.X behavior. Refer to
+        <xref target="BGPEPE" format="default" sectionFormat="of" derivedContent="Appendix A"/> for some differences between the signaling of
+        these SIDs in SR-MPLS and SRv6. The SRv6 BGP PeerNode SID TLV is a
+        mandatory TLV for use in the BGP-LS Attribute for an SRv6 SID NLRI
+        advertised by BGP for the EPE functionality. This TLV <bcp14>MUST</bcp14> be included
+        along with SRv6 SIDs that are associated with the BGP PeerNode or
+        PeerSet functionality.</t>
+        <t indent="0" pn="section-7.2-2">The TLV has the following format:</t>
+        <figure anchor="SRPEERTLVFIG" align="left" suppress-title="false" pn="figure-8">
+          <name slugifiedName="name-srv6-bgp-peernode-sid-tlv-f">SRv6 BGP PeerNode SID TLV Format</name>
+          <artwork name="" type="" align="left" alt="" pn="section-7.2-3.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Flags    |     Weight    |          Reserved             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Peer AS Number                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Peer BGP Identifier                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-7.2-4">where:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-7.2-5">
+          <dt pn="section-7.2-5.1">Type:</dt>
+          <dd pn="section-7.2-5.2">1251</dd>
+          <dt pn="section-7.2-5.3">Length:</dt>
+          <dd pn="section-7.2-5.4">12</dd>
+          <dt pn="section-7.2-5.5">Flags:</dt>
+          <dd pn="section-7.2-5.6">
+            <t indent="0" pn="section-7.2-5.6.1">1 octet of flags with the following definitions:</t>
+            <figure anchor="ENDXBGPFLAGS" align="left" suppress-title="false" pn="figure-9">
+              <name slugifiedName="name-srv6-bgp-epe-sid-flags-form">SRv6 BGP EPE SID Flags Format</name>
+              <artwork align="left" name="" type="" alt="" pn="section-7.2-5.6.2.1">
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|B|S|P|         |
++-+-+-+-+-+-+-+-+
+</artwork>
+            </figure>
+            <dl newline="false" spacing="normal" indent="3" pn="section-7.2-5.6.3">
+              <dt pn="section-7.2-5.6.3.1">B-Flag:</dt>
+              <dd pn="section-7.2-5.6.3.2">Backup Flag. If set, the SID is eligible to
+              be protected using Fast Reroute (FRR). The computation of the
+              backup forwarding path and its association with the forwarding
+              entry for the Peer BGP Identifier are implementation specific.</dd>
+              <dt pn="section-7.2-5.6.3.3">S-Flag:</dt>
+              <dd pn="section-7.2-5.6.3.4">Set Flag. When set, the S-Flag indicates that the
+                SID refers to a set of BGP peering sessions (i.e., BGP Peer
+                Set SID functionality) and therefore <bcp14>MAY</bcp14> be assigned to one or
+                more End.X SIDs associated with BGP peering sessions.</dd>
+              <dt pn="section-7.2-5.6.3.5">P-Flag:</dt>
+              <dd pn="section-7.2-5.6.3.6">Persistent Flag. When set, the P-Flag indicates
+                that the SID is persistently allocated, i.e., the value
+                remains consistent across router restart and/or session
+                flap.</dd>
+              <dt pn="section-7.2-5.6.3.7">Other bits are reserved for future use and
+              <bcp14>MUST</bcp14> be set to 0 when originated and ignored on
+              receipt.  The flags defined above are also used with the SRv6
+              End.X SID TLV when advertising  the SRv6 BGP Peer Adjacency SID
+              (<xref target="SRENDXTLV" format="default" sectionFormat="of" derivedContent="Section 4.1"/>).</dt>
+              <dd pn="section-7.2-5.6.3.8"/>
+            </dl>
+          </dd>
+          <dt pn="section-7.2-5.7">Weight:</dt>
+          <dd pn="section-7.2-5.8">1-octet field. The value represents the weight of the
+            SID for the purpose of load balancing. The use of the weight is
+            defined in <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>.</dd>
+          <dt pn="section-7.2-5.9">Reserved:</dt>
+          <dd pn="section-7.2-5.10">2-octet field. The value <bcp14>MUST</bcp14> be set to 0 when
+            originated and ignored on receipt.</dd>
+          <dt pn="section-7.2-5.11">Peer AS Number:</dt>
+          <dd pn="section-7.2-5.12">4 octets of the BGP AS number of the peer
+            router.</dd>
+          <dt pn="section-7.2-5.13">Peer BGP Identifier:</dt>
+          <dd pn="section-7.2-5.14">4 octets of the BGP Identifier (BGP
+            Router-ID) of the peer router.</dd>
+        </dl>
+        <t indent="0" pn="section-7.2-6">For an SRv6 BGP EPE PeerNode SID, one instance of this TLV is
+        associated with the SRv6 SID. For an SRv6 BGP EPE PeerSet SID, multiple
+        instances of this TLV (one for each peer in the "peer
+        set") are associated with the SRv6 SID and the S-Flag is
+        set.</t>
+      </section>
+    </section>
+    <section anchor="SRSTRUCTTLV" numbered="true" toc="include" removeInRFC="false" pn="section-8">
+      <name slugifiedName="name-srv6-sid-structure-tlv">SRv6 SID Structure TLV</name>
+      <t indent="0" pn="section-8-1">The SRv6 SID Structure TLV is used to advertise the length of each
+      individual part of the SRv6 SID as defined in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>.
+      It is an optional TLV for use in the BGP-LS Attribute for an SRv6 SID
+      NLRI and as a sub-TLV of the SRv6 End.X SID, IS-IS SRv6 LAN End.X SID,
+      and OSPFv3 SRv6 LAN End.X SID TLVs.</t>
+      <t indent="0" pn="section-8-2">When advertising SRv6 SIDs from the IGPs, the SRv6 SID Structure
+      information is derived from the IS-IS SRv6 SID Structure sub-sub-TLV
+      (<xref target="RFC9352" sectionFormat="of" section="9" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-9" derivedContent="RFC9352"/>) or the
+      OSPFv3 SRv6 SID Structure sub-TLV (<xref target="RFC9513" sectionFormat="of" section="10" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9513#section-10" derivedContent="RFC9513"/>) in the case of IS-IS or
+      OSPFv3, respectively.</t>
+      <t indent="0" pn="section-8-3">When advertising the SRv6 SIDs corresponding to the BGP EPE
+      functionality or for advertising SRv6 SIDs using Direct as the Protocol-ID, the
+      SRv6 SID Structure information is derived from the locally provisioned
+      SRv6 SID.</t>
+      <t indent="0" pn="section-8-4">The TLV has the following format:</t>
+      <figure anchor="SRSIDSTRUCT" align="left" suppress-title="false" pn="figure-10">
+        <name slugifiedName="name-srv6-sid-structure-tlv-2">SRv6 SID Structure TLV</name>
+        <artwork name="" type="" align="left" alt="" pn="section-8-5.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    LB Length  |  LN Length    | Fun. Length   |  Arg. Length  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-8-6">where:</t>
+      <dl newline="false" spacing="normal" indent="3" pn="section-8-7">
+        <dt pn="section-8-7.1">Type:</dt>
+        <dd pn="section-8-7.2">1252</dd>
+        <dt pn="section-8-7.3">Length:</dt>
+        <dd pn="section-8-7.4">4</dd>
+        <dt pn="section-8-7.5">LB Length:</dt>
+        <dd pn="section-8-7.6">1-octet field. SRv6 SID Locator Block length in
+          bits.</dd>
+        <dt pn="section-8-7.7">LN Length:</dt>
+        <dd pn="section-8-7.8">1-octet field. SRv6 SID Locator Node length in
+          bits.</dd>
+        <dt pn="section-8-7.9">Fun. Length:</dt>
+        <dd pn="section-8-7.10">1-octet field. SRv6 SID Function length in bits.</dd>
+        <dt pn="section-8-7.11">Arg. Length:</dt>
+        <dd pn="section-8-7.12">1-octet field. SRv6 SID Argument length in bits.</dd>
+      </dl>
+      <t indent="0" pn="section-8-8">The sum of the LB Length, LN Length, Fun. Length, and Arg. Length
+      <bcp14>MUST</bcp14> be less than or equal to 128.</t>
+    </section>
+    <section anchor="IANA" numbered="true" toc="include" removeInRFC="false" pn="section-9">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-9-1">Per this document, IANA has allocated code points in the "Border
+      Gateway Protocol - Link State (BGP-LS) Parameters" registry group, as
+      described in the subsections below.</t>
+      <section anchor="NLRITYPES" numbered="true" toc="include" removeInRFC="false" pn="section-9.1">
+        <name slugifiedName="name-bgp-ls-nlri-types">BGP-LS NLRI Types</name>
+        <t indent="0" pn="section-9.1-1">IANA has assigned the following code points in the
+         "BGP-LS NLRI Types" registry:</t>
+        <table anchor="IANANLRI" align="center" pn="table-1">
+          <name slugifiedName="name-addition-to-bgp-ls-nlri-typ">Addition to BGP-LS NLRI Types Registry</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Type</th>
+              <th align="left" colspan="1" rowspan="1">NLRI Type</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">6</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 SID NLRI</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="BGPLSTLVS" numbered="true" toc="include" removeInRFC="false" pn="section-9.2">
+        <name slugifiedName="name-bgp-ls-nlri-and-attribute-t">BGP-LS NLRI and Attribute TLVs</name>
+        <t indent="0" pn="section-9.2-1">IANA has assigned the following TLV code points in the "BGP-LS NLRI and Attribute TLVs" registry:</t>
+        <table anchor="ATTRTYPES" align="center" pn="table-2">
+          <name slugifiedName="name-additions-to-bgp-ls-nlri-an">Additions to BGP-LS NLRI and Attribute TLVs Registry</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">TLV Code Point</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">518</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 SID Information</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1038</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 Capabilities</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1106</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 End.X SID</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1107</td>
+              <td align="left" colspan="1" rowspan="1">IS-IS SRv6 LAN End.X SID</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1108</td>
+              <td align="left" colspan="1" rowspan="1">OSPFv3 SRv6 LAN End.X SID</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1162</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 Locator</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1250</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 Endpoint Behavior</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1251</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 BGP PeerNode SID</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1252</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 SID Structure</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="BGPEPEFLAGS" numbered="true" toc="include" removeInRFC="false" pn="section-9.3">
+        <name slugifiedName="name-srv6-bgp-epe-sid-flags">SRv6 BGP EPE SID Flags</name>
+        <t indent="0" pn="section-9.3-1">Per this document, IANA has created a new registry called "SRv6
+        BGP EPE SID Flags" under the "Border Gateway Protocol - Link State
+        (BGP-LS) Parameters" registry group. The allocation policy of this
+        registry is "Standards Action" according to <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>.</t>
+        <t indent="0" pn="section-9.3-2">The initial contents of the registry are as follows:</t>
+        <table anchor="EPEFLAGS" align="center" pn="table-3">
+          <name slugifiedName="name-new-srv6-bgp-epe-sid-flags-">New SRv6 BGP EPE SID Flags Registry</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Bit</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">0</td>
+              <td align="left" colspan="1" rowspan="1">Backup Flag (B-Flag)</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1</td>
+              <td align="left" colspan="1" rowspan="1">Set Flag (S-Flag)</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">2</td>
+              <td align="left" colspan="1" rowspan="1">Persistent Flag (P-Flag)</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9514</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">3-7</td>
+              <td align="left" colspan="1" rowspan="1">Unassigned</td>
+              <td align="left" colspan="1" rowspan="1"/>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+    <section anchor="Manageability" numbered="true" toc="include" removeInRFC="false" pn="section-10">
+      <name slugifiedName="name-manageability-consideration">Manageability Considerations</name>
+      <t indent="0" pn="section-10-1">This section is structured as recommended in <xref target="RFC5706" format="default" sectionFormat="of" derivedContent="RFC5706"/>.</t>
+      <t indent="0" pn="section-10-2">The new protocol extensions introduced in this document augment the
+      existing IGP topology information that is distributed via <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/>. Procedures and protocol extensions defined in this
+      document do not affect the BGP protocol operations and management other
+      than as discussed in Section <xref target="RFC7752" sectionFormat="bare" section="6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7752#section-6" derivedContent="RFC7752">Manageability Considerations</xref> of <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/>. Specifically, the malformed attribute tests for
+      syntactic checks in Section <xref target="RFC7752" sectionFormat="bare" section="6.2.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7752#section-6.2.2" derivedContent="RFC7752">Fault Management</xref> of <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/> now encompass the new BGP-LS extensions defined in
+      this document. The semantic or content checking for the TLVs specified
+      in this document and their association with the BGP-LS NLRI types or
+      their BGP-LS Attribute are left to the consumer of the BGP-LS information
+      (e.g., an application or a controller) and not BGP.</t>
+      <t indent="0" pn="section-10-3">The SR information introduced in BGP-LS by this specification may be
+      used by BGP-LS consumer applications like an SR Path Computation Engine
+      (PCE) to learn the SRv6 capabilities of the nodes in the topology and the
+      mapping of SRv6 segments to those nodes. This can enable the SR PCE
+      to perform path computations based on SR for traffic-engineering
+      use cases and to steer traffic on paths different from the underlying
+      IGP-based distributed best path computation. Errors in the encoding or
+      decoding of the SRv6 information may result in the unavailability of
+      such information to the SR PCE or incorrect information being made
+      available to it. This may result in the SR PCE not being able to perform
+      the desired SR-based optimization functionality or performing it in an
+      unexpected or inconsistent manner. The handling of such errors by
+      applications like SR PCE may be implementation specific and out of the
+      scope of this document.</t>
+      <t indent="0" pn="section-10-4">The manageability considerations related to BGP EPE functionality are
+      discussed in <xref target="RFC9086" format="default" sectionFormat="of" derivedContent="RFC9086"/> in the context of SR-MPLS; they
+      also apply to this document in the context of SRv6.</t>
+      <t indent="0" pn="section-10-5">The extensions specified in this document do not introduce any new
+      configuration or monitoring aspects in BGP or BGP-LS other than as
+      discussed in <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/>. The manageability aspects of the
+      underlying SRv6 features are covered by <xref target="I-D.ietf-spring-srv6-yang" format="default" sectionFormat="of" derivedContent="SRV6-YANG"/>.</t>
+    </section>
+    <section anchor="Security" numbered="true" toc="include" removeInRFC="false" pn="section-11">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-11-1">The new protocol extensions introduced in this document augment the
+      existing IGP topology information that is distributed via <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/>. The advertisement of the SRv6
+      link-state information defined in this document presents a similar risk
+      as associated with the existing link-state information as described in
+      <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/>.  Section <xref target="RFC7752" sectionFormat="bare" section="8" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7752#section-8" derivedContent="RFC7752">Security Considerations</xref> of <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/> also applies to these extensions. The
+      procedures and new TLVs defined in this document, by themselves, do not
+      affect the BGP-LS security model discussed in <xref target="RFC7752" format="default" sectionFormat="of" derivedContent="RFC7752"/>.</t>
+      <t indent="0" pn="section-11-2">The extensions introduced in this document are used to propagate
+      IGP-defined information <xref target="RFC9352" format="default" sectionFormat="of" derivedContent="RFC9352"/> <xref target="RFC9513" format="default" sectionFormat="of" derivedContent="RFC9513"/>. These extensions represent the
+      advertisement of SRv6 information associated with the IGP node, link,
+      and prefix. The IGP instances originating these TLVs are assumed to
+      support all the required security and authentication mechanisms (as
+      described in <xref target="RFC9352" format="default" sectionFormat="of" derivedContent="RFC9352"/> and <xref target="RFC9513" format="default" sectionFormat="of" derivedContent="RFC9513"/>).</t>
+      <t indent="0" pn="section-11-3">The security considerations related to BGP EPE functionality are
+      discussed in <xref target="RFC9086" format="default" sectionFormat="of" derivedContent="RFC9086"/> in the context of SR-MPLS, and they
+      also apply to this document in the context of SRv6.</t>
+      <t indent="0" pn="section-11-4">BGP-LS SRv6 extensions enable traffic-engineering use cases within
+      the SR domain. SR operates within a trusted domain <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>, and its security considerations also apply to BGP-LS
+      sessions when carrying SR information. The SR traffic-engineering
+      policies using the SIDs advertised via BGP-LS are expected to be used
+      entirely within this trusted SR domain (e.g., between multiple AS or IGP
+      domains within a single provider network). Therefore, precaution is
+      necessary to ensure that the link-state information (including SRv6
+      information) advertised via BGP-LS sessions is securely limited to
+      consumers within this trusted SR domain. BGP peering sessions for
+      address families other than Link State may be set up to routers outside
+      the SR domain. The isolation of BGP-LS peering sessions is <bcp14>RECOMMENDED</bcp14>
+      to ensure that BGP-LS topology information (including the newly added SR
+      information) is not advertised to an external BGP peering session
+      outside the SR domain.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-spring-srv6-yang" to="SRV6-YANG"/>
+    <references pn="section-12">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-12.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC7752" target="https://www.rfc-editor.org/info/rfc7752" quoteTitle="true" derivedAnchor="RFC7752">
+          <front>
+            <title>North-Bound Distribution of Link-State and Traffic Engineering (TE) Information Using BGP</title>
+            <author fullname="H. Gredler" initials="H." role="editor" surname="Gredler"/>
+            <author fullname="J. Medved" initials="J." surname="Medved"/>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+            <author fullname="S. Ray" initials="S." surname="Ray"/>
+            <date month="March" year="2016"/>
+            <abstract>
+              <t indent="0">In a number of environments, a component external to a network is called upon to perform computations based on the network topology and current state of the connections within the network, including Traffic Engineering (TE) information. This is information typically distributed by IGP routing protocols within the network.</t>
+              <t indent="0">This document describes a mechanism by which link-state and TE information can be collected from networks and shared with external components using the BGP routing protocol. This is achieved using a new BGP Network Layer Reachability Information (NLRI) encoding format. The mechanism is applicable to physical and virtual IGP links. The mechanism described is subject to policy control.</t>
+              <t indent="0">Applications of this technique include Application-Layer Traffic Optimization (ALTO) servers and Path Computation Elements (PCEs).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7752"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7752"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8402" target="https://www.rfc-editor.org/info/rfc8402" quoteTitle="true" derivedAnchor="RFC8402">
+          <front>
+            <title>Segment Routing Architecture</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="S. Previdi" initials="S." role="editor" surname="Previdi"/>
+            <author fullname="L. Ginsberg" initials="L." surname="Ginsberg"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="S. Litkowski" initials="S." surname="Litkowski"/>
+            <author fullname="R. Shakir" initials="R." surname="Shakir"/>
+            <date month="July" year="2018"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) leverages the source routing paradigm. A node steers a packet through an ordered list of instructions, called "segments". A segment can represent any instruction, topological or service based. A segment can have a semantic local to an SR node or global within an SR domain. SR provides a mechanism that allows a flow to be restricted to a specific topological path, while maintaining per-flow state only at the ingress node(s) to the SR domain.</t>
+              <t indent="0">SR can be directly applied to the MPLS architecture with no change to the forwarding plane. A segment is encoded as an MPLS label. An ordered list of segments is encoded as a stack of labels. The segment to process is on the top of the stack. Upon completion of a segment, the related label is popped from the stack.</t>
+              <t indent="0">SR can be applied to the IPv6 architecture, with a new type of routing header. A segment is encoded as an IPv6 address. An ordered list of segments is encoded as an ordered list of IPv6 addresses in the routing header. The active segment is indicated by the Destination Address (DA) of the packet. The next active segment is indicated by a pointer in the new routing header.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8402"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8402"/>
+        </reference>
+        <reference anchor="RFC8814" target="https://www.rfc-editor.org/info/rfc8814" quoteTitle="true" derivedAnchor="RFC8814">
+          <front>
+            <title>Signaling Maximum SID Depth (MSD) Using the Border Gateway Protocol - Link State</title>
+            <author fullname="J. Tantsura" initials="J." surname="Tantsura"/>
+            <author fullname="U. Chunduri" initials="U." surname="Chunduri"/>
+            <author fullname="K. Talaulikar" initials="K." surname="Talaulikar"/>
+            <author fullname="G. Mirsky" initials="G." surname="Mirsky"/>
+            <author fullname="N. Triantafillis" initials="N." surname="Triantafillis"/>
+            <date month="August" year="2020"/>
+            <abstract>
+              <t indent="0">This document defines a way for a Border Gateway Protocol - Link
+State (BGP-LS) speaker to advertise multiple types of supported
+Maximum SID Depths (MSDs) at node and/or link granularity.</t>
+              <t indent="0">Such advertisements allow entities (e.g., centralized controllers) to
+determine whether a particular Segment Identifier (SID) stack can be
+supported in a given network.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8814"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8814"/>
+        </reference>
+        <reference anchor="RFC8986" target="https://www.rfc-editor.org/info/rfc8986" quoteTitle="true" derivedAnchor="RFC8986">
+          <front>
+            <title>Segment Routing over IPv6 (SRv6) Network Programming</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="P. Camarillo" initials="P." role="editor" surname="Camarillo"/>
+            <author fullname="J. Leddy" initials="J." surname="Leddy"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <author fullname="S. Matsushima" initials="S." surname="Matsushima"/>
+            <author fullname="Z. Li" initials="Z." surname="Li"/>
+            <date month="February" year="2021"/>
+            <abstract>
+              <t indent="0">The Segment Routing over IPv6 (SRv6) Network Programming framework enables a network operator or an application to specify a packet processing program by encoding a sequence of instructions in the IPv6 packet header.</t>
+              <t indent="0">Each instruction is implemented on one or several nodes in the network and identified by an SRv6 Segment Identifier in the packet.</t>
+              <t indent="0">This document defines the SRv6 Network Programming concept and specifies the base set of SRv6 behaviors that enables the creation of interoperable overlays with underlay optimization.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8986"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8986"/>
+        </reference>
+        <reference anchor="RFC9085" target="https://www.rfc-editor.org/info/rfc9085" quoteTitle="true" derivedAnchor="RFC9085">
+          <front>
+            <title>Border Gateway Protocol - Link State (BGP-LS) Extensions for Segment Routing</title>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="K. Talaulikar" initials="K." role="editor" surname="Talaulikar"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="H. Gredler" initials="H." surname="Gredler"/>
+            <author fullname="M. Chen" initials="M." surname="Chen"/>
+            <date month="August" year="2021"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) allows for a flexible definition of end-to-end paths by encoding paths as sequences of topological subpaths, called "segments". These segments are advertised by routing protocols, e.g., by the link-state routing protocols (IS-IS, OSPFv2, and OSPFv3) within IGP topologies.</t>
+              <t indent="0">This document defines extensions to the Border Gateway Protocol - Link State (BGP-LS) address family in order to carry SR information via BGP.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9085"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9085"/>
+        </reference>
+        <reference anchor="RFC9086" target="https://www.rfc-editor.org/info/rfc9086" quoteTitle="true" derivedAnchor="RFC9086">
+          <front>
+            <title>Border Gateway Protocol - Link State (BGP-LS) Extensions for Segment Routing BGP Egress Peer Engineering</title>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="K. Talaulikar" initials="K." role="editor" surname="Talaulikar"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="K. Patel" initials="K." surname="Patel"/>
+            <author fullname="S. Ray" initials="S." surname="Ray"/>
+            <author fullname="J. Dong" initials="J." surname="Dong"/>
+            <date month="August" year="2021"/>
+            <abstract>
+              <t indent="0">A node steers a packet through a controlled set of instructions, called segments, by prepending the packet with a list of segment identifiers (SIDs). A segment can represent any instruction, topological or service based. SR segments allow steering a flow through any topological path and service chain while maintaining per-flow state only at the ingress node of the SR domain.</t>
+              <t indent="0">This document describes an extension to Border Gateway Protocol - Link State (BGP-LS) for advertisement of BGP Peering Segments along with their BGP peering node information so that efficient BGP Egress Peer Engineering (EPE) policies and strategies can be computed based on Segment Routing.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9086"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9086"/>
+        </reference>
+        <reference anchor="RFC9352" target="https://www.rfc-editor.org/info/rfc9352" quoteTitle="true" derivedAnchor="RFC9352">
+          <front>
+            <title>IS-IS Extensions to Support Segment Routing over the IPv6 Data Plane</title>
+            <author fullname="P. Psenak" initials="P." role="editor" surname="Psenak"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="A. Bashandy" initials="A." surname="Bashandy"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <date month="February" year="2023"/>
+            <abstract>
+              <t indent="0">The Segment Routing (SR) architecture allows a flexible definition of the end-to-end path by encoding it as a sequence of topological elements called "segments". It can be implemented over the MPLS or the IPv6 data plane. This document describes the IS-IS extensions required to support SR over the IPv6 data plane.</t>
+              <t indent="0">This document updates RFC 7370 by modifying an existing registry.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9352"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9352"/>
+        </reference>
+        <reference anchor="RFC9513" target="https://www.rfc-editor.org/info/rfc9513" quoteTitle="true" derivedAnchor="RFC9513">
+          <front>
+            <title>OSPFv3 Extensions for Segment Routing over IPv6 (SRv6)</title>
+            <author initials="Z." surname="Li" fullname="Zhenbin Li">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author initials="Z." surname="Hu" fullname="Zhibo Hu">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author initials="K." surname="Talaulikar" fullname="Ketan Talaulikar" role="editor">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <author initials="P." surname="Psenak" fullname="Peter Psenak">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <date month="December" year="2023"/>
+          </front>
+          <seriesInfo name="RFC" value="9513"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9513"/>
+        </reference>
+      </references>
+      <references pn="section-12.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC5706" target="https://www.rfc-editor.org/info/rfc5706" quoteTitle="true" derivedAnchor="RFC5706">
+          <front>
+            <title>Guidelines for Considering Operations and Management of New Protocols and Protocol Extensions</title>
+            <author fullname="D. Harrington" initials="D." surname="Harrington"/>
+            <date month="November" year="2009"/>
+            <abstract>
+              <t indent="0">New protocols or protocol extensions are best designed with due consideration of the functionality needed to operate and manage the protocols. Retrofitting operations and management is sub-optimal. The purpose of this document is to provide guidance to authors and reviewers of documents that define new protocols or protocol extensions regarding aspects of operations and management that should be considered. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5706"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5706"/>
+        </reference>
+        <reference anchor="RFC8754" target="https://www.rfc-editor.org/info/rfc8754" quoteTitle="true" derivedAnchor="RFC8754">
+          <front>
+            <title>IPv6 Segment Routing Header (SRH)</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="D. Dukes" initials="D." role="editor" surname="Dukes"/>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="J. Leddy" initials="J." surname="Leddy"/>
+            <author fullname="S. Matsushima" initials="S." surname="Matsushima"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <date month="March" year="2020"/>
+            <abstract>
+              <t indent="0">Segment Routing can be applied to the IPv6 data plane using a new type of Routing Extension Header called the Segment Routing Header (SRH). This document describes the SRH and how it is used by nodes that are Segment Routing (SR) capable.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8754"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8754"/>
+        </reference>
+        <reference anchor="I-D.ietf-spring-srv6-yang" target="https://datatracker.ietf.org/doc/html/draft-ietf-spring-srv6-yang-02" quoteTitle="true" derivedAnchor="SRV6-YANG">
+          <front>
+            <title>YANG Data Model for SRv6 Base and Static</title>
+            <author fullname="Syed Raza" initials="S." surname="Raza">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <author fullname="Sonal Agarwal" initials="S." surname="Agarwal">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <author fullname="Xufeng Liu" initials="X." surname="Liu">
+              <organization showOnFrontPage="true">Volta Networks</organization>
+            </author>
+            <author fullname="Zhibo Hu" initials="Z." surname="Hu">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author fullname="Iftekhar Hussain" initials="I." surname="Hussain">
+              <organization showOnFrontPage="true">Infinera Corporation</organization>
+            </author>
+            <author fullname="Himanshu C. Shah" initials="H. C." surname="Shah">
+              <organization showOnFrontPage="true">Ciena Corporation</organization>
+            </author>
+            <author fullname="Daniel Voyer" initials="D." surname="Voyer">
+              <organization showOnFrontPage="true">Bell Canada</organization>
+            </author>
+            <author fullname="Satoru Matsushima" initials="S." surname="Matsushima">
+              <organization showOnFrontPage="true">SoftBank</organization>
+            </author>
+            <author fullname="Katsuhiro Horiba" initials="K." surname="Horiba">
+              <organization showOnFrontPage="true">SoftBank</organization>
+            </author>
+            <author fullname="Jaganbabu Rajamanickam" initials="J." surname="Rajamanickam">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <author fullname="Ahmed Abdelsalam" initials="A." surname="Abdelsalam">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <date day="23" month="September" year="2022"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-spring-srv6-yang-02"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section anchor="BGPEPE" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-differences-with-bgp-epe-fo">Differences with BGP-EPE for SR-MPLS</name>
+      <t indent="0" pn="section-appendix.a-1">The signaling of SRv6 SIDs corresponding to BGP-EPE functionality as
+      defined in this document differs from the signaling of SR-MPLS BGP-EPE
+      SIDs as specified in <xref target="RFC9086" format="default" sectionFormat="of" derivedContent="RFC9086"/>. This section provides a
+      high-level overview of the same.</t>
+      <t indent="0" pn="section-appendix.a-2">There is no difference in the advertisement of the BGP Peer Adjacency
+      SID in both SR-MPLS and SRv6, and it is advertised as an attribute of the
+      Link NLRI, which identifies a specific Layer 3 interface on the BGP
+      Speaker. The difference is in the advertisement of the BGP PeerNode and
+      PeerSet SIDs.</t>
+      <t indent="0" pn="section-appendix.a-3">In the case of SR-MPLS, an additional Link NLRI is required to be
+      advertised corresponding to each BGP peering session on the node. Note
+      that this is not the same Link NLRI associated with the actual Layer 3
+      interface even when the peering is set up using the interface IP
+      addresses. These BGP-LS Link NLRIs are not really links in the
+      conventional link-state routing data model but instead identify BGP
+      peering sessions. The BGP PeerNode and/or PeerSet SIDs associated with
+      that peering session are advertised as attributes associated with this
+      peering Link NLRI. In the case of SRv6, each BGP PeerNode or PeerSet
+      SID is considered to be associated with the BGP Speaker Node and is
+      advertised using the BGP-LS SRv6 SID NLRI, while the peering session
+      information is advertised as attributes associated with it.</t>
+      <t indent="0" pn="section-appendix.a-4">The advertisement of the BGP PeerSet SID for SR-MPLS is done by
+      including that SID as an attribute in all the Link NLRIs corresponding
+      to the peering sessions that are part of the "set". The advertisement of
+      the BGP PeerSet SID for SRv6 is advertised using a single SRv6 SID NLRI,
+      and all the peers associated with that "set" are indicated as attributes
+      associated with the NLRI.</t>
+    </section>
+    <section anchor="Acknowledgements" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.b">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.b-1">The authors would like to thank <contact fullname="Peter Psenak"/>,
+      <contact fullname="Arun Babu"/>, <contact fullname="Pablo Camarillo"/>,
+      <contact fullname="Francois Clad"/>, <contact fullname="Peng Shaofu"/>,
+      <contact fullname="Cheng Li"/>, <contact fullname="Dhruv Dhody"/>,
+      <contact fullname="Tom Petch"/>, and <contact fullname="Dan Romascanu"/>
+      for their review of this document and their comments.  The authors would
+      also like to thank <contact fullname="Susan Hares"/> for her shepherd
+      review and <contact fullname="Adrian Farrel"/> for his detailed Routing Area
+      Directorate review.</t>
+    </section>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.c">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <contact fullname="James Uttaro">
+        <organization showOnFrontPage="true">AT&amp;T</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>ju1738@att.com</email>
+        </address>
+      </contact>
+      <contact fullname="Hani Elmalky">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>hani.elmalky@gmail.com</email>
+        </address>
+      </contact>
+      <contact fullname="Arjun Sreekantiah">
+        <organization showOnFrontPage="true">Individual</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>arjunhrs@gmail.com</email>
+        </address>
+      </contact>
+      <contact fullname="Les Ginsberg">
+        <organization showOnFrontPage="true">Cisco Systems</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>ginsberg@cisco.com</email>
+        </address>
+      </contact>
+      <contact fullname="Shunwan Zhuang">
+        <organization showOnFrontPage="true">Huawei</organization>
+        <address>
+          <postal>
+            <country>China</country>
+          </postal>
+          <email>zhuangshunwan@huawei.com</email>
+        </address>
+      </contact>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.d">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Gaurav Dawra" initials="G" surname="Dawra">
+        <organization showOnFrontPage="true">LinkedIn</organization>
+        <address>
+          <postal>
+            <street/>
+            <country>United States of America</country>
+          </postal>
+          <email>gdawra.ietf@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Clarence Filsfils" initials="C" surname="Filsfils">
+        <organization showOnFrontPage="true">Cisco Systems</organization>
+        <address>
+          <postal>
+            <street/>
+            <country>Belgium</country>
+          </postal>
+          <email>cfilsfil@cisco.com</email>
+        </address>
+      </author>
+      <author fullname="Ketan Talaulikar" initials="K" role="editor" surname="Talaulikar">
+        <organization showOnFrontPage="true">Cisco Systems</organization>
+        <address>
+          <postal>
+            <street/>
+            <country>India</country>
+          </postal>
+          <email>ketant.ietf@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Mach(Guoyi) Chen" initials="M." surname="Chen">
+        <organization showOnFrontPage="true">Huawei</organization>
+        <address>
+          <postal>
+            <street/>
+            <country>China</country>
+          </postal>
+          <email>mach.chen@huawei.com</email>
+        </address>
+      </author>
+      <author fullname="Daniel Bernier" initials="D." surname="Bernier">
+        <organization showOnFrontPage="true">Bell Canada</organization>
+        <address>
+          <postal>
+            <street/>
+            <country>Canada</country>
+          </postal>
+          <email>daniel.bernier@bell.ca</email>
+        </address>
+      </author>
+      <author fullname="Bruno Decraene" initials="B." surname="Decraene">
+        <organization showOnFrontPage="true">Orange</organization>
+        <address>
+          <postal>
+            <street/>
+            <country>France</country>
+          </postal>
+          <email>bruno.decraene@orange.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

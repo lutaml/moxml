@@ -1,0 +1,815 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-lamps-rfc8398bis-05" number="9598" category="std" consensus="true" submissionType="IETF" obsoletes="8398" updates="5280" tocInclude="true" sortRefs="true" symRefs="true" xml:lang="en" prepTime="2024-05-23T14:07:15" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-lamps-rfc8398bis-05" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9598" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="I18N Mail Addresses in X.509 Certificates">Internationalized Email Addresses in X.509 Certificates</title>
+    <seriesInfo name="RFC" value="9598" stream="IETF"/>
+    <author fullname="Alexey Melnikov">
+      <organization showOnFrontPage="true">Isode Ltd</organization>
+      <address>
+        <postal>
+          <street>14 Castle Mews</street>
+          <city>Hampton, Middlesex</city>
+          <code>TW12 2NP</code>
+          <country>United Kingdom</country>
+        </postal>
+        <email>Alexey.Melnikov@isode.com</email>
+      </address>
+    </author>
+    <author fullname="Wei Chuang">
+      <organization showOnFrontPage="true">Google, Inc.</organization>
+      <address>
+        <postal>
+          <street>1600 Amphitheater Parkway</street>
+          <city>Mountain View</city>
+          <region>CA</region>
+          <country>United States of America</country>
+        </postal>
+        <email>weihaw@google.com</email>
+      </address>
+    </author>
+    <author fullname="Corey Bonnell">
+      <organization showOnFrontPage="true">DigiCert</organization>
+      <address>
+        <postal>
+          <city>Pittsburgh</city>
+          <region>PA</region>
+          <country>United States of America</country>
+        </postal>
+        <email>corey.bonnell@digicert.com</email>
+      </address>
+    </author>
+    <date month="05" year="2024"/>
+    <area>SEC</area>
+    <workgroup>lamps</workgroup>
+    <keyword>EAI</keyword>
+    <keyword>PKIX</keyword>
+    <keyword>email address</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document defines a new name form for inclusion in the otherName
+field of an X.509 Subject Alternative Name and Issuer Alternative
+Name extension that allows a certificate subject to be associated
+with an internationalized email address.</t>
+      <t indent="0" pn="section-abstract-2">This document updates RFC 5280 and obsoletes RFC 8398.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9598" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-conventions-used-in-this-do">Conventions Used in This Document</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-name-definitions">Name Definitions</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-idna2008">IDNA2008</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-matching-of-internationaliz">Matching of Internationalized Email Addresses in X.509 Certificates</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-name-constraints-in-path-va">Name Constraints in Path Validation</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-differences-from-rfc-8398">Differences from RFC 8398</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.10.2">
+              <li pn="section-toc.1-1.10.2.1">
+                <t indent="0" pn="section-toc.1-1.10.2.1.1"><xref derivedContent="10.1" format="counter" sectionFormat="of" target="section-10.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.10.2.2">
+                <t indent="0" pn="section-toc.1-1.10.2.2.1"><xref derivedContent="10.2" format="counter" sectionFormat="of" target="section-10.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-asn1-module">ASN.1 Module</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="Appendix B" format="default" sectionFormat="of" target="section-appendix.b"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-example-of-smtputf8mailbox">Example of SmtpUTF8Mailbox</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.14">
+            <t indent="0" pn="section-toc.1-1.14.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.d"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1"><xref target="RFC5280" format="default" sectionFormat="of" derivedContent="RFC5280"/> defines the rfc822Name subjectAltName name type for
+representing email addresses as described in <xref target="RFC5321" format="default" sectionFormat="of" derivedContent="RFC5321"/>.  The syntax
+of rfc822Name is restricted to a subset of US-ASCII characters and
+thus can't be used to represent internationalized email addresses
+<xref target="RFC6531" format="default" sectionFormat="of" derivedContent="RFC6531"/>.  This document defines a new otherName variant to
+represent internationalized email addresses.  In addition, this
+document requires all email address domains in X.509 certificates to
+conform to IDNA2008 <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/>.</t>
+      <t indent="0" pn="section-1-2">This document obsoletes <xref target="RFC8398" format="default" sectionFormat="of" derivedContent="RFC8398"/>. The primary motivation of this document is to simplify the encoding of domain labels
+found in the domain part of internationalized email addresses. In
+particular, <xref target="RFC8398" format="default" sectionFormat="of" derivedContent="RFC8398"/> specifies that domain labels are conditionally
+encoded using either A-labels or U-labels. This specification simplifies
+encoding and processing of domain labels by mandating that the A-label
+representation be used in all cases.</t>
+    </section>
+    <section anchor="conventions-and-definitions" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-conventions-used-in-this-do">Conventions Used in This Document</name>
+      <t indent="0" pn="section-2-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.
+      </t>
+    </section>
+    <section anchor="name-definitions" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-name-definitions">Name Definitions</name>
+      <t indent="0" pn="section-3-1">The GeneralName structure <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="RFC5280"/> supports many
+different name forms including otherName for extensibility.  This
+section specifies the SmtpUTF8Mailbox name form of otherName so that
+internationalized email addresses can appear in the subjectAltName of
+a certificate, the issuerAltName of a certificate, or anywhere else
+that GeneralName is used.</t>
+      <sourcecode type="ASN.1" markers="false" pn="section-3-2">
+id-on-SmtpUTF8Mailbox OBJECT IDENTIFIER ::= { id-on 9 }
+
+SmtpUTF8Mailbox ::= UTF8String (SIZE (1..MAX))
+-- SmtpUTF8Mailbox conforms to Mailbox as specified
+-- in Section 3.3 of RFC 6531. Additionally, all domain
+-- labels included in the SmtpUTF8Mailbox value are
+-- encoded as LDH labels. In particular, domain labels
+-- are not encoded as U-labels and instead are encoded
+-- using their A-label representation.
+</sourcecode>
+      <t indent="0" pn="section-3-3">When the subjectAltName (or issuerAltName) extension contains an
+internationalized email address with a non-ASCII Local-part, the
+address <bcp14>MUST</bcp14> be stored in the SmtpUTF8Mailbox name form of otherName.
+The format of SmtpUTF8Mailbox is a modified version of the
+internationalized Mailbox that was defined in 
+<xref target="RFC6531" sectionFormat="of" section="3.3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6531#section-3.3" derivedContent="RFC6531"/>, which was derived from Mailbox as defined in 
+<xref target="RFC5321" sectionFormat="of" section="4.1.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5321#section-4.1.2" derivedContent="RFC5321"/>.  <xref target="RFC6531" format="default" sectionFormat="of" derivedContent="RFC6531"/> defines the following ABNF rules for Mailbox
+whose parts are modified for internationalization: <tt>Local-part</tt>,
+<tt>Dot-string</tt>, <tt>Quoted-string</tt>, <tt>QcontentSMTP</tt>, <tt>Domain</tt>, and <tt>Atom</tt>.
+In particular, <tt>Local-part</tt> was updated to also support
+UTF8-non-ascii.  UTF8-non-ascii was described by 
+<xref target="RFC6532" sectionFormat="of" section="3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6532#section-3.1" derivedContent="RFC6532"/>. Also, domain was extended to support U-labels, as defined
+in <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/>.</t>
+      <t indent="0" pn="section-3-4">This document further refines internationalized Mailbox ABNF rules as
+described in <xref target="RFC6531" format="default" sectionFormat="of" derivedContent="RFC6531"/> and calls this SmtpUTF8Mailbox.  In
+SmtpUTF8Mailbox, labels that include non-ASCII characters <bcp14>MUST</bcp14> be
+stored in A-label (rather than U-label) form <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/>.  This
+restriction reduces complexity for implementations of the certification
+path validation algorithm defined in <xref target="RFC5280" sectionFormat="of" section="6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-6" derivedContent="RFC5280"/>.  In
+SmtpUTF8Mailbox, domain labels that solely use ASCII characters (meaning
+neither A- nor U-labels) <bcp14>SHALL</bcp14> use NR-LDH restrictions as specified by
+<xref target="RFC5890" sectionFormat="of" section="2.3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5890#section-2.3.1" derivedContent="RFC5890"/>.  NR-LDH stands for "Non-Reserved Letters
+Digits Hyphen" and is the set of LDH labels that do not have "--"
+characters in the third and forth character positions, which excludes
+"tagged domain names" such as A-labels. To facilitate octet-for-octet
+comparisons of SmtpUTF8Mailbox values, all NR-LDH and A-label labels
+that constitute the domain part <bcp14>SHALL</bcp14> only be encoded with lowercase
+letters. Consistent with the treatment of rfc822Name in <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="RFC5280"/>,
+SmtpUTF8Mailbox is an envelope <tt>Mailbox</tt> and has no phrase (such as a
+common name) before it, has no comment (text surrounded in parentheses)
+after it, and is not surrounded by "&lt;" and "&gt;" characters.</t>
+      <t indent="0" pn="section-3-5">Due to name constraint compatibility reasons described in <xref target="name-constraints" format="default" sectionFormat="of" derivedContent="Section 6"/>,
+SmtpUTF8Mailbox subjectAltName <bcp14>MUST NOT</bcp14> be used unless the Local-part
+of the email address contains non-ASCII characters.  When the
+Local-part is ASCII, rfc822Name subjectAltName <bcp14>MUST</bcp14> be used instead of
+SmtpUTF8Mailbox.  This is compatible with legacy software that
+supports only rfc822Name (and not SmtpUTF8Mailbox).  The appropriate
+usage of rfc822Name and SmtpUTF8Mailbox is summarized in Table 1
+below.</t>
+      <t indent="0" pn="section-3-6">SmtpUTF8Mailbox is encoded as UTF8String.  The UTF8String encoding
+<bcp14>MUST NOT</bcp14> contain a Byte Order Mark (BOM) <xref target="RFC3629" format="default" sectionFormat="of" derivedContent="RFC3629"/> to aid consistency
+across implementations, particularly for comparison.</t>
+      <table anchor="santypes" align="center" pn="table-1">
+        <name slugifiedName="name-email-address-formatting">Email Address Formatting</name>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Local-part char</th>
+            <th align="left" colspan="1" rowspan="1">subjectAltName</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">ASCII-only</td>
+            <td align="left" colspan="1" rowspan="1">rfc822Name</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">non-ASCII</td>
+            <td align="left" colspan="1" rowspan="1">SmtpUTF8Mailbox</td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-3-8">Non-ASCII Local-part values may additionally include ASCII characters.</t>
+    </section>
+    <section anchor="idna2008" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-idna2008">IDNA2008</name>
+      <t indent="0" pn="section-4-1">To facilitate comparison between email addresses, all email address
+domains in X.509 certificates <bcp14>MUST</bcp14> conform to IDNA2008 <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/> (and
+avoid any "mappings" mentioned in that document).  Use of
+non-conforming email address domains introduces the possibility of
+conversion errors between alternate forms.  This applies to
+SmtpUTF8Mailbox and rfc822Name in subjectAltName, issuerAltName, and
+anywhere else that these are used.</t>
+    </section>
+    <section anchor="name-matching" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-matching-of-internationaliz">Matching of Internationalized Email Addresses in X.509 Certificates</name>
+      <t indent="0" pn="section-5-1">Equivalence comparisons with SmtpUTF8Mailbox consist of
+a domain part step and a Local-part step.  The comparison form for
+Local-parts is always UTF-8.  The comparison form for domain parts
+is always performed with the LDH label (<xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/>) encoding of the
+relevant domain labels. The comparison of LDH labels in domain parts
+reduces complexity for implementations of the certification path
+validation algorithm as defined in <xref target="RFC5280" sectionFormat="of" section="6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-6" derivedContent="RFC5280"/> by obviating
+the need to convert domain labels to their Unicode representation.</t>
+      <t indent="0" pn="section-5-2">Comparison of two SmtpUTF8Mailboxes is straightforward with no setup
+work needed.  They are considered equivalent if there is an exact
+octet-for-octet match.</t>
+      <t indent="0" pn="section-5-3">Comparison of an SmtpUTF8Mailbox and rfc822Name will always fail.
+SmtpUTF8Mailbox values <bcp14>SHALL</bcp14> contain a Local-part that includes
+one or more non-ASCII characters, while rfc822Names only
+includes ASCII characters (including the Local-part). Thus, an
+SmtpUTF8Mailbox and rfc822Name will never match.</t>
+      <t indent="0" pn="section-5-4">Comparison of SmtpUTF8Mailbox values with internationalized email
+addresses from other sources (such as received email messages, user
+input, etc.) requires additional setup steps for domain part and
+Local-part. The initial preparation for the email address to compare
+with the SmtpUTF8Mailbox value is to remove any phrases, comments, and
+"&lt;" or "&gt;" characters.</t>
+      <t indent="0" pn="section-5-5">For the setup of the domain part, the following conversions <bcp14>SHALL</bcp14> be
+performed:</t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-5-6"><li pn="section-5-6.1" derivedCounter="1.">
+          <t indent="0" pn="section-5-6.1.1">Convert all labels that constitute the domain part that include
+non-ASCII characters to A-labels, if not already in that form. </t>
+          <ol spacing="normal" type="a" indent="adaptive" start="1" pn="section-5-6.1.2">
+<li pn="section-5-6.1.2.1" derivedCounter="a.">
+              <t indent="0" pn="section-5-6.1.2.1.1">
+Detect all U-labels present within the domain part using
+    <xref target="RFC5891" sectionFormat="of" section="5.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5891#section-5.1" derivedContent="RFC5891"/>.  </t>
+            </li>
+            <li pn="section-5-6.1.2.2" derivedCounter="b.">
+              <t indent="0" pn="section-5-6.1.2.2.1">
+Transform all detected U-labels (Unicode) to A-labels (ASCII)
+   as specified in <xref target="RFC5891" sectionFormat="of" section="5.5" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5891#section-5.5" derivedContent="RFC5891"/>.</t>
+            </li>
+          </ol>
+        </li>
+        <li pn="section-5-6.2" derivedCounter="2.">
+          <t indent="0" pn="section-5-6.2.1">Convert all uppercase letters found within the NR-LDH and A-label
+labels that constitute the domain part to lowercase letters.</t>
+        </li>
+      </ol>
+      <t indent="0" pn="section-5-7">For the setup of the Local-part, the Local-part <bcp14>MUST</bcp14> be verified to
+conform to the requirements of <xref target="RFC6530" format="default" sectionFormat="of" derivedContent="RFC6530"/> and <xref target="RFC6531" format="default" sectionFormat="of" derivedContent="RFC6531"/>, including
+being a string in UTF-8 form.  In particular, the Local-
+part <bcp14>MUST NOT</bcp14> be transformed in any way, such as by doing case
+folding or normalization of any kind.  The <tt>Local-part</tt> of an
+internationalized email address is already in UTF-8. Once setup is
+complete, they are again compared octet for octet.</t>
+      <t indent="0" pn="section-5-8">To summarize non-normatively, the comparison steps, including setup,
+are:</t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-5-9"><li pn="section-5-9.1" derivedCounter="1.">
+          <t indent="0" pn="section-5-9.1.1">If the domain contains U-labels, transform them to A-labels.</t>
+        </li>
+        <li pn="section-5-9.2" derivedCounter="2.">
+          <t indent="0" pn="section-5-9.2.1">If any NR-LDH or A-label domain label in the domain part
+contains uppercase letters, lowercase them.</t>
+        </li>
+        <li pn="section-5-9.3" derivedCounter="3.">
+          <t indent="0" pn="section-5-9.3.1">Compare strings octet for octet for equivalence.</t>
+        </li>
+      </ol>
+      <t indent="0" pn="section-5-10">This specification expressly does not define any wildcard characters,
+and SmtpUTF8Mailbox comparison implementations <bcp14>MUST NOT</bcp14> interpret any
+characters as wildcards.  Instead, to specify multiple email
+addresses through SmtpUTF8Mailbox, the certificate <bcp14>MUST</bcp14> use multiple
+subjectAltNames or issuerAltNames to explicitly carry any additional
+email addresses.</t>
+    </section>
+    <section anchor="name-constraints" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-name-constraints-in-path-va">Name Constraints in Path Validation</name>
+      <t indent="0" pn="section-6-1">This section updates <xref target="RFC5280" sectionFormat="of" section="4.2.1.10" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-4.2.1.10" derivedContent="RFC5280"/> to extend
+rfc822Name name constraints to SmtpUTF8Mailbox subjectAltNames.
+SmtpUTF8Mailbox-aware path validators will apply name constraint
+comparison to the subject distinguished name and both forms of
+subject alternative names, rfc822Name and SmtpUTF8Mailbox.</t>
+      <t indent="0" pn="section-6-2">Both rfc822Name and SmtpUTF8Mailbox subject alternative names
+represent the same underlying email address namespace.  Since legacy
+Certification Authorities (CAs) constrained to issue certificates for a specific set of domains
+would lack corresponding UTF-8 constraints, <xref target="RFC9549" format="default" sectionFormat="of" derivedContent="RFC9549"/> updates,
+modifies, and extends rfc822Name name constraints defined in
+<xref target="RFC5280" format="default" sectionFormat="of" derivedContent="RFC5280"/> to cover SmtpUTF8Mailbox subject alternative names.  This
+ensures that the introduction of SmtpUTF8Mailbox does not violate
+existing name constraints.  Since it is not valid to include
+non-ASCII UTF-8 characters in the Local-part of rfc822Name name
+constraints, and since name constraints that include a Local-part are
+rarely, if at all, used in practice, name constraints updated in
+<xref target="RFC9549" format="default" sectionFormat="of" derivedContent="RFC9549"/> allow the forms that represent all addresses at a host, or
+all mailboxes in a domain and deprecates rfc822Name name constraints
+that represent a particular mailbox.  That is, rfc822Name constraints
+with a Local-part <bcp14>SHOULD NOT</bcp14> be used.</t>
+      <t indent="0" pn="section-6-3">Constraint comparison with SmtpUTF8Mailbox subjectAltName starts with
+the setup steps defined in <xref target="name-matching" format="default" sectionFormat="of" derivedContent="Section 5"/>.  Setup converts the inputs of
+the comparison (which is one of a subject distinguished name, an
+rfc822Name, or an SmtpUTF8Mailbox subjectAltName, and one of an
+rfc822Name name constraint) to constraint comparison form. For both the
+name constraint and the subject, this will convert all A-labels and
+NR-LDH labels to lowercase. Strip the Local-part and "@"
+separator from each rfc822Name and SmtpUTF8Mailbox, which leaves just the
+domain part.  After setup, follow the comparison steps defined
+in <xref target="RFC5280" sectionFormat="of" section="4.2.1.10" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-4.2.1.10" derivedContent="RFC5280"/> as follows.  If the resulting name
+constraint domain starts with a "." character, then for the name
+constraint to match, a suffix of the resulting subject alternative
+name domain <bcp14>MUST</bcp14> match the name constraint (including the leading
+".") octet for octet.  If the resulting name constraint domain does
+not start with a "." character, then for the name constraint to
+match, the entire resulting subject alternative name domain <bcp14>MUST</bcp14>
+match the name constraint octet for octet.</t>
+      <t indent="0" pn="section-6-4">Certificate Authorities that wish to issue CA certificates with email
+address name constraints <bcp14>MUST</bcp14> use rfc822Name subject alternative
+names only.  These <bcp14>MUST</bcp14> be IDNA2008-conformant names with no mappings
+and with non-ASCII domains encoded in A-labels only.</t>
+      <t indent="0" pn="section-6-5">The name constraint requirement with an SmtpUTF8Mailbox subject
+alternative name is illustrated in the non-normative diagram in
+<xref target="nctypes" format="default" sectionFormat="of" derivedContent="Figure 1"/>.  The first example (1) illustrates a permitted rfc822Name
+ASCII-only host name name constraint and the corresponding valid
+rfc822Name subjectAltName and SmtpUTF8Mailbox subjectAltName email
+addresses.  The second example (2) illustrates a permitted rfc822Name
+host name name constraint with an A-label, and the corresponding valid
+rfc822Name subjectAltName and SmtpUTF8Mailbox subjectAltName email
+addresses.  Note that an email address with an ASCII-only Local-part is
+encoded as rfc822Name despite also having Unicode present in the
+domain.</t>
+      <figure anchor="nctypes" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-name-constraints-with-smtpu">Name Constraints with SmtpUTF8Name and rfc822Name</name>
+        <artwork align="left" pn="section-6-6.1">
++-------------------------------------------------------------------+
+|  Root CA Cert                                                     |
++-------------------------------------------------------------------+
+                                  |
+                                  v
++-------------------------------------------------------------------+
+|  Intermediate CA Cert                                             |
+|      Permitted                                                    |
+|        rfc822Name: elementary.school.example.com (1)              |
+|                                                                   |
+|        rfc822Name: xn--pss25c.example.com (2)                     |
+|                                                                   |
++-------------------------------------------------------------------+
+                                  |
+                                  v
++-------------------------------------------------------------------+
+|  Entity Cert (w/explicitly permitted subjects)                    |
+|    SubjectAltName Extension                                       |
+|      rfc822Name: student@elementary.school.example.com (1)        |
+|      SmtpUTF8Mailbox: u+5B66u+751F@elementary.school.example.com  |
+|        (1)                                                        |
+|                                                                   |
+|      rfc822Name: student@xn--pss25c.example.com (2)               |
+|      SmtpUTF8Mailbox: u+533Bu+751F@xn--pss25c.example.com (2)     |
+|                                                                   |
++-------------------------------------------------------------------+
+</artwork>
+      </figure>
+    </section>
+    <section anchor="security-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-7-1">Use of SmtpUTF8Mailbox for certificate subjectAltName (and
+issuerAltName) will incur many of the same security considerations 
+described in <xref target="RFC5280" sectionFormat="of" section="8" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-8" derivedContent="RFC5280"/>, but it introduces a new issue by
+permitting non-ASCII characters in the email address Local-part.
+This issue, as mentioned in <xref target="RFC5890" sectionFormat="of" section="4.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5890#section-4.4" derivedContent="RFC5890"/> and in <xref target="RFC6532" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6532#section-4" derivedContent="RFC6532"/>, is that use of Unicode introduces the risk of visually
+similar and identical characters that can be exploited to deceive the
+recipient.  The former document references some means to mitigate
+against these attacks.  See <xref target="WEBER" format="default" sectionFormat="of" derivedContent="WEBER"/> for more background on security
+issues with Unicode.</t>
+      <t indent="0" pn="section-7-2">Additionally, it is possible to encode a string of Unicode
+user-perceived characters in multiple ways. While various Unicode
+normalization forms exist, <xref target="RFC6531" format="default" sectionFormat="of" derivedContent="RFC6531"/> does not mandate the use of any
+such forms for the encoding of the Local-part. Thus, it may be possible
+to encode a Local-part value in multiple ways. To mitigate against
+attacks where different encodings are used by the mail system and the
+Certification Authority issues certificates containing
+<tt>SmtpUTF8Mailbox</tt> values, this specification requires an octet-for-octet
+comparison of the Local-part. However, requiring the use of binary
+comparison may raise interoperability concerns where the mail system
+employs one encoding and the Certification Authority employs another.</t>
+    </section>
+    <section anchor="differences-from-rfc-8398" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-differences-from-rfc-8398">Differences from RFC 8398</name>
+      <t indent="0" pn="section-8-1">This document obsoletes <xref target="RFC8398" format="default" sectionFormat="of" derivedContent="RFC8398"/>. There are three major changes
+defined in this specification:</t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-8-2"><li pn="section-8-2.1" derivedCounter="1.">
+          <t indent="0" pn="section-8-2.1.1">In all cases, domain labels in mail addresses <bcp14>SHALL</bcp14> be encoded as
+LDH labels. In particular, domain names <bcp14>SHALL NOT</bcp14> be encoded using
+U-Labels; instead, use A-Labels.</t>
+        </li>
+        <li pn="section-8-2.2" derivedCounter="2.">
+          <t indent="0" pn="section-8-2.2.1">To accommodate the first change listed above, the mail address
+matching algorithm defined in <xref target="RFC8398" sectionFormat="of" section="5" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8398#section-5" derivedContent="RFC8398"/> has been modified
+to only accept domain labels that are encoded using their A-label
+representation.</t>
+        </li>
+        <li pn="section-8-2.3" derivedCounter="3.">
+          <t indent="0" pn="section-8-2.3.1">Additionally, the procedure to process rfc822Name name constraints as defined
+      in 
+<xref target="RFC8398" sectionFormat="of" section="6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8398#section-6" derivedContent="RFC8398"/> has been modified to only accept domain labels
+that are encoded using their A-label representation.</t>
+        </li>
+      </ol>
+    </section>
+    <section anchor="iana-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-9">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-9-1">IANA has updated the reference for the id-mod-lamps-eai-addresses-2016 
+module in the "SMI Security for PKIX Module Identifier"
+(1.3.6.1.5.5.7.0) registry to refer to this document instead of <xref target="RFC8398" format="default" sectionFormat="of" derivedContent="RFC8398"/>.</t>
+      <t indent="0" pn="section-9-2">IANA has updated the reference for the SmtpUTF8Mailbox otherName in the
+"SMI Security for PKIX Other Name Forms" (1.3.6.1.5.5.7.8) registry to refer to this document instead of <xref target="RFC8398" format="default" sectionFormat="of" derivedContent="RFC8398"/>.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-10">
+      <name slugifiedName="name-references">References</name>
+      <references anchor="sec-normative-references" pn="section-10.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC3629" target="https://www.rfc-editor.org/info/rfc3629" quoteTitle="true" derivedAnchor="RFC3629">
+          <front>
+            <title>UTF-8, a transformation format of ISO 10646</title>
+            <author fullname="F. Yergeau" initials="F." surname="Yergeau"/>
+            <date month="November" year="2003"/>
+            <abstract>
+              <t indent="0">ISO/IEC 10646-1 defines a large character set called the Universal Character Set (UCS) which encompasses most of the world's writing systems. The originally proposed encodings of the UCS, however, were not compatible with many current applications and protocols, and this has led to the development of UTF-8, the object of this memo. UTF-8 has the characteristic of preserving the full US-ASCII range, providing compatibility with file systems, parsers and other software that rely on US-ASCII values but are transparent to other values. This memo obsoletes and replaces RFC 2279.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="63"/>
+          <seriesInfo name="RFC" value="3629"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3629"/>
+        </reference>
+        <reference anchor="RFC5280" target="https://www.rfc-editor.org/info/rfc5280" quoteTitle="true" derivedAnchor="RFC5280">
+          <front>
+            <title>Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile</title>
+            <author fullname="D. Cooper" initials="D." surname="Cooper"/>
+            <author fullname="S. Santesson" initials="S." surname="Santesson"/>
+            <author fullname="S. Farrell" initials="S." surname="Farrell"/>
+            <author fullname="S. Boeyen" initials="S." surname="Boeyen"/>
+            <author fullname="R. Housley" initials="R." surname="Housley"/>
+            <author fullname="W. Polk" initials="W." surname="Polk"/>
+            <date month="May" year="2008"/>
+            <abstract>
+              <t indent="0">This memo profiles the X.509 v3 certificate and X.509 v2 certificate revocation list (CRL) for use in the Internet. An overview of this approach and model is provided as an introduction. The X.509 v3 certificate format is described in detail, with additional information regarding the format and semantics of Internet name forms. Standard certificate extensions are described and two Internet-specific extensions are defined. A set of required certificate extensions is specified. The X.509 v2 CRL format is described in detail along with standard and Internet-specific extensions. An algorithm for X.509 certification path validation is described. An ASN.1 module and examples are provided in the appendices. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5280"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5280"/>
+        </reference>
+        <reference anchor="RFC5321" target="https://www.rfc-editor.org/info/rfc5321" quoteTitle="true" derivedAnchor="RFC5321">
+          <front>
+            <title>Simple Mail Transfer Protocol</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="October" year="2008"/>
+            <abstract>
+              <t indent="0">This document is a specification of the basic protocol for Internet electronic mail transport. It consolidates, updates, and clarifies several previous documents, making all or parts of most of them obsolete. It covers the SMTP extension mechanisms and best practices for the contemporary Internet, but does not provide details about particular extensions. Although SMTP was designed as a mail transport and delivery protocol, this specification also contains information that is important to its use as a "mail submission" protocol for "split-UA" (User Agent) mail reading systems and mobile environments. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5321"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5321"/>
+        </reference>
+        <reference anchor="RFC5890" target="https://www.rfc-editor.org/info/rfc5890" quoteTitle="true" derivedAnchor="RFC5890">
+          <front>
+            <title>Internationalized Domain Names for Applications (IDNA): Definitions and Document Framework</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="August" year="2010"/>
+            <abstract>
+              <t indent="0">This document is one of a collection that, together, describe the protocol and usage context for a revision of Internationalized Domain Names for Applications (IDNA), superseding the earlier version. It describes the document collection and provides definitions and other material that are common to the set. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5890"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5890"/>
+        </reference>
+        <reference anchor="RFC5891" target="https://www.rfc-editor.org/info/rfc5891" quoteTitle="true" derivedAnchor="RFC5891">
+          <front>
+            <title>Internationalized Domain Names in Applications (IDNA): Protocol</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="August" year="2010"/>
+            <abstract>
+              <t indent="0">This document is the revised protocol definition for Internationalized Domain Names (IDNs). The rationale for changes, the relationship to the older specification, and important terminology are provided in other documents. This document specifies the protocol mechanism, called Internationalized Domain Names in Applications (IDNA), for registering and looking up IDNs in a way that does not require changes to the DNS itself. IDNA is only meant for processing domain names, not free text. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5891"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5891"/>
+        </reference>
+        <reference anchor="RFC6530" target="https://www.rfc-editor.org/info/rfc6530" quoteTitle="true" derivedAnchor="RFC6530">
+          <front>
+            <title>Overview and Framework for Internationalized Email</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <author fullname="Y. Ko" initials="Y." surname="Ko"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">Full use of electronic mail throughout the world requires that (subject to other constraints) people be able to use close variations on their own names (written correctly in their own languages and scripts) as mailbox names in email addresses. This document introduces a series of specifications that define mechanisms and protocol extensions needed to fully support internationalized email addresses. These changes include an SMTP extension and extension of email header syntax to accommodate UTF-8 data. The document set also includes discussion of key assumptions and issues in deploying fully internationalized email. This document is a replacement for RFC 4952; it reflects additional issues identified since that document was published. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6530"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6530"/>
+        </reference>
+        <reference anchor="RFC6531" target="https://www.rfc-editor.org/info/rfc6531" quoteTitle="true" derivedAnchor="RFC6531">
+          <front>
+            <title>SMTP Extension for Internationalized Email</title>
+            <author fullname="J. Yao" initials="J." surname="Yao"/>
+            <author fullname="W. Mao" initials="W." surname="Mao"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">This document specifies an SMTP extension for transport and delivery of email messages with internationalized email addresses or header information. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6531"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6531"/>
+        </reference>
+        <reference anchor="RFC6532" target="https://www.rfc-editor.org/info/rfc6532" quoteTitle="true" derivedAnchor="RFC6532">
+          <front>
+            <title>Internationalized Email Headers</title>
+            <author fullname="A. Yang" initials="A." surname="Yang"/>
+            <author fullname="S. Steele" initials="S." surname="Steele"/>
+            <author fullname="N. Freed" initials="N." surname="Freed"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">Internet mail was originally limited to 7-bit ASCII. MIME added support for the use of 8-bit character sets in body parts, and also defined an encoded-word construct so other character sets could be used in certain header field values. However, full internationalization of electronic mail requires additional enhancements to allow the use of Unicode, including characters outside the ASCII repertoire, in mail addresses as well as direct use of Unicode in header fields like "From:", "To:", and "Subject:", without requiring the use of complex encoded-word constructs. This document specifies an enhancement to the Internet Message Format and to MIME that allows use of Unicode in mail addresses and most header field content.</t>
+              <t indent="0">This specification updates Section 6.4 of RFC 2045 to eliminate the restriction prohibiting the use of non-identity content-transfer- encodings on subtypes of "message/". [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6532"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6532"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8398" target="https://www.rfc-editor.org/info/rfc8398" quoteTitle="true" derivedAnchor="RFC8398">
+          <front>
+            <title>Internationalized Email Addresses in X.509 Certificates</title>
+            <author fullname="A. Melnikov" initials="A." role="editor" surname="Melnikov"/>
+            <author fullname="W. Chuang" initials="W." role="editor" surname="Chuang"/>
+            <date month="May" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a new name form for inclusion in the otherName field of an X.509 Subject Alternative Name and Issuer Alternative Name extension that allows a certificate subject to be associated with an internationalized email address.</t>
+              <t indent="0">This document updates RFC 5280.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8398"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8398"/>
+        </reference>
+        <reference anchor="RFC9549" target="https://www.rfc-editor.org/info/rfc9549" quoteTitle="true" derivedAnchor="RFC9549">
+          <front>
+            <title>Internationalization Updates to RFC 5280</title>
+            <author fullname="R. Housley" initials="R." surname="Housley"/>
+            <date month="March" year="2024"/>
+            <abstract>
+              <t indent="0">The updates to RFC 5280 described in this document provide alignment with the 2008 specification for Internationalized Domain Names (IDNs) and includes support for internationalized email addresses in X.509 certificates. The updates ensure that name constraints for email addresses that contain only ASCII characters and internationalized email addresses are handled in the same manner. This document obsoletes RFC 8399.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9549"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9549"/>
+        </reference>
+      </references>
+      <references anchor="sec-informative-references" pn="section-10.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC5912" target="https://www.rfc-editor.org/info/rfc5912" quoteTitle="true" derivedAnchor="RFC5912">
+          <front>
+            <title>New ASN.1 Modules for the Public Key Infrastructure Using X.509 (PKIX)</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="J. Schaad" initials="J." surname="Schaad"/>
+            <date month="June" year="2010"/>
+            <abstract>
+              <t indent="0">The Public Key Infrastructure using X.509 (PKIX) certificate format, and many associated formats, are expressed using ASN.1. The current ASN.1 modules conform to the 1988 version of ASN.1. This document updates those ASN.1 modules to conform to the 2002 version of ASN.1. There are no bits-on-the-wire changes to any of the formats; this is simply a change to the syntax. This document is not an Internet Standards Track specification; it is published for informational purposes.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5912"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5912"/>
+        </reference>
+        <reference anchor="WEBER" target="https://www.lookout.net/files/Chris_Weber_Character%20Transformations%20v1.7_IUC33.pdf" quoteTitle="true" derivedAnchor="WEBER">
+          <front>
+            <title>Unraveling Unicode: A Bag of Tricks for Bug Hunting</title>
+            <author initials="C." surname="Weber" fullname="Chris Weber">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2009" month="July"/>
+          </front>
+        </reference>
+      </references>
+    </references>
+    <section anchor="asn1-module" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-asn1-module">ASN.1 Module</name>
+      <t indent="0" pn="section-appendix.a-1">The following ASN.1 module normatively specifies the SmtpUTF8Mailbox
+structure.  This specification uses the ASN.1 definitions from
+<xref target="RFC5912" format="default" sectionFormat="of" derivedContent="RFC5912"/> with the 2002 ASN.1 notation used in that document.
+<xref target="RFC5912" format="default" sectionFormat="of" derivedContent="RFC5912"/> updates normative documents using older ASN.1 notation.</t>
+      <sourcecode type="ASN.1" markers="false" pn="section-appendix.a-2">
+LAMPS-EaiAddresses-2016
+{ iso(1) identified-organization(3) dod(6)
+  internet(1) security(5) mechanisms(5) pkix(7) id-mod(0)
+  id-mod-lamps-eai-addresses-2016(92) }
+
+DEFINITIONS IMPLICIT TAGS ::=
+BEGIN
+
+IMPORTS
+OTHER-NAME
+FROM PKIX1Implicit-2009
+  { iso(1) identified-organization(3) dod(6) internet(1) security(5)
+  mechanisms(5) pkix(7) id-mod(0) id-mod-pkix1-implicit-02(59) }
+
+id-pkix
+FROM PKIX1Explicit-2009
+  { iso(1) identified-organization(3) dod(6) internet(1) security(5)
+  mechanisms(5) pkix(7) id-mod(0) id-mod-pkix1-explicit-02(51) } ;
+
+--
+-- otherName carries additional name types for subjectAltName,
+-- issuerAltName, and other uses of GeneralNames.
+--
+
+id-on OBJECT IDENTIFIER ::= { id-pkix 8 }
+
+SmtpUtf8OtherNames OTHER-NAME ::= { on-SmtpUTF8Mailbox, ... }
+
+on-SmtpUTF8Mailbox OTHER-NAME ::= {
+    SmtpUTF8Mailbox IDENTIFIED BY id-on-SmtpUTF8Mailbox
+}
+
+id-on-SmtpUTF8Mailbox OBJECT IDENTIFIER ::= { id-on 9 }
+
+SmtpUTF8Mailbox ::= UTF8String (SIZE (1..MAX))
+-- SmtpUTF8Mailbox conforms to Mailbox as specified
+-- in Section 3.3 of RFC 6531. Additionally, all domain
+-- labels included in the SmtpUTF8Mailbox value are
+-- encoded as LDH Labels. In particular, domain labels
+-- are not encoded as U-Labels and instead are encoded
+-- using their A-label representation.
+
+END
+</sourcecode>
+    </section>
+    <section anchor="example-of-smtputf8mailbox" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-example-of-smtputf8mailbox">Example of SmtpUTF8Mailbox</name>
+      <t indent="0" pn="section-appendix.b-1">This non-normative example demonstrates using SmtpUTF8Mailbox as an
+otherName in GeneralName to encode the email address
+"u+533Bu+751F@xn--pss25c.example.com".</t>
+      <t indent="0" pn="section-appendix.b-2">The hexadecimal DER encoding of the block is:</t>
+      <artwork align="left" pn="section-appendix.b-3">
+a02b0608 2b060105 05070809 a01f0c1d e58cbbe7 949f4078 6e2d2d70
+73733235 632e6578 616d706c 652e636f 6d
+</artwork>
+      <t indent="0" pn="section-appendix.b-4">The text decoding is:</t>
+      <artwork align="left" pn="section-appendix.b-5">
+0  43: [0] {
+2   8:   OBJECT IDENTIFIER '1 3 6 1 5 5 7 8 9'
+12  31:   [0] {
+14  29:     UTF8String 'u+533Bu+751F@xn--pss25c.example.com'
+      :     }
+      :   }
+</artwork>
+      <t indent="0" pn="section-appendix.b-6">The example was encoded using Google's "der-ascii" program and the
+above text decoding is an output of Peter Gutmann's "dumpasn1"
+program.</t>
+    </section>
+    <section numbered="false" anchor="acknowledgments" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.c-1">The authors thank David Benjamin for providing the motivation for this
+document. Additionally, the authors thank Éric Vyncke, John Levine,
+Peter van Dijk, Rich Salz, Russ Housley, and Tim Hollebeek for their
+reviews and feedback, which meaningfully improved the document.</t>
+      <t indent="0" pn="section-appendix.c-2">The authors also recognize and appreciate the following individuals for
+their contributions to <xref target="RFC8398" format="default" sectionFormat="of" derivedContent="RFC8398"/>:</t>
+      <blockquote pn="section-appendix.c-3">
+        <t indent="0" pn="section-appendix.c-3.1">Thank you to Magnus Nystrom for motivating this document.  Thanks to
+Russ Housley, Nicolas Lidzborski, Laetitia Baudoin, Ryan Sleevi, Sean
+Leonard, Sean Turner, John Levine, and Patrik Falstrom for their
+feedback.  Also special thanks to John Klensin for his valuable input
+on internationalization, Unicode, and ABNF formatting; to Jim Schaad
+for his help with the ASN.1 example and his helpful feedback; and
+especially to Viktor Dukhovni for helping us with name constraints
+and his many detailed document reviews.</t>
+      </blockquote>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.d">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Alexey Melnikov">
+        <organization showOnFrontPage="true">Isode Ltd</organization>
+        <address>
+          <postal>
+            <street>14 Castle Mews</street>
+            <city>Hampton, Middlesex</city>
+            <code>TW12 2NP</code>
+            <country>United Kingdom</country>
+          </postal>
+          <email>Alexey.Melnikov@isode.com</email>
+        </address>
+      </author>
+      <author fullname="Wei Chuang">
+        <organization showOnFrontPage="true">Google, Inc.</organization>
+        <address>
+          <postal>
+            <street>1600 Amphitheater Parkway</street>
+            <city>Mountain View</city>
+            <region>CA</region>
+            <country>United States of America</country>
+          </postal>
+          <email>weihaw@google.com</email>
+        </address>
+      </author>
+      <author fullname="Corey Bonnell">
+        <organization showOnFrontPage="true">DigiCert</organization>
+        <address>
+          <postal>
+            <city>Pittsburgh</city>
+            <region>PA</region>
+            <country>United States of America</country>
+          </postal>
+          <email>corey.bonnell@digicert.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

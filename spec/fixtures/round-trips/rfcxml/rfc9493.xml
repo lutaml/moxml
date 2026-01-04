@@ -1,0 +1,1173 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-secevent-subject-identifiers-18" number="9493" submissionType="IETF" category="std" consensus="true" tocInclude="true" sortRefs="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2023-12-06T16:51:12" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-secevent-subject-identifiers-18" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9493" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Security Event Subject Identifiers">Subject Identifiers for Security Event Tokens</title>
+    <seriesInfo name="RFC" value="9493" stream="IETF"/>
+    <author initials="A." surname="Backman" fullname="Annabelle Backman" role="editor">
+      <organization showOnFrontPage="true">Amazon</organization>
+      <address>
+        <email>richanna@amazon.com</email>
+      </address>
+    </author>
+    <author initials="M." surname="Scurtescu" fullname="Marius Scurtescu">
+      <organization showOnFrontPage="true">Coinbase</organization>
+      <address>
+        <email>marius.scurtescu@coinbase.com</email>
+      </address>
+    </author>
+    <author initials="P." surname="Jain" fullname="Prachi Jain">
+      <organization showOnFrontPage="true">Fastly</organization>
+      <address>
+        <email>prachi.jain1288@gmail.com</email>
+      </address>
+    </author>
+    <date month="12" year="2023"/>
+    <area>Security</area>
+    <workgroup>Security Events</workgroup>
+    <keyword>jwt</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">Security events communicated within Security Event Tokens may support
+      a variety of identifiers to identify subjects related to the event.
+      This specification formalizes the notion of Subject Identifiers as
+      structured information that describes a subject and named formats that
+      define the syntax and semantics for encoding Subject Identifiers as JSON
+      objects.  It also establishes a registry for defining and allocating
+      names for such formats as well as the JSON Web Token (JWT) "sub_id"
+      Claim.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9493" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-notational-conventions">Notational Conventions</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-definitions">Definitions</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-subject-identifiers">Subject Identifiers</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-identifier-formats-versus-p">Identifier Formats versus Principal Types</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-identifier-format-definitio">Identifier Format Definitions</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2.2.2">
+                  <li pn="section-toc.1-1.3.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.3.2.2.2.1.1"><xref derivedContent="3.2.1" format="counter" sectionFormat="of" target="section-3.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-account-identifier-format">Account Identifier Format</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.3.2.2.2.2.1"><xref derivedContent="3.2.2" format="counter" sectionFormat="of" target="section-3.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-email-identifier-format">Email Identifier Format</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.3.2.2.2.3.1"><xref derivedContent="3.2.3" format="counter" sectionFormat="of" target="section-3.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-issuer-and-subject-identifi">Issuer and Subject Identifier Format</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.2.2.4">
+                    <t indent="0" pn="section-toc.1-1.3.2.2.2.4.1"><xref derivedContent="3.2.4" format="counter" sectionFormat="of" target="section-3.2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-opaque-identifier-format">Opaque Identifier Format</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.2.2.5">
+                    <t indent="0" pn="section-toc.1-1.3.2.2.2.5.1"><xref derivedContent="3.2.5" format="counter" sectionFormat="of" target="section-3.2.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-phone-number-identifier-for">Phone Number Identifier Format</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.2.2.6">
+                    <t indent="0" pn="section-toc.1-1.3.2.2.2.6.1"><xref derivedContent="3.2.6" format="counter" sectionFormat="of" target="section-3.2.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-decentralized-identifier-di">Decentralized Identifier (DID) Format</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.2.2.7">
+                    <t indent="0" pn="section-toc.1-1.3.2.2.2.7.1"><xref derivedContent="3.2.7" format="counter" sectionFormat="of" target="section-3.2.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-uniform-resource-identifier">Uniform Resource Identifier (URI) Format</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.2.2.8">
+                    <t indent="0" pn="section-toc.1-1.3.2.2.2.8.1"><xref derivedContent="3.2.8" format="counter" sectionFormat="of" target="section-3.2.8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-aliases-identifier-format">Aliases Identifier Format</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-subject-identifiers-in-jwts">Subject Identifiers in JWTs</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-jwt-sub_id-claim">JWT "sub_id" Claim</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-jwt-sub_id-claim-and-iss_su">JWT "sub_id" Claim and "iss_sub" Subject Identifier</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-considerations-for-specific">Considerations for Specifications that Define Identifier Formats</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-privacy-considerations">Privacy Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-identifier-correlation">Identifier Correlation</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-event-identifier-f">Security Event Identifier Formats Registry</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2.1.2">
+                  <li pn="section-toc.1-1.8.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.8.2.1.2.1.1"><xref derivedContent="8.1.1" format="counter" sectionFormat="of" target="section-8.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-registration-template">Registration Template</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.8.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.8.2.1.2.2.1"><xref derivedContent="8.1.2" format="counter" sectionFormat="of" target="section-8.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-initial-registry-contents">Initial Registry Contents</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.8.2.1.2.3">
+                    <t indent="0" pn="section-toc.1-1.8.2.1.2.3.1"><xref derivedContent="8.1.3" format="counter" sectionFormat="of" target="section-8.1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-guidance-for-expert-reviewe">Guidance for Expert Reviewers</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-json-web-token-claims-regis">JSON Web Token Claims Registration</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2.2.2">
+                  <li pn="section-toc.1-1.8.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.8.2.2.2.1.1"><xref derivedContent="8.2.1" format="counter" sectionFormat="of" target="section-8.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-registry-contents">Registry Contents</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="intro" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">As described in <xref target="RFC8417" sectionFormat="of" section="1.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8417#section-1.2" derivedContent="RFC8417"/> ("<xref target="RFC8417" format="title" sectionFormat="of" derivedContent="Security Event Token (SET)"/>"), subjects
+      related to security events may take a variety of forms, including but
+      not limited to a JWT <xref target="RFC7519" format="default" sectionFormat="of" derivedContent="RFC7519"/> principal, an IP address,
+      a URL, etc.  Different types of subjects may need to be identified in
+      different ways (e.g., a user might be identified by an email address,
+      a phone number, or an account number).  Furthermore, even in the case
+      where the type of the subject is known, there may be multiple ways by
+      which a given subject may be identified.  For example, an account may be
+      identified by an opaque identifier, an email address, a phone number, a
+      JWT "iss" Claim and "sub" Claim, etc., depending on the nature and needs
+      of the transmitter and receiver. Even within the context of a given
+      transmitter and receiver relationship, it may be appropriate to identify
+      different accounts in different ways, for example, if some accounts only
+      have email addresses associated with them while others only have phone
+      numbers. Therefore, it can be necessary to indicate within a SET the
+      mechanism by which a subject is being identified.</t>
+      <t indent="0" pn="section-1-2">To address this problem, this specification defines Subject
+      Identifiers as JSON <xref target="RFC8259" format="default" sectionFormat="of" derivedContent="RFC8259"/> objects containing
+      information identifying a subject and defines Identifier Formats as named
+      sets of rules describing how to encode different kinds of
+      subject-identifying information (e.g., an email address or an issuer and
+      subject pair) as a Subject Identifier.</t>
+      <t indent="0" pn="section-1-3">Below is a non-normative example of a Subject Identifier that
+      identifies a subject by email address, using the Email Identifier
+      Format.</t>
+      <figure anchor="figexampleintro" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-example-subject-identifier-">Example: Subject Identifier Using the Email Identifier Format</name>
+        <sourcecode type="json" markers="false" pn="section-1-4.1">{
+  "format": "email",
+  "email": "user@example.com"
+}</sourcecode>
+      </figure>
+      <t indent="0" pn="section-1-5">Subject Identifiers are intended to be a general-purpose mechanism for identifying subjects within JSON objects, and their usage need not be limited to SETs.  Below is a non-normative example of a JWT that uses a Subject Identifier in the JWT "sub_id" Claim (defined in this specification) to identify the JWT Subject.</t>
+      <figure anchor="figexampleintro2" align="left" suppress-title="false" pn="figure-2">
+        <name slugifiedName="name-example-jwt-using-a-subject">Example: JWT Using a Subject Identifier with the JWT "sub_id" Claim</name>
+        <sourcecode type="json" markers="false" pn="section-1-6.1">{
+  "iss": "issuer.example.com",
+  "sub_id": {
+    "format": "phone_number",
+    "phone_number": "+12065550100"
+  }
+}</sourcecode>
+      </figure>
+      <t indent="0" pn="section-1-7">Usage of Subject Identifiers also need not be limited to identifying JWT Subjects.  They are intended as a general-purpose means of expressing identifying information in an unambiguous manner.  Below is a non-normative example of a SET containing a hypothetical security event describing the interception of a message, using Subject Identifiers to identify the sender, intended recipient, and interceptor.</t>
+      <figure anchor="figexampleintro3" align="left" suppress-title="false" pn="figure-3">
+        <name slugifiedName="name-example-set-with-an-event-p">Example: SET with an Event Payload Containing Multiple Subject Identifiers</name>
+        <sourcecode type="json" markers="false" pn="section-1-8.1">{
+  "iss": "issuer.example.com",
+  "iat": 1508184845,
+  "aud": "aud.example.com",
+  "events": {
+    "https://secevent.example.com/events/message-interception": {
+      "from": {
+        "format": "email",
+        "email": "alice@example.com"
+      },
+      "to": {
+        "format": "email",
+        "email": "bob@example.com"
+      },
+      "interceptor": {
+        "format": "email",
+        "email": "eve@example.com"
+      }
+    }
+  }
+}</sourcecode>
+      </figure>
+    </section>
+    <section anchor="conv" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-notational-conventions">Notational Conventions</name>
+      <t indent="0" pn="section-2-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are
+    to be interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/>
+        <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals,
+    as shown here.
+      </t>
+      <section anchor="defn" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-definitions">Definitions</name>
+        <t indent="0" pn="section-2.1-1">This specification utilizes terminology defined in <xref target="RFC8259" format="default" sectionFormat="of" derivedContent="RFC8259"/> and <xref target="RFC8417" format="default" sectionFormat="of" derivedContent="RFC8417"/>.</t>
+        <t indent="0" pn="section-2.1-2">Within this specification, the terms "Subject" and "subject" refer generically to anything being identified via one or more pieces of information.  The term "JWT Subject" refers specifically to the subject of a JWT (i.e., the subject that the JWT asserts claims about).</t>
+      </section>
+    </section>
+    <section anchor="sub-ids" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-subject-identifiers">Subject Identifiers</name>
+      <t indent="0" pn="section-3-1">A Subject Identifier is a JSON object <xref target="RFC8259" format="default" sectionFormat="of" derivedContent="RFC8259"/> whose
+      contents may be used to identify a subject within some context.  An
+      Identifier Format is a named definition of a set of information that may
+      be used to identify a subject and the rules for encoding that
+      information as a Subject Identifier; these rules define the syntax and
+      semantics of Subject Identifiers.  A Subject Identifier
+      <bcp14>MUST</bcp14> conform to a specific Identifier Format and
+      <bcp14>MUST</bcp14> contain a "format" member whose value is the name of
+      that Identifier Format.</t>
+      <t indent="0" pn="section-3-2">Every Identifier Format <bcp14>MUST</bcp14> have a unique name
+      registered in the IANA "Security Event Identifier Formats" registry
+      established in <xref target="iana-formats" format="default" sectionFormat="of" derivedContent="Section 8.1"/> or a Collision-Resistant
+      Name as defined in <xref target="RFC7519" format="default" sectionFormat="of" derivedContent="RFC7519"/>.  Identifier Formats that
+      are expected to be used broadly by a variety of parties
+      <bcp14>SHOULD</bcp14> be registered in the "Security Event Identifier
+      Formats" registry.</t>
+      <t indent="0" pn="section-3-3">An Identifier Format <bcp14>MAY</bcp14> describe more members than
+      are strictly necessary to identify a subject and <bcp14>MAY</bcp14>
+      describe conditions under which those members are required, optional, or
+      prohibited.  The "format" member is reserved for use as described in
+      this specification; Identifier Formats <bcp14>MUST NOT</bcp14> declare
+      any rules regarding the "format" member.</t>
+      <t indent="0" pn="section-3-4">Every member within a Subject Identifier <bcp14>MUST</bcp14> match
+      the rules specified for that member by this specification or by a Subject
+      Identifier's Identifier Format.  A Subject Identifier <bcp14>MUST NOT</bcp14> contain any members prohibited or not described by its
+      Identifier Format and <bcp14>MUST</bcp14> contain all members required
+      by its Identifier Format.</t>
+      <section anchor="identifier-formats-versus-principal-types" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-identifier-formats-versus-p">Identifier Formats versus Principal Types</name>
+        <t indent="0" pn="section-3.1-1">Identifier Formats define how to encode identifying information for
+        a subject.  Unlike Principal Types, they do not define the type or
+        nature of the subject itself.  For example, while the Email
+        Identifier Format declares that the value of the "email" member is an
+        email address, a subject in a security event that is identified by an
+        Email Subject Identifier could be an end user who controls that
+        email address, the mailbox itself, or anything else that the
+        transmitter and receiver both understand to be associated with that
+        email address.  Consequently, Subject Identifiers remove ambiguity
+        around how a subject is being identified and how to parse an
+        identifying structure, but they do not remove ambiguity
+        around how to resolve that identifier for a subject.  For example,
+        consider a directory management API that allows callers to identify
+        users and groups through both opaque unique identifiers and email
+        addresses.  Such an API could use Subject Identifiers to disambiguate
+        between which of these two types of identifiers is in use.  However,
+        the API would have to determine whether the subject is a user or group
+        via some other means, such as by querying a database, interpreting
+        other parameters in the request, or inferring the type from the API
+        contract.</t>
+      </section>
+      <section anchor="identifier-format-definitions" numbered="true" removeInRFC="false" toc="include" pn="section-3.2">
+        <name slugifiedName="name-identifier-format-definitio">Identifier Format Definitions</name>
+        <t indent="0" pn="section-3.2-1">The following Identifier Formats are registered in the IANA
+        "Security Event Identifier Formats" registry established in <xref target="iana-formats" format="default" sectionFormat="of" derivedContent="Section 8.1"/>.</t>
+        <t indent="0" pn="section-3.2-2">Since the Subject Identifier Format conveys semantic information,
+        applications <bcp14>SHOULD</bcp14> choose the most specific possible
+        format for the identifier in question. For example, an email address
+        can be conveyed using a "mailto:" URI and the URI Identifier
+        Format, but since the value is known to be an email address, the
+        application should prefer to use the Email Identifier Format
+        instead.</t>
+        <section anchor="sub-id-acct" numbered="true" removeInRFC="false" toc="include" pn="section-3.2.1">
+          <name slugifiedName="name-account-identifier-format">Account Identifier Format</name>
+          <t indent="0" pn="section-3.2.1-1">The Account Identifier Format identifies a subject using an account at a service provider, identified with an "acct" URI as defined in <xref target="RFC7565" format="default" sectionFormat="of" derivedContent="RFC7565"/>. An account is an arrangement or agreement through which a user gets access to a service and gets a unique identity with the service provider. Subject Identifiers in this format <bcp14>MUST</bcp14> contain a "uri" member whose value is the "acct" URI for the subject.  The "uri" member is <bcp14>REQUIRED</bcp14> and <bcp14>MUST NOT</bcp14> be null or empty.  The Account Identifier Format is identified by a value of "account" in the "format" member.</t>
+          <t indent="0" pn="section-3.2.1-2">Below is a non-normative example Subject Identifier for the Account Identifier Format:</t>
+          <figure anchor="figexamplesubidaccount" align="left" suppress-title="false" pn="figure-4">
+            <name slugifiedName="name-example-subject-identifier-f">Example: Subject Identifier for the Account Identifier Format</name>
+            <sourcecode type="json" markers="false" pn="section-3.2.1-3.1">{
+  "format": "account",
+  "uri": "acct:example.user@service.example.com"
+}</sourcecode>
+          </figure>
+        </section>
+        <section anchor="sub-id-email" numbered="true" removeInRFC="false" toc="include" pn="section-3.2.2">
+          <name slugifiedName="name-email-identifier-format">Email Identifier Format</name>
+          <t indent="0" pn="section-3.2.2-1">The Email Identifier Format identifies a subject using an email address.  Subject Identifiers in this format <bcp14>MUST</bcp14> contain an "email" member whose value is a string containing the email address of the subject, formatted as an "addr-spec" as defined in <xref target="RFC5322" sectionFormat="of" section="3.4.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5322#section-3.4.1" derivedContent="RFC5322"/>. The "email" member is <bcp14>REQUIRED</bcp14> and <bcp14>MUST NOT</bcp14> be null or empty. The value of the "email" member <bcp14>MUST</bcp14> identify a mailbox to which email may be delivered, in accordance with <xref target="RFC5321" format="default" sectionFormat="of" derivedContent="RFC5321"/>. The Email Identifier Format is identified by the name "email".</t>
+          <t indent="0" pn="section-3.2.2-2">Below is a non-normative example Subject Identifier in the Email Identifier Format:</t>
+          <figure anchor="figexamplesubidemail" align="left" suppress-title="false" pn="figure-5">
+            <name slugifiedName="name-example-subject-identifier-i">Example: Subject Identifier in the Email Identifier Format</name>
+            <sourcecode type="json" markers="false" pn="section-3.2.2-3.1">{
+  "format": "email",
+  "email": "user@example.com"
+}</sourcecode>
+          </figure>
+          <section anchor="email-canon" numbered="true" removeInRFC="false" toc="exclude" pn="section-3.2.2.1">
+            <name slugifiedName="name-email-canonicalization">Email Canonicalization</name>
+            <t indent="0" pn="section-3.2.2.1-1">Many email providers will treat multiple email addresses as
+            equivalent. While the domain portion of an email address <xref target="RFC5322" format="default" sectionFormat="of" derivedContent="RFC5322"/> is consistently treated as case-insensitive per
+            <xref target="RFC1034" format="default" sectionFormat="of" derivedContent="RFC1034"/>, most providers treat the local part of
+            the email address as case-insensitive as well and consider
+            "user@example.com", "User@example.com", and "USER@example.com" as
+            the same email address. Some providers also treat dots (".") as
+            optional; for example, "user.name@example.com",
+            "username@example.com", "u.s.e.r.name@example.com", and
+            "u.s.e.r.n.a.m.e@example.com" might all be treated as
+            equivalent. This has led users to view these strings as
+            equivalent, driving service providers to implement proprietary
+            email canonicalization algorithms to ensure that email addresses
+            entered by users resolve to the same canonical string. Email
+            canonicalization is not standardized, and there is no way for the
+            event recipient to determine the mail provider's canonicalization
+            method. Therefore, the recipient <bcp14>SHOULD</bcp14> apply its
+            own canonicalization algorithm to incoming events in order to
+            reproduce the translation done by the local email system.</t>
+          </section>
+        </section>
+        <section anchor="sub-id-iss-sub" numbered="true" removeInRFC="false" toc="include" pn="section-3.2.3">
+          <name slugifiedName="name-issuer-and-subject-identifi">Issuer and Subject Identifier Format</name>
+          <t indent="0" pn="section-3.2.3-1">The Issuer and Subject Identifier Format identifies a subject
+          using a pair of "iss" and "sub" members, analogous to how subjects
+          are identified using the JWT "iss" and "sub" Claims in <xref target="OpenID.Core" format="default" sectionFormat="of" derivedContent="OpenID.Core">OpenID Connect</xref> ID Tokens.  These members
+          <bcp14>MUST</bcp14> follow the formats of the "iss" member and "sub"
+          member defined by <xref target="RFC7519" format="default" sectionFormat="of" derivedContent="RFC7519"/>, respectively.  Both the
+          "iss" member and the "sub" member are <bcp14>REQUIRED</bcp14> and
+          <bcp14>MUST NOT</bcp14> be null or empty. The Issuer and Subject
+          Identifier Format is identified by the name "iss_sub".</t>
+          <t indent="0" pn="section-3.2.3-2">Below is a non-normative example Subject Identifier in the Issuer
+          and Subject Identifier Format:</t>
+          <figure anchor="figexamplesubidisssub" align="left" suppress-title="false" pn="figure-6">
+            <name slugifiedName="name-example-subject-identifier-in">Example: Subject Identifier in the Issuer and Subject Identifier Format</name>
+            <sourcecode type="json" markers="false" pn="section-3.2.3-3.1">{
+  "format": "iss_sub",
+  "iss": "https://issuer.example.com/",
+  "sub": "145234573"
+}</sourcecode>
+          </figure>
+        </section>
+        <section anchor="sub-id-opaque" numbered="true" removeInRFC="false" toc="include" pn="section-3.2.4">
+          <name slugifiedName="name-opaque-identifier-format">Opaque Identifier Format</name>
+          <t indent="0" pn="section-3.2.4-1">The Opaque Identifier Format describes a subject that is identified with a string with no semantics asserted beyond its usage as an identifier for the subject, such as a Universally Unique Identifier (UUID) or hash used as a surrogate identifier for a record in a database.  Subject Identifiers in this format <bcp14>MUST</bcp14> contain an "id" member whose value is a JSON string containing the opaque string identifier for the subject.  The "id" member is <bcp14>REQUIRED</bcp14> and <bcp14>MUST NOT</bcp14> be null or empty.  The Opaque Identifier Format is identified by the name "opaque".</t>
+          <t indent="0" pn="section-3.2.4-2">Below is a non-normative example Subject Identifier in the Opaque Identifier Format:</t>
+          <figure anchor="figexamplesubidopaque" align="left" suppress-title="false" pn="figure-7">
+            <name slugifiedName="name-example-subject-identifier-in-">Example: Subject Identifier in the Opaque Identifier Format</name>
+            <sourcecode type="json" markers="false" pn="section-3.2.4-3.1">{
+  "format": "opaque",
+  "id": "11112222333344445555"
+}</sourcecode>
+          </figure>
+        </section>
+        <section anchor="sub-id-phone" numbered="true" removeInRFC="false" toc="include" pn="section-3.2.5">
+          <name slugifiedName="name-phone-number-identifier-for">Phone Number Identifier Format</name>
+          <t indent="0" pn="section-3.2.5-1">The Phone Number Identifier Format identifies a subject using a telephone number.  Subject Identifiers in this format <bcp14>MUST</bcp14> contain a "phone_number" member whose value is a string containing the full telephone number of the subject, including an international dialing prefix, formatted according to <xref target="E164" format="default" sectionFormat="of" derivedContent="E164">E.164</xref>. The "phone_number" member is <bcp14>REQUIRED</bcp14> and <bcp14>MUST NOT</bcp14> be null or empty. The Phone Number Identifier Format is identified by the name "phone_number".</t>
+          <t indent="0" pn="section-3.2.5-2">Below is a non-normative example Subject Identifier in the Phone Number Identifier Format:</t>
+          <figure anchor="figexamplesubidphone" align="left" suppress-title="false" pn="figure-8">
+            <name slugifiedName="name-example-subject-identifier-in-t">Example: Subject Identifier in the Phone Number Identifier Format</name>
+            <sourcecode type="json" markers="false" pn="section-3.2.5-3.1">{
+  "format": "phone_number",
+  "phone_number": "+12065550100"
+}</sourcecode>
+          </figure>
+        </section>
+        <section anchor="sub-id-did" numbered="true" removeInRFC="false" toc="include" pn="section-3.2.6">
+          <name slugifiedName="name-decentralized-identifier-di">Decentralized Identifier (DID) Format</name>
+          <t indent="0" pn="section-3.2.6-1">The Decentralized Identifier (DID) Format identifies a subject
+          using a DID URL as defined in <xref target="DID" format="default" sectionFormat="of" derivedContent="DID"/>.  Subject
+          Identifiers in this format <bcp14>MUST</bcp14> contain a "url"
+          member whose value is a DID URL for the DID Subject being
+          identified. The value of the "url" member <bcp14>MUST</bcp14> be a
+          valid DID URL and <bcp14>MAY</bcp14> be a bare DID. The "url" member
+          is <bcp14>REQUIRED</bcp14> and <bcp14>MUST NOT</bcp14> be null or
+          empty. The Decentralized Identifier Format is identified by the name
+          "did".</t>
+          <t indent="0" pn="section-3.2.6-2">Below are non-normative example Subject Identifiers for the Decentralized Identifier Format:</t>
+          <figure anchor="figexamplesubiddidbare" align="left" suppress-title="false" pn="figure-9">
+            <name slugifiedName="name-example-subject-identifier-fo">Example: Subject Identifier for the Decentralized Identifier Format, Identifying a Subject with a Bare DID</name>
+            <sourcecode type="json" markers="false" pn="section-3.2.6-3.1">{
+  "format": "did",
+  "url": "did:example:123456"
+}</sourcecode>
+          </figure>
+          <figure anchor="figexamplesubiddidcomplex" align="left" suppress-title="false" pn="figure-10">
+            <name slugifiedName="name-example-subject-identifier-for">Example: Subject Identifier for the Decentralized Identifier Format, Identifying a Subject with a DID URL with Non-empty Path and Query Components</name>
+            <sourcecode type="json" markers="false" pn="section-3.2.6-4.1">{
+  "format": "did",
+  "url": "did:example:123456/did/url/path?versionId=1"
+}</sourcecode>
+          </figure>
+        </section>
+        <section anchor="sub-id-uri" numbered="true" removeInRFC="false" toc="include" pn="section-3.2.7">
+          <name slugifiedName="name-uniform-resource-identifier">Uniform Resource Identifier (URI) Format</name>
+          <t indent="0" pn="section-3.2.7-1">The Uniform Resource Identifier (URI) Format identifies a subject using a URI as defined in <xref target="RFC3986" format="default" sectionFormat="of" derivedContent="RFC3986"/>. This Identifier Format makes no assumptions or guarantees with regard to the content, scheme, or reachability of the URI within the field. Subject Identifiers in this format <bcp14>MUST</bcp14> contain a "uri" member whose value is a URI for the subject being identified. The "uri" member is <bcp14>REQUIRED</bcp14> and <bcp14>MUST NOT</bcp14> be null or empty. The URI Format is identified by the name "uri".</t>
+          <t indent="0" pn="section-3.2.7-2">Below are non-normative example Subject Identifiers for the URI Format:</t>
+          <figure anchor="figexamplesubiduidbare" align="left" suppress-title="false" pn="figure-11">
+            <name slugifiedName="name-example-subject-identifier-for-">Example: Subject Identifier for the URI Format, Identifying a Subject with a Website URI</name>
+            <sourcecode type="json" markers="false" pn="section-3.2.7-3.1">{
+  "format": "uri",
+  "uri": "https://user.example.com/"
+}</sourcecode>
+          </figure>
+          <figure anchor="figexamplesubidurnbare" align="left" suppress-title="false" pn="figure-12">
+            <name slugifiedName="name-example-subject-identifier-for-t">Example: Subject Identifier for the URI Format, Identifying a Subject with a Random URN</name>
+            <sourcecode type="json" markers="false" pn="section-3.2.7-4.1">{
+  "format": "uri",
+  "uri": "urn:uuid:4e851e98-83c4-4743-a5da-150ecb53042f"
+}</sourcecode>
+          </figure>
+        </section>
+        <section anchor="sub-id-aliases" numbered="true" removeInRFC="false" toc="include" pn="section-3.2.8">
+          <name slugifiedName="name-aliases-identifier-format">Aliases Identifier Format</name>
+          <t indent="0" pn="section-3.2.8-1">The Aliases Identifier Format describes a subject that is
+          identified with a list of different Subject Identifiers. It is
+          intended for use when a variety of identifiers have been shared with
+          the party that will be interpreting the Subject Identifier, and it
+          is unknown which of those identifiers they will recognize or
+          support.  Subject Identifiers in this format <bcp14>MUST</bcp14>
+          contain an "identifiers" member whose value is a JSON array
+          containing one or more Subject Identifiers.  Each Subject Identifier
+          in the array <bcp14>MUST</bcp14> identify the same entity.  The
+          "identifiers" member is <bcp14>REQUIRED</bcp14> and <bcp14>MUST NOT</bcp14> be null or empty.  It <bcp14>MAY</bcp14> contain
+          multiple instances of the same Identifier Format (e.g., multiple
+          Email Subject Identifiers) but <bcp14>SHOULD NOT</bcp14> contain
+          exact duplicates.  This format is identified by the name
+          "aliases".</t>
+          <t indent="0" pn="section-3.2.8-2">"aliases" Subject Identifiers <bcp14>MUST NOT</bcp14> be nested,
+          i.e., the "identifiers" member of an "aliases" Subject Identifier
+          <bcp14>MUST NOT</bcp14> contain a Subject Identifier in the Aliases
+          Identifier Format.</t>
+          <t indent="0" pn="section-3.2.8-3">Below is a non-normative example Subject Identifier in the
+          Aliases Identifier Format:</t>
+          <figure anchor="figexamplesubididtoken" align="left" suppress-title="false" pn="figure-13">
+            <name slugifiedName="name-example-subject-identifier-in-th">Example: Subject Identifier in the Aliases Identifier Format</name>
+            <sourcecode type="json" markers="false" pn="section-3.2.8-4.1">{
+  "format": "aliases",
+  "identifiers": [
+    {
+      "format": "email",
+      "email": "user@example.com"
+    },
+    {
+      "format": "phone_number",
+      "phone_number": "+12065550100"
+    },
+    {
+      "format": "email",
+      "email": "user+qualifier@example.com"
+    }
+  ]
+}</sourcecode>
+          </figure>
+        </section>
+      </section>
+    </section>
+    <section anchor="jwt-claims" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-subject-identifiers-in-jwts">Subject Identifiers in JWTs</name>
+      <section anchor="jwt-claims-sub_id" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-jwt-sub_id-claim">JWT "sub_id" Claim</name>
+        <t indent="0" pn="section-4.1-1">The JWT "sub" Claim is defined in <xref target="RFC7519" sectionFormat="of" section="4.1.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7519#section-4.1.2" derivedContent="RFC7519"/> as containing a string value;
+        therefore, it cannot contain a Subject Identifier (which is a JSON
+        object) as its value.  This document defines the JWT "sub_id" Claim,
+        in accordance with <xref target="RFC7519" sectionFormat="of" section="4.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7519#section-4.2" derivedContent="RFC7519"/>, as a common claim that identifies the JWT Subject
+        using a Subject Identifier.  When present, the value of this claim
+        <bcp14>MUST</bcp14> be a Subject Identifier that identifies the
+        subject of the JWT.  The JWT "sub_id" Claim <bcp14>MAY</bcp14> be included
+        in a JWT, whether or not the JWT "sub" Claim is present.  When both the JWT
+        "sub" and "sub_id" Claims are present in a JWT, they
+        <bcp14>MUST</bcp14> identify the same subject, as a JWT has one and
+        only one JWT Subject.</t>
+        <t indent="0" pn="section-4.1-2">When processing a JWT with both JWT "sub" and "sub_id" Claims,
+        implementations <bcp14>MUST NOT</bcp14> rely on both claims to
+        determine the JWT Subject.  An implementation <bcp14>MAY</bcp14>
+        attempt to determine the JWT Subject from one claim and fall back to
+        using the other if it determines it does not understand the format of
+        the first claim.  For example, an implementation may attempt to use
+        "sub_id" and fall back to using "sub" upon finding that "sub_id"
+        contains a Subject Identifier with a format that is not recognized by
+        the implementation.</t>
+        <t indent="0" pn="section-4.1-3">Below are non-normative examples of JWTs containing the JWT "sub_id"
+        Claim:</t>
+        <figure anchor="figexamplejwtsubidemail" align="left" suppress-title="false" pn="figure-14">
+          <name slugifiedName="name-example-jwt-containing-a-jw">Example: JWT Containing a JWT "sub_id" Claim and No "sub" Claim</name>
+          <sourcecode type="json" markers="false" pn="section-4.1-4.1">{
+  "iss": "issuer.example.com",
+  "sub_id": {
+    "format": "email",
+    "email": "user@example.com"
+  }
+}</sourcecode>
+        </figure>
+        <figure anchor="figexamplejwtsamesubid" align="left" suppress-title="false" pn="figure-15">
+          <name slugifiedName="name-example-jwt-where-the-jwt-s">Example: JWT Where the JWT "sub" and "sub_id" Claims Identify the JWT Subject Using the Same Identifier</name>
+          <sourcecode type="json" markers="false" pn="section-4.1-5.1">{
+  "iss": "issuer.example.com",
+  "sub": "user@example.com",
+  "sub_id": {
+    "format": "email",
+    "email": "user@example.com"
+  }
+}</sourcecode>
+        </figure>
+        <figure anchor="figexamplejwtdiffsubvalues" align="left" suppress-title="false" pn="figure-16">
+          <name slugifiedName="name-example-jwt-where-the-jwt-su">Example: JWT Where the JWT "sub" and "sub_id" Claims Identify the JWT Subject Using Different Values of the Same Identifier Type</name>
+          <sourcecode type="json" markers="false" pn="section-4.1-6.1">{
+  "iss": "issuer.example.com",
+  "sub": "liz@example.com",
+  "sub_id": {
+    "format": "email",
+    "email": "elizabeth@example.com"
+  }
+}</sourcecode>
+        </figure>
+        <figure anchor="figexamplejwtdiffsubtype" align="left" suppress-title="false" pn="figure-17">
+          <name slugifiedName="name-example-jwt-where-the-jwt-sub">Example: JWT Where the JWT "sub" and "sub_id" Claims Identify the JWT Subject via Different Types of Identifiers</name>
+          <sourcecode type="json" markers="false" pn="section-4.1-7.1">{
+  "iss": "issuer.example.com",
+  "sub": "user@example.com",
+  "sub_id": {
+    "format": "account",
+    "uri": "acct:example.user@service.example.com"
+  }
+}</sourcecode>
+        </figure>
+      </section>
+      <section anchor="subid-and-isssub-subject-identifiers" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-jwt-sub_id-claim-and-iss_su">JWT "sub_id" Claim and "iss_sub" Subject Identifier</name>
+        <t indent="0" pn="section-4.2-1">The JWT "sub_id" Claim <bcp14>MAY</bcp14> contain an "iss_sub" Subject Identifier.  In this case, the JWT's "iss" Claim and the Subject Identifier's "iss" member <bcp14>MAY</bcp14> be different. For example, an <xref target="OpenID.Core" format="default" sectionFormat="of" derivedContent="OpenID.Core">OpenID Connect</xref> client may construct such a JWT when sending JWTs back to its OpenID Connect Identity Provider in order to identify the JWT Subject using an identifier known to be understood by both parties.  Similarly, the JWT's "sub" Claim and the Subject Identifier's "sub" member <bcp14>MAY</bcp14> be different.  For example, this may be used by an OpenID Connect client to communicate the JWT Subject's local identifier at the client back to its Identity Provider.</t>
+        <t indent="0" pn="section-4.2-2">Below are non-normative examples of a JWT where the JWT "iss" Claim and "iss" member within the JWT "sub_id" Claim are the same and a JWT where they are different.</t>
+        <figure anchor="figexamplejwtsameiss" align="left" suppress-title="false" pn="figure-18">
+          <name slugifiedName="name-example-jwt-with-an-iss_sub">Example: JWT with an "iss_sub" Subject Identifier Where the JWT Issuer and JWT Subject Issuer Are the Same</name>
+          <sourcecode type="json" markers="false" pn="section-4.2-3.1">{
+  "iss": "issuer.example.com",
+  "sub_id": {
+    "format": "iss_sub",
+    "iss": "issuer.example.com",
+    "sub": "example_user"
+  }
+}</sourcecode>
+        </figure>
+        <figure anchor="figexamplejwtdiffiss" align="left" suppress-title="false" pn="figure-19">
+          <name slugifiedName="name-example-jwt-with-an-iss_sub-">Example: JWT with an "iss_sub" Subject Identifier Where the JWT Issuer and JWT Subject Issuer Are Different</name>
+          <sourcecode type="json" markers="false" pn="section-4.2-4.1">{
+  "iss": "client.example.com",
+  "sub_id": {
+    "format": "iss_sub",
+    "iss": "issuer.example.com",
+    "sub": "example_user"
+  }
+}</sourcecode>
+        </figure>
+        <figure anchor="figexamplejwtdiffisssub" align="left" suppress-title="false" pn="figure-20">
+          <name slugifiedName="name-example-jwt-with-an-iss_sub-s">Example: JWT with an "iss_sub" Subject Identifier Where the JWT "iss" and "sub" Claims Differ from the JWT Subject's "iss" and "sub" Members</name>
+          <sourcecode type="json" markers="false" pn="section-4.2-5.1">{
+  "iss": "client.example.com",
+  "sub": "client_user",
+  "sub_id": {
+    "format": "iss_sub",
+    "iss": "issuer.example.com",
+    "sub": "example_user"
+  }
+}</sourcecode>
+        </figure>
+      </section>
+    </section>
+    <section anchor="implementer" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-considerations-for-specific">Considerations for Specifications that Define Identifier Formats</name>
+      <t indent="0" pn="section-5-1">Identifier Format definitions <bcp14>MUST NOT</bcp14> make assertions or declarations regarding the subject being identified by the Subject Identifier (e.g., an Identifier Format cannot be defined as specifically identifying human end users). Such statements are outside the scope of Identifier Formats and Subject Identifiers. Expanding that scope for some Identifier Formats but not others would harm interoperability because applications that depend on this expanded scope to disambiguate the subject type would be unable to use Identifier Formats that do not provide such rules.</t>
+    </section>
+    <section anchor="privacy" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-privacy-considerations">Privacy Considerations</name>
+      <section anchor="identifier-correlation" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-identifier-correlation">Identifier Correlation</name>
+        <t indent="0" pn="section-6.1-1">The act of presenting two or more identifiers for a single subject
+        together (e.g., within an "aliases" Subject Identifier or via the
+        JWT "sub" and "sub_id" Claims) may communicate more information about
+        the subject than was intended.  For example, the entity to which the
+        identifiers are presented now knows that both identifiers relate to
+        the same subject and may be able to correlate additional data based on
+        that.  When transmitting Subject Identifiers, the transmitter
+        <bcp14>SHOULD</bcp14> take care that they are only transmitting
+        multiple identifiers together when it is known that the recipient
+        already knows that the identifiers are related (e.g., because they
+        were previously sent to the recipient as claims in an OpenID Connect
+        ID Token) or when correlation is essential to the use case.
+        Implementers must consider such risks, and specifications that use
+        Subject Identifiers must provide appropriate privacy considerations of
+        their own.</t>
+        <t indent="0" pn="section-6.1-2">The considerations described in <xref target="RFC8417" sectionFormat="of" section="6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8417#section-6" derivedContent="RFC8417"/> also apply when Subject Identifiers
+        are used within SETs.  The considerations described in <xref target="RFC7519" sectionFormat="of" section="12" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7519#section-12" derivedContent="RFC7519"/> also apply when
+        Subject Identifiers are used within JWTs.</t>
+      </section>
+    </section>
+    <section anchor="security" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-7-1">This specification does not define any mechanism for ensuring the
+      confidentiality or integrity of a Subject Identifier.  Where such
+      properties are required, implementations <bcp14>MUST</bcp14> use
+      mechanisms provided by the containing format (e.g., integrity protecting
+      SETs or JWTs using JSON Web Signature (JWS) <xref target="RFC7515" format="default" sectionFormat="of" derivedContent="RFC7515"/>) or
+      at the transport layer or other layer in the application stack (e.g.,
+      using TLS <xref target="RFC8446" format="default" sectionFormat="of" derivedContent="RFC8446"/>).</t>
+      <t indent="0" pn="section-7-2">Further considerations regarding confidentiality and integrity of
+      SETs can be found in <xref target="RFC8417" sectionFormat="of" section="5.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8417#section-5.1" derivedContent="RFC8417"/>.</t>
+    </section>
+    <section anchor="iana" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section anchor="iana-formats" numbered="true" removeInRFC="false" toc="include" pn="section-8.1">
+        <name slugifiedName="name-security-event-identifier-f">Security Event Identifier Formats Registry</name>
+        <t indent="0" pn="section-8.1-1">This document defines Identifier Formats, for which IANA has created and maintains a new registry titled "Security Event Identifier Formats".  Initial values for the "Security Event Identifier Formats" registry are given in <xref target="sub-ids" format="default" sectionFormat="of" derivedContent="Section 3"/>.  Future assignments are to be made through the Specification Required registration policy <xref target="BCP26" format="default" sectionFormat="of" derivedContent="BCP26"/> and shall follow the template presented in <xref target="iana-formats-template" format="default" sectionFormat="of" derivedContent="Section 8.1.1"/>.</t>
+        <t indent="0" pn="section-8.1-2">It is suggested that multiple designated experts be appointed who are able to represent the perspectives of different applications using this specification in order to enable broadly informed review of registration decisions.</t>
+        <section anchor="iana-formats-template" numbered="true" removeInRFC="false" toc="include" pn="section-8.1.1">
+          <name slugifiedName="name-registration-template">Registration Template</name>
+          <dl newline="true" indent="3" spacing="normal" pn="section-8.1.1-1">
+            <dt pn="section-8.1.1-1.1">Format Name:</dt>
+            <dd pn="section-8.1.1-1.2">
+              <t indent="0" pn="section-8.1.1-1.2.1">The name of the Identifier Format, as described in <xref target="sub-ids" format="default" sectionFormat="of" derivedContent="Section 3"/>. The name <bcp14>MUST</bcp14> be an ASCII
+              string consisting only of lowercase characters ("a" - "z"),
+              digits ("0" - "9"), underscores ("_"), and hyphens ("-") and
+              <bcp14>SHOULD NOT</bcp14> exceed 20 characters in length.</t>
+            </dd>
+            <dt pn="section-8.1.1-1.3">Format Description:</dt>
+            <dd pn="section-8.1.1-1.4">
+              <t indent="0" pn="section-8.1.1-1.4.1">A brief description of the Identifier Format.</t>
+            </dd>
+            <dt pn="section-8.1.1-1.5">Change Controller:</dt>
+            <dd pn="section-8.1.1-1.6">
+              <t indent="0" pn="section-8.1.1-1.6.1">For formats defined in documents published by the IETF or its
+              working groups, list "IETF".  For all other formats, list the
+              name of the party responsible for the registration.  Contact
+              information, such as mailing address, email address, or phone
+              number, must also be provided.</t>
+            </dd>
+            <dt pn="section-8.1.1-1.7">Reference:</dt>
+            <dd pn="section-8.1.1-1.8">
+              <t indent="0" pn="section-8.1.1-1.8.1">A reference to the document or documents that define the
+              Identifier Format.  The reference document(s)
+              <bcp14>MUST</bcp14> specify the name, format, and meaning of each
+              member that may occur within a Subject Identifier of the defined
+              format as well as whether each member is optional, required, or
+              conditional and the circumstances under which these optional or
+              conditional fields would be used. URIs that can be used to
+              retrieve copies of each document <bcp14>SHOULD</bcp14> be
+              included.</t>
+            </dd>
+          </dl>
+        </section>
+        <section anchor="iana-formats-init" numbered="true" removeInRFC="false" toc="include" pn="section-8.1.2">
+          <name slugifiedName="name-initial-registry-contents">Initial Registry Contents</name>
+          <section anchor="account-identifier-format" numbered="true" removeInRFC="false" toc="exclude" pn="section-8.1.2.1">
+            <name slugifiedName="name-account-identifier-format-2">Account Identifier Format</name>
+            <dl spacing="compact" newline="false" indent="3" pn="section-8.1.2.1-1">
+              <dt pn="section-8.1.2.1-1.1">Format Name:</dt>
+              <dd pn="section-8.1.2.1-1.2">account</dd>
+              <dt pn="section-8.1.2.1-1.3">Format Description:</dt>
+              <dd pn="section-8.1.2.1-1.4">Subject Identifier based on
+              "acct" URI</dd>
+              <dt pn="section-8.1.2.1-1.5">Change Controller:</dt>
+              <dd pn="section-8.1.2.1-1.6">IETF</dd>
+              <dt pn="section-8.1.2.1-1.7">Reference:</dt>
+              <dd pn="section-8.1.2.1-1.8">
+                <xref target="sub-ids" format="default" sectionFormat="of" derivedContent="Section 3"/> of
+              RFC 9493</dd>
+            </dl>
+          </section>
+          <section anchor="email-identifier-format" numbered="true" removeInRFC="false" toc="exclude" pn="section-8.1.2.2">
+            <name slugifiedName="name-email-identifier-format-2">Email Identifier Format</name>
+            <dl spacing="compact" newline="false" indent="3" pn="section-8.1.2.2-1">
+              <dt pn="section-8.1.2.2-1.1">Format Name:</dt>
+              <dd pn="section-8.1.2.2-1.2">email</dd>
+              <dt pn="section-8.1.2.2-1.3">Format Description:</dt>
+              <dd pn="section-8.1.2.2-1.4">Subject Identifier based on
+              an email address</dd>
+              <dt pn="section-8.1.2.2-1.5">Change Controller:</dt>
+              <dd pn="section-8.1.2.2-1.6">IETF</dd>
+              <dt pn="section-8.1.2.2-1.7">Reference:</dt>
+              <dd pn="section-8.1.2.2-1.8">
+                <xref target="sub-ids" format="default" sectionFormat="of" derivedContent="Section 3"/> of
+              RFC 9493</dd>
+            </dl>
+          </section>
+          <section anchor="issuer-and-subject-identifier-format" numbered="true" removeInRFC="false" toc="exclude" pn="section-8.1.2.3">
+            <name slugifiedName="name-issuer-and-subject-identifie">Issuer and Subject Identifier Format</name>
+            <dl spacing="compact" newline="false" indent="3" pn="section-8.1.2.3-1">
+              <dt pn="section-8.1.2.3-1.1">Format Name:</dt>
+              <dd pn="section-8.1.2.3-1.2">iss_sub</dd>
+              <dt pn="section-8.1.2.3-1.3">Format Description:</dt>
+              <dd pn="section-8.1.2.3-1.4">Subject Identifier based on an
+              issuer and subject</dd>
+              <dt pn="section-8.1.2.3-1.5">Change Controller:</dt>
+              <dd pn="section-8.1.2.3-1.6">IETF</dd>
+              <dt pn="section-8.1.2.3-1.7">Reference:</dt>
+              <dd pn="section-8.1.2.3-1.8">
+                <xref target="sub-ids" format="default" sectionFormat="of" derivedContent="Section 3"/> of
+              RFC 9493</dd>
+            </dl>
+          </section>
+          <section anchor="opaque-identifier-format" numbered="true" removeInRFC="false" toc="exclude" pn="section-8.1.2.4">
+            <name slugifiedName="name-opaque-identifier-format-2">Opaque Identifier Format</name>
+            <dl spacing="compact" newline="false" indent="3" pn="section-8.1.2.4-1">
+              <dt pn="section-8.1.2.4-1.1">Format Name:</dt>
+              <dd pn="section-8.1.2.4-1.2">opaque</dd>
+              <dt pn="section-8.1.2.4-1.3">Format Description:</dt>
+              <dd pn="section-8.1.2.4-1.4">Subject Identifier based on an
+              opaque string</dd>
+              <dt pn="section-8.1.2.4-1.5">Change Controller:</dt>
+              <dd pn="section-8.1.2.4-1.6">IETF</dd>
+              <dt pn="section-8.1.2.4-1.7">Reference:</dt>
+              <dd pn="section-8.1.2.4-1.8">
+                <xref target="sub-ids" format="default" sectionFormat="of" derivedContent="Section 3"/> of
+              RFC 9493</dd>
+            </dl>
+          </section>
+          <section anchor="phone-number-identifier-format" numbered="true" removeInRFC="false" toc="exclude" pn="section-8.1.2.5">
+            <name slugifiedName="name-phone-number-identifier-form">Phone Number Identifier Format</name>
+            <dl spacing="compact" newline="false" indent="3" pn="section-8.1.2.5-1">
+              <dt pn="section-8.1.2.5-1.1">Format Name:</dt>
+              <dd pn="section-8.1.2.5-1.2">phone_number</dd>
+              <dt pn="section-8.1.2.5-1.3">Format Description:</dt>
+              <dd pn="section-8.1.2.5-1.4">Subject Identifier based on a
+              phone number</dd>
+              <dt pn="section-8.1.2.5-1.5">Change Controller:</dt>
+              <dd pn="section-8.1.2.5-1.6">IETF</dd>
+              <dt pn="section-8.1.2.5-1.7">Reference:</dt>
+              <dd pn="section-8.1.2.5-1.8">
+                <xref target="sub-ids" format="default" sectionFormat="of" derivedContent="Section 3"/> of
+              RFC 9493</dd>
+            </dl>
+          </section>
+          <section anchor="decentralized-identifier-format" numbered="true" removeInRFC="false" toc="exclude" pn="section-8.1.2.6">
+            <name slugifiedName="name-decentralized-identifier-fo">Decentralized Identifier Format</name>
+            <dl spacing="compact" newline="false" indent="3" pn="section-8.1.2.6-1">
+              <dt pn="section-8.1.2.6-1.1">Format Name:</dt>
+              <dd pn="section-8.1.2.6-1.2">did</dd>
+              <dt pn="section-8.1.2.6-1.3">Format Description:</dt>
+              <dd pn="section-8.1.2.6-1.4">Subject Identifier based on a
+              decentralized identifier (DID)</dd>
+              <dt pn="section-8.1.2.6-1.5">Change Controller:</dt>
+              <dd pn="section-8.1.2.6-1.6">IETF</dd>
+              <dt pn="section-8.1.2.6-1.7">Reference:</dt>
+              <dd pn="section-8.1.2.6-1.8">
+                <xref target="sub-ids" format="default" sectionFormat="of" derivedContent="Section 3"/> of
+              RFC 9493</dd>
+            </dl>
+          </section>
+          <section anchor="uniform-resource-identifier-format" numbered="true" removeInRFC="false" toc="exclude" pn="section-8.1.2.7">
+            <name slugifiedName="name-uniform-resource-identifier-">Uniform Resource Identifier Format</name>
+            <dl spacing="compact" newline="false" indent="3" pn="section-8.1.2.7-1">
+              <dt pn="section-8.1.2.7-1.1">Format Name:</dt>
+              <dd pn="section-8.1.2.7-1.2">uri</dd>
+              <dt pn="section-8.1.2.7-1.3">Format Description:</dt>
+              <dd pn="section-8.1.2.7-1.4">Subject Identifier based on a
+              Uniform Resource Identifier (URI)</dd>
+              <dt pn="section-8.1.2.7-1.5">Change Controller:</dt>
+              <dd pn="section-8.1.2.7-1.6">IETF</dd>
+              <dt pn="section-8.1.2.7-1.7">Reference:</dt>
+              <dd pn="section-8.1.2.7-1.8">
+                <xref target="sub-ids" format="default" sectionFormat="of" derivedContent="Section 3"/> of
+              RFC 9493</dd>
+            </dl>
+          </section>
+          <section anchor="aliases-identifier-format" numbered="true" removeInRFC="false" toc="exclude" pn="section-8.1.2.8">
+            <name slugifiedName="name-aliases-identifier-format-2">Aliases Identifier Format</name>
+            <dl spacing="compact" newline="false" indent="3" pn="section-8.1.2.8-1">
+              <dt pn="section-8.1.2.8-1.1">Format Name:</dt>
+              <dd pn="section-8.1.2.8-1.2">aliases</dd>
+              <dt pn="section-8.1.2.8-1.3">Format Description:</dt>
+              <dd pn="section-8.1.2.8-1.4">Subject Identifier that groups
+              together multiple different Subject Identifiers for the same
+              subject</dd>
+              <dt pn="section-8.1.2.8-1.5">Change Controller:</dt>
+              <dd pn="section-8.1.2.8-1.6">IETF</dd>
+              <dt pn="section-8.1.2.8-1.7">Reference:</dt>
+              <dd pn="section-8.1.2.8-1.8">
+                <xref target="sub-ids" format="default" sectionFormat="of" derivedContent="Section 3"/> of
+              RFC 9493</dd>
+            </dl>
+          </section>
+        </section>
+        <section anchor="iana-formats-expert" numbered="true" removeInRFC="false" toc="include" pn="section-8.1.3">
+          <name slugifiedName="name-guidance-for-expert-reviewe">Guidance for Expert Reviewers</name>
+          <t indent="0" pn="section-8.1.3-1">The Expert Reviewer is expected to review the documentation referenced in a registration request to verify its completeness. The Expert Reviewer must base their decision to accept or reject the request on a fair and impartial assessment of the request. If the Expert Reviewer has a conflict of interest, such as being an author of a defining document referenced by the request, they must recuse themselves from the approval process for that request.</t>
+          <t indent="0" pn="section-8.1.3-2">Identifier Formats need not be generally applicable and may be highly specific to a particular domain; it is expected that formats may be registered for niche or industry-specific use cases. The Expert Reviewer should focus on whether the format is thoroughly documented and whether its registration will promote or harm interoperability.  In most cases, the Expert Reviewer should not approve a request if the registration would contribute to confusion or amount to a synonym for an existing format.</t>
+        </section>
+      </section>
+      <section anchor="json-web-token-claims-registration" numbered="true" removeInRFC="false" toc="include" pn="section-8.2">
+        <name slugifiedName="name-json-web-token-claims-regis">JSON Web Token Claims Registration</name>
+        <t indent="0" pn="section-8.2-1">This document defines the JWT "sub_id" Claim, which IANA has registered in the "JSON Web Token Claims" registry <xref target="IANA.JWT.Claims" format="default" sectionFormat="of" derivedContent="IANA.JWT.Claims"/> established by <xref target="RFC7519" format="default" sectionFormat="of" derivedContent="RFC7519"/>.</t>
+        <section anchor="registry-contents" numbered="true" removeInRFC="false" toc="include" pn="section-8.2.1">
+          <name slugifiedName="name-registry-contents">Registry Contents</name>
+          <dl spacing="compact" newline="false" indent="3" pn="section-8.2.1-1">
+            <dt pn="section-8.2.1-1.1">Claim Name:</dt>
+            <dd pn="section-8.2.1-1.2">sub_id</dd>
+            <dt pn="section-8.2.1-1.3">Claim Description:</dt>
+            <dd pn="section-8.2.1-1.4">Subject Identifier</dd>
+            <dt pn="section-8.2.1-1.5">Change Controller:</dt>
+            <dd pn="section-8.2.1-1.6">IETF</dd>
+            <dt pn="section-8.2.1-1.7">Reference:</dt>
+            <dd pn="section-8.2.1-1.8">
+              <xref target="jwt-claims-sub_id" format="default" sectionFormat="of" derivedContent="Section 4.1"/> of RFC 9493</dd>
+          </dl>
+        </section>
+      </section>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-9">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-9.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <referencegroup anchor="BCP26" target="https://www.rfc-editor.org/info/bcp26" derivedAnchor="BCP26">
+          <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true">
+            <front>
+              <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+              <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+              <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+              <author fullname="T. Narten" initials="T." surname="Narten"/>
+              <date month="June" year="2017"/>
+              <abstract>
+                <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+                <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+                <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+              </abstract>
+            </front>
+            <seriesInfo name="BCP" value="26"/>
+            <seriesInfo name="RFC" value="8126"/>
+            <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+          </reference>
+        </referencegroup>
+        <reference anchor="DID" target="https://www.w3.org/TR/did-core/" quoteTitle="true" derivedAnchor="DID">
+          <front>
+            <title>Decentralized Identifiers (DIDs) v1.0</title>
+            <author fullname="Manu Sporny" role="editor">
+              <organization showOnFrontPage="true">Digital Bazaar</organization>
+            </author>
+            <author fullname="Amy Guy" role="editor">
+              <organization showOnFrontPage="true">Digital Bazaar</organization>
+            </author>
+            <author fullname="Markus Sabadello" role="editor">
+              <organization showOnFrontPage="true">Danube Tech</organization>
+            </author>
+            <author fullname="Drummond Reed" role="editor">
+              <organization showOnFrontPage="true">Evernym/Avast</organization>
+            </author>
+            <author fullname="Dave Longley">
+              <organization showOnFrontPage="true">Digital Bazaar</organization>
+            </author>
+            <author fullname="Orie Steele">
+              <organization showOnFrontPage="true">Transmute</organization>
+            </author>
+            <author fullname="Christopher Allen">
+              <organization showOnFrontPage="true">Blockchain Commons</organization>
+            </author>
+            <date month="July" year="2022"/>
+          </front>
+        </reference>
+        <reference anchor="E164" target="https://www.itu.int/rec/T-REC-E.164-201011-I/en" quoteTitle="true" derivedAnchor="E164">
+          <front>
+            <title>E.164: The international public telecommunication numbering plan</title>
+            <author>
+              <organization showOnFrontPage="true">ITU-T</organization>
+            </author>
+            <date month="November" year="2010"/>
+          </front>
+          <seriesInfo name="ITU-T Recommendation" value="E.164"/>
+        </reference>
+        <reference anchor="IANA.JWT.Claims" target="https://www.iana.org/assignments/jwt" quoteTitle="true" derivedAnchor="IANA.JWT.Claims">
+          <front>
+            <title>JSON Web Token Claims</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC3986" target="https://www.rfc-editor.org/info/rfc3986" quoteTitle="true" derivedAnchor="RFC3986">
+          <front>
+            <title>Uniform Resource Identifier (URI): Generic Syntax</title>
+            <author fullname="T. Berners-Lee" initials="T." surname="Berners-Lee"/>
+            <author fullname="R. Fielding" initials="R." surname="Fielding"/>
+            <author fullname="L. Masinter" initials="L." surname="Masinter"/>
+            <date month="January" year="2005"/>
+            <abstract>
+              <t indent="0">A Uniform Resource Identifier (URI) is a compact sequence of characters that identifies an abstract or physical resource. This specification defines the generic URI syntax and a process for resolving URI references that might be in relative form, along with guidelines and security considerations for the use of URIs on the Internet. The URI syntax defines a grammar that is a superset of all valid URIs, allowing an implementation to parse the common components of a URI reference without knowing the scheme-specific requirements of every possible identifier. This specification does not define a generative grammar for URIs; that task is performed by the individual specifications of each URI scheme. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="66"/>
+          <seriesInfo name="RFC" value="3986"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3986"/>
+        </reference>
+        <reference anchor="RFC5321" target="https://www.rfc-editor.org/info/rfc5321" quoteTitle="true" derivedAnchor="RFC5321">
+          <front>
+            <title>Simple Mail Transfer Protocol</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="October" year="2008"/>
+            <abstract>
+              <t indent="0">This document is a specification of the basic protocol for Internet electronic mail transport. It consolidates, updates, and clarifies several previous documents, making all or parts of most of them obsolete. It covers the SMTP extension mechanisms and best practices for the contemporary Internet, but does not provide details about particular extensions. Although SMTP was designed as a mail transport and delivery protocol, this specification also contains information that is important to its use as a "mail submission" protocol for "split-UA" (User Agent) mail reading systems and mobile environments. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5321"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5321"/>
+        </reference>
+        <reference anchor="RFC5322" target="https://www.rfc-editor.org/info/rfc5322" quoteTitle="true" derivedAnchor="RFC5322">
+          <front>
+            <title>Internet Message Format</title>
+            <author fullname="P. Resnick" initials="P." role="editor" surname="Resnick"/>
+            <date month="October" year="2008"/>
+            <abstract>
+              <t indent="0">This document specifies the Internet Message Format (IMF), a syntax for text messages that are sent between computer users, within the framework of "electronic mail" messages. This specification is a revision of Request For Comments (RFC) 2822, which itself superseded Request For Comments (RFC) 822, "Standard for the Format of ARPA Internet Text Messages", updating it to reflect current practice and incorporating incremental changes that were specified in other RFCs. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5322"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5322"/>
+        </reference>
+        <reference anchor="RFC7519" target="https://www.rfc-editor.org/info/rfc7519" quoteTitle="true" derivedAnchor="RFC7519">
+          <front>
+            <title>JSON Web Token (JWT)</title>
+            <author fullname="M. Jones" initials="M." surname="Jones"/>
+            <author fullname="J. Bradley" initials="J." surname="Bradley"/>
+            <author fullname="N. Sakimura" initials="N." surname="Sakimura"/>
+            <date month="May" year="2015"/>
+            <abstract>
+              <t indent="0">JSON Web Token (JWT) is a compact, URL-safe means of representing claims to be transferred between two parties. The claims in a JWT are encoded as a JSON object that is used as the payload of a JSON Web Signature (JWS) structure or as the plaintext of a JSON Web Encryption (JWE) structure, enabling the claims to be digitally signed or integrity protected with a Message Authentication Code (MAC) and/or encrypted.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7519"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7519"/>
+        </reference>
+        <reference anchor="RFC7565" target="https://www.rfc-editor.org/info/rfc7565" quoteTitle="true" derivedAnchor="RFC7565">
+          <front>
+            <title>The 'acct' URI Scheme</title>
+            <author fullname="P. Saint-Andre" initials="P." surname="Saint-Andre"/>
+            <date month="May" year="2015"/>
+            <abstract>
+              <t indent="0">This document defines the 'acct' Uniform Resource Identifier (URI) scheme as a way to identify a user's account at a service provider, irrespective of the particular protocols that can be used to interact with the account.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7565"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7565"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8259" target="https://www.rfc-editor.org/info/rfc8259" quoteTitle="true" derivedAnchor="RFC8259">
+          <front>
+            <title>The JavaScript Object Notation (JSON) Data Interchange Format</title>
+            <author fullname="T. Bray" initials="T." role="editor" surname="Bray"/>
+            <date month="December" year="2017"/>
+            <abstract>
+              <t indent="0">JavaScript Object Notation (JSON) is a lightweight, text-based, language-independent data interchange format. It was derived from the ECMAScript Programming Language Standard. JSON defines a small set of formatting rules for the portable representation of structured data.</t>
+              <t indent="0">This document removes inconsistencies with other specifications of JSON, repairs specification errors, and offers experience-based interoperability guidance.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="90"/>
+          <seriesInfo name="RFC" value="8259"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8259"/>
+        </reference>
+        <reference anchor="RFC8417" target="https://www.rfc-editor.org/info/rfc8417" quoteTitle="true" derivedAnchor="RFC8417">
+          <front>
+            <title>Security Event Token (SET)</title>
+            <author fullname="P. Hunt" initials="P." role="editor" surname="Hunt"/>
+            <author fullname="M. Jones" initials="M." surname="Jones"/>
+            <author fullname="W. Denniss" initials="W." surname="Denniss"/>
+            <author fullname="M. Ansari" initials="M." surname="Ansari"/>
+            <date month="July" year="2018"/>
+            <abstract>
+              <t indent="0">This specification defines the Security Event Token (SET) data structure. A SET describes statements of fact from the perspective of an issuer about a subject. These statements of fact represent an event that occurred directly to or about a security subject, for example, a statement about the issuance or revocation of a token on behalf of a subject. This specification is intended to enable representing security- and identity-related events. A SET is a JSON Web Token (JWT), which can be optionally signed and/or encrypted. SETs can be distributed via protocols such as HTTP.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8417"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8417"/>
+        </reference>
+      </references>
+      <references pn="section-9.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="OpenID.Core" target="https://openid.net/specs/openid-connect-core-1_0.html" quoteTitle="true" derivedAnchor="OpenID.Core">
+          <front>
+            <title>OpenID Connect Core 1.0 incorporating errata set 1</title>
+            <author initials="N." surname="Sakimura" fullname="Nat Sakimura">
+              <organization showOnFrontPage="true">Nomura Research Institute, Ltd.</organization>
+            </author>
+            <author initials="J." surname="Bradley" fullname="John Bradley">
+              <organization showOnFrontPage="true">Ping Identity</organization>
+            </author>
+            <author initials="M." surname="Jones" fullname="Michael B. Jones">
+              <organization showOnFrontPage="true">Microsoft</organization>
+            </author>
+            <author initials="B." surname="de Medeiros" fullname="Breno de Medeiros">
+              <organization showOnFrontPage="true">Google</organization>
+            </author>
+            <author initials="C." surname="Mortimore" fullname="Chuck Mortimore">
+              <organization showOnFrontPage="true">Salesforce</organization>
+            </author>
+            <date year="2014" month="November"/>
+          </front>
+        </reference>
+        <reference anchor="RFC1034" target="https://www.rfc-editor.org/info/rfc1034" quoteTitle="true" derivedAnchor="RFC1034">
+          <front>
+            <title>Domain names - concepts and facilities</title>
+            <author fullname="P. Mockapetris" initials="P." surname="Mockapetris"/>
+            <date month="November" year="1987"/>
+            <abstract>
+              <t indent="0">This RFC is the revised basic definition of The Domain Name System. It obsoletes RFC-882. This memo describes the domain style names and their used for host address look up and electronic mail forwarding. It discusses the clients and servers in the domain name system and the protocol used between them.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="13"/>
+          <seriesInfo name="RFC" value="1034"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1034"/>
+        </reference>
+        <reference anchor="RFC7515" target="https://www.rfc-editor.org/info/rfc7515" quoteTitle="true" derivedAnchor="RFC7515">
+          <front>
+            <title>JSON Web Signature (JWS)</title>
+            <author fullname="M. Jones" initials="M." surname="Jones"/>
+            <author fullname="J. Bradley" initials="J." surname="Bradley"/>
+            <author fullname="N. Sakimura" initials="N." surname="Sakimura"/>
+            <date month="May" year="2015"/>
+            <abstract>
+              <t indent="0">JSON Web Signature (JWS) represents content secured with digital signatures or Message Authentication Codes (MACs) using JSON-based data structures. Cryptographic algorithms and identifiers for use with this specification are described in the separate JSON Web Algorithms (JWA) specification and an IANA registry defined by that specification. Related encryption capabilities are described in the separate JSON Web Encryption (JWE) specification.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7515"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7515"/>
+        </reference>
+        <reference anchor="RFC8446" target="https://www.rfc-editor.org/info/rfc8446" quoteTitle="true" derivedAnchor="RFC8446">
+          <front>
+            <title>The Transport Layer Security (TLS) Protocol Version 1.3</title>
+            <author fullname="E. Rescorla" initials="E." surname="Rescorla"/>
+            <date month="August" year="2018"/>
+            <abstract>
+              <t indent="0">This document specifies version 1.3 of the Transport Layer Security (TLS) protocol. TLS allows client/server applications to communicate over the Internet in a way that is designed to prevent eavesdropping, tampering, and message forgery.</t>
+              <t indent="0">This document updates RFCs 5705 and 6066, and obsoletes RFCs 5077, 5246, and 6961. This document also specifies new requirements for TLS 1.2 implementations.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8446"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8446"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" anchor="acknowledgements" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">The authors would like to thank the members of the IETF Security
+      Events Working Group, as well as those of the OpenID Shared Signals and
+      Events Working Group, whose work provided the original basis for this
+      document.  We would also like to acknowledge <contact fullname="Aaron       Parecki"/>, <contact fullname="Denis Pinkas"/>, <contact fullname="Justin Richer"/>, <contact fullname="Mike Jones"/>, and other
+      members of the working group for reviewing this document.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="A." surname="Backman" fullname="Annabelle Backman" role="editor">
+        <organization showOnFrontPage="true">Amazon</organization>
+        <address>
+          <email>richanna@amazon.com</email>
+        </address>
+      </author>
+      <author initials="M." surname="Scurtescu" fullname="Marius Scurtescu">
+        <organization showOnFrontPage="true">Coinbase</organization>
+        <address>
+          <email>marius.scurtescu@coinbase.com</email>
+        </address>
+      </author>
+      <author initials="P." surname="Jain" fullname="Prachi Jain">
+        <organization showOnFrontPage="true">Fastly</organization>
+        <address>
+          <email>prachi.jain1288@gmail.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

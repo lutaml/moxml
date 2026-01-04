@@ -1,0 +1,1139 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-ipsecme-add-ike-14" number="9464" ipr="trust200902" obsoletes="" updates="" xml:lang="en" tocInclude="true" tocDepth="4" symRefs="true" sortRefs="true" prepTime="2023-11-06T13:26:26" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-ipsecme-add-ike-14" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9464" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="IKEv2 for Encrypted DNS">Internet Key Exchange Protocol Version 2 (IKEv2) Configuration for Encrypted DNS</title>
+    <seriesInfo name="RFC" value="9464" stream="IETF"/>
+    <author fullname="Mohamed Boucadair" initials="M." surname="Boucadair">
+      <organization showOnFrontPage="true">Orange</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Rennes</city>
+          <code>35000</code>
+          <country>France</country>
+        </postal>
+        <email>mohamed.boucadair@orange.com</email>
+      </address>
+    </author>
+    <author fullname="Tirumaleswar Reddy.K" initials="T." surname="Reddy.K">
+      <organization showOnFrontPage="true">Nokia</organization>
+      <address>
+        <postal>
+          <street/>
+          <city/>
+          <region/>
+          <code/>
+          <country>India</country>
+        </postal>
+        <email>kondtir@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Dan Wing" initials="D." surname="Wing">
+      <organization abbrev="Cloud Software Group" showOnFrontPage="true">Cloud Software Group Holdings, Inc.</organization>
+      <address>
+        <postal>
+          <street/>
+          <country>United States of America</country>
+        </postal>
+        <email>dwing-ietf@fuggles.com</email>
+      </address>
+    </author>
+    <author fullname="Valery Smyslov" initials="V." surname="Smyslov">
+      <organization showOnFrontPage="true">ELVIS-PLUS</organization>
+      <address>
+        <postal>
+          <street/>
+          <city/>
+          <region/>
+          <code/>
+          <country>Russian Federation</country>
+        </postal>
+        <email>svan@elvis.ru</email>
+      </address>
+    </author>
+    <date month="11" year="2023"/>
+    <area>sec</area>
+    <workgroup>ipsecme</workgroup>
+    <keyword>security</keyword>
+    <keyword>name resolution</keyword>
+    <keyword>encryption</keyword>
+    <keyword>service discovery</keyword>
+    <keyword>naming</keyword>
+    <keyword>resolver</keyword>
+    <keyword>stub-resolver</keyword>
+    <keyword>CPE</keyword>
+    <keyword>Customer premise equipment</keyword>
+    <keyword>VPN</keyword>
+    <keyword>Secure discovery</keyword>
+    <keyword>DoT</keyword>
+    <keyword>DoH</keyword>
+    <keyword>DoQ</keyword>
+    <keyword>Tunnel</keyword>
+    <keyword>connectivity</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document specifies new Internet Key Exchange Protocol Version 2
+      (IKEv2) Configuration Payload Attribute Types to assign DNS resolvers
+      that support encrypted DNS protocols, such as DNS over HTTPS (DoH),
+      DNS over TLS (DoT), and DNS over QUIC (DoQ).</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9464" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ikev2-configuration-payload">IKEv2 Configuration Payload Attribute Types for Encrypted DNS</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-encdns_ip-configuration-pay">ENCDNS_IP* Configuration Payload Attributes</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-encdns_digest_info-configur">ENCDNS_DIGEST_INFO Configuration Payload Attribute</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ikev2-protocol-exchange">IKEv2 Protocol Exchange</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-subject-public-key-info-spk">Subject Public Key Info (SPKI) Hash</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-privacy-considerations">Privacy Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-configuration-payload-examp">Configuration Payload Examples</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.10.2">
+              <li pn="section-toc.1-1.10.2.1">
+                <t indent="0" pn="section-toc.1-1.10.2.1.1"><xref derivedContent="A.1" format="counter" sectionFormat="of" target="section-appendix.a.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-configuration-of-encrypted-">Configuration of Encrypted IPv6 DNS Resolvers without Suggested Values</xref></t>
+              </li>
+              <li pn="section-toc.1-1.10.2.2">
+                <t indent="0" pn="section-toc.1-1.10.2.2.1"><xref derivedContent="A.2" format="counter" sectionFormat="of" target="section-appendix.a.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-configuration-of-encrypted-i">Configuration of Encrypted IPv6 DNS Resolvers with Suggested Values</xref></t>
+              </li>
+              <li pn="section-toc.1-1.10.2.3">
+                <t indent="0" pn="section-toc.1-1.10.2.3.1"><xref derivedContent="A.3" format="counter" sectionFormat="of" target="section-appendix.a.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-split-dns">Split DNS</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="intro" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">This document specifies a mechanism for assigning encrypted DNS
+      configurations to an Internet Key Exchange Protocol Version 2 (IKEv2)
+      initiator <xref target="RFC7296" format="default" sectionFormat="of" derivedContent="RFC7296"/>. Specifically, it assigns one
+      or more Authentication Domain Names (ADNs) of DNS resolvers that support
+      encrypted DNS protocols. The specific protocols supported are described
+      using the Service Parameters format defined in <xref target="RFC9460" format="default" sectionFormat="of" derivedContent="RFC9460"/>; supported protocols include
+      DNS over HTTPS (DoH) <xref target="RFC8484" format="default" sectionFormat="of" derivedContent="RFC8484"/>, DNS over TLS (DoT)
+      <xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/>, and DNS over QUIC (DoQ) <xref target="RFC9250" format="default" sectionFormat="of" derivedContent="RFC9250"/>.</t>
+      <t indent="0" pn="section-1-2">This document introduces three new IKEv2 Configuration Payload
+      Attribute Types (<xref target="RI" format="default" sectionFormat="of" derivedContent="Section 3"/>) to add support for encrypted
+      DNS resolvers. The ENCDNS_IP4 and ENCDNS_IP6 attribute types (<xref target="RIIP" format="default" sectionFormat="of" derivedContent="Section 3.1"/>) are used to provision ADNs, a list of IP
+      addresses, and a set of service parameters. The ENCDNS_DIGEST_INFO
+      attribute (<xref target="digest" format="default" sectionFormat="of" derivedContent="Section 3.2"/>) additionally allows a specific
+      resolver certificate to be indicated by the IKEv2 responder.</t>
+      <t indent="0" pn="section-1-3">The encrypted DNS resolver hosted by a Virtual Private Network (VPN)
+      provider can get a domain-validated certificate from a public Certificate
+      Authority (CA). The VPN client does not need to be provisioned with the
+      root certificate of a private CA to authenticate the certificate of the
+      encrypted DNS resolvers. The encrypted DNS resolver can run on private
+      IP addresses, and its access can be restricted to clients connected to
+      the VPN.</t>
+      <t indent="0" pn="section-1-4">For many years, typical designs have often assumed that the DNS
+      resolver was usually located inside the protected domain, but they don't
+      consider implementations where the DNS resolver could be located outside of it. With encrypted DNS, implementing the latter scenario becomes
+      plausible. Note that existing VPN client implementations might not
+      expect the discovered DNS resolver IP addresses to be outside of
+      the covered IP address ranges of the VPN tunnel.</t>
+    </section>
+    <section anchor="notation" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <t indent="0" pn="section-2-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+       "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>",
+       "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>",
+       "<bcp14>SHOULD NOT</bcp14>",
+       "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+       "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+       are to be interpreted as described in BCP 14
+       <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only
+       when, they appear in all capitals, as shown here.</t>
+      <t indent="0" pn="section-2-2">This document uses the terms defined in <xref target="RFC8499" format="default" sectionFormat="of" derivedContent="RFC8499"/>.</t>
+      <t indent="0" pn="section-2-3">Also, this document uses the terms defined in <xref target="RFC7296" format="default" sectionFormat="of" derivedContent="RFC7296"/>. In particular, readers should be familiar with the terms
+      "initiator" and "responder" as used in that document.</t>
+      <t indent="0" pn="section-2-4">This document makes use of the following terms: </t>
+      <dl newline="false" spacing="normal" indent="3" pn="section-2-5">
+        <dt pn="section-2-5.1">Do53:</dt>
+        <dd pn="section-2-5.2">Refers to unencrypted DNS.</dd>
+        <dt pn="section-2-5.3">Encrypted DNS:</dt>
+        <dd pn="section-2-5.4">Refers to a scheme where DNS messages
+          are sent over an encrypted channel. Examples of encrypted DNS are
+          DoT, DoH, and DoQ.</dd>
+        <dt pn="section-2-5.5">ENCDNS_IP*:</dt>
+        <dd pn="section-2-5.6">Refers to any of the IKEv2 Configuration Payload
+          Attribute Types defined in <xref target="RIIP" format="default" sectionFormat="of" derivedContent="Section 3.1"/>.</dd>
+      </dl>
+    </section>
+    <section anchor="RI" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-ikev2-configuration-payload">IKEv2 Configuration Payload Attribute Types for Encrypted DNS</name>
+      <section anchor="RIIP" numbered="true" toc="include" removeInRFC="false" pn="section-3.1">
+        <name slugifiedName="name-encdns_ip-configuration-pay">ENCDNS_IP* Configuration Payload Attributes</name>
+        <t indent="0" pn="section-3.1-1">The ENCDNS_IP* IKEv2 Configuration Payload Attribute Types,
+        ENCDNS_IP4 and ENCDNS_IP6, are used to configure an initiator with encrypted DNS
+        resolvers. Both attribute types share the format
+        shown in <xref target="ri_attr" format="default" sectionFormat="of" derivedContent="Figure 1"/>. The information included
+        in these attributes adheres to the recommendation in <xref section="3.1.9" target="RFC9463" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9463#section-3.1.9" derivedContent="RFC9463"/>.</t>
+        <figure anchor="ri_attr" align="left" suppress-title="false" pn="figure-1">
+          <name slugifiedName="name-format-of-encdns_ip4-and-en">Format of ENCDNS_IP4 and ENCDNS_IP6 Configuration Attributes</name>
+          <artwork name="" type="" align="left" alt="" pn="section-3.1-2.1">                     1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-----------------------------+-------------------------------+
+|R|         Attribute Type      |            Length             |
++-+-----------------------------+---------------+---------------+
+|       Service Priority        | Num Addresses |  ADN Length   |
++-------------------------------+---------------+---------------+
+~                        IP Address(es)                         ~
++---------------------------------------------------------------+
+~                  Authentication Domain Name                   ~
++---------------------------------------------------------------+
+~                 Service Parameters (SvcParams)                ~
++---------------------------------------------------------------+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-3.1-3">The description of the fields shown in <xref target="ri_attr" format="default" sectionFormat="of" derivedContent="Figure 1"/> is as follows:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-3.1-4">
+          <dt pn="section-3.1-4.1">R (Reserved, 1 bit):</dt>
+          <dd pn="section-3.1-4.2">This bit <bcp14>MUST</bcp14> be set to zero and <bcp14>MUST</bcp14> be
+            ignored on receipt (see <xref section="3.15.1" target="RFC7296" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc7296#section-3.15.1" derivedContent="RFC7296"/> for details).</dd>
+          <dt pn="section-3.1-4.3">Attribute Type (15 bits):</dt>
+          <dd pn="section-3.1-4.4">Identifier for the Configuration
+            Attribute Type. This is set to 27 for ENCDNS_IP4 or 28 for
+            ENCDNS_IP6, as registered in <xref target="IANA1" format="default" sectionFormat="of" derivedContent="Section 8"/>.</dd>
+          <dt pn="section-3.1-4.5">Length (2 octets, unsigned integer):</dt>
+          <dd pn="section-3.1-4.6">
+            <t indent="0" pn="section-3.1-4.6.1">Length of the enclosed
+            data in octets. In particular, this field is set to:</t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1-4.6.2">
+              <li pn="section-3.1-4.6.2.1">0, if the Configuration payload has type (1) CFG_REQUEST
+                and no specific DNS resolver is requested or (2) CFG_ACK. If the "Length" field is set to 0, then the subsequent fields
+                shown in <xref target="ri_attr" format="default" sectionFormat="of" derivedContent="Figure 1"/> are not present.</li>
+              <li pn="section-3.1-4.6.2.2">(4 + 'Length of the ADN' + N * 4 + 'Length of SvcParams') for
+                ENCDNS_IP4 attributes if the Configuration payload has type
+                CFG_REQUEST, CFG_REPLY, or CFG_SET, with N being the number of
+                included IPv4 addresses ("Num Addresses").</li>
+              <li pn="section-3.1-4.6.2.3">(4 + 'Length of the ADN' + N * 16 + 'Length of SvcParams')
+                for ENCDNS_IP6 attributes if the Configuration payload has
+                type CFG_REQUEST, CFG_REPLY, or CFG_SET, with N being the number
+                of included IPv6 addresses ("Num Addresses").</li>
+            </ul>
+          </dd>
+          <dt pn="section-3.1-4.7">Service Priority (2 octets):</dt>
+          <dd pn="section-3.1-4.8">The priority of this attribute
+            compared to other ENCDNS_IP* instances. This 16-bit unsigned
+            integer is interpreted following the rules specified in <xref section="2.4.1" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.4.1" derivedContent="RFC9460"/>. As
+            AliasMode (<xref section="2.4.2" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.4.2" derivedContent="RFC9460"/>) is not supported, this
+            field <bcp14>MUST NOT</bcp14> be set to 0. Note that AliasMode is not supported
+            because such a mode will trigger additional Do53 queries while the
+            data can be supplied directly in the IKE response.</dd>
+          <dt pn="section-3.1-4.9">Num Addresses (1 octet):</dt>
+          <dd pn="section-3.1-4.10">Indicates the number of enclosed IPv4
+            (for ENCDNS_IP4) or IPv6 (for ENCDNS_IP6) addresses. This value
+            <bcp14>MUST NOT</bcp14> be set to 0 if the Configuration payload has type
+            CFG_REPLY or CFG_SET. This may be set to 0 in CFG_REQUEST to
+            indicate that no IP address is encoded in the attribute.</dd>
+          <dt pn="section-3.1-4.11">ADN Length (1 octet):</dt>
+          <dd pn="section-3.1-4.12">Indicates the length of the
+            "Authentication Domain Name" field in octets. When set to 0,
+            this means that no ADN is enclosed in the attribute.</dd>
+          <dt pn="section-3.1-4.13">IP Address(es) (variable):</dt>
+          <dd pn="section-3.1-4.14">Includes one or more IP addresses
+            that can be used to reach the encrypted DNS resolver identified by
+            the ADN. For ENCDNS_IP4, this field contains
+            one or more 4-octet IPv4 addresses, and for ENCDNS_IP6, this field
+            contains one or more 16-octet IPv6 addresses.</dd>
+          <dt pn="section-3.1-4.15">Authentication Domain Name (variable):</dt>
+          <dd pn="section-3.1-4.16">
+            <t indent="0" pn="section-3.1-4.16.1">A fully qualified
+            domain name of the encrypted DNS resolver, in DNS presentation
+            format and using an Internationalized Domain Names for
+            Applications (IDNA) A-label <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/>. The
+            name <bcp14>MUST NOT</bcp14> contain any terminators (e.g., NULL, CR). </t>
+            <t indent="0" pn="section-3.1-4.16.2">An example of a valid ADN for a DoH server is
+            "doh1.example.com".</t>
+          </dd>
+          <dt pn="section-3.1-4.17">Service Parameters (SvcParams) (variable):</dt>
+          <dd pn="section-3.1-4.18">
+            <t indent="0" pn="section-3.1-4.18.1">Specifies a set of
+            service parameters that are encoded following the same rules
+for encoding SvcParams using the wire format specified in <xref section="2.2" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.2" derivedContent="RFC9460"/>. <xref section="3.1.5" target="RFC9463" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9463#section-3.1.5" derivedContent="RFC9463"/> lists a set of
+            service parameters that are recommended to be supported by
+            implementations. </t>
+            <t indent="0" pn="section-3.1-4.18.2">The service parameters
+            <bcp14>MUST NOT</bcp14> include "ipv4hint" or "ipv6hint" SvcParams, as they are
+            superseded by the included IP addresses. </t>
+            <t indent="0" pn="section-3.1-4.18.3">If no "port" service parameter is included, this
+            indicates that default port numbers should be used. As a reminder,
+            the default port number is 853 for DoT (<xref section="6" target="RFC7858" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc7858#section-6" derivedContent="RFC7858"/>), 443 for DoH (<xref section="8.1" target="RFC8484" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8484#section-8.1" derivedContent="RFC8484"/>), and 853 for DoQ (<xref section="8" target="RFC9250" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9250#section-8" derivedContent="RFC9250"/>). </t>
+            <t indent="0" pn="section-3.1-4.18.4">The service
+            parameters apply to all IP addresses in the ENCDNS_IP*
+            Configuration Payload Attribute.</t>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="digest" numbered="true" toc="include" removeInRFC="false" pn="section-3.2">
+        <name slugifiedName="name-encdns_digest_info-configur">ENCDNS_DIGEST_INFO Configuration Payload Attribute</name>
+        <t indent="0" pn="section-3.2-1">The ENCDNS_DIGEST_INFO Configuration Payload Attribute (<xref target="digest_attr_full" format="default" sectionFormat="of" derivedContent="Figure 2"/>) allows IKEv2 responders to specify
+        a certificate digest that initiators can use when validating TLS
+        connections to encrypted resolvers. This attribute can also be sent by
+        the initiator to request specific hash algorithms for such
+        digests.</t>
+        <figure anchor="digest_attr_full" align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-encdns_digest_info-attribut">ENCDNS_DIGEST_INFO Attribute Format</name>
+          <artwork name="" type="" align="left" alt="" pn="section-3.2-2.1">                     1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-----------------------------+-------------------------------+
+|R|         Attribute Type      |            Length             |
++-+-------------+---------------+-------------------------------+
+| Num Hash Algs |  ADN Length   |                               |
++---------------+---------------+                               +
+~                Authentication Domain Name                     ~
++---------------------------------------------------------------+
+~                List of Hash Algorithm Identifiers             ~
++---------------------------------------------------------------+
+~                       Certificate Digest                      ~
++---------------------------------------------------------------+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-3.2-3">Some of the fields shown in <xref target="digest_attr_full" format="default" sectionFormat="of" derivedContent="Figure 2"/> can be omitted, as further detailed
+        below.</t>
+        <t indent="0" pn="section-3.2-4">The format of the ENCDNS_DIGEST_INFO attribute if the Configuration
+        payload has type CFG_REQUEST is shown in <xref target="digest_attr" format="default" sectionFormat="of" derivedContent="Figure 3"/>.</t>
+        <figure anchor="digest_attr" align="left" suppress-title="false" pn="figure-3">
+          <name slugifiedName="name-encdns_digest_info-attribute">ENCDNS_DIGEST_INFO Attribute Format in CFG_REQUEST</name>
+          <artwork name="" type="" align="left" alt="" pn="section-3.2-5.1">                     1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-----------------------------+-------------------------------+
+|R|         Attribute Type      |            Length             |
++-+-------------+---------------+-------------------------------+
+| Num Hash Algs |  ADN Length   |                               |
++---------------+---------------+                               +
+~                List of Hash Algorithm Identifiers             ~
++---------------------------------------------------------------+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-3.2-6">The description of the fields shown in <xref target="digest_attr" format="default" sectionFormat="of" derivedContent="Figure 3"/> is as follows:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-3.2-7">
+          <dt pn="section-3.2-7.1">R (Reserved, 1 bit):</dt>
+          <dd pn="section-3.2-7.2">This bit <bcp14>MUST</bcp14> be set to zero and <bcp14>MUST</bcp14> be
+            ignored on receipt (see <xref section="3.15.1" target="RFC7296" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc7296#section-3.15.1" derivedContent="RFC7296"/> for details).</dd>
+          <dt pn="section-3.2-7.3">Attribute Type (15 bits):</dt>
+          <dd pn="section-3.2-7.4">Identifier for the Configuration
+            Attribute Type.  This is set to 29; see <xref target="IANA1" format="default" sectionFormat="of" derivedContent="Section 8"/>.</dd>
+          <dt pn="section-3.2-7.5">Length (2 octets, unsigned integer):</dt>
+          <dd pn="section-3.2-7.6">Length of the enclosed
+            data in octets. This field <bcp14>MUST</bcp14> be set to "2 + (2 * 'number of
+            included hash algorithm identifiers')".</dd>
+          <dt pn="section-3.2-7.7">Num Hash Algs (1 octet):</dt>
+          <dd pn="section-3.2-7.8">Indicates the number of identifiers included in the "List of Hash Algorithm Identifiers" field. This field <bcp14>MUST</bcp14> be set to "(Length
+            - 2)/2".</dd>
+          <dt pn="section-3.2-7.9">ADN Length (1 octet):</dt>
+          <dd pn="section-3.2-7.10">
+            <bcp14>MUST</bcp14> be set to 0.</dd>
+          <dt pn="section-3.2-7.11">List of Hash Algorithm Identifiers (variable):</dt>
+          <dd pn="section-3.2-7.12">
+            <t indent="0" pn="section-3.2-7.12.1">Specifies a
+            list of 16-bit hash algorithm identifiers that are supported by
+            the encrypted DNS client. This list may be controlled by a local
+            policy.</t>
+            <t indent="0" pn="section-3.2-7.12.2">The values of this field are identifiers taken
+            from "IKEv2 Hash Algorithms" on IANA's "Internet Key
+            Exchange Version 2 (IKEv2) Parameters" registry <xref target="IANA-IKE-HASH" format="default" sectionFormat="of" derivedContent="IANA-IKE-HASH"/>. </t>
+            <t indent="0" pn="section-3.2-7.12.3">There is
+            no padding between the hash algorithm identifiers. </t>
+            <t indent="0" pn="section-3.2-7.12.4">Note that SHA2-256 is mandatory to implement (see
+            <xref target="hash" format="default" sectionFormat="of" derivedContent="Section 5"/>).</t>
+          </dd>
+        </dl>
+        <t indent="0" pn="section-3.2-8">The format of the ENCDNS_DIGEST_INFO attribute if the Configuration
+        payload has type CFG_REPLY or CFG_SET is shown in <xref target="digest_attr_res" format="default" sectionFormat="of" derivedContent="Figure 4"/>.</t>
+        <figure anchor="digest_attr_res" align="left" suppress-title="false" pn="figure-4">
+          <name slugifiedName="name-encdns_digest_info-attribute-">ENCDNS_DIGEST_INFO Attribute Format in CFG_REPLY or CFG_SET</name>
+          <artwork name="" type="" align="left" alt="" pn="section-3.2-9.1">                     1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-----------------------------+-------------------------------+
+|R|         Attribute Type      |            Length             |
++-+-------------+---------------+-------------------------------+
+| Num Hash Algs |  ADN Length   |                               |
++---------------+---------------+                               +
+~                Authentication Domain Name                     ~
++-------------------------------+-------------------------------+
+| Hash Algorithm Identifier     |                               ~
++-------------------------------+                               +
+~                     Certificate Digest                        ~
++---------------------------------------------------------------+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-3.2-10">The description of the fields shown in
+        <xref target="digest_attr_res" format="default" sectionFormat="of" derivedContent="Figure 4"/> is as follows:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-3.2-11">
+          <dt pn="section-3.2-11.1">R (Reserved, 1 bit):</dt>
+          <dd pn="section-3.2-11.2">This bit <bcp14>MUST</bcp14> be set to zero and <bcp14>MUST</bcp14> be
+            ignored on receipt (see <xref section="3.15.1" target="RFC7296" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc7296#section-3.15.1" derivedContent="RFC7296"/> for details).</dd>
+          <dt pn="section-3.2-11.3">Attribute Type (15 bits):</dt>
+          <dd pn="section-3.2-11.4">Identifier for the Configuration
+            Attribute Type.  This is set to 29; see <xref target="IANA1" format="default" sectionFormat="of" derivedContent="Section 8"/>.</dd>
+          <dt pn="section-3.2-11.5">Length (2 octets, unsigned integer):</dt>
+          <dd pn="section-3.2-11.6">Length of the data in
+            octets.</dd>
+          <dt pn="section-3.2-11.7">Num Hash Algs (1 octet):</dt>
+          <dd pn="section-3.2-11.8">
+            <bcp14>MUST</bcp14> be set to 1.</dd>
+          <dt pn="section-3.2-11.9">ADN Length (1 octet):</dt>
+          <dd pn="section-3.2-11.10">Indicates the length of the
+            "Authentication Domain Name" field in octets. When set to 0,
+            this means that the digest applies on the ADN conveyed in the
+            ENCDNS_IP* Configuration Payload Attribute.</dd>
+          <dt pn="section-3.2-11.11">Authentication Domain Name (variable):</dt>
+          <dd pn="section-3.2-11.12">A fully qualified
+            domain name of the encrypted DNS resolver following the syntax
+            defined in <xref target="RFC5890" format="default" sectionFormat="of" derivedContent="RFC5890"/>. The name <bcp14>MUST NOT</bcp14>
+            contain any terminators (e.g., NULL, CR). A name is included only
+            when multiple ADNs are included in the ENCDNS_IP* Configuration
+            Payload Attribute.</dd>
+          <dt pn="section-3.2-11.13">Hash Algorithm Identifier (2 octets):</dt>
+          <dd pn="section-3.2-11.14">Specifies the 16-bit
+            hash algorithm identifier selected by the DNS resolver to generate
+            the digest of its certificate.</dd>
+          <dt pn="section-3.2-11.15">Certificate Digest (variable):</dt>
+          <dd pn="section-3.2-11.16">Includes the Subject
+            Public Key Info (SPKI) hash (<xref target="hash" format="default" sectionFormat="of" derivedContent="Section 5"/>) of the
+            encrypted DNS resolver certificate using the algorithm identified
+            in the "Hash Algorithm Identifier" field. The length of this field
+            is "Length - 4 - 'ADN Length'".</dd>
+        </dl>
+        <t indent="0" pn="section-3.2-12">The ENCDNS_DIGEST_INFO attribute may be present in the
+        Configuration payload of CFG_ACK. In such a case, the
+        ENCDNS_DIGEST_INFO <bcp14>MUST</bcp14> be returned with zero-length data.</t>
+        <t indent="0" pn="section-3.2-13">As discussed in <xref section="3.15.1" target="RFC7296" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc7296#section-3.15.1" derivedContent="RFC7296"/>,
+        there are no defined uses for the CFG_SET/CFG_ACK exchange. The use of
+        the ENCDNS_DIGEST_INFO attribute for these messages is provided for
+        completeness.</t>
+      </section>
+    </section>
+    <section anchor="protocol" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-ikev2-protocol-exchange">IKEv2 Protocol Exchange</name>
+      <t indent="0" pn="section-4-1">This section describes how the attributes defined in <xref target="RI" format="default" sectionFormat="of" derivedContent="Section 3"/> are used to configure an IKEv2 initiator with one or
+      more encrypted DNS resolvers. As a reminder, badly formatted attributes
+      or unacceptable fields are handled as per <xref section="2.21" target="RFC7296" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc7296#section-2.21" derivedContent="RFC7296"/>.</t>
+      <t indent="0" pn="section-4-2">Initiators first indicate support for encrypted DNS by including
+      ENCDNS_IP* attributes in their CFG_REQUEST payloads. Responders supply
+      encrypted DNS configuration by including ENCDNS_IP* attributes in their
+      CFG_REPLY payloads. Concretely:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-3">
+        <li pn="section-4-3.1">If the initiator supports encrypted DNS, it includes either or
+          both of the ENCDNS_IP4 and ENCDNS_IP6 attributes in its CFG_REQUEST.
+          If the initiator does not want to request specific DNS resolvers, it
+          sets the "Length" field to 0 for the attribute. For a given attribute
+          type, the initiator <bcp14>MAY</bcp14> send either an empty attribute or a list of
+          distinct suggested resolvers. The initiator <bcp14>MAY</bcp14> also include the
+          ENCDNS_DIGEST_INFO attribute with a list of hash algorithms that are
+          supported by the encrypted DNS client.</li>
+        <li pn="section-4-3.2">If the request includes multiple bitwise identical attributes,
+          only the first occurrence is processed, and the rest <bcp14>SHOULD</bcp14> be
+          ignored by the responder. The responder <bcp14>MAY</bcp14> discard the full request
+          if the count of repeated attributes exceeds an
+          (implementation-specific) threshold.</li>
+        <li pn="section-4-3.3">For each ENCDNS_IP* attribute from the CFG_REQUEST, if the
+          responder supports the corresponding address family, and absent any
+          policy restrictions, the responder sends back one or more ENCDNS_IP*
+          attributes in the CFG_REPLY with an appropriate list of IP
+          addresses, service parameters, and an ADN. The list of IP addresses
+          <bcp14>MUST</bcp14> include at least one IP address. The service parameters <bcp14>SHOULD</bcp14>
+          include at least the "alpn" service parameter. The "alpn" service
+          parameter may not be required in contexts such as a variant of DNS
+          over the Constrained Application Protocol (CoAP) where the messages are encrypted using Object Security for
+          Constrained RESTful Environments (OSCORE) <xref target="RFC8613" format="default" sectionFormat="of" derivedContent="RFC8613"/>.</li>
+        <li pn="section-4-3.4">The responder <bcp14>MAY</bcp14> ignore suggested values from the initiator (if
+          any). Multiple instances of the same ENCDNS_IP* attribute <bcp14>MAY</bcp14> be
+          returned if distinct ADNs or service parameters need to be assigned
+          to the initiator. In such instances, the different attributes can
+          have matching or distinct IP addresses. These instances <bcp14>MUST</bcp14> be
+          presented to a local DNS client following their service priority
+          (i.e., a smaller service priority value indicates a higher
+          preference).</li>
+        <li pn="section-4-3.5">In addition, the responder <bcp14>MAY</bcp14> return the ENCDNS_DIGEST_INFO
+          attribute to convey a digest of the certificate of the encrypted DNS
+          and the identifier of the hash algorithm that is used to generate
+          the digest.</li>
+        <li pn="section-4-3.6">If the CFG_REQUEST includes an ENCDNS_IP* attribute but the
+          CFG_REPLY does not include an ENCDNS_IP* attribute matching the requested
+          address family, this is an indication that the requested address family
+          is not supported by the responder or the responder is not configured
+          to provide corresponding resolver addresses.</li>
+        <li pn="section-4-3.7">If the initiator receives both ENCDNS_IP* and INTERNAL_IP6_DNS
+          (or INTERNAL_IP4_DNS) attributes, it is <bcp14>RECOMMENDED</bcp14> that the
+          initiator use the encrypted DNS resolvers.</li>
+      </ul>
+      <t indent="0" pn="section-4-4">The DNS client establishes an encrypted DNS session (e.g., DoT, DoH, or
+      DoQ) with the address or addresses conveyed in ENCDNS_IP* and uses the mechanisms
+      discussed in <xref section="8" target="RFC8310" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8310#section-8" derivedContent="RFC8310"/> to authenticate
+      the DNS resolver certificate using the ADN
+      conveyed in ENCDNS_IP*.</t>
+      <t indent="0" pn="section-4-5">If the CFG_REPLY includes an ENCDNS_DIGEST_INFO attribute, the client
+      has to create an SPKI hash (<xref target="hash" format="default" sectionFormat="of" derivedContent="Section 5"/>) of the DNS
+      resolver certificate received in the TLS handshake using the negotiated
+      hash algorithm in the ENCDNS_DIGEST_INFO attribute. If the computed
+      digest for an ADN matches the digest sent in the ENCDNS_DIGEST_INFO
+      attribute, the encrypted DNS resolver certificate is successfully
+      validated. If so, the client continues with the TLS connection as
+      normal. Otherwise, the client <bcp14>MUST</bcp14> treat the resolver certificate
+      validation failure as a non-recoverable error. This approach is similar
+      to certificate usage PKIX-EE(1) with selector SPKI(1) as defined in <xref target="RFC7671" format="default" sectionFormat="of" derivedContent="RFC7671"/>, but without PKIX validation.</t>
+      <t indent="0" pn="section-4-6">If the IPsec connection is a split-tunnel configuration and the
+      initiator negotiated INTERNAL_DNS_DOMAIN as per <xref target="RFC8598" format="default" sectionFormat="of" derivedContent="RFC8598"/>, the DNS client resolves the internal names
+      using ENCDNS_IP* DNS resolvers.</t>
+      <t indent="3" pn="section-4-7">Note: <xref target="RFC8598" format="default" sectionFormat="of" derivedContent="RFC8598"/> requires that the INTERNAL_IP6_DNS
+          (or INTERNAL_IP4_DNS) attribute be present when
+          INTERNAL_DNS_DOMAIN is included. This specification relaxes that
+          constraint in the presence of ENCDNS_IP* attributes. That is, if
+          ENCDNS_IP* attributes are supplied, responders are allowed to
+          include INTERNAL_DNS_DOMAIN even in the absence of INTERNAL_IP6_DNS
+          (or INTERNAL_IP4_DNS) attributes.</t>
+    </section>
+    <section anchor="hash" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-subject-public-key-info-spk">Subject Public Key Info (SPKI) Hash</name>
+      <t indent="0" pn="section-5-1">The SPKI hash of the encrypted DNS resolver certificate is the output
+      of a cryptographic hash algorithm whose input is the DER-encoded ASN.1
+      representation of the SPKI.</t>
+      <t indent="0" pn="section-5-2">Implementations <bcp14>MUST</bcp14> support SHA2-256 <xref target="RFC6234" format="default" sectionFormat="of" derivedContent="RFC6234"/>.</t>
+    </section>
+    <section anchor="Security" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-6-1">This document adheres to the security considerations defined in <xref target="RFC7296" format="default" sectionFormat="of" derivedContent="RFC7296"/>. In particular, this document does not alter
+      the trust that the initiator has placed on the DNS configuration provided by a responder.</t>
+      <t indent="0" pn="section-6-2">Networks are susceptible to internal attacks as discussed in <xref section="3.2" target="I-D.arkko-farrell-arch-model-t" format="default" sectionFormat="of" derivedLink="https://datatracker.ietf.org/doc/html/draft-arkko-farrell-arch-model-t-04#section-3.2" derivedContent="INT-THREAT-MOD"/>. Hosting
+      encrypted DNS resolvers even in the case of split-VPN configuration can
+      minimize the attack vector (e.g., a compromised network device cannot
+      monitor/modify DNS traffic). This specification describes a mechanism for
+      restricting access to the DNS messages to only the parties that need to
+      know.</t>
+      <t indent="0" pn="section-6-3">If the IKEv2 responder has used the NULL Authentication method <xref target="RFC7619" format="default" sectionFormat="of" derivedContent="RFC7619"/> to authenticate itself, the initiator <bcp14>MUST NOT</bcp14>
+      use returned ENCDNS_IP* resolvers configuration unless the initiator is
+      preconfigured, e.g., in the operating system or the application.</t>
+      <t indent="0" pn="section-6-4">This specification does not extend the scope of accepting DNSSEC
+      trust anchors beyond the usage guidelines defined in <xref section="6" target="RFC8598" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8598#section-6" derivedContent="RFC8598"/>.</t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-privacy-considerations">Privacy Considerations</name>
+      <t indent="0" pn="section-7-1">As discussed in <xref target="RFC9076" format="default" sectionFormat="of" derivedContent="RFC9076"/>, the use of encrypted
+      DNS does not reduce the data available in the DNS resolver. For example,
+      the reader may refer to <xref section="8" target="RFC8484" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8484#section-8" derivedContent="RFC8484"/> or
+      <xref section="7" target="RFC9250" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9250#section-7" derivedContent="RFC9250"/> for a discussion on specific
+      privacy considerations for encrypted DNS.</t>
+    </section>
+    <section anchor="IANA1" numbered="true" toc="include" removeInRFC="false" pn="section-8">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-8-1">IANA has assigned the following new IKEv2
+      Configuration Payload Attribute Types in the "IKEv2 Configuration
+      Payload Attribute Types" namespace available at <xref target="IANA-IKE-CFG" format="default" sectionFormat="of" derivedContent="IANA-IKE-CFG"/>.</t>
+      <table anchor="tab-1" align="center" pn="table-1">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">Attribute Type</th>
+            <th align="left" colspan="1" rowspan="1">Multivalued</th>
+            <th align="left" colspan="1" rowspan="1">Length</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">27</td>
+            <td align="left" colspan="1" rowspan="1">ENCDNS_IP4</td>
+            <td align="left" colspan="1" rowspan="1">YES</td>
+            <td align="left" colspan="1" rowspan="1">0 or more</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9464</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">28</td>
+            <td align="left" colspan="1" rowspan="1">ENCDNS_IP6</td>
+            <td align="left" colspan="1" rowspan="1">YES</td>
+            <td align="left" colspan="1" rowspan="1">0 or more</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9464</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">29</td>
+            <td align="left" colspan="1" rowspan="1">ENCDNS_DIGEST_INFO</td>
+            <td align="left" colspan="1" rowspan="1">YES</td>
+            <td align="left" colspan="1" rowspan="1">0 or more</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9464</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.arkko-farrell-arch-model-t" to="INT-THREAT-MOD"/>
+    <references pn="section-9">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-9.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="IANA-IKE-HASH" target="https://www.iana.org/assignments/ikev2-parameters/" quoteTitle="true" derivedAnchor="IANA-IKE-HASH">
+          <front>
+            <title>IKEv2 Hash Algorithms</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+            <date/>
+          </front>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC5890" target="https://www.rfc-editor.org/info/rfc5890" quoteTitle="true" derivedAnchor="RFC5890">
+          <front>
+            <title>Internationalized Domain Names for Applications (IDNA): Definitions and Document Framework</title>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <date month="August" year="2010"/>
+            <abstract>
+              <t indent="0">This document is one of a collection that, together, describe the protocol and usage context for a revision of Internationalized Domain Names for Applications (IDNA), superseding the earlier version. It describes the document collection and provides definitions and other material that are common to the set. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5890"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5890"/>
+        </reference>
+        <reference anchor="RFC6234" target="https://www.rfc-editor.org/info/rfc6234" quoteTitle="true" derivedAnchor="RFC6234">
+          <front>
+            <title>US Secure Hash Algorithms (SHA and SHA-based HMAC and HKDF)</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <author fullname="T. Hansen" initials="T." surname="Hansen"/>
+            <date month="May" year="2011"/>
+            <abstract>
+              <t indent="0">Federal Information Processing Standard, FIPS</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6234"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6234"/>
+        </reference>
+        <reference anchor="RFC7296" target="https://www.rfc-editor.org/info/rfc7296" quoteTitle="true" derivedAnchor="RFC7296">
+          <front>
+            <title>Internet Key Exchange Protocol Version 2 (IKEv2)</title>
+            <author fullname="C. Kaufman" initials="C." surname="Kaufman"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="Y. Nir" initials="Y." surname="Nir"/>
+            <author fullname="P. Eronen" initials="P." surname="Eronen"/>
+            <author fullname="T. Kivinen" initials="T." surname="Kivinen"/>
+            <date month="October" year="2014"/>
+            <abstract>
+              <t indent="0">This document describes version 2 of the Internet Key Exchange (IKE) protocol. IKE is a component of IPsec used for performing mutual authentication and establishing and maintaining Security Associations (SAs). This document obsoletes RFC 5996, and includes all of the errata for it. It advances IKEv2 to be an Internet Standard.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="79"/>
+          <seriesInfo name="RFC" value="7296"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7296"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8310" target="https://www.rfc-editor.org/info/rfc8310" quoteTitle="true" derivedAnchor="RFC8310">
+          <front>
+            <title>Usage Profiles for DNS over TLS and DNS over DTLS</title>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="D. Gillmor" initials="D." surname="Gillmor"/>
+            <author fullname="T. Reddy" initials="T." surname="Reddy"/>
+            <date month="March" year="2018"/>
+            <abstract>
+              <t indent="0">This document discusses usage profiles, based on one or more authentication mechanisms, which can be used for DNS over Transport Layer Security (TLS) or Datagram TLS (DTLS). These profiles can increase the privacy of DNS transactions compared to using only cleartext DNS. This document also specifies new authentication mechanisms -- it describes several ways that a DNS client can use an authentication domain name to authenticate a (D)TLS connection to a DNS server. Additionally, it defines (D)TLS protocol profiles for DNS clients and servers implementing DNS over (D)TLS. This document updates RFC 7858.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8310"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8310"/>
+        </reference>
+        <reference anchor="RFC8598" target="https://www.rfc-editor.org/info/rfc8598" quoteTitle="true" derivedAnchor="RFC8598">
+          <front>
+            <title>Split DNS Configuration for the Internet Key Exchange Protocol Version 2 (IKEv2)</title>
+            <author fullname="T. Pauly" initials="T." surname="Pauly"/>
+            <author fullname="P. Wouters" initials="P." surname="Wouters"/>
+            <date month="May" year="2019"/>
+            <abstract>
+              <t indent="0">This document defines two Configuration Payload Attribute Types (INTERNAL_DNS_DOMAIN and INTERNAL_DNSSEC_TA) for the Internet Key Exchange Protocol version 2 (IKEv2). These payloads add support for private (internal-only) DNS domains. These domains are intended to be resolved using non-public DNS servers that are only reachable through the IPsec connection. DNS resolution for other domains remains unchanged. These Configuration Payloads only apply to split- tunnel configurations.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8598"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8598"/>
+        </reference>
+        <reference anchor="RFC9460" target="https://www.rfc-editor.org/info/rfc9460" quoteTitle="true" derivedAnchor="RFC9460">
+          <front>
+            <title>Service Binding and Parameter Specification via the DNS (SVCB and HTTPS Resource Records)</title>
+            <author initials="B" surname="Schwartz" fullname="Benjamin Schwartz">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="M" surname="Bishop" fullname="Mike Bishop">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="E" surname="Nygren" fullname="Erik Nygren">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2023" month="November"/>
+          </front>
+          <seriesInfo name="RFC" value="9460"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9460"/>
+        </reference>
+      </references>
+      <references pn="section-9.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="IANA-IKE-CFG" target="https://www.iana.org/assignments/ikev2-parameters/" quoteTitle="true" derivedAnchor="IANA-IKE-CFG">
+          <front>
+            <title>IKEv2 Configuration Payload Attribute Types</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+            <date/>
+          </front>
+        </reference>
+        <reference anchor="I-D.arkko-farrell-arch-model-t" target="https://datatracker.ietf.org/doc/html/draft-arkko-farrell-arch-model-t-04" quoteTitle="true" derivedAnchor="INT-THREAT-MOD">
+          <front>
+            <title>Challenges and Changes in the Internet Threat Model</title>
+            <author fullname="Jari Arkko" initials="J." surname="Arkko">
+              <organization showOnFrontPage="true">Ericsson</organization>
+            </author>
+            <author fullname="Stephen Farrell" initials="S." surname="Farrell">
+              <organization showOnFrontPage="true">Trinity College Dublin</organization>
+            </author>
+            <date day="13" month="July" year="2020"/>
+            <abstract>
+              <t indent="0">Communications security has been at the center of many security improvements in the Internet. The goal has been to ensure that communications are protected against outside observers and attackers. This memo suggests that the existing RFC 3552 threat model, while important and still valid, is no longer alone sufficient to cater for the pressing security and privacy issues seen on the Internet today. For instance, it is often also necessary to protect against endpoints that are compromised, malicious, or whose interests simply do not align with the interests of users. While such protection is difficult, there are some measures that can be taken and we argue that investigation of these issues is warranted. It is particularly important to ensure that as we continue to develop Internet technology, non-communications security related threats, and privacy issues, are properly understood.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-arkko-farrell-arch-model-t-04"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC7619" target="https://www.rfc-editor.org/info/rfc7619" quoteTitle="true" derivedAnchor="RFC7619">
+          <front>
+            <title>The NULL Authentication Method in the Internet Key Exchange Protocol Version 2 (IKEv2)</title>
+            <author fullname="V. Smyslov" initials="V." surname="Smyslov"/>
+            <author fullname="P. Wouters" initials="P." surname="Wouters"/>
+            <date month="August" year="2015"/>
+            <abstract>
+              <t indent="0">This document specifies the NULL Authentication method and the ID_NULL Identification Payload ID Type for Internet Key Exchange Protocol version 2 (IKEv2). This allows two IKE peers to establish single-side authenticated or mutual unauthenticated IKE sessions for those use cases where a peer is unwilling or unable to authenticate or identify itself. This ensures IKEv2 can be used for Opportunistic Security (also known as Opportunistic Encryption) to defend against Pervasive Monitoring attacks without the need to sacrifice anonymity.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7619"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7619"/>
+        </reference>
+        <reference anchor="RFC7671" target="https://www.rfc-editor.org/info/rfc7671" quoteTitle="true" derivedAnchor="RFC7671">
+          <front>
+            <title>The DNS-Based Authentication of Named Entities (DANE) Protocol: Updates and Operational Guidance</title>
+            <author fullname="V. Dukhovni" initials="V." surname="Dukhovni"/>
+            <author fullname="W. Hardaker" initials="W." surname="Hardaker"/>
+            <date month="October" year="2015"/>
+            <abstract>
+              <t indent="0">This document clarifies and updates the DNS-Based Authentication of Named Entities (DANE) TLSA specification (RFC 6698), based on subsequent implementation experience. It also contains guidance for implementers, operators, and protocol developers who want to use DANE records.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7671"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7671"/>
+        </reference>
+        <reference anchor="RFC7858" target="https://www.rfc-editor.org/info/rfc7858" quoteTitle="true" derivedAnchor="RFC7858">
+          <front>
+            <title>Specification for DNS over Transport Layer Security (TLS)</title>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <author fullname="L. Zhu" initials="L." surname="Zhu"/>
+            <author fullname="J. Heidemann" initials="J." surname="Heidemann"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This document describes the use of Transport Layer Security (TLS) to provide privacy for DNS. Encryption provided by TLS eliminates opportunities for eavesdropping and on-path tampering with DNS queries in the network, such as discussed in RFC 7626. In addition, this document specifies two usage profiles for DNS over TLS and provides advice on performance considerations to minimize overhead from using TCP and TLS with DNS.</t>
+              <t indent="0">This document focuses on securing stub-to-recursive traffic, as per the charter of the DPRIVE Working Group. It does not prevent future applications of the protocol to recursive-to-authoritative traffic.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7858"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7858"/>
+        </reference>
+        <reference anchor="RFC8484" target="https://www.rfc-editor.org/info/rfc8484" quoteTitle="true" derivedAnchor="RFC8484">
+          <front>
+            <title>DNS Queries over HTTPS (DoH)</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="P. McManus" initials="P." surname="McManus"/>
+            <date month="October" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a protocol for sending DNS queries and getting DNS responses over HTTPS. Each DNS query-response pair is mapped into an HTTP exchange.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8484"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8484"/>
+        </reference>
+        <reference anchor="RFC8499" target="https://www.rfc-editor.org/info/rfc8499" quoteTitle="true" derivedAnchor="RFC8499">
+          <front>
+            <title>DNS Terminology</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="A. Sullivan" initials="A." surname="Sullivan"/>
+            <author fullname="K. Fujiwara" initials="K." surname="Fujiwara"/>
+            <date month="January" year="2019"/>
+            <abstract>
+              <t indent="0">The Domain Name System (DNS) is defined in literally dozens of different RFCs. The terminology used by implementers and developers of DNS protocols, and by operators of DNS systems, has sometimes changed in the decades since the DNS was first defined. This document gives current definitions for many of the terms used in the DNS in a single document.</t>
+              <t indent="0">This document obsoletes RFC 7719 and updates RFC 2308.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="219"/>
+          <seriesInfo name="RFC" value="8499"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8499"/>
+        </reference>
+        <reference anchor="RFC8613" target="https://www.rfc-editor.org/info/rfc8613" quoteTitle="true" derivedAnchor="RFC8613">
+          <front>
+            <title>Object Security for Constrained RESTful Environments (OSCORE)</title>
+            <author fullname="G. Selander" initials="G." surname="Selander"/>
+            <author fullname="J. Mattsson" initials="J." surname="Mattsson"/>
+            <author fullname="F. Palombini" initials="F." surname="Palombini"/>
+            <author fullname="L. Seitz" initials="L." surname="Seitz"/>
+            <date month="July" year="2019"/>
+            <abstract>
+              <t indent="0">This document defines Object Security for Constrained RESTful Environments (OSCORE), a method for application-layer protection of the Constrained Application Protocol (CoAP), using CBOR Object Signing and Encryption (COSE). OSCORE provides end-to-end protection between endpoints communicating using CoAP or CoAP-mappable HTTP. OSCORE is designed for constrained nodes and networks supporting a range of proxy operations, including translation between different transport protocols.</t>
+              <t indent="0">Although an optional functionality of CoAP, OSCORE alters CoAP options processing and IANA registration. Therefore, this document updates RFC 7252.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8613"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8613"/>
+        </reference>
+        <reference anchor="RFC9076" target="https://www.rfc-editor.org/info/rfc9076" quoteTitle="true" derivedAnchor="RFC9076">
+          <front>
+            <title>DNS Privacy Considerations</title>
+            <author fullname="T. Wicinski" initials="T." role="editor" surname="Wicinski"/>
+            <date month="July" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes the privacy issues associated with the use of the DNS by Internet users. It provides general observations about typical current privacy practices. It is intended to be an analysis of the present situation and does not prescribe solutions. This document obsoletes RFC 7626.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9076"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9076"/>
+        </reference>
+        <reference anchor="RFC9250" target="https://www.rfc-editor.org/info/rfc9250" quoteTitle="true" derivedAnchor="RFC9250">
+          <front>
+            <title>DNS over Dedicated QUIC Connections</title>
+            <author fullname="C. Huitema" initials="C." surname="Huitema"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <date month="May" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes the use of QUIC to provide transport confidentiality for DNS. The encryption provided by QUIC has similar properties to those provided by TLS, while QUIC transport eliminates the head-of-line blocking issues inherent with TCP and provides more efficient packet-loss recovery than UDP. DNS over QUIC (DoQ) has privacy properties similar to DNS over TLS (DoT) specified in RFC 7858, and latency characteristics similar to classic DNS over UDP. This specification describes the use of DoQ as a general-purpose transport for DNS and includes the use of DoQ for stub to recursive, recursive to authoritative, and zone transfer scenarios.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9250"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9250"/>
+        </reference>
+        <reference anchor="RFC9463" target="https://www.rfc-editor.org/info/rfc9463" quoteTitle="true" derivedAnchor="RFC9463">
+          <front>
+            <title>DHCP and Router Advertisement Options for the Discovery of Network-designated Resolvers (DNR)</title>
+            <author initials="M." surname="Boucadair" fullname="Mohamed Boucadair" role="editor">
+              <organization showOnFrontPage="true">Orange</organization>
+            </author>
+            <author initials="T." surname="Reddy.K" fullname="Tirumaleswar Reddy.K" role="editor">
+              <organization showOnFrontPage="true">Nokia</organization>
+            </author>
+            <author initials="D." surname="Wing" fullname="Dan Wing">
+              <organization showOnFrontPage="true">Cloud Software Group</organization>
+            </author>
+            <author initials="N." surname="Cook" fullname="Neil Cook">
+              <organization showOnFrontPage="true">Open-Xchange</organization>
+            </author>
+            <author initials="T." surname="Jensen" fullname="Tommy Jensen">
+              <organization showOnFrontPage="true">Microsoft</organization>
+            </author>
+            <date month="November" year="2023"/>
+          </front>
+          <seriesInfo name="RFC" value="9463"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9463"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-configuration-payload-examp">Configuration Payload Examples</name>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.1">
+        <name slugifiedName="name-configuration-of-encrypted-">Configuration of Encrypted IPv6 DNS Resolvers without Suggested Values</name>
+        <t indent="0" pn="section-appendix.a.1-1"><xref target="ex1" format="default" sectionFormat="of" derivedContent="Figure 5"/> depicts an example of a CFG_REQUEST to
+        request the configuration of IPv6 DNS resolvers without providing any
+        suggested values. In this example, the initiator uses the
+        ENCDNS_DIGEST_INFO attribute to indicate that the encrypted DNS client
+        supports SHA2-256 (2), SHA2-384 (3), and SHA2-512 (4) hash algorithms
+        for certificate digests. The label of these algorithms is taken from
+        <xref target="IANA-IKE-HASH" format="default" sectionFormat="of" derivedContent="IANA-IKE-HASH"/>. The use of INTERNAL_IP6_ADDRESS
+        is explained in <xref target="RFC7296" format="default" sectionFormat="of" derivedContent="RFC7296"/> and thus is not
+        reiterated here.</t>
+        <figure anchor="ex1" align="left" suppress-title="false" pn="figure-5">
+          <name slugifiedName="name-example-of-a-cfg_request">Example of a CFG_REQUEST</name>
+          <artwork name="" type="" align="left" alt="" pn="section-appendix.a.1-2.1">CP(CFG_REQUEST) =
+  INTERNAL_IP6_ADDRESS()
+  INTERNAL_IP6_DNS()
+  ENCDNS_IP6()
+  ENCDNS_DIGEST_INFO(0, (SHA2-256, SHA2-384, SHA2-512))
+</artwork>
+        </figure>
+        <t indent="0" pn="section-appendix.a.1-3"><xref target="ex2" format="default" sectionFormat="of" derivedContent="Figure 6"/> depicts an example of a CFG_REPLY that
+        can be sent by a responder as a response to the above CFG_REQUEST. This
+        response indicates the following information to identify the encrypted
+        DNS resolver:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a.1-4">
+          <li pn="section-appendix.a.1-4.1">Its service priority, which is 1.</li>
+          <li pn="section-appendix.a.1-4.2">Its single (1) IPv6 address (2001:db8:99:88:77:66:55:44).</li>
+          <li pn="section-appendix.a.1-4.3">Its ADN (doh.example.com). This ADN has
+            a length of 15.</li>
+          <li pn="section-appendix.a.1-4.4">Its supported HTTP version (h2).</li>
+          <li pn="section-appendix.a.1-4.5">The relative form of the URI Template (/dns-query{?dns}).</li>
+          <li pn="section-appendix.a.1-4.6">The SPKI hash of the resolver's certificate using SHA2-256
+            (8b6e7a5971cc6bb0b4db5a71...).</li>
+        </ul>
+        <figure anchor="ex2" align="left" suppress-title="false" pn="figure-6">
+          <name slugifiedName="name-example-of-a-cfg_reply">Example of a CFG_REPLY</name>
+          <artwork name="" type="" align="left" alt="" pn="section-appendix.a.1-5.1">CP(CFG_REPLY) =
+  INTERNAL_IP6_ADDRESS(2001:db8:0:1:2:3:4:5/64)
+  ENCDNS_IP6(1, 1, 15,
+                (2001:db8:99:88:77:66:55:44),
+                "doh.example.com",
+                (alpn=h2 dohpath=/dns-query{?dns}))
+  ENCDNS_DIGEST_INFO(0, SHA2-256,
+                        8b6e7a5971cc6bb0b4db5a71...)
+</artwork>
+        </figure>
+        <t indent="0" pn="section-appendix.a.1-6">In the example depicted in <xref target="ex2" format="default" sectionFormat="of" derivedContent="Figure 6"/>, no ADN is
+        included in the ENCDNS_DIGEST_INFO attribute because only one ADN is
+        provided in the ENCDNS_IP6 attribute. Identifying the encrypted resolver
+        associated with the supplied digest is therefore unambiguous.</t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.2">
+        <name slugifiedName="name-configuration-of-encrypted-i">Configuration of Encrypted IPv6 DNS Resolvers with Suggested Values</name>
+        <t indent="0" pn="section-appendix.a.2-1">An initiator may provide suggested values in the CFG_REQUEST when
+        requesting an encrypted DNS resolver. For example, the initiator
+        may:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a.2-2">
+          <li pn="section-appendix.a.2-2.1">
+            <t indent="0" pn="section-appendix.a.2-2.1.1">Indicate a preferred resolver that is identified by an IPv6
+            address (see <xref target="ex3" format="default" sectionFormat="of" derivedContent="Figure 7"/>).</t>
+            <figure anchor="ex3" align="left" suppress-title="false" pn="figure-7">
+              <name slugifiedName="name-example-of-a-cfg_request-wi">Example of a CFG_REQUEST with a Preferred Resolver Identified by Its IP Address</name>
+              <artwork name="" type="" align="left" alt="" pn="section-appendix.a.2-2.1.2.1">CP(CFG_REQUEST) =
+  INTERNAL_IP6_ADDRESS()
+  INTERNAL_IP6_DNS()
+  ENCDNS_IP6(1, 1, 0,
+                (2001:db8:99:88:77:66:55:44))
+</artwork>
+            </figure>
+          </li>
+          <li pn="section-appendix.a.2-2.2">
+            <t indent="0" pn="section-appendix.a.2-2.2.1">Indicate a preferred resolver that is identified by an ADN (see
+            <xref target="ex4" format="default" sectionFormat="of" derivedContent="Figure 8"/>).</t>
+            <figure anchor="ex4" align="left" suppress-title="false" pn="figure-8">
+              <name slugifiedName="name-example-of-a-cfg_request-wit">Example of a CFG_REQUEST with a Preferred Resolver Identified by Its ADN</name>
+              <artwork name="" type="" align="left" alt="" pn="section-appendix.a.2-2.2.2.1">CP(CFG_REQUEST) =
+  INTERNAL_IP6_ADDRESS()
+  INTERNAL_IP6_DNS()
+  ENCDNS_IP6(1, 0, 15, "doh.example.com")
+</artwork>
+            </figure>
+          </li>
+          <li pn="section-appendix.a.2-2.3">
+            <t indent="0" pn="section-appendix.a.2-2.3.1">Indicate a preferred transport protocol (DoT, in the example
+            depicted in <xref target="ex5" format="default" sectionFormat="of" derivedContent="Figure 9"/>).</t>
+            <figure anchor="ex5" align="left" suppress-title="false" pn="figure-9">
+              <name slugifiedName="name-example-of-a-cfg_request-with">Example of a CFG_REQUEST with a Preferred Transport Protocol</name>
+              <artwork name="" type="" align="left" alt="" pn="section-appendix.a.2-2.3.2.1">CP(CFG_REQUEST) =
+  INTERNAL_IP6_ADDRESS()
+  INTERNAL_IP6_DNS()
+  ENCDNS_IP6(1, 0, 0, (alpn=dot))
+</artwork>
+            </figure>
+          </li>
+          <li pn="section-appendix.a.2-2.4">or any combination thereof.</li>
+        </ul>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.3">
+        <name slugifiedName="name-split-dns">Split DNS</name>
+        <t indent="0" pn="section-appendix.a.3-1">An initiator may also indicate that it supports Split DNS by
+        including the INTERNAL_DNS_DOMAIN attribute in a CFG_REQUEST as shown
+        in <xref target="ex6" format="default" sectionFormat="of" derivedContent="Figure 10"/>. In this example, the initiator does not
+        indicate any preference for the requested encrypted DNS server, nor does it indicate
+        which DNS queries will be forwarded through the IPsec tunnel.</t>
+        <figure anchor="ex6" align="left" suppress-title="false" pn="figure-10">
+          <name slugifiedName="name-example-of-a-cfg_request-with-">Example of a CFG_REQUEST with Support for Split DNS</name>
+          <artwork name="" type="" align="left" alt="" pn="section-appendix.a.3-2.1">CP(CFG_REQUEST) =
+  INTERNAL_IP6_ADDRESS()
+  INTERNAL_IP6_DNS()
+  ENCDNS_IP6()
+  INTERNAL_DNS_DOMAIN()
+</artwork>
+        </figure>
+        <t indent="0" pn="section-appendix.a.3-3"><xref target="ex7" format="default" sectionFormat="of" derivedContent="Figure 11"/> shows an example of the responder's reply. Absent any prohibited local policy, the initiator uses the
+        encrypted DNS server (doh.example.com) for any subsequent DNS queries
+        for "example.com" and its subdomains.</t>
+        <figure anchor="ex7" align="left" suppress-title="false" pn="figure-11">
+          <name slugifiedName="name-example-of-a-cfg_reply-with">Example of a CFG_REPLY with INTERNAL_DNS_DOMAIN</name>
+          <artwork name="" type="" align="left" alt="" pn="section-appendix.a.3-4.1">CP(CFG_REPLY) =
+  INTERNAL_IP6_ADDRESS(2001:db8:0:1:2:3:4:5/64)
+  ENCDNS_IP6(1, 1, 15,
+                (2001:db8:99:88:77:66:55:44),
+                "doh.example.com",
+                (alpn=h2 dohpath=/dns-query{?dns}))
+  INTERNAL_DNS_DOMAIN(example.com)
+</artwork>
+        </figure>
+      </section>
+    </section>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.b">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.b-1">Many thanks to <contact fullname="Yoav Nir"/>, <contact fullname="Christian Jacquenet"/>, <contact fullname="Paul Wouters"/>, and <contact fullname="Tommy Pauly"/> for their reviews and comments.</t>
+      <t indent="0" pn="section-appendix.b-2"><contact fullname="Yoav"/> and <contact fullname="Paul"/> suggested the use of one single attribute carrying both
+      the name and an IP address instead of depending on the existing
+      INTERNAL_IP6_DNS and INTERNAL_IP4_DNS attributes.</t>
+      <t indent="0" pn="section-appendix.b-3">Thanks to <contact fullname="Tero Kivinen"/> for the Shepherd review and <contact fullname="Roman Danyliw"/> for
+      the AD review.</t>
+      <t indent="0" pn="section-appendix.b-4">Thanks to <contact fullname="Stewart Bryant"/> for the gen-art review, <contact fullname="Dhruv Dhody"/> for the
+      ops-dir review, and <contact fullname="Patrick Mevzek"/> for the dns-dir review.</t>
+      <t indent="0" pn="section-appendix.b-5">Thanks to <contact fullname="Paul Wouters"/>, <contact fullname="Zaheduzzaman Sarker"/>, <contact fullname="Éric Vyncke"/>, and <contact fullname="Robert Wilton"/> for their comments during the IESG review.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Mohamed Boucadair" initials="M." surname="Boucadair">
+        <organization showOnFrontPage="true">Orange</organization>
+        <address>
+          <postal>
+            <street/>
+            <city>Rennes</city>
+            <code>35000</code>
+            <country>France</country>
+          </postal>
+          <email>mohamed.boucadair@orange.com</email>
+        </address>
+      </author>
+      <author fullname="Tirumaleswar Reddy.K" initials="T." surname="Reddy.K">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <postal>
+            <street/>
+            <city/>
+            <region/>
+            <code/>
+            <country>India</country>
+          </postal>
+          <email>kondtir@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Dan Wing" initials="D." surname="Wing">
+        <organization abbrev="Cloud Software Group" showOnFrontPage="true">Cloud Software Group Holdings, Inc.</organization>
+        <address>
+          <postal>
+            <street/>
+            <country>United States of America</country>
+          </postal>
+          <email>dwing-ietf@fuggles.com</email>
+        </address>
+      </author>
+      <author fullname="Valery Smyslov" initials="V." surname="Smyslov">
+        <organization showOnFrontPage="true">ELVIS-PLUS</organization>
+        <address>
+          <postal>
+            <street/>
+            <city/>
+            <region/>
+            <code/>
+            <country>Russian Federation</country>
+          </postal>
+          <email>svan@elvis.ru</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

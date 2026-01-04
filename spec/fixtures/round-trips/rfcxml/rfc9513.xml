@@ -1,0 +1,1861 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-lsr-ospfv3-srv6-extensions-15" number="9513" ipr="trust200902" obsoletes="" updates="" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="true" prepTime="2023-12-05T15:42:31" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-lsr-ospfv3-srv6-extensions-15" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9513" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="OSPFv3 Extensions for SRV6">OSPFv3 Extensions for Segment Routing over IPv6 (SRv6)</title>
+    <seriesInfo name="RFC" value="9513" stream="IETF"/>
+    <author fullname="Zhenbin Li" initials="Z." surname="Li">
+      <organization showOnFrontPage="true">Huawei Technologies</organization>
+      <address>
+        <email>lizhenbin@huawei.com</email>
+      </address>
+    </author>
+    <author fullname="Zhibo Hu" initials="Z." surname="Hu">
+      <organization showOnFrontPage="true">Huawei Technologies</organization>
+      <address>
+        <email>huzhibo@huawei.com</email>
+      </address>
+    </author>
+    <author fullname="Ketan Talaulikar" initials="K" role="editor" surname="Talaulikar">
+      <organization showOnFrontPage="true">Cisco Systems</organization>
+      <address>
+        <postal>
+          <country>India</country>
+        </postal>
+        <email>ketant.ietf@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Peter Psenak" initials="P." surname="Psenak">
+      <organization showOnFrontPage="true">Cisco Systems</organization>
+      <address>
+        <postal>
+          <country>Slovakia</country>
+        </postal>
+        <email>ppsenak@cisco.com</email>
+      </address>
+    </author>
+    <date month="12" year="2023"/>
+    <area>rtg</area>
+    <workgroup>lsr</workgroup>
+    <keyword>OSPF</keyword>
+    <keyword>OSPFv3</keyword>
+    <keyword>Segment Routing</keyword>
+    <keyword>SRv6</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">The Segment Routing (SR) architecture allows a flexible definition of
+      the end-to-end path by encoding it as a sequence of topological elements
+      called segments. It can be implemented over an MPLS or IPv6 data plane.
+      This document describes the OSPFv3 extensions required to support
+      SR over the IPv6 data plane.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9513" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-capabilities-tlv">SRv6 Capabilities TLV</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-advertisement-of-supported-">Advertisement of Supported Algorithms</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-advertisement-of-maximum-sr">Advertisement of Maximum SRv6 SID Depths</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-maximum-segments-left-msd-t">Maximum Segments Left MSD Type</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-maximum-end-pop-msd-type">Maximum End Pop MSD Type</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-maximum-hencaps-msd-type">Maximum H.Encaps MSD Type</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.4">
+                <t indent="0" pn="section-toc.1-1.4.2.4.1"><xref derivedContent="4.4" format="counter" sectionFormat="of" target="section-4.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-maximum-end-d-msd-type">Maximum End D MSD Type</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-sids-and-reachability">SRv6 SIDs and Reachability</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-flexible-algorithm">SRv6 Flexible Algorithm</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-advertisement-of-anycast-pr">Advertisement of Anycast Property</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-locator-lsa">SRv6 Locator LSA</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-locator-tlv">SRv6 Locator TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-locator-sub-tlvs">SRv6 Locator Sub-TLVs</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-advertisement-of-srv6-end-s">Advertisement of SRv6 End SIDs</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-advertisement-of-srv6-sids-">Advertisement of SRv6 SIDs Associated with Adjacencies</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-endx-sid-sub-tlv">SRv6 End.X SID Sub-TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-lan-endx-sid-sub-tlv">SRv6 LAN End.X SID Sub-TLV</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-sid-structure-sub-tlv">SRv6 SID Structure Sub-TLV</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="11" format="counter" sectionFormat="of" target="section-11"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-advertising-endpoint-behavi">Advertising Endpoint Behaviors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="12" format="counter" sectionFormat="of" target="section-12"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="13" format="counter" sectionFormat="of" target="section-13"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.13.2">
+              <li pn="section-toc.1-1.13.2.1">
+                <t indent="0" pn="section-toc.1-1.13.2.1.1"><xref derivedContent="13.1" format="counter" sectionFormat="of" target="section-13.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ospf-router-information-tlv">OSPF Router Information TLVs</xref></t>
+              </li>
+              <li pn="section-toc.1-1.13.2.2">
+                <t indent="0" pn="section-toc.1-1.13.2.2.1"><xref derivedContent="13.2" format="counter" sectionFormat="of" target="section-13.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ospfv3-lsa-function-codes">OSPFv3 LSA Function Codes</xref></t>
+              </li>
+              <li pn="section-toc.1-1.13.2.3">
+                <t indent="0" pn="section-toc.1-1.13.2.3.1"><xref derivedContent="13.3" format="counter" sectionFormat="of" target="section-13.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ospfv3-prefix-options">OSPFv3 Prefix Options</xref></t>
+              </li>
+              <li pn="section-toc.1-1.13.2.4">
+                <t indent="0" pn="section-toc.1-1.13.2.4.1"><xref derivedContent="13.4" format="counter" sectionFormat="of" target="section-13.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ospfv3-srv6-capabilities-tl">OSPFv3 SRv6 Capabilities TLV Flags</xref></t>
+              </li>
+              <li pn="section-toc.1-1.13.2.5">
+                <t indent="0" pn="section-toc.1-1.13.2.5.1"><xref derivedContent="13.5" format="counter" sectionFormat="of" target="section-13.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ospfv3-srv6-end-sid-sub-tlv">OSPFv3 SRv6 End SID Sub-TLV Flags</xref></t>
+              </li>
+              <li pn="section-toc.1-1.13.2.6">
+                <t indent="0" pn="section-toc.1-1.13.2.6.1"><xref derivedContent="13.6" format="counter" sectionFormat="of" target="section-13.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ospfv3-srv6-adjacency-sid-s">OSPFv3 SRv6 Adjacency SID Sub-TLV Flags</xref></t>
+              </li>
+              <li pn="section-toc.1-1.13.2.7">
+                <t indent="0" pn="section-toc.1-1.13.2.7.1"><xref derivedContent="13.7" format="counter" sectionFormat="of" target="section-13.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ospfv3-extended-lsa-sub-tlv">OSPFv3 Extended-LSA Sub-TLVs</xref></t>
+              </li>
+              <li pn="section-toc.1-1.13.2.8">
+                <t indent="0" pn="section-toc.1-1.13.2.8.1"><xref derivedContent="13.8" format="counter" sectionFormat="of" target="section-13.8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ospfv3-srv6-locator-lsa-tlv">OSPFv3 SRv6 Locator LSA TLVs</xref></t>
+              </li>
+              <li pn="section-toc.1-1.13.2.9">
+                <t indent="0" pn="section-toc.1-1.13.2.9.1"><xref derivedContent="13.9" format="counter" sectionFormat="of" target="section-13.9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ospfv3-srv6-locator-lsa-sub">OSPFv3 SRv6 Locator LSA Sub-TLVs</xref></t>
+              </li>
+              <li pn="section-toc.1-1.13.2.10">
+                <t indent="0" pn="section-toc.1-1.13.2.10.1"><xref derivedContent="13.10" format="counter" sectionFormat="of" target="section-13.10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-ospfv3-extended-lsa-sub-tlvs">OSPFv3 Extended-LSA Sub-TLVs</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.14">
+            <t indent="0" pn="section-toc.1-1.14.1"><xref derivedContent="14" format="counter" sectionFormat="of" target="section-14"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.14.2">
+              <li pn="section-toc.1-1.14.2.1">
+                <t indent="0" pn="section-toc.1-1.14.2.1.1"><xref derivedContent="14.1" format="counter" sectionFormat="of" target="section-14.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.14.2.2">
+                <t indent="0" pn="section-toc.1-1.14.2.2.1"><xref derivedContent="14.2" format="counter" sectionFormat="of" target="section-14.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.15">
+            <t indent="0" pn="section-toc.1-1.15.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.16">
+            <t indent="0" pn="section-toc.1-1.16.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="intro" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">The Segment Routing (SR) architecture <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>
+      specifies how a node can steer a packet using an ordered list of
+      instructions called segments. These segments are identified using
+      Segment Identifiers (SIDs).</t>
+      <t indent="0" pn="section-1-2">SR can be instantiated on the IPv6 data plane through
+      the use of the Segment Routing Header (SRH) defined in <xref target="RFC8754" format="default" sectionFormat="of" derivedContent="RFC8754"/>. SR instantiation on the IPv6 data plane
+      is referred to as SRv6.</t>
+      <t indent="0" pn="section-1-3">The network programming paradigm for SRv6 is specified in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>. It describes how any behavior can be bound to a SID
+      and how any network program can be expressed as a combination of SIDs.
+      It also describes several well-known behaviors that can be bound to SRv6
+      SIDs.</t>
+      <t indent="0" pn="section-1-4">This document specifies OSPFv3 extensions to support SRv6
+      capabilities as defined in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>, <xref target="RFC8754" format="default" sectionFormat="of" derivedContent="RFC8754"/>, and <xref target="RFC9259" format="default" sectionFormat="of" derivedContent="RFC9259"/>. The extensions include
+      advertisement of an OSPFv3 router's SRv6 capabilities, SRv6 Locators,
+      and required SRv6 SIDs along with their supported Endpoint behaviors.
+      Familiarity with <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/> is necessary to understand the
+      extensions specified in this document.</t>
+      <t indent="0" pn="section-1-5">At a high level, the extensions to OSPFv3 are comprised of the
+      following:</t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-1-6"><li pn="section-1-6.1" derivedCounter="1.">An SRv6 Capabilities TLV to advertise the SRv6 features and SRH
+          operations supported by an OSPFv3 router.</li>
+        <li pn="section-1-6.2" derivedCounter="2.">Several sub-TLVs to advertise various SRv6 Maximum SID
+          Depths.</li>
+        <li pn="section-1-6.3" derivedCounter="3.">An SRv6 Locator TLV using an SRv6 Locator Link State
+          Advertisement (LSA) to advertise the SRv6 Locator -- a form of
+          summary address for the IGP algorithm-specific SIDs instantiated on
+          an OSPFv3 router.</li>
+        <li pn="section-1-6.4" derivedCounter="4.">TLVs and sub-TLVs to advertise the SRv6 SIDs instantiated on an
+          OSPFv3 router along with their Endpoint behaviors.</li>
+      </ol>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.1">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+        </t>
+      </section>
+    </section>
+    <section anchor="capability" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-srv6-capabilities-tlv">SRv6 Capabilities TLV</name>
+      <t indent="0" pn="section-2-1">The SRv6 Capabilities TLV is used by an OSPFv3 router to advertise
+      its support for the SR Segment Endpoint Node <xref target="RFC8754" format="default" sectionFormat="of" derivedContent="RFC8754"/>
+      functionality along with its SRv6-related capabilities. This is an
+      optional top-level TLV of the OSPFv3 Router Information LSA <xref target="RFC7770" format="default" sectionFormat="of" derivedContent="RFC7770"/> that <bcp14>MUST</bcp14> be advertised by an SRv6-enabled
+      router.</t>
+      <t indent="0" pn="section-2-2">This TLV <bcp14>MUST</bcp14> be advertised only once in the OSPFv3 Router
+      Information LSA. When multiple SRv6 Capabilities TLVs are received from
+      a given router, the receiver <bcp14>MUST</bcp14> use the first occurrence of the TLV in
+      the OSPFv3 Router Information LSA. If the SRv6 Capabilities TLV appears
+      in multiple OSPFv3 Router Information LSAs that have different flooding
+      scopes, the TLV in the OSPFv3 Router Information LSA with the
+      area-scoped flooding scope <bcp14>MUST</bcp14> be used. If the SRv6 Capabilities TLV
+      appears in multiple OSPFv3 Router Information LSAs that have the same
+      flooding scope, the TLV in the OSPFv3 Router Information LSA with the
+      numerically smallest Link State ID <bcp14>MUST</bcp14> be used, and subsequent instances
+      of the TLV <bcp14>MUST</bcp14> be ignored.</t>
+      <t indent="0" pn="section-2-3">The OSPFv3 Router Information LSA can be advertised at any of the
+      defined flooding scopes (link, area, or Autonomous System (AS)). 
+For the
+      purpose of SRv6 Capabilities TLV advertisement, area-scoped flooding is
+      <bcp14>REQUIRED</bcp14>. Link and AS-scoped flooding is <bcp14>OPTIONAL</bcp14>.</t>
+      <t indent="0" pn="section-2-4">The format of the OSPFv3 SRv6 Capabilities TLV is shown below:</t>
+      <figure anchor="SRV6CAPFMT" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-srv6-capabilities-tlv-2">SRv6 Capabilities TLV</name>
+        <artwork name="" type="" align="center" alt="" pn="section-2-5.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Flags             |            Reserved           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Sub-TLVs...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-2-6">where:</t>
+      <dl newline="false" indent="3" spacing="normal" pn="section-2-7">
+        <dt pn="section-2-7.1">Type:</dt>
+        <dd pn="section-2-7.2">2-octet field. The value for this type is 20.</dd>
+        <dt pn="section-2-7.3">Length:</dt>
+        <dd pn="section-2-7.4">2-octet field. The total length (in octets) of the value
+          portion of the TLV, including nested sub-TLVs.</dd>
+        <dt pn="section-2-7.5">Reserved:</dt>
+        <dd pn="section-2-7.6">2-octet field. It <bcp14>MUST</bcp14> be set to 0 on transmission and
+          <bcp14>MUST</bcp14> be ignored on receipt.</dd>
+        <dt pn="section-2-7.7">Flags:</dt>
+        <dd pn="section-2-7.8">
+          <t indent="0" pn="section-2-7.8.1">2-octet field. The flags are defined as follows:</t>
+          <artwork name="" type="" align="left" alt="" pn="section-2-7.8.2">
+ 0                   1
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| |O|                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+</artwork>
+          <t indent="0" pn="section-2-7.8.3">where:</t>
+          <dl newline="false" indent="3" spacing="normal" pn="section-2-7.8.4">
+            <dt pn="section-2-7.8.4.1">O-flag:</dt>
+            <dd pn="section-2-7.8.4.2">If set, then the router is capable of supporting the
+              O-flag in the SRH flags, as specified in <xref target="RFC9259" format="default" sectionFormat="of" derivedContent="RFC9259"/>.</dd>
+            <dt pn="section-2-7.8.4.3">Other flags are not defined and are reserved for future use.
+              They <bcp14>MUST</bcp14> be set to 0 on transmission and
+              <bcp14>MUST</bcp14> be ignored on receipt.</dt>
+            <dd pn="section-2-7.8.4.4"/>
+          </dl>
+        </dd>
+      </dl>
+      <t indent="0" pn="section-2-8">The SRv6 Capabilities TLV may contain optional sub-TLVs. No sub-TLVs
+      are defined in this specification.</t>
+    </section>
+    <section anchor="algorithm" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-advertisement-of-supported-">Advertisement of Supported Algorithms</name>
+      <t indent="0" pn="section-3-1">An SRv6-enabled OSPFv3 router advertises its algorithm support using
+      the SR-Algorithm TLV defined in <xref target="RFC8665" format="default" sectionFormat="of" derivedContent="RFC8665"/> and as described in
+      <xref target="RFC8666" format="default" sectionFormat="of" derivedContent="RFC8666"/>.</t>
+    </section>
+    <section anchor="SRH-limits" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-advertisement-of-maximum-sr">Advertisement of Maximum SRv6 SID Depths</name>
+      <t indent="0" pn="section-4-1">An SRv6-enabled router may have different capabilities and limits
+      related to SRH processing. These need to be advertised to other
+      OSPFv3 routers in the SRv6 domain.</t>
+      <t indent="0" pn="section-4-2"><xref target="RFC8476" format="default" sectionFormat="of" derivedContent="RFC8476"/> defines the means to advertise node- and link-specific values for Maximum SID Depth (MSD) types. Node MSDs are
+      advertised using the Node MSD TLV in the OSPFv3 Router Information LSA
+      <xref target="RFC7770" format="default" sectionFormat="of" derivedContent="RFC7770"/>, while Link MSDs are advertised using the Link
+      MSD sub-TLV of the Router-Link TLV <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/>. The format
+      of the MSD types for OSPFv3 is defined in <xref target="RFC8476" format="default" sectionFormat="of" derivedContent="RFC8476"/>.</t>
+      <t indent="0" pn="section-4-3">The MSD types for SRv6 that are defined in <xref target="RFC9352" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9352#section-4" derivedContent="RFC9352"/> for IS-IS are also used by OSPFv3. These MSD types
+      are allocated in the "IGP MSD-Types" registry maintained by IANA and
+      are shared by IS-IS and OSPF. They are described in the subsections below.</t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.1">
+        <name slugifiedName="name-maximum-segments-left-msd-t">Maximum Segments Left MSD Type</name>
+        <t indent="0" pn="section-4.1-1">The Maximum Segments Left MSD Type signals the maximum value of the
+        Segments Left field of the SRH of a received packet before applying
+        the Endpoint behavior associated with a SID. If no value is
+        advertised, the supported value is assumed to be 0.</t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.2">
+        <name slugifiedName="name-maximum-end-pop-msd-type">Maximum End Pop MSD Type</name>
+        <t indent="0" pn="section-4.2-1">The Maximum End Pop MSD Type signals the maximum number of SIDs in
+        the SRH to which the router can apply "Penultimate Segment Pop (PSP)
+        of the SRH" or "Ultimate Segment Pop (USP) of the SRH", which are flavors defined in
+        <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>. If the advertised value is zero or
+        no value is advertised, then the router cannot apply the PSP or USP
+        flavors.</t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.3">
+        <name slugifiedName="name-maximum-hencaps-msd-type">Maximum H.Encaps MSD Type</name>
+        <t indent="0" pn="section-4.3-1">The Maximum H.Encaps MSD Type signals the maximum number of SIDs
+        that can be added as part of the H.Encaps behavior as defined in
+        <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>. If the advertised value is zero or no value
+        is advertised, then the headend can apply an SR Policy that only
+        contains one segment without inserting any SRH. A non-zero SRH Max
+        H.Encaps MSD indicates that the headend can insert an SRH with SIDs up
+        to the advertised value.</t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.4">
+        <name slugifiedName="name-maximum-end-d-msd-type">Maximum End D MSD Type</name>
+        <t indent="0" pn="section-4.4-1">The Maximum End D MSD Type specifies the maximum number of SIDs
+        present in an SRH when performing decapsulation. These include, but
+        are not limited to, End.DX6, End.DT4, End.DT46, End with USD, and
+        End.X with USD as defined in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>. If the
+        advertised value is zero or no value is advertised, then the router
+        cannot apply any behavior that results in decapsulation and forwarding
+        of the inner packet when the outer IPv6 header contains an SRH.</t>
+      </section>
+    </section>
+    <section anchor="SRv6-SID" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-srv6-sids-and-reachability">SRv6 SIDs and Reachability</name>
+      <t indent="0" pn="section-5-1">An SRv6 SID is 128 bits and consists of locator,
+      function, and argument parts as described in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>.</t>
+      <t indent="0" pn="section-5-2">An OSPFv3 router is provisioned with algorithm-specific locators for
+      each algorithm supported by that router. Each locator is a covering
+      prefix for all SIDs provisioned on that router that have the matching
+      algorithm.</t>
+      <t indent="0" pn="section-5-3">Locators <bcp14>MUST</bcp14> be advertised within an SRv6 Locator TLV (see <xref target="LOCTLV" format="default" sectionFormat="of" derivedContent="Section 7.1"/>) using an SRv6 Locator LSA (see <xref target="LOCLSA" format="default" sectionFormat="of" derivedContent="Section 7"/>). The SRv6 Locator LSA is introduced instead of
+      reusing the respective Extended Prefix LSAs <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/> for
+      a clear distinction between the two different types of reachability
+      advertisements (viz., the base OSPFv3 prefix reachability advertisements
+      and the SRv6 Locator reachability advertisements).</t>
+      <t indent="0" pn="section-5-4">Forwarding entries for the locators advertised in the SRv6 Locator
+      TLV <bcp14>MUST</bcp14> be installed in the forwarding plane of receiving SRv6-capable
+      routers when the associated algorithm is supported by the receiving
+      OSPFv3 router. Locators can be of different route types that map to
+      existing OSPFv3 LSA types: Intra-Area, Inter-Area, External, and Not-So-Stubby Area (NSSA).
+      The advertisement and propagation of the SRv6 Locator LSAs also follow
+      the OSPFv3 <xref target="RFC5340" format="default" sectionFormat="of" derivedContent="RFC5340"/> specifications for the respective
+      LSA types. The processing of the prefix advertised in the SRv6 Locator
+      TLV, the calculation of its reachability, and the installation in the
+      forwarding plane follows the OSPFv3 <xref target="RFC5340" format="default" sectionFormat="of" derivedContent="RFC5340"/>
+      specifications for the respective LSA types.</t>
+      <t indent="0" pn="section-5-5">Locators associated with algorithms 0 and 1 (refer to <xref target="RFC8402" sectionFormat="of" section="3.1.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8402#section-3.1.1" derivedContent="RFC8402"/>) <bcp14>SHOULD</bcp14> also be advertised using Extended LSA types with extended TLVs <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/> so that
+      routers that do not support SRv6 will install a forwarding entry for
+      SRv6 traffic matching those locators. When operating in Extended LSA
+      sparse-mode <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/>, these locators <bcp14>SHOULD</bcp14> also be
+      advertised using Legacy LSAs <xref target="RFC5340" format="default" sectionFormat="of" derivedContent="RFC5340"/>.</t>
+      <t indent="0" pn="section-5-6">When SRv6 Locators are also advertised as Intra-Area-Prefix-LSAs
+      and/or E-Intra-Area-Prefix-LSAs, the SRv6 Locator <bcp14>MUST</bcp14> be considered as
+      a prefix associated with the router, and the referenced LSA type <bcp14>MUST</bcp14>
+      point to the Router LSA of the advertising router as specified in
+      <xref target="RFC5340" sectionFormat="of" section="4.4.3.9" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5340#section-4.4.3.9" derivedContent="RFC5340"/>.</t>
+      <t indent="0" pn="section-5-7">In cases where a locator advertisement is received both in a prefix
+      reachability advertisement (i.e., via Legacy LSAs and/or Extended
+      Prefix TLVs using Extended LSAs) and an SRv6 Locator TLV, the
+      prefix reachability advertisement in the Legacy LSA or Extended
+      LSA <bcp14>MUST</bcp14> be preferred over the advertisement in the SRv6 Locator TLV
+      when installing entries in the forwarding plane. This prevents
+      inconsistent forwarding entries between SRv6-capable and SRv6-incapable
+      OSPFv3 routers. Such preference for prefix reachability advertisement
+      does not have any impact on the rest of the data advertised in the SRv6
+      Locator TLV.</t>
+      <t indent="0" pn="section-5-8">SRv6 SIDs are advertised as sub-TLVs in the SRv6 Locator TLV except
+      for SRv6 End.X SIDs and LAN End.X SIDs, which are associated with a specific
+      neighbor/link and are therefore advertised as sub-TLVs of the
+      E-Router-Link TLV.</t>
+      <t indent="0" pn="section-5-9">SRv6 SIDs received from other OSFPv3 routers are not directly
+      routable and <bcp14>MUST NOT</bcp14> be installed in the forwarding plane. Reachability
+      to SRv6 SIDs depends upon the existence of a covering locator.</t>
+      <t indent="0" pn="section-5-10">Adherence to the rules defined in this section will ensure that SRv6
+      SIDs associated with a supported algorithm will be forwarded correctly,
+      while SRv6 SIDs associated with an unsupported algorithm will be
+      dropped.</t>
+      <aside pn="section-5-11">
+        <t indent="0" pn="section-5-11.1">NOTE: The drop behavior depends on the absence of a
+      default/summary route matching the locator prefix.</t>
+      </aside>
+      <t indent="0" pn="section-5-12">If the locator associated with SRv6 SID advertisements is the longest
+      prefix match installed in the forwarding plane for those SIDs, this will
+      ensure correct forwarding. Network operators should take steps to make
+      sure that this requirement is not compromised. For example, the
+      following situations should be avoided:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-13">
+        <li pn="section-5-13.1">Another locator associated with a different algorithm is the
+          longest prefix match.</li>
+        <li pn="section-5-13.2">Another prefix advertised via Legacy or Extended LSA
+          advertisement is the longest prefix match.</li>
+      </ul>
+      <section anchor="SRV6FA" numbered="true" toc="include" removeInRFC="false" pn="section-5.1">
+        <name slugifiedName="name-srv6-flexible-algorithm">SRv6 Flexible Algorithm</name>
+        <t indent="0" pn="section-5.1-1"><xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/> specifies IGP Flexible Algorithm
+        mechanisms for OSPFv3. 
+<xref target="RFC9350" sectionFormat="of" section="14.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9350#section-14.2" derivedContent="RFC9350"/>
+        explains SRv6 forwarding for Flexible Algorithms, and analogous
+        procedures apply for supporting SRv6 Flexible Algorithms using OSPFv3.
+        When the algorithm value that is advertised in the SRv6 Locator TLV
+        (refer to <xref target="LOCTLV" format="default" sectionFormat="of" derivedContent="Section 7.1"/>) represents a Flexible Algorithm,
+        the procedures described in <xref target="RFC9350" sectionFormat="of" section="14.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9350#section-14.2" derivedContent="RFC9350"/>
+        are followed for the programming of those specific SRv6 Locators.</t>
+        <t indent="0" pn="section-5.1-2">Locators associated with Flexible Algorithms <bcp14>SHOULD NOT</bcp14> be
+        advertised in the base OSPFv3 prefix reachability advertisements.
+        Advertising the Flexible Algorithm locator in a regular prefix
+        reachability advertisement would make it available for non-Flexible
+        Algorithm forwarding (i.e., algorithm 0).</t>
+        <t indent="0" pn="section-5.1-3">The procedures for OSPFv3 Flexible Algorithm for SR-MPLS, as specified in <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>, also apply for SRv6; these procedures include a) ASBR reachability,
+b) inter-area, external, and NSSA prefix advertisements, and c) the use of
+those prefix advertisements in Flexible Algorithm route computation.</t>
+      </section>
+    </section>
+    <section anchor="ANYCAST" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-advertisement-of-anycast-pr">Advertisement of Anycast Property</name>
+      <t indent="0" pn="section-6-1">Both prefixes and SRv6 Locators may be configured as anycast, and as
+      such, the same value can be advertised by multiple routers. It is useful
+      for other routers to know that the advertisement is for an anycast
+      identifier.</t>
+      <t indent="0" pn="section-6-2">The AC-bit (value 0x80) in the OSPFv3 PrefixOptions field <xref target="RFC5340" format="default" sectionFormat="of" derivedContent="RFC5340"/> is defined
+      to advertise the anycast property:</t>
+      <figure anchor="PFXOPTIONS" align="left" suppress-title="false" pn="figure-2">
+        <name slugifiedName="name-ospfv3-prefix-options-field">OSPFv3 Prefix Options Field</name>
+        <artwork name="" type="" alt="" align="center" pn="section-6-3.1">
+ 0  1  2  3  4  5  6  7
++--+--+--+--+--+--+--+--+
+|AC|EL| N|DN| P| x|LA|NU|
++--+--+--+--+--+--+--+--+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-6-4">When the prefix/SRv6 Locator is configured as anycast, the AC-bit
+      <bcp14>MUST</bcp14> be set. Otherwise, this flag <bcp14>MUST</bcp14> be clear.</t>
+      <t indent="0" pn="section-6-5">The AC-bit <bcp14>MUST</bcp14> be preserved when re-advertising the prefix/SRv6
+      Locator across areas.</t>
+      <t indent="0" pn="section-6-6">The AC-bit and the N-bit <bcp14>MUST NOT</bcp14> both be set. If the N-bit and
+      AC-bit are both set in the prefix/SRv6 Locator advertisement, the receiving
+      routers <bcp14>MUST</bcp14> ignore the N-bit.</t>
+      <t indent="0" pn="section-6-7">The same prefix/SRv6 Locator can be advertised by multiple routers.
+      If at least one of them sets the AC-bit in its advertisement, the
+      prefix/SRv6 Locator is considered as anycast.</t>
+      <t indent="0" pn="section-6-8">A prefix/SRv6 Locator that is advertised by a single node and without
+      an AC-bit is considered node-specific.</t>
+      <t indent="0" pn="section-6-9">All the nodes advertising the same anycast SRv6 Locator <bcp14>MUST</bcp14>
+      instantiate the exact same set of SIDs under that anycast SRv6 Locator.
+      Failure to do so may result in traffic being dropped or misrouted.</t>
+      <t indent="0" pn="section-6-10">The PrefixOptions field is common to the prefix reachability
+      advertisements (i.e., the base OSPFv3 prefix LSA types defined in <xref target="RFC5340" format="default" sectionFormat="of" derivedContent="RFC5340"/>, the OSPFv3 Extended Prefix TLV types defined in
+      <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/>), and the SRv6 Locator TLV advertisements
+      specified in <xref target="LOCTLV" format="default" sectionFormat="of" derivedContent="Section 7.1"/> of this document. When a router
+      originates both the prefix reachability advertisement and the SRv6
+      Locator advertisement for a given prefix, the router <bcp14>SHOULD</bcp14> advertise
+      the same PrefixOptions bits in both advertisements. In the case of any
+      inconsistency between the PrefixOptions advertised in the SRv6 Locator
+      and in the prefix reachability advertisements, the ones advertised in
+      the prefix reachability advertisement <bcp14>MUST</bcp14> be preferred.</t>
+    </section>
+    <section anchor="LOCLSA" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-srv6-locator-lsa">SRv6 Locator LSA</name>
+      <t indent="0" pn="section-7-1">The SRv6 Locator LSA has a function code of 42. The S1/S2 bits are
+      dependent on the desired flooding scope for the LSA. The flooding scope
+      of the SRv6 Locator LSA depends on the scope of the advertised SRv6
+      Locator and is under the control of the advertising router. The U-bit
+      will be set indicating that the LSA should be flooded even if it is not
+      understood.</t>
+      <t indent="0" pn="section-7-2">Multiple SRv6 Locator LSAs can be advertised by an OSPFv3 router, and
+      they are distinguished by their Link State IDs (which are chosen
+      arbitrarily by the originating router).</t>
+      <t indent="0" pn="section-7-3">The format of the SRv6 Locator LSA is shown below:</t>
+      <figure anchor="LOCLSAFMT" align="left" suppress-title="false" pn="figure-3">
+        <name slugifiedName="name-srv6-locator-lsa-2">SRv6 Locator LSA</name>
+        <artwork name="" type="" align="center" alt="" pn="section-7-4.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|            LS age             |U|S12|   Function Code         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Link State ID                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Advertising Router                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       LS sequence number                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        LS checksum            |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
++-                            TLVs                             -+
+|                             ...                               |
+</artwork>
+      </figure>
+      <t indent="0" pn="section-7-5">The format of the TLVs within the body of the SRv6 Locator LSA is the
+      same as the format used by <xref target="RFC3630" format="default" sectionFormat="of" derivedContent="RFC3630"/>. The variable TLV
+      section consists of one or more nested TLV tuples. Nested TLVs are also
+      referred to as sub-TLVs. The format of each TLV is:</t>
+      <figure anchor="TLVFMT" align="left" suppress-title="false" pn="figure-4">
+        <name slugifiedName="name-srv6-locator-lsa-tlv-format">SRv6 Locator LSA TLV Format</name>
+        <artwork name="" type="" align="center" alt="" pn="section-7-6.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Type             |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Value...                           |
+.                                                               .
+.                                                               .
+.                                                               .
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-7-7">The Length field defines the length of the value portion in octets
+      (thus, a TLV with no value portion would have a length of 0). The TLV is
+      padded to 4-octet alignment; padding is not included in the Length field
+      (so a 3-octet value would have a length of 3, but the total size of the
+      TLV would be 8 octets). Nested TLVs are also 32-bit aligned. For
+      example, a 1-byte value would have the Length field set to 1, and 3
+      octets of padding would be added to the end of the value portion of the
+      TLV. The padding is composed of zeros.</t>
+      <section anchor="LOCTLV" numbered="true" toc="include" removeInRFC="false" pn="section-7.1">
+        <name slugifiedName="name-srv6-locator-tlv">SRv6 Locator TLV</name>
+        <t indent="0" pn="section-7.1-1">The SRv6 Locator TLV is a top-level TLV of the SRv6 Locator LSA
+        that is used to advertise an SRv6 Locator, its attributes, and SIDs
+        associated with it. Multiple SRv6 Locator TLVs <bcp14>MAY</bcp14> be advertised in
+        each SRv6 Locator LSA. However, since the S12 bits define the flooding
+        scope, the LSA flooding scope has to satisfy the application-specific
+        requirements for all the locators included in a single SRv6 Locator
+        LSA.</t>
+        <t indent="0" pn="section-7.1-2">When multiple SRv6 Locator TLVs are received from a given router in
+        an SRv6 Locator LSA for the same locator, the receiver <bcp14>MUST</bcp14> use the
+        first occurrence of the TLV in the LSA. If the SRv6 Locator TLV for
+        the same locator appears in multiple SRv6 Locator LSAs that have
+        different flooding scopes, the TLV in the SRv6 Locator LSA with the
+        area-scoped flooding scope <bcp14>MUST</bcp14> be used. If the SRv6 Locator TLV for
+        the same locator appears in multiple SRv6 Locator LSAs that have the
+        same flooding scope, the TLV in the SRv6 Locator LSA with the
+        numerically smallest Link State ID <bcp14>MUST</bcp14> be used, and subsequent
+        instances of the TLV <bcp14>MUST</bcp14> be ignored.</t>
+        <t indent="0" pn="section-7.1-3">The format of the SRv6 Locator TLV is shown below:</t>
+        <figure anchor="LOCTLVFMT" align="left" suppress-title="false" pn="figure-5">
+          <name slugifiedName="name-srv6-locator-tlv-2">SRv6 Locator TLV</name>
+          <artwork name="" type="" align="center" alt="" pn="section-7.1-4.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Type             |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Route Type   |  Algorithm    | Locator Length| PrefixOptions |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             Metric                            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Locator (up to 16 octets) ...                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... Locator continued ...                                   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... Locator continued ...                                   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... Locator concluded                                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                      Sub-TLVs (variable)                      |
++-                                                             -+
+|                             ...                               |
+</artwork>
+        </figure>
+        <t indent="0" pn="section-7.1-5">where:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-7.1-6">
+          <dt pn="section-7.1-6.1">Type:</dt>
+          <dd pn="section-7.1-6.2">2-octet field. The value for this type is 1.</dd>
+          <dt pn="section-7.1-6.3">Length:</dt>
+          <dd pn="section-7.1-6.4">2-octet field. The total length (in octets) of the
+            value portion of the TLV, including nested sub-TLVs.</dd>
+          <dt pn="section-7.1-6.5">Route Type:</dt>
+          <dd pn="section-7.1-6.6">
+            <t indent="0" pn="section-7.1-6.6.1">1-octet field. The type of the locator route. The
+            only supported types are the ones listed below, and the SRv6
+            Locator TLV <bcp14>MUST</bcp14> be ignored on receipt of any other type.</t>
+            <dl newline="false" spacing="compact" indent="3" pn="section-7.1-6.6.2">
+              <dt pn="section-7.1-6.6.2.1">1:</dt>
+              <dd pn="section-7.1-6.6.2.2">Intra-Area</dd>
+              <dt pn="section-7.1-6.6.2.3">2:</dt>
+              <dd pn="section-7.1-6.6.2.4">Inter-Area</dd>
+              <dt pn="section-7.1-6.6.2.5">3:</dt>
+              <dd pn="section-7.1-6.6.2.6">AS External Type 1</dd>
+              <dt pn="section-7.1-6.6.2.7">4:</dt>
+              <dd pn="section-7.1-6.6.2.8">AS External Type 2</dd>
+              <dt pn="section-7.1-6.6.2.9">5:</dt>
+              <dd pn="section-7.1-6.6.2.10">NSSA External Type 1</dd>
+              <dt pn="section-7.1-6.6.2.11">6:</dt>
+              <dd pn="section-7.1-6.6.2.12">NSSA External Type 2</dd>
+            </dl>
+          </dd>
+          <dt pn="section-7.1-6.7">Algorithm:</dt>
+          <dd pn="section-7.1-6.8">1-octet field. The algorithm associated with the
+            SRv6 Locator. Algorithm values are defined in the "IGP Algorithm
+            Types" registry <xref target="RFC8665" format="default" sectionFormat="of" derivedContent="RFC8665"/>.</dd>
+          <dt pn="section-7.1-6.9">Locator Length:</dt>
+          <dd pn="section-7.1-6.10">1-octet field. Specifies the length of the
+            locator prefix as the number of locator bits from the range
+            (1-128).</dd>
+          <dt pn="section-7.1-6.11">PrefixOptions:</dt>
+          <dd pn="section-7.1-6.12">1-octet field. Specifies the prefix options
+            bits/flags as specified in <xref target="RFC5340" format="default" sectionFormat="of" derivedContent="RFC5340"/> and further
+            extended by <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/> and <xref target="ANYCAST" format="default" sectionFormat="of" derivedContent="Section 6"/>
+            of this document.</dd>
+          <dt pn="section-7.1-6.13">Metric:</dt>
+          <dd pn="section-7.1-6.14">4-octet field. The metric value associated with the
+            SRv6 Locator. The metric value of 0xFFFFFFFF <bcp14>MUST</bcp14> be considered as
+            unreachable.</dd>
+          <dt pn="section-7.1-6.15">Locator:</dt>
+          <dd pn="section-7.1-6.16">1-16 octets. This field encodes the
+          advertised SRv6 Locator as an IPv6 Prefix as specified in <xref target="RFC5340" sectionFormat="of" section="A.4.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5340#appendix-A.4.1" derivedContent="RFC5340"/>.</dd>
+          <dt pn="section-7.1-6.17">Sub-TLVs:</dt>
+          <dd pn="section-7.1-6.18">Used to advertise sub-TLVs that provide additional
+            attributes for the given SRv6 Locator and SRv6 SIDs associated
+            with the SRv6 Locator.</dd>
+        </dl>
+      </section>
+      <section anchor="LOCSUBTLVS" numbered="true" toc="include" removeInRFC="false" pn="section-7.2">
+        <name slugifiedName="name-srv6-locator-sub-tlvs">SRv6 Locator Sub-TLVs</name>
+        <t indent="0" pn="section-7.2-1">The following OSPFv3 Extended-LSA sub-TLVs corresponding to the
+        Extended Prefix LSAs are also applicable for use as sub-TLVs of the
+        SRv6 Locator TLV using code points as specified in <xref target="IANALLSTLVS" format="default" sectionFormat="of" derivedContent="Section 13.9"/>:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-7.2-2">
+          <li pn="section-7.2-2.1">IPv6-Forwarding-Address sub-TLV <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/></li>
+          <li pn="section-7.2-2.2">Route-Tag sub-TLV <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/></li>
+          <li pn="section-7.2-2.3">Prefix Source OSPF Router-ID sub-TLV <xref target="RFC9084" format="default" sectionFormat="of" derivedContent="RFC9084"/></li>
+          <li pn="section-7.2-2.4">Prefix Source Router Address sub-TLV <xref target="RFC9084" format="default" sectionFormat="of" derivedContent="RFC9084"/></li>
+        </ul>
+      </section>
+    </section>
+    <section anchor="END" numbered="true" toc="include" removeInRFC="false" pn="section-8">
+      <name slugifiedName="name-advertisement-of-srv6-end-s">Advertisement of SRv6 End SIDs</name>
+      <t indent="0" pn="section-8-1">The SRv6 End SID sub-TLV is a sub-TLV of the SRv6 Locator TLV in the
+      SRv6 Locator LSA (defined in <xref target="LOCLSA" format="default" sectionFormat="of" derivedContent="Section 7"/>). It is used to
+      advertise the SRv6 SIDs belonging to the router along with their
+      associated Endpoint behaviors. SIDs associated with adjacencies are
+      advertised as described in <xref target="SRv6-Neighbor" format="default" sectionFormat="of" derivedContent="Section 9"/>. Every
+      SRv6-enabled OSPFv3 router <bcp14>SHOULD</bcp14> advertise at least one SRv6 SID
+      associated with an End behavior for itself as specified in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>, although it <bcp14>MAY</bcp14> omit doing so if that node is not
+      going to be used as a Segment Endpoint (e.g., for TE or Topology Independent Loop-Free Alternate (TI-LFA)) by any
+      SR Source Node.</t>
+      <t indent="0" pn="section-8-2">SRv6 End SIDs inherit the algorithm from the parent locator. The SRv6
+      End SID <bcp14>MUST</bcp14> be allocated from its associated locator. SRv6 End SIDs
+      that are NOT allocated from the associated locator <bcp14>MUST</bcp14> be ignored.</t>
+      <t indent="0" pn="section-8-3">The router <bcp14>MAY</bcp14> advertise multiple instances of the SRv6 End SID
+      sub-TLV within the SRv6 Locator TLV -- one for each of the SRv6 SIDs to
+      be advertised. When multiple SRv6 End SID sub-TLVs are received in the
+      SRv6 Locator TLV from a given router for the same SRv6 SID value, the
+      receiver <bcp14>MUST</bcp14> use the first occurrence of the sub-TLV in the SRv6
+      Locator TLV.</t>
+      <t indent="0" pn="section-8-4">The format of the SRv6 End SID sub-TLV is shown below</t>
+      <figure anchor="NODESIDTLV" align="left" suppress-title="false" pn="figure-6">
+        <name slugifiedName="name-srv6-end-sid-sub-tlv">SRv6 End SID Sub-TLV</name>
+        <artwork name="" type="" align="center" alt="" pn="section-8-5.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Flags     |   Reserved    |        Endpoint Behavior      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   SID (128 bits) ...                                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... SID continued ...                                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... SID continued ...                                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... SID concluded                                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Sub-TLVs (variable) . . .             
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-8-6">where:</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-8-7">
+        <dt pn="section-8-7.1">Type:</dt>
+        <dd pn="section-8-7.2">2-octet field. The value for this type is 1.</dd>
+        <dt pn="section-8-7.3">Length:</dt>
+        <dd pn="section-8-7.4">2-octet field. The total length (in octets) of the value
+          portion of the sub-TLV, including its nested sub-TLVs.</dd>
+        <dt pn="section-8-7.5">Flags:</dt>
+        <dd pn="section-8-7.6">1-octet field. Specifies the flags associated
+        with the SID. No flags are currently defined, and this field
+        <bcp14>MUST</bcp14> be set to 0 on transmission and
+        <bcp14>MUST</bcp14> be ignored on receipt.</dd>
+        <dt pn="section-8-7.7">Reserved:</dt>
+        <dd pn="section-8-7.8">1-octet field. It <bcp14>MUST</bcp14> be set to 0 on transmission and
+          <bcp14>MUST</bcp14> be ignored on receipt.</dd>
+        <dt pn="section-8-7.9">Endpoint Behavior:</dt>
+        <dd pn="section-8-7.10">2-octet field. The Endpoint behavior code point for this SRv6 SID as defined in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>.
+          Supported behavior values for this sub-TLV are defined in <xref target="AdvtEndBeh" format="default" sectionFormat="of" derivedContent="Section 11"/> of this document. Unsupported or unrecognized
+          behavior values are ignored by the receiver.</dd>
+        <dt pn="section-8-7.11">SID:</dt>
+        <dd pn="section-8-7.12">16-octet field. This field encodes the advertised SRv6
+          SID.</dd>
+        <dt pn="section-8-7.13">Sub-TLVs:</dt>
+        <dd pn="section-8-7.14">Used to advertise sub-TLVs that provide additional
+          attributes for the given SRv6 SID.</dd>
+      </dl>
+    </section>
+    <section anchor="SRv6-Neighbor" numbered="true" toc="include" removeInRFC="false" pn="section-9">
+      <name slugifiedName="name-advertisement-of-srv6-sids-">Advertisement of SRv6 SIDs Associated with Adjacencies</name>
+      <t indent="0" pn="section-9-1">The SRv6 Endpoint behaviors defined in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>
+      include certain behaviors that are specific to links or adjacencies. The
+      most basic of these (which is critical for link-state routing protocols
+      like OSPFv3) is the End.X behavior, which is an instruction to forward to
+      a specific neighbor on a specific link. These SRv6 SIDs and others that
+      are defined in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>, which are specific to links or
+      adjacencies, need to be advertised to OSPFv3 routers within an area to
+      steer SRv6 traffic over a specific link or adjacency.</t>
+      <t indent="0" pn="section-9-2">Therefore, SRv6 SIDs that are specific to a particular neighbor, such
+      as End.X, are not advertised as a sub-TLVs of the SRv6 Locator TLV. Instead, they are advertised via two different optional sub-TLVs of the E-Router-Link TLV defined in
+      <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/>:</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-9-3">
+        <dt pn="section-9-3.1">SRv6 End.X SID sub-TLV:</dt>
+        <dd pn="section-9-3.2">Used for OSPFv3 adjacencies over
+          point-to-point or point-to-multipoint links and for the adjacency to
+          the Designated Router (DR) over broadcast and
+          Non-Broadcast-Multi-Access (NBMA) links.</dd>
+        <dt pn="section-9-3.3">SRv6 LAN End.X SID sub-TLV:</dt>
+        <dd pn="section-9-3.4">Used for OSPFv3 adjacencies on
+          broadcast and NBMA links to the Backup DR and DR-Other neighbors.
+          This sub-TLV includes the OSPFv3 Router-ID of the neighbor and thus
+          allows for an instance of this sub-TLV for each neighbor to be
+          explicitly advertised as a sub-TLV of the E-Router-Link TLV for the
+          same link.</dd>
+      </dl>
+      <t indent="0" pn="section-9-4">Every SRv6-enabled OSPFv3 router <bcp14>SHOULD</bcp14> instantiate at least
+      one unique SRv6 End.X SID corresponding to each of its neighbors,
+      although it <bcp14>MAY</bcp14> omit doing so if features like TE or
+      TI-LFA that require End.X SID
+      are not in use. A router <bcp14>MAY</bcp14> instantiate more than one SRv6 End.X SID
+      for a single neighbor. The same SRv6 End.X SID <bcp14>MAY</bcp14> be advertised for
+      more than one neighbor. Thus, multiple instances of the SRv6 End.X SID
+      and SRv6 LAN End.X SID sub-TLVs <bcp14>MAY</bcp14> be advertised within the
+      E-Router-Link TLV for a single link.</t>
+      <t indent="0" pn="section-9-5">All End.X and LAN End.X SIDs <bcp14>MUST</bcp14> be subsumed by the subnet of a
+      locator with the matching algorithm that is advertised by the same
+      OSPFv3 router in an SRv6 Locator TLV. End.X SIDs that do not meet this
+      requirement <bcp14>MUST</bcp14> be ignored. This ensures that the OSPFv3 router
+      advertising the End.X or LAN End.X SID is also advertising its
+      corresponding locator with the algorithm that will be used for computing
+      paths destined to the SID.</t>
+      <section anchor="P2P" numbered="true" toc="include" removeInRFC="false" pn="section-9.1">
+        <name slugifiedName="name-srv6-endx-sid-sub-tlv">SRv6 End.X SID Sub-TLV</name>
+        <t indent="0" pn="section-9.1-1">The format of the SRv6 End.X SID sub-TLV is shown below:</t>
+        <figure anchor="ADJSIDTLV" align="left" suppress-title="false" pn="figure-7">
+          <name slugifiedName="name-srv6-endx-sid-sub-tlv-2">SRv6 End.X SID Sub-TLV</name>
+          <artwork name="" type="" align="center" alt="" pn="section-9.1-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Endpoint Behavior      |     Flags     |   Reserved1   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Algorithm   |    Weight     |           Reserved2           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   SID (128 bits) ...                                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... SID continued ...                                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... SID continued ...                                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... SID concluded                                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    Sub-TLVs (variable) . . .             
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-9.1-3">where:</t>
+        <dl newline="false" indent="3" spacing="normal" pn="section-9.1-4">
+          <dt pn="section-9.1-4.1">Type:</dt>
+          <dd pn="section-9.1-4.2">2-octet field. The value for this type is 31.</dd>
+          <dt pn="section-9.1-4.3">Length:</dt>
+          <dd pn="section-9.1-4.4">2-octet field. The total length (in octets) of the
+            value portion of the sub-TLV, including its nested
+            sub-TLVs.</dd>
+          <dt pn="section-9.1-4.5">Endpoint Behavior:</dt>
+          <dd pn="section-9.1-4.6">2-octet field. The Endpoint behavior code point for this SRv6 SID as defined in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>.
+            Supported behavior values for this sub-TLV are defined in <xref target="AdvtEndBeh" format="default" sectionFormat="of" derivedContent="Section 11"/> of this document. Unsupported or
+            unrecognized behavior values are ignored by the receiver.</dd>
+          <dt pn="section-9.1-4.7">Flags:</dt>
+          <dd pn="section-9.1-4.8">
+            <t indent="0" pn="section-9.1-4.8.1"> 1-octet field. The flags are defined as follows:</t>
+            <artwork name="" type="" align="left" alt="" pn="section-9.1-4.8.2">
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|B|S|P| Reserved|
++-+-+-+-+-+-+-+-+
+</artwork>
+            <dl newline="false" indent="3" spacing="normal" pn="section-9.1-4.8.3">
+              <dt pn="section-9.1-4.8.3.1">B-Flag:</dt>
+              <dd pn="section-9.1-4.8.3.2">Backup Flag. If set, the SID refers to a path that
+                is eligible for protection.</dd>
+              <dt pn="section-9.1-4.8.3.3">S-Flag:</dt>
+              <dd pn="section-9.1-4.8.3.4">Set Flag. When set, the S-Flag indicates that the
+                End.X SID refers to a set of adjacencies (and therefore <bcp14>MAY</bcp14> be
+                assigned to other adjacencies as well).</dd>
+              <dt pn="section-9.1-4.8.3.5">P-Flag:</dt>
+              <dd pn="section-9.1-4.8.3.6">Persistent Flag. If set, the SID is persistently
+                allocated, i.e., the SID value remains consistent across
+                router restart and session/interface flap.</dd>
+              <dt pn="section-9.1-4.8.3.7">Other flags are not defined and are reserved for future
+                use. They <bcp14>MUST</bcp14> be set to 0 on transmission and <bcp14>MUST</bcp14> be ignored
+                on receipt.</dt>
+              <dd pn="section-9.1-4.8.3.8"/>
+            </dl>
+          </dd>
+        </dl>
+        <dl indent="3" newline="false" spacing="normal" pn="section-9.1-5">
+          <dt pn="section-9.1-5.1">Reserved1:</dt>
+          <dd pn="section-9.1-5.2">1-octet field. It <bcp14>MUST</bcp14> be set to 0 on transmission
+            and <bcp14>MUST</bcp14> be ignored on receipt.</dd>
+          <dt pn="section-9.1-5.3">Algorithm:</dt>
+          <dd pn="section-9.1-5.4">1-octet field. The algorithm associated with the
+            SRv6 Locator from which the SID is allocated. Algorithm values are
+            defined in the "IGP Algorithm Types" registry <xref target="RFC8665" format="default" sectionFormat="of" derivedContent="RFC8665"/>.</dd>
+          <dt pn="section-9.1-5.5">Weight:</dt>
+          <dd pn="section-9.1-5.6">1-octet field. Its value represents the weight of the
+            End.X SID for load-balancing. The use of the weight is defined in
+            <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>.</dd>
+          <dt pn="section-9.1-5.7">Reserved2:</dt>
+          <dd pn="section-9.1-5.8">2-octet field. It <bcp14>MUST</bcp14> be set to 0 on transmission
+            and <bcp14>MUST</bcp14> be ignored on receipt.</dd>
+          <dt pn="section-9.1-5.9">SID:</dt>
+          <dd pn="section-9.1-5.10">16-octet field. This field encodes the advertised SRv6
+            SID.</dd>
+          <dt pn="section-9.1-5.11">Sub-TLVs:</dt>
+          <dd pn="section-9.1-5.12">Used to advertise sub-TLVs that provide additional
+            attributes for the given SRv6 End.X SID.</dd>
+        </dl>
+      </section>
+      <section anchor="LAN" numbered="true" toc="include" removeInRFC="false" pn="section-9.2">
+        <name slugifiedName="name-srv6-lan-endx-sid-sub-tlv">SRv6 LAN End.X SID Sub-TLV</name>
+        <t indent="0" pn="section-9.2-1">The format of the SRv6 LAN End.X SID sub-TLV is as shown below:</t>
+        <figure anchor="LADJSIDTLV" align="left" suppress-title="false" pn="figure-8">
+          <name slugifiedName="name-srv6-lan-endx-sid-sub-tlv-2">SRv6 LAN End.X SID Sub-TLV</name>
+          <artwork name="" type="" align="center" alt="" pn="section-9.2-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Endpoint Behavior        |     Flags     |   Reserved1   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Algorithm   |    Weight     |           Reserved2           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Neighbor Router-ID                                          |   
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   SID (128 bits) ...                                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... SID continued ...                                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... SID continued ...                                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ... SID concluded                                           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Sub-TLVs (variable) . . .             
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-9.2-3">where:</t>
+        <dl spacing="normal" newline="false" indent="3" pn="section-9.2-4">
+          <dt pn="section-9.2-4.1">Type:</dt>
+          <dd pn="section-9.2-4.2">2-octet field. The value for this type is 32.</dd>
+          <dt pn="section-9.2-4.3">Length:</dt>
+          <dd pn="section-9.2-4.4">2-octet field. The total length (in octets) of the
+            value portion of the sub-TLV, including its nested
+            sub-TLVs.</dd>
+          <dt pn="section-9.2-4.5">Endpoint Behavior:</dt>
+          <dd pn="section-9.2-4.6">2-octet field. The code point for the
+          Endpoint behavior for this SRv6 SID as defined in <xref target="RFC8986" sectionFormat="of" section="9.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8986#section-9.2" derivedContent="RFC8986"/>.</dd>
+          <dt pn="section-9.2-4.7">Flags:</dt>
+          <dd pn="section-9.2-4.8">
+            <t indent="0" pn="section-9.2-4.8.1">1-octet field. The flags are defined as follows:</t>
+            <artwork name="" type="" align="left" alt="" pn="section-9.2-4.8.2">
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|B|S|P| Reserved|
++-+-+-+-+-+-+-+-+
+</artwork>
+            <dl spacing="normal" newline="false" indent="3" pn="section-9.2-4.8.3">
+              <dt pn="section-9.2-4.8.3.1">B-Flag:</dt>
+              <dd pn="section-9.2-4.8.3.2">Backup Flag. If set, the SID refers to a path that
+                is eligible for protection.</dd>
+              <dt pn="section-9.2-4.8.3.3">S-Flag:</dt>
+              <dd pn="section-9.2-4.8.3.4">Set Flag. When set, the S-Flag indicates that the
+                End.X SID refers to a set of adjacencies (and therefore <bcp14>MAY</bcp14> be
+                assigned to other adjacencies as well).</dd>
+              <dt pn="section-9.2-4.8.3.5">P-Flag:</dt>
+              <dd pn="section-9.2-4.8.3.6">Persistent Flag. If set, the SID is persistently
+                allocated, i.e., the SID value remains consistent across
+                router restart and session/interface flap.</dd>
+              <dt pn="section-9.2-4.8.3.7">Other flags are not defined and are reserved for future
+                use. They <bcp14>MUST</bcp14> be set to 0 on transmission and <bcp14>MUST</bcp14> be ignored
+                on receipt.</dt>
+              <dd pn="section-9.2-4.8.3.8"/>
+            </dl>
+          </dd>
+          <dt pn="section-9.2-4.9">Reserved1:</dt>
+          <dd pn="section-9.2-4.10">1-octet field. It <bcp14>MUST</bcp14> be set to 0 on transmission
+            and <bcp14>MUST</bcp14> be ignored on receipt.</dd>
+          <dt pn="section-9.2-4.11">Algorithm:</dt>
+          <dd pn="section-9.2-4.12">1-octet field. The algorithm associated with the
+            SRv6 Locator from which the SID is allocated. Algorithm values are
+            defined in the "IGP Algorithm Types" registry <xref target="RFC8665" format="default" sectionFormat="of" derivedContent="RFC8665"/>.</dd>
+          <dt pn="section-9.2-4.13">Weight:</dt>
+          <dd pn="section-9.2-4.14">1-octet field. Its value represents the weight of the
+            End.X SID for load balancing. The use of the weight is defined in
+            <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>.</dd>
+          <dt pn="section-9.2-4.15">Reserved2:</dt>
+          <dd pn="section-9.2-4.16">2-octet field. It <bcp14>MUST</bcp14> be set to 0 on transmission
+            and <bcp14>MUST</bcp14> be ignored on receipt.</dd>
+          <dt pn="section-9.2-4.17">Neighbor Router-ID:</dt>
+          <dd pn="section-9.2-4.18">4-octet field. It specifies the OSPFv3
+            Router-ID of the neighbor.</dd>
+          <dt pn="section-9.2-4.19">SID:</dt>
+          <dd pn="section-9.2-4.20">16-octet field. This field encodes the advertised SRv6
+            SID.</dd>
+          <dt pn="section-9.2-4.21">Sub-TLVs:</dt>
+          <dd pn="section-9.2-4.22">Used to advertise sub-TLVs that provide additional
+            attributes for the given SRv6 SID.</dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="SRSTRUCTTLV" numbered="true" toc="include" removeInRFC="false" pn="section-10">
+      <name slugifiedName="name-srv6-sid-structure-sub-tlv">SRv6 SID Structure Sub-TLV</name>
+      <t indent="0" pn="section-10-1">The SRv6 SID Structure sub-TLV is used to advertise the structure of the
+      SRv6 SID as defined in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>. It is used as an
+      optional sub-TLV of the following:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-10-2">
+        <li pn="section-10-2.1">SRv6 End SID sub-TLV (refer to <xref target="END" format="default" sectionFormat="of" derivedContent="Section 8"/>)</li>
+        <li pn="section-10-2.2">SRv6 End.X SID sub-TLV (refer to <xref target="P2P" format="default" sectionFormat="of" derivedContent="Section 9.1"/>)</li>
+        <li pn="section-10-2.3">SRv6 LAN End.X SID sub-TLV (refer to <xref target="LAN" format="default" sectionFormat="of" derivedContent="Section 9.2"/>)</li>
+      </ul>
+      <t indent="0" pn="section-10-3">The sub-TLV has the following format:</t>
+      <figure anchor="SRSIDSTRUCT" align="left" suppress-title="false" pn="figure-9">
+        <name slugifiedName="name-srv6-sid-structure-sub-tlv-2">SRv6 SID Structure Sub-TLV</name>
+        <artwork name="" type="" align="center" alt="" pn="section-10-4.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               Type            |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    LB Length  |  LN Length    | Fun. Length   |  Arg. Length  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-10-5">where:</t>
+      <dl newline="false" indent="3" spacing="normal" pn="section-10-6">
+        <dt pn="section-10-6.1">Type:</dt>
+        <dd pn="section-10-6.2">2-octet field. The value for this type is 30.</dd>
+        <dt pn="section-10-6.3">Length:</dt>
+        <dd pn="section-10-6.4">2-octet field. The value <bcp14>MUST</bcp14> be 4.</dd>
+        <dt pn="section-10-6.5">LB Length:</dt>
+        <dd pn="section-10-6.6">1-octet field. SRv6 SID Locator Block length in
+          bits.</dd>
+        <dt pn="section-10-6.7">LN Length:</dt>
+        <dd pn="section-10-6.8">1-octet field. SRv6 SID Locator Node length in
+          bits.</dd>
+        <dt pn="section-10-6.9">Function Length:</dt>
+        <dd pn="section-10-6.10">1-octet field. SRv6 SID Function length in
+          bits.</dd>
+        <dt pn="section-10-6.11">Argument Length:</dt>
+        <dd pn="section-10-6.12">1-octet field. SRv6 SID Argument length in
+          bits.</dd>
+      </dl>
+      <t indent="0" pn="section-10-7">The SRv6 SID Structure sub-TLV <bcp14>MUST NOT</bcp14> appear more than once in its
+      parent sub-TLV. If it appears more than once in its parent sub-TLV, the
+      parent sub-TLV <bcp14>MUST</bcp14> be ignored by the receiver.</t>
+      <t indent="0" pn="section-10-8">The sum of all four sizes advertised in SRv6 SID Structure sub-TLV
+      <bcp14>MUST</bcp14> be less than or equal to 128 bits. If the sum of all four sizes
+      advertised in the SRv6 SID Structure sub-TLV is larger than 128 bits,
+      the parent TLV or sub-TLV <bcp14>MUST</bcp14> be ignored by the receiver.</t>
+      <t indent="0" pn="section-10-9">The SRv6 SID Structure sub-TLV is intended for informational use by
+      the control and management planes. It <bcp14>MUST NOT</bcp14> be used at a transit node
+      (as defined in <xref target="RFC8754" format="default" sectionFormat="of" derivedContent="RFC8754"/>) for forwarding packets. As an
+      example, this information could be used for the following: </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-10-10">
+        <li pn="section-10-10.1">Validation of SRv6 SIDs being instantiated in the network and
+        advertised via OSPFv3. These can be learned by controllers via BGP-LS
+        <xref target="RFC9514" format="default" sectionFormat="of" derivedContent="RFC9514"/> and then monitored for
+        conformance to the SRv6 SID allocation scheme chosen by the operator
+        as described in <xref target="RFC8986" sectionFormat="of" section="3.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8986#section-3.2" derivedContent="RFC8986"/>.</li>
+        <li pn="section-10-10.2">Verification and the automation for securing the SRv6 domain by
+          provisioning filtering rules at SR domain boundaries as described in
+          <xref target="RFC8754" sectionFormat="of" section="5" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-5" derivedContent="RFC8754"/>.</li>
+      </ul>
+      <t indent="0" pn="section-10-11">The details of these potential applications are outside the scope of
+      this document.</t>
+    </section>
+    <section anchor="AdvtEndBeh" numbered="true" toc="include" removeInRFC="false" pn="section-11">
+      <name slugifiedName="name-advertising-endpoint-behavi">Advertising Endpoint Behaviors</name>
+      <t indent="0" pn="section-11-1">Endpoint behaviors are defined in <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>. The
+      code points for the Endpoint behaviors are defined in the "SRv6 Endpoint
+      Behaviors" registry of <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>. This section lists the
+      Endpoint behaviors and their code points, which <bcp14>MAY</bcp14> be advertised by
+      OSPFv3 and the sub-TLVs in which each type <bcp14>MAY</bcp14> appear.</t>
+      <table anchor="EndBehTable" align="center" pn="table-1">
+        <name slugifiedName="name-srv6-endpoint-behaviors-in-">SRv6 Endpoint Behaviors in OSPFv3</name>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Endpoint Behavior</th>
+            <th align="left" colspan="1" rowspan="1">Endpoint Behavior Code Point</th>
+            <th align="left" colspan="1" rowspan="1">End SID</th>
+            <th align="left" colspan="1" rowspan="1">End.X SID</th>
+            <th align="left" colspan="1" rowspan="1">LAN End.X SID</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">End   (PSP, USP, USD)</td>
+            <td align="left" colspan="1" rowspan="1">1-4, 28-31</td>
+            <td align="left" colspan="1" rowspan="1">Y</td>
+            <td align="left" colspan="1" rowspan="1">N</td>
+            <td align="left" colspan="1" rowspan="1">N</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">End.X (PSP, USP, USD)</td>
+            <td align="left" colspan="1" rowspan="1">5-8, 32-35</td>
+            <td align="left" colspan="1" rowspan="1">N</td>
+            <td align="left" colspan="1" rowspan="1">Y</td>
+            <td align="left" colspan="1" rowspan="1">Y</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">End.DX6</td>
+            <td align="left" colspan="1" rowspan="1">16</td>
+            <td align="left" colspan="1" rowspan="1">N</td>
+            <td align="left" colspan="1" rowspan="1">Y</td>
+            <td align="left" colspan="1" rowspan="1">Y</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">End.DX4</td>
+            <td align="left" colspan="1" rowspan="1">17</td>
+            <td align="left" colspan="1" rowspan="1">N</td>
+            <td align="left" colspan="1" rowspan="1">Y</td>
+            <td align="left" colspan="1" rowspan="1">Y</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">End.DT6</td>
+            <td align="left" colspan="1" rowspan="1">18</td>
+            <td align="left" colspan="1" rowspan="1">Y</td>
+            <td align="left" colspan="1" rowspan="1">N</td>
+            <td align="left" colspan="1" rowspan="1">N</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">End.DT4</td>
+            <td align="left" colspan="1" rowspan="1">19</td>
+            <td align="left" colspan="1" rowspan="1">Y</td>
+            <td align="left" colspan="1" rowspan="1">N</td>
+            <td align="left" colspan="1" rowspan="1">N</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">End.DT64</td>
+            <td align="left" colspan="1" rowspan="1">20</td>
+            <td align="left" colspan="1" rowspan="1">Y</td>
+            <td align="left" colspan="1" rowspan="1">N</td>
+            <td align="left" colspan="1" rowspan="1">N</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section anchor="Security" numbered="true" toc="include" removeInRFC="false" pn="section-12">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-12-1">This document introduces extensions to the OSPFv3 protocol and, as such,
+      does not affect existing security considerations for OSPFv3 as
+      documented in <xref target="RFC5340" format="default" sectionFormat="of" derivedContent="RFC5340"/>. <xref target="RFC7166" format="default" sectionFormat="of" derivedContent="RFC7166"/>
+      describes an alternative and improved authentication mechanism to IPsec
+      for OSPFv3. The use of authentication is <bcp14>RECOMMENDED</bcp14> for OSPFv3
+      deployment.</t>
+      <t indent="0" pn="section-12-2">Reception of a malformed TLV or sub-TLV <bcp14>SHOULD</bcp14> be counted and/or logged
+      in a rate-limited manner for further analysis.</t>
+      <t indent="0" pn="section-12-3">This document describes the OSPFv3 extensions required to support
+      SR over an IPv6 data plane. The security considerations for
+      SR are discussed in <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>. <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/> defines the SRv6 Network Programming concept and
+      specifies the main SR behaviors to enable the creation of
+      interoperable overlays. The security considerations from that document
+      apply as well.</t>
+      <t indent="0" pn="section-12-4">The advertisement of an incorrect MSD value may have negative
+      consequences. See <xref target="RFC8476" format="default" sectionFormat="of" derivedContent="RFC8476"/> for additional
+      considerations.</t>
+      <t indent="0" pn="section-12-5">Security concerns associated with the setting of the O-flag are
+      described in <xref target="RFC9259" format="default" sectionFormat="of" derivedContent="RFC9259"/>.</t>
+      <t indent="0" pn="section-12-6">Security concerns associated with the usage of Flexible Algorithms
+      are described in <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>.</t>
+    </section>
+    <section anchor="IANA" numbered="true" toc="include" removeInRFC="false" pn="section-13">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-13-1">Per this document, IANA has made allocations in OSPF- and
+      OSPFv3-related registries and created new registries, as
+      detailed in the following subsections.</t>
+      <section anchor="IANARI" numbered="true" toc="include" removeInRFC="false" pn="section-13.1">
+        <name slugifiedName="name-ospf-router-information-tlv">OSPF Router Information TLVs</name>
+        <t indent="0" pn="section-13.1-1">IANA has allocated the following code point in the "OSPF Router
+        Information (RI) TLVs" registry within the "Open Shortest Path First
+        (OSPF) Parameters" registry group:</t>
+        <table anchor="iana1" align="center" pn="table-2">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">TLV Name</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">20</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 Capabilities</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, <xref target="capability" format="default" sectionFormat="of" derivedContent="Section 2"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="IANALSA" numbered="true" toc="include" removeInRFC="false" pn="section-13.2">
+        <name slugifiedName="name-ospfv3-lsa-function-codes">OSPFv3 LSA Function Codes</name>
+        <t indent="0" pn="section-13.2-1">IANA has allocated the following code point in
+        the "OSPFv3 LSA Function Codes" registry within the "Open Shortest Path First v3 (OSPFv3) Parameters"
+        registry group:
+        </t>
+        <table anchor="iana2" align="center" pn="table-3">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">LSA Function Code Name</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">42</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 Locator LSA</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, <xref target="LOCLSA" format="default" sectionFormat="of" derivedContent="Section 7"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="IANAPO" numbered="true" toc="include" removeInRFC="false" pn="section-13.3">
+        <name slugifiedName="name-ospfv3-prefix-options">OSPFv3 Prefix Options</name>
+        <t indent="0" pn="section-13.3-1">IANA has allocated the following code point in the "OSPFv3 Prefix
+        Options (8 bits)" registry within the "Open Shortest Path First v3
+        (OSPFv3) Parameters" registry group:</t>
+        <table anchor="iana3" align="center" pn="table-4">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">0x80</td>
+              <td align="left" colspan="1" rowspan="1">AC-bit</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, <xref target="ANYCAST" format="default" sectionFormat="of" derivedContent="Section 6"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="IANASRV6CAP" numbered="true" toc="include" removeInRFC="false" pn="section-13.4">
+        <name slugifiedName="name-ospfv3-srv6-capabilities-tl">OSPFv3 SRv6 Capabilities TLV Flags</name>
+        <t indent="0" pn="section-13.4-1">IANA has created a new subregistry named "OSPFv3 SRv6
+        Capabilities TLV Flags" within the "Open Shortest Path First v3 (OSPFv3) Parameters"
+        registry group to control the assignment of bits 0 to 15 in the Flags
+        field of the OSPFv3 SRv6 Capabilities TLV specified in this document.
+        The registration procedure is "Standards Action" as defined in <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>.</t>
+        <t indent="0" pn="section-13.4-2">The following assignment has been made per this document:</t>
+        <table anchor="iana4" align="center" pn="table-5">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Bit</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1</td>
+              <td align="left" colspan="1" rowspan="1">O-flag</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, <xref target="capability" format="default" sectionFormat="of" derivedContent="Section 2"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="IANASRV6END" numbered="true" toc="include" removeInRFC="false" pn="section-13.5">
+        <name slugifiedName="name-ospfv3-srv6-end-sid-sub-tlv">OSPFv3 SRv6 End SID Sub-TLV Flags</name>
+        <t indent="0" pn="section-13.5-1">IANA has created a new subregistry named "OSPFv3 SRv6
+        End SID Sub-TLV Flags" within the "Open Shortest Path First v3 (OSPFv3) Parameters"
+        registry group to control the assignment of bits 0 to 7 in the Flags
+        field of the OSPFv3 SRv6 End SID sub-TLV specified in this document.
+        The registration procedure is "Standards Action" as defined in <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>.</t>
+        <t indent="0" pn="section-13.5-2">No assignments are made by this document.</t>
+      </section>
+      <section anchor="IANASRV6ENDX" numbered="true" toc="include" removeInRFC="false" pn="section-13.6">
+        <name slugifiedName="name-ospfv3-srv6-adjacency-sid-s">OSPFv3 SRv6 Adjacency SID Sub-TLV Flags</name>
+        <t indent="0" pn="section-13.6-1">IANA has created a new subregistry named "OSPFv3 SRv6
+        Adjacency SID Sub-TLV Flags" within the "Open Shortest Path First v3 (OSPFv3) Parameters"
+        registry group to control the assignment of bits 0 to 7 in the Flags
+        field of the OSPFv3 SRv6 End.X SID and OSPFv3 SRv6 LAN End.X SID
+        sub-TLVs specified in this document. The registration procedure is
+        "Standards Action" as defined in <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>.</t>
+        <t indent="0" pn="section-13.6-2">The following assignments have been made per this document:</t>
+        <table anchor="iana5" align="center" pn="table-6">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Bit</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">0</td>
+              <td align="left" colspan="1" rowspan="1">B-flag</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, Sections <xref target="P2P" format="counter" sectionFormat="of" derivedContent="9.1"/> and <xref target="LAN" format="counter" sectionFormat="of" derivedContent="9.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1</td>
+              <td align="left" colspan="1" rowspan="1">S-flag</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, Sections <xref target="P2P" format="counter" sectionFormat="of" derivedContent="9.1"/> and <xref target="LAN" format="counter" sectionFormat="of" derivedContent="9.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">2</td>
+              <td align="left" colspan="1" rowspan="1">P-flag</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, Sections <xref target="P2P" format="counter" sectionFormat="of" derivedContent="9.1"/> and <xref target="LAN" format="counter" sectionFormat="of" derivedContent="9.2"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="IANAELSTLVS" numbered="true" toc="include" removeInRFC="false" pn="section-13.7">
+        <name slugifiedName="name-ospfv3-extended-lsa-sub-tlv">OSPFv3 Extended-LSA Sub-TLVs</name>
+        <t indent="0" pn="section-13.7-1">IANA has allocated the following code points
+        in the "OSPFv3 Extended-LSA Sub-TLVs" registry
+        within the "Open Shortest Path First v3 (OSPFv3) Parameters" registry group:</t>
+        <table anchor="iana6" align="center" pn="table-7">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">L2BM</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">30</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 SID Structure</td>
+              <td align="left" colspan="1" rowspan="1">Y</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, <xref target="SRSTRUCTTLV" format="default" sectionFormat="of" derivedContent="Section 10"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">31</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 End.X SID</td>
+              <td align="left" colspan="1" rowspan="1">Y</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, <xref target="P2P" format="default" sectionFormat="of" derivedContent="Section 9.1"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">32</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 LAN End.X SID</td>
+              <td align="left" colspan="1" rowspan="1">Y</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, <xref target="LAN" format="default" sectionFormat="of" derivedContent="Section 9.2"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="IANALLTLVS" numbered="true" toc="include" removeInRFC="false" pn="section-13.8">
+        <name slugifiedName="name-ospfv3-srv6-locator-lsa-tlv">OSPFv3 SRv6 Locator LSA TLVs</name>
+        <t indent="0" pn="section-13.8-1">IANA has created a new subregistry named "OSPFv3 SRv6 Locator LSA
+        TLVs" within the "Open Shortest Path First v3 (OSPFv3) Parameters" registry group to define top-level TLVs for the OSPFv3 SRv6
+        Locator LSA. The initial
+        assignments are below:</t>
+        <table anchor="iana7" align="center" pn="table-8">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">0</td>
+              <td align="left" colspan="1" rowspan="1">Reserved</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 Locator</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, <xref target="LOCTLV" format="default" sectionFormat="of" derivedContent="Section 7.1"/></td>
+            </tr>
+          </tbody>
+        </table>
+        <t indent="0" pn="section-13.8-3">Types in the range 0-32767 are allocated via IETF Review or IESG
+        Approval <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>.</t>
+        <t indent="0" pn="section-13.8-4">Types in the range 32768-33023 are Reserved for Experimental Use;
+        these will not be registered with IANA and <bcp14>MUST NOT</bcp14> be mentioned by
+        RFCs.</t>
+        <t indent="0" pn="section-13.8-5">Types in the range 33024-45055 are to be assigned on a First Come
+        First Served (FCFS) basis.</t>
+        <t indent="0" pn="section-13.8-6">Types in the range 45056-65535 are not to be assigned at this time.
+        Before any assignments can be made in the 45056-65535 range, there
+        <bcp14>MUST</bcp14> be an IETF specification that specifies IANA Considerations that
+        cover the range being assigned.</t>
+      </section>
+      <section anchor="IANALLSTLVS" numbered="true" toc="include" removeInRFC="false" pn="section-13.9">
+        <name slugifiedName="name-ospfv3-srv6-locator-lsa-sub">OSPFv3 SRv6 Locator LSA Sub-TLVs</name>
+        <t indent="0" pn="section-13.9-1">IANA has created a new subregistry named "OSPFv3 SRv6 Locator LSA
+        Sub-TLVs" within the "Open Shortest Path First v3 (OSPFv3) Parameters" registry    
+group to define sub-TLVs at any level of nesting for
+        the SRv6 Locator LSA TLV.
+        The initial assignment are below:</t>
+        <table anchor="iana8" align="center" pn="table-9">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">0</td>
+              <td align="left" colspan="1" rowspan="1">Reserved</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 End SID</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, <xref target="END" format="default" sectionFormat="of" derivedContent="Section 8"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">2</td>
+              <td align="left" colspan="1" rowspan="1">IPv6-Forwarding-Address</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/>; RFC 9513, <xref target="LOCSUBTLVS" format="default" sectionFormat="of" derivedContent="Section 7.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">3</td>
+              <td align="left" colspan="1" rowspan="1">Route-Tag</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/>; RFC 9513, <xref target="LOCSUBTLVS" format="default" sectionFormat="of" derivedContent="Section 7.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">4</td>
+              <td align="left" colspan="1" rowspan="1">Prefix Source OSPF Router-ID</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC9084" format="default" sectionFormat="of" derivedContent="RFC9084"/>; RFC 9513, <xref target="LOCSUBTLVS" format="default" sectionFormat="of" derivedContent="Section 7.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">5</td>
+              <td align="left" colspan="1" rowspan="1">Prefix Source Router Address</td>
+              <td align="left" colspan="1" rowspan="1">
+                <xref target="RFC9084" format="default" sectionFormat="of" derivedContent="RFC9084"/>; RFC 9513, <xref target="LOCSUBTLVS" format="default" sectionFormat="of" derivedContent="Section 7.2"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">10</td>
+              <td align="left" colspan="1" rowspan="1">SRv6 SID Structure</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9513, <xref target="SRSTRUCTTLV" format="default" sectionFormat="of" derivedContent="Section 10"/></td>
+            </tr>
+          </tbody>
+        </table>
+        <t indent="0" pn="section-13.9-3">Types in the range 0-32767 are allocated via IETF Review
+        or IESG Approval <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>.</t>
+        <t indent="0" pn="section-13.9-4">Types in the range 32768-33023 are Reserved for Experimental Use;
+        these will not be registered with IANA and <bcp14>MUST NOT</bcp14> be mentioned by
+        RFCs.</t>
+        <t indent="0" pn="section-13.9-5">Types in the range 33024-45055 are to be assigned on a FCFS basis.</t>
+        <t indent="0" pn="section-13.9-6">Types in the range 45056-65535 are not to be assigned at this time.
+        Before any assignments can be made in the 45056-65535 range, there
+        <bcp14>MUST</bcp14> be an IETF specification that specifies IANA Considerations that
+        cover the range being assigned.</t>
+        <t indent="0" pn="section-13.9-7">The following note has been added to this registry to
+        ensure that any document requesting allocations in this registry
+        for sub-TLVs of any of the OSPFv3 SRv6 Locator TLVs checks if
+        allocations are also applicable for the "OSPFv3 Extended-LSA Sub-TLVs"
+        registry.</t>
+        <blockquote pn="section-13.9-8">
+          <t indent="0" pn="section-13.9-8.1">Note: Allocations made in this registry for sub-TLVs that
+        are associated with OSPFv3 SRv6 Locator TLVs <bcp14>MUST</bcp14> be
+        evaluated for their applicability as OSPFv3 Extended-LSA sub-TLVs,
+        which are required to be allocated in the "OSPFv3 Extended-LSA
+        Sub-TLVs" registry.</t>
+        </blockquote>
+      </section>
+      <section anchor="IANAOSPFV3EXTLSA" numbered="true" toc="include" removeInRFC="false" pn="section-13.10">
+        <name slugifiedName="name-ospfv3-extended-lsa-sub-tlvs">OSPFv3 Extended-LSA Sub-TLVs</name>
+        <t indent="0" pn="section-13.10-1">IANA has added the following note to
+        the "OSPFv3 Extended-LSA Sub-TLVs" registry within the "Open Shortest Path First v3 (OSPFv3) Parameters" registry group. The purpose of this note is to ensure that
+        any document requesting allocations in this registry for sub-TLVs
+        of any of the OSPFv3 Extended Prefix TLVs checks if allocations are
+        also applicable for the "OSPFv3 SRv6 Locator LSA Sub-TLVs" registry
+        defined in this document.</t>
+        <blockquote pn="section-13.10-2">
+          <t indent="0" pn="section-13.10-2.1">Note: Allocations made in this registry for sub-TLVs that
+        are associated with OSPFv3 Extended TLVs related to prefix
+        advertisements <bcp14>MUST</bcp14> be evaluated for their
+        applicability as OSPFv3 SRv6 Locator sub-TLVs, which are
+        required to be allocated in the "OSPFv3 SRv6 Locator LSA Sub-TLVs"
+        registry.</t>
+        </blockquote>
+      </section>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-14">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-14.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC5340" target="https://www.rfc-editor.org/info/rfc5340" quoteTitle="true" derivedAnchor="RFC5340">
+          <front>
+            <title>OSPF for IPv6</title>
+            <author fullname="R. Coltun" initials="R." surname="Coltun"/>
+            <author fullname="D. Ferguson" initials="D." surname="Ferguson"/>
+            <author fullname="J. Moy" initials="J." surname="Moy"/>
+            <author fullname="A. Lindem" initials="A." surname="Lindem"/>
+            <date month="July" year="2008"/>
+            <abstract>
+              <t indent="0">This document describes the modifications to OSPF to support version 6 of the Internet Protocol (IPv6). The fundamental mechanisms of OSPF (flooding, Designated Router (DR) election, area support, Short Path First (SPF) calculations, etc.) remain unchanged. However, some changes have been necessary, either due to changes in protocol semantics between IPv4 and IPv6, or simply to handle the increased address size of IPv6. These modifications will necessitate incrementing the protocol version from version 2 to version 3. OSPF for IPv6 is also referred to as OSPF version 3 (OSPFv3).</t>
+              <t indent="0">Changes between OSPF for IPv4, OSPF Version 2, and OSPF for IPv6 as described herein include the following. Addressing semantics have been removed from OSPF packets and the basic Link State Advertisements (LSAs). New LSAs have been created to carry IPv6 addresses and prefixes. OSPF now runs on a per-link basis rather than on a per-IP-subnet basis. Flooding scope for LSAs has been generalized. Authentication has been removed from the OSPF protocol and instead relies on IPv6's Authentication Header and Encapsulating Security Payload (ESP).</t>
+              <t indent="0">Even with larger IPv6 addresses, most packets in OSPF for IPv6 are almost as compact as those in OSPF for IPv4. Most fields and packet- size limitations present in OSPF for IPv4 have been relaxed. In addition, option handling has been made more flexible.</t>
+              <t indent="0">All of OSPF for IPv4's optional capabilities, including demand circuit support and Not-So-Stubby Areas (NSSAs), are also supported in OSPF for IPv6. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5340"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5340"/>
+        </reference>
+        <reference anchor="RFC7166" target="https://www.rfc-editor.org/info/rfc7166" quoteTitle="true" derivedAnchor="RFC7166">
+          <front>
+            <title>Supporting Authentication Trailer for OSPFv3</title>
+            <author fullname="M. Bhatia" initials="M." surname="Bhatia"/>
+            <author fullname="V. Manral" initials="V." surname="Manral"/>
+            <author fullname="A. Lindem" initials="A." surname="Lindem"/>
+            <date month="March" year="2014"/>
+            <abstract>
+              <t indent="0">Currently, OSPF for IPv6 (OSPFv3) uses IPsec as the only mechanism for authenticating protocol packets. This behavior is different from authentication mechanisms present in other routing protocols (OSPFv2, Intermediate System to Intermediate System (IS-IS), RIP, and Routing Information Protocol Next Generation (RIPng)). In some environments, it has been found that IPsec is difficult to configure and maintain and thus cannot be used. This document defines an alternative mechanism to authenticate OSPFv3 protocol packets so that OSPFv3 does not depend only upon IPsec for authentication.</t>
+              <t indent="0">The OSPFv3 Authentication Trailer was originally defined in RFC 6506. This document obsoletes RFC 6506 by providing a revised definition, including clarifications and refinements of the procedures.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7166"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7166"/>
+        </reference>
+        <reference anchor="RFC7770" target="https://www.rfc-editor.org/info/rfc7770" quoteTitle="true" derivedAnchor="RFC7770">
+          <front>
+            <title>Extensions to OSPF for Advertising Optional Router Capabilities</title>
+            <author fullname="A. Lindem" initials="A." role="editor" surname="Lindem"/>
+            <author fullname="N. Shen" initials="N." surname="Shen"/>
+            <author fullname="JP. Vasseur" initials="JP." surname="Vasseur"/>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="S. Shaffer" initials="S." surname="Shaffer"/>
+            <date month="February" year="2016"/>
+            <abstract>
+              <t indent="0">It is useful for routers in an OSPFv2 or OSPFv3 routing domain to know the capabilities of their neighbors and other routers in the routing domain. This document proposes extensions to OSPFv2 and OSPFv3 for advertising optional router capabilities. The Router Information (RI) Link State Advertisement (LSA) is defined for this purpose. In OSPFv2, the RI LSA will be implemented with an Opaque LSA type ID. In OSPFv3, the RI LSA will be implemented with a unique LSA type function code. In both protocols, the RI LSA can be advertised at any of the defined flooding scopes (link, area, or autonomous system (AS)). This document obsoletes RFC 4970 by providing a revised specification that includes support for advertisement of multiple instances of the RI LSA and a TLV for functional capabilities.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7770"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7770"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8362" target="https://www.rfc-editor.org/info/rfc8362" quoteTitle="true" derivedAnchor="RFC8362">
+          <front>
+            <title>OSPFv3 Link State Advertisement (LSA) Extensibility</title>
+            <author fullname="A. Lindem" initials="A." surname="Lindem"/>
+            <author fullname="A. Roy" initials="A." surname="Roy"/>
+            <author fullname="D. Goethals" initials="D." surname="Goethals"/>
+            <author fullname="V. Reddy Vallem" initials="V." surname="Reddy Vallem"/>
+            <author fullname="F. Baker" initials="F." surname="Baker"/>
+            <date month="April" year="2018"/>
+            <abstract>
+              <t indent="0">OSPFv3 requires functional extension beyond what can readily be done with the fixed-format Link State Advertisement (LSA) as described in RFC 5340. Without LSA extension, attributes associated with OSPFv3 links and advertised IPv6 prefixes must be advertised in separate LSAs and correlated to the fixed-format LSAs. This document extends the LSA format by encoding the existing OSPFv3 LSA information in Type-Length-Value (TLV) tuples and allowing advertisement of additional information with additional TLVs. Backward-compatibility mechanisms are also described.</t>
+              <t indent="0">This document updates RFC 5340, "OSPF for IPv6", and RFC 5838, "Support of Address Families in OSPFv3", by providing TLV-based encodings for the base OSPFv3 unicast support and OSPFv3 address family support.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8362"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8362"/>
+        </reference>
+        <reference anchor="RFC8402" target="https://www.rfc-editor.org/info/rfc8402" quoteTitle="true" derivedAnchor="RFC8402">
+          <front>
+            <title>Segment Routing Architecture</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="S. Previdi" initials="S." role="editor" surname="Previdi"/>
+            <author fullname="L. Ginsberg" initials="L." surname="Ginsberg"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="S. Litkowski" initials="S." surname="Litkowski"/>
+            <author fullname="R. Shakir" initials="R." surname="Shakir"/>
+            <date month="July" year="2018"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) leverages the source routing paradigm. A node steers a packet through an ordered list of instructions, called "segments". A segment can represent any instruction, topological or service based. A segment can have a semantic local to an SR node or global within an SR domain. SR provides a mechanism that allows a flow to be restricted to a specific topological path, while maintaining per-flow state only at the ingress node(s) to the SR domain.</t>
+              <t indent="0">SR can be directly applied to the MPLS architecture with no change to the forwarding plane. A segment is encoded as an MPLS label. An ordered list of segments is encoded as a stack of labels. The segment to process is on the top of the stack. Upon completion of a segment, the related label is popped from the stack.</t>
+              <t indent="0">SR can be applied to the IPv6 architecture, with a new type of routing header. A segment is encoded as an IPv6 address. An ordered list of segments is encoded as an ordered list of IPv6 addresses in the routing header. The active segment is indicated by the Destination Address (DA) of the packet. The next active segment is indicated by a pointer in the new routing header.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8402"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8402"/>
+        </reference>
+        <reference anchor="RFC8476" target="https://www.rfc-editor.org/info/rfc8476" quoteTitle="true" derivedAnchor="RFC8476">
+          <front>
+            <title>Signaling Maximum SID Depth (MSD) Using OSPF</title>
+            <author fullname="J. Tantsura" initials="J." surname="Tantsura"/>
+            <author fullname="U. Chunduri" initials="U." surname="Chunduri"/>
+            <author fullname="S. Aldrin" initials="S." surname="Aldrin"/>
+            <author fullname="P. Psenak" initials="P." surname="Psenak"/>
+            <date month="December" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a way for an Open Shortest Path First (OSPF) router to advertise multiple types of supported Maximum SID Depths (MSDs) at node and/or link granularity. Such advertisements allow entities (e.g., centralized controllers) to determine whether a particular Segment Identifier (SID) stack can be supported in a given network. This document only refers to the Signaling MSD as defined in RFC 8491, but it defines an encoding that can support other MSD types. Here, the term "OSPF" means both OSPFv2 and OSPFv3.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8476"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8476"/>
+        </reference>
+        <reference anchor="RFC8665" target="https://www.rfc-editor.org/info/rfc8665" quoteTitle="true" derivedAnchor="RFC8665">
+          <front>
+            <title>OSPF Extensions for Segment Routing</title>
+            <author fullname="P. Psenak" initials="P." role="editor" surname="Psenak"/>
+            <author fullname="S. Previdi" initials="S." role="editor" surname="Previdi"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="H. Gredler" initials="H." surname="Gredler"/>
+            <author fullname="R. Shakir" initials="R." surname="Shakir"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <author fullname="J. Tantsura" initials="J." surname="Tantsura"/>
+            <date month="December" year="2019"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) allows a flexible definition of end-to-end paths within IGP topologies by encoding paths as sequences of topological subpaths called "segments". These segments are advertised by the link-state routing protocols (IS-IS and OSPF).</t>
+              <t indent="0">This document describes the OSPFv2 extensions required for Segment Routing.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8665"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8665"/>
+        </reference>
+        <reference anchor="RFC8666" target="https://www.rfc-editor.org/info/rfc8666" quoteTitle="true" derivedAnchor="RFC8666">
+          <front>
+            <title>OSPFv3 Extensions for Segment Routing</title>
+            <author fullname="P. Psenak" initials="P." role="editor" surname="Psenak"/>
+            <author fullname="S. Previdi" initials="S." role="editor" surname="Previdi"/>
+            <date month="December" year="2019"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) allows a flexible definition of end-to-end paths within IGP topologies by encoding paths as sequences of topological subpaths called "segments". These segments are advertised by the link-state routing protocols (IS-IS and OSPF).</t>
+              <t indent="0">This document describes the OSPFv3 extensions required for Segment Routing with the MPLS data plane.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8666"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8666"/>
+        </reference>
+        <reference anchor="RFC8754" target="https://www.rfc-editor.org/info/rfc8754" quoteTitle="true" derivedAnchor="RFC8754">
+          <front>
+            <title>IPv6 Segment Routing Header (SRH)</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="D. Dukes" initials="D." role="editor" surname="Dukes"/>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="J. Leddy" initials="J." surname="Leddy"/>
+            <author fullname="S. Matsushima" initials="S." surname="Matsushima"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <date month="March" year="2020"/>
+            <abstract>
+              <t indent="0">Segment Routing can be applied to the IPv6 data plane using a new type of Routing Extension Header called the Segment Routing Header (SRH). This document describes the SRH and how it is used by nodes that are Segment Routing (SR) capable.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8754"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8754"/>
+        </reference>
+        <reference anchor="RFC8986" target="https://www.rfc-editor.org/info/rfc8986" quoteTitle="true" derivedAnchor="RFC8986">
+          <front>
+            <title>Segment Routing over IPv6 (SRv6) Network Programming</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="P. Camarillo" initials="P." role="editor" surname="Camarillo"/>
+            <author fullname="J. Leddy" initials="J." surname="Leddy"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <author fullname="S. Matsushima" initials="S." surname="Matsushima"/>
+            <author fullname="Z. Li" initials="Z." surname="Li"/>
+            <date month="February" year="2021"/>
+            <abstract>
+              <t indent="0">The Segment Routing over IPv6 (SRv6) Network Programming framework enables a network operator or an application to specify a packet processing program by encoding a sequence of instructions in the IPv6 packet header.</t>
+              <t indent="0">Each instruction is implemented on one or several nodes in the network and identified by an SRv6 Segment Identifier in the packet.</t>
+              <t indent="0">This document defines the SRv6 Network Programming concept and specifies the base set of SRv6 behaviors that enables the creation of interoperable overlays with underlay optimization.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8986"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8986"/>
+        </reference>
+        <reference anchor="RFC9084" target="https://www.rfc-editor.org/info/rfc9084" quoteTitle="true" derivedAnchor="RFC9084">
+          <front>
+            <title>OSPF Prefix Originator Extensions</title>
+            <author fullname="A. Wang" initials="A." surname="Wang"/>
+            <author fullname="A. Lindem" initials="A." surname="Lindem"/>
+            <author fullname="J. Dong" initials="J." surname="Dong"/>
+            <author fullname="P. Psenak" initials="P." surname="Psenak"/>
+            <author fullname="K. Talaulikar" initials="K." role="editor" surname="Talaulikar"/>
+            <date month="August" year="2021"/>
+            <abstract>
+              <t indent="0">This document defines OSPF extensions to include information associated with the node originating a prefix along with the prefix advertisement. These extensions do not change the core OSPF route computation functionality but provide useful information for network analysis, troubleshooting, and use cases like traffic engineering.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9084"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9084"/>
+        </reference>
+        <reference anchor="RFC9259" target="https://www.rfc-editor.org/info/rfc9259" quoteTitle="true" derivedAnchor="RFC9259">
+          <front>
+            <title>Operations, Administration, and Maintenance (OAM) in Segment Routing over IPv6 (SRv6)</title>
+            <author fullname="Z. Ali" initials="Z." surname="Ali"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="S. Matsushima" initials="S." surname="Matsushima"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <author fullname="M. Chen" initials="M." surname="Chen"/>
+            <date month="June" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes how the existing IPv6 mechanisms for ping and traceroute can be used in a Segment Routing over IPv6 (SRv6) network. The document also specifies the OAM flag (O-flag) in the Segment Routing Header (SRH) for performing controllable and predictable flow sampling from segment endpoints. In addition, the document describes how a centralized monitoring system performs a path continuity check between any nodes within an SRv6 domain.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9259"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9259"/>
+        </reference>
+        <reference anchor="RFC9350" target="https://www.rfc-editor.org/info/rfc9350" quoteTitle="true" derivedAnchor="RFC9350">
+          <front>
+            <title>IGP Flexible Algorithm</title>
+            <author fullname="P. Psenak" initials="P." role="editor" surname="Psenak"/>
+            <author fullname="S. Hegde" initials="S." surname="Hegde"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="K. Talaulikar" initials="K." surname="Talaulikar"/>
+            <author fullname="A. Gulko" initials="A." surname="Gulko"/>
+            <date month="February" year="2023"/>
+            <abstract>
+              <t indent="0">IGP protocols historically compute the best paths over the network based on the IGP metric assigned to the links. Many network deployments use RSVP-TE or Segment Routing - Traffic Engineering (SR-TE) to steer traffic over a path that is computed using different metrics or constraints than the shortest IGP path. This document specifies a solution that allows IGPs themselves to compute constraint-based paths over the network. This document also specifies a way of using Segment Routing (SR) Prefix-SIDs and SRv6 locators to steer packets along the constraint-based paths.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9350"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9350"/>
+        </reference>
+        <reference anchor="RFC9352" target="https://www.rfc-editor.org/info/rfc9352" quoteTitle="true" derivedAnchor="RFC9352">
+          <front>
+            <title>IS-IS Extensions to Support Segment Routing over the IPv6 Data Plane</title>
+            <author fullname="P. Psenak" initials="P." role="editor" surname="Psenak"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="A. Bashandy" initials="A." surname="Bashandy"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <date month="February" year="2023"/>
+            <abstract>
+              <t indent="0">The Segment Routing (SR) architecture allows a flexible definition of the end-to-end path by encoding it as a sequence of topological elements called "segments". It can be implemented over the MPLS or the IPv6 data plane. This document describes the IS-IS extensions required to support SR over the IPv6 data plane.</t>
+              <t indent="0">This document updates RFC 7370 by modifying an existing registry.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9352"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9352"/>
+        </reference>
+      </references>
+      <references pn="section-14.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC3630" target="https://www.rfc-editor.org/info/rfc3630" quoteTitle="true" derivedAnchor="RFC3630">
+          <front>
+            <title>Traffic Engineering (TE) Extensions to OSPF Version 2</title>
+            <author fullname="D. Katz" initials="D." surname="Katz"/>
+            <author fullname="K. Kompella" initials="K." surname="Kompella"/>
+            <author fullname="D. Yeung" initials="D." surname="Yeung"/>
+            <date month="September" year="2003"/>
+            <abstract>
+              <t indent="0">This document describes extensions to the OSPF protocol version 2 to support intra-area Traffic Engineering (TE), using Opaque Link State Advertisements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3630"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3630"/>
+        </reference>
+        <reference anchor="RFC9514" target="https://www.rfc-editor.org/info/rfc9514" quoteTitle="true" derivedAnchor="RFC9514">
+          <front>
+            <title>Border Gateway Protocol - Link State (BGP-LS) Extensions for Segment Routing over IPv6 (SRv6)</title>
+            <author initials="G." surname="Dawra" fullname="Gaurav Dawra">
+              <organization showOnFrontPage="true">LinkedIn</organization>
+            </author>
+            <author initials="C." surname="Filsfils" fullname="Clarence Filsfils">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <author initials="K." surname="Talaulikar" fullname="Ketan Talaulikar" role="editor">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <author initials="M." surname="Chen" fullname="Mach Chen">
+              <organization showOnFrontPage="true">Huawei</organization>
+            </author>
+            <author initials="D." surname="Bernier" fullname="Daniel Bernier">
+              <organization showOnFrontPage="true">Bell Canada</organization>
+            </author>
+            <author initials="B." surname="Decraene" fullname="Bruno Decraene">
+              <organization showOnFrontPage="true">Orange</organization>
+            </author>
+            <date month="December" year="2023"/>
+          </front>
+          <seriesInfo name="RFC" value="9514"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9514"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">The authors would like to acknowledge the contributions of <contact fullname="Dean Cheng"/>
+      in the early draft versions of this document. The authors would like to thank
+      <contact fullname="Ran Chen"/> and <contact fullname="Detao Zhao"/> for their suggestions related to the extension
+      of PrefixOptions for the signaling of the anycast property.</t>
+      <t indent="0" pn="section-appendix.a-2">The authors would like to thank <contact fullname="Chenzichao"/>,
+      <contact fullname="Dirk Goethals"/>, <contact fullname="Baalajee S"/>,
+      <contact fullname="Yingzhen Qu"/>, <contact fullname="Shraddha Hegde"/>,
+      <contact fullname="Dhruv Dhody"/>, <contact fullname="Martin       Vigoureux"/>, and <contact fullname="Reese Enghardt"/> for their review
+      and comments on this document. The authors would like to thank <contact fullname="Acee Lindem"/> for his detailed shepherd review and feedback
+      for improvement of this document. The authors would like to thank
+      <contact fullname="John Scudder"/> for his AD review and suggestions to
+      improve this document.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Zhenbin Li" initials="Z." surname="Li">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <email>lizhenbin@huawei.com</email>
+        </address>
+      </author>
+      <author fullname="Zhibo Hu" initials="Z." surname="Hu">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <email>huzhibo@huawei.com</email>
+        </address>
+      </author>
+      <author fullname="Ketan Talaulikar" initials="K" role="editor" surname="Talaulikar">
+        <organization showOnFrontPage="true">Cisco Systems</organization>
+        <address>
+          <postal>
+            <country>India</country>
+          </postal>
+          <email>ketant.ietf@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Peter Psenak" initials="P." surname="Psenak">
+        <organization showOnFrontPage="true">Cisco Systems</organization>
+        <address>
+          <postal>
+            <country>Slovakia</country>
+          </postal>
+          <email>ppsenak@cisco.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

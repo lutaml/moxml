@@ -1,0 +1,704 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" docName="draft-ietf-stir-messaging-08" number="9475" submissionType="IETF" category="std" consensus="true" ipr="trust200902" obsoletes="" updates="" xml:lang="en" tocInclude="true" tocDepth="4" symRefs="true" sortRefs="true" prepTime="2023-12-19T17:40:51" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-stir-messaging-08" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9475" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="STIR Messaging">Messaging Use Cases and Extensions for Secure Telephone Identity Revisited (STIR)</title>
+    <seriesInfo name="RFC" value="9475" stream="IETF"/>
+    <author initials="J." surname="Peterson" fullname="Jon Peterson">
+      <organization abbrev="Neustar" showOnFrontPage="true">Neustar, Inc.</organization>
+      <address>
+        <email>jon.peterson@team.neustar</email>
+      </address>
+    </author>
+    <author fullname="Chris Wendt" initials="C." surname="Wendt">
+      <organization showOnFrontPage="true">Somos</organization>
+      <address>
+        <email>chris-ietf@chriswendt.net</email>
+      </address>
+    </author>
+    <date month="12" year="2023"/>
+    <area>art</area>
+    <workgroup>stir</workgroup>
+    <keyword>SIP</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">
+	   Secure Telephone Identity Revisited (STIR) provides a means of attesting the identity of a telephone caller via a signed token in order to prevent impersonation of a calling party number, which is a key enabler for illegal robocalling. Similar impersonation is sometimes leveraged by bad actors in the text and multimedia messaging space. This document explores the applicability of STIR's Personal Assertion Token (PASSporT) and certificate issuance framework to text and multimedia messaging use cases, including support for both messages carried as a payload in SIP requests and messages sent in sessions negotiated by SIP.
+      </t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9475" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-applicability-to-messaging-">Applicability to Messaging Systems</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-message-sessions">Message Sessions</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-passports-and-individual-me">PASSporTs and Individual Messages</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2.2.2">
+                  <li pn="section-toc.1-1.3.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.3.2.2.2.1.1"><xref derivedContent="3.2.1" format="counter" sectionFormat="of" target="section-3.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-passport-conveyance-with-me">PASSporT Conveyance with Messaging</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-certificates-and-messaging">Certificates and Messaging</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-json-web-token-claims-regis">JSON Web Token Claims Registration</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-passport-type-registration">PASSporT Type Registration</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-privacy-considerations">Privacy Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">
+	The STIR problem statement <xref target="RFC7340" format="default" sectionFormat="of" derivedContent="RFC7340"/> describes widespread problems enabled by impersonation in the telephone network, including illegal robocalling, voicemail hacking, and swatting.
+	As telephone services are increasingly migrating onto the Internet and using Voice over IP (VoIP) protocols such as <xref target="RFC3261" format="default" sectionFormat="of" derivedContent="RFC3261">SIP</xref>, it is necessary for these protocols
+	to support stronger identity mechanisms to prevent impersonation. <xref target="RFC8224" format="default" sectionFormat="of" derivedContent="RFC8224"/> defines a SIP Identity header capable of carrying <xref target="RFC8225" format="default" sectionFormat="of" derivedContent="RFC8225">PASSporT</xref> objects in SIP as a means to cryptographically attest that the originator of a telephone call is authorized to use the calling party number (or, for SIP cases, SIP URI) associated with the originator of the call.
+      </t>
+      <t indent="0" pn="section-1-2">
+	However, the problem of bulk, unsolicited commercial communications is not limited to telephone calls. Spammers and fraudsters are increasingly turning to messaging applications to deliver undesired content to consumers. In some respects, mitigating these unwanted messages resembles the email spam problem; for example, textual analysis of the message contents can be used to fingerprint content that is generated by spammers. However, encrypted messaging is becoming more common, and analysis of message contents may no longer be a reliable way to mitigate messaging spam in the future. As STIR sees further deployment in the telephone network, the governance structures put in place for securing telephone-network resources with STIR could be repurposed to help secure the messaging ecosystem.
+      </t>
+      <t indent="0" pn="section-1-3">
+	One of the more sensitive applications for message security is emergency services. As next-generation emergency services increasingly incorporate messaging as a mode of communication with public safety personnel (see <xref target="RFC8876" format="default" sectionFormat="of" derivedContent="RFC8876"/>), providing an identity assurance could help to mitigate denial-of-service attacks and ultimately help to identify the source of emergency communications in general (including swatting attacks, see <xref target="RFC7340" format="default" sectionFormat="of" derivedContent="RFC7340"/>).
+      </t>
+      <t indent="0" pn="section-1-4">
+	Therefore, this specification explores how the PASSporT mechanism defined for STIR could be applied in providing protection for textual and multimedia messaging, but it focuses particularly on those messages that use telephone numbers as the identity of the sender. Moreover, it considers the reuse of existing STIR certificates, which are beginning to see widespread deployment for signing PASSporTs that protect messages. For that purpose, it defines a new PASSporT type and an element that protects message integrity. It contains a mixture of normative and informative guidance that specifies new claims for use in PASSporTs as well as an overview of how STIR might be applied to messaging in various environments.
+      </t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <t indent="0" pn="section-2-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+      </t>
+    </section>
+    <section anchor="applic" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-applicability-to-messaging-">Applicability to Messaging Systems</name>
+      <t indent="0" pn="section-3-1">
+
+	
+      At a high level, <xref target="RFC8225" format="default" sectionFormat="of" derivedContent="RFC8225">PASSporT</xref> claims provide similar value to number-based messaging as they do to telephone calls. A signature over the calling and called party numbers, along with a timestamp, could already help to prevent impersonation in the mobile-messaging ecosystem.</t>
+      <t indent="0" pn="section-3-2">When it comes to protecting message contents, broadly, there are a few ways that the PASSporT mechanism of STIR could apply to messaging:</t>
+      <ol indent="adaptive" spacing="normal" start="1" type="1" pn="section-3-3"><li pn="section-3-3.1" derivedCounter="1.">a PASSporT could be used to securely negotiate a session over which messages will be exchanged (see <xref target="session" format="default" sectionFormat="of" derivedContent="Section 3.1"/>), and</li>
+        <li pn="section-3-3.2" derivedCounter="2.">in sessionless scenarios, a PASSporT could be generated on a per-message basis with its own built-in message security (see <xref target="message" format="default" sectionFormat="of" derivedContent="Section 3.2"/>).</li>
+      </ol>
+      <section anchor="session" numbered="true" toc="include" removeInRFC="false" pn="section-3.1">
+        <name slugifiedName="name-message-sessions">Message Sessions</name>
+        <t indent="0" pn="section-3.1-1">
+	  
+	  In the first case, SIP negotiates a session in which the media will be text messages or MIME content, as, for example, with the <xref target="RFC4975" format="default" sectionFormat="of" derivedContent="RFC4975">Message Session Relay Protocol (MSRP)</xref>.  This usage of STIR would deviate little from <xref target="RFC8224" format="default" sectionFormat="of" derivedContent="RFC8224"/>. An INVITE request sent with an Identity header containing a PASSporT with the proper calling and called party numbers would then negotiate an MSRP session the same way that an INVITE for a telephone call would negotiate an audio session.  This could be applicable to MSRP sessions negotiated for <xref target="RCC.07" format="default" sectionFormat="of" derivedContent="RCC.07">Rich Communication Suite (RCS)</xref>. Note that, if TLS is used to secure MSRP (per RCS <xref target="RCC.15" format="default" sectionFormat="of" derivedContent="RCC.15"/>), fingerprints of those TLS keys could be secured via the "mky" claim of PASSporT using the framework described in <xref target="RFC8862" format="default" sectionFormat="of" derivedContent="RFC8862"/>. Similar practices would apply to sessions that negotiate real-time text over RTP (<xref target="RFC4103" format="default" sectionFormat="of" derivedContent="RFC4103"/>, <xref target="RFC5194" format="default" sectionFormat="of" derivedContent="RFC5194"/>); any that can operate over DTLS/SRTP  (Secure Real-time Transport Protocol) should work with the "mky" PASSporT claim. For the most basic use cases, STIR for messaging should not require any further protocol enhancements.
+        </t>
+        <t indent="0" pn="section-3.1-2">
+	  Current usage of <xref target="RFC8224" format="default" sectionFormat="of" derivedContent="RFC8224"/> Identity is largely confined to INVITE requests that initiate telephone calls. RCS-style applications would require PASSporTs for all conversation participants, which could become complex in multiparty conversations. Any solution in this space would likely require the implementation of <xref target="I-D.ietf-stir-rfc4916-update" format="default" sectionFormat="of" derivedContent="CONNECT-ID-STIR">STIR-connected identity</xref>, but the specification of PASSporT-signed session conferencing is outside the scope of this document.
+        </t>
+        <t indent="0" pn="section-3.1-3">
+	  Also note that the assurance offered by <xref target="RFC8862" format="default" sectionFormat="of" derivedContent="RFC8862"/> is "end-to-end" in the sense that it offers assurance between an authentication service and verification service. If those are not implemented by the endpoints themselves, there are still potential opportunities for tampering before messages are signed and after they are verified. However, for the most part, STIR does not intend to protect against machine-in-the-middle attacks so much as spoofed origination; so the protection offered may be sufficient to mitigate nuisance messaging.
+        </t>
+      </section>
+      <section anchor="message" numbered="true" toc="include" removeInRFC="false" pn="section-3.2">
+        <name slugifiedName="name-passports-and-individual-me">PASSporTs and Individual Messages</name>
+        <t indent="0" pn="section-3.2-1">
+	  In the second case described in <xref target="applic" format="default" sectionFormat="of" derivedContent="Section 3"/>, SIP also has a method for sending messages in the body of a SIP request: the <xref target="RFC3428" format="default" sectionFormat="of" derivedContent="RFC3428">MESSAGE method</xref>. For example, MESSAGE is used in some North American emergency services use cases. The interaction of STIR with MESSAGE is not as straightforward as the potential use case with MSRP. An Identity header could be added to any SIP MESSAGE request, but without some extension to the PASSporT claims, the PASSporT would offer no protection to the message content; it would potentially be reusable for cut-and-paste attacks where the Identity header field from a legitimate request for one user is reused in a request for a different user. As the bodies of SIP requests are MIME encoded, <xref target="RFC8591" format="default" sectionFormat="of" derivedContent="RFC8591">S/MIME</xref> has been proposed as a means of providing integrity for MESSAGE (and some MSRP cases as well). The use of <xref target="RFC3862" format="default" sectionFormat="of" derivedContent="RFC3862">Common Presence and Instant Messaging (CPIM)</xref> as a MIME body allows the integrity of messages to withstand interworking with protocols that are not SIP. The interaction of STIR certificates with S/MIME (see <xref target="RFC8226" format="default" sectionFormat="of" derivedContent="RFC8226"/>) for messaging applications would require further specification; additionally, PASSporT can provide its own integrity check for message contents through a new claim defined to provide a hash over message contents.
+        </t>
+        <t indent="0" pn="section-3.2-2">
+	  In order to differentiate a PASSporT for an individual message from a PASSporT used to secure a telephone call or message stream, this document defines a new "msg" PASSporT type. "msg" PASSporTs may carry a new optional JSON Web Token (JWT) <xref target="RFC7519" format="default" sectionFormat="of" derivedContent="RFC7519"/> claim "msgi", which provides a digest over a MIME body that contains a text or multimedia message. Authentication services <bcp14>MUST NOT</bcp14> include "msgi" elements in PASSporT types other than "msg", but "msgi" is <bcp14>OPTIONAL</bcp14> in "msg" PASSporTs, as integrity for messages may be provided by some other service (e.g. <xref target="RFC8591" format="default" sectionFormat="of" derivedContent="RFC8591"/>). Verification services <bcp14>MUST</bcp14> ignore the presence of "msgi" in non-"msg" PASSporT types.
+        </t>
+        <t indent="0" pn="section-3.2-3">
+	  The claim value of the "msgi" claim key is a string that defines the crypto algorithm used to generate the digest concatenated by a hyphen with a digest string.  Implementations <bcp14>MUST</bcp14> support the hash algorithms SHA-256, SHA-384,
+      and SHA-512.  These hash algorithms are identified by "sha256", "sha384",
+      and "sha512", respectively.  SHA-256, SHA-384, and SHA-512 are part of
+      the SHA-2 set of cryptographic hash functions <xref target="RFC6234" format="default" sectionFormat="of" derivedContent="RFC6234"/> defined by the
+      US National Institute of Standards and Technology (NIST). 
+<xref target="SHA2" format="default" sectionFormat="of" derivedContent="SHA2"/>  implementations
+      <bcp14>MAY</bcp14> support additional recommended hash algorithms in the  <eref target="https://www.iana.org/assignments/cose" brackets="none">"COSE Algorithms" registry</eref>;
+      that is, the hash algorithm has "Yes" in the "Recommended" column of
+      the IANA registry.  Hash algorithm identifiers <bcp14>MUST</bcp14> use only lowercase
+      letters, and they <bcp14>MUST NOT</bcp14> contain hyphen characters. The character following the algorithm string <bcp14>MUST</bcp14> be a hyphen character ("-" or ASCII character 45).
+        </t>
+        <t indent="0" pn="section-3.2-4">
+      The subsequent characters in the claim value are the base64-encoded <xref target="RFC4648" format="default" sectionFormat="of" derivedContent="RFC4648"/> digest of a canonicalized and concatenated string or binary-data-based MIME body of the message.
+	  An "msgi" message digest is computed over the entirety of the MIME body (be it carried via SIP or not); per <xref target="RFC3428" format="default" sectionFormat="of" derivedContent="RFC3428"/>, this may be any sort of MIME body, including a multipart body in some cases, especially when multimedia content is involved. Those MIME bodies may or may not contain encrypted content or as the sender desires.
+	  The digest becomes the value of the JWT "msgi" claim, as per this example:
+        </t>
+        <t indent="0" pn="section-3.2-5">
+	  "msgi" : "sha256-H8BRh8j48O9oYatfu5AZzq6A9RINQZngK7T62em8MUt1FLm52t+eX6xO"
+        </t>
+        <t indent="0" pn="section-3.2-6">
+	  Per <xref target="RFC8224" format="default" sectionFormat="of" derivedContent="RFC8224"/>, this specification leaves it to local policy to determine how messages are handled after verification succeeds or fails. Broadly, if a SIP-based verification service wants to communicate back to the sender that the "msgi" hash does not correspond to the received message, using a SIP 438 response code would be most appropriate. 
+        </t>
+        <t indent="0" pn="section-3.2-7">
+	  Note that, in some CPIM environments, intermediaries may add or consume CPIM headers used for metadata in messages. MIME-layer integrity protection of "msgi" would be broken by a modification along these lines. Any such environment would require a profile of this specification that reduces the scope of protection only to the CPIM payload, as discussed in <xref target="RFC8591" sectionFormat="of" section="9.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8591#section-9.1" derivedContent="RFC8591"/>.
+        </t>
+        <t indent="0" pn="section-3.2-8">
+	  Finally, note that messages may be subject to store-and-forward treatment that differs from delivery expectations of SIP transactions. In such cases, the expiry freshness window recommended by <xref target="RFC8224" format="default" sectionFormat="of" derivedContent="RFC8224"/> may be too strict, as routine behavior might dictate the delivery of a MESSAGE minutes or hours after it was sent. The potential for replay attacks can, however, be largely mitigated by the timestamp in PASSporTs; duplicate messages are easily detected, and the timestamp can be
+   used to order messages displayed in the user inbox in a way that
+   precludes showing stale messages as fresh.   Relaxing the expiry timer would require support for such features on the receiving side of the message.
+        </t>
+        <section anchor="convey" numbered="true" toc="include" removeInRFC="false" pn="section-3.2.1">
+          <name slugifiedName="name-passport-conveyance-with-me">PASSporT Conveyance with Messaging</name>
+          <t indent="0" pn="section-3.2.1-1">
+		If the message is being conveyed in SIP, via the MESSAGE method, then the PASSporT could be conveyed in an Identity header in that request. The authentication and verification service procedures for populating that PASSporT would follow the guidance in <xref target="RFC8224" format="default" sectionFormat="of" derivedContent="RFC8224"/>, with the addition of the "msgi" claim defined in <xref target="message" format="default" sectionFormat="of" derivedContent="Section 3.2"/>.
+          </t>
+          <t indent="0" pn="section-3.2.1-2">
+		In text messaging today, Multimedia Messaging Service (MMS) messages are often conveyed with SMTP. Thus, there is a suite of additional email security tools available in this environment for sender authentication, such as "<xref target="RFC7489" format="title" sectionFormat="of" derivedContent="Domain-based Message Authentication, Reporting, and Conformance (DMARC)"/>" <xref target="RFC7489" format="default" sectionFormat="of" derivedContent="RFC7489"/>. The interaction of these mechanisms with STIR certificates and/or PASSporTs would require further study and is outside the scope of this document.
+          </t>
+          <t indent="0" pn="section-3.2.1-3">
+		For other cases where messages are conveyed by some protocol other than SIP, that protocol itself might have some way of conveying PASSporTs. There will surely be cases where legacy transmission of messages will not permit an accompanying PASSporT; in such a situation, something like out-of-band <xref target="RFC8816" format="default" sectionFormat="of" derivedContent="RFC8816"/> conveyance would be the only way to deliver the PASSporT. For example, this may be necessary to support cases where legacy Short Message Peer-to-Peer <xref target="SMPP" format="default" sectionFormat="of" derivedContent="SMPP"/> systems cannot be upgraded.
+          </t>
+          <t indent="0" pn="section-3.2.1-4">
+		A MESSAGE request can be sent to multiple destinations in order to support multiparty messaging. In those cases, the "dest" claim of the PASSporT can accommodate the multiple targets of a MESSAGE without the need to generate a PASSporT for each target of the message. However, if the request is forked to multiple targets by an intermediary later in the call flow, and the list of targets is not available to the authentication service, then that forking intermediary would need to use <xref target="RFC8946" format="default" sectionFormat="of" derivedContent="RFC8946">diversion PASSporTs</xref> to sign for its target set.
+          </t>
+        </section>
+      </section>
+    </section>
+    <section anchor="certs" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-certificates-and-messaging">Certificates and Messaging</name>
+      <t indent="0" pn="section-4-1">
+	  "<xref target="RFC8226" format="title" sectionFormat="of" derivedContent="Secure Telephone Identity Credentials: Certificates"/>" <xref target="RFC8226" format="default" sectionFormat="of" derivedContent="RFC8226"/>  defines a way to issue certificates that sign PASSporTs, which attest through their TNAuthList a Service Provider Code (SPC) and/or a set of one or more telephone numbers. This specification proposes that the semantics of these certificates should suffice for signing for messages from a telephone number without further modification.
+      </t>
+      <t indent="0" pn="section-4-2">
+	Note that the certificate referenced by the "x5u" of a PASSporT can change over time due to certificate expiry/rollover; in particular, the use of short-lived certificates can entail rollover on a daily basis or even more frequently. Thus, any store-and-forward messaging system relying on PASSporTs must take into account the possibility that the certificate that signed the PASSporT, though valid at the time the PASSporT was generated, could expire before a user reads the message. This might require:</t>
+      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-4-3">
+        <li pn="section-4-3.1">storing some indicator of the validity of the signature and certificate at the time the message was received, or</li>
+        <li pn="section-4-3.2">securely storing the certificate along with the PASSporT</li>
+      </ul>
+      <t indent="0" pn="section-4-4">so that the "iat" claim can be compared with the expiry freshness window of the certificate prior to validation.</t>
+      <t indent="0" pn="section-4-5">
+	  As the "orig" and "dest" claims of PASSporTs may contain URIs without telephone numbers, the STIR for messaging mechanism contained in this specification is not inherently restricted to the use of telephone numbers. This specification offers no guidance on appropriate certification authorities for designing "orig" values that do not contain telephone numbers.
+
+      </t>
+    </section>
+    <section anchor="IANA" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-5.1">
+        <name slugifiedName="name-json-web-token-claims-regis">JSON Web Token Claims Registration</name>
+        <t indent="0" pn="section-5.1-1">IANA has added one new claim to the "JSON Web Token Claims" registry that was defined in <xref target="RFC7519" format="default" sectionFormat="of" derivedContent="RFC7519"/>.</t>
+        <dl indent="3" newline="false" spacing="normal" pn="section-5.1-2">
+          <dt pn="section-5.1-2.1">Claim Name:</dt>
+          <dd pn="section-5.1-2.2">msgi</dd>
+          <dt pn="section-5.1-2.3">Claim Description:</dt>
+          <dd pn="section-5.1-2.4">Message Integrity Information</dd>
+          <dt pn="section-5.1-2.5">Change Controller:</dt>
+          <dd pn="section-5.1-2.6">IETF</dd>
+          <dt pn="section-5.1-2.7">Specification Document(s):</dt>
+          <dd pn="section-5.1-2.8">RFC 9475</dd>
+        </dl>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-5.2">
+        <name slugifiedName="name-passport-type-registration">PASSporT Type Registration</name>
+        <t indent="0" pn="section-5.2-1">This specification defines one new PASSporT type for the "Personal Assertion Token (PASSporT) Extensions" registry defined in <xref target="RFC8225" format="default" sectionFormat="of" derivedContent="RFC8225"/>.</t>
+        <dl indent="3" newline="false" spacing="normal" pn="section-5.2-2">
+          <dt pn="section-5.2-2.1">ppt value:</dt>
+          <dd pn="section-5.2-2.2">msg</dd>
+          <dt pn="section-5.2-2.3">Reference:</dt>
+          <dd pn="section-5.2-2.4">
+            <xref target="message" format="default" sectionFormat="of" derivedContent="Section 3.2"/> of RFC 9475</dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="Privacy" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-privacy-considerations">Privacy Considerations</name>
+      <t indent="0" pn="section-6-1">
+	  Signing messages or message sessions with STIR has little direct bearing on the privacy of messaging for SIP as described in <xref target="RFC3428" format="default" sectionFormat="of" derivedContent="RFC3428"/> or <xref target="RFC4975" format="default" sectionFormat="of" derivedContent="RFC4975"/>. An authentication service signing a MESSAGE method may compute the "msgi" hash over the message contents; if the message is in cleartext, that will reveal its contents to the authentication service, which might not otherwise be in the call path. 
+      </t>
+      <t indent="0" pn="section-6-2">
+	  The implications for anonymity of STIR are discussed in <xref target="RFC8224" format="default" sectionFormat="of" derivedContent="RFC8224"/>, and those considerations would apply equally here for anonymous messaging. Creating an "msg" PASSporT does not add any additional privacy
+          protections to the original message content.
+      </t>
+    </section>
+    <section anchor="Security" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-7-1">
+	  This specification inherits the security considerations of <xref target="RFC8224" format="default" sectionFormat="of" derivedContent="RFC8224"/>. The carriage of messages within SIP per <xref target="message" format="default" sectionFormat="of" derivedContent="Section 3.2"/> has a number of security and privacy implications as documented in <xref target="RFC3428" format="default" sectionFormat="of" derivedContent="RFC3428"/>, which are expanded in <xref target="RFC8591" format="default" sectionFormat="of" derivedContent="RFC8591"/>; these considerations apply here as well. The guidance about store-and-forward messaging and replay protection in <xref target="message" format="default" sectionFormat="of" derivedContent="Section 3.2"/> should also be recognized by implementers.
+      </t>
+      <t indent="0" pn="section-7-2">
+	  Note that a variety of protocols that are not SIP, both those integrated into the telephone network and those based on over-the-top applications, are responsible for most of the messaging that is sent to and from telephone numbers today. Introducing this capability for SIP-based messaging will help to mitigate spoofing and nuisance messaging for SIP-based platforms only. 
+      </t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-stir-rfc4916-update" to="CONNECT-ID-STIR"/>
+    <references pn="section-8">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-8.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC3261" target="https://www.rfc-editor.org/info/rfc3261" quoteTitle="true" derivedAnchor="RFC3261">
+          <front>
+            <title>SIP: Session Initiation Protocol</title>
+            <author fullname="J. Rosenberg" initials="J." surname="Rosenberg"/>
+            <author fullname="H. Schulzrinne" initials="H." surname="Schulzrinne"/>
+            <author fullname="G. Camarillo" initials="G." surname="Camarillo"/>
+            <author fullname="A. Johnston" initials="A." surname="Johnston"/>
+            <author fullname="J. Peterson" initials="J." surname="Peterson"/>
+            <author fullname="R. Sparks" initials="R." surname="Sparks"/>
+            <author fullname="M. Handley" initials="M." surname="Handley"/>
+            <author fullname="E. Schooler" initials="E." surname="Schooler"/>
+            <date month="June" year="2002"/>
+            <abstract>
+              <t indent="0">This document describes Session Initiation Protocol (SIP), an application-layer control (signaling) protocol for creating, modifying, and terminating sessions with one or more participants. These sessions include Internet telephone calls, multimedia distribution, and multimedia conferences. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3261"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3261"/>
+        </reference>
+        <reference anchor="RFC3428" target="https://www.rfc-editor.org/info/rfc3428" quoteTitle="true" derivedAnchor="RFC3428">
+          <front>
+            <title>Session Initiation Protocol (SIP) Extension for Instant Messaging</title>
+            <author fullname="B. Campbell" initials="B." role="editor" surname="Campbell"/>
+            <author fullname="J. Rosenberg" initials="J." surname="Rosenberg"/>
+            <author fullname="H. Schulzrinne" initials="H." surname="Schulzrinne"/>
+            <author fullname="C. Huitema" initials="C." surname="Huitema"/>
+            <author fullname="D. Gurle" initials="D." surname="Gurle"/>
+            <date month="December" year="2002"/>
+            <abstract>
+              <t indent="0">Instant Messaging (IM) refers to the transfer of messages between users in near real-time. These messages are usually, but not required to be, short. IMs are often used in a conversational mode, that is, the transfer of messages back and forth is fast enough for participants to maintain an interactive conversation. This document proposes the MESSAGE method, an extension to the Session Initiation Protocol (SIP) that allows the transfer of Instant Messages. Since the MESSAGE request is an extension to SIP, it inherits all the request routing and security features of that protocol. MESSAGE requests carry the content in the form of MIME body parts. MESSAGE requests do not themselves initiate a SIP dialog; under normal usage each Instant Message stands alone, much like pager messages. MESSAGE requests may be sent in the context of a dialog initiated by some other SIP request. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3428"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3428"/>
+        </reference>
+        <reference anchor="RFC3862" target="https://www.rfc-editor.org/info/rfc3862" quoteTitle="true" derivedAnchor="RFC3862">
+          <front>
+            <title>Common Presence and Instant Messaging (CPIM): Message Format</title>
+            <author fullname="G. Klyne" initials="G." surname="Klyne"/>
+            <author fullname="D. Atkins" initials="D." surname="Atkins"/>
+            <date month="August" year="2004"/>
+            <abstract>
+              <t indent="0">This memo defines the MIME content type 'Message/CPIM', a message format for protocols that conform to the Common Profile for Instant Messaging (CPIM) specification. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3862"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3862"/>
+        </reference>
+        <reference anchor="RFC4648" target="https://www.rfc-editor.org/info/rfc4648" quoteTitle="true" derivedAnchor="RFC4648">
+          <front>
+            <title>The Base16, Base32, and Base64 Data Encodings</title>
+            <author fullname="S. Josefsson" initials="S." surname="Josefsson"/>
+            <date month="October" year="2006"/>
+            <abstract>
+              <t indent="0">This document describes the commonly used base 64, base 32, and base 16 encoding schemes. It also discusses the use of line-feeds in encoded data, use of padding in encoded data, use of non-alphabet characters in encoded data, use of different encoding alphabets, and canonical encodings. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4648"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4648"/>
+        </reference>
+        <reference anchor="RFC6234" target="https://www.rfc-editor.org/info/rfc6234" quoteTitle="true" derivedAnchor="RFC6234">
+          <front>
+            <title>US Secure Hash Algorithms (SHA and SHA-based HMAC and HKDF)</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <author fullname="T. Hansen" initials="T." surname="Hansen"/>
+            <date month="May" year="2011"/>
+            <abstract>
+              <t indent="0">Federal Information Processing Standard, FIPS</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6234"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6234"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8224" target="https://www.rfc-editor.org/info/rfc8224" quoteTitle="true" derivedAnchor="RFC8224">
+          <front>
+            <title>Authenticated Identity Management in the Session Initiation Protocol (SIP)</title>
+            <author fullname="J. Peterson" initials="J." surname="Peterson"/>
+            <author fullname="C. Jennings" initials="C." surname="Jennings"/>
+            <author fullname="E. Rescorla" initials="E." surname="Rescorla"/>
+            <author fullname="C. Wendt" initials="C." surname="Wendt"/>
+            <date month="February" year="2018"/>
+            <abstract>
+              <t indent="0">The baseline security mechanisms in the Session Initiation Protocol (SIP) are inadequate for cryptographically assuring the identity of the end users that originate SIP requests, especially in an interdomain context. This document defines a mechanism for securely identifying originators of SIP requests. It does so by defining a SIP header field for conveying a signature used for validating the identity and for conveying a reference to the credentials of the signer.</t>
+              <t indent="0">This document obsoletes RFC 4474.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8224"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8224"/>
+        </reference>
+        <reference anchor="RFC8225" target="https://www.rfc-editor.org/info/rfc8225" quoteTitle="true" derivedAnchor="RFC8225">
+          <front>
+            <title>PASSporT: Personal Assertion Token</title>
+            <author fullname="C. Wendt" initials="C." surname="Wendt"/>
+            <author fullname="J. Peterson" initials="J." surname="Peterson"/>
+            <date month="February" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a method for creating and validating a token that cryptographically verifies an originating identity or, more generally, a URI or telephone number representing the originator of personal communications. The Personal Assertion Token, PASSporT, is cryptographically signed to protect the integrity of the identity of the originator and to verify the assertion of the identity information at the destination. The cryptographic signature is defined with the intention that it can confidently verify the originating persona even when the signature is sent to the destination party over an insecure channel. PASSporT is particularly useful for many personal-communications applications over IP networks and other multi-hop interconnection scenarios where the originating and destination parties may not have a direct trusted relationship.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8225"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8225"/>
+        </reference>
+        <reference anchor="RFC8226" target="https://www.rfc-editor.org/info/rfc8226" quoteTitle="true" derivedAnchor="RFC8226">
+          <front>
+            <title>Secure Telephone Identity Credentials: Certificates</title>
+            <author fullname="J. Peterson" initials="J." surname="Peterson"/>
+            <author fullname="S. Turner" initials="S." surname="Turner"/>
+            <date month="February" year="2018"/>
+            <abstract>
+              <t indent="0">In order to prevent the impersonation of telephone numbers on the Internet, some kind of credential system needs to exist that cryptographically asserts authority over telephone numbers. This document describes the use of certificates in establishing authority over telephone numbers, as a component of a broader architecture for managing telephone numbers as identities in protocols like SIP.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8226"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8226"/>
+        </reference>
+      </references>
+      <references pn="section-8.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.ietf-stir-rfc4916-update" target="https://datatracker.ietf.org/doc/html/draft-ietf-stir-rfc4916-update-04" quoteTitle="true" derivedAnchor="CONNECT-ID-STIR">
+          <front>
+            <title>Connected Identity for STIR</title>
+            <author initials="J." surname="Peterson" fullname="Jon Peterson">
+              <organization showOnFrontPage="true">Neustar (a TransUnion Company).</organization>
+            </author>
+            <author initials="C." surname="Wendt" fullname="Chris Wendt">
+              <organization showOnFrontPage="true">Somos</organization>
+            </author>
+            <date month="October" day="23" year="2023"/>
+            <abstract>
+              <t indent="0">   The SIP Identity header conveys cryptographic identity information
+   about the originators of SIP requests.  The Secure Telephone Identity
+   Revisited (STIR) framework however provides no means for determining
+   the identity of the called party in a traditional telephone calling
+   scenario.  This document updates prior guidance on the "connected
+   identity" problem to reflect the changes to SIP Identity that
+   accompanied STIR, and considers a revised problem space for connected
+   identity as a means of detecting calls that have been retargeted to a
+   party impersonating the intended destination, as well as the spoofing
+   of mid-dialog or dialog-terminating events by intermediaries or third
+   parties.
+
+              </t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-stir-rfc4916-update-04"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RCC.07" target="https://www.gsma.com/futurenetworks/wp-content/uploads/2019/09/RCC.07-v9.0.pdf" quoteTitle="true" derivedAnchor="RCC.07">
+          <front>
+            <title>Rich Communication Suite 8.0 Advanced Communications Services and Client Specification</title>
+            <author>
+              <organization showOnFrontPage="true">GSMA</organization>
+            </author>
+            <date month="May" year="2018"/>
+          </front>
+          <refcontent>Version 9.0</refcontent>
+        </reference>
+        <reference anchor="RCC.15" target="https://www.gsma.com/newsroom/wp-content/uploads//RCC.15-v7.0.pdf" quoteTitle="true" derivedAnchor="RCC.15">
+          <front>
+            <title>IMS Device Configuration and Supporting Services</title>
+            <author>
+              <organization showOnFrontPage="true">GSMA</organization>
+            </author>
+            <date month="October" year="2019"/>
+          </front>
+          <refcontent>Version 7.0</refcontent>
+        </reference>
+        <reference anchor="RFC4103" target="https://www.rfc-editor.org/info/rfc4103" quoteTitle="true" derivedAnchor="RFC4103">
+          <front>
+            <title>RTP Payload for Text Conversation</title>
+            <author fullname="G. Hellstrom" initials="G." surname="Hellstrom"/>
+            <author fullname="P. Jones" initials="P." surname="Jones"/>
+            <date month="June" year="2005"/>
+            <abstract>
+              <t indent="0">This memo obsoletes RFC 2793; it describes how to carry real-time text conversation session contents in RTP packets. Text conversation session contents are specified in ITU-T Recommendation T.140.</t>
+              <t indent="0">One payload format is described for transmitting text on a separate RTP session dedicated for the transmission of text.</t>
+              <t indent="0">This RTP payload description recommends a method to include redundant text from already transmitted packets in order to reduce the risk of text loss caused by packet loss. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4103"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4103"/>
+        </reference>
+        <reference anchor="RFC4975" target="https://www.rfc-editor.org/info/rfc4975" quoteTitle="true" derivedAnchor="RFC4975">
+          <front>
+            <title>The Message Session Relay Protocol (MSRP)</title>
+            <author fullname="B. Campbell" initials="B." role="editor" surname="Campbell"/>
+            <author fullname="R. Mahy" initials="R." role="editor" surname="Mahy"/>
+            <author fullname="C. Jennings" initials="C." role="editor" surname="Jennings"/>
+            <date month="September" year="2007"/>
+            <abstract>
+              <t indent="0">This document describes the Message Session Relay Protocol, a protocol for transmitting a series of related instant messages in the context of a session. Message sessions are treated like any other media stream when set up via a rendezvous or session creation protocol such as the Session Initiation Protocol. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4975"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4975"/>
+        </reference>
+        <reference anchor="RFC5194" target="https://www.rfc-editor.org/info/rfc5194" quoteTitle="true" derivedAnchor="RFC5194">
+          <front>
+            <title>Framework for Real-Time Text over IP Using the Session Initiation Protocol (SIP)</title>
+            <author fullname="A. van Wijk" initials="A." role="editor" surname="van Wijk"/>
+            <author fullname="G. Gybels" initials="G." role="editor" surname="Gybels"/>
+            <date month="June" year="2008"/>
+            <abstract>
+              <t indent="0">This document lists the essential requirements for real-time Text-over-IP (ToIP) and defines a framework for implementation of all required functions based on the Session Initiation Protocol (SIP) and the Real-Time Transport Protocol (RTP). This includes interworking between Text-over-IP and existing text telephony on the Public Switched Telephone Network (PSTN) and other networks. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5194"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5194"/>
+        </reference>
+        <reference anchor="RFC7340" target="https://www.rfc-editor.org/info/rfc7340" quoteTitle="true" derivedAnchor="RFC7340">
+          <front>
+            <title>Secure Telephone Identity Problem Statement and Requirements</title>
+            <author fullname="J. Peterson" initials="J." surname="Peterson"/>
+            <author fullname="H. Schulzrinne" initials="H." surname="Schulzrinne"/>
+            <author fullname="H. Tschofenig" initials="H." surname="Tschofenig"/>
+            <date month="September" year="2014"/>
+            <abstract>
+              <t indent="0">Over the past decade, Voice over IP (VoIP) systems based on SIP have replaced many traditional telephony deployments. Interworking VoIP systems with the traditional telephone network has reduced the overall level of calling party number and Caller ID assurances by granting attackers new and inexpensive tools to impersonate or obscure calling party numbers when orchestrating bulk commercial calling schemes, hacking voicemail boxes, or even circumventing multi-factor authentication systems trusted by banks. Despite previous attempts to provide a secure assurance of the origin of SIP communications, we still lack effective standards for identifying the calling party in a VoIP session. This document examines the reasons why providing identity for telephone numbers on the Internet has proven so difficult and shows how changes in the last decade may provide us with new strategies for attaching a secure identity to SIP sessions. It also gives high-level requirements for a solution in this space.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7340"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7340"/>
+        </reference>
+        <reference anchor="RFC7489" target="https://www.rfc-editor.org/info/rfc7489" quoteTitle="true" derivedAnchor="RFC7489">
+          <front>
+            <title>Domain-based Message Authentication, Reporting, and Conformance (DMARC)</title>
+            <author fullname="M. Kucherawy" initials="M." role="editor" surname="Kucherawy"/>
+            <author fullname="E. Zwicky" initials="E." role="editor" surname="Zwicky"/>
+            <date month="March" year="2015"/>
+            <abstract>
+              <t indent="0">Domain-based Message Authentication, Reporting, and Conformance (DMARC) is a scalable mechanism by which a mail-originating organization can express domain-level policies and preferences for message validation, disposition, and reporting, that a mail-receiving organization can use to improve mail handling.</t>
+              <t indent="0">Originators of Internet Mail need to be able to associate reliable and authenticated domain identifiers with messages, communicate policies about messages that use those identifiers, and report about mail using those identifiers. These abilities have several benefits: Receivers can provide feedback to Domain Owners about the use of their domains; this feedback can provide valuable insight about the management of internal operations and the presence of external domain name abuse.</t>
+              <t indent="0">DMARC does not produce or encourage elevated delivery privilege of authenticated email. DMARC is a mechanism for policy distribution that enables increasingly strict handling of messages that fail authentication checks, ranging from no action, through altered delivery, up to message rejection.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7489"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7489"/>
+        </reference>
+        <reference anchor="RFC7519" target="https://www.rfc-editor.org/info/rfc7519" quoteTitle="true" derivedAnchor="RFC7519">
+          <front>
+            <title>JSON Web Token (JWT)</title>
+            <author fullname="M. Jones" initials="M." surname="Jones"/>
+            <author fullname="J. Bradley" initials="J." surname="Bradley"/>
+            <author fullname="N. Sakimura" initials="N." surname="Sakimura"/>
+            <date month="May" year="2015"/>
+            <abstract>
+              <t indent="0">JSON Web Token (JWT) is a compact, URL-safe means of representing claims to be transferred between two parties. The claims in a JWT are encoded as a JSON object that is used as the payload of a JSON Web Signature (JWS) structure or as the plaintext of a JSON Web Encryption (JWE) structure, enabling the claims to be digitally signed or integrity protected with a Message Authentication Code (MAC) and/or encrypted.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7519"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7519"/>
+        </reference>
+        <reference anchor="RFC8591" target="https://www.rfc-editor.org/info/rfc8591" quoteTitle="true" derivedAnchor="RFC8591">
+          <front>
+            <title>SIP-Based Messaging with S/MIME</title>
+            <author fullname="B. Campbell" initials="B." surname="Campbell"/>
+            <author fullname="R. Housley" initials="R." surname="Housley"/>
+            <date month="April" year="2019"/>
+            <abstract>
+              <t indent="0">Mobile messaging applications used with the Session Initiation Protocol (SIP) commonly use some combination of the SIP MESSAGE method and the Message Session Relay Protocol (MSRP). While these provide mechanisms for hop-by-hop security, neither natively provides end-to-end protection. This document offers guidance on how to provide end-to-end authentication, integrity protection, and confidentiality using the Secure/Multipurpose Internet Mail Extensions (S/MIME). It updates and provides clarifications for RFCs 3261, 3428, and 4975.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8591"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8591"/>
+        </reference>
+        <reference anchor="RFC8816" target="https://www.rfc-editor.org/info/rfc8816" quoteTitle="true" derivedAnchor="RFC8816">
+          <front>
+            <title>Secure Telephone Identity Revisited (STIR) Out-of-Band Architecture and Use Cases</title>
+            <author fullname="E. Rescorla" initials="E." surname="Rescorla"/>
+            <author fullname="J. Peterson" initials="J." surname="Peterson"/>
+            <date month="February" year="2021"/>
+            <abstract>
+              <t indent="0">The Personal Assertion Token (PASSporT) format defines a token that can be carried by signaling protocols, including SIP, to cryptographically attest the identity of callers. However, not all telephone calls use Internet signaling protocols, and some calls use them for only part of their signaling path, while some cannot reliably deliver SIP header fields end-to-end. This document describes use cases that require the delivery of PASSporT objects outside of the signaling path, and defines architectures and semantics to provide this functionality.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8816"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8816"/>
+        </reference>
+        <reference anchor="RFC8862" target="https://www.rfc-editor.org/info/rfc8862" quoteTitle="true" derivedAnchor="RFC8862">
+          <front>
+            <title>Best Practices for Securing RTP Media Signaled with SIP</title>
+            <author fullname="J. Peterson" initials="J." surname="Peterson"/>
+            <author fullname="R. Barnes" initials="R." surname="Barnes"/>
+            <author fullname="R. Housley" initials="R." surname="Housley"/>
+            <date month="January" year="2021"/>
+            <abstract>
+              <t indent="0">Although the Session Initiation Protocol (SIP) includes a suite of security services that has been expanded by numerous specifications over the years, there is no single place that explains how to use SIP to establish confidential media sessions. Additionally, existing mechanisms have some feature gaps that need to be identified and resolved in order for them to address the pervasive monitoring threat model. This specification describes best practices for negotiating confidential media with SIP, including a comprehensive protection solution that binds the media layer to SIP layer identities.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="228"/>
+          <seriesInfo name="RFC" value="8862"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8862"/>
+        </reference>
+        <reference anchor="RFC8876" target="https://www.rfc-editor.org/info/rfc8876" quoteTitle="true" derivedAnchor="RFC8876">
+          <front>
+            <title>Non-interactive Emergency Calls</title>
+            <author fullname="B. Rosen" initials="B." surname="Rosen"/>
+            <author fullname="H. Schulzrinne" initials="H." surname="Schulzrinne"/>
+            <author fullname="H. Tschofenig" initials="H." surname="Tschofenig"/>
+            <author fullname="R. Gellens" initials="R." surname="Gellens"/>
+            <date month="September" year="2020"/>
+            <abstract>
+              <t indent="0">Use of the Internet for emergency calling is described in RFC 6443, 'Framework for Emergency Calling Using Internet Multimedia'. In some cases of emergency calls, the transmission of application data is all that is needed, and no interactive media channel is established: a situation referred to as 'non-interactive emergency calls', where, unlike most emergency calls, there is no two-way interactive media such as voice or video or text. This document describes use of a SIP MESSAGE transaction that includes a container for the data based on the Common Alerting Protocol (CAP). That type of emergency request does not establish a session, distinguishing it from SIP INVITE, which does. Any device that needs to initiate a request for emergency services without an interactive media channel would use the mechanisms in this document.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8876"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8876"/>
+        </reference>
+        <reference anchor="RFC8946" target="https://www.rfc-editor.org/info/rfc8946" quoteTitle="true" derivedAnchor="RFC8946">
+          <front>
+            <title>Personal Assertion Token (PASSporT) Extension for Diverted Calls</title>
+            <author fullname="J. Peterson" initials="J." surname="Peterson"/>
+            <date month="February" year="2021"/>
+            <abstract>
+              <t indent="0">The Personal Assertion Token (PASSporT) is specified in RFC 8225 to convey cryptographically signed information about the people involved in personal communications. This document extends PASSporT to include an indication that a call has been diverted from its original destination to a new one. This information can greatly improve the decisions made by verification services in call forwarding scenarios. Also specified here is an encapsulation mechanism for nesting a PASSporT within another PASSporT that assists relying parties in some diversion scenarios.</t>
+              <t indent="0">This document updates RFC 8224.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8946"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8946"/>
+        </reference>
+        <reference anchor="SHA2" target="http://csrc.nist.gov/publications/fips/fips180-3/fips180-3_final.pdf" quoteTitle="true" derivedAnchor="SHA2">
+          <front>
+            <title>Secure Hash Standard (SHS)</title>
+            <author>
+              <organization showOnFrontPage="true">National Institute of Standards and Technology (NIST)</organization>
+            </author>
+            <date year="2008"/>
+          </front>
+          <seriesInfo name="FIPS PUB" value="180-3"/>
+        </reference>
+        <reference anchor="SMPP" target="https://smpp.org/SMPP_v5.pdf" quoteTitle="true" derivedAnchor="SMPP">
+          <front>
+            <title>Short Message Peer-to-Peer Protocol Specification</title>
+            <author>
+              <organization showOnFrontPage="true">SMS Forum</organization>
+            </author>
+            <date month="February" year="2003"/>
+          </front>
+          <refcontent>Version 5.0</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section anchor="Acknowledgments" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">We would like to thank <contact fullname="Christer Holmberg"/>,
+      <contact fullname="Brian Rosen"/>, <contact fullname="Ben Campbell"/>,
+      <contact fullname="Russ Housley"/>, and <contact fullname="Alex       Bobotek"/> for their contributions to this specification.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="J." surname="Peterson" fullname="Jon Peterson">
+        <organization abbrev="Neustar" showOnFrontPage="true">Neustar, Inc.</organization>
+        <address>
+          <email>jon.peterson@team.neustar</email>
+        </address>
+      </author>
+      <author fullname="Chris Wendt" initials="C." surname="Wendt">
+        <organization showOnFrontPage="true">Somos</organization>
+        <address>
+          <email>chris-ietf@chriswendt.net</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

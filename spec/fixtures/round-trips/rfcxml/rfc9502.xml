@@ -1,0 +1,1632 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-lsr-ip-flexalgo-16" number="9502" ipr="trust200902" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2023-11-22T15:34:12" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-lsr-ip-flexalgo-16" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9502" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="IGP IP Flexible Algorithm">IGP Flexible Algorithm in IP Networks</title>
+    <seriesInfo name="RFC" value="9502" stream="IETF"/>
+    <author fullname="William Britto" initials="W." surname="Britto">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <postal>
+          <street>Elnath-Exora Business Park Survey</street>
+          <city>Bangalore</city>
+          <region>Karnataka</region>
+          <code>560103</code>
+          <country>India</country>
+        </postal>
+        <email>bwilliam@juniper.net</email>
+      </address>
+    </author>
+    <author fullname="Shraddha Hegde" initials="S." surname="Hegde">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <postal>
+          <street>Elnath-Exora Business Park Survey</street>
+          <city>Bangalore</city>
+          <region>Karnataka</region>
+          <code>560103</code>
+          <country>India</country>
+        </postal>
+        <email>shraddha@juniper.net</email>
+      </address>
+    </author>
+    <author fullname="Parag Kaneriya" initials="P." surname="Kaneriya">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <postal>
+          <street>Elnath-Exora Business Park Survey</street>
+          <city>Bangalore</city>
+          <region>Karnataka</region>
+          <code>560103</code>
+          <country>India</country>
+        </postal>
+        <email>pkaneria@juniper.net</email>
+      </address>
+    </author>
+    <author fullname="Rejesh Shetty" initials="R." surname="Shetty">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <postal>
+          <street>Elnath-Exora Business Park Survey</street>
+          <city>Bangalore</city>
+          <region>Karnataka</region>
+          <code>560103</code>
+          <country>India</country>
+        </postal>
+        <email>mrajesh@juniper.net</email>
+      </address>
+    </author>
+    <author fullname="Ron Bonica" initials="R." surname="Bonica">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <postal>
+          <street>2251 Corporate Park Drive</street>
+          <city>Herndon</city>
+          <code>20171</code>
+          <region>Virginia</region>
+          <country>United States of America</country>
+        </postal>
+        <email>rbonica@juniper.net</email>
+      </address>
+    </author>
+    <author fullname="Peter Psenak" initials="P." surname="Psenak">
+      <organization showOnFrontPage="true">Cisco Systems</organization>
+      <address>
+        <postal>
+          <extaddr>Apollo Business Center</extaddr>
+          <street>Mlynske nivy 43</street>
+          <city>Bratislava</city>
+          <code>82109</code>
+          <country>Slovakia</country>
+        </postal>
+        <email>ppsenak@cisco.com</email>
+      </address>
+    </author>
+    <date month="11" year="2023"/>
+    <area>rtg</area>
+    <workgroup>lsr</workgroup>
+    <keyword>IS-IS</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document extends IGP Flexible Algorithm so that it can be used with
+      regular IPv4 and IPv6 forwarding.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9502" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-use-case-example">Use Case Example</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-advertising-flexible-algori">Advertising Flexible Algorithm Definitions (FADs)</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-advertising-ip-flexible-alg">Advertising IP Flexible Algorithm Participation</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-is-is-ip-algorithm-sub-">The IS-IS IP Algorithm Sub-TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-ospf-ip-algorithm-tlv">The OSPF IP Algorithm TLV</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-advertising-ip-flexible-algo">Advertising IP Flexible Algorithm Reachability</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-is-is-ipv4-algorithm-pr">The IS-IS IPv4 Algorithm Prefix Reachability TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-is-is-ipv6-algorithm-pr">The IS-IS IPv6 Algorithm Prefix Reachability TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.3">
+                <t indent="0" pn="section-toc.1-1.6.2.3.1"><xref derivedContent="6.3" format="counter" sectionFormat="of" target="section-6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-ospfv2-ip-algorithm-pre">The OSPFv2 IP Algorithm Prefix Reachability Sub-TLV</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.3.2">
+                  <li pn="section-toc.1-1.6.2.3.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.3.2.1.1"><xref derivedContent="6.3.1" format="counter" sectionFormat="of" target="section-6.3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-ospfv2-ip-forwarding-ad">The OSPFv2 IP Forwarding Address Sub-TLV</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.6.2.4">
+                <t indent="0" pn="section-toc.1-1.6.2.4.1"><xref derivedContent="6.4" format="counter" sectionFormat="of" target="section-6.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-ospfv3-ip-algorithm-pre">The OSPFv3 IP Algorithm Prefix Reachability Sub-TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.5">
+                <t indent="0" pn="section-toc.1-1.6.2.5.1"><xref derivedContent="6.5" format="counter" sectionFormat="of" target="section-6.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-ospf-ip-flexible-algori">The OSPF IP Flexible Algorithm ASBR Metric Sub-TLV</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-calculating-of-ip-flexible-">Calculating of IP Flexible Algorithm Paths</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ip-flexible-algorithm-forwa">IP Flexible Algorithm Forwarding</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-deployment-considerations">Deployment Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-protection">Protection</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="11" format="counter" sectionFormat="of" target="section-11"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="12" format="counter" sectionFormat="of" target="section-12"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="13" format="counter" sectionFormat="of" target="section-13"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.13.2">
+              <li pn="section-toc.1-1.13.2.1">
+                <t indent="0" pn="section-toc.1-1.13.2.1.1"><xref derivedContent="13.1" format="counter" sectionFormat="of" target="section-13.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.13.2.2">
+                <t indent="0" pn="section-toc.1-1.13.2.2.1"><xref derivedContent="13.2" format="counter" sectionFormat="of" target="section-13.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.14">
+            <t indent="0" pn="section-toc.1-1.14.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.15">
+            <t indent="0" pn="section-toc.1-1.15.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">An IGP Flexible Algorithm allows IGPs to compute
+      constraint-based paths. The base IGP Flexible Algorithm specification
+      describes how it is used with Segment Routing (SR) data planes: SR MPLS and 
+      SRv6.</t>
+      <t indent="0" pn="section-1-2">An IGP Flexible Algorithm as specified in <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>
+      computes a constraint-based path to:
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1-3">
+        <li pn="section-1-3.1">All Flexible-Algorithm-specific Prefix Segment Identifiers (SIDs)
+        <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>.</li>
+        <li pn="section-1-3.2">All Flexible-Algorithm-specific SRv6 Locators <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>.</li>
+      </ul>
+      <t indent="0" pn="section-1-4">Therefore, Flexible Algorithm cannot be deployed in the absence of
+      SR or SRv6.</t>
+      <t indent="0" pn="section-1-5">This document extends Flexible Algorithm, allowing it to compute paths
+      to IPv4 and IPv6 prefixes.</t>
+    </section>
+    <section anchor="ReqLang" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-requirements-language">Requirements Language</name>
+      <t indent="0" pn="section-2-1"> The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+        "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+        "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+        "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+        are to be interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they
+        appear in all capitals, as shown here.
+      </t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-use-case-example">Use Case Example</name>
+      <t indent="0" pn="section-3-1">In this section, we illustrate one use case that motivates this
+      specification: if a specific service can be identified by an IP
+      address, traffic to it can use constraint-based paths computed
+      according to this specification.</t>
+      <t indent="0" pn="section-3-2"> The System architecture for the 5G System <xref target="TS.23.501-3GPP" format="default" sectionFormat="of" derivedContent="TS.23.501-3GPP"/> describes the N3 interface between gNodeB and
+      UPF (User Plane Function).</t>
+      <t indent="0" pn="section-3-3">Mobile networks are becoming more and more IP-centric. Each end-user
+      session from a gNodeB can be destined to a specific UPF based on the
+      session requirements. For example, some sessions require high bandwidth,
+      while others need to be routed along the lowest latency path. Each UPF is
+      assigned a unique IP address. As a result, traffic for different
+      sessions is destined to a different destination IP address.</t>
+      <t indent="0" pn="section-3-4">The IP address allocated to the UPF can be associated with an
+      algorithm. The mobile user traffic is then forwarded along the path
+      based on the algorithm-specific metric and constraints. As a result,
+      traffic can be sent over a path that is optimized for minimal latency or
+      highest bandwidth. This mechanism is used to achieve Service Level
+      Agreement (SLA) appropriate for a user session.</t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-advertising-flexible-algori">Advertising Flexible Algorithm Definitions (FADs)</name>
+      <t indent="0" pn="section-4-1">To guarantee loop-free forwarding, all routers that participate in a
+      Flex-Algorithm <bcp14>MUST</bcp14> agree on the Flexible Algorithm Definition (FAD).</t>
+      <t indent="0" pn="section-4-2">Selected nodes within the IGP domain <bcp14>MUST</bcp14> advertise
+      FADs as described in Sections <xref target="RFC9350" section="5" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9350#section-5" derivedContent="RFC9350"/>, <xref target="RFC9350" section="6" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9350#section-6" derivedContent="RFC9350"/>, and <xref target="RFC9350" section="7" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9350#section-7" derivedContent="RFC9350"/> of <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>.</t>
+    </section>
+    <section anchor="PARTICIPATION" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-advertising-ip-flexible-alg">Advertising IP Flexible Algorithm Participation</name>
+      <t indent="0" pn="section-5-1">A node may use various algorithms when calculating paths to nodes and
+      prefixes. Algorithm values are defined in the <xref target="IANA-ALG" format="default" sectionFormat="of" derivedContent="IANA-ALG">"IGP Algorithm Types" registry </xref>.</t>
+      <t indent="0" pn="section-5-2">Only a node that is participating in a Flex-Algorithm is:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-3">
+        <li pn="section-5-3.1">Able to compute a path for such Flex-Algorithm</li>
+        <li pn="section-5-3.2">Part of the topology for such Flex-Algorithm</li>
+      </ul>
+      <t indent="0" pn="section-5-4">Flexible Algorithm participation <bcp14>MUST</bcp14> be advertised for
+      each Flexible Algorithm data plane independently, as specified in <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>. Using Flexible Algorithm for regular IPv4 and IPv6
+      prefixes represents an independent Flexible Algorithm data plane; as
+      such, the Flexible Algorithm participation for the IP Flexible Algorithm
+      data plane <bcp14>MUST</bcp14> be signaled independently of any other
+      Flexible Algorithm data plane (e.g., SR).</t>
+      <t indent="0" pn="section-5-5">All routers in an IGP domain participate in default algorithm 0.
+	  Advertisement of participation in IP Flexible Algorithm does not impact 
+      the router participation in default algorithm 0.
+      </t>
+      <t indent="0" pn="section-5-6">Advertisement of participation in IP Flexible Algorithm does not impact 
+      the router participation signaled for other data planes. For example,
+	  it is possible that a router participates in a particular Flex-Algorithm
+	  for the IP data plane but does not participate in the 
+	  same Flex-Algorithm for the SR data plane.</t>
+      <t indent="0" pn="section-5-7">The following sections describe how the IP Flexible Algorithm participation
+      is advertised in IGP protocols.</t>
+      <section anchor="IS-IS-ALG_TLV" numbered="true" removeInRFC="false" toc="include" pn="section-5.1">
+        <name slugifiedName="name-the-is-is-ip-algorithm-sub-">The IS-IS IP Algorithm Sub-TLV</name>
+        <t indent="0" pn="section-5.1-1">The IS-IS <xref target="ISO10589" format="default" sectionFormat="of" derivedContent="ISO10589"/> IP Algorithm Sub-TLV is a
+        sub-TLV of the IS-IS Router Capability TLV <xref target="RFC7981" format="default" sectionFormat="of" derivedContent="RFC7981"/>
+        and has the following format:
+        </t>
+        <figure anchor="ISISAlg" align="center" suppress-title="false" pn="figure-1">
+          <name slugifiedName="name-is-is-ip-algorithm-sub-tlv">IS-IS IP Algorithm Sub-TLV</name>
+          <artwork align="center" pn="section-5.1-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Type        |     Length    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Algorithm 1   |  Algorithm 2  | Algorithm ... |  Algorithm n  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <dl spacing="normal" newline="false" indent="3" pn="section-5.1-3">
+          <dt pn="section-5.1-3.1">Type (1 octet):</dt>
+          <dd pn="section-5.1-3.2">IP Algorithm Sub-TLV (Value 29)</dd>
+          <dt pn="section-5.1-3.3">Length (1 octet):</dt>
+          <dd pn="section-5.1-3.4">Variable</dd>
+          <dt pn="section-5.1-3.5">Algorithm (1 octet):</dt>
+          <dd pn="section-5.1-3.6">Value from 128 to 255</dd>
+        </dl>
+        <t indent="0" pn="section-5.1-4">The IP Algorithm Sub-TLV <bcp14>MUST</bcp14> be propagated
+        throughout the level and <bcp14>MUST NOT</bcp14> be advertised across
+        level boundaries. Therefore, the S bit in the Router Capability TLV,
+        in which the IP Algorithm Sub-TLV is advertised, <bcp14>MUST NOT</bcp14> be set.</t>
+        <t indent="0" pn="section-5.1-5">The IP Algorithm Sub-TLV is optional. It <bcp14>MUST NOT</bcp14> be
+        advertised more than once at a given level. A router receiving
+        multiple IP Algorithm sub-TLVs from the same originator
+        <bcp14>MUST</bcp14> select the first advertisement in the
+        lowest-numbered Link State PDU (LSP), and subsequent instances of the IP Algorithm
+        Sub-TLV <bcp14>MUST</bcp14> be ignored.</t>
+        <t indent="0" pn="section-5.1-6">Algorithms outside the Flex-Algorithm range (128-255)
+        <bcp14>MUST</bcp14> be ignored by the receiver. This situation
+        <bcp14>SHOULD</bcp14> be logged as an error.</t>
+        <t indent="0" pn="section-5.1-7">The IP Flex-Algorithm participation advertised in the IS-IS IP
+        Algorithm Sub-TLV is topology independent. When a router advertises
+        participation in the IS-IS IP Algorithm Sub-TLV, the participation
+        applies to all topologies in which the advertising node
+        participates.</t>
+      </section>
+      <section anchor="OSPF-ALG_TLV" numbered="true" removeInRFC="false" toc="include" pn="section-5.2">
+        <name slugifiedName="name-the-ospf-ip-algorithm-tlv">The OSPF IP Algorithm TLV</name>
+        <t indent="0" pn="section-5.2-1">The OSPF <xref target="RFC2328" format="default" sectionFormat="of" derivedContent="RFC2328"/> IP Algorithm TLV is a top-level
+        TLV of the Router Information Opaque Link State Advertisement (LSA)
+        <xref target="RFC7770" format="default" sectionFormat="of" derivedContent="RFC7770"/> and has the following format: </t>
+        <figure anchor="OSPFAlg" align="center" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-ospf-ip-algorithm-tlv">OSPF IP Algorithm TLV</name>
+          <artwork align="center" pn="section-5.2-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Type             |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Algorithm 1 | Algorithm...  |   Algorithm n |               |
++-                                                             -+
+|                                                               |
++                                                               +
+</artwork>
+        </figure>
+        <dl spacing="normal" newline="false" indent="3" pn="section-5.2-3">
+          <dt pn="section-5.2-3.1">Type (2 octets):</dt>
+          <dd pn="section-5.2-3.2">IP Algorithm TLV (21)</dd>
+          <dt pn="section-5.2-3.3">Length( 2 octets):</dt>
+          <dd pn="section-5.2-3.4">Variable</dd>
+          <dt pn="section-5.2-3.5">Algorithm (1 octet):</dt>
+          <dd pn="section-5.2-3.6">Value from 128 to 255</dd>
+        </dl>
+        <t indent="0" pn="section-5.2-4">The IP Algorithm TLV is optional. It <bcp14>MUST</bcp14> only be
+        advertised once in the Router Information LSA.</t>
+        <t indent="0" pn="section-5.2-5">Algorithms outside the Flex-Algorithm range (128-255)
+        <bcp14>MUST</bcp14> be ignored by the receiver. This situation
+        <bcp14>SHOULD</bcp14> be logged as an error.</t>
+        <t indent="0" pn="section-5.2-6">When multiple IP Algorithm TLVs are received from a given router,
+        the receiver <bcp14>MUST</bcp14> use the first occurrence of the TLV
+        in the Router Information LSA. If the IP Algorithm TLV appears in
+        multiple Router Information LSAs that have different flooding scopes,
+        the IP Algorithm TLV in the Router Information LSA with the
+        area-scoped flooding scope <bcp14>MUST</bcp14> be used. If the IP
+        Algorithm TLV appears in multiple Router Information LSAs that have
+        the same flooding scope, the IP Algorithm TLV in the Router
+        Information LSA with the numerically smallest Instance ID (Opaque ID
+        for OSPFv2 or Link State ID for OSPFv3) <bcp14>MUST</bcp14> be used,
+        and subsequent instances of the IP Algorithm TLV <bcp14>MUST</bcp14>
+        be ignored.</t>
+        <t indent="0" pn="section-5.2-7">The Router Information LSA can be advertised at any of the defined
+        flooding scopes (link, area, or Autonomous System (AS)). For the
+        purpose of IP Algorithm TLV advertisement, area- or AS-scoped flooding
+        is <bcp14>REQUIRED</bcp14>.  The AS flooding scope <bcp14>SHOULD NOT</bcp14> be used unless local configuration policy on the
+        originating router indicates domain-wide flooding.</t>
+        <t indent="0" pn="section-5.2-8">The IP Flexible Algorithm participation advertised in the OSPF IP Algorithm
+        TLV is topology independent. When a router advertises participation in
+        OSPF IP Algorithm TLV, the participation applies to all topologies in
+        which the advertising node participates.</t>
+      </section>
+    </section>
+    <section anchor="ASSOCIATE" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-advertising-ip-flexible-algo">Advertising IP Flexible Algorithm Reachability</name>
+      <t indent="0" pn="section-6-1">To be able to associate the prefix with the Flex-Algorithm, the
+      existing prefix reachability advertisements cannot be used, because
+      they advertise the prefix reachability in default algorithm 0. Instead,
+      new IP Flexible Algorithm reachability advertisements are defined in IS-IS
+      and OSPF.</t>
+      <t indent="0" pn="section-6-2">The M-flag in the FAD is not applicable to IP Algorithm Prefixes. Any IP
+      Algorithm Prefix advertisement includes the Algorithm and Metric fields.
+      When an IP Algorithm Prefix is advertised between areas or domains, the
+      metric field in the IP Algorithm Prefix advertisement <bcp14>MUST</bcp14> be used
+      irrespective of the M-flag in the FAD advertisement.</t>
+      <section anchor="IS-IS-IPV4_PFX_TLV" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-the-is-is-ipv4-algorithm-pr">The IS-IS IPv4 Algorithm Prefix Reachability TLV</name>
+        <t indent="0" pn="section-6.1-1">The IPv4 Algorithm Prefix Reachability top-level TLV is defined for advertising IPv4 Flexible Algorithm
+        Prefix Reachability in IS-IS.</t>
+        <t indent="0" pn="section-6.1-2">This new TLV shares the sub-TLV space defined for TLVs Advertising Prefix 
+        Reachability.</t>
+        <t indent="0" pn="section-6.1-3">The IS-IS IPv4 Algorithm Prefix Reachability TLV has the following
+        format: </t>
+        <figure anchor="ISISipv4" align="center" suppress-title="false" pn="figure-3">
+          <name slugifiedName="name-is-is-ipv4-algorithm-prefix">IS-IS IPv4 Algorithm Prefix Reachability TLV</name>
+          <artwork align="center" pn="section-6.1-4.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Type        |     Length    |  Rsvd |    MTID               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <dl spacing="normal" newline="false" indent="3" pn="section-6.1-5">
+          <dt pn="section-6.1-5.1">Type (1 octet):</dt>
+          <dd pn="section-6.1-5.2">IPv4 Algorithm Prefix Reachability TLV
+          (Value 126)</dd>
+          <dt pn="section-6.1-5.3">Length (1 octet):</dt>
+          <dd pn="section-6.1-5.4">Variable based on number of prefix
+          entries encoded</dd>
+          <dt pn="section-6.1-5.5">Rsvd (4 bits):</dt>
+          <dd pn="section-6.1-5.6">Reserved for future use. They
+          <bcp14>MUST</bcp14> be set to zero on transmission and
+          <bcp14>MUST</bcp14> be ignored on receipt.</dd>
+          <dt pn="section-6.1-5.7">MTID (12 bits):</dt>
+          <dd pn="section-6.1-5.8">Multitopology Identifier as defined in
+          <xref target="RFC5120" format="default" sectionFormat="of" derivedContent="RFC5120"/>. Note that the value 0 is
+          legal.</dd>
+        </dl>
+        <t indent="0" pn="section-6.1-6">Followed by one or more prefix entries of the form:</t>
+        <figure anchor="ISISpfxentry" align="center" suppress-title="false" pn="figure-4">
+          <name slugifiedName="name-is-is-ipv4-algorithm-prefix-">IS-IS IPv4 Algorithm Prefix Reachability TLV</name>
+          <artwork align="center" pn="section-6.1-7.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Metric                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Flags       |  Algorithm    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Pfx Length   |  Prefix (variable)...
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Sub-tlv-len  |         Sub-TLVs (variable) . . .             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <dl spacing="normal" newline="false" indent="3" pn="section-6.1-8">
+          <dt pn="section-6.1-8.1">Metric (4 octets):</dt>
+          <dd pn="section-6.1-8.2">Metric information as defined in <xref target="RFC5305" format="default" sectionFormat="of" derivedContent="RFC5305"/></dd>
+          <dt pn="section-6.1-8.3">Flags (1 octet):</dt>
+          <dd pn="section-6.1-8.4">
+            <artwork align="left" pn="section-6.1-8.4.1">
+ 0 1 2 3 4 5 6 7
++-+-+-+-+-+-+-+-+
+|D|  Reserved   |
++-+-+-+-+-+-+-+-+
+</artwork>
+            <dl newline="false" spacing="normal" indent="3" pn="section-6.1-8.4.2">
+              <dt pn="section-6.1-8.4.2.1">D-flag:</dt>
+              <dd pn="section-6.1-8.4.2.2">The D-flag is described as the "up/down bit" in <xref target="RFC5305" sectionFormat="of" section="4.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5305#section-4.1" derivedContent="RFC5305"/>. When the
+              Prefix is leaked from level 2 to level 1, the D bit
+              <bcp14>MUST</bcp14> be set. Otherwise, this bit
+              <bcp14>MUST</bcp14> be clear.  Prefixes with the D bit set
+              <bcp14>MUST NOT</bcp14> be leaked from level 1 to level 2. This
+              is to prevent looping.</dd>
+              <dt pn="section-6.1-8.4.2.3">The remaining bits:</dt>
+              <dd pn="section-6.1-8.4.2.4">Reserved for future use. They <bcp14>MUST</bcp14> be set
+	      to zero on transmission and <bcp14>MUST</bcp14> be ignored on
+	      receipt.</dd>
+            </dl>
+          </dd>
+          <dt pn="section-6.1-8.5">Algorithm (1 octet):</dt>
+          <dd pn="section-6.1-8.6">Associated Algorithm from 128 to
+          255</dd>
+          <dt pn="section-6.1-8.7">Prefix Len (1 octet):</dt>
+          <dd pn="section-6.1-8.8">Prefix length measured in
+          bits</dd>
+          <dt pn="section-6.1-8.9">Prefix (variable length):</dt>
+          <dd pn="section-6.1-8.10">Prefix mapped to
+          Flex-Algorithm</dd>
+          <dt pn="section-6.1-8.11">Optional Sub-TLV-length (1 octet):</dt>
+          <dd pn="section-6.1-8.12">Number of octets
+          used by sub-TLVs</dd>
+          <dt pn="section-6.1-8.13">Optional sub-TLVs (variable length)</dt>
+          <dd pn="section-6.1-8.14"/>
+        </dl>
+        <t indent="0" pn="section-6.1-9">If the Algorithms in the IS-IS IPv4 Algorithm Prefix Reachability
+        TLV are outside the Flex-Algorithm range (128-255), the IS-IS IPv4
+        Algorithm Prefix Reachability TLV <bcp14>MUST</bcp14> be ignored by
+        the receiver. This situation <bcp14>SHOULD</bcp14> be logged as an
+        error.</t>
+        <t indent="0" pn="section-6.1-10"> If a router receives multiple IPv4 Algorithm Prefix Reachability
+        advertisements for the same prefix from the same originator, it
+        <bcp14>MUST</bcp14> select the first advertisement in
+        the lowest-numbered LSP and ignore any subsequent IPv4 Algorithm
+        Prefix Reachability advertisements for the same prefix.</t>
+        <t indent="0" pn="section-6.1-11">If a router receives multiple IPv4 Algorithm Prefix Reachability
+        advertisements for the same prefix, from different originators, 
+        where all of them do not advertise the same algorithm, it <bcp14>MUST</bcp14> ignore all of them and
+        <bcp14>MUST NOT</bcp14> install any forwarding entries based on these
+        advertisements.  This situation <bcp14>SHOULD</bcp14> be logged as an error.</t>
+        <t indent="0" pn="section-6.1-12">In cases where a prefix advertisement is received in both an IPv4
+        Prefix Reachability TLV <xref target="RFC5305" format="default" sectionFormat="of" derivedContent="RFC5305"/> <xref target="RFC5120" format="default" sectionFormat="of" derivedContent="RFC5120"/> and an IPv4 Algorithm Prefix Reachability TLV, the
+        IPv4 Prefix Reachability advertisement <bcp14>MUST</bcp14> be
+        preferred when installing entries in the forwarding plane.</t>
+      </section>
+      <section anchor="IS-IS-IPV6_PFX_TLV" numbered="true" removeInRFC="false" toc="include" pn="section-6.2">
+        <name slugifiedName="name-the-is-is-ipv6-algorithm-pr">The IS-IS IPv6 Algorithm Prefix Reachability TLV</name>
+        <t indent="0" pn="section-6.2-1">The IS-IS IPv6 Algorithm Prefix Reachability TLV is identical to the
+        IS-IS IPv4 Algorithm Prefix Reachability TLV, except that it has a
+        distinct type. The type is 127.</t>
+        <t indent="0" pn="section-6.2-2">If the Algorithms in the IS-IS IPv6 Algorithm Prefix Reachability
+        TLV are outside the Flex-Algorithm range (128-255), the IS-IS IPv6
+        Algorithm Prefix Reachability TLV <bcp14>MUST</bcp14> be ignored by
+        the receiver. This situation <bcp14>SHOULD</bcp14> be logged as an
+        error.</t>
+        <t indent="0" pn="section-6.2-3"> If a router receives multiple IPv6 Algorithm Prefix Reachability
+        advertisements for the same prefix from the same originator, it
+        <bcp14>MUST</bcp14> select the first advertisement in
+        the lowest-numbered LSP and ignore any subsequent IPv6 Algorithm
+        Prefix Reachability advertisements for the same prefix.</t>
+        <t indent="0" pn="section-6.2-4">If a router receives multiple IPv6 Algorithm Prefix Reachability
+        advertisements for the same prefix, from different originators, 
+        where all of them do not advertise the same algorithm, it <bcp14>MUST</bcp14> ignore all of them and
+        <bcp14>MUST NOT</bcp14> install any forwarding entries based on these
+       advertisements.  This situation <bcp14>SHOULD</bcp14> be logged as an error.</t>
+        <t indent="0" pn="section-6.2-5">In cases where a prefix advertisement is received in both an IPv6
+        Prefix Reachability TLV <xref target="RFC5308" format="default" sectionFormat="of" derivedContent="RFC5308"/> <xref target="RFC5120" format="default" sectionFormat="of" derivedContent="RFC5120"/> and an IPv6 Algorithm Prefix Reachability TLV, the
+        IPv6 Prefix Reachability advertisement <bcp14>MUST</bcp14> be
+        preferred when installing entries in the forwarding plane.</t>
+        <t indent="0" pn="section-6.2-6">In cases where a prefix advertisement is received in both an IS-IS SRv6 
+        Locator TLV  <xref target="RFC9352" format="default" sectionFormat="of" derivedContent="RFC9352"/> and in IS-IS IPv6 Algorithm Prefix Reachability TLV, the receiver
+        <bcp14>MUST</bcp14> ignore both of them and <bcp14>MUST NOT</bcp14> install any forwarding entries based 
+        on these advertisements. This situation <bcp14>SHOULD</bcp14> be logged as an error.</t>
+      </section>
+      <section anchor="OSPF-IPV4_PFX_TLV" numbered="true" removeInRFC="false" toc="include" pn="section-6.3">
+        <name slugifiedName="name-the-ospfv2-ip-algorithm-pre">The OSPFv2 IP Algorithm Prefix Reachability Sub-TLV</name>
+        <t indent="0" pn="section-6.3-1">A new sub-TLV of the OSPFv2 Extended Prefix TLV is defined for
+        advertising IP Algorithm Prefix Reachability in OSPFv2, the OSPFv2 IP
+        Algorithm Prefix Reachability Sub-TLV.</t>
+        <t indent="0" pn="section-6.3-2">The OSPFv2 IP Algorithm Prefix Reachability Sub-TLV has the
+        following format:</t>
+        <figure anchor="OSPFvpfx2" align="center" suppress-title="false" pn="figure-5">
+          <name slugifiedName="name-ospfv2-ip-algorithm-prefix-">OSPFv2 IP Algorithm Prefix Reachability Sub-TLV</name>
+          <artwork align="center" pn="section-6.3-3.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Type             |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       MT-ID   |  Algorithm    |     Flags     |     Reserved  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Metric                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <dl spacing="normal" newline="false" indent="3" pn="section-6.3-4">
+          <dt pn="section-6.3-4.1">Type (2 octets):</dt>
+          <dd pn="section-6.3-4.2">The value is 6</dd>
+          <dt pn="section-6.3-4.3">Length (2 octets):</dt>
+          <dd pn="section-6.3-4.4">8</dd>
+          <dt pn="section-6.3-4.5">MT-ID (1 octet):</dt>
+          <dd pn="section-6.3-4.6">Multi-Topology ID as defined in <xref target="RFC4915" format="default" sectionFormat="of" derivedContent="RFC4915"/></dd>
+          <dt pn="section-6.3-4.7">Algorithm (1 octet):</dt>
+          <dd pn="section-6.3-4.8">Associated Algorithm from 128 to
+          255</dd>
+          <dt pn="section-6.3-4.9">Flags (1 octet):</dt>
+          <dd pn="section-6.3-4.10">
+            <t indent="0" pn="section-6.3-4.10.1">The following flags are defined:</t>
+            <artwork align="left" pn="section-6.3-4.10.2">
+ 0 1 2 3 4 5 6 7 8 
++-+-+-+-+-+-+-+-+-+
+|E|   Reserved    |
++-+-+-+-+-+-+-+-+-+
+</artwork>
+            <t indent="0" pn="section-6.3-4.10.3">Where:</t>
+            <dl spacing="normal" newline="false" indent="3" pn="section-6.3-4.10.4">
+              <dt pn="section-6.3-4.10.4.1">E bit:</dt>
+              <dd pn="section-6.3-4.10.4.2">The same as the E bit defined in
+              <xref target="RFC2328" sectionFormat="of" section="A.4.5" format="default" derivedLink="https://rfc-editor.org/rfc/rfc2328#appendix-A.4.5" derivedContent="RFC2328"/>.</dd>
+              <dt pn="section-6.3-4.10.4.3">The remaining bits:</dt>
+              <dd pn="section-6.3-4.10.4.4">Reserved for future
+	      use. They <bcp14>MUST</bcp14> be set to zero on transmission and
+	      <bcp14>MUST</bcp14> be ignored on receipt.</dd>
+            </dl>
+          </dd>
+          <dt pn="section-6.3-4.11">Reserved (1 octet):</dt>
+          <dd pn="section-6.3-4.12">
+            <bcp14>SHOULD</bcp14> be set to 0
+          on transmission and <bcp14>MUST</bcp14> be ignored on
+          reception.</dd>
+          <dt pn="section-6.3-4.13">Metric (4 octets):</dt>
+          <dd pn="section-6.3-4.14">The algorithm-specific metric
+          value. The metric value of 0XFFFFFFFF <bcp14>MUST</bcp14> be
+          considered unreachable.</dd>
+        </dl>
+        <t indent="0" pn="section-6.3-5">If the Algorithms in the OSPFv2 IP Algorithm Prefix Reachability
+        Sub-TLV are outside the Flex-Algorithm range (128-255), the OSPFv2 IP
+        Algorithm Prefix Reachability Sub-TLV <bcp14>MUST</bcp14> be ignored
+        by the receiver. This situation <bcp14>SHOULD</bcp14> be logged as an
+        error.</t>
+        <t indent="0" pn="section-6.3-6">An OSPFv2 router receiving multiple OSPFv2 IP Algorithm Prefix
+        Reachability Sub-TLVs in the same OSPFv2 Extended Prefix TLV
+        <bcp14>MUST</bcp14> select the first advertisement of this sub-TLV and
+        <bcp14>MUST</bcp14> ignore all remaining occurrences of this sub-TLV in
+        the OSPFv2 Extended Prefix TLV.</t>
+        <t indent="0" pn="section-6.3-7">An OSPFv2 router receiving multiple OSPFv2 IP Algorithm Prefix
+        Reachability TLVs for the same prefix from different originators
+        where all of them do not advertise the same algorithm <bcp14>MUST</bcp14> ignore all of them and <bcp14>MUST NOT</bcp14>
+        install any forwarding entries based on these advertisements.
+        This situation <bcp14>SHOULD</bcp14> be logged as an error.</t>
+        <t indent="0" pn="section-6.3-8">In cases where a prefix advertisement is received in any of the
+        LSAs advertising the prefix reachability for algorithm 0 and in an OSPFv2
+        IP Algorithm Prefix Reachability Sub-TLV, only the prefix reachability
+        advertisement for algorithm 0 <bcp14>MUST</bcp14> be used, and all occurrences of the
+        OSPFv2 IP Algorithm Prefix Reachability Sub-TLV <bcp14>MUST</bcp14> be ignored.</t>
+        <t indent="0" pn="section-6.3-9">When computing the IP Algorithm Prefix reachability in OSPFv2, only
+        information present in the OSPFv2 Extended Prefix TLV
+        <bcp14>MUST</bcp14> be used. There will not be any information
+        advertised for the IP Algorithm Prefix in any of the OSPFv2 LSAs that
+        advertise prefix reachability for algorithm 0. For the IP Algorithm
+        Prefix, the OSPFv2 Extended Prefix TLV is used to advertise the prefix
+        reachability, unlike for algorithm 0 prefixes, where the OSPFv2
+        Extended Prefix TLV is only used to advertise additional attributes --
+        but not the reachability itself.</t>
+        <section anchor="OSPFV2_FA-SUBTLV" numbered="true" removeInRFC="false" toc="include" pn="section-6.3.1">
+          <name slugifiedName="name-the-ospfv2-ip-forwarding-ad">The OSPFv2 IP Forwarding Address Sub-TLV</name>
+          <t indent="0" pn="section-6.3.1-1">A new sub-TLV of the OSPFv2 Extended Prefix TLV is defined for
+        advertising IP Forwarding Address, the OSPFv2 IP Forwarding Address Sub-TLV.</t>
+          <t indent="0" pn="section-6.3.1-2">The OSPFv2 IP Forwarding Address Sub-TLV has the
+        following format:</t>
+          <figure anchor="OSPFV2_FA" align="center" suppress-title="false" pn="figure-6">
+            <name slugifiedName="name-ospfv2-ip-forwarding-addres">OSPFv2 IP Forwarding Address Sub-TLV</name>
+            <artwork align="center" pn="section-6.3.1-3.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Type             |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                     Forwarding Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+          </figure>
+          <dl spacing="normal" newline="false" indent="3" pn="section-6.3.1-4">
+            <dt pn="section-6.3.1-4.1">Type (2 octets):</dt>
+            <dd pn="section-6.3.1-4.2">The value is 7</dd>
+            <dt pn="section-6.3.1-4.3">Length (2 octets):</dt>
+            <dd pn="section-6.3.1-4.4">4</dd>
+            <dt pn="section-6.3.1-4.5">Forwarding Address (4 octets):</dt>
+            <dd pn="section-6.3.1-4.6">The same as defined in <xref target="RFC2328" sectionFormat="of" section="A.4.5" format="default" derivedLink="https://rfc-editor.org/rfc/rfc2328#appendix-A.4.5" derivedContent="RFC2328"/></dd>
+          </dl>
+          <t indent="0" pn="section-6.3.1-5">The OSPFv2 IP Forwarding Address Sub-TLV <bcp14>MUST NOT</bcp14>
+          be used for computing algorithm 0 prefix reachability and
+          <bcp14>MUST</bcp14> be ignored for algorithm 0 prefixes.</t>
+          <t indent="0" pn="section-6.3.1-6">The OSPFv2 IP Forwarding Address Sub-TLV is optional. If it is
+          not present, the forwarding address for computing the IP Algorithm
+          Prefix reachability is assumed to be equal to 0.0.0.0.</t>
+          <t indent="0" pn="section-6.3.1-7">The OSPFv2 IP Forwarding Address Sub-TLV is only applicable to AS External and Not-So-Stubby Area (NSSA) External route types. If the 
+             OSPFv2 IP Forwarding Address Sub-TLV is advertised in the OSPFv2 Extended 
+             Prefix TLV that has the Route Type field set to any other type, the OSPFv2 
+             IP Forwarding Address Sub-TLV <bcp14>MUST</bcp14> be ignored.</t>
+        </section>
+      </section>
+      <section anchor="OSPFV3_ALGTLV" numbered="true" removeInRFC="false" toc="include" pn="section-6.4">
+        <name slugifiedName="name-the-ospfv3-ip-algorithm-pre">The OSPFv3 IP Algorithm Prefix Reachability Sub-TLV</name>
+        <t indent="0" pn="section-6.4-1">The OSPFv3 <xref target="RFC5340" format="default" sectionFormat="of" derivedContent="RFC5340"/> IP Algorithm Prefix Reachability Sub-TLV 
+        is defined for advertisement of the IP Algorithm Prefix Reachability in OSPFv3.</t>
+        <t indent="0" pn="section-6.4-2">The OSPFv3 IP Algorithm Prefix Reachability Sub-TLV is a sub-TLV of
+        the following OSPFv3 TLVs defined in <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/>: </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.4-3">
+          <li pn="section-6.4-3.1">Intra-Area-Prefix TLV</li>
+          <li pn="section-6.4-3.2">Inter-Area-Prefix TLV</li>
+          <li pn="section-6.4-3.3">External-Prefix TLV</li>
+        </ul>
+        <t indent="0" pn="section-6.4-4">The format of OSPFv3 IP Algorithm Prefix Reachability Sub-TLV is
+        shown below:</t>
+        <figure anchor="OSPFv3pfx" align="center" suppress-title="false" pn="figure-7">
+          <name slugifiedName="name-ospfv3-ip-algorithm-prefix-">OSPFv3 IP Algorithm Prefix Reachability Sub-TLV</name>
+          <artwork align="center" pn="section-6.4-5.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Type             |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Algorithm    |                 Reserved                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          Metric                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-6.4-6">Where:</t>
+        <dl spacing="normal" newline="false" indent="3" pn="section-6.4-7">
+          <dt pn="section-6.4-7.1">Type (2 octets):</dt>
+          <dd pn="section-6.4-7.2">The value is 35</dd>
+          <dt pn="section-6.4-7.3">Length (2 octets):</dt>
+          <dd pn="section-6.4-7.4">8</dd>
+          <dt pn="section-6.4-7.5">Algorithm (1 octet):</dt>
+          <dd pn="section-6.4-7.6">Associated Algorithm from 128 to
+          255</dd>
+          <dt pn="section-6.4-7.7">Reserved (3 octets):</dt>
+          <dd pn="section-6.4-7.8">
+            <bcp14>SHOULD</bcp14> be set to 0
+          on transmission and <bcp14>MUST</bcp14> be ignored on
+          reception.</dd>
+          <dt pn="section-6.4-7.9">Metric (4 octets):</dt>
+          <dd pn="section-6.4-7.10">The algorithm-specific metric
+          value. The metric value of 0XFFFFFFFF <bcp14>MUST</bcp14> be
+          considered unreachable.</dd>
+        </dl>
+        <t indent="0" pn="section-6.4-8">If the Algorithms in the OSPFv3 IP Algorithm Prefix Reachability
+        Sub-TLV are outside the Flex-Algorithm range (128-255), the OSPFv3 IP
+        Algorithm Prefix Reachability Sub-TLV <bcp14>MUST</bcp14> be ignored
+        by the receiver. This situation <bcp14>SHOULD</bcp14> be logged as an
+        error.</t>
+        <t indent="0" pn="section-6.4-9">When the OSPFv3 IP Algorithm Prefix Reachability Sub-TLV is
+        present, the NU-bit in the PrefixOptions field of the parent TLV
+        <bcp14>MUST</bcp14> be set.  This is needed to prevent the OSPFv3 IP
+        Algorithm Prefix Reachability advertisement from contributing to the
+        base algorithm reachability. If the NU-bit in the PrefixOptions field
+        of the parent TLV is not set, the OSPFv3 IP Algorithm Prefix Sub-TLV
+        <bcp14>MUST</bcp14> be ignored by the receiver.</t>
+        <t indent="0" pn="section-6.4-10">The metric value in the parent TLV is <bcp14>RECOMMENDED</bcp14> to
+        be set to LSInfinity <xref target="RFC2328" format="default" sectionFormat="of" derivedContent="RFC2328"/>. This recommendation is
+        provided as a network troubleshooting convenience; if it is not
+        followed, the protocol will still function correctly.</t>
+        <t indent="0" pn="section-6.4-11">An OSPFv3 router receiving multiple OSPFv3 IP Algorithm Prefix
+        Reachability Sub-TLVs in the same parent TLV <bcp14>MUST</bcp14> select the first
+        advertisement of this sub-TLV and <bcp14>MUST</bcp14> ignore all remaining occurrences
+        of this sub-TLV in the parent TLV.</t>
+        <t indent="0" pn="section-6.4-12">An OSPFv3 router receiving multiple OSPFv3 IP Algorithm Prefix
+        Reachability TLVs for the same prefix from different originators
+        where all of them do not advertise the same algorithm <bcp14>MUST</bcp14> ignore all of them and <bcp14>MUST NOT</bcp14>
+        install any forwarding entries based on these advertisements.
+        This situation <bcp14>SHOULD</bcp14> be logged as an error.</t>
+        <t indent="0" pn="section-6.4-13">In cases where a prefix advertisement is received in any of the
+        LSAs advertising the prefix reachability for algorithm 0 and in an OSPFv3
+        OSPFv3 IP Algorithm Prefix Reachability Sub-TLV, only the prefix reachability
+        advertisement for algorithm 0 <bcp14>MUST</bcp14> be used, and all occurrences of the
+        OSPFv3 IP Algorithm Prefix Reachability Sub-TLV <bcp14>MUST</bcp14> be ignored.</t>
+        <t indent="0" pn="section-6.4-14">In cases where a prefix advertisement is received in both an OSPFv3 SRv6 Locator TLV 
+        and in an OSPFv3 IP Algorithm Prefix Reachability Sub-TLV, the receiver
+        <bcp14>MUST</bcp14> ignore both of them and <bcp14>MUST NOT</bcp14> install any forwarding entries based 
+        on these advertisements. This situation <bcp14>SHOULD</bcp14> be logged as an error.</t>
+      </section>
+      <section anchor="IPFAAL" numbered="true" removeInRFC="false" toc="include" pn="section-6.5">
+        <name slugifiedName="name-the-ospf-ip-flexible-algori">The OSPF IP Flexible Algorithm ASBR Metric Sub-TLV</name>
+        <t indent="0" pn="section-6.5-1"><xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/> defines the OSPF Flexible Algorithm ASBR
+        Metric (FAAM) Sub-TLV that is used by an OSPFv2 or an OSPFv3 Area
+        Border Router (ABR) to advertise a Flex-Algorithm-specific metric
+        associated with the corresponding ASBR LSA.</t>
+        <t indent="0" pn="section-6.5-2">As described in <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>, each data plane signals
+        its participation independently. IP Flexible Algorithm participation is
+        signaled independent of SR Flexible Algorithm participation. As a result,
+        the calculated topologies for SR and IP Flexible Algorithm could be
+        different. Such a difference prevents the usage of FAAM for the purpose
+        of the IP Flexible Algorithm.</t>
+        <t indent="0" pn="section-6.5-3">The OSPF IP Flexible Algorithm ASBR Metric (IPFAAM) Sub-TLV is
+        defined for the advertisement of the IP Flex-Algorithm-specific metric
+        associated with an ASBR by the ABR.</t>
+        <t indent="0" pn="section-6.5-4">The IPFAAM Sub-TLV is a sub-TLV of the:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.5-5">
+          <li pn="section-6.5-5.1">OSPFv2 Extended Inter-Area ASBR TLV, as defined in <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/></li>
+          <li pn="section-6.5-5.2">OSPFv3 Inter-Area-Router TLV, as defined in <xref target="RFC8362" format="default" sectionFormat="of" derivedContent="RFC8362"/></li>
+        </ul>
+        <t indent="0" pn="section-6.5-6">The OSPF IPFAAM Sub-TLV has the following format:</t>
+        <figure anchor="OSPFfaal" align="center" suppress-title="false" pn="figure-8">
+          <name slugifiedName="name-ospf-ip-flexible-algorithm-">OSPF IP Flexible Algorithm ASBR Metric Sub-TLV</name>
+          <artwork align="center" pn="section-6.5-7.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|              Type             |             Length            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Algorithm   |                   Reserved                    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                            Metric                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-6.5-8">Where:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-6.5-9">
+          <dt pn="section-6.5-9.1">Type (2 octets):</dt>
+          <dd pn="section-6.5-9.2">2 (allocated by IANA) for OSPFv2, 36
+          for OSPFv3</dd>
+          <dt pn="section-6.5-9.3">Length (2 octets):</dt>
+          <dd pn="section-6.5-9.4">8</dd>
+          <dt pn="section-6.5-9.5">Algorithm (1 octet):</dt>
+          <dd pn="section-6.5-9.6">Associated Algorithm from 128 to
+          255</dd>
+          <dt pn="section-6.5-9.7">Reserved (3 octets):</dt>
+          <dd pn="section-6.5-9.8">
+            <bcp14>SHOULD</bcp14> be set to 0
+          on transmission and <bcp14>MUST</bcp14> be ignored on
+          reception</dd>
+          <dt pn="section-6.5-9.9">Metric (4 octets):</dt>
+          <dd pn="section-6.5-9.10">The algorithm-specific metric
+          value</dd>
+        </dl>
+        <t indent="0" pn="section-6.5-10">If the Algorithms in the OSPF IP Flexible Algorithm ASBR Metric
+        Sub-TLV are outside the Flex-Algorithm range (128-255), the OSPF IP
+        Flexible Algorithm ASBR Metric Sub-TLV <bcp14>MUST</bcp14> be ignored
+        by the receiver. This situation <bcp14>SHOULD</bcp14> be logged as an
+        error.</t>
+        <t indent="0" pn="section-6.5-11">The usage of the IPFAAM Sub-TLV is similar to the usage of the FAAM
+        Sub-TLV defined in <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>, but it is used to
+        advertise IP Flexible Algorithm metric.</t>
+        <t indent="0" pn="section-6.5-12">An OSPF ABR <bcp14>MUST</bcp14> include the OSPF IPFAAM Sub-TLVs as
+        part of any IP Flexible Algorithm ASBR reachability advertisement
+        between areas.</t>
+        <t indent="0" pn="section-6.5-13">The FAAM Sub-TLV as defined in <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/> <bcp14>MUST NOT</bcp14> be used during IP Flexible Algorithm path calculation; the
+        IPFAAM Sub-TLV <bcp14>MUST</bcp14> be used instead.</t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-calculating-of-ip-flexible-">Calculating of IP Flexible Algorithm Paths</name>
+      <t indent="0" pn="section-7-1">The IP Flexible Algorithm is considered as yet another data plane of the
+      Flexible Algorithm as described in <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>.</t>
+      <t indent="0" pn="section-7-2">Participation in the IP Flexible Algorithm is signaled as described in
+      <xref target="PARTICIPATION" format="default" sectionFormat="of" derivedContent="Section 5"/> and is specific to the IP Flexible Algorithm
+      data plane.</t>
+      <t indent="0" pn="section-7-3">Calculation of IP Flexible Algorithm paths follows what is described in
+      <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>. This computation uses the IP
+      Flexible Algorithm data plane participation and is independent of the Flexible Algorithm
+      calculation done for any other Flexible Algorithm data plane (e.g., SR,
+      SRv6).</t>
+      <t indent="0" pn="section-7-4">The IP Flexible Algorithm data plane only considers participating nodes
+      during the Flexible Algorithm calculation. When computing paths for a given
+      Flex-Algorithm, all nodes that do not advertise participation for such IP
+      Flex-Algorithm, as described in <xref target="PARTICIPATION" format="default" sectionFormat="of" derivedContent="Section 5"/>, <bcp14>MUST</bcp14> be
+      pruned from the topology.</t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-ip-flexible-algorithm-forwa">IP Flexible Algorithm Forwarding</name>
+      <t indent="0" pn="section-8-1">The IP Algorithm Prefix Reachability advertisement as described in <xref target="PARTICIPATION" format="default" sectionFormat="of" derivedContent="Section 5"/> includes the MTID value that associates the
+      prefix with a specific topology. Algorithm Prefix Reachability
+      advertisement also includes an Algorithm value that explicitly
+      associates the prefix with a specific Flex-Algorithm. The paths to the
+      prefix <bcp14>MUST</bcp14> be calculated using the specified Flex-Algorithm in the
+      associated topology.</t>
+      <t indent="0" pn="section-8-2">Forwarding entries for the IP Flex-Algorithm prefixes advertised in
+      IGPs <bcp14>MUST</bcp14> be installed in the forwarding plane of the receiving IP
+      Flex-Algorithm prefix capable routers when they participate in the
+      associated topology and algorithm. Forwarding entries for IP
+      Flex-Algorithm prefixes associated with Flex-Algorithms in which the
+      node is not participating <bcp14>MUST NOT</bcp14> be installed in the forwarding
+      plane.</t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-9">
+      <name slugifiedName="name-deployment-considerations">Deployment Considerations</name>
+      <t indent="0" pn="section-9-1">IGP Flexible Algorithm can be used by many data planes. The original
+      specification was done for SR and SRv6; this specification adds IP as
+      another data plane that can use IGP Flexible Algorithm. Other data planes
+      may be defined in the future. This section provides some details about
+      the coexistence of the various data planes of an IGP Flexible Algorithm.</t>
+      <t indent="0" pn="section-9-2">Flexible Algorithm Definition (FAD), as described in <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>, is data plane independent and is
+      used by all Flexible Algorithm data planes.</t>
+      <t indent="0" pn="section-9-3">Participation in the Flexible Algorithm, as described in <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>, is data plane specific.</t>
+      <t indent="0" pn="section-9-4">Calculation of the Flexible Algorithm paths is data plane specific and uses
+      data-plane-specific participation advertisements.</t>
+      <t indent="0" pn="section-9-5">Data-plane-specific participation and calculation guarantee that the
+      forwarding of the traffic over the Flex-Algorithm data-plane-specific
+      paths is consistent between all nodes that apply the IGP Flex-Algorithm
+      to the data plane.</t>
+      <t indent="0" pn="section-9-6">Multiple data planes can use the same Flex-Algorithm value at the
+      same time and, and as such, share the FAD for it. For example, SR-MPLS
+      and IP can both use a common Flex-Algorithm. Traffic for SR-MPLS will be
+      forwarded based on Flex-Algorithm-specific SR SIDs. Traffic for IP
+      Flex-Algorithm will be forwarded based on Flex-Algorithm-specific prefix
+      reachability advertisements. Note that for a particular Flex-Algorithm,
+      for a particular IP prefix, there will only be path(s) calculated and
+      installed for a single data plane.</t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-10">
+      <name slugifiedName="name-protection">Protection</name>
+      <t indent="0" pn="section-10-1">In many networks where IGP Flexible Algorithms are deployed, IGP
+      restoration will be fast and additional protection mechanisms will not
+      be required. IGP restoration may be enhanced by Equal Cost Multipath
+      (ECMP).</t>
+      <t indent="0" pn="section-10-2">In other networks, operators can deploy additional protection
+      mechanisms. The following are examples:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-10-3">
+        <li pn="section-10-3.1">Loop-Free Alternates (LFAs) <xref target="RFC5286" format="default" sectionFormat="of" derivedContent="RFC5286"/></li>
+        <li pn="section-10-3.2">Remote Loop-Free Alternates (R-LFAs) <xref target="RFC7490" format="default" sectionFormat="of" derivedContent="RFC7490"/></li>
+      </ul>
+      <t indent="0" pn="section-10-4">LFA and R-LFA computations <bcp14>MUST</bcp14> be restricted to the
+      Flex-Algorithm topology and the computed backup next hops should be programmed
+      for the IP Flex-Algorithm prefixes.</t>
+    </section>
+    <section anchor="IANA" numbered="true" removeInRFC="false" toc="include" pn="section-11">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-11-1">This specification updates the "OSPF Router Information (RI) TLVs"
+      registry as follows:</t>
+      <table anchor="T1" align="center" pn="table-1">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">TLV Name</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">21</td>
+            <td align="left" colspan="1" rowspan="1">IP Algorithm</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9502, <xref target="OSPF-ALG_TLV" format="default" sectionFormat="of" derivedContent="Section 5.2"/></td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-11-3">This document also updates the "IS-IS Sub-TLVs for IS-IS Router CAPABILITY TLV"
+      registry as follows:</t>
+      <table anchor="T2" align="center" pn="table-2">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">TLV Name</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">29</td>
+            <td align="left" colspan="1" rowspan="1">IP Algorithm</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9502, <xref target="IS-IS-ALG_TLV" format="default" sectionFormat="of" derivedContent="Section 5.1"/></td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-11-5">This document also updates the "IS-IS Top-Level TLV Codepoints"
+      registry as follows:</t>
+      <table anchor="T3" align="center" pn="table-3">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">TLV Name</th>
+            <th align="left" colspan="1" rowspan="1">IIH</th>
+            <th align="left" colspan="1" rowspan="1">LSP</th>
+            <th align="left" colspan="1" rowspan="1">SNP</th>
+            <th align="left" colspan="1" rowspan="1">Purge</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">126</td>
+            <td align="left" colspan="1" rowspan="1">IPv4 Algorithm Prefix Reachability</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9502, <xref target="IS-IS-IPV4_PFX_TLV" format="default" sectionFormat="of" derivedContent="Section 6.1"/></td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">127</td>
+            <td align="left" colspan="1" rowspan="1">IPv6 Algorithm Prefix Reachability</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9502, <xref target="IS-IS-IPV6_PFX_TLV" format="default" sectionFormat="of" derivedContent="Section 6.2"/></td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-11-7">Since the above TLVs share the sub-TLV space managed in the "IS-IS
+      Sub-TLVs for TLVs Advertising Prefix Reachability" registry, IANA has
+      added "IPv4 Algorithm Prefix Reachability TLV (126)" and
+      "IPv6 Algorithm Prefix Reachability TLV (127)" to the list of TLVs in
+      the description of that registry.</t>
+      <t indent="0" pn="section-11-8">In addition, columns headed "126" and "127" have been added to that
+      registry, as follows:</t>
+      <table anchor="attribute126-127" align="center" pn="table-4">
+        <name/>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Type</th>
+            <th align="left" colspan="1" rowspan="1">Description</th>
+            <th align="left" colspan="1" rowspan="1">126</th>
+            <th align="left" colspan="1" rowspan="1">127</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">1</td>
+            <td align="left" colspan="1" rowspan="1">32-bit Administrative Tag Sub-TLV</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">2</td>
+            <td align="left" colspan="1" rowspan="1">64-bit Administrative Tag Sub-TLV</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">3</td>
+            <td align="left" colspan="1" rowspan="1">Prefix Segment Identifier</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">4</td>
+            <td align="left" colspan="1" rowspan="1">Prefix Attribute Flags</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">5</td>
+            <td align="left" colspan="1" rowspan="1">SRv6 End SID</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">6</td>
+            <td align="left" colspan="1" rowspan="1">Flexible Algorithm Prefix Metric (FAPM)</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">11</td>
+            <td align="left" colspan="1" rowspan="1">IPv4 Source Router ID</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">12</td>
+            <td align="left" colspan="1" rowspan="1">IPv6 Source Router ID</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+            <td align="left" colspan="1" rowspan="1">y</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">32</td>
+            <td align="left" colspan="1" rowspan="1">BIER Info</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+            <td align="left" colspan="1" rowspan="1">n</td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-11-10">This document registers the following in the "OSPFv2 Extended Prefix TLV Sub-TLVs"       registry:</t>
+      <table anchor="T4" align="center" pn="table-5">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">TLV Name</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">6</td>
+            <td align="left" colspan="1" rowspan="1">OSPFv2 IP Algorithm Prefix Reachability</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9502, <xref target="OSPF-IPV4_PFX_TLV" format="default" sectionFormat="of" derivedContent="Section 6.3"/></td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">7</td>
+            <td align="left" colspan="1" rowspan="1">OSPFv2 IP Forwarding Address</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9502, <xref target="OSPFV2_FA-SUBTLV" format="default" sectionFormat="of" derivedContent="Section 6.3.1"/></td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-11-12">IANA has created the "IP Algorithm Prefix Reachability Sub-TLV Flags" registry within the "Open Shortest Path First v2 (OSPFv2) Parameters" group of registries.  The new registry defines the bits in the
+      8-bit Flags field in the OSPFv2 IP Algorithm Prefix Reachability Sub-TLV
+      (<xref target="OSPF-IPV4_PFX_TLV" format="default" sectionFormat="of" derivedContent="Section 6.3"/>). New bits can be allocated via IETF
+      Review or IESG Approval <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/></t>
+      <table anchor="T5" align="center" pn="table-6">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Bit</th>
+            <th align="left" colspan="1" rowspan="1">Name</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">0</td>
+            <td align="left" colspan="1" rowspan="1">E bit</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9502, <xref target="OSPF-IPV4_PFX_TLV" format="default" sectionFormat="of" derivedContent="Section 6.3"/></td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">1-7</td>
+            <td align="left" colspan="1" rowspan="1">Unassigned</td>
+            <td align="left" colspan="1" rowspan="1"/>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-11-14">This document registers the following in the "OSPFv3 Extended-LSA Sub-TLVs" registry:
+      </t>
+      <table anchor="T6" align="center" pn="table-7">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">Description</th>
+            <th align="left" colspan="1" rowspan="1">L2BM</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">35</td>
+            <td align="left" colspan="1" rowspan="1">OSPFv3 IP Algorithm Prefix Reachability</td>
+            <td align="left" colspan="1" rowspan="1">X</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9502, <xref target="OSPFV3_ALGTLV" format="default" sectionFormat="of" derivedContent="Section 6.4"/></td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">36</td>
+            <td align="left" colspan="1" rowspan="1">OSPFv3 IP Flexible Algorithm ASBR Metric</td>
+            <td align="left" colspan="1" rowspan="1">X</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9502, <xref target="IPFAAL" format="default" sectionFormat="of" derivedContent="Section 6.5"/></td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-11-16">This document registers the following in the "OSPFv2 Extended Inter-Area ASBR Sub-TLVs"
+      registry:</t>
+      <table anchor="T7" align="center" pn="table-8">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">Description</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">2</td>
+            <td align="left" colspan="1" rowspan="1">OSPF IP Flexible Algorithm ASBR Metric</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9502, <xref target="IPFAAL" format="default" sectionFormat="of" derivedContent="Section 6.5"/></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section anchor="Security" numbered="true" removeInRFC="false" toc="include" pn="section-12">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-12-1">This document inherits security considerations from <xref target="RFC9350" format="default" sectionFormat="of" derivedContent="RFC9350"/>.</t>
+      <t indent="0" pn="section-12-2">This document adds one new way to disrupt IGP networks that are using
+      Flexible Algorithm: an attacker can suppress reachability for a given prefix
+      whose reachability is advertised by a legitimate node for a particular
+      IP Flex-Algorithm X by advertising the same prefix in Flex-Algorithm Y
+      from another malicious node. (To see why this is, consider, for
+      example, the rule given in the second-to-last paragraph of <xref target="IS-IS-IPV4_PFX_TLV" format="default" sectionFormat="of" derivedContent="Section 6.1"/>).</t>
+      <t indent="0" pn="section-12-3">This attack can be addressed by the existing security extensions, as
+      described in <xref target="RFC5304" format="default" sectionFormat="of" derivedContent="RFC5304"/> and <xref target="RFC5310" format="default" sectionFormat="of" derivedContent="RFC5310"/> for
+      IS-IS, in <xref target="RFC2328" format="default" sectionFormat="of" derivedContent="RFC2328"/> and <xref target="RFC7474" format="default" sectionFormat="of" derivedContent="RFC7474"/> for
+      OSPFv2, and in <xref target="RFC4552" format="default" sectionFormat="of" derivedContent="RFC4552"/> and <xref target="RFC5340" format="default" sectionFormat="of" derivedContent="RFC5340"/> for
+      OSPFv3.</t>
+      <t indent="0" pn="section-12-4">If a node that is authenticated is taken over by an attacker, such a
+      rogue node can perform the attack described above.  Such an attack is
+      not preventable through authentication, and it is not different from
+      advertising any other incorrect information through IS-IS or OSPF.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-13">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-13.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="ISO10589" quoteTitle="true" derivedAnchor="ISO10589">
+          <front>
+            <title>Information technology - Telecommunications and information exchange between systems - Intermediate System to Intermediate System intra-domain routeing information exchange protocol for use in conjunction with the protocol for providing the connectionless-mode network service (ISO 8473)</title>
+            <author>
+              <organization abbrev="ISO" showOnFrontPage="true">International Organization for Standardization</organization>
+            </author>
+            <date month="November" year="2002"/>
+          </front>
+          <seriesInfo name="ISO/IEC" value="10589:2002"/>
+          <refcontent>Second Edition</refcontent>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC2328" target="https://www.rfc-editor.org/info/rfc2328" quoteTitle="true" derivedAnchor="RFC2328">
+          <front>
+            <title>OSPF Version 2</title>
+            <author fullname="J. Moy" initials="J." surname="Moy"/>
+            <date month="April" year="1998"/>
+            <abstract>
+              <t indent="0">This memo documents version 2 of the OSPF protocol. OSPF is a link- state routing protocol. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="54"/>
+          <seriesInfo name="RFC" value="2328"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2328"/>
+        </reference>
+        <reference anchor="RFC4552" target="https://www.rfc-editor.org/info/rfc4552" quoteTitle="true" derivedAnchor="RFC4552">
+          <front>
+            <title>Authentication/Confidentiality for OSPFv3</title>
+            <author fullname="M. Gupta" initials="M." surname="Gupta"/>
+            <author fullname="N. Melam" initials="N." surname="Melam"/>
+            <date month="June" year="2006"/>
+            <abstract>
+              <t indent="0">This document describes means and mechanisms to provide authentication/confidentiality to OSPFv3 using an IPv6 Authentication Header/Encapsulating Security Payload (AH/ESP) extension header. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4552"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4552"/>
+        </reference>
+        <reference anchor="RFC4915" target="https://www.rfc-editor.org/info/rfc4915" quoteTitle="true" derivedAnchor="RFC4915">
+          <front>
+            <title>Multi-Topology (MT) Routing in OSPF</title>
+            <author fullname="P. Psenak" initials="P." surname="Psenak"/>
+            <author fullname="S. Mirtorabi" initials="S." surname="Mirtorabi"/>
+            <author fullname="A. Roy" initials="A." surname="Roy"/>
+            <author fullname="L. Nguyen" initials="L." surname="Nguyen"/>
+            <author fullname="P. Pillay-Esnault" initials="P." surname="Pillay-Esnault"/>
+            <date month="June" year="2007"/>
+            <abstract>
+              <t indent="0">This document describes an extension to Open Shortest Path First (OSPF) in order to define independent IP topologies called Multi- Topologies (MTs). The Multi-Topologies extension can be used for computing different paths for unicast traffic, multicast traffic, different classes of service based on flexible criteria, or an in- band network management topology.</t>
+              <t indent="0">An optional extension to exclude selected links from the default topology is also described. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4915"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4915"/>
+        </reference>
+        <reference anchor="RFC5120" target="https://www.rfc-editor.org/info/rfc5120" quoteTitle="true" derivedAnchor="RFC5120">
+          <front>
+            <title>M-ISIS: Multi Topology (MT) Routing in Intermediate System to Intermediate Systems (IS-ISs)</title>
+            <author fullname="T. Przygienda" initials="T." surname="Przygienda"/>
+            <author fullname="N. Shen" initials="N." surname="Shen"/>
+            <author fullname="N. Sheth" initials="N." surname="Sheth"/>
+            <date month="February" year="2008"/>
+            <abstract>
+              <t indent="0">This document describes an optional mechanism within Intermediate System to Intermediate Systems (IS-ISs) used today by many ISPs for IGP routing within their clouds. This document describes how to run, within a single IS-IS domain, a set of independent IP topologies that we call Multi-Topologies (MTs). This MT extension can be used for a variety of purposes, such as an in-band management network "on top" of the original IGP topology, maintaining separate IGP routing domains for isolated multicast or IPv6 islands within the backbone, or forcing a subset of an address space to follow a different topology. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5120"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5120"/>
+        </reference>
+        <reference anchor="RFC5304" target="https://www.rfc-editor.org/info/rfc5304" quoteTitle="true" derivedAnchor="RFC5304">
+          <front>
+            <title>IS-IS Cryptographic Authentication</title>
+            <author fullname="T. Li" initials="T." surname="Li"/>
+            <author fullname="R. Atkinson" initials="R." surname="Atkinson"/>
+            <date month="October" year="2008"/>
+            <abstract>
+              <t indent="0">This document describes the authentication of Intermediate System to Intermediate System (IS-IS) Protocol Data Units (PDUs) using the Hashed Message Authentication Codes - Message Digest 5 (HMAC-MD5) algorithm as found in RFC 2104. IS-IS is specified in International Standards Organization (ISO) 10589, with extensions to support Internet Protocol version 4 (IPv4) described in RFC 1195. The base specification includes an authentication mechanism that allows for multiple authentication algorithms. The base specification only specifies the algorithm for cleartext passwords. This document replaces RFC 3567.</t>
+              <t indent="0">This document proposes an extension to that specification that allows the use of the HMAC-MD5 authentication algorithm to be used in conjunction with the existing authentication mechanisms. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5304"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5304"/>
+        </reference>
+        <reference anchor="RFC5305" target="https://www.rfc-editor.org/info/rfc5305" quoteTitle="true" derivedAnchor="RFC5305">
+          <front>
+            <title>IS-IS Extensions for Traffic Engineering</title>
+            <author fullname="T. Li" initials="T." surname="Li"/>
+            <author fullname="H. Smit" initials="H." surname="Smit"/>
+            <date month="October" year="2008"/>
+            <abstract>
+              <t indent="0">This document describes extensions to the Intermediate System to Intermediate System (IS-IS) protocol to support Traffic Engineering (TE). This document extends the IS-IS protocol by specifying new information that an Intermediate System (router) can place in Link State Protocol Data Units (LSP). This information describes additional details regarding the state of the network that are useful for traffic engineering computations. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5305"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5305"/>
+        </reference>
+        <reference anchor="RFC5308" target="https://www.rfc-editor.org/info/rfc5308" quoteTitle="true" derivedAnchor="RFC5308">
+          <front>
+            <title>Routing IPv6 with IS-IS</title>
+            <author fullname="C. Hopps" initials="C." surname="Hopps"/>
+            <date month="October" year="2008"/>
+            <abstract>
+              <t indent="0">This document specifies a method for exchanging IPv6 routing information using the IS-IS routing protocol. The described method utilizes two new TLVs: a reachability TLV and an interface address TLV to distribute the necessary IPv6 information throughout a routing domain. Using this method, one can route IPv6 along with IPv4 and OSI using a single intra-domain routing protocol. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5308"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5308"/>
+        </reference>
+        <reference anchor="RFC5310" target="https://www.rfc-editor.org/info/rfc5310" quoteTitle="true" derivedAnchor="RFC5310">
+          <front>
+            <title>IS-IS Generic Cryptographic Authentication</title>
+            <author fullname="M. Bhatia" initials="M." surname="Bhatia"/>
+            <author fullname="V. Manral" initials="V." surname="Manral"/>
+            <author fullname="T. Li" initials="T." surname="Li"/>
+            <author fullname="R. Atkinson" initials="R." surname="Atkinson"/>
+            <author fullname="R. White" initials="R." surname="White"/>
+            <author fullname="M. Fanto" initials="M." surname="Fanto"/>
+            <date month="February" year="2009"/>
+            <abstract>
+              <t indent="0">This document proposes an extension to Intermediate System to Intermediate System (IS-IS) to allow the use of any cryptographic authentication algorithm in addition to the already-documented authentication schemes, described in the base specification and RFC 5304. IS-IS is specified in International Standards Organization (ISO) 10589, with extensions to support Internet Protocol version 4 (IPv4) described in RFC 1195.</t>
+              <t indent="0">Although this document has been written specifically for using the Hashed Message Authentication Code (HMAC) construct along with the Secure Hash Algorithm (SHA) family of cryptographic hash functions, the method described in this document is generic and can be used to extend IS-IS to support any cryptographic hash function in the future. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5310"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5310"/>
+        </reference>
+        <reference anchor="RFC5340" target="https://www.rfc-editor.org/info/rfc5340" quoteTitle="true" derivedAnchor="RFC5340">
+          <front>
+            <title>OSPF for IPv6</title>
+            <author fullname="R. Coltun" initials="R." surname="Coltun"/>
+            <author fullname="D. Ferguson" initials="D." surname="Ferguson"/>
+            <author fullname="J. Moy" initials="J." surname="Moy"/>
+            <author fullname="A. Lindem" initials="A." surname="Lindem" role="editor"/>
+            <date month="July" year="2008"/>
+          </front>
+          <seriesInfo name="RFC" value="5340"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5340"/>
+        </reference>
+        <reference anchor="RFC7474" target="https://www.rfc-editor.org/info/rfc7474" quoteTitle="true" derivedAnchor="RFC7474">
+          <front>
+            <title>Security Extension for OSPFv2 When Using Manual Key Management</title>
+            <author fullname="M. Bhatia" initials="M." surname="Bhatia"/>
+            <author fullname="S. Hartman" initials="S." surname="Hartman"/>
+            <author fullname="D. Zhang" initials="D." surname="Zhang"/>
+            <author fullname="A. Lindem" initials="A." role="editor" surname="Lindem"/>
+            <date month="April" year="2015"/>
+            <abstract>
+              <t indent="0">The current OSPFv2 cryptographic authentication mechanism as defined in RFCs 2328 and 5709 is vulnerable to both inter-session and intra- session replay attacks when using manual keying. Additionally, the existing cryptographic authentication mechanism does not cover the IP header. This omission can be exploited to carry out various types of attacks.</t>
+              <t indent="0">This document defines changes to the authentication sequence number mechanism that will protect OSPFv2 from both inter-session and intra- session replay attacks when using manual keys for securing OSPFv2 protocol packets. Additionally, we also describe some changes in the cryptographic hash computation that will eliminate attacks resulting from OSPFv2 not protecting the IP header.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7474"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7474"/>
+        </reference>
+        <reference anchor="RFC7770" target="https://www.rfc-editor.org/info/rfc7770" quoteTitle="true" derivedAnchor="RFC7770">
+          <front>
+            <title>Extensions to OSPF for Advertising Optional Router Capabilities</title>
+            <author fullname="A. Lindem" initials="A." role="editor" surname="Lindem"/>
+            <author fullname="N. Shen" initials="N." surname="Shen"/>
+            <author fullname="JP. Vasseur" initials="JP." surname="Vasseur"/>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="S. Shaffer" initials="S." surname="Shaffer"/>
+            <date month="February" year="2016"/>
+            <abstract>
+              <t indent="0">It is useful for routers in an OSPFv2 or OSPFv3 routing domain to know the capabilities of their neighbors and other routers in the routing domain. This document proposes extensions to OSPFv2 and OSPFv3 for advertising optional router capabilities. The Router Information (RI) Link State Advertisement (LSA) is defined for this purpose. In OSPFv2, the RI LSA will be implemented with an Opaque LSA type ID. In OSPFv3, the RI LSA will be implemented with a unique LSA type function code. In both protocols, the RI LSA can be advertised at any of the defined flooding scopes (link, area, or autonomous system (AS)). This document obsoletes RFC 4970 by providing a revised specification that includes support for advertisement of multiple instances of the RI LSA and a TLV for functional capabilities.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7770"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7770"/>
+        </reference>
+        <reference anchor="RFC7981" target="https://www.rfc-editor.org/info/rfc7981" quoteTitle="true" derivedAnchor="RFC7981">
+          <front>
+            <title>IS-IS Extensions for Advertising Router Information</title>
+            <author fullname="L. Ginsberg" initials="L." surname="Ginsberg"/>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="M. Chen" initials="M." surname="Chen"/>
+            <date month="October" year="2016"/>
+            <abstract>
+              <t indent="0">This document defines a new optional Intermediate System to Intermediate System (IS-IS) TLV named CAPABILITY, formed of multiple sub-TLVs, which allows a router to announce its capabilities within an IS-IS level or the entire routing domain. This document obsoletes RFC 4971.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7981"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7981"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8362" target="https://www.rfc-editor.org/info/rfc8362" quoteTitle="true" derivedAnchor="RFC8362">
+          <front>
+            <title>OSPFv3 Link State Advertisement (LSA) Extensibility</title>
+            <author fullname="A. Lindem" initials="A." surname="Lindem"/>
+            <author fullname="A. Roy" initials="A." surname="Roy"/>
+            <author fullname="D. Goethals" initials="D." surname="Goethals"/>
+            <author fullname="V. Reddy Vallem" initials="V." surname="Reddy Vallem"/>
+            <author fullname="F. Baker" initials="F." surname="Baker"/>
+            <date month="April" year="2018"/>
+            <abstract>
+              <t indent="0">OSPFv3 requires functional extension beyond what can readily be done with the fixed-format Link State Advertisement (LSA) as described in RFC 5340. Without LSA extension, attributes associated with OSPFv3 links and advertised IPv6 prefixes must be advertised in separate LSAs and correlated to the fixed-format LSAs. This document extends the LSA format by encoding the existing OSPFv3 LSA information in Type-Length-Value (TLV) tuples and allowing advertisement of additional information with additional TLVs. Backward-compatibility mechanisms are also described.</t>
+              <t indent="0">This document updates RFC 5340, "OSPF for IPv6", and RFC 5838, "Support of Address Families in OSPFv3", by providing TLV-based encodings for the base OSPFv3 unicast support and OSPFv3 address family support.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8362"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8362"/>
+        </reference>
+        <reference anchor="RFC9350" target="https://www.rfc-editor.org/info/rfc9350" quoteTitle="true" derivedAnchor="RFC9350">
+          <front>
+            <title>IGP Flexible Algorithm</title>
+            <author fullname="P. Psenak" initials="P." role="editor" surname="Psenak"/>
+            <author fullname="S. Hegde" initials="S." surname="Hegde"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="K. Talaulikar" initials="K." surname="Talaulikar"/>
+            <author fullname="A. Gulko" initials="A." surname="Gulko"/>
+            <date month="February" year="2023"/>
+            <abstract>
+              <t indent="0">IGP protocols historically compute the best paths over the network based on the IGP metric assigned to the links. Many network deployments use RSVP-TE or Segment Routing - Traffic Engineering (SR-TE) to steer traffic over a path that is computed using different metrics or constraints than the shortest IGP path. This document specifies a solution that allows IGPs themselves to compute constraint-based paths over the network. This document also specifies a way of using Segment Routing (SR) Prefix-SIDs and SRv6 locators to steer packets along the constraint-based paths.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9350"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9350"/>
+        </reference>
+        <reference anchor="RFC9352" target="https://www.rfc-editor.org/info/rfc9352" quoteTitle="true" derivedAnchor="RFC9352">
+          <front>
+            <title>IS-IS Extensions to Support Segment Routing over the IPv6 Data Plane</title>
+            <author fullname="P. Psenak" initials="P." role="editor" surname="Psenak"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="A. Bashandy" initials="A." surname="Bashandy"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <date month="February" year="2023"/>
+            <abstract>
+              <t indent="0">The Segment Routing (SR) architecture allows a flexible definition of the end-to-end path by encoding it as a sequence of topological elements called "segments". It can be implemented over the MPLS or the IPv6 data plane. This document describes the IS-IS extensions required to support SR over the IPv6 data plane.</t>
+              <t indent="0">This document updates RFC 7370 by modifying an existing registry.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9352"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9352"/>
+        </reference>
+      </references>
+      <references pn="section-13.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="IANA-ALG" target="https://www.iana.org/assignments/igp-parameters" quoteTitle="true" derivedAnchor="IANA-ALG">
+          <front>
+            <title>IGP Algorithm Types</title>
+            <author fullname="" initials="" surname="">
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="RFC5286" target="https://www.rfc-editor.org/info/rfc5286" quoteTitle="true" derivedAnchor="RFC5286">
+          <front>
+            <title>Basic Specification for IP Fast Reroute: Loop-Free Alternates</title>
+            <author fullname="A. Atlas" initials="A." role="editor" surname="Atlas"/>
+            <author fullname="A. Zinin" initials="A." role="editor" surname="Zinin"/>
+            <date month="September" year="2008"/>
+            <abstract>
+              <t indent="0">This document describes the use of loop-free alternates to provide local protection for unicast traffic in pure IP and MPLS/LDP networks in the event of a single failure, whether link, node, or shared risk link group (SRLG). The goal of this technology is to reduce the packet loss that happens while routers converge after a topology change due to a failure. Rapid failure repair is achieved through use of precalculated backup next-hops that are loop-free and safe to use until the distributed network convergence process completes. This simple approach does not require any support from other routers. The extent to which this goal can be met by this specification is dependent on the topology of the network. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5286"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5286"/>
+        </reference>
+        <reference anchor="RFC7490" target="https://www.rfc-editor.org/info/rfc7490" quoteTitle="true" derivedAnchor="RFC7490">
+          <front>
+            <title>Remote Loop-Free Alternate (LFA) Fast Reroute (FRR)</title>
+            <author fullname="S. Bryant" initials="S." surname="Bryant"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="M. Shand" initials="M." surname="Shand"/>
+            <author fullname="N. So" initials="N." surname="So"/>
+            <date month="April" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes an extension to the basic IP fast reroute mechanism, described in RFC 5286, that provides additional backup connectivity for point-to-point link failures when none can be provided by the basic mechanisms.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7490"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7490"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8402" target="https://www.rfc-editor.org/info/rfc8402" quoteTitle="true" derivedAnchor="RFC8402">
+          <front>
+            <title>Segment Routing Architecture</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="S. Previdi" initials="S." role="editor" surname="Previdi"/>
+            <author fullname="L. Ginsberg" initials="L." surname="Ginsberg"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="S. Litkowski" initials="S." surname="Litkowski"/>
+            <author fullname="R. Shakir" initials="R." surname="Shakir"/>
+            <date month="July" year="2018"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) leverages the source routing paradigm. A node steers a packet through an ordered list of instructions, called "segments". A segment can represent any instruction, topological or service based. A segment can have a semantic local to an SR node or global within an SR domain. SR provides a mechanism that allows a flow to be restricted to a specific topological path, while maintaining per-flow state only at the ingress node(s) to the SR domain.</t>
+              <t indent="0">SR can be directly applied to the MPLS architecture with no change to the forwarding plane. A segment is encoded as an MPLS label. An ordered list of segments is encoded as a stack of labels. The segment to process is on the top of the stack. Upon completion of a segment, the related label is popped from the stack.</t>
+              <t indent="0">SR can be applied to the IPv6 architecture, with a new type of routing header. A segment is encoded as an IPv6 address. An ordered list of segments is encoded as an ordered list of IPv6 addresses in the routing header. The active segment is indicated by the Destination Address (DA) of the packet. The next active segment is indicated by a pointer in the new routing header.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8402"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8402"/>
+        </reference>
+        <reference anchor="RFC8986" target="https://www.rfc-editor.org/info/rfc8986" quoteTitle="true" derivedAnchor="RFC8986">
+          <front>
+            <title>Segment Routing over IPv6 (SRv6) Network Programming</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="P. Camarillo" initials="P." role="editor" surname="Camarillo"/>
+            <author fullname="J. Leddy" initials="J." surname="Leddy"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <author fullname="S. Matsushima" initials="S." surname="Matsushima"/>
+            <author fullname="Z. Li" initials="Z." surname="Li"/>
+            <date month="February" year="2021"/>
+            <abstract>
+              <t indent="0">The Segment Routing over IPv6 (SRv6) Network Programming framework enables a network operator or an application to specify a packet processing program by encoding a sequence of instructions in the IPv6 packet header.</t>
+              <t indent="0">Each instruction is implemented on one or several nodes in the network and identified by an SRv6 Segment Identifier in the packet.</t>
+              <t indent="0">This document defines the SRv6 Network Programming concept and specifies the base set of SRv6 behaviors that enables the creation of interoperable overlays with underlay optimization.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8986"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8986"/>
+        </reference>
+        <reference anchor="TS.23.501-3GPP" quoteTitle="true" derivedAnchor="TS.23.501-3GPP">
+          <front>
+            <title>System architecture for 5G System (5GS)</title>
+            <author>
+              <organization showOnFrontPage="true">3GPP</organization>
+            </author>
+            <date month="September" year="2023"/>
+          </front>
+          <seriesInfo name="3GPP TS" value="23.501"/>
+          <refcontent>Release 18.3.0</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section anchor="Acknowledgements" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">Thanks to <contact fullname="Bruno Decraene"/> for his contributions
+      to this document.  Special thanks to <contact fullname="Petr Bonbon       Adamec"/> of Cesnet for supporting interoperability testing.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="William Britto" initials="W." surname="Britto">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <postal>
+            <street>Elnath-Exora Business Park Survey</street>
+            <city>Bangalore</city>
+            <region>Karnataka</region>
+            <code>560103</code>
+            <country>India</country>
+          </postal>
+          <email>bwilliam@juniper.net</email>
+        </address>
+      </author>
+      <author fullname="Shraddha Hegde" initials="S." surname="Hegde">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <postal>
+            <street>Elnath-Exora Business Park Survey</street>
+            <city>Bangalore</city>
+            <region>Karnataka</region>
+            <code>560103</code>
+            <country>India</country>
+          </postal>
+          <email>shraddha@juniper.net</email>
+        </address>
+      </author>
+      <author fullname="Parag Kaneriya" initials="P." surname="Kaneriya">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <postal>
+            <street>Elnath-Exora Business Park Survey</street>
+            <city>Bangalore</city>
+            <region>Karnataka</region>
+            <code>560103</code>
+            <country>India</country>
+          </postal>
+          <email>pkaneria@juniper.net</email>
+        </address>
+      </author>
+      <author fullname="Rejesh Shetty" initials="R." surname="Shetty">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <postal>
+            <street>Elnath-Exora Business Park Survey</street>
+            <city>Bangalore</city>
+            <region>Karnataka</region>
+            <code>560103</code>
+            <country>India</country>
+          </postal>
+          <email>mrajesh@juniper.net</email>
+        </address>
+      </author>
+      <author fullname="Ron Bonica" initials="R." surname="Bonica">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <postal>
+            <street>2251 Corporate Park Drive</street>
+            <city>Herndon</city>
+            <code>20171</code>
+            <region>Virginia</region>
+            <country>United States of America</country>
+          </postal>
+          <email>rbonica@juniper.net</email>
+        </address>
+      </author>
+      <author fullname="Peter Psenak" initials="P." surname="Psenak">
+        <organization showOnFrontPage="true">Cisco Systems</organization>
+        <address>
+          <postal>
+            <extaddr>Apollo Business Center</extaddr>
+            <street>Mlynske nivy 43</street>
+            <city>Bratislava</city>
+            <code>82109</code>
+            <country>Slovakia</country>
+          </postal>
+          <email>ppsenak@cisco.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

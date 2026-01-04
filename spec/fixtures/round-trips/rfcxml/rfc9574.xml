@@ -1,0 +1,1817 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" category="std" docName="draft-ietf-bess-evpn-optimized-ir-12" number="9574" ipr="trust200902" submissionType="IETF" obsoletes="" updates="" xml:lang="en" tocInclude="true" consensus="true" tocDepth="3" symRefs="true" sortRefs="true" prepTime="2024-05-23T16:22:38" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-bess-evpn-optimized-ir-12" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9574" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="EVPN Optimized IR">Optimized Ingress Replication Solution for Ethernet VPNs (EVPNs)</title>
+    <seriesInfo name="RFC" value="9574" stream="IETF"/>
+    <author fullname="Jorge Rabadan" initials="J." role="editor" surname="Rabadan">
+      <organization showOnFrontPage="true">Nokia</organization>
+      <address>
+        <postal>
+          <street>777 Middlefield Road</street>
+          <city>Mountain View</city>
+          <region>CA</region>
+          <code>94043</code>
+          <country>United States of America</country>
+        </postal>
+        <email>jorge.rabadan@nokia.com</email>
+      </address>
+    </author>
+    <author fullname="Senthil Sathappan" initials="S." surname="Sathappan">
+      <organization showOnFrontPage="true">Nokia</organization>
+      <address>
+        <email>senthil.sathappan@nokia.com</email>
+      </address>
+    </author>
+    <author fullname="Wen Lin" initials="W." surname="Lin">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <email>wlin@juniper.net</email>
+      </address>
+    </author>
+    <author fullname="Mukul Katiyar" initials="M." surname="Katiyar">
+      <organization showOnFrontPage="true">Versa Networks</organization>
+      <address>
+        <email>mukul@versa-networks.com</email>
+      </address>
+    </author>
+    <author fullname="Ali Sajassi" initials="A." surname="Sajassi">
+      <organization showOnFrontPage="true">Cisco Systems</organization>
+      <address>
+        <email>sajassi@cisco.com</email>
+      </address>
+    </author>
+    <date month="05" year="2024"/>
+    <area>rtg</area>
+    <workgroup>BESS</workgroup>
+    <keyword>Assisted Replication</keyword>
+    <keyword>AR</keyword>
+    <keyword>AR-Replicator</keyword>
+    <keyword>RNVE</keyword>
+    <keyword>Pruned Flood List</keyword>
+    <keyword>PFL</keyword>
+    <keyword>Pruned Flooding List</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">Network Virtualization Overlay (NVO) networks using Ethernet VPNs
+      (EVPNs) as their control plane may use trees based on ingress replication
+      or Protocol Independent Multicast (PIM) to convey the overlay Broadcast,
+      Unknown Unicast, or Multicast (BUM) traffic. PIM provides an efficient
+      solution that prevents sending multiple copies of the same packet over the
+      same physical link; however, it may not always be deployed in the
+      NVO network core. Ingress replication avoids the
+      dependency on PIM in the NVO network core.
+      While ingress replication provides a simple multicast transport, some
+      NVO networks with demanding multicast
+      applications require a more efficient solution without PIM in the core.
+      This document describes a solution to optimize the efficiency of ingress
+      replication trees.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9574" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology-and-conventions">Terminology and Conventions</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-solution-requirements">Solution Requirements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-evpn-bgp-attributes-for-opt">EVPN BGP Attributes for Optimized Ingress Replication</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-non-selective-assisted-repl">Non-selective Assisted Replication (AR) Solution Description</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-non-selective-ar-replicator">Non-selective AR-REPLICATOR Procedures</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-non-selective-ar-leaf-proce">Non-selective AR-LEAF Procedures</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.3">
+                <t indent="0" pn="section-toc.1-1.5.2.3.1"><xref derivedContent="5.3" format="counter" sectionFormat="of" target="section-5.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rnve-procedures">RNVE Procedures</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-selective-assisted-replicat">Selective Assisted Replication (AR) Solution Description</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-selective-ar-replicator-pro">Selective AR-REPLICATOR Procedures</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-selective-ar-leaf-procedure">Selective AR-LEAF Procedures</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-pruned-flooding-lists-pfls">Pruned Flooding Lists (PFLs)</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-example-of-a-pruned-floodin">Example of a Pruned Flooding List</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ar-procedures-for-single-ip">AR Procedures for Single-IP AR-REPLICATORS</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ar-procedures-and-evpn-all-">AR Procedures and EVPN All-Active Multihoming Split-Horizon</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ethernet-segments-on-ar-lea">Ethernet Segments on AR-LEAF Nodes</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ethernet-segments-on-ar-rep">Ethernet Segments on AR-REPLICATOR Nodes</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="11" format="counter" sectionFormat="of" target="section-11"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="12" format="counter" sectionFormat="of" target="section-12"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.12.2">
+              <li pn="section-toc.1-1.12.2.1">
+                <t indent="0" pn="section-toc.1-1.12.2.1.1"><xref derivedContent="12.1" format="counter" sectionFormat="of" target="section-12.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.12.2.2">
+                <t indent="0" pn="section-toc.1-1.12.2.2.1"><xref derivedContent="12.2" format="counter" sectionFormat="of" target="section-12.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.14">
+            <t indent="0" pn="section-toc.1-1.14.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.15">
+            <t indent="0" pn="section-toc.1-1.15.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="sect-1" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">Ethernet Virtual Private Networks (EVPNs) may be used as the control
+      plane for a Network Virtualization Overlay (NVO) network <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/>. Network Virtualization Edge (NVE) and Provider Edge
+      (PE) devices that are part of the same EVPN Broadcast Domain (BD) use
+      Ingress Replication (IR) or PIM-based trees to transport the tenant's
+      Broadcast, Unknown Unicast, or Multicast (BUM) traffic.</t>
+      <t indent="0" pn="section-1-2"> In the ingress replication approach, the ingress NVE receiving a BUM
+      frame from the Tenant System (TS) will create as many copies of the
+      frame as the number of remote NVEs/PEs that are attached to the BD. Each of
+      those copies will be
+      encapsulated into an IP packet where the outer IP Destination Address
+      (IP DA) identifies the loopback of the egress NVE/PE. The IP fabric core
+      nodes (also known as spines) will simply route the IP-encapsulated BUM
+      frames based on the outer IP DA. If PIM-based trees are used instead of
+      ingress replication, the NVEs/PEs attached to the same BD will join a
+      PIM-based tree. The ingress NVE receiving a BUM frame will send a single
+      copy of the frame, encapsulated into an IP packet where the outer IP DA
+      is the multicast address that represents the PIM-based tree. The IP
+      fabric core nodes are part of the PIM tree and keep multicast state for
+      the multicast group, so that IP-encapsulated BUM frames can be routed to
+      all the NVEs/PEs that joined the tree.</t>
+      <t indent="0" pn="section-1-3">The two approaches are illustrated in <xref target="IR-PIM" format="default" sectionFormat="of" derivedContent="Figure 1"/>. On the
+      left-hand side of the diagram, NVE1 uses ingress replication to send a BUM frame
+      (originated from Tenant System TS1) to the remote nodes attached to the
+      BD, i.e., NVE2, NVE3, and PE1. On the right-hand side, the
+      same example is depicted but using a PIM-based tree, i.e., (S1,G1),
+      instead of ingress replication. While a single copy of the tunneled BUM
+      frame is generated in the latter approach, all the routers in the fabric
+      need to keep multicast state, e.g., the spine keeps a PIM
+      routing entry for (S1,G1) with an Incoming Interface (IIF) and three
+      Outgoing Interfaces (OIFs).</t>
+      <figure anchor="IR-PIM" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-ingress-replication-vs-pim-">Ingress Replication vs. PIM-Based Trees in NVO Networks</name>
+        <artwork name="" type="" align="left" alt="" pn="section-1-4.1">           To WAN                           To WAN
+              ^                                ^
+              |                                |
+           +-----+                          +-----+
++----------| PE1 |-----------+   +----------| PE1 |-----------+
+|          +--^--+           |   |          +--^--+           |            
+|             |    IP Fabric |   |             |    IP Fabric |
+|             PE             |   |    (S1,G1)  |OIF to G1     |
+| +----PE-&gt;+-----+ No State  |   |      IIF +-----+ OIF to G1 |
+| | +---2-&gt;|Spine|------+    |   |   +------&gt;Spine|------+    |
+| | | +-3-&gt;+-----+      |    |   |   |      +-----+      |    |
+| | | |       2         3    |   |   |PIM      |OIF to G1|    |
+| | | |IR     |         |    |   |   |tree     |         |    |
+|+-----+   +--v--+   +--v--+ |   |+-----+   +--v--+   +--v--+ |
++| NVE1|---| NVE2|---| NVE3|-+   +| NVE1|---| NVE2|---| NVE3|-+ 
+ +--^--+   +-----+   +-----+      +--^--+   +-----+   +-----+
+    |         |         |            |         |         |   
+    |         v         v            |         v         v
+   TS1       TS2       TS3          TS1       TS2       TS3
+</artwork>
+      </figure>
+      <t indent="0" pn="section-1-5">In NVO networks where PIM-based trees
+      cannot be used, ingress replication is the only option. Examples of
+      these situations are NVO networks where the
+      core nodes do not support PIM or the network operator does not want to
+      run PIM in the core.</t>
+      <t indent="0" pn="section-1-6">In some use cases, the amount of replication for BUM traffic is kept
+      under control on the NVEs due to the following fairly common
+      assumptions:</t>
+      <ol spacing="normal" type="a" indent="adaptive" start="1" pn="section-1-7"><li pn="section-1-7.1" derivedCounter="a.">Broadcast traffic is greatly reduced due to the proxy
+          Address Resolution Protocol (ARP) and proxy Neighbor Discovery (ND)
+          capabilities supported by EVPNs <xref target="RFC9161" format="default" sectionFormat="of" derivedContent="RFC9161"/> on the NVEs. Some NVEs can even
+          provide Dynamic Host Configuration Protocol (DHCP) server functions
+          for the attached TSs, reducing the broadcast traffic even
+          further.</li>
+        <li pn="section-1-7.2" derivedCounter="b.">Unknown
+          unicast traffic is greatly reduced in NVO
+          networks where all the Media Access Control (MAC) and IP addresses from the TSs
+          are learned in the control plane.</li>
+        <li pn="section-1-7.3" derivedCounter="c.">Multicast applications are not used.</li>
+      </ol>
+      <t indent="0" pn="section-1-8">If the above assumptions are true for a given NVO network, then ingress replication provides a simple solution for
+      multi-destination traffic. However, statement c. above is not always
+      true, and multicast applications are required in many use cases.</t>
+      <t indent="0" pn="section-1-9">When the multicast sources are attached to NVEs residing in
+      hypervisors or low-performance-replication Top-of-Rack (ToR) switches,
+      the ingress replication of a large amount of multicast traffic to a
+      significant number of remote NVEs/PEs can seriously degrade the
+      performance of the NVE and impact the application.</t>
+      <t indent="0" pn="section-1-10">This document describes a solution that makes use of two ingress
+      replication optimizations:</t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-1-11"><li pn="section-1-11.1" derivedCounter="1.">Assisted Replication (AR)</li>
+        <li pn="section-1-11.2" derivedCounter="2.">Pruned Flooding Lists (PFLs)</li>
+      </ol>
+      <t indent="0" pn="section-1-12">Assisted Replication consists of a set of procedures that allows the
+      ingress NVE/PE to send a single copy of a broadcast or multicast frame
+      received from a TS to the BD without the need
+      for PIM in the underlay. Assisted Replication defines the roles of
+      AR-REPLICATOR and AR-LEAF routers. The AR-LEAF is the ingress NVE/PE
+      attached to the TS. The AR-LEAF sends a single copy of a
+      broadcast or multicast packet to a selected AR-REPLICATOR that
+      replicates the packet multiple times to remote AR-LEAF or AR-REPLICATOR
+      routers and is therefore "assisting" the ingress AR-LEAF in delivering the
+      broadcast or multicast traffic to the remote NVEs/PEs attached to the
+      same BD. Assisted Replication can use a single
+      AR-REPLICATOR or two AR-REPLICATOR routers in the path between the
+      ingress AR-LEAF and the remote destination NVEs/PEs. The procedures that
+      use a single AR-REPLICATOR (the non-selective Assisted Replication solution)
+      are specified in <xref target="sect-5" format="default" sectionFormat="of" derivedContent="Section 5"/>, whereas <xref target="sect-6" format="default" sectionFormat="of" derivedContent="Section 6"/> describes how multi-stage replication, i.e., two
+      AR-REPLICATOR routers in the path between the ingress AR-LEAF and
+      destination NVEs/PEs, is accomplished (the selective Assisted Replication
+      solution). The procedures for Assisted Replication do not impact unknown
+      unicast traffic, which follows the same forwarding procedures as known
+      unicast traffic so that packet reordering does not occur.</t>
+      <t indent="0" pn="section-1-13">PFLs provide a method for the ingress NVE/PE to prune or
+      remove certain destination NVEs/PEs from a flooding list, depending on the
+      interest of those NVEs/PEs in receiving BUM traffic. As specified in <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/>, an NVE/PE builds a
+      flooding list for BUM traffic based on the next hops of the received EVPN
+      Inclusive Multicast Ethernet Tag routes for the BD. While
+      <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/> states that the flooding list is used for all BUM
+      traffic, this document allows pruning certain next hops from the list.
+      As an example, suppose an ingress NVE creates a flooding list with
+      next hops PE1, PE2, and PE3. If PE2 and PE3 did not signal any interest in
+      receiving unknown unicast traffic in their Inclusive Multicast Ethernet Tag
+      routes, when the ingress NVE receives an unknown unicast frame from a
+      TS, it will replicate it only to PE1. That is, PE2 and PE3 are
+      "pruned" from the NVE's flooding list for unknown unicast traffic.
+      PFLs can be used with ingress replication or
+      Assisted Replication and are described in <xref target="sect-7" format="default" sectionFormat="of" derivedContent="Section 7"/>.</t>
+      <t indent="0" pn="section-1-14">Both optimizations -- Assisted Replication and PFLs -- may
+      be used together or independently so that the performance and efficiency
+      of the network to transport multicast can be improved. Both solutions
+      require some extensions to the BGP attributes used in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>; see <xref target="sect-4" format="default" sectionFormat="of" derivedContent="Section 4"/> for details.</t>
+      <t indent="0" pn="section-1-15">The Assisted Replication solution described in this document is
+      focused on NVO networks (hence its use of IP
+      tunnels). MPLS transport networks are out of scope for this document. The
+      PFLs solution <bcp14>MAY</bcp14> be used in NVO
+      and MPLS transport networks.</t>
+      <t indent="0" pn="section-1-16"><xref target="sect-3" format="default" sectionFormat="of" derivedContent="Section 3"/> lists the requirements of the combined
+      optimized ingress replication solution, whereas Sections <xref target="sect-5" format="counter" sectionFormat="of" derivedContent="5"/>
+      and <xref target="sect-6" format="counter" sectionFormat="of" derivedContent="6"/> describe the Assisted Replication solution
+      for non-selective and selective procedures, respectively. <xref target="sect-7" format="default" sectionFormat="of" derivedContent="Section 7"/> provides the PFLs solution.</t>
+    </section>
+    <section anchor="sect-2" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-terminology-and-conventions">Terminology and Conventions</name>
+      <t indent="0" pn="section-2-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+      "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+      "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+      "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are
+      to be interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and
+      only when, they appear in all capitals, as shown here.</t>
+      <t indent="0" pn="section-2-2">The following terminology is used throughout this document:</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-2-3">
+        <dt pn="section-2-3.1">AR-IP:</dt>
+        <dd pn="section-2-3.2">Assisted Replication - IP. Refers to an IP address owned by the AR-REPLICATOR and used to
+          differentiate the incoming traffic that must follow the AR
+          procedures. The AR-IP is also used in the Tunnel Identifier and
+          Next Hop fields of the Replicator-AR route.</dd>
+        <dt pn="section-2-3.3">AR-LEAF:</dt>
+        <dd pn="section-2-3.4">Assisted Replication - LEAF. Refers to an NVE/PE that
+          sends all the BM traffic to an AR-REPLICATOR
+          that can replicate the traffic further on its behalf. An AR-LEAF is
+          typically an NVE/PE with poor replication performance
+          capabilities.</dd>
+        <dt pn="section-2-3.5">AR-REPLICATOR:</dt>
+        <dd pn="section-2-3.6">Assisted Replication - REPLICATOR. Refers to an
+          NVE/PE that can replicate broadcast or multicast traffic received on
+          overlay tunnels to other overlay tunnels and local Attachment Circuits (ACs).
+          This document defines the control and data plane
+          procedures that an AR-REPLICATOR needs to follow.</dd>
+        <dt pn="section-2-3.7">AR-VNI:</dt>
+        <dd pn="section-2-3.8">Assisted Replication - VNI. Refers to a Virtual eXtensible Local Area Network (VXLAN) Network Identifier (VNI) advertised by the AR-REPLICATOR along with the
+          Replicator-AR route. It is used to identify the incoming packets
+          that must follow the AR procedures ONLY in the single-IP AR-REPLICATOR
+          case (see <xref target="sect-8" format="default" sectionFormat="of" derivedContent="Section 8"/>).</dd>
+        <dt pn="section-2-3.9">Assisted Replication forwarding mode:</dt>
+        <dd pn="section-2-3.10">In the case of an AR-LEAF,
+          sending an AC Broadcast and Multicast (BM) packet to a single AR-REPLICATOR
+          with a tunnel destination address AR-IP. In the case of an AR-REPLICATOR, this means
+          sending a BM packet to a selected number of, or all of, the overlay tunnels
+          when the packet was previously received from an overlay tunnel.</dd>
+        <dt pn="section-2-3.11">BD:</dt>
+        <dd pn="section-2-3.12"> Broadcast Domain, as defined in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</dd>
+        <dt pn="section-2-3.13">BD label:</dt>
+        <dd pn="section-2-3.14">Defined as the MPLS label that identifies the BD
+          and is advertised in Regular-IR or Replicator-AR routes, when
+          the encapsulation is MPLS over GRE (MPLSoGRE) or MPLS over UDP (MPLSoUDP). </dd>
+        <dt pn="section-2-3.15">BM traffic:</dt>
+        <dd pn="section-2-3.16">Refers to broadcast and multicast frames (excluding
+          unknown unicast frames).</dd>
+        <dt pn="section-2-3.17">DF and NDF:</dt>
+        <dd pn="section-2-3.18">Designated Forwarder and Non-Designated Forwarder.
+          These are roles defined in NVEs/PEs attached to multihomed TSs,
+          as per <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> and <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/>.</dd>
+        <dt pn="section-2-3.19">ES and ESI:</dt>
+        <dd pn="section-2-3.20">Ethernet Segment and Ethernet Segment Identifier.
+          EVPN multihoming concepts as specified in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</dd>
+        <dt pn="section-2-3.21">EVI:</dt>
+        <dd pn="section-2-3.22"> EVPN Instance. A group of Provider Edge (PE) devices
+          participating in the same EVPN service, as specified in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</dd>
+        <dt pn="section-2-3.23">GRE:</dt>
+        <dd pn="section-2-3.24">Generic Routing Encapsulation <xref target="RFC4023" format="default" sectionFormat="of" derivedContent="RFC4023"/>.</dd>
+        <dt pn="section-2-3.25">Ingress Replication forwarding mode:</dt>
+        <dd pn="section-2-3.26"> Refers to the ingress
+          replication behavior explained in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>. In
+          this mode, an AC BM packet copy is sent to each remote PE/NVE
+          in the BD, and an overlay BM packet is sent only to the ACs
+          and not to other overlay tunnels.</dd>
+        <dt pn="section-2-3.27">IR-IP:</dt>
+        <dd pn="section-2-3.28">Ingress Replication - IP. Refers to the local IP address of an NVE/PE that is used for the ingress
+          replication signaling and procedures provided in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.
+          Encapsulated incoming traffic with an outer destination IP address matching the
+          IR-IP will follow the procedures for ingress replication and not the
+          procedures for Assisted Replication. The IR-IP is also used in the
+          Tunnel Identifier and Next Hop fields of the Regular-IR route.</dd>
+        <dt pn="section-2-3.29">IR-VNI:</dt>
+        <dd pn="section-2-3.30">Ingress Replication - VNI. Refers to a VNI advertised along with the Inclusive Multicast
+          Ethernet Tag route for the ingress replication tunnel type.</dd>
+        <dt pn="section-2-3.31">MPLS:</dt>
+        <dd pn="section-2-3.32">Multi-Protocol Label Switching.</dd>
+        <dt pn="section-2-3.33">NVE:</dt>
+        <dd pn="section-2-3.34">Network Virtualization Edge <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/>.</dd>
+        <dt pn="section-2-3.35">NVGRE:</dt>
+        <dd pn="section-2-3.36">Network virtualization using Generic Routing
+          Encapsulation <xref target="RFC7637" format="default" sectionFormat="of" derivedContent="RFC7637"/>.</dd>
+        <dt pn="section-2-3.37">PE:</dt>
+        <dd pn="section-2-3.38">Provider Edge.</dd>
+        <dt pn="section-2-3.39">PMSI:</dt>
+        <dd pn="section-2-3.40">P-Multicast Service Interface. A conceptual interface for
+          a PE to send customer multicast traffic to all or some PEs in the
+          same VPN <xref target="RFC6513" format="default" sectionFormat="of" derivedContent="RFC6513"/>.</dd>
+        <dt pn="section-2-3.41">RD:</dt>
+        <dd pn="section-2-3.42">Route Distinguisher.</dd>
+        <dt pn="section-2-3.43">Regular-IR route:</dt>
+        <dd pn="section-2-3.44">An EVPN Inclusive Multicast Ethernet Tag route
+          <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> that uses the ingress replication tunnel
+          type.</dd>
+        <dt pn="section-2-3.45">Replicator-AR route:</dt>
+        <dd pn="section-2-3.46">An EVPN Inclusive Multicast Ethernet Tag
+          route that is advertised by an AR-REPLICATOR to signal its
+          capabilities, as described in <xref target="sect-4" format="default" sectionFormat="of" derivedContent="Section 4"/>.</dd>
+        <dt pn="section-2-3.47">RNVE:</dt>
+        <dd pn="section-2-3.48">Regular NVE. Refers to an NVE that supports the procedures
+          provided in <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/> and does not support the procedures provided in
+          this document. However, this document defines procedures to
+          interoperate with RNVEs.</dd>
+        <dt pn="section-2-3.49">ToR switch:</dt>
+        <dd pn="section-2-3.50">Top-of-Rack switch.</dd>
+        <dt pn="section-2-3.51">TS and VM:</dt>
+        <dd pn="section-2-3.52">Tenant System and Virtual Machine. In this document,
+          TSs and VMs are the devices connected to
+          the ACs of the PEs and NVEs.</dd>
+        <dt pn="section-2-3.53">VNI:</dt>
+        <dd pn="section-2-3.54">VXLAN Network Identifier. Used in VXLAN tunnels.</dd>
+        <dt pn="section-2-3.55">VSID:</dt>
+        <dd pn="section-2-3.56">Virtual Segment Identifier. Used in NVGRE tunnels.</dd>
+        <dt pn="section-2-3.57">VXLAN:</dt>
+        <dd pn="section-2-3.58">Virtual eXtensible Local Area Network <xref target="RFC7348" format="default" sectionFormat="of" derivedContent="RFC7348"/>.</dd>
+      </dl>
+    </section>
+    <section anchor="sect-3" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-solution-requirements">Solution Requirements</name>
+      <t indent="0" pn="section-3-1">The ingress replication optimization solution specified in this
+      document meets the following requirements:</t>
+      <ol spacing="normal" type="a" indent="adaptive" start="1" pn="section-3-2"><li pn="section-3-2.1" derivedCounter="a.">The solution provides an ingress replication optimization for BM
+          traffic without the need for PIM while preserving the
+          packet order for unicast applications, i.e., unknown unicast traffic
+          should follow the same path as known unicast traffic. This
+          optimization is required in low-performance NVEs.</li>
+        <li pn="section-3-2.2" derivedCounter="b.">The solution reduces the flooded traffic in NVO
+          networks where some NVEs do not need broadcast/multicast and/or
+          unknown unicast traffic.</li>
+        <li pn="section-3-2.3" derivedCounter="c.">
+          <t indent="0" pn="section-3-2.3.1">The solution is compatible with <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> and
+          <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/> and has no impact on the Customer Edge (CE) procedures for
+          BM traffic. In particular, the solution supports the following EVPN
+          functions:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3-2.3.2">
+            <li pn="section-3-2.3.2.1">All-active multihoming, including the split-horizon and
+              DF functions.</li>
+            <li pn="section-3-2.3.2.2">Single-active multihoming, including the DF function.</li>
+            <li pn="section-3-2.3.2.3">Handling of multi-destination traffic and processing of
+              BM traffic as per <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</li>
+          </ul>
+        </li>
+        <li pn="section-3-2.4" derivedCounter="d.">The solution is backward compatible with existing NVEs using a
+          non-optimized version of ingress replication. A given BD can have
+          NVEs/PEs supporting regular ingress replication and optimized
+          ingress replication.</li>
+        <li pn="section-3-2.5" derivedCounter="e.">The solution is independent of the NVO-specific data plane encapsulation and the virtual identifiers being
+          used, e.g., VXLAN VNIs, NVGRE VSIDs, or MPLS labels, as long as the
+          tunnel is IP based.</li>
+      </ol>
+    </section>
+    <section anchor="sect-4" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-evpn-bgp-attributes-for-opt">EVPN BGP Attributes for Optimized Ingress Replication</name>
+      <t indent="0" pn="section-4-1">The ingress replication optimization solution specified in this document
+extends the Inclusive
+      Multicast Ethernet Tag routes and attributes described in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> so that an NVE/PE can
+      signal its optimized ingress replication capabilities.</t>
+      <t indent="0" pn="section-4-2">The Network Layer Reachability Information (NLRI) of the Inclusive Multicast Ethernet Tag route <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> is shown in <xref target="imet-route" format="default" sectionFormat="of" derivedContent="Figure 2"/> and is
+      used in this document without any modifications to its format. The PMSI
+      Tunnel Attribute's general format as provided in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> (which
+      takes it from <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>) is used in this document; only a
+      new tunnel type and new flags are specified, as shown in <xref target="pta" format="default" sectionFormat="of" derivedContent="Figure 3"/>.</t>
+      <figure anchor="imet-route" align="left" suppress-title="false" pn="figure-2">
+        <name slugifiedName="name-evpn-inclusive-multicast-et">EVPN Inclusive Multicast Ethernet Tag Route's NLRI</name>
+        <artwork name="" type="" align="left" alt="" pn="section-4-3.1">                 +------------------------------------+
+                 |      RD (8 octets)                 |
+                 +------------------------------------+
+                 |  Ethernet Tag ID (4 octets)        |
+                 +------------------------------------+
+                 |  IP Address Length (1 octet)       |
+                 +------------------------------------+
+                 |  Originating Router's IP Address   |
+                 |        (4 or 16 octets)            |
+                 +------------------------------------+
+</artwork>
+      </figure>
+      <figure anchor="pta" align="left" suppress-title="false" pn="figure-3">
+        <name slugifiedName="name-pmsi-tunnel-attribute">PMSI Tunnel Attribute</name>
+        <artwork name="" type="" align="left" alt="" pn="section-4-4.1">                                        0  1  2  3  4  5  6  7
++---------------------------------+    +--+--+--+--+--+--+--+--+
+|  Flags (1 octet)                | -&gt; |x |E |x |  T  |BM|U |L |
++---------------------------------+    +--+--+--+--+--+--+--+--+
+|  Tunnel Type (1 octet)          |    T = Assisted Replication Type 
++---------------------------------+    BM = Broadcast and Multicast
+|  MPLS Label (3 octets)          |    U = Unknown (unknown unicast)
++---------------------------------+    x = unassigned
+|  Tunnel Identifier (variable)   |
++---------------------------------+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-4-5">The Flags field in <xref target="pta" format="default" sectionFormat="of" derivedContent="Figure 3"/> is 8 bits long as per
+      <xref target="RFC7902" format="default" sectionFormat="of" derivedContent="RFC7902"/>. The Extension (E) flag was allocated by <xref target="RFC7902" format="default" sectionFormat="of" derivedContent="RFC7902"/>, and the Leaf
+      Information Required (L) flag was allocated by <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>. This document defines the use of 4 bits of this Flags field:
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-6">
+        <li pn="section-4-6.1">Bits 3 and 4, which together form the Assisted Replication Type (T)
+          field</li>
+        <li pn="section-4-6.2">Bit 5, called the Broadcast and Multicast (BM) flag</li>
+        <li pn="section-4-6.3">Bit 6, called the Unknown (U) flag</li>
+      </ul>
+      <t indent="0" pn="section-4-7">Bits 5 and 6 are collectively referred to as the Pruned Flooding Lists (PFLs) flags.</t>
+      <t indent="0" pn="section-4-8">The T field and PFLs flags are defined as follows:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-9">
+        <li pn="section-4-9.1">
+          <t indent="0" pn="section-4-9.1.1">T is the Assisted Replication Type field (2 bits), which defines
+          the AR role of the advertising router:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-9.1.2">
+            <li pn="section-4-9.1.2.1">00 (decimal 0) = RNVE (non-AR support)</li>
+            <li pn="section-4-9.1.2.2">01 (decimal 1) = AR-REPLICATOR</li>
+            <li pn="section-4-9.1.2.3">10 (decimal 2) = AR-LEAF</li>
+            <li pn="section-4-9.1.2.4">11 (decimal 3) = RESERVED</li>
+          </ul>
+        </li>
+        <li pn="section-4-9.2">
+          <t indent="0" pn="section-4-9.2.1">The PFLs flags define the desired behavior of the
+          advertising router for the different types of traffic:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-9.2.2">
+            <li pn="section-4-9.2.2.1">Broadcast and Multicast (BM) flag. BM = 1 means "prune me from
+              the BM flooding list". BM = 0 indicates regular behavior.</li>
+            <li pn="section-4-9.2.2.2">Unknown (U) flag. U = 1 means "prune me from the Unknown
+              flooding list". U = 0 indicates regular behavior.</li>
+          </ul>
+        </li>
+        <li pn="section-4-9.3">The L flag (bit 7) is defined in <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>
+          and will be used only in the
+          selective AR solution.</li>
+      </ul>
+      <t indent="0" pn="section-4-10">Please refer to <xref target="sect-11" format="default" sectionFormat="of" derivedContent="Section 11"/> for the IANA considerations
+      related to the PMSI Tunnel Attribute flags.</t>
+      <t indent="0" pn="section-4-11">In this document, the above Inclusive Multicast Ethernet Tag route
+      (<xref target="imet-route" format="default" sectionFormat="of" derivedContent="Figure 2"/>) and PMSI Tunnel Attribute (<xref target="pta" format="default" sectionFormat="of" derivedContent="Figure 3"/>) can be used in two different modes for the same BD:</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-4-12">
+        <dt pn="section-4-12.1">Regular-IR route:</dt>
+        <dd pn="section-4-12.2">In this route, Originating Router's IP Address,
+          Tunnel Type (0x06), MPLS Label, and Tunnel Identifier <bcp14>MUST</bcp14> be used as
+          described in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> when ingress replication is in
+          use. The NVE/PE that advertises the route will set the Next Hop to
+          an IP address that we denominate IR-IP in this document. When
+          advertised by an AR-LEAF node, the Regular-IR route <bcp14>MUST</bcp14> be
+          advertised with the T field set to 10 (AR-LEAF).</dd>
+        <dt pn="section-4-12.3">
+          Replicator-AR route:</dt>
+        <dd pn="section-4-12.4">
+          <t indent="0" pn="section-4-12.4.1">This route is used by the AR-REPLICATOR to
+          advertise its AR capabilities, with the fields set as follows:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-12.4.2">
+            <li pn="section-4-12.4.2.1">
+              <t indent="0" pn="section-4-12.4.2.1.1">Originating Router's IP Address <bcp14>MUST</bcp14> be set to an IP address
+              of the advertising router that is common to all the EVIs on the
+              PE (usually this is a loopback address of the PE). </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-12.4.2.1.2">
+                <li pn="section-4-12.4.2.1.2.1">The Tunnel Identifier and Next Hop fields <bcp14>SHOULD</bcp14> be set to the
+                  same IP address as the Originating Router's IP Address field when
+                  the NVE/PE originates the route -- that is, when the NVE/PE is
+                  not an ASBR; see <xref target="RFC8365" section="10.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8365#section-10.2" derivedContent="RFC8365"/>.
+                  Irrespective of the values in the Tunnel Identifier and
+                  Originating Router's IP Address fields, the ingress NVE/PE
+                  will process the received Replicator-AR route and will use
+                  the IP address setting in the Next Hop field to create IP tunnels to
+                  the AR-REPLICATOR.</li>
+                <li pn="section-4-12.4.2.1.2.2">The Next Hop address is referred to as the AR-IP and <bcp14>MUST</bcp14>
+                  be different from the IR-IP for a given PE/NVE, unless the
+                  procedures provided in <xref target="sect-8" format="default" sectionFormat="of" derivedContent="Section 8"/> are followed.</li>
+              </ul>
+            </li>
+            <li pn="section-4-12.4.2.2">Tunnel Type <bcp14>MUST</bcp14> be set to Assisted Replication Tunnel. <xref target="sect-11" format="default" sectionFormat="of" derivedContent="Section 11"/> provides the allocated type value.</li>
+            <li pn="section-4-12.4.2.3">T (Assisted Replication type) <bcp14>MUST</bcp14> be set to 01 (AR-REPLICATOR).</li>
+            <li pn="section-4-12.4.2.4">L (Leaf Information Required) <bcp14>MUST</bcp14> be set to 0 for
+              non-selective AR and <bcp14>MUST</bcp14> be set to 1 for selective AR.</li>
+          </ul>
+        </dd>
+      </dl>
+      <t indent="0" pn="section-4-13">An NVE/PE configured as an AR-REPLICATOR for a BD <bcp14>MUST</bcp14> advertise a
+      Replicator-AR route for the BD and <bcp14>MAY</bcp14> advertise a Regular-IR route. The
+      advertisement of the Replicator-AR route will indicate to the AR-LEAFs which
+      outer IP DA, i.e., which AR-IP, they need to use for IP-encapsulated BM
+      frames that use Assisted Replication forwarding mode. The AR-REPLICATOR
+      will forward an IP-encapsulated BM frame in Assisted Replication
+      forwarding mode if the outer IP DA matches its AR-IP but will forward
+      in Ingress Replication forwarding mode if the outer IP DA matches its
+      IR-IP.</t>
+      <t indent="0" pn="section-4-14">In addition, this document also uses the Leaf Auto-Discovery (Leaf
+      A-D) route defined in <xref target="RFC9572" format="default" sectionFormat="of" derivedContent="RFC9572"/> in cases where the
+      selective AR mode is used. An AR-LEAF <bcp14>MAY</bcp14> send a Leaf A-D route in
+      response to reception of a Replicator-AR route whose L flag is set. The
+      Leaf A-D route is only used for selective AR, and the fields
+      of such a route are set as follows:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-15">
+        <li pn="section-4-15.1">Originating Router's IP Address is set to the advertising
+              router's IP address (the same IP address used by the AR-LEAF in Regular-IR
+              routes). The Next Hop address is set to the IR-IP, which <bcp14>SHOULD</bcp14>
+              be the same IP address as the advertising router's IP address,
+              when the NVE/PE originates the route, i.e., when the NVE/PE is
+              not an ASBR; see <xref target="RFC8365" sectionFormat="of" section="10.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8365#section-10.2" derivedContent="RFC8365"/>.</li>
+        <li pn="section-4-15.2">Route Key <xref target="RFC9572" format="default" sectionFormat="of" derivedContent="RFC9572"/> is the "Route Type Specific" NLRI of the
+              Replicator-AR route for which this Leaf A-D route is
+              generated.</li>
+        <li pn="section-4-15.3">The AR-LEAF constructs an IP-address-specific Route Target,
+              analogously to <xref target="RFC9572" format="default" sectionFormat="of" derivedContent="RFC9572"/>, by placing
+              the IP address carried in the Next Hop field of the received
+              Replicator-AR route in the Global Administrator field of the
+              extended community, with the Local Administrator field of this extended community
+              set to 0, and setting the Extended Communities attribute of the
+              Leaf A-D route to that extended community. The same
+              IP-address-specific import Route Target is auto-configured by
+              the AR-REPLICATOR that sent the Replicator-AR route, in order to
+              control the acceptance of the Leaf A-D routes.</li>
+        <li pn="section-4-15.4">The Leaf A-D route <bcp14>MUST</bcp14> include the PMSI Tunnel
+              Attribute with Tunnel Type set to Assisted Replication Tunnel (<xref target="sect-11" format="default" sectionFormat="of" derivedContent="Section 11"/>), T (Assisted Replication type) set to AR-LEAF, and
+              Tunnel Identifier set to the IP address of the advertising
+              AR-LEAF. The PMSI Tunnel Attribute <bcp14>MUST</bcp14> carry a
+              downstream-assigned MPLS label or VNI that is used by the
+              AR-REPLICATOR to send traffic to the AR-LEAF.</li>
+      </ul>
+      <t indent="0" pn="section-4-16">Each AR-enabled node understands and processes the T
+      (Assisted Replication type) field in the PMSI Tunnel Attribute (Flags
+      field) of the routes and <bcp14>MUST</bcp14> signal the corresponding type
+      (AR-REPLICATOR or AR-LEAF type) according to its administrative choice.
+      An NVE/PE following this specification is not expected to set the
+      Assisted Replication Type field to decimal 3 (which is a RESERVED
+      value). If a route with the Assisted Replication Type field set to decimal 3 is received
+      by an AR-REPLICATOR or AR-LEAF, the router will process the route as a
+      Regular-IR route advertised by an RNVE.</t>
+      <t indent="0" pn="section-4-17">Each node attached to the BD may understand and process the BM/U
+      flags (PFLs flags). Note that these BM/U flags may be used
+      to optimize the delivery of multi-destination traffic; their use
+      <bcp14>SHOULD</bcp14> be an administrative choice and independent of the AR role. When
+      the PFL capability is enabled, the BM/U flags can be used
+      with the Regular-IR, Replicator-AR, and Leaf A-D routes.</t>
+      <t indent="0" pn="section-4-18">Non-optimized ingress replication NVEs/PEs will be unaware of the new
+      PMSI Tunnel Attribute flag definition as well as the new tunnel type
+      (AR), i.e., non-upgraded NVEs/PEs will ignore the information contained
+      in the Flags field or an unknown tunnel type (type AR in this case) for
+      any Inclusive Multicast Ethernet Tag route.</t>
+    </section>
+    <section anchor="sect-5" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-non-selective-assisted-repl">Non-selective Assisted Replication (AR) Solution Description</name>
+      <t indent="0" pn="section-5-1"><xref target="ure-optimized-ir-scenario" format="default" sectionFormat="of" derivedContent="Figure 4"/> illustrates an example
+      NVO network where the non-selective AR
+      function is enabled. Three different roles are defined for a given BD:
+      AR-REPLICATOR, AR-LEAF, and RNVE. The solution is called
+      "non-selective" because the chosen AR-REPLICATOR for a given flow <bcp14>MUST</bcp14>
+      replicate the BM traffic to all the NVEs/PEs in the BD except for the
+      source NVE/PE. NVO tunnels, i.e., IP tunnels,
+      exist among all the PEs and NVEs in the diagram. The PEs and NVEs in the
+      diagram have TSs or VMs connected to their
+      ACs.</t>
+      <figure anchor="ure-optimized-ir-scenario" align="left" suppress-title="false" pn="figure-4">
+        <name slugifiedName="name-non-selective-ar-scenario">Non-selective AR Scenario</name>
+        <artwork name="" type="" align="left" alt="" pn="section-5-2.1">
+                        (           )
+                       (_    WAN    _)
+                    +---(_         _)----+
+                    |     (_      _)     |
+              PE1   |                PE2 |
+             +------+----+          +----+------+
+        TS1--+  (BD-1)   |          |  (BD-1)   +--TS2
+             |REPLICATOR |          |REPLICATOR |
+             +--------+--+          +--+--------+
+                      |                |
+                   +--+----------------+--+
+                   |                      |
+                   |                      |
+              +----+ VXLAN/NVGRE/MPLSoGRE +----+
+              |    |      IP Fabric       |    |
+              |    |                      |    |
+    NVE1      |    +-----------+----------+    |      NVE3
+    Hypervisor|          ToR   |  NVE2         |Hypervisor
+    +---------+-+        +-----+-----+       +-+---------+
+    |  (BD-1)   |        |  (BD-1)   |       |  (BD-1)   |
+    |    LEAF   |        |   RNVE    |       |    LEAF   |
+    +--+-----+--+        +--+-----+--+       +--+-----+--+
+       |     |              |     |             |     |
+      VM11  VM12           TS3   TS4           VM31  VM32
+</artwork>
+      </figure>
+      <t indent="0" pn="section-5-3">In AR BDs, such as BD-1 in <xref target="ure-optimized-ir-scenario" format="default" sectionFormat="of" derivedContent="Figure 4"/>, BM
+      traffic between two NVEs may follow a different path than unicast
+      traffic. This solution recommends the replication of BM traffic through the
+      AR-REPLICATOR node, whereas unknown/known unicast traffic will be delivered
+      directly from the source node to the destination node without being
+      replicated by any intermediate node.</t>
+      <t indent="0" pn="section-5-4">Note that known unicast forwarding is not impacted by this solution,
+      i.e., unknown unicast traffic <bcp14>SHALL</bcp14> follow the same path as known unicast
+      traffic.</t>
+      <section anchor="sect-5.1" numbered="true" toc="include" removeInRFC="false" pn="section-5.1">
+        <name slugifiedName="name-non-selective-ar-replicator">Non-selective AR-REPLICATOR Procedures</name>
+        <t indent="0" pn="section-5.1-1">An AR-REPLICATOR is defined as an NVE/PE capable of replicating
+        incoming BM traffic received on an overlay tunnel to other overlay
+        tunnels and local ACs. The AR-REPLICATOR signals its
+        role in the control plane and understands where the other roles
+        (AR-LEAF nodes, RNVEs, and other AR-REPLICATORs) are located. A given
+        AR-enabled BD service may have zero, one, or more AR-REPLICATORs. In
+        our example in <xref target="ure-optimized-ir-scenario" format="default" sectionFormat="of" derivedContent="Figure 4"/>, PE1 and PE2
+        are defined as AR-REPLICATORs. The following considerations apply to
+        the AR-REPLICATOR role:</t>
+        <ol spacing="normal" type="a" indent="adaptive" start="1" pn="section-5.1-2"><li pn="section-5.1-2.1" derivedCounter="a.">The AR-REPLICATOR role <bcp14>SHOULD</bcp14> be an administrative
+            choice in any NVE/PE that is part of an AR-enabled BD. This
+            administrative option to enable AR-REPLICATOR capabilities <bcp14>MAY</bcp14> be
+            implemented as a system-level option as opposed to a per-BD
+            option.</li>
+          <li pn="section-5.1-2.2" derivedCounter="b.">An AR-REPLICATOR <bcp14>MUST</bcp14> advertise a Replicator-AR
+            route and <bcp14>MAY</bcp14> advertise a Regular-IR route. The AR-REPLICATOR <bcp14>MUST NOT</bcp14> generate a Regular-IR route if it does not have local
+            ACs. If the Regular-IR route is advertised,
+            the Assisted Replication Type field of the Regular-IR route <bcp14>MUST</bcp14>
+            be set to 0.</li>
+          <li pn="section-5.1-2.3" derivedCounter="c.">The Replicator-AR and Regular-IR routes are
+            generated according to <xref target="sect-4" format="default" sectionFormat="of" derivedContent="Section 4"/>. The AR-IP and
+            IR-IP are different IP addresses owned by the AR-REPLICATOR.</li>
+          <li pn="section-5.1-2.4" derivedCounter="d.">
+            <t indent="0" pn="section-5.1-2.4.1">When a node defined as an AR-REPLICATOR receives a BM
+            packet on an overlay tunnel, it will do a tunnel destination IP
+            address lookup and apply the following procedures: </t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.1-2.4.2">
+              <li pn="section-5.1-2.4.2.1">If the destination IP address is the AR-REPLICATOR IR-IP
+                address, the node will process the packet normally as discussed in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</li>
+              <li pn="section-5.1-2.4.2.2">If the destination IP address is the AR-REPLICATOR AR-IP
+                address, the node <bcp14>MUST</bcp14> replicate the packet to local ACs
+                and overlay tunnels (excluding the overlay tunnel to
+                the source of the packet). When replicating to remote
+                AR-REPLICATORs, the tunnel destination IP address will be an
+                IR-IP. This will indicate to the remote AR-REPLICATOR
+                that it <bcp14>MUST NOT</bcp14> replicate to overlay tunnels. The tunnel
+                source IP address used by the AR-REPLICATOR <bcp14>MUST</bcp14> be its IR-IP
+                when replicating to AR-REPLICATOR or AR-LEAF nodes.</li>
+            </ul>
+          </li>
+        </ol>
+        <t indent="0" pn="section-5.1-3">An AR-REPLICATOR <bcp14>MUST</bcp14> follow a data path implementation
+        compatible with the following rules:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.1-4">
+          <li pn="section-5.1-4.1">The AR-REPLICATORs will build a flooding list composed of
+            ACs and overlay tunnels to remote nodes in the BD.
+            Some of those overlay tunnels <bcp14>MAY</bcp14> be flagged as non-BM receivers
+            based on the BM flag received from the remote nodes in the BD.</li>
+          <li pn="section-5.1-4.2">When an AR-REPLICATOR receives a BM packet on an AC,
+            it will forward the BM packet to its flooding list
+            (including local ACs and remote NVEs/PEs), skipping
+            the non-BM overlay tunnels.</li>
+          <li pn="section-5.1-4.3">
+            <t indent="0" pn="section-5.1-4.3.1">When an AR-REPLICATOR receives a BM packet on an overlay
+            tunnel, it will check the destination IP address of the underlay
+            IP header and:</t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.1-4.3.2">
+              <li pn="section-5.1-4.3.2.1">If the destination IP address matches its IR-IP, the
+                AR-REPLICATOR will skip all the overlay tunnels from the
+                flooding list, i.e., it will only replicate to local ACs.
+                This is the regular ingress replication behavior
+                described in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</li>
+              <li pn="section-5.1-4.3.2.2">If the destination IP address matches its AR-IP, the
+                AR-REPLICATOR <bcp14>MUST</bcp14> forward the BM packet to its flooding list
+                (ACs and overlay tunnels), excluding the non-BM overlay
+                tunnels. The AR-REPLICATOR will ensure that the traffic is not sent
+                back to the originating AR-LEAF.</li>
+              <li pn="section-5.1-4.3.2.3">If the encapsulation is MPLSoGRE or MPLSoUDP and the
+                received BD label that the AR-REPLICATOR advertised in the
+                Replicator-AR route is not at the bottom of the stack, the
+                AR-REPLICATOR <bcp14>MUST</bcp14> copy all the labels below the BD label
+                and propagate them when forwarding the packet to the egress
+                overlay tunnels.</li>
+            </ul>
+          </li>
+          <li pn="section-5.1-4.4">
+            <t indent="0" pn="section-5.1-4.4.1">The AR-REPLICATOR/LEAF nodes will build an unknown unicast
+            flooding list composed of ACs and overlay tunnels to
+            the IR-IP addresses of the remote nodes in the BD. Some of those
+            overlay tunnels <bcp14>MAY</bcp14> be flagged as non-U (unknown unicast)
+            receivers based on the U flag received from the remote nodes in
+            the BD.</t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.1-4.4.2">
+              <li pn="section-5.1-4.4.2.1">When an AR-REPLICATOR/LEAF receives an unknown unicast
+                packet on an AC, it will forward the unknown
+                unicast packet to its flooding list, skipping the non-U overlay
+                tunnels.</li>
+              <li pn="section-5.1-4.4.2.2">When an AR-REPLICATOR/LEAF receives an unknown unicast
+                packet on an overlay tunnel, it will forward the unknown
+                unicast packet to its local ACs and never to
+                an overlay tunnel. This is the regular ingress replication
+                behavior described in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+      <section anchor="sect-5.2" numbered="true" toc="include" removeInRFC="false" pn="section-5.2">
+        <name slugifiedName="name-non-selective-ar-leaf-proce">Non-selective AR-LEAF Procedures</name>
+        <t indent="0" pn="section-5.2-1">An AR-LEAF is defined as an NVE/PE that, given its poor replication
+        performance, sends all the BM traffic to an AR-REPLICATOR that can
+        replicate the traffic further on its behalf. It <bcp14>MAY</bcp14> signal its AR-LEAF
+        capability in the control plane and understands where the other roles
+        are located (AR-REPLICATORs and RNVEs). A given service can have zero,
+        one, or more AR-LEAF nodes. In <xref target="ure-optimized-ir-scenario" format="default" sectionFormat="of" derivedContent="Figure 4"/>,
+        NVE1 and NVE3 (both residing in hypervisors) act as AR-LEAF nodes.
+        The following considerations apply to the AR-LEAF role:</t>
+        <ol spacing="normal" type="a" indent="adaptive" start="1" pn="section-5.2-2"><li pn="section-5.2-2.1" derivedCounter="a.">The AR-LEAF role <bcp14>SHOULD</bcp14> be an administrative choice
+            in any NVE/PE that is part of an AR-enabled BD. This
+            administrative option to enable AR-LEAF capabilities <bcp14>MAY</bcp14> be
+            implemented as a system-level option as opposed to a per-BD
+            option.</li>
+          <li pn="section-5.2-2.2" derivedCounter="b.">In this non-selective AR solution, the AR-LEAF <bcp14>MUST</bcp14>
+            advertise a single Regular-IR Inclusive Multicast Ethernet Tag route as described in
+            <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>. The AR-LEAF <bcp14>SHOULD</bcp14> set the
+            Assisted Replication Type field to AR-LEAF. Note that although this
+            field does not affect the remote nodes when creating an EVPN destination
+            to the AR-LEAF, this field is useful from the standpoint of ease of
+            operation and troubleshooting of the BD.</li>
+          <li pn="section-5.2-2.3" derivedCounter="c.">
+            <t indent="0" pn="section-5.2-2.3.1">In a BD where there are no AR-REPLICATORs due to
+            the AR-REPLICATORs being down or reconfigured, the AR-LEAF <bcp14>MUST</bcp14>
+            use regular ingress replication based on the remote Regular-IR
+            Inclusive Multicast Ethernet Tag routes as described in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>. This may happen in the following cases: </t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.2-2.3.2">
+              <li pn="section-5.2-2.3.2.1">The AR-LEAF has a list of AR-REPLICATORs for the BD, but it
+                detects that all the AR-REPLICATORs for the BD are down (via
+                next-hop tracking in the IGP or some other detection
+                mechanism).</li>
+              <li pn="section-5.2-2.3.2.2">The AR-LEAF receives updates from all the former
+                AR-REPLICATORs containing a non-REPLICATOR AR type in the
+                Inclusive Multicast Ethernet Tag routes.</li>
+              <li pn="section-5.2-2.3.2.3">The AR-LEAF never discovered an AR-REPLICATOR for the
+                BD.</li>
+            </ul>
+          </li>
+          <li pn="section-5.2-2.4" derivedCounter="d.">
+            <t indent="0" pn="section-5.2-2.4.1">In a service where there are one or more
+            AR-REPLICATORs (based on the received Replicator-AR routes for the
+            BD), the AR-LEAF can locally select which AR-REPLICATOR it sends
+            the BM traffic to:</t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.2-2.4.2">
+              <li pn="section-5.2-2.4.2.1">A single AR-REPLICATOR <bcp14>MAY</bcp14> be selected for all the BM
+                packets received on the AR-LEAF ACs for
+                a given BD. This selection is a local decision and does not
+                have to match other AR-LEAFs' selections within the same
+                BD.</li>
+              <li pn="section-5.2-2.4.2.2">An AR-LEAF <bcp14>MAY</bcp14> select more than one AR-REPLICATOR and do
+                either per-flow or per-BD load balancing.</li>
+              <li pn="section-5.2-2.4.2.3">In the case of failure of the selected AR-REPLICATOR, another
+                AR-REPLICATOR <bcp14>SHOULD</bcp14> be selected by the AR-LEAF.</li>
+              <li pn="section-5.2-2.4.2.4">When an AR-REPLICATOR is selected for a given flow or BD,
+                the AR-LEAF <bcp14>MUST</bcp14> send all the BM packets targeted to that
+                AR-REPLICATOR using the forwarding information given by the
+                Replicator-AR route for the chosen AR-REPLICATOR, with Tunnel
+                Type = 0x0A (AR tunnel). The underlay destination IP address
+                <bcp14>MUST</bcp14> be the AR-IP advertised by the AR-REPLICATOR in the
+                Replicator-AR route.</li>
+              <li pn="section-5.2-2.4.2.5">An AR-LEAF <bcp14>MAY</bcp14> change the selection of AR-REPLICATOR(s)
+                dynamically due to an administrative or policy configuration
+                change.</li>
+              <li pn="section-5.2-2.4.2.6">AR-LEAF nodes <bcp14>SHALL</bcp14> send service-level BM control plane
+                packets, following the procedures for regular ingress replication. An
+                example would be IGMP, Multicast Listener Discovery (MLD), or PIM
+packets, and, in
+                general, any packets using link-local scope multicast IPv4 or
+                IPv6 packets. The AR-REPLICATORs <bcp14>MUST NOT</bcp14> replicate these
+                control plane packets to other overlay tunnels, since they will
+                use the IR-IP address.</li>
+            </ul>
+          </li>
+          <li pn="section-5.2-2.5" derivedCounter="e.">The use of an AR-REPLICATOR-activation-timer (in
+            seconds, with a default value of 3) on the AR-LEAF nodes is <bcp14>RECOMMENDED</bcp14>.
+            Upon receiving a new Replicator-AR route where the AR-REPLICATOR
+            is selected, the AR-LEAF will run a timer before programming the
+            new AR-REPLICATOR. In the case of a newly added AR-REPLICATOR or if
+            an AR-REPLICATOR reboots, this timer will give the
+            AR-REPLICATOR some time to program the AR-LEAF nodes before the
+            AR-LEAF sends BM traffic. The AR-REPLICATOR-activation-timer
+            <bcp14>SHOULD</bcp14> be configurable in seconds, and its value needs to account for the
+            time it takes for the AR-LEAF Regular-IR Inclusive Multicast Ethernet Tag route
+            to get to the AR-REPLICATOR and be programmed. While the
+            AR-REPLICATOR-activation-timer is running, the AR-LEAF node will
+            use regular ingress replication.</li>
+          <li pn="section-5.2-2.6" derivedCounter="f.">If the AR-LEAF has selected an AR-REPLICATOR, whether
+            or not to change to a new preferred AR-REPLICATOR for the existing BM traffic flows is a matter of local policy.</li>
+        </ol>
+        <t indent="0" pn="section-5.2-3">An AR-LEAF <bcp14>MUST</bcp14> follow a data path implementation compatible
+        with the following rules:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.2-4">
+          <li pn="section-5.2-4.1">
+            <t indent="0" pn="section-5.2-4.1.1">The AR-LEAF nodes will build two flooding lists:</t>
+            <dl indent="3" newline="false" spacing="normal" pn="section-5.2-4.1.2">
+              <dt pn="section-5.2-4.1.2.1">Flooding list #1:
+              </dt>
+              <dd pn="section-5.2-4.1.2.2">Composed of ACs and an AR-REPLICATOR-set of
+	      overlay tunnels. The AR-REPLICATOR-set is defined as one or more
+	      overlay tunnels to the AR-IP addresses of the remote
+	      AR-REPLICATOR(s) in the BD. The selection of more than one
+	      AR-REPLICATOR is described in item d. above and is a local
+	      AR-LEAF decision.
+	      </dd>
+              <dt pn="section-5.2-4.1.2.3">Flooding list #2:
+              </dt>
+              <dd pn="section-5.2-4.1.2.4">Composed of ACs and overlay tunnels to the
+	      remote IR-IP addresses.
+	      </dd>
+            </dl>
+          </li>
+          <li pn="section-5.2-4.2">
+            <t indent="0" pn="section-5.2-4.2.1">When an AR-LEAF receives a BM packet on an AC,
+            it will check the AR-REPLICATOR-set:</t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.2-4.2.2">
+              <li pn="section-5.2-4.2.2.1">If the AR-REPLICATOR-set is empty, the AR-LEAF <bcp14>MUST</bcp14> send
+                the packet to flooding list #2.</li>
+              <li pn="section-5.2-4.2.2.2">If the AR-REPLICATOR-set is NOT empty, the AR-LEAF <bcp14>MUST</bcp14>
+                send the packet to flooding list #1, where only one of the
+                overlay tunnels of the AR-REPLICATOR-set is used.</li>
+            </ul>
+          </li>
+          <li pn="section-5.2-4.3">When an AR-LEAF receives a BM packet on an overlay tunnel, it
+            will forward the BM packet to its local ACs and
+            never to an overlay tunnel. This is the regular ingress
+            replication behavior described in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</li>
+          <li pn="section-5.2-4.4">AR-LEAF nodes process unknown unicast traffic in the same way
+            AR-REPLICATORS do, as described in <xref target="sect-5.1" format="default" sectionFormat="of" derivedContent="Section 5.1"/>.</li>
+        </ul>
+      </section>
+      <section anchor="sect-5.3" numbered="true" toc="include" removeInRFC="false" pn="section-5.3">
+        <name slugifiedName="name-rnve-procedures">RNVE Procedures</name>
+        <t indent="0" pn="section-5.3-1">An RNVE is defined as an
+        NVE/PE without AR-REPLICATOR or AR-LEAF capabilities that does ingress
+        replication as described in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>. The RNVE does
+        not signal any AR role and is unaware of the AR-REPLICATOR/LEAF roles
+        in the BD. The RNVE will ignore the flags in the Regular-IR routes and
+        will ignore the Replicator-AR routes (due to an unknown tunnel type in
+        the PMSI Tunnel Attribute) and the Leaf A-D routes (due to
+        the IP-address-specific Route Target).</t>
+        <t indent="0" pn="section-5.3-2">This role provides EVPNs with the backward compatibility required
+        in optimized ingress replication BDs. In <xref target="ure-optimized-ir-scenario" format="default" sectionFormat="of" derivedContent="Figure 4"/>, NVE2 acts as an RNVE.</t>
+      </section>
+    </section>
+    <section anchor="sect-6" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-selective-assisted-replicat">Selective Assisted Replication (AR) Solution Description</name>
+      <t indent="0" pn="section-6-1"><xref target="selective-ar" format="default" sectionFormat="of" derivedContent="Figure 5"/> is used to describe the selective AR
+      solution.</t>
+      <figure anchor="selective-ar" align="left" suppress-title="false" pn="figure-5">
+        <name slugifiedName="name-selective-ar-scenario">Selective AR Scenario</name>
+        <artwork name="" type="" align="left" alt="" pn="section-6-2.1">
+                        (           )
+                       (_    WAN    _)
+                    +---(_         _)----+
+                    |     (_      _)     |
+              PE1   |                PE2 |
+             +------+----+          +----+------+
+        TS1--+  (BD-1)   |          |  (BD-1)   +--TS2
+             |REPLICATOR |          |REPLICATOR |
+             +--------+--+          +--+--------+
+                      |                |
+                   +--+----------------+--+
+                   |                      |
+                   |                      |
+              +----+ VXLAN/NVGRE/MPLSoGRE +----+
+              |    |      IP Fabric       |    |
+              |    |                      |    |
+    NVE1      |    +-----------+----------+    |      NVE3
+    Hypervisor|          ToR   |  NVE2         |Hypervisor
+    +---------+-+        +-----+-----+       +-+---------+
+    |  (BD-1)   |        |  (BD-1)   |       |  (BD-1)   |
+    |LEAF-set-1 |        |LEAF-set-1 |       |LEAF-set-2 |
+    +--+-----+--+        +--+-----+--+       +--+-----+--+
+       |     |              |     |             |     |
+      VM11  VM12           TS3   TS4           VM31  VM32
+</artwork>
+      </figure>
+      <t indent="0" pn="section-6-3">The solution is called "selective" because a given AR-REPLICATOR <bcp14>MUST</bcp14>
+      replicate the BM traffic to only the AR-LEAFs that requested the
+      replication (as opposed to all the AR-LEAF nodes) and <bcp14>MUST</bcp14> replicate the
+      BM traffic to the RNVEs (if there are any). The same AR roles as those defined in
+      Sections <xref target="sect-4" format="counter" sectionFormat="of" derivedContent="4"/> and <xref target="sect-5" format="counter" sectionFormat="of" derivedContent="5"/> are used here; however, the procedures are
+      different.</t>
+      <t indent="0" pn="section-6-4">The selective AR procedures create multiple AR-LEAF-sets in the EVPN
+      BD and build single-hop trees among AR-LEAFs of the same set
+      (AR-LEAF-&gt;AR-REPLICATOR-&gt;AR-LEAF) and two-hop trees among
+      AR-LEAFs of different sets
+      (AR-LEAF-&gt;AR-REPLICATOR-&gt;AR-REPLICATOR-&gt;AR-LEAF). Compared to
+      the selective solution, the non-selective AR method assumes that all the
+      AR-LEAFs of the BD are in the same set and always creates single-hop trees
+      among AR-LEAFs. While the selective solution is more efficient than the
+      non-selective solution in multi-stage IP fabrics, the trade-off is
+      additional signaling and an additional outer source IP address
+      lookup.</t>
+      <t indent="0" pn="section-6-5">The following subsections describe the differences in the procedures
+      for AR-REPLICATORs/LEAFs compared to the non-selective AR solution. There
+      are no changes applicable to RNVEs.</t>
+      <section anchor="sect-6.1" numbered="true" toc="include" removeInRFC="false" pn="section-6.1">
+        <name slugifiedName="name-selective-ar-replicator-pro">Selective AR-REPLICATOR Procedures</name>
+        <t indent="0" pn="section-6.1-1">In our example in <xref target="selective-ar" format="default" sectionFormat="of" derivedContent="Figure 5"/>, PE1 and PE2 are
+        defined as selective AR-REPLICATORs. The following considerations
+        apply to the selective AR-REPLICATOR role:</t>
+        <ol spacing="normal" type="a" indent="adaptive" start="1" pn="section-6.1-2"><li pn="section-6.1-2.1" derivedCounter="a.">The selective AR-REPLICATOR role <bcp14>SHOULD</bcp14> be an
+            administrative choice in any NVE/PE that is part of an
+            AR-enabled BD. This
+            administrative option <bcp14>MAY</bcp14> be implemented as a system-level option
+            as opposed to a per-BD option.</li>
+          <li pn="section-6.1-2.2" derivedCounter="b.">Each AR-REPLICATOR will build a list of AR-REPLICATOR, AR-LEAF,
+            and RNVE nodes. In spite of the "selective" administrative option,
+            an AR-REPLICATOR <bcp14>MUST NOT</bcp14> behave as a selective AR-REPLICATOR if
+            at least one of the AR-REPLICATORs has the L flag NOT set. If at
+            least one AR-REPLICATOR sends a Replicator-AR route with L = 0 (in
+            the BD context), the rest of the AR-REPLICATORs will fall back to
+            non-selective AR mode.</li>
+          <li pn="section-6.1-2.3" derivedCounter="c.">
+            <t indent="0" pn="section-6.1-2.3.1">The selective AR-REPLICATOR <bcp14>MUST</bcp14> follow the procedures
+            described in <xref target="sect-5.1" format="default" sectionFormat="of" derivedContent="Section 5.1"/>, except for the following
+            differences:</t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.1-2.3.2">
+              <li pn="section-6.1-2.3.2.1">The AR-REPLICATOR <bcp14>MUST</bcp14> have the L flag set to 1
+                when advertising the Replicator-AR route. This flag is used by the
+                AR-REPLICATORs to advertise their "selective" AR-REPLICATOR
+                capabilities. In addition, the AR-REPLICATOR auto-configures
+                its IP-address-specific import Route Target as described in
+                the third bullet of the procedures for Leaf A-D
+                routes in <xref target="sect-4" format="default" sectionFormat="of" derivedContent="Section 4"/>.</li>
+              <li pn="section-6.1-2.3.2.2">The AR-REPLICATOR will build a "selective" AR-LEAF-set with
+                the list of nodes that requested replication to its own AR-IP.
+                For instance, assuming that NVE1 and NVE2 advertise a Leaf
+                A-D route with PE1's IP-address-specific
+                Route Target and NVE3 advertises a Leaf A-D route
+                with PE2's IP-address-specific Route Target, PE1 will only add
+                NVE1/NVE2 to its selective AR-LEAF-set for BD-1 and exclude
+                NVE3. Likewise, PE2 will only add NVE3 to its selective
+                AR-LEAF-set for BD-1 and exclude NVE1/NVE2.</li>
+              <li pn="section-6.1-2.3.2.3">
+                <t indent="0" pn="section-6.1-2.3.2.3.1">When a node defined and operating as a selective
+                AR-REPLICATOR receives a packet on an overlay tunnel, it will
+                do a tunnel destination IP lookup, and if the destination IP
+                address is the AR-REPLICATOR AR-IP address, the node <bcp14>MUST</bcp14>
+                replicate the packet to:</t>
+                <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.1-2.3.2.3.2">
+                  <li pn="section-6.1-2.3.2.3.2.1">Local ACs.</li>
+                  <li pn="section-6.1-2.3.2.3.2.2">Overlay tunnels in the selective AR-LEAF-set, excluding
+                    the overlay tunnel to the source AR-LEAF.</li>
+                  <li pn="section-6.1-2.3.2.3.2.3">Overlay tunnels to the RNVEs if the tunnel source IP
+                    address is the IR-IP of an AR-LEAF. In any other case, the
+                    AR-REPLICATOR <bcp14>MUST NOT</bcp14> replicate the BM traffic to remote
+                    RNVEs. In other words, only the first-hop selective
+                    AR-REPLICATOR will replicate to all the RNVEs.</li>
+                  <li pn="section-6.1-2.3.2.3.2.4">Overlay tunnels to the remote selective AR-REPLICATORs
+                    if the tunnel source IP address (of the encapsulated
+                    packet that arrived on the overlay tunnel) is an IR-IP of
+                    its own AR-LEAF-set. In any other case, the AR-REPLICATOR
+                    <bcp14>MUST NOT</bcp14> replicate the BM traffic to remote
+                    AR-REPLICATORs. When doing this replication, the tunnel
+                    destination IP address is the AR-IP of the remote
+                    selective AR-REPLICATOR. The tunnel destination address AR-IP
+                    will indicate to the remote selective
+                    AR-REPLICATOR that the packet needs further replication to
+                    its AR-LEAFs.</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ol>
+        <t indent="0" pn="section-6.1-3">A selective AR-REPLICATOR data path implementation <bcp14>MUST</bcp14> be
+        compatible with the following rules:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.1-4">
+          <li pn="section-6.1-4.1">
+            <t indent="0" pn="section-6.1-4.1.1">The selective AR-REPLICATORs will build two flooding lists:</t>
+            <dl indent="3" newline="false" spacing="normal" pn="section-6.1-4.1.2">
+              <dt pn="section-6.1-4.1.2.1">Flooding list #1:
+              </dt>
+              <dd pn="section-6.1-4.1.2.2">
+                <t indent="0" pn="section-6.1-4.1.2.2.1">Composed of ACs and overlay tunnels to the
+	      remote nodes in the BD, always using the IR-IPs in the tunnel
+	      destination IP addresses.</t>
+              </dd>
+              <dt pn="section-6.1-4.1.2.3">Flooding list #2:
+              </dt>
+              <dd pn="section-6.1-4.1.2.4">
+                <t indent="0" pn="section-6.1-4.1.2.4.1">Composed of ACs, a selective AR-LEAF-set, and
+	      a selective AR-REPLICATOR-set, where:</t>
+                <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.1-4.1.2.4.2">
+                  <li pn="section-6.1-4.1.2.4.2.1">The selective AR-LEAF-set is composed of the overlay
+                  tunnels to the AR-LEAFs that advertise a Leaf A-D
+                  route for the local AR-REPLICATOR. This set is updated with
+                  every Leaf A-D route received/withdrawn from a
+                  new AR-LEAF.</li>
+                  <li pn="section-6.1-4.1.2.4.2.2">The selective AR-REPLICATOR-set is composed of the
+                  overlay tunnels to all the AR-REPLICATORs that send a
+                  Replicator-AR route with L = 1. The AR-IP addresses are used
+                  as tunnel destination IP addresses.</li>
+                </ul>
+              </dd>
+            </dl>
+          </li>
+          <li pn="section-6.1-4.2">Some of the overlay tunnels in the flooding lists <bcp14>MAY</bcp14> be flagged
+            as non-BM receivers based on the BM flag received from the remote
+            nodes in the routes.</li>
+          <li pn="section-6.1-4.3">When a selective AR-REPLICATOR receives a BM packet on an
+            AC, it <bcp14>MUST</bcp14> forward the BM packet to its
+            flooding list #1, skipping the non-BM overlay tunnels.</li>
+          <li pn="section-6.1-4.4">
+            <t indent="0" pn="section-6.1-4.4.1">When a selective AR-REPLICATOR receives a BM packet on an
+            overlay tunnel, it will check the destination and source IPs of
+            the underlay IP header and:</t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.1-4.4.2">
+              <li pn="section-6.1-4.4.2.1">If the destination IP address matches its AR-IP and the
+                source IP address matches an IP of its own selective
+                AR-LEAF-set, the AR-REPLICATOR <bcp14>MUST</bcp14> forward the BM packet to
+                its flooding list #2, unless some AR-REPLICATOR within the BD has
+                advertised L = 0. In the latter case, the node reverts to
+                Non-selective mode, and flooding list #1 <bcp14>MUST</bcp14> be used. Non-BM
+                overlay tunnels are skipped when sending BM packets.</li>
+              <li pn="section-6.1-4.4.2.2">If the destination IP address matches its AR-IP and the
+                source IP address does not match any IP address of its
+                selective AR-LEAF-set, the AR-REPLICATOR <bcp14>MUST</bcp14> forward the BM
+                packet to flooding list #2, skipping the AR-REPLICATOR-set.
+                Non-BM overlay tunnels are skipped when sending BM
+                packets.</li>
+              <li pn="section-6.1-4.4.2.3">If the destination IP address matches its IR-IP, the
+                AR-REPLICATOR <bcp14>MUST</bcp14> use flooding list #1 but <bcp14>MUST</bcp14> skip all the
+                overlay tunnels from the flooding list, i.e., it will only
+                replicate to local ACs. This is the regular ingress replication
+                behavior described in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>. Non-BM overlay
+                tunnels are skipped when sending BM packets.</li>
+            </ul>
+          </li>
+          <li pn="section-6.1-4.5">In any case, the AR-REPLICATOR ensures that the traffic is not sent
+            back to the originating source. If the encapsulation is MPLSoGRE
+            or MPLSoUDP and the received BD label (the label that the
+            AR-REPLICATOR advertised in the Replicator-AR route) is not at the
+            bottom of the stack, the AR-REPLICATOR <bcp14>MUST</bcp14> copy the rest of the
+            labels when forwarding them to the egress overlay tunnels.</li>
+        </ul>
+      </section>
+      <section anchor="sect-6.2" numbered="true" toc="include" removeInRFC="false" pn="section-6.2">
+        <name slugifiedName="name-selective-ar-leaf-procedure">Selective AR-LEAF Procedures</name>
+        <t indent="0" pn="section-6.2-1">A selective AR-LEAF chooses a single selective AR-REPLICATOR per BD
+        and:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.2-2">
+          <li pn="section-6.2-2.1">Sends all the BD's BM traffic to that AR-REPLICATOR and</li>
+          <li pn="section-6.2-2.2">Expects to receive all the BM traffic for a given BD from the
+            same AR-REPLICATOR (except for the BM traffic from the RNVEs,
+            which comes directly from the RNVEs)</li>
+        </ul>
+        <t indent="0" pn="section-6.2-3">In the example in <xref target="selective-ar" format="default" sectionFormat="of" derivedContent="Figure 5"/>, we consider
+        NVE1/NVE2/NVE3 as selective AR-LEAFs. NVE1 selects PE1 as its
+        selective AR-REPLICATOR. If that is so, NVE1 will send all its BM
+        traffic for BD-1 to PE1. If other AR-LEAFs/REPLICATORs send BM traffic,
+        NVE1 will receive that traffic from PE1. A selective AR-LEAF and a non-selective AR-LEAF behave differently, as follows:</t>
+        <ol spacing="normal" type="a" indent="adaptive" start="1" pn="section-6.2-4"><li pn="section-6.2-4.1" derivedCounter="a.">The selective AR-LEAF role <bcp14>SHOULD</bcp14> be an
+            administrative choice in any NVE/PE that is part of an
+            AR-enabled BD. This administrative option to
+            enable AR-LEAF capabilities <bcp14>MAY</bcp14> be implemented as a system-level option as opposed to a per-BD option.</li>
+          <li pn="section-6.2-4.2" derivedCounter="b.">The AR-LEAF <bcp14>MAY</bcp14> advertise a Regular-IR route if there are RNVEs
+            in the BD. The selective AR-LEAF <bcp14>MUST</bcp14> advertise a Leaf
+            A-D route after receiving a Replicator-AR route with
+            L = 1. It is <bcp14>RECOMMENDED</bcp14> that the selective AR-LEAF wait for a period specified by an
+            AR-LEAF-join-wait-timer (in seconds, with a default value of 3) before
+            sending the Leaf A-D route, so that the AR-LEAF can
+            collect all the Replicator-AR routes for the BD before advertising
+            the Leaf A-D route. If the Replicator-AR route with L = 1
+            is withdrawn, the corresponding Leaf A-D route is
+            withdrawn too.</li>
+          <li pn="section-6.2-4.3" derivedCounter="c.">
+            <t indent="0" pn="section-6.2-4.3.1">In a service where there is more than one selective
+            AR-REPLICATOR, the selective AR-LEAF <bcp14>MUST</bcp14> locally select a single
+            selective AR-REPLICATOR for the BD. Once selected: </t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.2-4.3.2">
+              <li pn="section-6.2-4.3.2.1">The selective AR-LEAF <bcp14>MUST</bcp14> send a Leaf A-D route,
+                including the route key and IP-address-specific Route Target
+                of the selected AR-REPLICATOR.</li>
+              <li pn="section-6.2-4.3.2.2">The selective AR-LEAF <bcp14>MUST</bcp14> send all the BM packets received
+                on the ACs for a given BD to that
+                AR-REPLICATOR.</li>
+              <li pn="section-6.2-4.3.2.3">In the case of failure of the selected AR-REPLICATOR
+                (detected when the Replicator-AR route becomes infeasible as
+                a result of any of the underlying BGP mechanisms), another
+                AR-REPLICATOR will be selected and a new Leaf A-D
+                update will be issued for the new AR-REPLICATOR. This new
+                route will update the selective list in the new selective
+                AR-REPLICATOR. In the case of failure of the active selective
+                AR-REPLICATOR, it is <bcp14>RECOMMENDED</bcp14> that the selective AR-LEAF
+                revert to ingress replication behavior for an
+                AR-REPLICATOR-activation-timer (in seconds, with a default value of
+                3) to mitigate the traffic impact. When the timer expires, the
+                selective AR-LEAF will resume its AR mode with the new
+                selective AR-REPLICATOR. The AR-REPLICATOR-activation-timer
+                <bcp14>MAY</bcp14> be the same configurable parameter as the parameter discussed in <xref target="sect-5.2" format="default" sectionFormat="of" derivedContent="Section 5.2"/>.</li>
+              <li pn="section-6.2-4.3.2.4">A selective AR-LEAF <bcp14>MAY</bcp14> change the selection of AR-REPLICATOR(s)
+                dynamically due to an administrative or policy
+                configuration change.</li>
+            </ul>
+          </li>
+        </ol>
+        <t indent="0" pn="section-6.2-5">All the AR-LEAFs in a BD are expected to be configured as either
+        selective or non-selective. A mix of selective and non-selective
+        AR-LEAFs <bcp14>SHOULD NOT</bcp14> coexist in the same BD. If a
+        non-selective AR-LEAF is present, its BM traffic sent to a selective
+        AR-REPLICATOR will not be replicated to other AR-LEAFs that are not in
+        its selective AR-LEAF-set.</t>
+        <t indent="0" pn="section-6.2-6">A selective AR-LEAF <bcp14>MUST</bcp14> follow a data path implementation
+        compatible with the following rules:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.2-7">
+          <li pn="section-6.2-7.1">
+            <t indent="0" pn="section-6.2-7.1.1">The selective AR-LEAF nodes will build two flooding lists:</t>
+            <dl indent="3" newline="false" spacing="normal" pn="section-6.2-7.1.2">
+              <dt pn="section-6.2-7.1.2.1">Flooding list #1:
+</dt>
+              <dd pn="section-6.2-7.1.2.2">Composed of ACs and the overlay tunnel to the selected
+AR-REPLICATOR (using the AR-IP as the tunnel destination IP address).
+</dd>
+              <dt pn="section-6.2-7.1.2.3">Flooding list #2:
+</dt>
+              <dd pn="section-6.2-7.1.2.4">Composed of ACs and overlay tunnels to the remote IR-IP
+addresses.
+</dd>
+            </dl>
+          </li>
+          <li pn="section-6.2-7.2">Some of the overlay tunnels in the flooding lists <bcp14>MAY</bcp14> be flagged
+            as non-BM receivers based on the BM flag received from the remote
+            nodes in the routes.</li>
+          <li pn="section-6.2-7.3">When an AR-LEAF receives a BM packet on an AC,
+            it will check to see if an AR-REPLICATOR was selected; if one is found,
+            flooding list #1 <bcp14>MUST</bcp14> be used. Otherwise, flooding list #2 <bcp14>MUST</bcp14> be used.
+            Non-BM overlay tunnels are skipped when sending BM packets.</li>
+          <li pn="section-6.2-7.4">When an AR-LEAF receives a BM packet on an overlay tunnel, it
+            <bcp14>MUST</bcp14> forward the BM packet to its local ACs and
+            never to an overlay tunnel. This is the regular ingress
+            replication behavior described in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</li>
+        </ul>
+      </section>
+    </section>
+    <section anchor="sect-7" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-pruned-flooding-lists-pfls">Pruned Flooding Lists (PFLs)</name>
+      <t indent="0" pn="section-7-1">In addition to AR, the second optimization supported by the ingress
+replication optimization solution specified in this document
+      is the ability of all the BD nodes to signal PFLs. As described in <xref target="sect-4" format="default" sectionFormat="of" derivedContent="Section 4"/>, an EVPN node can signal
+      a given value for the BM and U PFLs flags in the
+      Regular-IR, Replicator-AR, or Leaf A-D routes, where:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-7-2">
+        <li pn="section-7-2.1">BM is the Broadcast and Multicast flag. BM = 1 means "prune me
+          from the BM flooding list". BM = 0 indicates regular behavior.</li>
+        <li pn="section-7-2.2">U is the Unknown flag. U = 1 means "prune me from the Unknown
+          flooding list". U = 0 indicates regular behavior.</li>
+      </ul>
+      <t indent="0" pn="section-7-3">The ability to signal and process these PFLs flags
+      <bcp14>SHOULD</bcp14> be an administrative choice. If a node is configured to process
+      the PFLs flags, upon receiving a non-zero
+      PFLs flag for a route, an NVE/PE will add the
+      corresponding flag to the created overlay tunnel in the flooding list. When
+      replicating a BM packet in the context of a flooding list, the NVE/PE will
+      skip the overlay tunnels marked with the flag BM = 1, since the NVEs/PEs at
+      the end of those tunnels are not expecting BM packets. Similarly, when
+      replicating unknown unicast packets, the NVE/PE will skip the overlay
+      tunnels marked with U = 1.</t>
+      <t indent="0" pn="section-7-4">An NVE/PE not following this document or not configured for this
+      optimization will ignore any of the received PFLs flags.
+      An AR-LEAF or RNVE receiving BUM traffic on an overlay tunnel <bcp14>MUST</bcp14>
+      replicate the traffic to its local ACs, regardless of
+      the BM/U flags on the overlay tunnels.</t>
+      <t indent="0" pn="section-7-5">This optimization <bcp14>MAY</bcp14> be used along with the Assisted Replication
+      solution.</t>
+      <section anchor="sect-7.1" numbered="true" toc="include" removeInRFC="false" pn="section-7.1">
+        <name slugifiedName="name-example-of-a-pruned-floodin">Example of a Pruned Flooding List</name>
+        <t indent="0" pn="section-7.1-1">In order to illustrate the use of the PFLs solution, we will assume that BD-1 in <xref target="ure-optimized-ir-scenario" format="default" sectionFormat="of" derivedContent="Figure 4"/> is optimized ingress replication
+        enabled and:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-7.1-2">
+          <li pn="section-7.1-2.1">PE1 and PE2 are administratively configured as AR-REPLICATORs
+            due to their high-performance replication capabilities. PE1 and
+            PE2 will send a Replicator-AR route with BM/U flags = 00.</li>
+          <li pn="section-7.1-2.2">
+            <t indent="0" pn="section-7.1-2.2.1">NVE1 and NVE3 are administratively configured as AR-LEAF nodes
+            due to their low-performance software-based replication
+            capabilities. They will advertise a Regular-IR route with type
+            AR-LEAF. Assuming that both NVEs advertise all of the attached VMs'
+            MAC and IP addresses in EVPNs as soon as they come up and
+            these NVEs do not have any VMs interested in
+            multicast applications, they will be configured to signal BM/U
+            flags = 11 for BD-1. That is, neither NVE1 nor NVE3 is interested
+            in receiving BM or unknown unicast traffic, since:</t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-7.1-2.2.2">
+              <li pn="section-7.1-2.2.2.1">Their attached VMs (VM11, VM12, VM31, VM32) do not support
+                multicast applications.</li>
+              <li pn="section-7.1-2.2.2.2">Their attached VMs will not receive ARP Requests. Proxy ARP
+                <xref target="RFC9161" format="default" sectionFormat="of" derivedContent="RFC9161"/> on the remote
+                NVEs/PEs will reply to ARP Requests locally, and no other
+                broadcast traffic is expected.</li>
+              <li pn="section-7.1-2.2.2.3">Their attached VMs will not receive unknown unicast
+                traffic, since the VMs' MAC and IP addresses are always
+                advertised by EVPNs as long as the VMs are active.</li>
+            </ul>
+          </li>
+          <li pn="section-7.1-2.3">NVE2 is optimized ingress replication unaware; therefore, it
+            takes on the RNVE role in BD-1.</li>
+        </ul>
+        <t indent="0" pn="section-7.1-3">Based on the above assumptions, the following forwarding behavior
+        will take place:</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-7.1-4"><li pn="section-7.1-4.1" derivedCounter="1.">Any BM packets sent from VM11 will be sent to VM12
+            and PE1. PE1 will then forward the BM packets on to TS1, the WAN link,
+            PE2, and NVE2 but not to NVE3. PE2 and NVE2 will replicate the BM
+            packets to their local ACs, but NVE3 will be prevented from
+            having to replicate those BM packets to VM31 and
+            VM32 unnecessarily.</li>
+          <li pn="section-7.1-4.2" derivedCounter="2.">Any BM packets received on PE2 from the WAN will be
+            sent to PE1 and NVE2 but not to NVE1 and NVE3, sparing the two
+            hypervisors from replicating unnecessarily to their local VMs.
+            PE1 and NVE2 will replicate to their local ACs
+            only.</li>
+          <li pn="section-7.1-4.3" derivedCounter="3.">Any unknown unicast packet sent from VM31 will be
+            forwarded by NVE3 to NVE2, PE1, and PE2 but not to NVE1. The solution
+            prevents unnecessary replication to NVE1, since the destination
+            of the unknown traffic cannot be NVE1.</li>
+          <li pn="section-7.1-4.4" derivedCounter="4.">Any unknown unicast packet sent from TS1 will be
+            forwarded by PE1 to the WAN link, PE2, and NVE2 but not to NVE1 and
+            NVE3, since the target of the unknown traffic cannot be NVE1 or
+            NVE3.</li>
+        </ol>
+      </section>
+    </section>
+    <section anchor="sect-8" numbered="true" toc="include" removeInRFC="false" pn="section-8">
+      <name slugifiedName="name-ar-procedures-for-single-ip">AR Procedures for Single-IP AR-REPLICATORS</name>
+      <t indent="0" pn="section-8-1">The procedures explained in Sections <xref target="sect-5" format="counter" sectionFormat="of" derivedContent="5"/> and
+      <xref target="sect-6" format="counter" sectionFormat="of" derivedContent="6"/> assume that the AR-REPLICATOR can use two local
+      routable IP addresses to terminate and originate NVO
+      tunnels, i.e., IR-IP and AR-IP addresses. This is usually the
+      case for PE-based AR-REPLICATOR nodes.</t>
+      <t indent="0" pn="section-8-2">In some cases, the AR-REPLICATOR node does not support more than one
+      IP address to terminate and originate NVO
+      tunnels, i.e., the IR-IP and AR-IP are the same IP addresses. This may be
+      the case in some software-based or low-end AR-REPLICATOR nodes. If this
+      is the case, the procedures provided in Sections <xref target="sect-5" format="counter" sectionFormat="of" derivedContent="5"/> and <xref target="sect-6" format="counter" sectionFormat="of" derivedContent="6"/> <bcp14>MUST</bcp14> be modified in the following way:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-8-3">
+        <li pn="section-8-3.1">The Replicator-AR routes generated by the AR-REPLICATOR use an
+          AR-IP that will match its IR-IP. In order to differentiate the data
+          plane packets that need to use ingress replication from the packets
+          that must use Assisted Replication forwarding mode, the
+          Replicator-AR route <bcp14>MUST</bcp14> advertise a different VNI/VSID than the one
+          used by the Regular-IR route. For instance, the AR-REPLICATOR will
+          advertise an AR-VNI along with the Replicator-AR route and an IR-VNI along
+          with the Regular-IR route. Since both routes have the same key,
+          different Route Distinguishers are needed in each route.</li>
+        <li pn="section-8-3.2">An AR-REPLICATOR will perform Ingress Replication forwarding mode or Assisted
+          Replication forwarding mode for the incoming overlay packets based
+          on an ingress VNI lookup as opposed to the tunnel IP DA lookup.
+          Note that when replicating to remote AR-REPLICATOR nodes, the use
+          of the IR-VNI or AR-VNI advertised by the egress node will determine
+          whether Ingress Replication forwarding mode or Assisted Replication forwarding mode is used at
+          the subsequent AR-REPLICATOR.</li>
+      </ul>
+      <t indent="0" pn="section-8-4">The rest of the procedures will follow those described in
+      Sections <xref target="sect-5" format="counter" sectionFormat="of" derivedContent="5"/> and                 
+      <xref target="sect-6" format="counter" sectionFormat="of" derivedContent="6"/>.</t>
+    </section>
+    <section anchor="sect-9" numbered="true" toc="include" removeInRFC="false" pn="section-9">
+      <name slugifiedName="name-ar-procedures-and-evpn-all-">AR Procedures and EVPN All-Active Multihoming Split-Horizon</name>
+      <t indent="0" pn="section-9-1">This section extends the procedures for the cases where two or more
+      AR-LEAF nodes are attached to the same ES and two or more
+      AR-REPLICATOR nodes are attached to the same ES in the BD.
+      The mixed case -- where an AR-LEAF node and an AR-REPLICATOR node are
+      attached to the same ES -- would require extended procedures
+      that are out of scope for this document.</t>
+      <section anchor="sect-9.1" numbered="true" toc="include" removeInRFC="false" pn="section-9.1">
+        <name slugifiedName="name-ethernet-segments-on-ar-lea">Ethernet Segments on AR-LEAF Nodes</name>
+        <t indent="0" pn="section-9.1-1">If a VXLAN or NVGRE is used and if the split-horizon is based on
+        the tunnel source IP address and "local bias" as described in <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/>, the split-horizon check will not work if
+        an ES is shared between two AR-LEAF nodes, and the
+        AR-REPLICATOR replaces the tunnel source IP address of the packets
+        with its own AR-IP.</t>
+        <t indent="0" pn="section-9.1-2">In order to be compatible with the source IP address split-horizon
+        check, the AR-REPLICATOR <bcp14>MAY</bcp14> keep the original received tunnel source IP
+        address when replicating packets to a remote AR-LEAF or RNVE.
+        This will allow AR-LEAF nodes to apply split-horizon check procedures
+        for BM packets before sending them to the local ES.
+        Even if the AR-LEAF's source IP address is preserved when replicating
+        to AR-LEAFs or RNVEs, the AR-REPLICATOR <bcp14>MUST</bcp14> always use its IR-IP as
+        the source IP address when replicating to other AR-REPLICATORs.</t>
+        <t indent="0" pn="section-9.1-3">When EVPNs are used for MPLSoGRE or MPLSoUDP, the ESI-label-based
+        split-horizon procedure provided in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> will not work
+        for multihomed ESs defined on AR-LEAF nodes.
+        Local bias is recommended in this case, as it is in the case of a VXLAN or
+        NVGRE as explained above. The local-bias and tunnel source IP address
+        preservation mechanisms provide the required split-horizon behavior in
+        non-selective or selective AR.</t>
+        <t indent="0" pn="section-9.1-4">Note that if the AR-REPLICATOR implementation keeps the received
+        tunnel source IP address, the use of unicast Reverse Path
+        Forwarding (uRPF) checks in the IP fabric based on the tunnel source IP
+        address <bcp14>MUST</bcp14> be disabled.</t>
+      </section>
+      <section anchor="sect-9.2" numbered="true" toc="include" removeInRFC="false" pn="section-9.2">
+        <name slugifiedName="name-ethernet-segments-on-ar-rep">Ethernet Segments on AR-REPLICATOR Nodes</name>
+        <t indent="0" pn="section-9.2-1">AR-REPLICATOR nodes attached to the same all-active ES
+        will follow local-bias procedures <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/>
+        as follows:</t>
+        <ol spacing="normal" type="a" indent="adaptive" start="1" pn="section-9.2-2"><li pn="section-9.2-2.1" derivedCounter="a.">For BUM traffic received on a local AR-REPLICATOR's AC,
+            local-bias procedures as provided in <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/>
+            <bcp14>MUST</bcp14> be followed.</li>
+          <li pn="section-9.2-2.2" derivedCounter="b.">For BUM traffic received on an AR-REPLICATOR overlay tunnel
+            with AR-IP as the IP DA, local bias <bcp14>MUST</bcp14> also
+            be followed. That is, traffic received with AR-IP as the IP DA
+            will be treated as though it had been received
+            on a local AC that is part of the ES
+            and will be forwarded to all local ESs, irrespective
+            of their DF or NDF state.</li>
+          <li pn="section-9.2-2.3" derivedCounter="c.">BUM traffic received on an AR-REPLICATOR overlay tunnel with
+            IR-IP as the IP DA will follow regular local-bias rules <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/> and will not be forwarded to
+            local ESs that are shared with the AR-LEAF or
+            AR-REPLICATOR originating the traffic.</li>
+          <li pn="section-9.2-2.4" derivedCounter="d.">In cases where the AR-REPLICATOR supports a single IP address,
+            the IR-IP and the AR-IP are the same IP address, as discussed in
+            <xref target="sect-8" format="default" sectionFormat="of" derivedContent="Section 8"/>. The received BUM traffic will be treated
+            as specified in item b above if the received VNI is the AR-VNI and as specified in item c if the VNI is the IR-VNI.</li>
+        </ol>
+      </section>
+    </section>
+    <section anchor="sect-10" numbered="true" toc="include" removeInRFC="false" pn="section-10">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-10-1">The security considerations in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> and <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/> apply to this document. The security considerations
+      related to the Leaf A-D route in <xref target="RFC9572" format="default" sectionFormat="of" derivedContent="RFC9572"/> apply too.</t>
+      <t indent="0" pn="section-10-2">In addition, the Assisted Replication method introduced by this
+      document may introduce some new risks that could affect the successful delivery of BM
+      traffic. Unicast traffic is not affected by Assisted Replication
+      (although unknown unicast traffic is affected by the procedures for PFLs). The forwarding of BM traffic is
+      modified, and BM traffic from the AR-LEAF nodes will be drawn toward
+AR-REPLICATORs in the BD. An AR-LEAF will forward BM
+      traffic to its selected AR-REPLICATOR; therefore, an attack on the
+      AR-REPLICATOR could impact the delivery of the BM traffic using that
+      node. Also, an attack on the AR-REPLICATOR and any change to the advertised
+      AR type will modify the selections made by the AR-LEAF nodes. If no other
+      AR-REPLICATOR is selected, the AR-LEAF nodes will be forced to use
+      Ingress Replication forwarding mode, which will impact their
+      performance, since the AR-LEAF nodes are usually NVEs/PEs with poor
+      replication performance.</t>
+      <t indent="0" pn="section-10-3">This document introduces the ability of the AR-REPLICATOR to forward
+      traffic received on an overlay tunnel to another overlay tunnel. The
+      reader may determine that this introduces the risk of BM loops -- that is,
+      an AR-LEAF receiving a BM-encapsulated packet that the AR-LEAF
+      originated in the first place due to one or two AR-REPLICATORs
+      "looping" the BM traffic back to the AR-LEAF. Following the procedures provided in this
+      document will prevent these BM loops, since the AR-REPLICATOR will always
+      forward the BM traffic using the correct tunnel IP DA
+      (or the correct VNI in the case of single-IP AR-REPLICATORs), which instructs the
+      remote nodes regarding how to forward the traffic. This is true for both the
+      Non-selective and Selective modes defined in this document. However,
+      incorrect implementation of the procedures provided in this document may lead to
+      those unexpected BM loops.</t>
+      <t indent="0" pn="section-10-4">The Selective mode provides a multi-stage replication solution,
+      where proper configuration of all the AR-REPLICATORs will prevent any
+      issues. A mix of mistakenly configured selective and non-selective
+      AR-REPLICATORs in the same BD could theoretically create packet
+      duplication in some AR-LEAFs; however, this document specifies a fallback solution -- falling back to Non-selective mode in cases where the AR-REPLICATORs
+      advertised an inconsistent AR mode.</t>
+      <t indent="0" pn="section-10-5">This document allows the AR-REPLICATOR to preserve the tunnel source IP
+      address of the AR-LEAF (as an option) when forwarding BM packets
+      from an overlay tunnel to another overlay tunnel. Preserving the AR-LEAF
+      source IP address makes the local-bias filtering procedures possible
+      for AR-LEAF nodes that are attached to the same ES. If the
+      AR-REPLICATOR does not preserve the AR-LEAF source IP address, AR-LEAF
+      nodes attached to all-active ESs will cause packet
+      duplication on the multihomed CE.</t>
+      <t indent="0" pn="section-10-6">The AR-REPLICATOR nodes are, by design, using more bandwidth than PEs <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> or NVEs <xref target="RFC8365" format="default" sectionFormat="of" derivedContent="RFC8365"/> would use.
+      Certain network events or unexpected low performance may exceed the
+      AR-REPLICATOR's local bandwidth and cause service disruption.</t>
+      <t indent="0" pn="section-10-7">Finally, PFLs (<xref target="sect-7" format="default" sectionFormat="of" derivedContent="Section 7"/>) should be
+      used with care. Intentional or unintentional misconfiguration of
+      the BDs on a given leaf node may result in the leaf not receiving the
+      required BM or unknown unicast traffic.</t>
+    </section>
+    <section anchor="sect-11" numbered="true" toc="include" removeInRFC="false" pn="section-11">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-11-1">IANA has allocated the following Border Gateway Protocol (BGP)
+      parameters:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-11-2">
+        <li pn="section-11-2.1">Allocation in the "P-Multicast Service Interface Tunnel (PMSI Tunnel) Tunnel Types" registry:</li>
+      </ul>
+      <table align="center" pn="table-1">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">Meaning</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">0x0A</td>
+            <td align="left" colspan="1" rowspan="1">Assisted Replication Tunnel</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9574</td>
+          </tr>
+        </tbody>
+      </table>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-11-4">
+        <li pn="section-11-4.1">Allocations in the "P-Multicast Service Interface (PMSI) Tunnel Attribute Flags" registry:</li>
+      </ul>
+      <table align="center" pn="table-2">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">Name</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">3-4</td>
+            <td align="left" colspan="1" rowspan="1">Assisted Replication Type (T)</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9574</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">5</td>
+            <td align="left" colspan="1" rowspan="1">Broadcast and Multicast (BM)</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9574</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">6</td>
+            <td align="left" colspan="1" rowspan="1">Unknown (U)</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9574</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-12">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-12.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC6513" target="https://www.rfc-editor.org/info/rfc6513" quoteTitle="true" derivedAnchor="RFC6513">
+          <front>
+            <title>Multicast in MPLS/BGP IP VPNs</title>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <author fullname="R. Aggarwal" initials="R." role="editor" surname="Aggarwal"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">In order for IP multicast traffic within a BGP/MPLS IP VPN (Virtual Private Network) to travel from one VPN site to another, special protocols and procedures must be implemented by the VPN Service Provider. These protocols and procedures are specified in this document. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6513"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6513"/>
+        </reference>
+        <reference anchor="RFC6514" target="https://www.rfc-editor.org/info/rfc6514" quoteTitle="true" derivedAnchor="RFC6514">
+          <front>
+            <title>BGP Encodings and Procedures for Multicast in MPLS/BGP IP VPNs</title>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <author fullname="T. Morin" initials="T." surname="Morin"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">This document describes the BGP encodings and procedures for exchanging the information elements required by Multicast in MPLS/BGP IP VPNs, as specified in RFC 6513. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6514"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6514"/>
+        </reference>
+        <reference anchor="RFC7432" target="https://www.rfc-editor.org/info/rfc7432" quoteTitle="true" derivedAnchor="RFC7432">
+          <front>
+            <title>BGP MPLS-Based Ethernet VPN</title>
+            <author fullname="A. Sajassi" initials="A." role="editor" surname="Sajassi"/>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="N. Bitar" initials="N." surname="Bitar"/>
+            <author fullname="A. Isaac" initials="A." surname="Isaac"/>
+            <author fullname="J. Uttaro" initials="J." surname="Uttaro"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <date month="February" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes procedures for BGP MPLS-based Ethernet VPNs (EVPN). The procedures described here meet the requirements specified in RFC 7209 -- "Requirements for Ethernet VPN (EVPN)".</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7432"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7432"/>
+        </reference>
+        <reference anchor="RFC7902" target="https://www.rfc-editor.org/info/rfc7902" quoteTitle="true" derivedAnchor="RFC7902">
+          <front>
+            <title>Registry and Extensions for P-Multicast Service Interface Tunnel Attribute Flags</title>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <author fullname="T. Morin" initials="T." surname="Morin"/>
+            <date month="June" year="2016"/>
+            <abstract>
+              <t indent="0">The BGP-based control procedures for Multicast Virtual Private Networks (MVPNs) make use of a BGP attribute known as the "P-Multicast Service Interface (PMSI) Tunnel" attribute. The attribute contains a one-octet "Flags" field. The purpose of this document is to establish an IANA registry for the assignment of the bits in this field. Since the "Flags" field contains only eight bits, this document also defines a new BGP Extended Community, "Additional PMSI Tunnel Attribute Flags", that can be used to carry additional flags for the "P-Multicast Service Interface (PMSI) Tunnel" attribute. This document updates RFC 6514.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7902"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7902"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8365" target="https://www.rfc-editor.org/info/rfc8365" quoteTitle="true" derivedAnchor="RFC8365">
+          <front>
+            <title>A Network Virtualization Overlay Solution Using Ethernet VPN (EVPN)</title>
+            <author fullname="A. Sajassi" initials="A." role="editor" surname="Sajassi"/>
+            <author fullname="J. Drake" initials="J." role="editor" surname="Drake"/>
+            <author fullname="N. Bitar" initials="N." surname="Bitar"/>
+            <author fullname="R. Shekhar" initials="R." surname="Shekhar"/>
+            <author fullname="J. Uttaro" initials="J." surname="Uttaro"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <date month="March" year="2018"/>
+            <abstract>
+              <t indent="0">This document specifies how Ethernet VPN (EVPN) can be used as a Network Virtualization Overlay (NVO) solution and explores the various tunnel encapsulation options over IP and their impact on the EVPN control plane and procedures. In particular, the following encapsulation options are analyzed: Virtual Extensible LAN (VXLAN), Network Virtualization using Generic Routing Encapsulation (NVGRE), and MPLS over GRE. This specification is also applicable to Generic Network Virtualization Encapsulation (GENEVE); however, some incremental work is required, which will be covered in a separate document. This document also specifies new multihoming procedures for split-horizon filtering and mass withdrawal. It also specifies EVPN route constructions for VXLAN/NVGRE encapsulations and Autonomous System Border Router (ASBR) procedures for multihoming of Network Virtualization Edge (NVE) devices.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8365"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8365"/>
+        </reference>
+        <reference anchor="RFC9572" target="https://www.rfc-editor.org/info/rfc9572" quoteTitle="true" derivedAnchor="RFC9572">
+          <front>
+            <title>Updates to EVPN Broadcast, Unknown Unicast, or Multicast (BUM) Procedures</title>
+            <author initials="Z" surname="Zhang" fullname="Z. Zhang">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="W" surname="Lin" fullname="W. Lin">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="J" surname="Rabadan" fullname="J. Rabadan">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="K" surname="Patel" fullname="K. Patel">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="A" surname="Sajassi" fullname="A. Sajassi">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date month="May" year="2024"/>
+          </front>
+          <seriesInfo name="RFC" value="9572"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9572"/>
+        </reference>
+      </references>
+      <references pn="section-12.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC4023" target="https://www.rfc-editor.org/info/rfc4023" quoteTitle="true" derivedAnchor="RFC4023">
+          <front>
+            <title>Encapsulating MPLS in IP or Generic Routing Encapsulation (GRE)</title>
+            <author fullname="T. Worster" initials="T." surname="Worster"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <date month="March" year="2005"/>
+            <abstract>
+              <t indent="0">Various applications of MPLS make use of label stacks with multiple entries. In some cases, it is possible to replace the top label of the stack with an IP-based encapsulation, thereby enabling the application to run over networks that do not have MPLS enabled in their core routers. This document specifies two IP-based encapsulations: MPLS-in-IP and MPLS-in-GRE (Generic Routing Encapsulation). Each of these is applicable in some circumstances. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4023"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4023"/>
+        </reference>
+        <reference anchor="RFC7348" target="https://www.rfc-editor.org/info/rfc7348" quoteTitle="true" derivedAnchor="RFC7348">
+          <front>
+            <title>Virtual eXtensible Local Area Network (VXLAN): A Framework for Overlaying Virtualized Layer 2 Networks over Layer 3 Networks</title>
+            <author fullname="M. Mahalingam" initials="M." surname="Mahalingam"/>
+            <author fullname="D. Dutt" initials="D." surname="Dutt"/>
+            <author fullname="K. Duda" initials="K." surname="Duda"/>
+            <author fullname="P. Agarwal" initials="P." surname="Agarwal"/>
+            <author fullname="L. Kreeger" initials="L." surname="Kreeger"/>
+            <author fullname="T. Sridhar" initials="T." surname="Sridhar"/>
+            <author fullname="M. Bursell" initials="M." surname="Bursell"/>
+            <author fullname="C. Wright" initials="C." surname="Wright"/>
+            <date month="August" year="2014"/>
+            <abstract>
+              <t indent="0">This document describes Virtual eXtensible Local Area Network (VXLAN), which is used to address the need for overlay networks within virtualized data centers accommodating multiple tenants. The scheme and the related protocols can be used in networks for cloud service providers and enterprise data centers. This memo documents the deployed VXLAN protocol for the benefit of the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7348"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7348"/>
+        </reference>
+        <reference anchor="RFC7637" target="https://www.rfc-editor.org/info/rfc7637" quoteTitle="true" derivedAnchor="RFC7637">
+          <front>
+            <title>NVGRE: Network Virtualization Using Generic Routing Encapsulation</title>
+            <author fullname="P. Garg" initials="P." role="editor" surname="Garg"/>
+            <author fullname="Y. Wang" initials="Y." role="editor" surname="Wang"/>
+            <date month="September" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes the usage of the Generic Routing Encapsulation (GRE) header for Network Virtualization (NVGRE) in multi-tenant data centers. Network Virtualization decouples virtual networks and addresses from physical network infrastructure, providing isolation and concurrency between multiple virtual networks on the same physical network infrastructure. This document also introduces a Network Virtualization framework to illustrate the use cases, but the focus is on specifying the data-plane aspect of NVGRE.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7637"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7637"/>
+        </reference>
+        <reference anchor="RFC9161" target="https://www.rfc-editor.org/info/rfc9161" quoteTitle="true" derivedAnchor="RFC9161">
+          <front>
+            <title>Operational Aspects of Proxy ARP/ND in Ethernet Virtual Private Networks</title>
+            <author fullname="J. Rabadan" initials="J." role="editor" surname="Rabadan"/>
+            <author fullname="S. Sathappan" initials="S." surname="Sathappan"/>
+            <author fullname="K. Nagaraj" initials="K." surname="Nagaraj"/>
+            <author fullname="G. Hankins" initials="G." surname="Hankins"/>
+            <author fullname="T. King" initials="T." surname="King"/>
+            <date month="January" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes the Ethernet Virtual Private Network (EVPN) Proxy ARP/ND function augmented by the capability of the ARP/ND Extended Community. From that perspective, this document updates the EVPN specification to provide more comprehensive documentation of the operation of the Proxy ARP/ND function. The EVPN Proxy ARP/ND function and the ARP/ND Extended Community help operators of Internet Exchange Points, Data Centers, and other networks deal with IPv4 and IPv6 address resolution issues associated with large Broadcast Domains by reducing and even suppressing the flooding produced by address resolution in the EVPN network.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9161"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9161"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">The authors would like to thank <contact fullname="Neil Hart"/>, <contact fullname="David Motz"/>, <contact fullname="Dai Truong"/>,
+      <contact fullname="Thomas Morin"/>, <contact fullname="Jeffrey Zhang"/>, <contact fullname="Shankar Murthy"/>, and <contact fullname="Krzysztof Szarkowicz"/> for
+      their valuable feedback and contributions. Also, thanks to <contact fullname="John Scudder"/> for his thorough review, which improved the quality of the document
+      significantly. </t>
+    </section>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.b">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <t indent="0" pn="section-appendix.b-1">In addition to the authors listed on the front page, the following people also contributed to this document and should be considered coauthors:</t>
+      <contact fullname="Wim Henderickx">
+        <organization showOnFrontPage="true">Nokia</organization>
+      </contact>
+      <contact fullname="Kiran Nagaraj">
+        <organization showOnFrontPage="true">Nokia</organization>
+      </contact>
+      <contact fullname="Ravi Shekhar">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+      </contact>
+      <contact fullname="Nischal Sheth">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+      </contact>
+      <contact fullname="Aldrin Isaac">
+        <organization showOnFrontPage="true">Juniper</organization>
+      </contact>
+      <contact fullname="Mudassir Tufail">
+        <organization showOnFrontPage="true">Citibank</organization>
+      </contact>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Jorge Rabadan" initials="J." role="editor" surname="Rabadan">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <postal>
+            <street>777 Middlefield Road</street>
+            <city>Mountain View</city>
+            <region>CA</region>
+            <code>94043</code>
+            <country>United States of America</country>
+          </postal>
+          <email>jorge.rabadan@nokia.com</email>
+        </address>
+      </author>
+      <author fullname="Senthil Sathappan" initials="S." surname="Sathappan">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <email>senthil.sathappan@nokia.com</email>
+        </address>
+      </author>
+      <author fullname="Wen Lin" initials="W." surname="Lin">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <email>wlin@juniper.net</email>
+        </address>
+      </author>
+      <author fullname="Mukul Katiyar" initials="M." surname="Katiyar">
+        <organization showOnFrontPage="true">Versa Networks</organization>
+        <address>
+          <email>mukul@versa-networks.com</email>
+        </address>
+      </author>
+      <author fullname="Ali Sajassi" initials="A." surname="Sajassi">
+        <organization showOnFrontPage="true">Cisco Systems</organization>
+        <address>
+          <email>sajassi@cisco.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>
