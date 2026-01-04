@@ -1,0 +1,1492 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-dprive-unilateral-probing-13" number="9539" submissionType="IETF" category="exp" consensus="true" tocInclude="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2024-02-28T15:40:28" indexInclude="true" scripts="Common,Latin" sortRefs="false" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-dprive-unilateral-probing-13" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9539" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Unilateral Encrypted Authoritative DNS">Unilateral Opportunistic Deployment of Encrypted Recursive‑to‑Authoritative DNS</title>
+    <seriesInfo name="RFC" value="9539" stream="IETF"/>
+    <author initials="D. K." surname="Gillmor" fullname="Daniel Kahn Gillmor" role="editor">
+      <organization abbrev="ACLU" showOnFrontPage="true">American Civil Liberties Union</organization>
+      <address>
+        <postal>
+          <street>125 Broad St.</street>
+          <city>New York</city>
+          <region>NY</region>
+          <code>10004</code>
+          <country>United States of America</country>
+        </postal>
+        <email>dkg@fifthhorseman.net</email>
+      </address>
+    </author>
+    <author initials="J." surname="Salazar" fullname="Joey Salazar" role="editor">
+      <organization showOnFrontPage="true"/>
+      <address>
+        <postal>
+          <city>Alajuela</city>
+          <code>20201</code>
+          <country>Costa Rica</country>
+        </postal>
+        <email>joeygsal@gmail.com</email>
+      </address>
+    </author>
+    <author initials="P." surname="Hoffman" fullname="Paul Hoffman" role="editor">
+      <organization showOnFrontPage="true">ICANN</organization>
+      <address>
+        <postal>
+          <country>United States of America</country>
+        </postal>
+        <email>paul.hoffman@icann.org</email>
+      </address>
+    </author>
+    <date month="02" year="2024"/>
+    <area>int</area>
+    <workgroup>dprive</workgroup>
+    <keyword>DNS over TLS</keyword>
+    <keyword>DNS over QUIC</keyword>
+    <keyword>DoT</keyword>
+    <keyword>DoQ</keyword>
+    <keyword>encryption</keyword>
+    <keyword>unilateral</keyword>
+    <keyword>recursive</keyword>
+    <keyword>authoritative</keyword>
+    <keyword>DNS</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document sets out steps that DNS servers (recursive resolvers and authoritative servers) can take unilaterally (without any coordination with other peers) to defend DNS query privacy against a passive network monitor.
+The protections provided by the guidance in this document can be defeated by an active attacker, but they should be simpler and less risky to deploy than more powerful defenses.</t>
+      <t indent="0" pn="section-abstract-2">The goal of this document is to simplify and speed up deployment of opportunistic encrypted transport in the recursive-to-authoritative hop of the DNS ecosystem.
+Wider easy deployment of the underlying encrypted transport on an opportunistic basis may facilitate the future specification of stronger cryptographic protections against more-powerful attacks.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for examination, experimental implementation, and
+            evaluation.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document defines an Experimental Protocol for the Internet
+            community.  This document is a product of the Internet Engineering
+            Task Force (IETF).  It represents the consensus of the IETF community.
+            It has received public review and has been approved for publication
+            by the Internet Engineering Steering Group (IESG).  Not all documents
+            approved by the IESG are candidates for any level of Internet
+            Standard; see Section 2 of RFC 7841. 
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9539" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-priorities">Priorities</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-minimizing-negative-impacts">Minimizing Negative Impacts</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-protocol-choices">Protocol Choices</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-guidance-for-authoritative-">Guidance for Authoritative Servers</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-pooled-authoritative-server">Pooled Authoritative Servers behind a Load Balancer</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-authentication">Authentication</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-server-name-indication">Server Name Indication</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.4">
+                <t indent="0" pn="section-toc.1-1.3.2.4.1"><xref derivedContent="3.4" format="counter" sectionFormat="of" target="section-3.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-resource-exhaustion">Resource Exhaustion</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.5">
+                <t indent="0" pn="section-toc.1-1.3.2.5.1"><xref derivedContent="3.5" format="counter" sectionFormat="of" target="section-3.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-pad-responses-to-mitigate-t">Pad Responses to Mitigate Traffic Analysis</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-guidance-for-recursive-reso">Guidance for Recursive Resolvers</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-high-level-overview">High-Level Overview</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-maintaining-authoritative-s">Maintaining Authoritative State by IP Address</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-overall-recursive-resolver-">Overall Recursive Resolver Settings</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.4">
+                <t indent="0" pn="section-toc.1-1.4.2.4.1"><xref derivedContent="4.4" format="counter" sectionFormat="of" target="section-4.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-recursive-resolver-requirem">Recursive Resolver Requirements</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.5">
+                <t indent="0" pn="section-toc.1-1.4.2.5.1"><xref derivedContent="4.5" format="counter" sectionFormat="of" target="section-4.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-authoritative-server-encryp">Authoritative Server Encrypted Transport Connection State</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.6">
+                <t indent="0" pn="section-toc.1-1.4.2.6.1"><xref derivedContent="4.6" format="counter" sectionFormat="of" target="section-4.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-probing-policy">Probing Policy</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2.6.2">
+                  <li pn="section-toc.1-1.4.2.6.2.1">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.1.1"><xref derivedContent="4.6.1" format="counter" sectionFormat="of" target="section-4.6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sending-a-query-over-do53">Sending a Query over Do53</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.6.2.2">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.2.1"><xref derivedContent="4.6.2" format="counter" sectionFormat="of" target="section-4.6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-receiving-a-response-over-d">Receiving a Response over Do53</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.6.2.3">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.3.1"><xref derivedContent="4.6.3" format="counter" sectionFormat="of" target="section-4.6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-initiating-a-connection-ove">Initiating a Connection over Encrypted Transport</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.6.2.4">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.4.1"><xref derivedContent="4.6.4" format="counter" sectionFormat="of" target="section-4.6.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-establishing-an-encrypted-t">Establishing an Encrypted Transport Connection</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.6.2.5">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.5.1"><xref derivedContent="4.6.5" format="counter" sectionFormat="of" target="section-4.6.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-failing-to-establish-an-enc">Failing to Establish an Encrypted Transport Connection</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.6.2.6">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.6.1"><xref derivedContent="4.6.6" format="counter" sectionFormat="of" target="section-4.6.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-encrypted-transport-failure">Encrypted Transport Failure</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.6.2.7">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.7.1"><xref derivedContent="4.6.7" format="counter" sectionFormat="of" target="section-4.6.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-handling-clean-shutdown-of-">Handling Clean Shutdown of an Encrypted Transport Connection</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.6.2.8">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.8.1"><xref derivedContent="4.6.8" format="counter" sectionFormat="of" target="section-4.6.8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sending-a-query-over-encryp">Sending a Query over Encrypted Transport</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.6.2.9">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.9.1"><xref derivedContent="4.6.9" format="counter" sectionFormat="of" target="section-4.6.9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-receiving-a-response-over-e">Receiving a Response over Encrypted Transport</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.6.2.10">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.10.1"><xref derivedContent="4.6.10" format="counter" sectionFormat="of" target="section-4.6.10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-resource-exhaustion-2">Resource Exhaustion</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.6.2.11">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.11.1"><xref derivedContent="4.6.11" format="counter" sectionFormat="of" target="section-4.6.11"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-maintaining-connections">Maintaining Connections</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.6.2.12">
+                    <t indent="0" pn="section-toc.1-1.4.2.6.2.12.1"><xref derivedContent="4.6.12" format="counter" sectionFormat="of" target="section-4.6.12"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-additional-tuning">Additional Tuning</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-privacy-considerations">Privacy Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-server-name-indication-3">Server Name Indication</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-modeling-the-probability-of">Modeling the Probability of Encryption</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-operational-considerations">Operational Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-assessing-the-experiment">Assessing the Experiment</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="Appendix B" format="default" sectionFormat="of" target="section-appendix.b"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-defense-against-active-atta">Defense against Active Attackers</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.11.2">
+              <li pn="section-toc.1-1.11.2.1">
+                <t indent="0" pn="section-toc.1-1.11.2.1.1"><xref derivedContent="B.1" format="counter" sectionFormat="of" target="section-appendix.b.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-signaling-mechanism-propert">Signaling Mechanism Properties</xref></t>
+              </li>
+              <li pn="section-toc.1-1.11.2.2">
+                <t indent="0" pn="section-toc.1-1.11.2.2.1"><xref derivedContent="B.2" format="counter" sectionFormat="of" target="section-appendix.b.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-authentication-of-authorita">Authentication of Authoritative Servers</xref></t>
+              </li>
+              <li pn="section-toc.1-1.11.2.3">
+                <t indent="0" pn="section-toc.1-1.11.2.3.1"><xref derivedContent="B.3" format="counter" sectionFormat="of" target="section-appendix.b.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-combining-protocols">Combining Protocols</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.d"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">This document aims to provide guidance to DNS implementers and operators who want to simply enable protection against passive network observers.</t>
+      <t indent="0" pn="section-1-2">In particular, it focuses on mechanisms that can be adopted
+      unilaterally by recursive resolvers and authoritative servers, without
+      any explicit coordination with the other parties.  This guidance
+      provides opportunistic security (see <xref target="RFC7435" format="default" sectionFormat="of" derivedContent="RFC7435"/>), that is, 
+      encrypting things that would otherwise be in the clear, without
+      interfering with or weakening stronger forms of security.</t>
+      <t indent="0" pn="section-1-3">This document also briefly introduces (but does not try to specify) how a future protocol might permit defense against an active attacker in <xref target="adding-auth" format="default" sectionFormat="of" derivedContent="Appendix B"/>.</t>
+      <t indent="0" pn="section-1-4">The protocol described here offers three concrete advantages to the DNS ecosystem:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1-5">
+        <li pn="section-1-5.1">
+          <t indent="0" pn="section-1-5.1.1">Protection from passive attackers of DNS queries in transit between recursive and authoritative servers.</t>
+        </li>
+        <li pn="section-1-5.2">
+          <t indent="0" pn="section-1-5.2.1">A road map for gaining real-world experience at scale with encrypted protections of this traffic.</t>
+        </li>
+        <li pn="section-1-5.3">
+          <t indent="0" pn="section-1-5.3.1">A bridge to some possible future protection against a more powerful attacker.</t>
+        </li>
+      </ul>
+      <section anchor="requirements-language" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+        </t>
+      </section>
+      <section anchor="terminology" numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-terminology">Terminology</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-1.2-1">
+          <dt pn="section-1.2-1.1">Unilateral:</dt>
+          <dd pn="section-1.2-1.2">
+            <t indent="0" pn="section-1.2-1.2.1">Capable of opportunistic probing without external coordination with any of the other parties.</t>
+          </dd>
+          <dt pn="section-1.2-1.3">Do53:</dt>
+          <dd pn="section-1.2-1.4">
+            <t indent="0" pn="section-1.2-1.4.1">DNS over port 53 (<xref target="RFC1035" format="default" sectionFormat="of" derivedContent="RFC1035"/>) for traditional cleartext transport.</t>
+          </dd>
+          <dt pn="section-1.2-1.5">DoQ:</dt>
+          <dd pn="section-1.2-1.6">
+            <t indent="0" pn="section-1.2-1.6.1">DNS over QUIC (<xref target="RFC9250" format="default" sectionFormat="of" derivedContent="RFC9250"/>).</t>
+          </dd>
+          <dt pn="section-1.2-1.7">DoT:</dt>
+          <dd pn="section-1.2-1.8">
+            <t indent="0" pn="section-1.2-1.8.1">DNS over TLS (<xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/>).</t>
+          </dd>
+          <dt pn="section-1.2-1.9">Encrypted transports:</dt>
+          <dd pn="section-1.2-1.10">
+            <t indent="0" pn="section-1.2-1.10.1">DoQ and DoT, collectively.</t>
+          </dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="priorities" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-priorities">Priorities</name>
+      <t indent="0" pn="section-2-1">The protocol described in this document was developed with two priorities: minimizing negative impacts and retaining flexibility in the underlying encrypted transport protocol.</t>
+      <section anchor="minimizing-negative-impacts" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-minimizing-negative-impacts">Minimizing Negative Impacts</name>
+        <t indent="0" pn="section-2.1-1">The protocol described in this document aims to minimize potentially negative impacts caused by the probing of encrypted transports for the systems that adopt the protocol, for the parties that those systems communicate with, and for uninvolved third parties.
+The negative impacts that this protocol specifically tries to minimize are:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2.1-2">
+          <li pn="section-2.1-2.1">
+            <t indent="0" pn="section-2.1-2.1.1">excessive bandwidth use,</t>
+          </li>
+          <li pn="section-2.1-2.2">
+            <t indent="0" pn="section-2.1-2.2.1">excessive use of computational resources (CPU and memory in particular), and</t>
+          </li>
+          <li pn="section-2.1-2.3">
+            <t indent="0" pn="section-2.1-2.3.1">the potential for amplification attacks (where DNS resolution infrastructure is wielded as part of a DoS attack).</t>
+          </li>
+        </ul>
+      </section>
+      <section anchor="protocol-choices" numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-protocol-choices">Protocol Choices</name>
+        <t indent="0" pn="section-2.2-1">Although this document focuses specifically on strategies used by DNS servers, it does not go into detail on the specific protocols used because those protocols, in particular DoT and DoQ, are described in other documents.
+The DoT specification (<xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/>) says that it:</t>
+        <blockquote pn="section-2.2-2">...focuses on securing stub-to-recursive traffic, as per the
+        charter of the DPRIVE Working Group.  It does not prevent future
+        applications of the protocol to recursive-to-authoritative
+        traffic.</blockquote>
+        <t indent="0" pn="section-2.2-3">It further says:</t>
+        <blockquote pn="section-2.2-4">It might work equally between recursive clients and
+        authoritative servers...</blockquote>
+        <t indent="0" pn="section-2.2-5">The DoQ specification (<xref target="RFC9250" format="default" sectionFormat="of" derivedContent="RFC9250"/>) says:</t>
+        <blockquote pn="section-2.2-6">For the recursive to authoritative scenario,
+        authentication requirements are unspecified at the time of writing and
+        are the subject of ongoing work in the DPRIVE WG.</blockquote>
+        <t indent="0" pn="section-2.2-7">The protocol described in this document specifies the use of DoT and DoQ without authentication of the server.</t>
+        <t indent="0" pn="section-2.2-8">This document does not pursue the use of DNS over HTTPS, commonly called "DoH" (<xref target="RFC8484" format="default" sectionFormat="of" derivedContent="RFC8484"/>), in this context because a DoH client needs to know the path part of a DoH endpoint URL. Currently, there are no mechanisms for a DNS recursive resolver to predict the path on its own, in an opportunistic or unilateral fashion, without incurring an excessive use of resources.
+If such mechanisms are later defined, the protocol in this document can be updated to accommodate them.</t>
+      </section>
+    </section>
+    <section anchor="authoritative-guidance" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-guidance-for-authoritative-">Guidance for Authoritative Servers</name>
+      <t indent="0" pn="section-3-1">The protocol described in this document is <bcp14>OPTIONAL</bcp14> for authoritative servers.
+An authoritative server choosing to implement the protocol described in this document <bcp14>MUST</bcp14> implement at least one of either
+DoT or DoQ on port 853.</t>
+      <t indent="0" pn="section-3-2">An authoritative server choosing to implement the protocol described in this document <bcp14>MAY</bcp14> require clients to use Application-Layer Protocol Negotiation (ALPN) (see <xref target="RFC7301" format="default" sectionFormat="of" derivedContent="RFC7301"/>).
+      The ALPN strings the client will use are given in <xref target="recursive-requirements" format="default" sectionFormat="of" derivedContent="Section 4.4"/>.</t>
+      <t indent="0" pn="section-3-3">An authoritative server implementing DoT or DoQ <bcp14>MUST</bcp14> populate the response from the same authoritative zone data as the unencrypted DNS transports.
+Encrypted transports have their own characteristic response size that might be different from the unencrypted DNS transports, so response sizes and related options (e.g., Extension Mechanisms for DNS (EDNS0)) and flags (e.g., the TrunCation (TC) bit) might vary based on the transport.
+In other words, the content of the responses to a particular query <bcp14>MUST</bcp14> be the same regardless of the type of transport.</t>
+      <section anchor="authoritative-pools" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-pooled-authoritative-server">Pooled Authoritative Servers behind a Load Balancer</name>
+        <t indent="0" pn="section-3.1-1">Some authoritative DNS servers are structured as a pool of authoritatives standing behind a load balancer that runs on a single IP address, forwarding queries to members of the pool.
+In such a deployment, individual members of the pool typically get updated independently from each other.</t>
+        <t indent="0" pn="section-3.1-2">A recursive resolver following the guidance in <xref target="recursive-guidance" format="default" sectionFormat="of" derivedContent="Section 4"/> and interacting with such a pool likely does not know that it is a pool.
+If some members of the pool follow the protocol specified in this document while others do not, the recursive client might see the pool as a single authoritative server that sometimes offers and sometimes refuses encrypted transport.</t>
+        <t indent="0" pn="section-3.1-3">To avoid incurring additional minor timeouts for such a recursive resolver, the pool operator <bcp14>SHOULD</bcp14>:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1-4">
+          <li pn="section-3.1-4.1">
+            <t indent="0" pn="section-3.1-4.1.1">ensure that all members of the pool enable the same encrypted transport(s) within the span of a few seconds (such as within 30 seconds), or</t>
+          </li>
+          <li pn="section-3.1-4.2">
+            <t indent="0" pn="section-3.1-4.2.1">ensure that the load balancer maps client requests to pool members based on client IP addresses, or</t>
+          </li>
+          <li pn="section-3.1-4.3">
+            <t indent="0" pn="section-3.1-4.3.1">use a load balancer that forwards queries/connections on encrypted transports to only those members of the pool known (e.g., via monitoring) to support the given encrypted transport.</t>
+          </li>
+        </ul>
+        <t indent="0" pn="section-3.1-5">Similar concerns apply to authoritative servers responding from an anycast IP address.
+As long as the pool of servers is in a heterogeneous state, any flapping route that switches a given client IP address to a different responder risks incurring an additional timeout.
+Frequent changes of routing for anycast listening IP addresses are also likely to cause problems for TLS, TCP, or QUIC connection state as well, so stable routes are important to ensure that the service remains available and responsive.
+The servers in a pool can share session information to increase the likelihood of successful resumptions.</t>
+      </section>
+      <section anchor="authentication" numbered="true" removeInRFC="false" toc="include" pn="section-3.2">
+        <name slugifiedName="name-authentication">Authentication</name>
+        <t indent="0" pn="section-3.2-1">For unilateral deployment, an authoritative server does not need to offer any particular form of authentication.</t>
+        <t indent="0" pn="section-3.2-2">One simple deployment approach would just be to provide a self-issued, regularly updated X.509 certificate.
+Whether the certificates used are short-lived or long-lived is up to the deployment.
+This mechanism is supported by many TLS and QUIC clients and will be acceptable for any opportunistic connection.
+The server could provide a normal PKI-based certificate, but there is no advantage to doing so at this time.</t>
+      </section>
+      <section anchor="authoritative-sni" numbered="true" removeInRFC="false" toc="include" pn="section-3.3">
+        <name slugifiedName="name-server-name-indication">Server Name Indication</name>
+        <t indent="0" pn="section-3.3-1">An authoritative DNS server that wants to handle unilateral queries <bcp14>MAY</bcp14> rely on Server Name Indication (SNI) to select alternate server credentials.
+However, such a server <bcp14>MUST NOT</bcp14> serve resource records that differ based on SNI (or on the lack of an SNI) provided by the client because a probing recursive resolver that offers SNI might or might not have used the right server name to get the records it is looking for.</t>
+      </section>
+      <section anchor="authoritative-resource-exhaustion" numbered="true" removeInRFC="false" toc="include" pn="section-3.4">
+        <name slugifiedName="name-resource-exhaustion">Resource Exhaustion</name>
+        <t indent="0" pn="section-3.4-1">A well-behaved recursive resolver may keep an encrypted connection open to an authoritative server to amortize the costs of connection setup for both parties.</t>
+        <t indent="0" pn="section-3.4-2">However, some authoritative servers may have insufficient resources available to keep many connections open concurrently.</t>
+        <t indent="0" pn="section-3.4-3">To keep resources under control, authoritative servers should proactively manage their encrypted connections.
+<xref section="5.5" sectionFormat="of" target="RFC9250" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9250#section-5.5" derivedContent="RFC9250"/> offers useful guidance for servers managing DoQ connections.
+<xref section="3.4" sectionFormat="of" target="RFC7858" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7858#section-3.4" derivedContent="RFC7858"/> offers useful guidance for servers managing DoT connections.</t>
+        <t indent="0" pn="section-3.4-4">An authoritative server facing unforeseen resource exhaustion <bcp14>SHOULD</bcp14> cleanly close open connections from recursive resolvers based on the authoritative server's preferred prioritization.</t>
+        <t indent="0" pn="section-3.4-5">In the case of unanticipated resource exhaustion, close connections until resources are back in control.
+A reasonable prioritization scheme would be to close connections with no outstanding queries, ordered by idle time (longest idle time gets closed first), then close connections with outstanding queries, ordered by age of outstanding query (oldest outstanding query gets closed first).</t>
+        <t indent="0" pn="section-3.4-6">When resources are especially tight, the authoritative server may also decline to accept new connections over encrypted transport.</t>
+      </section>
+      <section anchor="pad-responses-to-mitigate-traffic-analysis" numbered="true" removeInRFC="false" toc="include" pn="section-3.5">
+        <name slugifiedName="name-pad-responses-to-mitigate-t">Pad Responses to Mitigate Traffic Analysis</name>
+        <t indent="0" pn="section-3.5-1">To increase the anonymity set for each response, the authoritative server <bcp14>SHOULD</bcp14> use a sensible padding mechanism for all responses it sends when possible.
+The ability for the authoritative server to add padding might be limited, such as by not receiving an EDNS0 option in the query.
+Specifically, a DoT server <bcp14>SHOULD</bcp14> use EDNS0 padding <xref target="RFC7830" format="default" sectionFormat="of" derivedContent="RFC7830"/> if possible, and a DoQ server <bcp14>SHOULD</bcp14> follow the guidance in <xref section="5.4" sectionFormat="of" target="RFC9250" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9250#section-5.4" derivedContent="RFC9250"/>.
+How much to pad is out of scope of this document, but a reasonable suggestion can be found in <xref target="RFC8467" format="default" sectionFormat="of" derivedContent="RFC8467"/>.</t>
+      </section>
+    </section>
+    <section anchor="recursive-guidance" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-guidance-for-recursive-reso">Guidance for Recursive Resolvers</name>
+      <t indent="0" pn="section-4-1">The protocol described in this document is <bcp14>OPTIONAL</bcp14> for recursive resolvers.
+This section outlines a probing policy suitable for unilateral adoption by any recursive resolver.
+Following this policy should not result in failed resolutions or significant delays.</t>
+      <section anchor="high-level-overview" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-high-level-overview">High-Level Overview</name>
+        <t indent="0" pn="section-4.1-1">In addition to querying on Do53, the recursive resolver will try DoT, DoQ, or both concurrently.
+The recursive resolver remembers what opportunistic encrypted transport protocols have worked recently based on a (clientIP, serverIP, protocol) tuple.</t>
+        <t indent="0" pn="section-4.1-2">If a query needs to go to a given authoritative server, and the recursive resolver remembers a recent successful encrypted transport to that server, then it doesn't send the query over Do53 at all.
+Rather, it only sends the query using the encrypted transport protocol that was recently shown to be good.</t>
+        <t indent="0" pn="section-4.1-3">If the encrypted transport protocol fails, the recursive resolver falls back to Do53 for that serverIP.
+When any encrypted transport fails, the recursive resolver remembers that failure for a reasonable amount of time to avoid flooding an incompatible server with requests that it cannot accept.
+The description of how an encrypted transport protocol fails is in <xref target="establish-encrypted" format="default" sectionFormat="of" derivedContent="Section 4.6.4"/> and the sections following that.</t>
+        <t indent="0" pn="section-4.1-4">See the subsections below for a more detailed description of this protocol.</t>
+      </section>
+      <section anchor="maintaining-authoritative-state-by-ip-address" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-maintaining-authoritative-s">Maintaining Authoritative State by IP Address</name>
+        <t indent="0" pn="section-4.2-1">In designing a probing strategy, the recursive resolver could record its knowledge about any given authoritative server with different strategies, including at least:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.2-2">
+          <li pn="section-4.2-2.1">
+            <t indent="0" pn="section-4.2-2.1.1">the authoritative server's IP address,</t>
+          </li>
+          <li pn="section-4.2-2.2">
+            <t indent="0" pn="section-4.2-2.2.1">the authoritative server's name (the NS record used), or</t>
+          </li>
+          <li pn="section-4.2-2.3">
+            <t indent="0" pn="section-4.2-2.3.1">the zone that contains the record being looked up.</t>
+          </li>
+        </ul>
+        <t indent="0" pn="section-4.2-3">This document encourages the first strategy, to minimize timeouts or accidental delays,
+and does not describe the other two strategies.</t>
+        <t indent="0" pn="section-4.2-4">A timeout (accidental delay) is most likely to happen when the recursive client believes that the authoritative server offers encrypted transport, but the actual server reached declines encrypted transport (or worse, filters the incoming traffic and does not even respond with an ICMP destination port unreachable message, such as during rate limiting).</t>
+        <t indent="0" pn="section-4.2-5">By associating the state with the authoritative IP address, the client can minimize the number of accidental delays introduced (see also Sections <xref target="authoritative-pools" format="counter" sectionFormat="of" derivedContent="3.1"/> and <xref target="conn-state" format="counter" sectionFormat="of" derivedContent="4.5"/>).</t>
+        <t indent="0" pn="section-4.2-6">For example, consider an authoritative server named <tt>ns0.example.com</tt> that is served by two installations: one at <tt>2001:db8::7</tt> that follows this guidance and one at <tt>2001:db8::8</tt> that is a legacy (cleartext port 53-only) deployment.
+A recursive client who associates state with the NS name and reaches <tt>2001:db8::7</tt> first will "learn" that <tt>ns0.example.com</tt> supports encrypted transport.
+A subsequent query over encrypted transport dispatched to <tt>2001:db8::8</tt> would fail, potentially delaying the response.</t>
+      </section>
+      <section anchor="overall-recursive-resolver-settings" numbered="true" removeInRFC="false" toc="include" pn="section-4.3">
+        <name slugifiedName="name-overall-recursive-resolver-">Overall Recursive Resolver Settings</name>
+        <t indent="0" pn="section-4.3-1">A recursive resolver implementing the protocol in this document needs to set system-wide values for some default parameters.
+These parameters may be set independently for each supported encrypted transport, though a simple implementation may keep the parameters constant across encrypted transports.</t>
+        <table align="center" pn="table-1">
+          <name slugifiedName="name-recursive-resolver-system-p">Recursive Resolver System Parameters per Encrypted Transport</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Name</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Suggested Default</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">
+                <tt>persistence</tt></td>
+              <td align="left" colspan="1" rowspan="1">How long the recursive resolver remembers a successful encrypted transport connection</td>
+              <td align="left" colspan="1" rowspan="1">3 days (259200 seconds)</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">
+                <tt>damping</tt></td>
+              <td align="left" colspan="1" rowspan="1">How long the recursive resolver remembers an unsuccessful encrypted transport connection</td>
+              <td align="left" colspan="1" rowspan="1">1 day (86400 seconds)</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">
+                <tt>timeout</tt></td>
+              <td align="left" colspan="1" rowspan="1">How long the recursive resolver waits for an initiated encrypted connection to complete</td>
+              <td align="left" colspan="1" rowspan="1">4 seconds</td>
+            </tr>
+          </tbody>
+        </table>
+        <t indent="0" pn="section-4.3-3">This document uses the notation <tt>&lt;transport&gt;-foo</tt> to refer to the <tt>foo</tt> parameter for the encrypted transport <tt>&lt;transport&gt;</tt>.
+For example, <tt>DoT-persistence</tt> would indicate the length of time that the recursive resolver will remember that an authoritative server had a successful connection over DoT.
+Additionally, when describing an arbitrary encrypted transport, we use <tt>E</tt> in place of <tt>&lt;transport&gt;</tt> to generically mean whatever encrypted transport is in use.
+For example, when handling a query sent over encrypted transport <tt>E</tt>, a reference to <tt>E-timeout</tt> should be understood to mean <tt>DoT-timeout</tt> if the query is sent over DoT, and to mean <tt>DoQ-timeout</tt> if the query is sent over DoQ.</t>
+        <t indent="0" pn="section-4.3-4">This document also assumes that the recursive resolver maintains a list of outstanding cleartext queries destined for the authoritative server's IP address <tt>X</tt>.
+This list is referred to as "<tt>Do53-queries[X]</tt>"
+This document does not attempt to describe the specific operation of sending and receiving cleartext DNS queries (Do53) for a recursive resolver.
+Instead it describes a "bolt-on" mechanism that extends the recursive resolver's operation on a few simple hooks into the recursive resolver's existing handling of Do53.</t>
+        <t indent="0" pn="section-4.3-5">Implementers or deployers of DNS recursive resolvers that follow the strategies in this document are encouraged to publish their preferred values of these parameters.</t>
+      </section>
+      <section anchor="recursive-requirements" numbered="true" removeInRFC="false" toc="include" pn="section-4.4">
+        <name slugifiedName="name-recursive-resolver-requirem">Recursive Resolver Requirements</name>
+        <t indent="0" pn="section-4.4-1">To follow the strategies in this document, a recursive resolver <bcp14>MUST</bcp14> implement at least one of either DoT or DoQ in its capacity as a client of authoritative nameservers.
+A recursive resolver <bcp14>SHOULD</bcp14> implement the client side of DoT.
+A recursive resolver <bcp14>SHOULD</bcp14> implement the client side of DoQ.</t>
+        <t indent="0" pn="section-4.4-2">DoT queries from the recursive resolver <bcp14>MUST</bcp14> target TCP port 853 using an ALPN of "<tt>dot</tt>".
+DoQ queries from the recursive resolver <bcp14>MUST</bcp14> target UDP port 853 using an ALPN of "<tt>doq</tt>".</t>
+        <t indent="0" pn="section-4.4-3">While this document focuses on the recursive-to-authoritative hop, a recursive resolver implementing the strategies in this document <bcp14>SHOULD</bcp14> also accept queries from its clients over some encrypted transport unless it only accepts queries from the localhost.</t>
+      </section>
+      <section anchor="conn-state" numbered="true" removeInRFC="false" toc="include" pn="section-4.5">
+        <name slugifiedName="name-authoritative-server-encryp">Authoritative Server Encrypted Transport Connection State</name>
+        <t indent="0" pn="section-4.5-1">The recursive resolver <bcp14>SHOULD</bcp14> keep a record of the state for each authoritative server it contacts, indexed by the IP address of the authoritative server and the encrypted transports supported by the recursive resolver.</t>
+        <t indent="0" pn="section-4.5-2">Note that the recursive resolver might record this per-authoritative-IP state for each source IP address it uses as it sends its queries.
+For example, if a recursive resolver can send a packet to authoritative servers from IP addresses <tt>2001:db8::100</tt> and <tt>2001:db8::200</tt>, it could keep two distinct sets of per-authoritative-IP state: one for each source address it uses, if the recursive resolver knows the addresses in use.
+Keeping these state tables distinct for each source address makes it possible for a pooled authoritative server behind a load balancer to do a partial rollout while minimizing accidental timeouts (see <xref target="authoritative-pools" format="default" sectionFormat="of" derivedContent="Section 3.1"/>).</t>
+        <t indent="0" pn="section-4.5-3">In addition to tracking the state of connection attempts and outcomes, a recursive resolver <bcp14>SHOULD</bcp14> record the state of established sessions for encrypted protocols.
+The details of how sessions are identified are dependent on the transport protocol implementation (such as a TLS session ticket or TLS session ID, a QUIC connection ID, and so on).
+The use of session resumption as recommended here is limited somewhat because the tickets are only stored within the context defined by the (clientIP, serverIP, protocols) tuples used to track client-server interaction by the recursive resolver in a table like the one below.
+However, session resumption still offers the ability to optimize the handshake in some circumstances.</t>
+        <t indent="0" pn="section-4.5-4">Each record should contain the following fields for each supported encrypted transport, each of which would initially be <tt>null</tt>:</t>
+        <table align="center" pn="table-2">
+          <name slugifiedName="name-recursive-resolver-state-pe">Recursive Resolver State per-Authoritative-IP and per-Encrypted Transport</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Name</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Retain Across Restart</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">
+                <tt>session</tt></td>
+              <td align="left" colspan="1" rowspan="1">The associated state of any existing established session (the structure of this value is dependent on the encrypted transport implementation).  If <tt>session</tt> is not <tt>null</tt>, it may be in one of two states: <tt>pending</tt> or <tt>established</tt>.</td>
+              <td align="left" colspan="1" rowspan="1">no</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">
+                <tt>initiated</tt></td>
+              <td align="left" colspan="1" rowspan="1">Timestamp of the most recent connection attempt</td>
+              <td align="left" colspan="1" rowspan="1">yes</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">
+                <tt>completed</tt></td>
+              <td align="left" colspan="1" rowspan="1">Timestamp of the most recent completed handshake (which can include one where an existing session is resumed)</td>
+              <td align="left" colspan="1" rowspan="1">yes</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">
+                <tt>status</tt></td>
+              <td align="left" colspan="1" rowspan="1">Enumerated value of <tt>success</tt>, <tt>fail</tt>, or <tt>timeout</tt> associated with the <tt>completed</tt> handshake</td>
+              <td align="left" colspan="1" rowspan="1">yes</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">
+                <tt>last-response</tt></td>
+              <td align="left" colspan="1" rowspan="1">A timestamp of the most recent response received on the connection</td>
+              <td align="left" colspan="1" rowspan="1">yes</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">
+                <tt>resumptions</tt></td>
+              <td align="left" colspan="1" rowspan="1">A stack of resumption tickets (and associated parameters) that could be used to resume a prior successful session</td>
+              <td align="left" colspan="1" rowspan="1">yes</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">
+                <tt>queries</tt></td>
+              <td align="left" colspan="1" rowspan="1">A queue of queries intended for this authoritative server, each of which has additional status of <tt>early</tt>, <tt>unsent</tt>, or <tt>sent</tt></td>
+              <td align="left" colspan="1" rowspan="1">no</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">
+                <tt>last-activity</tt></td>
+              <td align="left" colspan="1" rowspan="1">A timestamp of the most recent activity on the connection</td>
+              <td align="left" colspan="1" rowspan="1">no</td>
+            </tr>
+          </tbody>
+        </table>
+        <t indent="0" pn="section-4.5-6">Note that the <tt>session</tt> fields in aggregate constitute a pool of open connections to different servers.</t>
+        <t indent="0" pn="section-4.5-7">With the exception of the <tt>session</tt>, <tt>queries</tt>, and <tt>last-activity</tt> fields, this cache information should be kept across restart of the server unless explicitly cleared by administrative action.</t>
+        <t indent="0" pn="section-4.5-8">This document uses the notation <tt>E-foo[X]</tt> to indicate the value of field <tt>foo</tt> for encrypted transport <tt>E</tt> to IP address <tt>X</tt>.</t>
+        <t indent="0" pn="section-4.5-9">For example, <tt>DoT-initiated[192.0.2.4]</tt> represents the timestamp when the most recent DoT connection packet was sent to IP address <tt>192.0.2.4</tt>.</t>
+        <t indent="0" pn="section-4.5-10">This document uses the notation <tt>any-E-queries</tt> to indicate any query on an encrypted transport.</t>
+      </section>
+      <section anchor="probing-policy" numbered="true" removeInRFC="false" toc="include" pn="section-4.6">
+        <name slugifiedName="name-probing-policy">Probing Policy</name>
+        <t indent="0" pn="section-4.6-1">When a recursive resolver discovers the need for an authoritative lookup to an authoritative DNS server using that server's IP address <tt>X</tt>, it retrieves the connection state records described in <xref target="conn-state" format="default" sectionFormat="of" derivedContent="Section 4.5"/> associated with <tt>X</tt> from its cache.</t>
+        <t indent="0" pn="section-4.6-2">Some of the subsections that follow offer pseudocode that corresponds roughly to an asynchronous programming model for a recursive resolver's interactions with authoritative servers.
+All subsections also presume that the time of the discovery of the need for lookup is time <tt>T0</tt>.</t>
+        <t indent="0" pn="section-4.6-3">If any of the records discussed here are absent, they are treated as <tt>null</tt>.</t>
+        <t indent="0" pn="section-4.6-4">The recursive resolver must decide whether to initially send a query over Do53, or over either of the supported encrypted transports (DoT or DoQ).</t>
+        <t indent="0" pn="section-4.6-5">Note that a recursive resolver might initiate this query via any or all of the known transports.
+When multiple queries are sent, the initial packets for each connection can be sent concurrently, similar to the method used in the document known as "Happy Eyeballs" (<xref target="RFC8305" format="default" sectionFormat="of" derivedContent="RFC8305"/>).
+However, unlike Happy Eyeballs, when one transport succeeds, the other connections do not need to be terminated; instead they can be continued to establish whether the IP address <tt>X</tt> is capable of communicating on the relevant transport.</t>
+        <section anchor="sending-a-query-over-do53" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.1">
+          <name slugifiedName="name-sending-a-query-over-do53">Sending a Query over Do53</name>
+          <t indent="0" pn="section-4.6.1-1">For any of the supported encrypted transports <tt>E</tt>, the recursive resolver <bcp14>SHOULD NOT</bcp14> send a query to <tt>X</tt>  over Do53 if either of the following holds true:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.1-2">
+            <li pn="section-4.6.1-2.1">
+              <t indent="0" pn="section-4.6.1-2.1.1"><tt>E-session[X]</tt> is in the <tt>established</tt> state, or</t>
+            </li>
+            <li pn="section-4.6.1-2.2">
+              <t indent="0" pn="section-4.6.1-2.2.1"><tt>E-status[X]</tt> is <tt>success</tt> and <tt>(T0 - E-last-response[X]) &lt; persistence</tt>.</t>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.1-3">This indicates that one successful connection to a server that the client then closed cleanly would result in the client not sending the next query over Do53.</t>
+          <t indent="0" pn="section-4.6.1-4">Otherwise, if there is no outstanding session for any encrypted transport, and the last successful encrypted transport connection was long ago, the recursive resolver sends a query to <tt>X</tt> over Do53.
+When it does so, it inserts a handle for the query in <tt>Do53-queries[X]</tt>.</t>
+        </section>
+        <section anchor="receiving-a-response-over-do53" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.2">
+          <name slugifiedName="name-receiving-a-response-over-d">Receiving a Response over Do53</name>
+          <t indent="0" pn="section-4.6.2-1">When any response <tt>R</tt> (a well-formed DNS response, asynchronous timeout, asynchronous destination port unreachable, etc.) for query <tt>Q</tt> arrives at the recursive resolver in cleartext sent over Do53 from an authoritative server with IP address <tt>X</tt>, the recursive resolver should perform the following.</t>
+          <t indent="0" pn="section-4.6.2-2">If <tt>Q</tt> is not in <tt>Do53-queries[X]</tt>:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.2-3">
+            <li pn="section-4.6.2-3.1">
+              <t indent="0" pn="section-4.6.2-3.1.1">process <tt>R</tt> no further (do not respond to a cleartext response to a query that is not outstanding).</t>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.2-4">Otherwise, if <tt>Q</tt> was marked as already processed:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.2-5">
+            <li pn="section-4.6.2-5.1">
+              <t indent="0" pn="section-4.6.2-5.1.1">remove <tt>Q</tt> from <tt>Do53-queries[X]</tt>,</t>
+            </li>
+            <li pn="section-4.6.2-5.2">
+              <t indent="0" pn="section-4.6.2-5.2.1">discard any content from the response, and process <tt>R</tt> no further.</t>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.2-6">If <tt>R</tt> is a well-formed DNS response:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.2-7">
+            <li pn="section-4.6.2-7.1">
+              <t indent="0" pn="section-4.6.2-7.1.1">remove <tt>Q</tt> from <tt>Do53-queries[X]</tt>,</t>
+            </li>
+            <li pn="section-4.6.2-7.2">
+              <t indent="0" pn="section-4.6.2-7.2.1">process <tt>R</tt> further, and</t>
+            </li>
+            <li pn="section-4.6.2-7.3">
+              <t indent="0" pn="section-4.6.2-7.3.1">for each supported encrypted transport <tt>E</tt>:
+              </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.2-7.3.2">
+                <li pn="section-4.6.2-7.3.2.1">
+                  <t indent="0" pn="section-4.6.2-7.3.2.1.1">if <tt>Q</tt> is in <tt>E-queries[X]</tt>, then
+                  </t>
+                  <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.2-7.3.2.1.2">
+                    <li pn="section-4.6.2-7.3.2.1.2.1">
+                      <t indent="0" pn="section-4.6.2-7.3.2.1.2.1.1">mark <tt>Q</tt> as already processed.</t>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.2-8">However, if <tt>R</tt> is malformed or a failure (e.g., a timeout or destination port unreachable), and</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.2-9">
+            <li pn="section-4.6.2-9.1">
+              <t indent="0" pn="section-4.6.2-9.1.1">if <tt>Q</tt> is not in any of <tt>any-E-queries[X]</tt>, then
+              </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.2-9.1.2">
+                <li pn="section-4.6.2-9.1.2.1">
+                  <t indent="0" pn="section-4.6.2-9.1.2.1.1">treat this as a failed query (i.e., follow the resolver's policy for unresponsive or non-compliant authoritatives, such as falling back to another authoritative server, returning <tt>SERVFAIL</tt> to the requesting client, and so on).</t>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section anchor="initiating-a-connection-over-encrypted-transport" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.3">
+          <name slugifiedName="name-initiating-a-connection-ove">Initiating a Connection over Encrypted Transport</name>
+          <t indent="0" pn="section-4.6.3-1">If any <tt>E-session[X]</tt> is in the <tt>established</tt> state, the recursive resolver <bcp14>SHOULD NOT</bcp14> initiate a new connection or resume a previous connection to <tt>X</tt> over Do53 or <tt>E</tt>, but should instead send queries to <tt>X</tt> through the existing session (see <xref target="sending" format="default" sectionFormat="of" derivedContent="Section 4.6.8"/>).</t>
+          <t indent="0" pn="section-4.6.3-2">If the recursive resolver prefers one encrypted transport over another, but only the unpreferred encrypted transport is in the <tt>established</tt> state, it <bcp14>MAY</bcp14> also initiate a new connection to <tt>X</tt> over its preferred encrypted transport while concurrently sending the query over the <tt>established</tt> encrypted transport <tt>E</tt>.</t>
+          <t indent="0" pn="section-4.6.3-3">Before considering whether to initiate a new connection over an encrypted transport, the timer should be examined, and its state possibly refreshed, for encrypted transport <tt>E</tt> to authoritative IP address <tt>X</tt>.</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.3-4">
+            <li pn="section-4.6.3-4.1">
+              <t indent="0" pn="section-4.6.3-4.1.1">If <tt>E-session[X]</tt> is in state <tt>pending</tt>, and</t>
+            </li>
+            <li pn="section-4.6.3-4.2">
+              <t indent="0" pn="section-4.6.3-4.2.1"><tt>T0 - E-initiated[X] &gt; E-timeout</tt>, then
+              </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.3-4.2.2">
+                <li pn="section-4.6.3-4.2.2.1">
+                  <t indent="0" pn="section-4.6.3-4.2.2.1.1">set <tt>E-session[X]</tt> to <tt>null</tt>, and</t>
+                </li>
+                <li pn="section-4.6.3-4.2.2.2">
+                  <t indent="0" pn="section-4.6.3-4.2.2.2.1">set <tt>E-status[X]</tt> to <tt>timeout</tt>.</t>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.3-5">When resources are available to attempt a new encrypted transport, the recursive resolver should only initiate a new connection to <tt>X</tt> over <tt>E</tt> as long as one of the following holds true:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.3-6">
+            <li pn="section-4.6.3-6.1">
+              <t indent="0" pn="section-4.6.3-6.1.1"><tt>E-status[X]</tt> is <tt>success</tt>, or</t>
+            </li>
+            <li pn="section-4.6.3-6.2">
+              <t indent="0" pn="section-4.6.3-6.2.1"><tt>E-status[X]</tt> is either <tt>fail</tt> or <tt>timeout</tt> and <tt>(T0 - E-completed[X]) &gt; damping</tt>, or</t>
+            </li>
+            <li pn="section-4.6.3-6.3">
+              <t indent="0" pn="section-4.6.3-6.3.1"><tt>E-status[X]</tt> is <tt>null</tt> and <tt>E-initiated[X]</tt> is <tt>null</tt>.</t>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.3-7">When initiating a session to <tt>X</tt> over encrypted transport <tt>E</tt>, if <tt>E-resumptions[X]</tt> is not empty, one ticket should be popped off the stack and used to try to resume a previous session.
+Otherwise, the initial ClientHello handshake should not try to resume any session.</t>
+          <t indent="0" pn="section-4.6.3-8">When initiating a connection, the recursive resolver should take the following steps:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.3-9">
+            <li pn="section-4.6.3-9.1">
+              <t indent="0" pn="section-4.6.3-9.1.1">set <tt>E-initiated[X]</tt> to <tt>T0</tt>,</t>
+            </li>
+            <li pn="section-4.6.3-9.2">
+              <t indent="0" pn="section-4.6.3-9.2.1">store a handle for the new session (which should have <tt>pending</tt> state) in <tt>E-session[X]</tt>, and</t>
+            </li>
+            <li pn="section-4.6.3-9.3">
+              <t indent="0" pn="section-4.6.3-9.3.1">insert a handle for the query that prompted this connection in <tt>E-queries[X]</tt>, with status <tt>unsent</tt> or <tt>early</tt>, as appropriate (see below).</t>
+            </li>
+          </ul>
+          <section anchor="early-data" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.6.3.1">
+            <name slugifiedName="name-early-data">Early Data</name>
+            <t indent="0" pn="section-4.6.3.1-1">Modern encrypted transports like TLS 1.3 offer the chance to send "early data" from the client in the initial ClientHello in some contexts.
+A recursive resolver that initiates a connection over an encrypted transport according to this guidance in a context where early data is possible <bcp14>SHOULD</bcp14> send the DNS query that prompted the connection in the early data, according to the sending guidance in <xref target="sending" format="default" sectionFormat="of" derivedContent="Section 4.6.8"/>.</t>
+            <t indent="0" pn="section-4.6.3.1-2">If it does so, the status of <tt>Q</tt> in <tt>E-queries[X]</tt> should be set to <tt>early</tt> instead of <tt>unsent</tt>.</t>
+          </section>
+          <section anchor="resumption" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.6.3.2">
+            <name slugifiedName="name-resumption-tickets">Resumption Tickets</name>
+            <t indent="0" pn="section-4.6.3.2-1">When initiating a new connection (whether by resuming an old session or not), the recursive resolver <bcp14>SHOULD</bcp14> request a session resumption ticket from the authoritative server.
+If the authoritative server supplies a resumption ticket, the recursive resolver pushes it into the stack at <tt>E-resumptions[X]</tt>.</t>
+          </section>
+          <section anchor="recursive-sni" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.6.3.3">
+            <name slugifiedName="name-server-name-indication-2">Server Name Indication</name>
+            <t indent="0" pn="section-4.6.3.3-1">For modern encrypted transports like TLS 1.3, most client implementations expect to send a Server Name Indication (SNI) in the ClientHello.</t>
+            <t indent="0" pn="section-4.6.3.3-2">There are two complications with selecting or sending an SNI in this unilateral probing.</t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.3.3-3">
+              <li pn="section-4.6.3.3-3.1">
+                <t indent="0" pn="section-4.6.3.3-3.1.1">Some authoritative servers are known by more than one name; selecting a single name to use for a given connection may be difficult or impossible.</t>
+              </li>
+              <li pn="section-4.6.3.3-3.2">
+                <t indent="0" pn="section-4.6.3.3-3.2.1">In most configurations, the contents of the SNI field are exposed on the wire to a passive adversary.
+This potentially reveals additional information about which query is being made based on the NS of the query itself.</t>
+              </li>
+            </ul>
+            <t indent="0" pn="section-4.6.3.3-4">To avoid additional leakage and complexity, a recursive resolver following this guidance <bcp14>SHOULD NOT</bcp14> send an SNI to the authoritative server when attempting encrypted transport.</t>
+            <t indent="0" pn="section-4.6.3.3-5">If the recursive resolver needs to send an SNI to the authoritative server for some reason not found in this document, using Encrypted ClientHello (<xref target="I-D.ietf-tls-esni" format="default" sectionFormat="of" derivedContent="TLS-ECH"/>) would reduce leakage.</t>
+          </section>
+          <section anchor="authoritative-server-authentication" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.6.3.4">
+            <name slugifiedName="name-authoritative-server-authen">Authoritative Server Authentication</name>
+            <t indent="0" pn="section-4.6.3.4-1">Because this probing policy is unilateral and opportunistic, the client connecting under this policy <bcp14>MUST</bcp14> accept any certificate presented by the server.
+If the client cannot verify the server's identity, it <bcp14>MAY</bcp14> use that information for reporting, logging, or other analysis purposes; however, it <bcp14>MUST NOT</bcp14> reject the connection due to the authentication failure, as the result would be falling back to cleartext, which would leak the content of the session to a passive network monitor.</t>
+          </section>
+        </section>
+        <section anchor="establish-encrypted" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.4">
+          <name slugifiedName="name-establishing-an-encrypted-t">Establishing an Encrypted Transport Connection</name>
+          <t indent="0" pn="section-4.6.4-1">When an encrypted transport connection actually completes (e.g., the TLS handshake completes) at time <tt>T1</tt>, the recursive resolver sets <tt>E-completed[X]</tt> to <tt>T1</tt> and does the following.</t>
+          <t indent="0" pn="section-4.6.4-2">If the handshake completed successfully, the recursive resolver:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.4-3">
+            <li pn="section-4.6.4-3.1">
+              <t indent="0" pn="section-4.6.4-3.1.1">updates <tt>E-session[X]</tt> so that it is in state <tt>established</tt>,</t>
+            </li>
+            <li pn="section-4.6.4-3.2">
+              <t indent="0" pn="section-4.6.4-3.2.1">sets <tt>E-status[X]</tt> to <tt>success</tt>,</t>
+            </li>
+            <li pn="section-4.6.4-3.3">
+              <t indent="0" pn="section-4.6.4-3.3.1">sets <tt>E-last-response[X]</tt> to <tt>T1</tt>,</t>
+            </li>
+            <li pn="section-4.6.4-3.4">
+              <t indent="0" pn="section-4.6.4-3.4.1">sets <tt>E-completed[X]</tt> to <tt>T1</tt>, and</t>
+            </li>
+            <li pn="section-4.6.4-3.5">
+              <t indent="0" pn="section-4.6.4-3.5.1">for each query <tt>Q</tt> in <tt>E-queries[X]</tt>:
+              </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.4-3.5.2">
+                <li pn="section-4.6.4-3.5.2.1">
+                  <t indent="0" pn="section-4.6.4-3.5.2.1.1">if early data was accepted and <tt>Q</tt> is <tt>early</tt>, then
+                  </t>
+                  <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.4-3.5.2.1.2">
+                    <li pn="section-4.6.4-3.5.2.1.2.1">
+                      <t indent="0" pn="section-4.6.4-3.5.2.1.2.1.1">sets the status of <tt>Q</tt> to <tt>sent</tt>.</t>
+                    </li>
+                  </ul>
+                </li>
+                <li pn="section-4.6.4-3.5.2.2">
+                  <t indent="0" pn="section-4.6.4-3.5.2.2.1">Otherwise:
+                  </t>
+                  <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.4-3.5.2.2.2">
+                    <li pn="section-4.6.4-3.5.2.2.2.1">
+                      <t indent="0" pn="section-4.6.4-3.5.2.2.2.1.1">sends <tt>Q</tt> through the session (see <xref target="sending" format="default" sectionFormat="of" derivedContent="Section 4.6.8"/>) and sets the status of <tt>Q</tt> to <tt>sent</tt>.</t>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section anchor="failing-to-establish-an-encrypted-transport-connection" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.5">
+          <name slugifiedName="name-failing-to-establish-an-enc">Failing to Establish an Encrypted Transport Connection</name>
+          <t indent="0" pn="section-4.6.5-1">If, at time <tt>T2</tt>, an encrypted transport handshake completes with a failure (e.g., a TLS alert):</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.5-2">
+            <li pn="section-4.6.5-2.1">
+              <t indent="0" pn="section-4.6.5-2.1.1">set <tt>E-session[X]</tt> to <tt>null</tt>,</t>
+            </li>
+            <li pn="section-4.6.5-2.2">
+              <t indent="0" pn="section-4.6.5-2.2.1">set <tt>E-status[X]</tt> to <tt>fail</tt>,</t>
+            </li>
+            <li pn="section-4.6.5-2.3">
+              <t indent="0" pn="section-4.6.5-2.3.1">set <tt>E-completed[X]</tt> to <tt>T2</tt>, and</t>
+            </li>
+            <li pn="section-4.6.5-2.4">
+              <t indent="0" pn="section-4.6.5-2.4.1">for each query <tt>Q</tt> in <tt>E-queries[X]</tt>:
+              </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.5-2.4.2">
+                <li pn="section-4.6.5-2.4.2.1">
+                  <t indent="0" pn="section-4.6.5-2.4.2.1.1">if <tt>Q</tt> is not present in any other <tt>any-E-queries[X]</tt> or in <tt>Do53-queries[X]</tt>, add <tt>Q</tt> to <tt>Do53-queries[X]</tt> and send query <tt>Q</tt> to <tt>X</tt> over Do53.</t>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.5-3">Note that this failure will trigger the recursive resolver to fall back to cleartext queries to the authoritative server at IP address <tt>X</tt>.
+It will retry encrypted transport to <tt>X</tt> once the <tt>damping</tt> timer has elapsed.</t>
+        </section>
+        <section anchor="e-failure" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.6">
+          <name slugifiedName="name-encrypted-transport-failure">Encrypted Transport Failure</name>
+          <t indent="0" pn="section-4.6.6-1">Once established, an encrypted transport might fail for a number of reasons (e.g., decryption failure or improper protocol sequence).</t>
+          <t indent="0" pn="section-4.6.6-2">If this happens:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.6-3">
+            <li pn="section-4.6.6-3.1">
+              <t indent="0" pn="section-4.6.6-3.1.1">set <tt>E-session[X]</tt> to <tt>null</tt>,</t>
+            </li>
+            <li pn="section-4.6.6-3.2">
+              <t indent="0" pn="section-4.6.6-3.2.1">set <tt>E-status[X]</tt> to <tt>fail</tt>, and</t>
+            </li>
+            <li pn="section-4.6.6-3.3">
+              <t indent="0" pn="section-4.6.6-3.3.1">for each query <tt>Q</tt> in <tt>E-queries[X]</tt>:
+              </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.6-3.3.2">
+                <li pn="section-4.6.6-3.3.2.1">
+                  <t indent="0" pn="section-4.6.6-3.3.2.1.1">if <tt>Q</tt> is not present in any other <tt>any-E-queries[X]</tt> or in <tt>Do53-queries[X]</tt>, add <tt>Q</tt> to <tt>Do53-queries[X]</tt> and send query <tt>Q</tt> to <tt>X</tt> over Do53.</t>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.6-4">Note that this failure will trigger the recursive resolver to fall back to cleartext queries to the authoritative server at IP address <tt>X</tt>.
+It will retry encrypted transport to <tt>X</tt> once the <tt>damping</tt> timer has elapsed.</t>
+        </section>
+        <section anchor="e-shutdown" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.7">
+          <name slugifiedName="name-handling-clean-shutdown-of-">Handling Clean Shutdown of an Encrypted Transport Connection</name>
+          <t indent="0" pn="section-4.6.7-1">At time <tt>T3</tt>, the recursive resolver may find that authoritative server <tt>X</tt> cleanly closes an existing outstanding connection (most likely due to resource exhaustion, see <xref target="authoritative-resource-exhaustion" format="default" sectionFormat="of" derivedContent="Section 3.4"/>).</t>
+          <t indent="0" pn="section-4.6.7-2">When this happens:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.7-3">
+            <li pn="section-4.6.7-3.1">
+              <t indent="0" pn="section-4.6.7-3.1.1">set <tt>E-session[X]</tt> to <tt>null</tt>, and</t>
+            </li>
+            <li pn="section-4.6.7-3.2">
+              <t indent="0" pn="section-4.6.7-3.2.1">for each query <tt>Q</tt> in <tt>E-queries[X]</tt>:
+              </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.7-3.2.2">
+                <li pn="section-4.6.7-3.2.2.1">
+                  <t indent="0" pn="section-4.6.7-3.2.2.1.1">if <tt>Q</tt> is not present in any other <tt>any-E-queries[X]</tt> or in <tt>Do53-queries[X]</tt>, add <tt>Q</tt> to <tt>Do53-queries[X]</tt> and send query <tt>Q</tt> to <tt>X</tt> over Do53.</t>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.7-4">Note that this premature shutdown will trigger the recursive resolver to fall back to cleartext queries to the authoritative server at IP address <tt>X</tt>.
+Any subsequent query to <tt>X</tt> will retry the encrypted connection promptly.</t>
+        </section>
+        <section anchor="sending" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.8">
+          <name slugifiedName="name-sending-a-query-over-encryp">Sending a Query over Encrypted Transport</name>
+          <t indent="0" pn="section-4.6.8-1">When sending a query to an authoritative server over encrypted transport at time <tt>T4</tt>, the recursive resolver should take a few reasonable steps to ensure privacy and efficiency.
+After sending query <tt>Q</tt>, the recursive resolver should:</t>
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-4.6.8-2">
+            <li pn="section-4.6.8-2.1">Ensure that <tt>Q</tt>'s state in <tt>E-queries[X]</tt> is set to <tt>sent</tt>.</li>
+            <li pn="section-4.6.8-2.2">Set <tt>E-last-activity[X]</tt> to <tt>T4</tt>.</li>
+          </ul>
+          <t indent="0" pn="section-4.6.8-3">The recursive resolver should also consider the guidance in the following subsections.</t>
+          <section anchor="pad-queries-to-mitigate-traffic-analysis" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.6.8.1">
+            <name slugifiedName="name-pad-queries-to-mitigate-tra">Pad Queries to Mitigate Traffic Analysis</name>
+            <t indent="0" pn="section-4.6.8.1-1">To increase the anonymity set for each query, the recursive resolver <bcp14>SHOULD</bcp14> use a sensible padding mechanism for all queries it sends.
+Specifically, a DoT client <bcp14>SHOULD</bcp14> use EDNS0 padding <xref target="RFC7830" format="default" sectionFormat="of" derivedContent="RFC7830"/>, and a DoQ client <bcp14>SHOULD</bcp14> follow the guidance in <xref section="5.4" sectionFormat="of" target="RFC9250" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9250#section-5.4" derivedContent="RFC9250"/>.
+How much to pad is out of scope of this document, but a reasonable suggestion can be found in <xref target="RFC8467" format="default" sectionFormat="of" derivedContent="RFC8467"/>.</t>
+          </section>
+          <section anchor="send-queries-in-separate-channels" numbered="true" removeInRFC="false" toc="exclude" pn="section-4.6.8.2">
+            <name slugifiedName="name-send-queries-in-separate-ch">Send Queries in Separate Channels</name>
+            <t indent="0" pn="section-4.6.8.2-1">When multiple queries are multiplexed on a single encrypted transport to a single authoritative server, the recursive resolver <bcp14>SHOULD</bcp14> pipeline queries and <bcp14>MUST</bcp14> be capable of receiving responses out of order.
+For guidance on how to best achieve this on a given encrypted transport, see <xref section="6.2.1.1" sectionFormat="of" target="RFC7766" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7766#section-6.2.1.1" derivedContent="RFC7766"/> (for DoT) and <xref section="5.6" sectionFormat="of" target="RFC9250" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9250#section-5.6" derivedContent="RFC9250"/> (for DoQ).</t>
+          </section>
+        </section>
+        <section anchor="receiving-encrypted" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.9">
+          <name slugifiedName="name-receiving-a-response-over-e">Receiving a Response over Encrypted Transport</name>
+          <t indent="0" pn="section-4.6.9-1">Even though session-level events on encrypted transports like clean shutdown (see <xref target="e-shutdown" format="default" sectionFormat="of" derivedContent="Section 4.6.7"/>) or encrypted transport failure (see <xref target="e-failure" format="default" sectionFormat="of" derivedContent="Section 4.6.6"/>) can happen, some events happen on encrypted transports that are specific to a query and are not session-wide.
+This subsection describes how the recursive resolver deals with events related to a specific query.</t>
+          <t indent="0" pn="section-4.6.9-2">When a query-specific response <tt>R</tt> (a well-formed DNS response or an asynchronous timeout) associated with query <tt>Q</tt> arrives at the recursive resolver over encrypted transport <tt>E</tt> from an authoritative server with IP address <tt>X</tt> at time <tt>T5</tt>, the recursive resolver should perform the following.</t>
+          <t indent="0" pn="section-4.6.9-3">If <tt>Q</tt> is not in <tt>E-queries[X]</tt>:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.9-4">
+            <li pn="section-4.6.9-4.1">
+              <t indent="0" pn="section-4.6.9-4.1.1">discard the response and process <tt>R</tt> no further (do not respond to an encrypted response to a query that is not outstanding).</t>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.9-5">Otherwise:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.9-6">
+            <li pn="section-4.6.9-6.1">
+              <t indent="0" pn="section-4.6.9-6.1.1">remove <tt>Q</tt> from <tt>E-queries[X]</tt>,</t>
+            </li>
+            <li pn="section-4.6.9-6.2">
+              <t indent="0" pn="section-4.6.9-6.2.1">set <tt>E-last-activity[X]</tt> to <tt>T5</tt>, and</t>
+            </li>
+            <li pn="section-4.6.9-6.3">
+              <t indent="0" pn="section-4.6.9-6.3.1">set <tt>E-last-response[X]</tt> to <tt>T5</tt>.</t>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.9-7">If <tt>Q</tt> was marked as already processed:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.9-8">
+            <li pn="section-4.6.9-8.1">
+              <t indent="0" pn="section-4.6.9-8.1.1">discard the response and process the response no further.</t>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.9-9">If <tt>R</tt> is a well-formed DNS response:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.9-10">
+            <li pn="section-4.6.9-10.1">
+              <t indent="0" pn="section-4.6.9-10.1.1">process <tt>R</tt> further, and</t>
+            </li>
+            <li pn="section-4.6.9-10.2">
+              <t indent="0" pn="section-4.6.9-10.2.1">for each supported encrypted transport <tt>N</tt> other than <tt>E</tt>:
+              </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.9-10.2.2">
+                <li pn="section-4.6.9-10.2.2.1">
+                  <t indent="0" pn="section-4.6.9-10.2.2.1.1">if <tt>Q</tt> is in <tt>N-queries[X]</tt>, then
+                  </t>
+                  <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.9-10.2.2.1.2">
+                    <li pn="section-4.6.9-10.2.2.1.2.1">
+                      <t indent="0" pn="section-4.6.9-10.2.2.1.2.1.1">mark <tt>Q</tt> as already processed.</t>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li pn="section-4.6.9-10.3">
+              <t indent="0" pn="section-4.6.9-10.3.1">If <tt>Q</tt> is in <tt>Do53-queries[X]</tt>:
+              </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.9-10.3.2">
+                <li pn="section-4.6.9-10.3.2.1">
+                  <t indent="0" pn="section-4.6.9-10.3.2.1.1">mark <tt>Q</tt> as already processed.</t>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <t indent="0" pn="section-4.6.9-11">However, if <tt>R</tt> is malformed or a failure (e.g., timeout), and</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.9-12">
+            <li pn="section-4.6.9-12.1">
+              <t indent="0" pn="section-4.6.9-12.1.1">if <tt>Q</tt> is not in <tt>Do53-queries[X]</tt> or in any of <tt>any-E-queries[X]</tt>, then
+              </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.9-12.1.2">
+                <li pn="section-4.6.9-12.1.2.1">
+                  <t indent="0" pn="section-4.6.9-12.1.2.1.1">treat this as a failed query (i.e., follow the resolver's policy for unresponsive or non-compliant authoritative servers, such as falling back to another authoritative server, returning <tt>SERVFAIL</tt> to the requesting client, and so on).</t>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+        <section anchor="recursive-resource-exhaustion" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.10">
+          <name slugifiedName="name-resource-exhaustion-2">Resource Exhaustion</name>
+          <t indent="0" pn="section-4.6.10-1">To keep resources under control, a recursive resolver should proactively manage outstanding encrypted connections.
+<xref section="5.5" sectionFormat="of" target="RFC9250" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9250#section-5.5" derivedContent="RFC9250"/> offers useful guidance for clients managing DoQ connections.
+<xref section="3.4" sectionFormat="of" target="RFC7858" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7858#section-3.4" derivedContent="RFC7858"/> offers useful guidance for clients managing DoT connections.</t>
+          <t indent="0" pn="section-4.6.10-2">Even with sensible connection management, a recursive resolver doing unilateral probing may find resources unexpectedly scarce and may need to close some outstanding connections.</t>
+          <t indent="0" pn="section-4.6.10-3">In such a situation, the recursive resolver <bcp14>SHOULD</bcp14> use a reasonable prioritization scheme to close outstanding connections.</t>
+          <t indent="0" pn="section-4.6.10-4">One reasonable prioritization scheme would be to close outstanding <tt>established</tt> sessions based on <tt>E-last-activity[X]</tt> (i.e, the oldest timestamp gets closed first).</t>
+          <t indent="0" pn="section-4.6.10-5">Note that when resources are limited, a recursive resolver following this guidance may also choose not to initiate new connections for encrypted transport.</t>
+        </section>
+        <section anchor="maintaining-connections" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.11">
+          <name slugifiedName="name-maintaining-connections">Maintaining Connections</name>
+          <t indent="0" pn="section-4.6.11-1">Some recursive resolvers looking to amortize connection costs and minimize latency <bcp14>MAY</bcp14> choose to synthesize queries to a particular authoritative server to keep an encrypted transport session active.</t>
+          <t indent="0" pn="section-4.6.11-2">A recursive resolver that adopts this approach should try to align the synthesized queries with other optimizations.
+For example, a recursive resolver that "pre-fetches" a particular resource record to keep its cache "hot" can send that query over an established encrypted transport session.</t>
+        </section>
+        <section anchor="additional-tuning" numbered="true" removeInRFC="false" toc="include" pn="section-4.6.12">
+          <name slugifiedName="name-additional-tuning">Additional Tuning</name>
+          <t indent="0" pn="section-4.6.12-1">A recursive resolver's state table for an authoritative server can contain additional information beyond what is described above.
+The recursive resolver might use that additional state to change the way it interacts with the authoritative server in the future.
+Some examples of additional states include the following.</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.6.12-2">
+            <li pn="section-4.6.12-2.1">
+              <t indent="0" pn="section-4.6.12-2.1.1">Whether the server accepts "early data" over a transport such as DoQ.</t>
+            </li>
+            <li pn="section-4.6.12-2.2">
+              <t indent="0" pn="section-4.6.12-2.2.1">Whether the server fails to respond to queries after the handshake succeeds.</t>
+            </li>
+            <li pn="section-4.6.12-2.3">
+              <t indent="0" pn="section-4.6.12-2.3.1">Tracking the round-trip time of queries to the server.</t>
+            </li>
+            <li pn="section-4.6.12-2.4">
+              <t indent="0" pn="section-4.6.12-2.4.1">Tracking the number of timeouts (compared to the number of successful queries).</t>
+            </li>
+          </ul>
+        </section>
+      </section>
+    </section>
+    <section anchor="iana-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-5-1">This document has no IANA actions.</t>
+    </section>
+    <section anchor="privacy-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-privacy-considerations">Privacy Considerations</name>
+      <section anchor="sni-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-server-name-indication-3">Server Name Indication</name>
+        <t indent="0" pn="section-6.1-1">A recursive resolver querying an authoritative server over DoT or DoQ that sends a Server Name Indication (SNI) in the clear in the cryptographic handshake leaks information about the intended query to a passive network observer.</t>
+        <t indent="0" pn="section-6.1-2">In particular, if two different zones refer to the same nameserver IP addresses via differently named NS records, a passive network observer can distinguish the queries to one zone from the queries to the other.</t>
+        <t indent="0" pn="section-6.1-3">Omitting SNI entirely, or using Encrypted ClientHello to hide the intended SNI, avoids this additional leakage.
+However, a series of queries that leak this information is still an improvement over cleartext.</t>
+      </section>
+      <section anchor="modeling-the-probability-of-encryption" numbered="true" removeInRFC="false" toc="include" pn="section-6.2">
+        <name slugifiedName="name-modeling-the-probability-of">Modeling the Probability of Encryption</name>
+        <t indent="0" pn="section-6.2-1">Given that there are many parameter choices that can be made by recursive resolvers and authoritative servers, it is reasonable to consider the probability that queries would be encrypted.
+Such a measurement would also certainly be affected by the types of queries being sent by the recursive resolver, which, in turn, is also related to the types of queries that are sent to the recursive resolver by the stub resolvers and forwarders downstream.
+Doing this type of research would be valuable to the DNS community after initial implementation by a variety of recursive resolvers and authoritative servers because it would help assess the overall DNS privacy value of implementing the protocol.
+Thus, it would be useful if recursive resolvers and authoritative servers reported percentages of queries sent and received over the different transports.</t>
+      </section>
+    </section>
+    <section anchor="security-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-7-1">The guidance in this document provides defense against passive network monitors for most queries.
+It does not defend against active attackers.
+It can also leak some queries and their responses due to Happy Eyeballs optimizations (<xref target="RFC8305" format="default" sectionFormat="of" derivedContent="RFC8305"/>) when the recursive resolver's cache is cold.</t>
+      <t indent="0" pn="section-7-2">Implementation of the guidance in this document should increase deployment of opportunistic encrypted DNS transport between recursive resolvers and authoritative servers at little operational risk.</t>
+      <t indent="0" pn="section-7-3">However, implementers cannot rely on the guidance in this document for robust defense against active attackers: they should treat it as a stepping stone en route to stronger defense.</t>
+      <t indent="0" pn="section-7-4">In particular, a recursive resolver following the guidance in this document can easily be forced by an active attacker to fall back to cleartext DNS queries.
+Or, an active attacker could position itself as a machine-in-the-middle, which the recursive resolver would not defend against or detect due to lack of server authentication.
+Defending against these attacks without risking additional unexpected protocol failures would require signaling and coordination that are out of scope for this document.</t>
+      <t indent="0" pn="section-7-5">This guidance is only one part of operating a privacy-preserving DNS ecosystem.
+A privacy-preserving recursive resolver should adopt other practices as well, such as QNAME minimization (<xref target="RFC9156" format="default" sectionFormat="of" derivedContent="RFC9156"/>), local root zone (<xref target="RFC8806" format="default" sectionFormat="of" derivedContent="RFC8806"/>), etc., to reduce the overall leakage of query information that could infringe on the client's privacy.</t>
+    </section>
+    <section anchor="operational-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-operational-considerations">Operational Considerations</name>
+      <t indent="0" pn="section-8-1">As recursive resolvers implement this protocol, authoritative servers will see more probing on port 853 of IP addresses that are associated with NS records.
+Such probing of an authoritative server should generally not cause any significant problems.  If the authoritative server is not supporting this protocol, it will not respond on port 853; if it is supporting this protocol, it will act accordingly.</t>
+      <t indent="0" pn="section-8-2">However, a system that is a public recursive resolver that supports DoT and/or DoQ may also have an IP address that is associated with NS records.
+This could be accidental (such as a glue record with the wrong target address) or intentional.
+In such a case, a recursive resolver following this protocol will look for authoritative answers to ports 53 and 853 on that IP address. Additionally, the DNS server answering on port 853 would need to be able to differentiate queries for recursive answers from queries for authoritative answers (e.g., by having the authoritative server handle all queries that have the Recursion Desired (RD) flag unset).</t>
+      <t indent="0" pn="section-8-3">As discussed in <xref target="security-considerations" format="default" sectionFormat="of" derivedContent="Section 7"/>, the protocol described in this document provides no defense against active attackers.
+On a network where a captive portal is operating, some communications may be actively intercepted (e.g., when the network tries to redirect a user to complete an interaction with a captive portal server).
+A recursive resolver operating on a node that performs captive portal detection and Internet connectivity checks <bcp14>SHOULD</bcp14> delay encrypted transport probes to authoritative servers until after the node's Internet connectivity check policy has been satisfied.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-dnsop-dns-error-reporting" to="DNS-ER"/>
+    <displayreference target="I-D.ietf-tls-esni" to="TLS-ECH"/>
+    <references pn="section-9">
+      <name slugifiedName="name-references">References</name>
+      <references anchor="sec-normative-references" pn="section-9.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC7301" target="https://www.rfc-editor.org/info/rfc7301" quoteTitle="true" derivedAnchor="RFC7301">
+          <front>
+            <title>Transport Layer Security (TLS) Application-Layer Protocol Negotiation Extension</title>
+            <author fullname="S. Friedl" initials="S." surname="Friedl"/>
+            <author fullname="A. Popov" initials="A." surname="Popov"/>
+            <author fullname="A. Langley" initials="A." surname="Langley"/>
+            <author fullname="E. Stephan" initials="E." surname="Stephan"/>
+            <date month="July" year="2014"/>
+            <abstract>
+              <t indent="0">This document describes a Transport Layer Security (TLS) extension for application-layer protocol negotiation within the TLS handshake. For instances in which multiple application protocols are supported on the same TCP or UDP port, this extension allows the application layer to negotiate which protocol will be used within the TLS connection.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7301"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7301"/>
+        </reference>
+        <reference anchor="RFC7858" target="https://www.rfc-editor.org/info/rfc7858" quoteTitle="true" derivedAnchor="RFC7858">
+          <front>
+            <title>Specification for DNS over Transport Layer Security (TLS)</title>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <author fullname="L. Zhu" initials="L." surname="Zhu"/>
+            <author fullname="J. Heidemann" initials="J." surname="Heidemann"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This document describes the use of Transport Layer Security (TLS) to provide privacy for DNS. Encryption provided by TLS eliminates opportunities for eavesdropping and on-path tampering with DNS queries in the network, such as discussed in RFC 7626. In addition, this document specifies two usage profiles for DNS over TLS and provides advice on performance considerations to minimize overhead from using TCP and TLS with DNS.</t>
+              <t indent="0">This document focuses on securing stub-to-recursive traffic, as per the charter of the DPRIVE Working Group. It does not prevent future applications of the protocol to recursive-to-authoritative traffic.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7858"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7858"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC9250" target="https://www.rfc-editor.org/info/rfc9250" quoteTitle="true" derivedAnchor="RFC9250">
+          <front>
+            <title>DNS over Dedicated QUIC Connections</title>
+            <author fullname="C. Huitema" initials="C." surname="Huitema"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <date month="May" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes the use of QUIC to provide transport confidentiality for DNS. The encryption provided by QUIC has similar properties to those provided by TLS, while QUIC transport eliminates the head-of-line blocking issues inherent with TCP and provides more efficient packet-loss recovery than UDP. DNS over QUIC (DoQ) has privacy properties similar to DNS over TLS (DoT) specified in RFC 7858, and latency characteristics similar to classic DNS over UDP. This specification describes the use of DoQ as a general-purpose transport for DNS and includes the use of DoQ for stub to recursive, recursive to authoritative, and zone transfer scenarios.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9250"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9250"/>
+        </reference>
+      </references>
+      <references anchor="sec-informative-references" pn="section-9.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC1035" target="https://www.rfc-editor.org/info/rfc1035" quoteTitle="true" derivedAnchor="RFC1035">
+          <front>
+            <title>Domain names - implementation and specification</title>
+            <author fullname="P. Mockapetris" initials="P." surname="Mockapetris"/>
+            <date month="November" year="1987"/>
+            <abstract>
+              <t indent="0">This RFC is the revised specification of the protocol and format used in the implementation of the Domain Name System. It obsoletes RFC-883. This memo documents the details of the domain name client - server communication.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="13"/>
+          <seriesInfo name="RFC" value="1035"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1035"/>
+        </reference>
+        <reference anchor="RFC7435" target="https://www.rfc-editor.org/info/rfc7435" quoteTitle="true" derivedAnchor="RFC7435">
+          <front>
+            <title>Opportunistic Security: Some Protection Most of the Time</title>
+            <author fullname="V. Dukhovni" initials="V." surname="Dukhovni"/>
+            <date month="December" year="2014"/>
+            <abstract>
+              <t indent="0">This document defines the concept "Opportunistic Security" in the context of communications protocols. Protocol designs based on Opportunistic Security use encryption even when authentication is not available, and use authentication when possible, thereby removing barriers to the widespread use of encryption on the Internet.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7435"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7435"/>
+        </reference>
+        <reference anchor="RFC7672" target="https://www.rfc-editor.org/info/rfc7672" quoteTitle="true" derivedAnchor="RFC7672">
+          <front>
+            <title>SMTP Security via Opportunistic DNS-Based Authentication of Named Entities (DANE) Transport Layer Security (TLS)</title>
+            <author fullname="V. Dukhovni" initials="V." surname="Dukhovni"/>
+            <author fullname="W. Hardaker" initials="W." surname="Hardaker"/>
+            <date month="October" year="2015"/>
+            <abstract>
+              <t indent="0">This memo describes a downgrade-resistant protocol for SMTP transport security between Message Transfer Agents (MTAs), based on the DNS-Based Authentication of Named Entities (DANE) TLSA DNS record. Adoption of this protocol enables an incremental transition of the Internet email backbone to one using encrypted and authenticated Transport Layer Security (TLS).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7672"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7672"/>
+        </reference>
+        <reference anchor="RFC7766" target="https://www.rfc-editor.org/info/rfc7766" quoteTitle="true" derivedAnchor="RFC7766">
+          <front>
+            <title>DNS Transport over TCP - Implementation Requirements</title>
+            <author fullname="J. Dickinson" initials="J." surname="Dickinson"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="R. Bellis" initials="R." surname="Bellis"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <date month="March" year="2016"/>
+            <abstract>
+              <t indent="0">This document specifies the requirement for support of TCP as a transport protocol for DNS implementations and provides guidelines towards DNS-over-TCP performance on par with that of DNS-over-UDP. This document obsoletes RFC 5966 and therefore updates RFC 1035 and RFC 1123.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7766"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7766"/>
+        </reference>
+        <reference anchor="RFC7830" target="https://www.rfc-editor.org/info/rfc7830" quoteTitle="true" derivedAnchor="RFC7830">
+          <front>
+            <title>The EDNS(0) Padding Option</title>
+            <author fullname="A. Mayrhofer" initials="A." surname="Mayrhofer"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This document specifies the EDNS(0) "Padding" option, which allows DNS clients and servers to pad request and response messages by a variable number of octets.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7830"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7830"/>
+        </reference>
+        <reference anchor="RFC8305" target="https://www.rfc-editor.org/info/rfc8305" quoteTitle="true" derivedAnchor="RFC8305">
+          <front>
+            <title>Happy Eyeballs Version 2: Better Connectivity Using Concurrency</title>
+            <author fullname="D. Schinazi" initials="D." surname="Schinazi"/>
+            <author fullname="T. Pauly" initials="T." surname="Pauly"/>
+            <date month="December" year="2017"/>
+            <abstract>
+              <t indent="0">Many communication protocols operating over the modern Internet use hostnames. These often resolve to multiple IP addresses, each of which may have different performance and connectivity characteristics. Since specific addresses or address families (IPv4 or IPv6) may be blocked, broken, or sub-optimal on a network, clients that attempt multiple connections in parallel have a chance of establishing a connection more quickly. This document specifies requirements for algorithms that reduce this user-visible delay and provides an example algorithm, referred to as "Happy Eyeballs". This document obsoletes the original algorithm description in RFC 6555.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8305"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8305"/>
+        </reference>
+        <reference anchor="RFC8460" target="https://www.rfc-editor.org/info/rfc8460" quoteTitle="true" derivedAnchor="RFC8460">
+          <front>
+            <title>SMTP TLS Reporting</title>
+            <author fullname="D. Margolis" initials="D." surname="Margolis"/>
+            <author fullname="A. Brotman" initials="A." surname="Brotman"/>
+            <author fullname="B. Ramakrishnan" initials="B." surname="Ramakrishnan"/>
+            <author fullname="J. Jones" initials="J." surname="Jones"/>
+            <author fullname="M. Risher" initials="M." surname="Risher"/>
+            <date month="September" year="2018"/>
+            <abstract>
+              <t indent="0">A number of protocols exist for establishing encrypted channels between SMTP Mail Transfer Agents (MTAs), including STARTTLS, DNS- Based Authentication of Named Entities (DANE) TLSA, and MTA Strict Transport Security (MTA-STS). These protocols can fail due to misconfiguration or active attack, leading to undelivered messages or delivery over unencrypted or unauthenticated channels. This document describes a reporting mechanism and format by which sending systems can share statistics and specific information about potential failures with recipient domains. Recipient domains can then use this information to both detect potential attacks and diagnose unintentional misconfigurations.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8460"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8460"/>
+        </reference>
+        <reference anchor="RFC8461" target="https://www.rfc-editor.org/info/rfc8461" quoteTitle="true" derivedAnchor="RFC8461">
+          <front>
+            <title>SMTP MTA Strict Transport Security (MTA-STS)</title>
+            <author fullname="D. Margolis" initials="D." surname="Margolis"/>
+            <author fullname="M. Risher" initials="M." surname="Risher"/>
+            <author fullname="B. Ramakrishnan" initials="B." surname="Ramakrishnan"/>
+            <author fullname="A. Brotman" initials="A." surname="Brotman"/>
+            <author fullname="J. Jones" initials="J." surname="Jones"/>
+            <date month="September" year="2018"/>
+            <abstract>
+              <t indent="0">SMTP MTA Strict Transport Security (MTA-STS) is a mechanism enabling mail service providers (SPs) to declare their ability to receive Transport Layer Security (TLS) secure SMTP connections and to specify whether sending SMTP servers should refuse to deliver to MX hosts that do not offer TLS with a trusted server certificate.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8461"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8461"/>
+        </reference>
+        <reference anchor="RFC8467" target="https://www.rfc-editor.org/info/rfc8467" quoteTitle="true" derivedAnchor="RFC8467">
+          <front>
+            <title>Padding Policies for Extension Mechanisms for DNS (EDNS(0))</title>
+            <author fullname="A. Mayrhofer" initials="A." surname="Mayrhofer"/>
+            <date month="October" year="2018"/>
+            <abstract>
+              <t indent="0">RFC 7830 specifies the "Padding" option for Extension Mechanisms for DNS (EDNS(0)) but does not specify the actual padding length for specific applications. This memo lists the possible options ("padding policies"), discusses the implications of each option, and provides a recommended (experimental) option.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8467"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8467"/>
+        </reference>
+        <reference anchor="RFC8484" target="https://www.rfc-editor.org/info/rfc8484" quoteTitle="true" derivedAnchor="RFC8484">
+          <front>
+            <title>DNS Queries over HTTPS (DoH)</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="P. McManus" initials="P." surname="McManus"/>
+            <date month="October" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a protocol for sending DNS queries and getting DNS responses over HTTPS. Each DNS query-response pair is mapped into an HTTP exchange.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8484"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8484"/>
+        </reference>
+        <reference anchor="RFC8806" target="https://www.rfc-editor.org/info/rfc8806" quoteTitle="true" derivedAnchor="RFC8806">
+          <front>
+            <title>Running a Root Server Local to a Resolver</title>
+            <author fullname="W. Kumari" initials="W." surname="Kumari"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="June" year="2020"/>
+            <abstract>
+              <t indent="0">Some DNS recursive resolvers have longer-than-desired round-trip times to the closest DNS root server; those resolvers may have difficulty getting responses from the root servers, such as during a network attack. Some DNS recursive resolver operators want to prevent snooping by third parties of requests sent to DNS root servers. In both cases, resolvers can greatly decrease the round-trip time and prevent observation of requests by serving a copy of the full root zone on the same server, such as on a loopback address or in the resolver software. This document shows how to start and maintain such a copy of the root zone that does not cause problems for other users of the DNS, at the cost of adding some operational fragility for the operator.</t>
+              <t indent="0">This document obsoletes RFC 7706.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8806"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8806"/>
+        </reference>
+        <reference anchor="RFC9102" target="https://www.rfc-editor.org/info/rfc9102" quoteTitle="true" derivedAnchor="RFC9102">
+          <front>
+            <title>TLS DNSSEC Chain Extension</title>
+            <author fullname="V. Dukhovni" initials="V." surname="Dukhovni"/>
+            <author fullname="S. Huque" initials="S." surname="Huque"/>
+            <author fullname="W. Toorop" initials="W." surname="Toorop"/>
+            <author fullname="P. Wouters" initials="P." surname="Wouters"/>
+            <author fullname="M. Shore" initials="M." surname="Shore"/>
+            <date month="August" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes an experimental TLS extension for the in-band transport of the complete set of records that can be validated by DNSSEC and that are needed to perform DNS-Based Authentication of Named Entities (DANE) of a TLS server. This extension obviates the need to perform separate, out-of-band DNS lookups. When the requisite DNS records do not exist, the extension conveys a denial-of-existence proof that can be validated.</t>
+              <t indent="0">This experimental extension is developed outside the IETF and is published here to guide implementation of the extension and to ensure interoperability among implementations.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9102"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9102"/>
+        </reference>
+        <reference anchor="RFC9156" target="https://www.rfc-editor.org/info/rfc9156" quoteTitle="true" derivedAnchor="RFC9156">
+          <front>
+            <title>DNS Query Name Minimisation to Improve Privacy</title>
+            <author fullname="S. Bortzmeyer" initials="S." surname="Bortzmeyer"/>
+            <author fullname="R. Dolmans" initials="R." surname="Dolmans"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="November" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes a technique called "QNAME minimisation" to improve DNS privacy, where the DNS resolver no longer always sends the full original QNAME and original QTYPE to the upstream name server. This document obsoletes RFC 7816.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9156"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9156"/>
+        </reference>
+        <reference anchor="I-D.ietf-tls-esni" target="https://datatracker.ietf.org/doc/html/draft-ietf-tls-esni-17" quoteTitle="true" derivedAnchor="TLS-ECH">
+          <front>
+            <title>TLS Encrypted Client Hello</title>
+            <author fullname="Eric Rescorla" initials="E." surname="Rescorla">
+              <organization showOnFrontPage="true">RTFM, Inc.</organization>
+            </author>
+            <author fullname="Kazuho Oku" initials="K." surname="Oku">
+              <organization showOnFrontPage="true">Fastly</organization>
+            </author>
+            <author fullname="Nick Sullivan" initials="N." surname="Sullivan">
+              <organization showOnFrontPage="true">Cloudflare</organization>
+            </author>
+            <author fullname="Christopher A. Wood" initials="C. A." surname="Wood">
+              <organization showOnFrontPage="true">Cloudflare</organization>
+            </author>
+            <date day="9" month="October" year="2023"/>
+            <abstract>
+              <t indent="0">This document describes a mechanism in Transport Layer Security (TLS) for encrypting a ClientHello message under a server public key. Discussion Venues This note is to be removed before publishing as an RFC. Source for this draft and an issue tracker can be found at https://github.com/tlswg/draft-ietf-tls-esni (https://github.com/tlswg/draft-ietf-tls-esni).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-tls-esni-17"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="I-D.ietf-dnsop-dns-error-reporting" target="https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-dns-error-reporting-07" quoteTitle="true" derivedAnchor="DNS-ER">
+          <front>
+            <title>DNS Error Reporting</title>
+            <author fullname="Roy Arends" initials="R." surname="Arends">
+              <organization showOnFrontPage="true">ICANN</organization>
+            </author>
+            <author fullname="Matt Larson" initials="M." surname="Larson">
+              <organization showOnFrontPage="true">ICANN</organization>
+            </author>
+            <date day="17" month="November" year="2023"/>
+            <abstract>
+              <t indent="0">DNS error reporting is a lightweight reporting mechanism that provides the operator of an authoritative server with reports on DNS resource records that fail to resolve or validate. A domain owner or DNS hosting organization can use these reports to improve domain hosting. The reports are based on extended DNS errors as described in RFC 8914. When a domain name fails to resolve or validate due to a misconfiguration or an attack, the operator of the authoritative server may be unaware of this. To mitigate this lack of feedback, this document describes a method for a validating resolver to automatically signal an error to a monitoring agent specified by the authoritative server. The error is encoded in the QNAME, thus the very act of sending the query is to report the error.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-dnsop-dns-error-reporting-07"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section anchor="assessing-the-experiment" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-assessing-the-experiment">Assessing the Experiment</name>
+      <t indent="0" pn="section-appendix.a-1">This document is an Experimental RFC.
+In order to assess the success of the experiment, some key metrics could be collected by the technical community about the deployment of the protocol in this document.
+These metrics will be collected in recursive resolvers, authoritative servers, and the networks containing them.
+Some key metrics include the following.</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a-2">
+        <li pn="section-appendix.a-2.1">
+          <t indent="0" pn="section-appendix.a-2.1.1">Comparison of the CPU and memory use between Do53 and encrypted transports.</t>
+        </li>
+        <li pn="section-appendix.a-2.2">
+          <t indent="0" pn="section-appendix.a-2.2.1">Comparison of the query response rates between Do53 and encrypted transports.</t>
+        </li>
+        <li pn="section-appendix.a-2.3">
+          <t indent="0" pn="section-appendix.a-2.3.1">Measurement of server authentication successes and failures.</t>
+        </li>
+        <li pn="section-appendix.a-2.4">
+          <t indent="0" pn="section-appendix.a-2.4.1">Measurement and descriptions of observed attack traffic, if any.</t>
+        </li>
+        <li pn="section-appendix.a-2.5">
+          <t indent="0" pn="section-appendix.a-2.5.1">Comparison of transactional bandwidth (ingress/egress, packets per second, bytes per second) between Do53 and encrypted transports.</t>
+        </li>
+      </ul>
+    </section>
+    <section anchor="adding-auth" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-defense-against-active-atta">Defense against Active Attackers</name>
+      <t indent="0" pn="section-appendix.b-1">The protocol described in this document provides no defense against active attackers.
+A future protocol for recursive-to-authoritative DNS might want to provide such protection.</t>
+      <t indent="0" pn="section-appendix.b-2">This appendix assumes that the use case for that future protocol is a recursive resolver that wants to prevent an active attack on communication between it and an authoritative server that has committed to offering encrypted DNS transport.
+An inherent part of this use case is that the recursive resolver would want to respond with a <tt>SERVFAIL</tt> response to its client if it cannot make an authenticated encrypted connection to any of the authoritative nameservers for a name.</t>
+      <t indent="0" pn="section-appendix.b-3">However, an authoritative server that merely offers encrypted transport (for example, by following the guidance in <xref target="authoritative-guidance" format="default" sectionFormat="of" derivedContent="Section 3"/>) has made no such commitment, and no recursive resolver that prioritizes delivery of DNS records to its clients would want to "fail closed" unilaterally.</t>
+      <t indent="0" pn="section-appendix.b-4">Therefore, such a future protocol would need at least three major distinctions from the protocol described in this document:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.b-5">
+        <li pn="section-appendix.b-5.1">
+          <t indent="0" pn="section-appendix.b-5.1.1">A signaling mechanism that tells the recursive resolver that the authoritative server intends to offer authenticated encryption.</t>
+        </li>
+        <li pn="section-appendix.b-5.2">
+          <t indent="0" pn="section-appendix.b-5.2.1">Authentication of the authoritative server.</t>
+        </li>
+        <li pn="section-appendix.b-5.3">
+          <t indent="0" pn="section-appendix.b-5.3.1">A way to combine defense against an active attacker with the defenses described in this document.</t>
+        </li>
+      </ul>
+      <t indent="0" pn="section-appendix.b-6">This can be thought of as a DNS analog to <xref target="RFC8461" format="default" sectionFormat="of" derivedContent="RFC8461"/> or <xref target="RFC7672" format="default" sectionFormat="of" derivedContent="RFC7672"/>.</t>
+      <section anchor="signaling-mechanism-properties" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.b.1">
+        <name slugifiedName="name-signaling-mechanism-propert">Signaling Mechanism Properties</name>
+        <t indent="0" pn="section-appendix.b.1-1">To defend against an active attacker, the signaling mechanism needs to be able to indicate that the recursive resolver should fail closed if it cannot authenticate the server for a particular query.</t>
+        <t indent="0" pn="section-appendix.b.1-2">The signaling mechanism itself would have to be resistant to downgrade attacks from active attackers.</t>
+        <t indent="0" pn="section-appendix.b.1-3">One open question is how such a signal should be scoped.
+While this document scopes opportunistic state about encrypted transport based on the IP addresses of the client and server, signaled intent to offer encrypted transport is more likely to be scoped by the queried zone in the DNS or by the nameserver name than by the IP address.</t>
+        <t indent="0" pn="section-appendix.b.1-4">A reasonable authoritative server operator or zone administrator probably doesn't want to risk breaking anything when they first enable the signal.
+Therefore, a signaling mechanism should probably also offer a means to report problems to the authoritative server operator without the client failing closed.
+Such a mechanism is likely to be similar to those described in <xref target="RFC8460" format="default" sectionFormat="of" derivedContent="RFC8460"/> or <xref target="I-D.ietf-dnsop-dns-error-reporting" format="default" sectionFormat="of" derivedContent="DNS-ER"/>.</t>
+      </section>
+      <section anchor="authentication-of-authoritative-server" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.b.2">
+        <name slugifiedName="name-authentication-of-authorita">Authentication of Authoritative Servers</name>
+        <t indent="0" pn="section-appendix.b.2-1">Forms of server authentication might include:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.b.2-2">
+          <li pn="section-appendix.b.2-2.1">
+            <t indent="0" pn="section-appendix.b.2-2.1.1">An X.509 certificate issued by a widely known certification authority associated with the common NS names used for this authoritative server.</t>
+          </li>
+          <li pn="section-appendix.b.2-2.2">
+            <t indent="0" pn="section-appendix.b.2-2.2.1">DNS-Based Authentication of Named Entities (DANE) (to avoid infinite recursion, the DNS records necessary to authenticate could be transmitted in the TLS handshake using the DNSSEC chain extension (see <xref target="RFC9102" format="default" sectionFormat="of" derivedContent="RFC9102"/>)).</t>
+          </li>
+        </ul>
+        <t indent="0" pn="section-appendix.b.2-3">A recursive resolver would have to verify the server's identity.
+When doing so, the identity would presumably be based on the NS name used for a given query or the IP address of the server.</t>
+      </section>
+      <section anchor="combining-protocols" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.b.3">
+        <name slugifiedName="name-combining-protocols">Combining Protocols</name>
+        <t indent="0" pn="section-appendix.b.3-1">If this protocol gains reasonable adoption, and a newer protocol that can offer defense against an active attacker were available, deployment is likely to be staggered and incomplete.
+This means that an operator that wants to maximize confidentiality for their users will want to use both protocols together.</t>
+        <t indent="0" pn="section-appendix.b.3-2">Any new stronger protocol should consider how it interacts with the opportunistic protocol defined here, so that operators are not faced with the choice between widespread opportunistic protection against passive attackers (this document) and more narrowly targeted protection against active attackers.</t>
+      </section>
+    </section>
+    <section anchor="acknowledgements" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.c-1">Many people contributed to the development of this document beyond the authors, including
+<contact fullname="Alexander Mayrhofer"/>,
+<contact fullname="Brian Dickson"/>,
+<contact fullname="Christian Huitema"/>,
+<contact fullname="Dhruv Dhody"/>,
+<contact fullname="Eric Nygren"/>,
+<contact fullname="Erik Kline"/>,
+<contact fullname="Florian Obser"/>,
+<contact fullname="Haoyu Song"/>,
+<contact fullname="Jim Reid"/>,
+<contact fullname="Kris Shrishak"/>,
+<contact fullname="Peter Thomassen"/>,
+<contact fullname="Peter van Dijk"/>,
+<contact fullname="Ralf Weber"/>,
+<contact fullname="Rich Salz"/>,
+<contact fullname="Robert Evans"/>,
+<contact fullname="Sara Dickinson"/>,
+<contact fullname="Scott Hollenbeck"/>,
+<contact fullname="Stephane Bortzmeyer"/>,
+<contact fullname="Yorgos Thessalonikefs"/>,
+and the DPRIVE Working Group.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.d">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="D. K." surname="Gillmor" fullname="Daniel Kahn Gillmor" role="editor">
+        <organization abbrev="ACLU" showOnFrontPage="true">American Civil Liberties Union</organization>
+        <address>
+          <postal>
+            <street>125 Broad St.</street>
+            <city>New York</city>
+            <region>NY</region>
+            <code>10004</code>
+            <country>United States of America</country>
+          </postal>
+          <email>dkg@fifthhorseman.net</email>
+        </address>
+      </author>
+      <author initials="J." surname="Salazar" fullname="Joey Salazar" role="editor">
+        <organization showOnFrontPage="true"/>
+        <address>
+          <postal>
+            <city>Alajuela</city>
+            <code>20201</code>
+            <country>Costa Rica</country>
+          </postal>
+          <email>joeygsal@gmail.com</email>
+        </address>
+      </author>
+      <author initials="P." surname="Hoffman" fullname="Paul Hoffman" role="editor">
+        <organization showOnFrontPage="true">ICANN</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>paul.hoffman@icann.org</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

@@ -1,0 +1,1115 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" category="info" ipr="trust200902" docName="draft-ietf-detnet-oam-framework-11" number="9551" consensus="true" obsoletes="" updates="" submissionType="IETF" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="true" prepTime="2024-03-11T21:21:29" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-detnet-oam-framework-11" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9551" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Framework of OAM for DetNet">Framework of Operations, Administration, and Maintenance (OAM) for Deterministic Networking (DetNet)</title>
+    <seriesInfo name="RFC" value="9551" stream="IETF"/>
+    <author initials="G." surname="Mirsky" fullname="Greg Mirsky">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <email>gregimirsky@gmail.com</email>
+      </address>
+    </author>
+    <author initials="F." surname="Theoleyre" fullname="Fabrice Theoleyre">
+      <organization showOnFrontPage="true">CNRS</organization>
+      <address>
+        <postal>
+          <extaddr>ICube Lab, Pole API</extaddr>
+          <street>300 boulevard Sebastien Brant - CS 10413</street>
+          <city>Illkirch - Strasbourg</city>
+          <code>67400</code>
+          <country>France</country>
+        </postal>
+        <phone>+33 368 85 45 33</phone>
+        <email>fabrice.theoleyre@cnrs.fr</email>
+        <uri>https://fabrice.theoleyre.cnrs.fr/</uri>
+      </address>
+    </author>
+    <author initials="G." surname="Papadopoulos" fullname="Georgios Papadopoulos">
+      <organization showOnFrontPage="true">IMT Atlantique</organization>
+      <address>
+        <postal>
+          <street>Office B00 - 102A</street>
+          <street>2 Rue de la Châtaigneraie</street>
+          <city>Cesson-Sévigné - Rennes</city>
+          <code>35510</code>
+          <country>France</country>
+        </postal>
+        <phone>+33 299 12 70 04</phone>
+        <email>georgios.papadopoulos@imt-atlantique.fr</email>
+      </address>
+    </author>
+    <author initials="CJ." surname="Bernardos" fullname="Carlos J. Bernardos">
+      <organization abbrev="UC3M" showOnFrontPage="true">Universidad Carlos III de Madrid</organization>
+      <address>
+        <postal>
+          <street>Av. Universidad, 30</street>
+          <city>Leganes, Madrid</city>
+          <code>28911</code>
+          <country>Spain</country>
+        </postal>
+        <phone>+34 91624 6236</phone>
+        <email>cjbc@it.uc3m.es</email>
+        <uri>http://www.it.uc3m.es/cjbc/</uri>
+      </address>
+    </author>
+    <author fullname="Balazs Varga" initials="B." surname="Varga">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <street>Magyar Tudosok krt. 11.</street>
+          <city>Budapest</city>
+          <country>Hungary</country>
+          <code>1117</code>
+        </postal>
+        <email>balazs.a.varga@ericsson.com</email>
+      </address>
+    </author>
+    <author fullname="Janos Farkas" initials="J." surname="Farkas">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <street>Magyar Tudosok krt. 11.</street>
+          <city>Budapest</city>
+          <country>Hungary</country>
+          <code>1117</code>
+        </postal>
+        <email>janos.farkas@ericsson.com</email>
+      </address>
+    </author>
+    <date month="03" year="2024"/>
+    <area>RTG</area>
+    <workgroup>DetNet</workgroup>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">Deterministic Networking (DetNet), as defined in RFC 8655, aims to
+      provide bounded end-to-end latency on top of the network infrastructure,
+      comprising both Layer 2 bridged and Layer 3 routed segments.  This
+      document's primary purpose is to detail the specific requirements of the
+      Operations, Administration, and Maintenance (OAM) recommended to maintain
+      a deterministic network. The document will be used in future work that
+      defines the applicability of and extension of OAM protocols for a
+      deterministic network.  With the implementation of the OAM framework in
+      DetNet, an operator will have a real-time view of the network
+      infrastructure regarding the network's ability to respect the Service
+      Level Objective (SLO), such as packet delay, delay variation, and packet-loss
+      ratio, assigned to each DetNet flow.
+
+      </t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for informational purposes.  
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by the
+            Internet Engineering Steering Group (IESG).  Not all documents
+            approved by the IESG are candidates for any level of Internet
+            Standard; see Section 2 of RFC 7841. 
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9551" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-definitions">Definitions</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-role-of-oam-in-detnet">Role of OAM in DetNet</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-operation">Operation</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-information-collection">Information Collection</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-continuity-check">Continuity Check</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-connectivity-verification">Connectivity Verification</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.4">
+                <t indent="0" pn="section-toc.1-1.3.2.4.1"><xref derivedContent="3.4" format="counter" sectionFormat="of" target="section-3.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-route-tracing">Route Tracing</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.5">
+                <t indent="0" pn="section-toc.1-1.3.2.5.1"><xref derivedContent="3.5" format="counter" sectionFormat="of" target="section-3.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-fault-verification-detectio">Fault Verification/Detection</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.6">
+                <t indent="0" pn="section-toc.1-1.3.2.6.1"><xref derivedContent="3.6" format="counter" sectionFormat="of" target="section-3.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-fault-localization-and-char">Fault Localization and Characterization</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.7">
+                <t indent="0" pn="section-toc.1-1.3.2.7.1"><xref derivedContent="3.7" format="counter" sectionFormat="of" target="section-3.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-use-of-hybrid-oam-in-detnet">Use of Hybrid OAM in DetNet</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-administration">Administration</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-collection-of-metrics">Collection of Metrics</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-worst-case-metrics">Worst-Case Metrics</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-maintenance">Maintenance</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-replication-elimination">Replication/Elimination</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-resource-reservation">Resource Reservation</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements">Requirements</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-for-the-detnet-forwarding-s">For the DetNet Forwarding Sub-layer</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-for-the-detnet-service-sub-">For the DetNet Service Sub-layer</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-privacy-considerations">Privacy Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.10.2">
+              <li pn="section-toc.1-1.10.2.1">
+                <t indent="0" pn="section-toc.1-1.10.2.1.1"><xref derivedContent="10.1" format="counter" sectionFormat="of" target="section-10.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.10.2.2">
+                <t indent="0" pn="section-toc.1-1.10.2.2.1"><xref derivedContent="10.2" format="counter" sectionFormat="of" target="section-10.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">
+        Deterministic Networking (DetNet) <xref target="RFC8655" format="default" sectionFormat="of" derivedContent="RFC8655"/> has proposed to provide a bounded end-to-end latency
+        on top of the network infrastructure, comprising both Layer 2 bridged and Layer 3 routed segments.
+        That work encompasses the data plane, OAM, time synchronization, management, control, and security aspects.
+      </t>
+      <t indent="0" pn="section-1-2">
+        Operations, Administration, and Maintenance (OAM) tools are of primary importance
+        for IP networks <xref target="RFC7276" format="default" sectionFormat="of" derivedContent="RFC7276"/>.
+        DetNet OAM should provide a toolset for fault detection, localization, and performance measurement.
+      </t>
+      <t indent="0" pn="section-1-3">
+        This document's primary purpose is to detail the specific requirements of the OAM features recommended to maintain a
+	deterministic/reliable network.  Specifically, it investigates the requirements for a deterministic
+network that supports critical flows.
+
+      </t>
+      <t indent="0" pn="section-1-4">
+      	In this document, the term "OAM" will be used according to its definition specified 
+      	in <xref target="RFC6291" format="default" sectionFormat="of" derivedContent="RFC6291"/>. DetNet is expected to implement an OAM framework to maintain a real-time
+      	view of the network infrastructure, and its ability to respect the Service Level
+          Objectives (SLOs), such as in-order packet delivery, packet delay, delay variation, and packet-loss ratio, assigned to each DetNet flow.
+      </t>
+      <t indent="0" pn="section-1-5">This document lists the OAM functional requirements for a DetNet domain. 
+    The list can further be used for gap analysis of available OAM tools to identify:</t>
+      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-1-6">
+        <li pn="section-1-6.1">possible enhancements of existing tools, or</li>
+        <li pn="section-1-6.2">whether new OAM tools are required to
+   support proactive and on-demand path monitoring and service validation.</li>
+      </ul>
+      <section anchor="define-sec" numbered="true" toc="include" removeInRFC="false" pn="section-1.1">
+        <name slugifiedName="name-definitions">Definitions</name>
+        <t indent="0" pn="section-1.1-1">
+            This document uses definitions, particularly of a DetNet flow, provided in <xref target="RFC8655" sectionFormat="of" section="2.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8655#section-2.1" derivedContent="RFC8655"/>.
+            The following terms are used throughout this document as defined below:
+        </t>
+        <dl spacing="normal" indent="3" newline="false" pn="section-1.1-2">
+          <dt pn="section-1.1-2.1">
+                    DetNet OAM domain:</dt>
+          <dd pn="section-1.1-2.2">a DetNet network used by the monitored DetNet flow. A DetNet OAM domain
+                    (also referred to in this document as "OAM domain") may have Maintenance End Points (MEPs) on its edge and Maintenance Intermediate Points (MIPs) within.
+                   </dd>
+          <dt pn="section-1.1-2.3">DetNet OAM instance:</dt>
+          <dd pn="section-1.1-2.4">a function that monitors a DetNet flow for defects and/or measures its performance metrics. Within this document,
+                    the shorter version "OAM instance" is used interchangeably.
+                   </dd>
+          <dt pn="section-1.1-2.5">Maintenance End Point (MEP):</dt>
+          <dd pn="section-1.1-2.6">an OAM instance that is capable of generating OAM test packets
+                   in the particular sub-layer of the DetNet OAM domain.
+               </dd>
+          <dt pn="section-1.1-2.7">Maintenance Intermediate Point (MIP):</dt>
+          <dd pn="section-1.1-2.8">an OAM instance along the DetNet flow  in the particular sub-layer of the DetNet OAM domain.
+An active MIP <bcp14>MUST</bcp14> respond to an OAM message generated by the MEP at its sub-layer of the same DetNet OAM domain.
+               </dd>
+          <dt pn="section-1.1-2.9">Control and management plane:</dt>
+          <dd pn="section-1.1-2.10">the control and management planes are used to configure and control the network.
+               Relative to a DetNet flow, the control and/or management plane can be out of band.
+                   </dd>
+          <dt pn="section-1.1-2.11">Active measurement methods:</dt>
+          <dd pn="section-1.1-2.12">(as defined in <xref target="RFC7799" format="default" sectionFormat="of" derivedContent="RFC7799"/>)
+                  these methods modify a DetNet flow by injecting specially constructed test packets <xref target="RFC2544" format="default" sectionFormat="of" derivedContent="RFC2544"/>.
+                  </dd>
+          <dt pn="section-1.1-2.13">Passive measurement methods:</dt>
+          <dd pn="section-1.1-2.14">(as defined in <xref target="RFC7799" format="default" sectionFormat="of" derivedContent="RFC7799"/>) these methods infer information by observing unmodified existing flows.</dd>
+          <dt pn="section-1.1-2.15">Hybrid measurement methods:</dt>
+          <dd pn="section-1.1-2.16">(as defined in <xref target="RFC7799" format="default" sectionFormat="of" derivedContent="RFC7799"/>) the combination of elements of both active and passive measurement methods.</dd>
+          <dt pn="section-1.1-2.17">In-band OAM:</dt>
+          <dd pn="section-1.1-2.18">an active OAM method that is in band within the monitored
+      DetNet OAM domain when it traverses the same set of links and
+      interfaces receiving the same QoS and Packet Replication,
+      Elimination, and Ordering Functions (PREOF) treatment as the
+      monitored DetNet flow.</dd>
+          <dt pn="section-1.1-2.19">Out-of-band OAM:</dt>
+          <dd pn="section-1.1-2.20">an active OAM method whose path through the DetNet domain may not be topologically identical to the
+   path of the monitored DetNet flow, its test packets may receive different QoS and/or PREOF treatment, or both.
+      </dd>
+          <dt pn="section-1.1-2.21">On-path telemetry:</dt>
+          <dd pn="section-1.1-2.22">on-path telemetry can be realized as a hybrid OAM method. The origination of the telemetry information
+      is inherently in band as packets in a DetNet flow are used as triggers. Collection of the on-path telemetry information
+      can be performed using in-band or out-of-band OAM methods.
+      </dd>
+        </dl>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.2">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.2-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here. 
+   The requirements language is used in Sections <xref target="define-sec" format="counter" sectionFormat="of" derivedContent="1.1"/> and <xref target="req-list" format="counter" sectionFormat="of" derivedContent="6"/>,
+   and applies to the implementations of DetNet OAM.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-role-of-oam-in-detnet">Role of OAM in DetNet</name>
+      <t indent="0" pn="section-2-1">
+	DetNet networks are expected to provide communications with predictable low packet delay, packet loss, and packet misordering.  Most critical applications will define
+a set of SLOs to be required for the DetNet flows they generate.
+</t>
+      <t indent="0" pn="section-2-2">
+To respect strict guarantees, DetNet can use an orchestrator able to
+monitor and maintain the network. Typically, a Software-Defined
+Network (SDN) controller places DetNet flows in the deployed network
+based on their SLOs. Thus, resources have to be provisioned a
+priori for the regular operation of the network. 
+</t>
+      <t indent="0" pn="section-2-3">
+Most of the existing OAM tools can be used in DetNet networks,
+but they can only cover some aspects of deterministic networking.
+Fulfilling strict guarantees is essential for DetNet flows,
+resulting in new DetNet-specific functionalities that must be covered with OAM.
+Filling these gaps is inevitable and needs accurate consideration of
+DetNet specifics. Similar to DetNet flows, their OAM also needs careful
+end-to-end engineering.
+</t>
+      <t indent="0" pn="section-2-4">
+For example, appropriate placing of MEPs along the path of a DetNet flow is
+not always a trivial task and may require proper design together with the
+design of the service component of a given DetNet flow.
+</t>
+      <t indent="0" pn="section-2-5">
+There are several DetNet-specific challenges for OAM. Bounded network
+characteristics (e.g., delay, loss) are inseparable service parameters;
+therefore, Performance Monitoring (PM) OAM is a key topic for DetNet. OAM tools are needed to monitor each
+SLO without impacting the DetNet flow characteristics. A further challenge
+is strict resource allocation. Resources used by OAM must be considered
+and allocated to avoid disturbing DetNet flows.
+</t>
+      <t indent="0" pn="section-2-6">
+The DetNet Working Group has defined two sub-layers:
+</t>
+      <ul empty="true" spacing="normal" bare="false" indent="3" pn="section-2-7">
+        <li pn="section-2-7.1">
+The DetNet service sub-layer at which a DetNet service (e.g., service
+protection) is provided.
+</li>
+        <li pn="section-2-7.2">
+The DetNet forwarding sub-layer, which
+optionally provides resource allocation for DetNet flows over paths
+provided by the underlying network.
+</li>
+      </ul>
+      <t indent="0" pn="section-2-8">
+OAM mechanisms exist for the
+DetNet forwarding sub-layer, but the service
+sub-layer requires new OAM procedures. These new OAM functions
+must allow, for example, recognizing/discovering DetNet relay
+nodes, getting information about their configuration, and 
+checking their operation or status.
+</t>
+      <t indent="0" pn="section-2-9">
+DetNet service sub-layer functions use a sequence number for PREOF, which creates
+a challenge for inserting OAM packets in the DetNet flow.
+</t>
+      <t indent="0" pn="section-2-10">
+Fault tolerance also assumes that multiple paths could be provisioned
+to maintain an end-to-end circuit by adapting to the existing conditions.
+The DetNet Controller Plane, e.g., central controller/orchestrator, controls the PREOF on a node. OAM is expected to support monitoring and
+troubleshooting PREOF on a particular node and within the domain.
+</t>
+      <t indent="0" pn="section-2-11">
+Note that a distributed architecture of the DetNet Control Plane can also control PREOF
+in those scenarios where DetNet solutions involve more than one single central controller.
+</t>
+      <t indent="0" pn="section-2-12">
+The DetNet forwarding sub-layer is based on preexisting technologies and has
+much better coverage regarding OAM. However, the forwarding sub-layer
+is terminated at DetNet relay nodes, so the end-to-end OAM state of forwarding
+may be created only based on the status of multiple forwarding sub-layer segments
+serving a given DetNet flow (e.g., in case of DetNet MPLS, there may be
+no end-to-end LSP below the DetNet pseudowire).
+</t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-operation">Operation</name>
+      <t indent="0" pn="section-3-1">
+    	OAM features will enable DetNet with robust operation both for forwarding and routing
+    	purposes.
+      </t>
+      <t indent="0" pn="section-3-2">
+			It is worth noting that the test and data packets are expected to follow the same
+            path, i.e., connectivity verification has to be conducted in band without
+            impacting data traffic.
+            It is expected that test packets share fate with the monitored data traffic
+            without introducing congestion in normal network conditions.
+      </t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-3.1">
+        <name slugifiedName="name-information-collection">Information Collection</name>
+        <t indent="0" pn="section-3.1-1">
+               Information about the state of the network can be collected using several mechanisms. Some protocols,
+              e.g., the Simple Network Management Protocol (SNMP), poll for updated data. 
+              Other protocols, such as YANG-Push <xref target="RFC8641" format="default" sectionFormat="of" derivedContent="RFC8641"/>, can be used
+              to set up subscriptions for the data defined in the YANG data models
+              to be published periodically or when the underlying data changes.
+              Either way, information is collected and sent using the DetNet Controller Plane.
+        </t>
+        <t indent="0" pn="section-3.1-2">
+               Also, we can characterize methods of transporting OAM information relative to the path of data.
+               For instance, OAM information may be transported in band or out of band relative to the DetNet flow.
+               In the case of the former, the telemetry information uses resources allocated for the monitored DetNet flow.
+               If an in-band method of transporting telemetry is used, the amount of generated information needs
+               to be carefully analyzed, and additional resources must be reserved. <xref target="RFC9197" format="default" sectionFormat="of" derivedContent="RFC9197"/> defines the in-band
+               transport mechanism where telemetry information is collected in the data packet on which information is generated.
+        Two tracing methods are described:</t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-3.1-3">
+          <li pn="section-3.1-3.1">end-to-end, i.e., from the ingress and egress nodes,
+          and</li>
+          <li pn="section-3.1-3.2">hop-by-hop, i.e., like end-to-end with additional information from transit nodes.</li>
+        </ul>
+        <t indent="0" pn="section-3.1-4"><xref target="RFC9326" format="default" sectionFormat="of" derivedContent="RFC9326"/> and <xref target="I-D.ietf-ippm-hybrid-two-step" format="default" sectionFormat="of" derivedContent="HYBRID-TWO-STEP"/> are examples of out-of-band
+               telemetry transport. In the former case, information is transported by each node traversed
+               by the data packet of the monitored DetNet flow in a specially constructed packet. In the latter,
+               information is collected in a sequence of follow-up packets that traverse the same path as the data packet of the monitored DetNet flow.
+               In both methods, transport of the telemetry can avoid using resources allocated for the DetNet domain.
+               
+
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-3.2">
+        <name slugifiedName="name-continuity-check">Continuity Check</name>
+        <t indent="0" pn="section-3.2-1">
+			A continuity check is used to monitor the continuity of a path, i.e.,
+            that there exists a way to deliver packets between
+            MEP A and MEP B. The continuity check detects a network failure in one direction:
+            from the MEP transmitting test packets to the remote egress MEP. The continuity check in a DetNet OAM domain
+           monitors the DetNet forwarding sub-layer; thus, it is not affected
+           by a PREOF that operates at the DetNet service sub-layer (<xref target="RFC8655" format="default" sectionFormat="of" derivedContent="RFC8655"/>).
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-3.3">
+        <name slugifiedName="name-connectivity-verification">Connectivity Verification</name>
+        <t indent="0" pn="section-3.3-1">
+            In addition to the Continuity Check, DetNet solutions have to verify connectivity.
+            This verification considers an additional constraint: the absence of
+            misconnection. The misconnection error state is entered after several consecutive test packets
+            from other DetNet flows are received. The definition of the conditions for entry and exit of a misconnection
+            error state is outside the scope of this document. Connectivity verification in a DetNet OAM domain
+           monitors the DetNet forwarding sub-layer; thus, it is not affected
+           by PREOF that operates at the DetNet service sub-layer (<xref target="RFC8655" format="default" sectionFormat="of" derivedContent="RFC8655"/>).
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-3.4">
+        <name slugifiedName="name-route-tracing">Route Tracing</name>
+        <t indent="0" pn="section-3.4-1">
+       		Ping and traceroute are two ubiquitous tools that help localize and characterize a failure in the network
+       		using an echo request/reply mechanism.
+       		They help to identify a subset of the routers in the path.
+       		However, to be predictable, resources are reserved per flow in DetNet.
+       		Thus, DetNet needs to define route tracing tools able to trace the route for a 
+       		specific flow. Also, tracing can be used for the discovery of the Path Maximum Transmission Unit (PMTU) or location of elements of PREOF
+       		for the particular route in the DetNet domain.
+        </t>
+        <t indent="0" pn="section-3.4-2">
+			DetNet is not expected to use Equal-Cost Multipath (ECMP) <xref target="RFC8939" format="default" sectionFormat="of" derivedContent="RFC8939"/>.
+			As a result, DetNet OAM in an ECMP environment is outside the scope of this document.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-3.5">
+        <name slugifiedName="name-fault-verification-detectio">Fault Verification/Detection</name>
+        <t indent="0" pn="section-3.5-1">
+      		DetNet expects to operate fault-tolerant networks.
+      		Thus, mechanisms able to detect faults before they impact network performance are needed.
+        </t>
+        <t indent="0" pn="section-3.5-2">
+     		The network has to detect when a fault has occurred, i.e., the network has deviated
+             from its expected behavior. Fault detection can be based on proactive OAM protocols
+             like continuity check or on-demand methods like ping.
+     		While the network must report an alarm, the cause may not be identified 
+     		precisely. 
+     		Examples of such alarms are significant degradation of the end-to-end reliability or when a 
+     		buffer overflow occurs.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-3.6">
+        <name slugifiedName="name-fault-localization-and-char">Fault Localization and Characterization</name>
+        <t indent="0" pn="section-3.6-1">
+        	The ability to localize a network defect and provide its characterization are necessary elements of network operation.
+        </t>
+        <dl spacing="normal" indent="3" newline="false" pn="section-3.6-2">
+          <dt pn="section-3.6-2.1">Fault localization:</dt>
+          <dd pn="section-3.6-2.2">a process of deducing the location of a network failure from a set of observed failure indications.
+        	For example, this might be achieved by tracing the route of the DetNet flow in which the network failure was detected.
+        	Another method of fault localization can correlate reports of failures from a set of interleaved sessions monitoring path continuity.</dd>
+          <dt pn="section-3.6-2.3">Fault characterization:</dt>
+          <dd pn="section-3.6-2.4">a process of identifying the root cause of the problem. For instance, misconfiguration or malfunction of PREOF elements
+          can be the cause of erroneous packet
+        	replication or extra packets being flooded in the DetNet domain.
+        	</dd>
+        </dl>
+      </section>
+      <section anchor="hybrid-oam" numbered="true" toc="include" removeInRFC="false" pn="section-3.7">
+        <name slugifiedName="name-use-of-hybrid-oam-in-detnet">Use of Hybrid OAM in DetNet</name>
+        <t indent="0" pn="section-3.7-1">Hybrid OAM methods are used in performance monitoring and defined in <xref target="RFC7799" format="default" sectionFormat="of" derivedContent="RFC7799"/> as follows:
+</t>
+        <blockquote pn="section-3.7-2">
+          <t indent="0" pn="section-3.7-2.1">Hybrid Methods are Methods of Measurement that use a combination of
+   Active Methods and Passive Methods.</t>
+        </blockquote>
+        <t indent="0" pn="section-3.7-3">
+A hybrid measurement method can produce metrics as close to measured using a passive measurement method.
+The passive methods measure metrics closest to the network's actual conditions. A hybrid method,
+even if it alters something in a data packet, even if that is as little as the value of a designated field in the packet encapsulation,
+is considered an approximation of a passive measurement method.
+  One example of such a hybrid measurement method
+   is the Alternate-Marking Method (AMM) described in <xref target="RFC9341" format="default" sectionFormat="of" derivedContent="RFC9341"/>.
+   As with all on-path telemetry methods, AMM in a DetNet domain with the IP data plane is, by design, in band
+  with respect to the monitored DetNet flow. Because the marking is applied to a data flow,
+  measured metrics are directly applicable to the DetNet flow. AMM minimizes the additional load on
+  the DetNet domain by using nodal collection and computation of performance metrics optionally in combination with
+  using out-of-band telemetry collection for further network analysis.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-administration">Administration</name>
+      <t indent="0" pn="section-4-1">
+      The ability to expose a collection of metrics to support an operator's decision-making is essential.
+      The following performance metrics are useful:
+      
+      </t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-4-2">
+        <dt pn="section-4-2.1">Queuing Delay:</dt>
+        <dd pn="section-4-2.2">the time elapsed between enqueuing a packet and its transmission to the next hop.
+            </dd>
+        <dt pn="section-4-2.3">Buffer occupancy:</dt>
+        <dd pn="section-4-2.4">the number of packets present in the buffer for each of the existing flows.
+            </dd>
+        <dt pn="section-4-2.5">Per DetNet flow:</dt>
+        <dd pn="section-4-2.6">a metric reflecting end-to-end performance for a given flow.
+            Each of the paths has to be isolated in a multipath routing environment.
+            </dd>
+        <dt pn="section-4-2.7">Per-path:</dt>
+        <dd pn="section-4-2.8">detection of a misbehaving path or paths when multiple paths are used for the service protection.
+            </dd>
+        <dt pn="section-4-2.9">Per-device:</dt>
+        <dd pn="section-4-2.10">detection of a misbehaving device.
+            </dd>
+      </dl>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.1">
+        <name slugifiedName="name-collection-of-metrics">Collection of Metrics</name>
+        <t indent="0" pn="section-4.1-1">
+             It is important to optimize the volume and frequency of statistics/measurement collection,
+             whether the mechanisms are distributed, centralized, or both. Periodic and
+             event-triggered collection information characterizing the state of a network is
+             an example of mechanisms to achieve the optimization.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.2">
+        <name slugifiedName="name-worst-case-metrics">Worst-Case Metrics</name>
+        <t indent="0" pn="section-4.2-1">
+         DetNet aims to enable real-time communications on top of a heterogeneous multi-hop architecture.
+         To make correct decisions, the DetNet Controller Plane <xref target="RFC8655" format="default" sectionFormat="of" derivedContent="RFC8655"/> needs timely information
+         about packet losses/delays for each flow and each hop of the paths.
+         In other words, just the average end-to-end statistics are not enough.
+         The collected information must be sufficient to allow a system to predict the worst-case scenario.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-maintenance">Maintenance</name>
+      <t indent="0" pn="section-5-1">
+      Service protection (provided by the DetNet Service sub-layer) is designed to mitigate simple network failures more rapidly
+ 	than the expected response time of the DetNet Controller Plane. 
+ 	In the face of events that impact network operation (e.g., link up/down,
+         device crash/reboot, flows starting and ending), the DetNet Controller Plane needs to perform
+         repair and reoptimization actions in order to permanently ensure
+         SLOs of all active flows with minimal waste of resources.
+         The Controller Plane is expected to be able to continuously retrieve the state of the network,
+         to evaluate conditions and trends about the relevance of a reconfiguration, quantifying the following:
+      </t>
+      <dl spacing="normal" indent="3" newline="false" pn="section-5-2">
+        <dt pn="section-5-2.1">the cost of the suboptimality:</dt>
+        <dd pn="section-5-2.2">resources may not be used optimally (i.e., a better path exists).
+            </dd>
+        <dt pn="section-5-2.3">the reconfiguration cost:</dt>
+        <dd pn="section-5-2.4">the DetNet Controller Plane needs an ability to trigger some reconfigurations.
+               For this transient period, resources may be twice reserved, and control packets have to be transmitted.
+            </dd>
+      </dl>
+      <t indent="0" pn="section-5-3">
+         Thus, reconfiguration may only be triggered if the gain is significant.
+      </t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-5.1">
+        <name slugifiedName="name-replication-elimination">Replication/Elimination</name>
+        <t indent="0" pn="section-5.1-1">
+          
+When multiple paths are reserved between two MEPs,
+  packet replication may be used to introduce redundancy and alleviate transmission errors and collisions.
+              For instance, in <xref target="fig_replication" format="default" sectionFormat="of" derivedContent="Figure 1"/>, the source device S transmits
+              a packet to devices A and B to reach the destination node R.              
+        </t>
+        <figure anchor="fig_replication" align="left" suppress-title="false" pn="figure-1">
+          <name slugifiedName="name-packet-replication-and-elim">Packet Replication and Elimination Functions</name>
+          <artwork align="center" name="" type="" alt="" pn="section-5.1-2.1">
+ 
+               ===&gt; (A) =&gt; (C) =&gt; (E) === 
+             //        \\//   \\//       \\
+   source (S)          //\\   //\\         (R) (root)
+             \\       //  \\ //  \\      //
+               ===&gt; (B) =&gt; (D) =&gt; (F) ===
+            </artwork>
+        </figure>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-5.2">
+        <name slugifiedName="name-resource-reservation">Resource Reservation</name>
+        <t indent="0" pn="section-5.2-1">Because the quality of service associated with a path may degrade, the network has
+            to provision additional resources along the path. 
+        </t>
+      </section>
+    </section>
+    <section anchor="req-list" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-requirements">Requirements</name>
+      <t indent="0" pn="section-6-1">
+      According to <xref target="RFC8655" format="default" sectionFormat="of" derivedContent="RFC8655"/>, DetNet functionality is divided into forwarding and service sub-layers.
+      The DetNet forwarding sub-layer includes DetNet transit nodes and may allocate resources for a DetNet flow over paths provided by the underlay network.
+      The DetNet service sub-layer includes DetNet relay nodes and provides a DetNet service (e.g., service protection).
+  This section lists general requirements for DetNet OAM as well as requirements in each of the DetNet sub-layers of a DetNet domain.
+      </t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-6-2">
+
+      <li pn="section-6-2.1" derivedCounter="1.">
+          It <bcp14>MUST</bcp14> be possible to initiate a DetNet OAM session from a MEP located at a
+          DetNet node towards a MEP or MEPs downstream from that DetNet node
+          within the given domain at a particular DetNet sub-layer.
+  </li>
+        <li pn="section-6-2.2" derivedCounter="2.">
+  It <bcp14>MUST</bcp14> be possible to initiate a DetNet OAM session using any of the DetNet Controller Plane solutions, e.g., a centralized controller.
+  </li>
+        <li pn="section-6-2.3" derivedCounter="3.">
+  DetNet OAM <bcp14>MUST</bcp14> support proactive OAM monitoring and measurement methods.
+  </li>
+        <li pn="section-6-2.4" derivedCounter="4.">
+  DetNet OAM <bcp14>MUST</bcp14> support on-demand OAM monitoring and measurement methods.
+  </li>
+        <li pn="section-6-2.5" derivedCounter="5.">
+  DetNet OAM <bcp14>MUST</bcp14> support unidirectional OAM methods, continuity checks, 
+  connectivity verification, and performance measurements.
+  </li>
+        <li pn="section-6-2.6" derivedCounter="6.">
+    DetNet OAM <bcp14>MUST</bcp14> support bidirectional DetNet flows,
+    but it is not required to support bidirectional OAM methods for bidirectional DetNet flows.
+    DetNet OAM test packets used for monitoring and measurements
+    of a bidirectional DetNet flow <bcp14>MUST</bcp14> be in band in both directions.
+   </li>
+        <li pn="section-6-2.7" derivedCounter="7.">
+DetNet OAM <bcp14>MUST</bcp14> support proactive monitoring of a DetNet device's reachability for a given DetNet flow.
+</li>
+        <li pn="section-6-2.8" derivedCounter="8.">
+  DetNet OAM <bcp14>MUST</bcp14> support hybrid performance measurement methods.
+  </li>
+        <li pn="section-6-2.9" derivedCounter="9.">
+Calculated performance metrics <bcp14>MUST</bcp14> include, but are not limited to, throughput, packet-loss, out-of-order,
+delay, and delay-variation metrics. <xref target="RFC6374" format="default" sectionFormat="of" derivedContent="RFC6374"/> provides detailed information on performance
+measurement and performance metrics.
+</li>
+      </ol>
+      <section anchor="req-on-dfs-oam" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-for-the-detnet-forwarding-s">For the DetNet Forwarding Sub-layer</name>
+        <t indent="0" pn="section-6.1-1">DetNet OAM <bcp14>MUST</bcp14> support:</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-6.1-2">
+
+        <li pn="section-6.1-2.1" derivedCounter="1.">PMTU discovery.
+</li>
+          <li pn="section-6.1-2.2" derivedCounter="2.">Remote Defect Indication (RDI) notification to the DetNet OAM instance
+ performing continuity checking.
+</li>
+          <li pn="section-6.1-2.3" derivedCounter="3.">the monitoring of levels of resources allocated for a particular DetNet flow.
+  Such resources include, but are not limited to, buffer utilization and scheduler transmission calendar.
+  </li>
+          <li pn="section-6.1-2.4" derivedCounter="4.">the monitoring of any subset of paths traversed through the DetNet domain by a DetNet flow.
+  </li>
+        </ol>
+      </section>
+      <section anchor="req-on-dss-oam" numbered="true" removeInRFC="false" toc="include" pn="section-6.2">
+        <name slugifiedName="name-for-the-detnet-service-sub-">For the DetNet Service Sub-layer</name>
+        <t indent="0" pn="section-6.2-1"> 
+	 The OAM functions for the DetNet service sub-layer allow, for example, the 
+	 recognizing/discovery of DetNet relay nodes, the gathering of information about their
+	 configuration, and the checking of their operation or status.
+        </t>
+        <t indent="0" pn="section-6.2-2">
+     The requirements on OAM for a DetNet relay node are that DetNet OAM <bcp14>MUST</bcp14>:
+        </t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-6.2-3">
+         <li pn="section-6.2-3.1" derivedCounter="1.">provide OAM functions for the DetNet service sub-layer. </li>
+          <li pn="section-6.2-3.2" derivedCounter="2.">support the discovery of DetNet relay nodes in a DetNet network. 
+        </li>
+          <li pn="section-6.2-3.3" derivedCounter="3.">support the discovery of PREOF locations in the domain.
+        </li>
+          <li pn="section-6.2-3.4" derivedCounter="4.">support the collection of information specific to the DetNet service sub-layer
+         (configuration/operation/status) from DetNet relay nodes.
+		  </li>
+          <li pn="section-6.2-3.5" derivedCounter="5.">support exercising functionality of PREOF in the domain.
+		  </li>
+          <li pn="section-6.2-3.6" derivedCounter="6.">work for DetNet data planes: MPLS and IP. </li>
+          <li pn="section-6.2-3.7" derivedCounter="7.">support a defect notification mechanism, like Alarm Indication Signal.
+Any DetNet relay node providing service for a given DetNet flow
+<bcp14>MAY</bcp14> originate a defect notification addressed to any subset of DetNet relay nodes along that flow.
+</li>
+          <li pn="section-6.2-3.8" derivedCounter="8.">be able to measure metrics (e.g. delay) inside a collection of OAM sessions, specially for complex DetNet flows, with PREOF features.
+    </li>
+        </ol>
+      </section>
+    </section>
+    <section anchor="iana-consider" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-7-1">This document has no IANA actions.</t>
+    </section>
+    <section anchor="security" numbered="true" toc="include" removeInRFC="false" pn="section-8">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-8-1">
+   This document lists the OAM requirements for a DetNet domain
+   and does not raise any security concerns or issues in addition to ones common to networking and
+   those specific to DetNet that are discussed in <xref target="RFC9055" sectionFormat="of" section="9" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9055#section-9" derivedContent="RFC9055"/>.
+      Furthermore, the analysis of OAM security concerns in <xref target="RFC7276" sectionFormat="of" section="6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7276#section-6" derivedContent="RFC7276"/>
+      also applies to DetNet OAM, including the use of OAM for network reconnaissance.</t>
+    </section>
+    <section anchor="privacy" numbered="true" toc="include" removeInRFC="false" pn="section-9">
+      <name slugifiedName="name-privacy-considerations">Privacy Considerations</name>
+      <t indent="0" pn="section-9-1">
+  Privacy considerations of DetNet discussed in <xref target="RFC9055" sectionFormat="of" section="13" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9055#section-13" derivedContent="RFC9055"/>
+  are also applicable to DetNet OAM. If any privacy mechanism is used for the monitored DetNet flow, then
+  the same privacy method <bcp14>MUST</bcp14> be applied to the active DetNet OAM used to monitor the flow.
+      </t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-ippm-hybrid-two-step" to="HYBRID-TWO-STEP"/>
+    <references pn="section-10">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-10.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8655" target="https://www.rfc-editor.org/info/rfc8655" quoteTitle="true" derivedAnchor="RFC8655">
+          <front>
+            <title>Deterministic Networking Architecture</title>
+            <author fullname="N. Finn" initials="N." surname="Finn"/>
+            <author fullname="P. Thubert" initials="P." surname="Thubert"/>
+            <author fullname="B. Varga" initials="B." surname="Varga"/>
+            <author fullname="J. Farkas" initials="J." surname="Farkas"/>
+            <date month="October" year="2019"/>
+            <abstract>
+              <t indent="0">This document provides the overall architecture for Deterministic Networking (DetNet), which provides a capability to carry specified unicast or multicast data flows for real-time applications with extremely low data loss rates and bounded latency within a network domain. Techniques used include 1) reserving data-plane resources for individual (or aggregated) DetNet flows in some or all of the intermediate nodes along the path of the flow, 2) providing explicit routes for DetNet flows that do not immediately change with the network topology, and 3) distributing data from DetNet flow packets over time and/or space to ensure delivery of each packet's data in spite of the loss of a path. DetNet operates at the IP layer and delivers service over lower-layer technologies such as MPLS and Time- Sensitive Networking (TSN) as defined by IEEE 802.1.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8655"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8655"/>
+        </reference>
+      </references>
+      <references pn="section-10.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.ietf-ippm-hybrid-two-step" target="https://datatracker.ietf.org/doc/html/draft-ietf-ippm-hybrid-two-step-00" quoteTitle="true" derivedAnchor="HYBRID-TWO-STEP">
+          <front>
+            <title>Hybrid Two-Step Performance Measurement Method</title>
+            <author initials="G." surname="Mirsky" fullname="Greg Mirsky">
+              <organization showOnFrontPage="true">Ericsson</organization>
+            </author>
+            <author initials="W." surname="Lingqiang" fullname="Wang Lingqiang">
+              <organization showOnFrontPage="true">ZTE Corporation</organization>
+            </author>
+            <author initials="G." surname="Zhui" fullname="Guo Zhui">
+              <organization showOnFrontPage="true">ZTE Corporation</organization>
+            </author>
+            <author initials="H." surname="Song" fullname="Haoyu Song">
+              <organization showOnFrontPage="true">Futurewei Technologies</organization>
+            </author>
+            <author initials="P." surname="Thubert" fullname="Pascal Thubert">
+              <organization showOnFrontPage="true">Cisco Systems, Inc</organization>
+            </author>
+            <date month="October" day="4" year="2023"/>
+            <abstract>
+              <t indent="0">   Development of, and advancements in, automation of network operations
+   brought new requirements for measurement methodology.  Among them is
+   the ability to collect instant network state as the packet being
+   processed by the networking elements along its path through the
+   domain.  This document introduces a new hybrid measurement method,
+   referred to as hybrid two-step, as it separates the act of measuring
+   and/or calculating the performance metric from the act of collecting
+   and transporting network state.
+
+              </t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-ippm-hybrid-two-step-00"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC2544" target="https://www.rfc-editor.org/info/rfc2544" quoteTitle="true" derivedAnchor="RFC2544">
+          <front>
+            <title>Benchmarking Methodology for Network Interconnect Devices</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <author fullname="J. McQuaid" initials="J." surname="McQuaid"/>
+            <date month="March" year="1999"/>
+            <abstract>
+              <t indent="0">This document is a republication of RFC 1944 correcting the values for the IP addresses which were assigned to be used as the default addresses for networking test equipment. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2544"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2544"/>
+        </reference>
+        <reference anchor="RFC6291" target="https://www.rfc-editor.org/info/rfc6291" quoteTitle="true" derivedAnchor="RFC6291">
+          <front>
+            <title>Guidelines for the Use of the "OAM" Acronym in the IETF</title>
+            <author fullname="L. Andersson" initials="L." surname="Andersson"/>
+            <author fullname="H. van Helvoort" initials="H." surname="van Helvoort"/>
+            <author fullname="R. Bonica" initials="R." surname="Bonica"/>
+            <author fullname="D. Romascanu" initials="D." surname="Romascanu"/>
+            <author fullname="S. Mansfield" initials="S." surname="Mansfield"/>
+            <date month="June" year="2011"/>
+            <abstract>
+              <t indent="0">At first glance, the acronym "OAM" seems to be well-known and well-understood. Looking at the acronym a bit more closely reveals a set of recurring problems that are revisited time and again.</t>
+              <t indent="0">This document provides a definition of the acronym "OAM" (Operations, Administration, and Maintenance) for use in all future IETF documents that refer to OAM. There are other definitions and acronyms that will be discussed while exploring the definition of the constituent parts of the "OAM" term. This memo documents an Internet Best Current Practice.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="161"/>
+          <seriesInfo name="RFC" value="6291"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6291"/>
+        </reference>
+        <reference anchor="RFC6374" target="https://www.rfc-editor.org/info/rfc6374" quoteTitle="true" derivedAnchor="RFC6374">
+          <front>
+            <title>Packet Loss and Delay Measurement for MPLS Networks</title>
+            <author fullname="D. Frost" initials="D." surname="Frost"/>
+            <author fullname="S. Bryant" initials="S." surname="Bryant"/>
+            <date month="September" year="2011"/>
+            <abstract>
+              <t indent="0">Many service provider service level agreements (SLAs) depend on the ability to measure and monitor performance metrics for packet loss and one-way and two-way delay, as well as related metrics such as delay variation and channel throughput. This measurement capability also provides operators with greater visibility into the performance characteristics of their networks, thereby facilitating planning, troubleshooting, and network performance evaluation. This document specifies protocol mechanisms to enable the efficient and accurate measurement of these performance metrics in MPLS networks. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6374"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6374"/>
+        </reference>
+        <reference anchor="RFC7276" target="https://www.rfc-editor.org/info/rfc7276" quoteTitle="true" derivedAnchor="RFC7276">
+          <front>
+            <title>An Overview of Operations, Administration, and Maintenance (OAM) Tools</title>
+            <author fullname="T. Mizrahi" initials="T." surname="Mizrahi"/>
+            <author fullname="N. Sprecher" initials="N." surname="Sprecher"/>
+            <author fullname="E. Bellagamba" initials="E." surname="Bellagamba"/>
+            <author fullname="Y. Weingarten" initials="Y." surname="Weingarten"/>
+            <date month="June" year="2014"/>
+            <abstract>
+              <t indent="0">Operations, Administration, and Maintenance (OAM) is a general term that refers to a toolset for fault detection and isolation, and for performance measurement. Over the years, various OAM tools have been defined for various layers in the protocol stack.</t>
+              <t indent="0">This document summarizes some of the OAM tools defined in the IETF in the context of IP unicast, MPLS, MPLS Transport Profile (MPLS-TP), pseudowires, and Transparent Interconnection of Lots of Links (TRILL). This document focuses on tools for detecting and isolating failures in networks and for performance monitoring. Control and management aspects of OAM are outside the scope of this document. Network repair functions such as Fast Reroute (FRR) and protection switching, which are often triggered by OAM protocols, are also out of the scope of this document.</t>
+              <t indent="0">The target audience of this document includes network equipment vendors, network operators, and standards development organizations. This document can be used as an index to some of the main OAM tools defined in the IETF. At the end of the document, a list of the OAM toolsets and a list of the OAM functions are presented as a summary.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7276"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7276"/>
+        </reference>
+        <reference anchor="RFC7799" target="https://www.rfc-editor.org/info/rfc7799" quoteTitle="true" derivedAnchor="RFC7799">
+          <front>
+            <title>Active and Passive Metrics and Methods (with Hybrid Types In-Between)</title>
+            <author fullname="A. Morton" initials="A." surname="Morton"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This memo provides clear definitions for Active and Passive performance assessment. The construction of Metrics and Methods can be described as either "Active" or "Passive". Some methods may use a subset of both Active and Passive attributes, and we refer to these as "Hybrid Methods". This memo also describes multiple dimensions to help evaluate new methods as they emerge.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7799"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7799"/>
+        </reference>
+        <reference anchor="RFC8641" target="https://www.rfc-editor.org/info/rfc8641" quoteTitle="true" derivedAnchor="RFC8641">
+          <front>
+            <title>Subscription to YANG Notifications for Datastore Updates</title>
+            <author fullname="A. Clemm" initials="A." surname="Clemm"/>
+            <author fullname="E. Voit" initials="E." surname="Voit"/>
+            <date month="September" year="2019"/>
+            <abstract>
+              <t indent="0">This document describes a mechanism that allows subscriber applications to request a continuous and customized stream of updates from a YANG datastore. Providing such visibility into updates enables new capabilities based on the remote mirroring and monitoring of configuration and operational state.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8641"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8641"/>
+        </reference>
+        <reference anchor="RFC8939" target="https://www.rfc-editor.org/info/rfc8939" quoteTitle="true" derivedAnchor="RFC8939">
+          <front>
+            <title>Deterministic Networking (DetNet) Data Plane: IP</title>
+            <author fullname="B. Varga" initials="B." role="editor" surname="Varga"/>
+            <author fullname="J. Farkas" initials="J." surname="Farkas"/>
+            <author fullname="L. Berger" initials="L." surname="Berger"/>
+            <author fullname="D. Fedyk" initials="D." surname="Fedyk"/>
+            <author fullname="S. Bryant" initials="S." surname="Bryant"/>
+            <date month="November" year="2020"/>
+            <abstract>
+              <t indent="0">This document specifies the Deterministic Networking (DetNet) data plane operation for IP hosts and routers that provide DetNet service to IP-encapsulated data. No DetNet-specific encapsulation is defined to support IP flows; instead, the existing IP-layer and higher-layer protocol header information is used to support flow identification and DetNet service delivery. This document builds on the DetNet architecture (RFC 8655) and data plane framework (RFC 8938).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8939"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8939"/>
+        </reference>
+        <reference anchor="RFC9055" target="https://www.rfc-editor.org/info/rfc9055" quoteTitle="true" derivedAnchor="RFC9055">
+          <front>
+            <title>Deterministic Networking (DetNet) Security Considerations</title>
+            <author fullname="E. Grossman" initials="E." role="editor" surname="Grossman"/>
+            <author fullname="T. Mizrahi" initials="T." surname="Mizrahi"/>
+            <author fullname="A. Hacker" initials="A." surname="Hacker"/>
+            <date month="June" year="2021"/>
+            <abstract>
+              <t indent="0">A DetNet (deterministic network) provides specific performance guarantees to its data flows, such as extremely low data loss rates and bounded latency (including bounded latency variation, i.e., "jitter"). As a result, securing a DetNet requires that in addition to the best practice security measures taken for any mission-critical network, additional security measures may be needed to secure the intended operation of these novel service properties.</t>
+              <t indent="0">This document addresses DetNet-specific security considerations from the perspectives of both the DetNet system-level designer and component designer. System considerations include a taxonomy of relevant threats and attacks, and associations of threats versus use cases and service properties. Component-level considerations include ingress filtering and packet arrival-time violation detection.</t>
+              <t indent="0">This document also addresses security considerations specific to the IP and MPLS data plane technologies, thereby complementing the Security Considerations sections of those documents.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9055"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9055"/>
+        </reference>
+        <reference anchor="RFC9197" target="https://www.rfc-editor.org/info/rfc9197" quoteTitle="true" derivedAnchor="RFC9197">
+          <front>
+            <title>Data Fields for In Situ Operations, Administration, and Maintenance (IOAM)</title>
+            <author fullname="F. Brockners" initials="F." role="editor" surname="Brockners"/>
+            <author fullname="S. Bhandari" initials="S." role="editor" surname="Bhandari"/>
+            <author fullname="T. Mizrahi" initials="T." role="editor" surname="Mizrahi"/>
+            <date month="May" year="2022"/>
+            <abstract>
+              <t indent="0">In situ Operations, Administration, and Maintenance (IOAM) collects operational and telemetry information in the packet while the packet traverses a path between two points in the network. This document discusses the data fields and associated data types for IOAM. IOAM-Data-Fields can be encapsulated into a variety of protocols, such as Network Service Header (NSH), Segment Routing, Generic Network Virtualization Encapsulation (Geneve), or IPv6. IOAM can be used to complement OAM mechanisms based on, e.g., ICMP or other types of probe packets.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9197"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9197"/>
+        </reference>
+        <reference anchor="RFC9326" target="https://www.rfc-editor.org/info/rfc9326" quoteTitle="true" derivedAnchor="RFC9326">
+          <front>
+            <title>In Situ Operations, Administration, and Maintenance (IOAM) Direct Exporting</title>
+            <author fullname="H. Song" initials="H." surname="Song"/>
+            <author fullname="B. Gafni" initials="B." surname="Gafni"/>
+            <author fullname="F. Brockners" initials="F." surname="Brockners"/>
+            <author fullname="S. Bhandari" initials="S." surname="Bhandari"/>
+            <author fullname="T. Mizrahi" initials="T." surname="Mizrahi"/>
+            <date month="November" year="2022"/>
+            <abstract>
+              <t indent="0">In situ Operations, Administration, and Maintenance (IOAM) is used for recording and collecting operational and telemetry information. Specifically, IOAM allows telemetry data to be pushed into data packets while they traverse the network. This document introduces a new IOAM option type (denoted IOAM-Option-Type) called the "IOAM Direct Export (DEX) Option-Type". This Option-Type is used as a trigger for IOAM data to be directly exported or locally aggregated without being pushed into in-flight data packets. The exporting method and format are outside the scope of this document.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9326"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9326"/>
+        </reference>
+        <reference anchor="RFC9341" target="https://www.rfc-editor.org/info/rfc9341" quoteTitle="true" derivedAnchor="RFC9341">
+          <front>
+            <title>Alternate-Marking Method</title>
+            <author fullname="G. Fioccola" initials="G." role="editor" surname="Fioccola"/>
+            <author fullname="M. Cociglio" initials="M." surname="Cociglio"/>
+            <author fullname="G. Mirsky" initials="G." surname="Mirsky"/>
+            <author fullname="T. Mizrahi" initials="T." surname="Mizrahi"/>
+            <author fullname="T. Zhou" initials="T." surname="Zhou"/>
+            <date month="December" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes the Alternate-Marking technique to perform packet loss, delay, and jitter measurements on live traffic. This technology can be applied in various situations and for different protocols. According to the classification defined in RFC 7799, it could be considered Passive or Hybrid depending on the application. This document obsoletes RFC 8321.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9341"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9341"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">
+        The authors express their appreciation and gratitude to <contact fullname="Pascal Thubert"/> for the review, insightful questions, and helpful comments.
+      </t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="G." surname="Mirsky" fullname="Greg Mirsky">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <email>gregimirsky@gmail.com</email>
+        </address>
+      </author>
+      <author initials="F." surname="Theoleyre" fullname="Fabrice Theoleyre">
+        <organization showOnFrontPage="true">CNRS</organization>
+        <address>
+          <postal>
+            <extaddr>ICube Lab, Pole API</extaddr>
+            <street>300 boulevard Sebastien Brant - CS 10413</street>
+            <city>Illkirch - Strasbourg</city>
+            <code>67400</code>
+            <country>France</country>
+          </postal>
+          <phone>+33 368 85 45 33</phone>
+          <email>fabrice.theoleyre@cnrs.fr</email>
+          <uri>https://fabrice.theoleyre.cnrs.fr/</uri>
+        </address>
+      </author>
+      <author initials="G." surname="Papadopoulos" fullname="Georgios Papadopoulos">
+        <organization showOnFrontPage="true">IMT Atlantique</organization>
+        <address>
+          <postal>
+            <street>Office B00 - 102A</street>
+            <street>2 Rue de la Châtaigneraie</street>
+            <city>Cesson-Sévigné - Rennes</city>
+            <code>35510</code>
+            <country>France</country>
+          </postal>
+          <phone>+33 299 12 70 04</phone>
+          <email>georgios.papadopoulos@imt-atlantique.fr</email>
+        </address>
+      </author>
+      <author initials="CJ." surname="Bernardos" fullname="Carlos J. Bernardos">
+        <organization abbrev="UC3M" showOnFrontPage="true">Universidad Carlos III de Madrid</organization>
+        <address>
+          <postal>
+            <street>Av. Universidad, 30</street>
+            <city>Leganes, Madrid</city>
+            <code>28911</code>
+            <country>Spain</country>
+          </postal>
+          <phone>+34 91624 6236</phone>
+          <email>cjbc@it.uc3m.es</email>
+          <uri>http://www.it.uc3m.es/cjbc/</uri>
+        </address>
+      </author>
+      <author fullname="Balazs Varga" initials="B." surname="Varga">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <street>Magyar Tudosok krt. 11.</street>
+            <city>Budapest</city>
+            <country>Hungary</country>
+            <code>1117</code>
+          </postal>
+          <email>balazs.a.varga@ericsson.com</email>
+        </address>
+      </author>
+      <author fullname="Janos Farkas" initials="J." surname="Farkas">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <street>Magyar Tudosok krt. 11.</street>
+            <city>Budapest</city>
+            <country>Hungary</country>
+            <code>1117</code>
+          </postal>
+          <email>janos.farkas@ericsson.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

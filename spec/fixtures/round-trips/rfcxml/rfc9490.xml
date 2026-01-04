@@ -1,0 +1,808 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-iab-m-ten-workshop-02" category="info" consensus="true" submissionType="IAB" tocInclude="true" sortRefs="true" symRefs="true" number="9490" prepTime="2024-01-16T13:48:18" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-iab-m-ten-workshop-02" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9490" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="M-TEN Workshop Report">Report from the IAB Workshop on Management Techniques in Encrypted Networks (M-TEN)</title>
+    <seriesInfo name="RFC" value="9490" stream="IAB"/>
+    <author initials="M." surname="Knodel" fullname="Mallory Knodel">
+      <address>
+        <email>mknodel@cdt.org</email>
+      </address>
+    </author>
+    <author initials="W." surname="Hardaker" fullname="Wes Hardaker">
+      <organization showOnFrontPage="true"/>
+      <address>
+        <email>ietf@hardakers.net</email>
+      </address>
+    </author>
+    <author initials="T." surname="Pauly" fullname="Tommy Pauly">
+      <organization showOnFrontPage="true"/>
+      <address>
+        <email>tpauly@apple.com</email>
+      </address>
+    </author>
+    <date month="01" year="2024"/>
+    <keyword>encryption</keyword>
+    <keyword>network management</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">The "Management Techniques in Encrypted Networks (M-TEN)" workshop was convened by the Internet Architecture Board (IAB) from 17 October 2022 to 19 October 2022 as a three-day online meeting. The workshop was organized in three parts to discuss ways to improve network management techniques in support of even broader adoption of encryption on the Internet. This report summarizes the workshop's discussion and identifies topics that warrant future work and consideration.</t>
+      <t indent="0" pn="section-abstract-2">Note that this document is a report on the proceedings of the
+workshop. The views and positions documented in this report are those
+of the expressed during the workshop by participants and do not
+necessarily reflect IAB views and positions.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for informational purposes.  
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Architecture Board
+            (IAB) and represents information that the IAB has deemed valuable
+            to provide for permanent record.  It represents the consensus of the Internet
+            Architecture Board (IAB).  Documents approved for publication
+            by the IAB are not candidates for any level of Internet Standard; see
+            Section 2 of RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9490" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-about-this-workshop-report-">About This Workshop Report Content</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-workshop-scope-and-discussi">Workshop Scope and Discussion</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-where-we-are-requirements-a">"Where We Are" - Requirements and Passive Observations</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2.1.2">
+                  <li pn="section-toc.1-1.2.2.1.2.1">
+                    <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.1.2.1.1"><xref derivedContent="2.1.1" format="counter" sectionFormat="of" target="section-2.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-traffic-classification-and-">Traffic Classification and Network Management</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.2.2.1.2.2.1"><xref derivedContent="2.1.2" format="counter" sectionFormat="of" target="section-2.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-preventing-traffic-analysis">Preventing Traffic Analysis</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.1.2.3">
+                    <t indent="0" pn="section-toc.1-1.2.2.1.2.3.1"><xref derivedContent="2.1.3" format="counter" sectionFormat="of" target="section-2.1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-users-and-privacy">Users and Privacy</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.1.2.4">
+                    <t indent="0" pn="section-toc.1-1.2.2.1.2.4.1"><xref derivedContent="2.1.4" format="counter" sectionFormat="of" target="section-2.1.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-discussion">Discussion</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-where-we-want-to-go-collabo">"Where We Want to Go" - Collaboration Principles</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2.2.2">
+                  <li pn="section-toc.1-1.2.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.1.1"><xref derivedContent="2.2.1" format="counter" sectionFormat="of" target="section-2.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-first-party-collaboration-f">First-Party Collaboration for Network Management</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.2.1"><xref derivedContent="2.2.2" format="counter" sectionFormat="of" target="section-2.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-second-and-third-party-coll">Second- and Third-Party Collaboration for Network Management</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.3.1"><xref derivedContent="2.2.3" format="counter" sectionFormat="of" target="section-2.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-visible-optional-network-ma">Visible, Optional Network Management</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.2.2.4">
+                    <t indent="0" pn="section-toc.1-1.2.2.2.2.4.1"><xref derivedContent="2.2.4" format="counter" sectionFormat="of" target="section-2.2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-discussion-2">Discussion</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.2.2.3">
+                <t indent="0" pn="section-toc.1-1.2.2.3.1"><xref derivedContent="2.3" format="counter" sectionFormat="of" target="section-2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-how-we-get-there-collaborat">"How We Get There" - Collaboration Use Cases</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2.3.2">
+                  <li pn="section-toc.1-1.2.2.3.2.1">
+                    <t indent="0" pn="section-toc.1-1.2.2.3.2.1.1"><xref derivedContent="2.3.1" format="counter" sectionFormat="of" target="section-2.3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-establishing-expected-contr">Establishing Expected Contracts to Enable Security Management</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.3.2.2">
+                    <t indent="0" pn="section-toc.1-1.2.2.3.2.2.1"><xref derivedContent="2.3.2" format="counter" sectionFormat="of" target="section-2.3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-zero-knowledge-middleboxes">Zero-Knowledge Middleboxes</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.2.2.3.2.3">
+                    <t indent="0" pn="section-toc.1-1.2.2.3.2.3.1"><xref derivedContent="2.3.3" format="counter" sectionFormat="of" target="section-2.3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-red-rover-a-collaborative-a">Red Rover - a Collaborative Approach to Content Filtering</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-conclusions">Conclusions</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-position-papers">Position Papers</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="A.1" format="counter" sectionFormat="of" target="section-appendix.a.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-motivations-and-principles">Motivations and Principles</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="A.2" format="counter" sectionFormat="of" target="section-appendix.a.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-classification-and-identifi">Classification and Identification of Encrypted Traffic</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.3">
+                <t indent="0" pn="section-toc.1-1.5.2.3.1"><xref derivedContent="A.3" format="counter" sectionFormat="of" target="section-appendix.a.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ideas-for-collaboration-and">Ideas for Collaboration and Coordination between Devices and Networks</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.4">
+                <t indent="0" pn="section-toc.1-1.5.2.4.1"><xref derivedContent="A.4" format="counter" sectionFormat="of" target="section-appendix.a.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-other-background-material">Other Background Material</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="Appendix B" format="default" sectionFormat="of" target="section-appendix.b"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-workshop-participants">Workshop Participants</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="Appendix C" format="default" sectionFormat="of" target="section-appendix.c"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-program-committee">Program Committee</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.d"/><xref derivedContent="" format="title" sectionFormat="of" target="name-iab-members-at-the-time-of-">IAB Members at the Time of Approval</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.e"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.f"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="intro" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">The Internet Architecture Board (IAB) holds occasional workshops
+      designed to consider long-term issues and strategies for the
+      Internet, and to suggest future directions for the Internet
+      architecture.  This long-term planning function of the IAB is
+      complementary to the ongoing engineering efforts performed by working
+      groups of the Internet Engineering Task Force (IETF).</t>
+      <t indent="0" pn="section-1-2">User privacy and security are constantly being improved by increasingly strong and more widely deployed encryption. This workshop aims to discuss ways to improve network management techniques in support of even broader adoption of encryption on the Internet.</t>
+      <t indent="0" pn="section-1-3">Network management techniques need to evolve to work effectively and reliably in the presence of ubiquitous traffic encryption and to support user privacy. In an all-encrypted network, it is not viable to rely on unencrypted metadata for network monitoring and security functions, troubleshooting devices, and passive traffic measurements. New approaches are needed to track network behaviors, e.g., by directly cooperating with endpoints and applications, increasing use of in-band telemetry, increasing use of active measurement approaches, and privacy-preserving inference techniques.</t>
+      <t indent="0" pn="section-1-4">The aim of this IAB online workshop from October 17-19, 2022, has been to provide a platform to explore the interaction between network management and traffic encryption and to initiate work on collaborative approaches that promote security and user privacy while supporting operational requirements. As such, the workshop addressed the following questions:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1-5">
+        <li pn="section-1-5.1">
+          <t indent="0" pn="section-1-5.1.1">What are actionable network management requirements?</t>
+        </li>
+        <li pn="section-1-5.2">
+          <t indent="0" pn="section-1-5.2.1">Who is willing to work on collaborative solutions?</t>
+        </li>
+        <li pn="section-1-5.3">
+          <t indent="0" pn="section-1-5.3.1">What are the starting points for collaborative solutions?</t>
+        </li>
+      </ul>
+      <section anchor="about-this-workshop-report-content" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-about-this-workshop-report-">About This Workshop Report Content</name>
+        <t indent="0" pn="section-1.1-1">This document is a report on the proceedings of the workshop. The
+views and positions documented in this report are those of the
+workshop participants and do not necessarily
+reflect IAB views and positions.</t>
+        <t indent="0" pn="section-1.1-2">Furthermore, the content of the report comes from presentations given
+by workshop participants and notes taken during the discussions,
+without interpretation or validation.  Thus, the content of this
+report follows the flow and dialog of the workshop but does not
+attempt to capture a consensus.</t>
+      </section>
+    </section>
+    <section anchor="workshop-scope-and-discussion" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-workshop-scope-and-discussi">Workshop Scope and Discussion</name>
+      <t indent="0" pn="section-2-1">The workshop was held across three days with all-group discussion slots, one per day. The following topic areas were identified, and the program committee organized paper submissions into three main themes for each of the three discussion slots. During each discussion, those papers were presented sequentially with open discussion held at the end of each day.</t>
+      <section anchor="day1" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-where-we-are-requirements-a">"Where We Are" - Requirements and Passive Observations</name>
+        <t indent="0" pn="section-2.1-1">The first day of the workshop focused on the existing state of the relationship between network management and encrypted traffic from various angles. Presentations ranged from discussing classifiers using machine learning to recognize traffic, to advanced techniques for evading traffic analysis, to user privacy considerations.</t>
+        <t indent="0" pn="section-2.1-2">After an introduction that covered the goals of the workshop and the starting questions (as described in <xref target="intro" format="default" sectionFormat="of" derivedContent="Section 1"/>), there were four presentations followed by open discussion.</t>
+        <section anchor="traffic-classification-and-network-management" numbered="true" removeInRFC="false" toc="include" pn="section-2.1.1">
+          <name slugifiedName="name-traffic-classification-and-">Traffic Classification and Network Management</name>
+          <t indent="0" pn="section-2.1.1-1">Many existing network management techniques are passive in nature: they don't rely on explicit signals from end hosts to negotiate with network middleboxes but instead rely on inspecting packets to recognize traffic and apply various policies. Traffic classification, as a passive technique, is being challenged by increasing encryption.</t>
+          <t indent="0" pn="section-2.1.1-2">Traffic classification is commonly performed by networks to infer what applications and services are being used. This information is in turn used for capacity and resource planning, Quality-of-Service (QoS) monitoring, traffic prioritization, network access control, identity management, and malware detection. However, since classification commonly relies on recognizing unencrypted properties of packets in a flow, increasing encryption of traffic can decrease the effectiveness of classification.</t>
+          <t indent="0" pn="section-2.1.1-3">The amount of classification that can be performed on traffic also provides useful insight into how "leaky" the protocols used by applications are and points to areas where information is visible to any observer, who may or may not be malicious.</t>
+          <t indent="0" pn="section-2.1.1-4">Frequently, classification has been based on specific rules crafted by experts, but there is also a move toward using machine learning to recognize patterns. "Deep learning" machine-learning models generally rely on analyzing a large set of traffic over time and have trouble reacting quickly to changes in traffic patterns.</t>
+          <t indent="0" pn="section-2.1.1-5">Models that are based on closed-world data sets also become less useful over time as traffic changes. <xref target="JIANG" format="default" sectionFormat="of" derivedContent="JIANG"/> describes experiments that show that a model that performed with high accuracy on an initial data set becomes severely degraded when running on a newer data set that contains traffic from the same applications. Even in as little time as one week, the traffic classification would become degraded. However, the set of features in packets and flows that were useful for models stayed mostly consistent, even if the models themselves needed to be updated. Models where the feature space is reduced to fewer features showed better resiliency and could be retrained more quickly. Based on this, <xref target="JIANG" format="default" sectionFormat="of" derivedContent="JIANG"/> recommends more work and research to determine which set of features in IP packets are most useful for focused machine-learning analysis. <xref target="WU" format="default" sectionFormat="of" derivedContent="WU"/> also recommends further research investment in Artificial Intelligence (AI) analysis for network management.</t>
+        </section>
+        <section anchor="preventing-traffic-analysis" numbered="true" removeInRFC="false" toc="include" pn="section-2.1.2">
+          <name slugifiedName="name-preventing-traffic-analysis">Preventing Traffic Analysis</name>
+          <t indent="0" pn="section-2.1.2-1">Just as traffic classification is continually adapting, techniques to prevent traffic analysis and to obfuscate application and user traffic are continually evolving. An invited talk from the authors of <xref target="DITTO" format="default" sectionFormat="of" derivedContent="DITTO"/> shared a novel approach with the workshop for how to build a very robust system to prevent unwanted traffic analysis.</t>
+          <t indent="0" pn="section-2.1.2-2">Usually traffic obfuscation is performed by changing the timing of packets or by adding padding to data. The practices can be costly and negatively impact performance. <xref target="DITTO" format="default" sectionFormat="of" derivedContent="DITTO"/> demonstrated the feasibility of applying traffic obfuscation on aggregated traffic in the network with minimal overhead and inline speed.</t>
+          <t indent="0" pn="section-2.1.2-3">While traffic obfuscation techniques are not widely deployed today, this study underlines the need for continuous effort to keep traffic models updated over time, the challenges of the classification of encrypted traffic, as well as the opportunities to further enhance user privacy.</t>
+        </section>
+        <section anchor="users-and-privacy" numbered="true" removeInRFC="false" toc="include" pn="section-2.1.3">
+          <name slugifiedName="name-users-and-privacy">Users and Privacy</name>
+          <t indent="0" pn="section-2.1.3-1">The Privacy Enhancements and Assessments Research Group (PEARG) is working on a document to discuss guidelines for measuring traffic on the Internet in a safe and privacy-friendly way <xref target="I-D.irtf-pearg-safe-internet-measurement" format="default" sectionFormat="of" derivedContent="LEARMONTH"/>. These guidelines and principles provide another view on the discussion of passive classification and analysis of traffic.</t>
+          <t indent="0" pn="section-2.1.3-2">Consent for collection and measurement of metadata is an important consideration in deploying network measurement techniques. This consent can be given explicitly as informed consent, given by proxy, or may be only implied. For example, a user of a network might need to consent to certain measurement and traffic treatment when joining a network.</t>
+          <t indent="0" pn="section-2.1.3-3">Various techniques for data collection can also improve user privacy, such as discarding data after a short period of time, masking aspects of data that contain user-identifying information, reducing the accuracy of collected data, and aggregating data.</t>
+        </section>
+        <section anchor="discussion" numbered="true" removeInRFC="false" toc="include" pn="section-2.1.4">
+          <name slugifiedName="name-discussion">Discussion</name>
+          <t indent="0" pn="section-2.1.4-1">The intents and goals of users, application developers, and network operators align in some cases, but not in others. One of the recurring challenges that was discussed was the lack of a clear way to understand or to communicate intents and requirements. Both traffic classification and traffic obfuscation attempt to change the visibility of traffic without cooperation of other parties: traffic classification is an attempt by the network to inspect application traffic without coordination from applications, and traffic obfuscation is an attempt by the application to hide that same traffic as it transits a network.</t>
+          <t indent="0" pn="section-2.1.4-2">Traffic adaptation and prioritization is one dimension in which the incentives for cooperation seem most clear. Even if an application is trying to prevent the leaking of metadata, it could benefit from signals from the network about sudden capacity changes that can help it adapt its application quality, such as bitrates and codecs. Such signaling may not be appropriate for the most privacy-sensitive applications, like Tor, but could be applicable for many others. There are existing protocols that involve explicit signaling between applications and networks, such as Explicit Congestion Notification (ECN) <xref target="RFC3168" format="default" sectionFormat="of" derivedContent="RFC3168"/>, but that has yet to see wide adoption.</t>
+          <t indent="0" pn="section-2.1.4-3">Managed networks (such as private corporate networks) were brought up in several comments as particularly challenging for meeting management requirements while maintaining encryption and privacy. These networks can have legal and regulated requirements for detection of specific fraudulent or malicious traffic.</t>
+          <t indent="0" pn="section-2.1.4-4">Personal networks that enable managed parental controls have similar complications with encrypted traffic and user privacy. In these scenarios, the parental controls that are operated by the network may be as simple as a DNS filter, which can be made ineffective by a device routing traffic to an alternate DNS resolver.</t>
+        </section>
+      </section>
+      <section anchor="day2" numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-where-we-want-to-go-collabo">"Where We Want to Go" - Collaboration Principles</name>
+        <t indent="0" pn="section-2.2-1">The second day of the workshop focused on the emerging techniques for analyzing, managing, or monitoring encrypted traffic. Presentations covered advanced classification and identification, including machine-learning techniques, for the purposes of managing network flows or monitoring or monetizing usage.</t>
+        <t indent="0" pn="section-2.2-2">After an introduction that covered the goals of the workshop and the starting questions (as described in <xref target="intro" format="default" sectionFormat="of" derivedContent="Section 1"/>), there were three presentations, followed by open discussion.</t>
+        <section anchor="first-party-collaboration-for-network-management" numbered="true" removeInRFC="false" toc="include" pn="section-2.2.1">
+          <name slugifiedName="name-first-party-collaboration-f">First-Party Collaboration for Network Management</name>
+          <t indent="0" pn="section-2.2.1-1">It is the intent of end-to-end encryption of traffic to create a barrier between entities inside the communication channel and everyone else, including network operators. Therefore, any attempt to overcome that intentional barrier requires collaboration between the inside and outside entities. At a minimum, those entities must agree on the benefits of overcoming the barrier (or solving the problem), agree that costs are proportional to the benefits, and agree to additional limitations or safeguards against bad behavior by collaborators including other non-insiders <xref target="BARNES" format="default" sectionFormat="of" derivedContent="BARNES"/>.</t>
+          <t indent="0" pn="section-2.2.1-2">The Internet is designed interoperably, which means an outside entity wishing to collaborate with the inside might be any number of intermediaries and not, say, a specific person that can be trusted in the human sense. Additionally, the use of encryption, especially network-layer or transport-layer encryption, introduces dynamic or opportunistic or perfunctory discoverability. These realities point to a need to ask why an outside entity might make an engineering case to collaborate with the user of a network with encrypted traffic and to ask whether the trade-offs and potential risks are worth it to the user.</t>
+          <t indent="0" pn="section-2.2.1-3">However, the answers cannot be specific, and the determinations or guidance need to be general as the encryption boundary is inevitably an application used by many people. Trade-offs must make sense to users who are unlikely to be thinking about network management considerations. Harms need to be preemptively reduced because, in general terms, few users would choose network management benefits over their own privacy if given the choice.</t>
+          <t indent="0" pn="section-2.2.1-4">Some have found that there appears to be little, if any, evidence
+that encryption causes network problems that are meaningful to the user. Since
+alignment on problem solving is a prerequisite to collaboration on a
+solution, it does not seem that collaboration across the encryption
+boundary is called for.</t>
+        </section>
+        <section anchor="second-and-third-party-collaboration-for-network-management" numbered="true" removeInRFC="false" toc="include" pn="section-2.2.2">
+          <name slugifiedName="name-second-and-third-party-coll">Second- and Third-Party Collaboration for Network Management</name>
+          <t indent="0" pn="section-2.2.2-1">Even with the wide-scale deployment of encryption in new protocols and of techniques that prevent passive observers of network traffic from knowing the content of exchanged communications, important information, such as which parties communicate and sometimes even which services have been requested, may still be able to be deduced. The future is to conceal more data and metadata from passive observers and also to minimize information exposure to second parties (where the user is the first party) by, maybe counterintuitively, introducing third-party relay services to intermediate communications. As discussed in <xref target="KUEHLEWIND" format="default" sectionFormat="of" derivedContent="KUEHLEWIND"/>, the relay is a mechanism that uses additional levels of encryption to separate two important pieces of information: knowledge of the identity of the person accessing a service is separated from knowledge about the service being accessed. By contrast, a VPN uses only one level of encryption and does not separate identity (first party) and service (second party) metadata.</t>
+          <t indent="0" pn="section-2.2.2-2">Relay mechanisms are termed "oblivious", there is a future for specifications in privacy-preserving measurement (PPM), and protocols like Multiplexed Application Substrate over QUIC Encryption (MASQUE) are discussed in the IETF. In various schemes, users are ideally able to share their identity only with the entity they have identified as a trusted one. That data is not shared with the service provider. However, this is more complicated for network management, but there may be opportunities for better collaboration between the network and, say, the application or service at the endpoint.</t>
+          <t indent="0" pn="section-2.2.2-3">A queriable relay mechanism could preserve network management functions that are disrupted by encryption, such as TCP optimization, quality of service, zero-rating, parental controls, access control, redirection, content enhancement, analytics, and fraud prevention. Instead of encrypting communication between only two ends with passive observation by all on-path elements, intermediate relays could be introduced as trusted parties that get to see limited information for the purpose of collaboration between in-network intermediary services.</t>
+        </section>
+        <section anchor="visible-optional-network-management" numbered="true" removeInRFC="false" toc="include" pn="section-2.2.3">
+          <name slugifiedName="name-visible-optional-network-ma">Visible, Optional Network Management</name>
+          <t indent="0" pn="section-2.2.3-1">Out of all of the possible network management functions that might be ameliorated by proxying, the ability to control congestion in encrypted communications has been researched in depth. These techniques are realized based on TCP performance-enhancing proxies (PEPs) that either entirely intercept a TCP connection or interfere with the transport information in the TCP header. However, despite the challenge that the new encrypted protocol will limit any such in-network interference, these techniques can also have a negative impact on the evolvability of these protocols. Therefore, a new approach was presented where, instead of manipulating existing information, additional information is sent using a so-called sidecar protocol independent of the main transport protocol that is used end to end <xref target="WELZL" format="default" sectionFormat="of" derivedContent="WELZL"/>. For example, sidecar information can contain additional acknowledgments to enable in-network local retransmission or faster end-to-end retransmission by reducing the signaling round-trip time.</t>
+          <t indent="0" pn="section-2.2.3-2">Taking user privacy benefits for granted, there is a need to investigate the comparable performance outputs of various encrypted traffic configurations such as the use of an additional sidecar protocol, or explicit encrypted and trusted network communication using MASQUE in relation to existing techniques such as TCP PEPs, etc.</t>
+        </section>
+        <section anchor="discussion-1" numbered="true" removeInRFC="false" toc="include" pn="section-2.2.4">
+          <name slugifiedName="name-discussion-2">Discussion</name>
+          <t indent="0" pn="section-2.2.4-1">One size fits all? On the issue of trust, different networks or devices will have different trust requirements for devices, users, or each other, and vice versa. For example, imagine two networks with really different security requirements, like a home network with a requirement to protect its child users versus a national security institution's network. How could one network architecture solve the needs of all use cases?</t>
+          <t indent="0" pn="section-2.2.4-2">Does our destination have consequences? It seems sometimes that there may be future consequences caused by the ubiquitous, strong encryption of network traffic because it will cause intermediaries to poke holes in what are supposed to be long-term solutions for user privacy and security.</t>
+          <t indent="0" pn="section-2.2.4-3">Can we bring the user along? While there has been a focus on the good reasons why people might collaborate across the encryption barrier, there will always be others who want to disrupt that in order to exploit the data for their own gain, and sometimes exploitation is called innovation. High-level policy mitigations have exposed how powerless end users are against corporate practices of data harvesting. And yet interfaces to help users understand these lower-layer traffic flows to protect their financial transactions or privacy haven't been achieved yet. That means that engineers must make inferences about user wants. Instead, we should make these relationships and trade-offs more visible.</t>
+        </section>
+      </section>
+      <section anchor="day3" numbered="true" removeInRFC="false" toc="include" pn="section-2.3">
+        <name slugifiedName="name-how-we-get-there-collaborat">"How We Get There" - Collaboration Use Cases</name>
+        <t indent="0" pn="section-2.3-1">The third day focused on techniques that could be used to
+improve the management of encrypted networks.<br/>
+The potential paths forward described in the presentations included some
+element of collaboration between the networks and the subscribing clients that
+simultaneously want both privacy and protection.  Thus, the central
+theme of the third day became negotiation and collaboration.</t>
+        <section anchor="establishing-expected-contracts-to-enable-security-management" numbered="true" removeInRFC="false" toc="include" pn="section-2.3.1">
+          <name slugifiedName="name-establishing-expected-contr">Establishing Expected Contracts to Enable Security Management</name>
+          <t indent="0" pn="section-2.3.1-1">For enterprise networks where client behavior is
+potentially managed, <xref target="COLLINS" format="default" sectionFormat="of" derivedContent="COLLINS"/> proposes "Improving network
+monitoring through contracts", where contracts describe different
+states of network behavior.</t>
+          <t indent="0" pn="section-2.3.1-2">Because network operators have a limited amount of time to focus on
+problems and process alerts, contracts and states let the operator
+focus on a particular aspect of a current situation or problem.  The
+current estimate for the number of events a Security Operations Center (SOC) operator can handle
+is about 10 per hour.  Operators must work within the limits imposed
+by their organization and must pick among options that frequently
+only frustrate attackers -- preventing attacks entirely is potentially
+impossible. Finally, operators must prioritize and manage the most
+events possible.</t>
+          <t indent="0" pn="section-2.3.1-3">Validating which alerts are true positives is challenging because lots
+of weird traffic creates many anomalies, and not all anomalies are
+malicious events.  Identifying which anomalous traffic is rooted in
+malicious activity with any level of certainty is extremely
+challenging.  Unfortunately, applying the latest machine-learning
+techniques has produced mixed results.  To make matters worse,
+the large amounts of Internet-wide scanning has resulted in endless
+traffic that is technically malicious but only creates an information
+overload and challenges event prioritization.  Any path forward must
+free up analyst time to concentrate on the more
+challenging events.</t>
+          <t indent="0" pn="section-2.3.1-4">The proposed contract solution is to define a collection of acceptable
+behaviors that comprises different states that might
+include IP addresses, domain names, and indicators of compromise.
+Deviation from a contract might indicate that a system is acting
+outside a normal mode of behavior or even that a normal mode of
+behavior is suddenly missing.  An example contract might be "this
+system is expected to update its base OS once a day". If this
+doesn't occur, then this expectation has not been met, and the system
+should be checked as it failed to call home to look for (potentially
+security-related) updates.</t>
+          <t indent="0" pn="section-2.3.1-5">Within the IETF, the Manufacturer Usage Description Specification
+(MUD) <xref target="RFC8520" format="default" sectionFormat="of" derivedContent="RFC8520"/> is one subset of contracts.  Note that
+contracts are likely to succeed only in a constrained, expected
+environment maintained by operational staff and may not work in an
+open Internet environment where end users drive all network
+connections.</t>
+        </section>
+        <section anchor="zero-knowledge-middleboxes" numbered="true" removeInRFC="false" toc="include" pn="section-2.3.2">
+          <name slugifiedName="name-zero-knowledge-middleboxes">Zero-Knowledge Middleboxes</name>
+          <t indent="0" pn="section-2.3.2-1">The world is not only shifting to increased encrypted traffic but is
+also encrypting more and more of the metadata (e.g., DNS queries and
+responses).  This makes network policy enforcement by middleboxes
+significantly more challenging.  The result is a
+significant tension between security enforcement and privacy
+protection.</t>
+          <t indent="0" pn="section-2.3.2-2">Goals for solving this problem should include
+enabling networks to enforce their policies, but
+should not include the weakening of encryption nor the deployment of new server software.  Existing
+solutions fail to meet at least one of these points.</t>
+          <t indent="0" pn="section-2.3.2-3">A cryptographic principle of a "zero-knowledge proof" (ZKP) <xref target="GRUBBS" format="default" sectionFormat="of" derivedContent="GRUBBS"/>
+may be one path forward to consider.  A ZKP allows a third party to
+verify that a statement is true without revealing what the statement
+actually is.  Applying this to network traffic has been shown to allow
+a middlebox to verify that traffic to a web server is
+compliant with a policy without revealing the actual contents.  This
+solution meets the three criteria listed above.  Using ZKP within TLS 1.3
+traffic turns out to be plausible.</t>
+          <t indent="0" pn="section-2.3.2-4">An example engine using encrypted DNS was built to test ZKP.  Clients
+were able to create DNS requests that were not listed within a DNS
+block list.  Middleboxes could verify, without knowing the exact
+request, that the client's DNS request was not on the prohibited list.
+Although the result was functional, the computational overhead was
+still too slow, and future work will be needed to decrease the ZKP-imposed 
+latencies.</t>
+        </section>
+        <section anchor="red-rover-a-collaborative-approach-to-content-filtering" numbered="true" removeInRFC="false" toc="include" pn="section-2.3.3">
+          <name slugifiedName="name-red-rover-a-collaborative-a">Red Rover - a Collaborative Approach to Content Filtering</name>
+          <t indent="0" pn="section-2.3.3-1">The principle challenge being studied is how to handle the inherent
+conflict between filtering and privacy.  Network operators need to
+implement policies and regulations that can originate from many
+locations (e.g., security, governmental, parental, etc.).  Conversely,
+clients need to protect their users' privacy and security.</t>
+          <t indent="0" pn="section-2.3.3-2">Safe browsing, originally created by Google, is one example of a
+mechanism that tries to meet both sides of this conflict.  It would be
+beneficial to standardize this and other similar mechanisms.
+Operating systems could continually protect their users by ensuring
+that malicious destinations are not being reached.  This would require
+some coordination between cooperating clients and servers offering
+protection services.  These collaborative solutions may be the best
+compromise to resolve the tension between privacy services and protection services 
+<xref target="PAULY" format="default" sectionFormat="of" derivedContent="PAULY"/>.</t>
+        </section>
+      </section>
+    </section>
+    <section anchor="conclusions" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-conclusions">Conclusions</name>
+      <t indent="0" pn="section-3-1">Looking forward, the workshop participants identified that solving the
+entire problem space with a single approach will be challenging for
+several reasons:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3-2">
+        <li pn="section-3-2.1">
+          <t indent="0" pn="section-3-2.1.1">The scalability of many solutions will likely be an issue as some
+solutions are complex or expensive to implement.</t>
+        </li>
+        <li pn="section-3-2.2">
+          <t indent="0" pn="section-3-2.2.1">Collaboration between multiple parties will be required for many
+mechanisms to function, and the sets of parties required for different
+use cases might be disjoint.</t>
+        </li>
+        <li pn="section-3-2.3">
+          <t indent="0" pn="section-3-2.3.1">There is an unanswered question of whether or not network operators are willing to participate by allowing new encryption technologies into their environment in exchange for technologies that prove their clients are being good net-citizens. If so, some of these solutions might be required to exist before networks allow a certain type of increased encryption; consider the example of TLS Encrypted Client Hello being blocked by some network operators.</t>
+        </li>
+      </ul>
+      <t indent="0" pn="section-3-3">The breadth of the problem space itself is another complicating
+factor.  There is a wide variety of network architectures, and each
+has different requirements for both data encryption and network
+management.  Each problem space will have multiple, different encumbrances:
+for example, technical, legal, data ownership,
+and regulatory concerns.  New network architectures might be needed to
+solve this problem at a larger scope, which would in turn require
+interoperability support from network product vendors.  Education about
+various solutions will be required in order to ensure regulation and
+policy organizations can understand and thus support the deployment of
+developed solutions.</t>
+      <t indent="0" pn="section-3-4">After new technologies and related standards are developed and deployed,
+unintended consequences can emerge.
+These lead to effects in multiple directions:
+on one hand, exposed protocol values not intended for network management
+might be used by networks to differentiate traffic; on the other hand,
+changes to a protocol that break existing use cases might have an impact on private network deployments.
+While making decisions on technology
+direction and protocol design, it is important to consider the impact on
+various kinds of network deployments and their unique requirements.
+When protocols change to make different network management functions
+easier or harder, the impact on various deployment models ought to be
+considered and documented.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.irtf-pearg-safe-internet-measurement" to="LEARMONTH"/>
+    <references anchor="sec-informative-references" pn="section-4">
+      <name slugifiedName="name-informative-references">Informative References</name>
+      <reference anchor="BARNES" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Barnes-Whats-In-It-For-Me-Revisiting-the-reasons-people-collaborate.pdf" quoteTitle="true" derivedAnchor="BARNES">
+        <front>
+          <title>What's In It For Me? Revisiting the reasons people collaborate</title>
+          <author initials="R." surname="Barnes" fullname="Richard L. Barnes">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+      <reference anchor="CASAS" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Casas-AI-driven-real-time-QoE-monitoring-encrypted-traffic.pdf" quoteTitle="true" derivedAnchor="CASAS">
+        <front>
+          <title>Monitoring User-Perceived Quality in an Encrypted Internet - AI to the Rescue</title>
+          <author initials="P." surname="Casas" fullname="Pedro Casas">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+      <reference anchor="COLLINS" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Collins-Improving-Network-Monitoring-Through-Contracts.pdf" quoteTitle="true" derivedAnchor="COLLINS">
+        <front>
+          <title>Improving Network Monitoring Through Contracts</title>
+          <author initials="M." surname="Collins" fullname="Michael Collins">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+      <reference anchor="DERI" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Deri-nDPI-Research-Proposal.pdf" quoteTitle="true" derivedAnchor="DERI">
+        <front>
+          <title>nDPI Research Proposal</title>
+          <author initials="L." surname="Deri" fullname="Luca Deri">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+      <reference anchor="DITTO" quoteTitle="true" target="https://doi.org/10.14722/ndss.2022.24056" derivedAnchor="DITTO">
+        <front>
+          <title>ditto: WAN Traffic Obfuscation at Line Rate</title>
+          <author initials="R." surname="Meier" fullname="Roland Meier">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="V." surname="Lenders" fullname="Vincent Lenders">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="L." surname="Vanbever" fullname="Laurent Vanbever">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="April"/>
+        </front>
+        <refcontent>Network and Distributed Systems Security (NDSS) Symposium</refcontent>
+        <seriesInfo name="DOI" value="10.14722/ndss.2022.24056"/>
+      </reference>
+      <reference anchor="ELKINS" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Elkins-Performance-Monitoring-in-Encrypted-Networks-PDMv2.pdf" quoteTitle="true" derivedAnchor="ELKINS">
+        <front>
+          <title>Performance Monitoring in Encrypted Networks: PDMv2</title>
+          <author initials="N." surname="Elkins" fullname="Nalini Elkins">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="M." surname="Ackermann" fullname="Mike Ackermann">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="M." surname="Tahiliani" fullname="Mohit P. Tahiliani">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="D." surname="Dhody" fullname="Dhruv Dhody">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="T." surname="Pecorella" fullname="Prof. Tommaso Pecorella">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+      <reference anchor="GRUBBS" target="https://www.usenix.org/conference/usenixsecurity22/presentation/grubbs" quoteTitle="true" derivedAnchor="GRUBBS">
+        <front>
+          <title>Zero-Knowledge Middleboxes</title>
+          <author initials="P." surname="Grubbs" fullname="Paul Grubbs">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="A." surname="Arun" fullname="Arasu Arun">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="Y." surname="Zhang" fullname="Ye Zhang">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="J." surname="Bonneau" fullname="Joseph Bonneau">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="M." surname="Walfish" fullname="Michael Walfish">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+        <refcontent>31st USENIX Security Symposium (USENIX Security 22)</refcontent>
+      </reference>
+      <reference anchor="HARDAKER" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Hardaker-Encrypted-Traffic-Estimation.pdf" quoteTitle="true" derivedAnchor="HARDAKER">
+        <front>
+          <title>Network Flow Management by Probability</title>
+          <author initials="W." surname="Hardaker" fullname="Wes Hardaker">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+      <reference anchor="JIANG" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Jiang-Towards-Designing-Robust-and-Efficient-Classifiers-for-Encrypted-Traffic-in-the-Modern-Internet.pdf" quoteTitle="true" derivedAnchor="JIANG">
+        <front>
+          <title>Towards Designing Robust and Efficient Classifiers for Encrypted Traffic in the Modern Internet</title>
+          <author initials="X." surname="Jiang" fullname="Xi Jiang">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="S." surname="Liu" fullname="Shinan Liu">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="S." surname="Naama" fullname="Saloua Naama">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="F." surname="Bronzino" fullname="Francesco Bronzino">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="P." surname="Schmitt" fullname="Paul Schmitt">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="N." surname="Feamster" fullname="Nick Feamster">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+      <reference anchor="KNODEL" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Knodel-Guidelines-for-Performing-Safe-Measurement-on-the-Internet.pdf" quoteTitle="true" derivedAnchor="KNODEL">
+        <front>
+          <title>(Introduction) 'Guidelines for Performing Safe Measurement on the Internet'</title>
+          <author initials="M." surname="Knodel" fullname="Mallory Knodel">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+      <reference anchor="KUEHLEWIND" target="https://www.ericsson.com/en/blog/2022/6/relays-and-online-user-privacy" quoteTitle="true" derivedAnchor="KUEHLEWIND">
+        <front>
+          <title>Relying on Relays: The future of secure communication</title>
+          <author initials="M." surname="Kuehlewind" fullname="Mirja Kuehlewind">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="M." surname="Westerlund" fullname="Magnus Westerlund">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="Z." surname="Sarker" fullname="Zaheduzzaman Sarker">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="M." surname="Ihlar" fullname="Marcus Ihlar">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="June"/>
+        </front>
+      </reference>
+      <reference anchor="I-D.irtf-pearg-safe-internet-measurement" target="https://datatracker.ietf.org/doc/html/draft-irtf-pearg-safe-internet-measurement-09" quoteTitle="true" derivedAnchor="LEARMONTH">
+        <front>
+          <title>Guidelines for Performing Safe Measurement on the Internet</title>
+          <author initials="I. R." surname="Learmonth" fullname="Iain R. Learmonth">
+            <organization showOnFrontPage="true">HamBSD</organization>
+          </author>
+          <author initials="G." surname="Grover" fullname="Gurshabad Grover">
+            <organization showOnFrontPage="true">Centre for Internet and Society</organization>
+          </author>
+          <author initials="M." surname="Knodel" fullname="Mallory Knodel">
+            <organization showOnFrontPage="true">Center for Democracy and Technology</organization>
+          </author>
+          <date month="January" day="12" year="2024"/>
+          <abstract>
+            <t indent="0">   Internet measurement is important to researchers from industry,
+   academia and civil society.  While measurement of the internet can
+   give insight into the functioning and usage of the internet, it can
+   present risks to user privacy and safety.  This document describes
+   briefly those risks and proposes guidelines for ensuring that
+   internet measurements can be carried out safely, with examples.
+
+            </t>
+          </abstract>
+        </front>
+        <seriesInfo name="Internet-Draft" value="draft-irtf-pearg-safe-internet-measurement-09"/>
+        <refcontent>Work in Progress</refcontent>
+      </reference>
+      <reference anchor="LEI" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Lei-Encrypted-Traffic-Classification-Through-Deep-Learning.pdf" quoteTitle="true" derivedAnchor="LEI">
+        <front>
+          <title>Encrypted Traffic Classification Through Deep Learning</title>
+          <author initials="Y." surname="Lei" fullname="Yupeng Lei">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="J." surname="Wu" fullname="Jun Wu">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="X." surname="Sun" fullname="Xudong Sun">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="L." surname="Zhang" fullname="Liang Zhang">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="Q." surname="Wu" fullname="Qin Wu">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+      <reference anchor="PAULY" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Pauly-Red-Rover-A-collaborative-approach-to-content-filtering.pdf" quoteTitle="true" derivedAnchor="PAULY">
+        <front>
+          <title>Red Rover: A collaborative approach to content filtering</title>
+          <author initials="T." surname="Pauly" fullname="Tommy Pauly">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="R." surname="Barnes" fullname="Richard Barnes">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+      <reference anchor="RFC3168" target="https://www.rfc-editor.org/info/rfc3168" quoteTitle="true" derivedAnchor="RFC3168">
+        <front>
+          <title>The Addition of Explicit Congestion Notification (ECN) to IP</title>
+          <author fullname="K. Ramakrishnan" initials="K." surname="Ramakrishnan"/>
+          <author fullname="S. Floyd" initials="S." surname="Floyd"/>
+          <author fullname="D. Black" initials="D." surname="Black"/>
+          <date month="September" year="2001"/>
+          <abstract>
+            <t indent="0">This memo specifies the incorporation of ECN (Explicit Congestion Notification) to TCP and IP, including ECN's use of two bits in the IP header. [STANDARDS-TRACK]</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="3168"/>
+        <seriesInfo name="DOI" value="10.17487/RFC3168"/>
+      </reference>
+      <reference anchor="RFC8520" target="https://www.rfc-editor.org/info/rfc8520" quoteTitle="true" derivedAnchor="RFC8520">
+        <front>
+          <title>Manufacturer Usage Description Specification</title>
+          <author fullname="E. Lear" initials="E." surname="Lear"/>
+          <author fullname="R. Droms" initials="R." surname="Droms"/>
+          <author fullname="D. Romascanu" initials="D." surname="Romascanu"/>
+          <date month="March" year="2019"/>
+          <abstract>
+            <t indent="0">This memo specifies a component-based architecture for Manufacturer Usage Descriptions (MUDs). The goal of MUD is to provide a means for end devices to signal to the network what sort of access and network functionality they require to properly function. The initial focus is on access control. Later work can delve into other aspects.</t>
+            <t indent="0">This memo specifies two YANG modules, IPv4 and IPv6 DHCP options, a Link Layer Discovery Protocol (LLDP) TLV, a URL, an X.509 certificate extension, and a means to sign and verify the descriptions.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="8520"/>
+        <seriesInfo name="DOI" value="10.17487/RFC8520"/>
+      </reference>
+      <reference anchor="WELZL" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Welzl-The-Sidecar-Opting-in-to-PEP-Functions.pdf" quoteTitle="true" derivedAnchor="WELZL">
+        <front>
+          <title>The Sidecar: 'Opting in' to PEP Functions</title>
+          <author initials="M." surname="Welzl" fullname="Michael Welzl">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+      <reference anchor="WU" target="https://www.iab.org/wp-content/IAB-uploads/2023/11/Wu-mten-taxonomy.pdf" quoteTitle="true" derivedAnchor="WU">
+        <front>
+          <title>Network Management of Encrypted Traffic: Detect it don't decrypt it</title>
+          <author initials="Q." surname="Wu" fullname="Qin Wu">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="J." surname="Wu" fullname="Jun Wu">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <author initials="Q." surname="Ma" fullname="Qiufang Ma">
+            <organization showOnFrontPage="true"/>
+          </author>
+          <date year="2022" month="August"/>
+        </front>
+      </reference>
+    </references>
+    <section anchor="positionpapers" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-position-papers">Position Papers</name>
+      <t indent="0" pn="section-appendix.a-1">Interested participants were openly invited to submit position papers on the workshop topics, including Internet-Drafts, relevant academic papers, or short abstracts explaining their interest. The papers below constitute the inputs that were considered relevant for workshop attendees and that focused the discussions themselves. The program committee grouped the papers by theme.</t>
+      <section anchor="motivations-and-principles" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.1">
+        <name slugifiedName="name-motivations-and-principles">Motivations and Principles</name>
+        <t indent="0" pn="section-appendix.a.1-1">Richard Barnes. "What's In It For Me? Revisiting the reasons people collaborate." <xref target="BARNES" format="default" sectionFormat="of" derivedContent="BARNES"/></t>
+        <t indent="0" pn="section-appendix.a.1-2">Mallory Knodel. "(Introduction) 'Guidelines for Performing Safe Measurement on the Internet'." (Additional rationale) <xref target="KNODEL" format="default" sectionFormat="of" derivedContent="KNODEL"/></t>
+        <t indent="0" pn="section-appendix.a.1-3">Qin Wu, Jun Wu, Qiufang Ma. "Network Management of Encrypted Traffic: Detect it don't decrypt it." <xref target="WU" format="default" sectionFormat="of" derivedContent="WU"/></t>
+      </section>
+      <section anchor="classification-and-identification-of-encrypted-traffic" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.2">
+        <name slugifiedName="name-classification-and-identifi">Classification and Identification of Encrypted Traffic</name>
+        <t indent="0" pn="section-appendix.a.2-1">Luca Deri. "nDPI Research Proposal." <xref target="DERI" format="default" sectionFormat="of" derivedContent="DERI"/></t>
+        <t indent="0" pn="section-appendix.a.2-2">Wes Hardaker. "Network Flow Management by Probability." <xref target="HARDAKER" format="default" sectionFormat="of" derivedContent="HARDAKER"/></t>
+        <t indent="0" pn="section-appendix.a.2-3">Xi Jiang, Shinan Liu, Saloua Naama, Francesco Bronzino, Paul Schmitt, Nick Feamster. "Towards Designing Robust and Efficient Classifiers for Encrypted Traffic in the Modern Internet." <xref target="JIANG" format="default" sectionFormat="of" derivedContent="JIANG"/></t>
+        <t indent="0" pn="section-appendix.a.2-4">Yupeng Lei, Jun Wu, Xudong Sun, Liang Zhang, Qin Wu. "Encrypted Traffic Classification Through Deep Learning." <xref target="LEI" format="default" sectionFormat="of" derivedContent="LEI"/></t>
+      </section>
+      <section anchor="ideas-for-collaboration-and-coordination-between-devices-and-networks" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.3">
+        <name slugifiedName="name-ideas-for-collaboration-and">Ideas for Collaboration and Coordination between Devices and Networks</name>
+        <t indent="0" pn="section-appendix.a.3-1">Michael Collins. "Improving Network Monitoring Through Contracts." <xref target="COLLINS" format="default" sectionFormat="of" derivedContent="COLLINS"/></t>
+        <t indent="0" pn="section-appendix.a.3-2">Paul Grubbs, Arasu Arun, Ye Zhang, Joseph Bonneau, Michael Walfish. "Zero-Knowledge Middleboxes." <xref target="GRUBBS" format="default" sectionFormat="of" derivedContent="GRUBBS"/></t>
+        <t indent="0" pn="section-appendix.a.3-3">Mirja Kuehlewind, Magnus Westerlund, Zaheduzzaman Sarker, Marcus Ihlar. "Relying on Relays: The future of secure communication." <xref target="KUEHLEWIND" format="default" sectionFormat="of" derivedContent="KUEHLEWIND"/></t>
+        <t indent="0" pn="section-appendix.a.3-4">Tommy Pauly, Richard Barnes. "Red Rover: A collaborative approach to content filtering." <xref target="PAULY" format="default" sectionFormat="of" derivedContent="PAULY"/></t>
+        <t indent="0" pn="section-appendix.a.3-5">Michael Welzl. "The Sidecar: 'Opting in' to PEP Functions." <xref target="WELZL" format="default" sectionFormat="of" derivedContent="WELZL"/></t>
+      </section>
+      <section anchor="other-background-material" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.4">
+        <name slugifiedName="name-other-background-material">Other Background Material</name>
+        <t indent="0" pn="section-appendix.a.4-1">Pedro Casas. "Monitoring User-Perceived Quality in an Encrypted Internet - AI to the Rescue." <xref target="CASAS" format="default" sectionFormat="of" derivedContent="CASAS"/></t>
+        <t indent="0" pn="section-appendix.a.4-2">Nalini Elkins, Mike Ackermann, Mohit P. Tahiliani, Dhruv Dhody, Prof. Tommaso Pecorella. "Performance Monitoring in Encrypted Networks: PDMv2." <xref target="ELKINS" format="default" sectionFormat="of" derivedContent="ELKINS"/></t>
+      </section>
+    </section>
+    <section anchor="participants" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-workshop-participants">Workshop Participants</name>
+      <t indent="0" pn="section-appendix.b-1">The workshop participants were <contact fullname="Cindy Morgan"/>, <contact fullname="Colin Perkins"/>, <contact fullname="Cullen Jennings"/>, <contact fullname="Deborah Brungard"/>, <contact fullname="Dhruv Dhody"/>, <contact fullname="Éric Vyncke"/>, <contact fullname="Georg Carle"/>, <contact fullname="Ivan Nardi"/>, <contact fullname="Jari Arkko"/>, <contact fullname="Jason Livingood"/>, <contact fullname="Jiankang Yao"/>, <contact fullname="Karen O'Donoghue"/>, <contact fullname="Keith Winstein"/>, <contact fullname="Lars Eggert"/>, <contact fullname="Laurent Vanbever"/>, <contact fullname="Luca Deri"/>, <contact fullname="Mallory Knodel"/>, <contact fullname="Marcus Ihlar"/>, <contact fullname="Matteo"/>, <contact fullname="Michael Collins"/>, <contact fullname="Michael Richardson"/>, <contact fullname="Michael Welzl"/>, <contact fullname="Mike Ackermann"/>, <contact fullname="Mirja Kühlewind"/>, <contact fullname="Mohit P. Tahiliani"/>, <contact fullname="Nalini Elkins"/>, <contact fullname="Patrick Tarpey"/>, <contact fullname="Paul Grubbs"/>, <contact fullname="Pedro Casas"/>, <contact fullname="Qin Wu"/>, <contact fullname="Qiufang Ma"/>, <contact fullname="Richard Barnes"/>, <contact fullname="Rob Wilton"/>, <contact fullname="Russ White"/>, <contact fullname="Saloua Naama"/>, <contact fullname="Shinan Liu"/>, <contact fullname="Srinivas C"/>, <contact fullname="Toerless Eckert"/>, <contact fullname="Tommy Pauly"/>, <contact fullname="Wes Hardaker"/>, <contact fullname="Xi Chase Jiang"/>, <contact fullname="Zaheduzzaman Sarker"/>, and <contact fullname="Zhenbin Li"/>.</t>
+    </section>
+    <section anchor="program-committee" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-program-committee">Program Committee</name>
+      <t indent="0" pn="section-appendix.c-1">The workshop program committee members were <contact fullname="Wes Hardaker"/> (IAB, USC/ISI), <contact fullname="Mallory Knodel"/> (IAB, Center for Democracy and Technology), <contact fullname="Mirja Kühlewind"/> (IAB, Ericsson), <contact fullname="Tommy Pauly"/> (IAB, Apple), <contact fullname="Russ White"/> (IAB, Juniper), <contact fullname="Qin Wu"/> (IAB, Huawei).</t>
+    </section>
+    <section anchor="iab-members" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.d">
+      <name slugifiedName="name-iab-members-at-the-time-of-">IAB Members at the Time of Approval</name>
+      <t indent="0" pn="section-appendix.d-1">Internet Architecture Board members at the time this document was approved for publication were:</t>
+      <ul empty="true" spacing="compact" bare="false" indent="3" pn="section-appendix.d-2">
+        <li pn="section-appendix.d-2.1">
+          <t indent="0" pn="section-appendix.d-2.1.1"><contact fullname="Dhruv Dhody"/></t>
+        </li>
+        <li pn="section-appendix.d-2.2">
+          <t indent="0" pn="section-appendix.d-2.2.1"><contact fullname="Lars Eggert"/></t>
+        </li>
+        <li pn="section-appendix.d-2.3">
+          <t indent="0" pn="section-appendix.d-2.3.1"><contact fullname="Wes Hardaker"/></t>
+        </li>
+        <li pn="section-appendix.d-2.4">
+          <t indent="0" pn="section-appendix.d-2.4.1"><contact fullname="Cullen Jennings"/></t>
+        </li>
+        <li pn="section-appendix.d-2.5">
+          <t indent="0" pn="section-appendix.d-2.5.1"><contact fullname="Mallory Knodel"/></t>
+        </li>
+        <li pn="section-appendix.d-2.6">
+          <t indent="0" pn="section-appendix.d-2.6.1"><contact fullname="Suresh Krishnan"/></t>
+        </li>
+        <li pn="section-appendix.d-2.7">
+          <t indent="0" pn="section-appendix.d-2.7.1"><contact fullname="Mirja Kühlewind"/></t>
+        </li>
+        <li pn="section-appendix.d-2.8">
+          <t indent="0" pn="section-appendix.d-2.8.1"><contact fullname="Tommy Pauly"/></t>
+        </li>
+        <li pn="section-appendix.d-2.9">
+          <t indent="0" pn="section-appendix.d-2.9.1"><contact fullname="Alvaro Retana"/></t>
+        </li>
+        <li pn="section-appendix.d-2.10">
+          <t indent="0" pn="section-appendix.d-2.10.1"><contact fullname="David Schinazi"/></t>
+        </li>
+        <li pn="section-appendix.d-2.11">
+          <t indent="0" pn="section-appendix.d-2.11.1"><contact fullname="Christopher Wood"/></t>
+        </li>
+        <li pn="section-appendix.d-2.12">
+          <t indent="0" pn="section-appendix.d-2.12.1"><contact fullname="Qin Wu"/></t>
+        </li>
+        <li pn="section-appendix.d-2.13">
+          <t indent="0" pn="section-appendix.d-2.13.1"><contact fullname="Jiankang Yao"/></t>
+        </li>
+      </ul>
+    </section>
+    <section anchor="acknowledgments" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.e">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.e-1">We wish to acknowledge the comments and suggestions from <contact fullname="Elliot Lear"/> and <contact fullname="Arnaud Taddei"/> for their comments and improvements to this document.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.f">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="M." surname="Knodel" fullname="Mallory Knodel">
+        <address>
+          <email>mknodel@cdt.org</email>
+        </address>
+      </author>
+      <author initials="W." surname="Hardaker" fullname="Wes Hardaker">
+        <organization showOnFrontPage="true"/>
+        <address>
+          <email>ietf@hardakers.net</email>
+        </address>
+      </author>
+      <author initials="T." surname="Pauly" fullname="Tommy Pauly">
+        <organization showOnFrontPage="true"/>
+        <address>
+          <email>tpauly@apple.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

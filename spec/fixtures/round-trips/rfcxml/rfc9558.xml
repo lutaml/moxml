@@ -1,0 +1,756 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" docName="draft-makarenko-gost2012-dnssec-05" number="9558" category="info" ipr="trust200902" obsoletes="" updates="" submissionType="independent" xml:lang="en" symRefs="true" sortRefs="false" tocInclude="true" prepTime="2024-04-11T09:18:25" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-makarenko-gost2012-dnssec-05" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9558" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Use of GOST 2012 Signatures in DNSSEC">Use of GOST 2012 Signature Algorithms in DNSKEY and RRSIG Resource Records for DNSSEC</title>
+    <seriesInfo name="RFC" value="9558" stream="independent"/>
+    <author fullname="Boris Makarenko" initials="B." surname="Makarenko">
+      <organization showOnFrontPage="true">The Technical center of Internet, LLC</organization>
+      <address>
+        <postal>
+          <street>8 marta St., 1, Bldg. 12</street>
+          <city>Moscow</city>
+          <code>127083</code>
+          <country>Russian Federation</country>
+        </postal>
+        <email>bmakarenko@tcinet.ru</email>
+      </address>
+    </author>
+    <author fullname="Vasily Dolmatov" initials="V." surname="Dolmatov" role="editor">
+      <organization showOnFrontPage="true">JSC "NPK Kryptonite"</organization>
+      <address>
+        <postal>
+          <street>Spartakovskaya Sq., 14, Bldg. 2</street>
+          <city>Moscow</city>
+          <code>105082</code>
+          <country>Russian Federation</country>
+        </postal>
+        <email>vdolmatov@gmail.com</email>
+      </address>
+    </author>
+    <date month="04" year="2024"/>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">
+      This document describes how to produce digital signatures and hash
+      functions using the GOST R 34.10-2012 and GOST R 34.11-2012 algorithms
+      for DNSKEY, RRSIG, and DS resource records, for use in the Domain
+      Name System Security Extensions (DNSSEC).
+      </t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for informational purposes.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This is a contribution to the RFC Series, independently of any
+            other RFC stream.  The RFC Editor has chosen to publish this
+            document at its discretion and makes no statement about its value
+            for implementation or deployment.  Documents approved for
+            publication by the RFC Editor are not candidates for any level of
+            Internet Standard; see Section 2 of RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9558" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dnskey-resource-records">DNSKEY Resource Records</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-using-a-public-key-with-exi">Using a Public Key with Existing Cryptographic Libraries</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-gost-dnskey-rr-example">GOST DNSKEY RR Example</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rrsig-resource-records">RRSIG Resource Records</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rrsig-rr-example">RRSIG RR Example</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ds-resource-records">DS Resource Records</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ds-rr-example">DS RR Example</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-operational-considerations">Operational Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-key-sizes">Key Sizes</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-signature-sizes">Signature Sizes</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.3">
+                <t indent="0" pn="section-toc.1-1.5.2.3.1"><xref derivedContent="5.3" format="counter" sectionFormat="of" target="section-5.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-digest-sizes">Digest Sizes</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-implementation-consideratio">Implementation Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">
+        The Domain Name System (DNS) is the global, hierarchically distributed
+        database for Internet Naming. The DNS has been extended to use
+        cryptographic keys and digital signatures for the verification of the
+        authenticity and integrity of its data. RFC 4033 <xref target="RFC4033" format="default" sectionFormat="of" derivedContent="RFC4033"/>, RFC 4034
+        <xref target="RFC4034" format="default" sectionFormat="of" derivedContent="RFC4034"/>, and RFC 4035 <xref target="RFC4035" format="default" sectionFormat="of" derivedContent="RFC4035"/> describe these DNS Security
+        Extensions, called DNSSEC.
+      </t>
+      <t indent="0" pn="section-1-2">
+        RFC 4034 describes how to store DNSKEY and RRSIG resource records
+        and specifies a list of cryptographic algorithms to use. This
+        document extends that list with the signature and hash algorithms
+        GOST R 34.10-2012 (<xref target="RFC7091" format="default" sectionFormat="of" derivedContent="RFC7091"/>) and GOST R 34.11-2012
+        (<xref target="RFC6986" format="default" sectionFormat="of" derivedContent="RFC6986"/>), and it specifies how to store DNSKEY data and
+        how to produce RRSIG resource records with these algorithms.
+      </t>
+      <t indent="0" pn="section-1-3">
+        GOST R 34.10-2012 and GOST R 34.11-2012 are Russian national standards.
+        Their cryptographic properties haven't been independently verified.
+      </t>
+      <t indent="0" pn="section-1-4">
+        Familiarity with DNSSEC and with GOST signature and hash algorithms
+        is assumed in this document.
+      </t>
+      <t indent="0" pn="section-1-5">
+	Caution:
+      </t>
+      <t indent="0" pn="section-1-6">
+	This specification is not a standard and does not have IETF community consensus.  It makes use of a cryptographic algorithm that is a national standard for Russia. Neither the IETF nor the IRTF has analyzed that algorithm for suitability for any given application, and it may contain either intended or unintended weaknesses.
+      </t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.1">
+        <name slugifiedName="name-terminology">Terminology</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-dnskey-resource-records">DNSKEY Resource Records</name>
+      <t indent="0" pn="section-2-1">
+        The format of the DNSKEY RR can be found in RFC 4034 <xref target="RFC4034" format="default" sectionFormat="of" derivedContent="RFC4034"/>.
+      </t>
+      <t indent="0" pn="section-2-2">
+        GOST R 34.10-2012 public keys are stored with the algorithm number 23.
+      </t>
+      <t indent="0" pn="section-2-3">
+        According to RFC 7091 <xref target="RFC7091" format="default" sectionFormat="of" derivedContent="RFC7091"/>, a GOST R 34.10-2012 public key is a point on the
+        elliptic curve Q = (x, y). The wire representation of a public key <bcp14>MUST</bcp14>
+        contain 64 octets, where the first 32 octets contain the little-endian
+        representation of x and the second 32 octets contain the little-endian
+        representation of y.
+      </t>
+      <t indent="0" pn="section-2-4">
+        As RFC 6986 and RFC 7091 allow two variants of the length of the output hash and the signature
+        and many variants of parameters of the digital signature, for the purpose of this
+        document we use the 256-bit variant of the digital signature algorithm, corresponding with the
+        256-bit variant of the digest algorithm. We select the parameters for
+        the digital signature algorithm to be id-tc26-gost-3410-2012-256-paramSetA
+        as specified in RFC 7836 <xref target="RFC7836" format="default" sectionFormat="of" derivedContent="RFC7836"/>; this document refers to it as "parameter set A".
+      </t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-2.1">
+        <name slugifiedName="name-using-a-public-key-with-exi">Using a Public Key with Existing Cryptographic Libraries</name>
+        <t indent="0" pn="section-2.1-1">
+          At the time of this writing, existing GOST-aware cryptographic
+          libraries are capable of reading GOST R 34.10-2012 public keys via a generic X.509
+          API if the key is encoded according to RFC 9215 <xref target="RFC9215" section="4" sectionFormat="comma" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9215#section-4" derivedContent="RFC9215"/>.
+        </t>
+        <t indent="0" pn="section-2.1-2">
+          To make this encoding from the wire format of a GOST R 34.10-2012 public key with
+          the parameters used in this document, prepend the 64 octets of key
+          data with the following 30-byte sequence:
+        </t>
+        <artwork name="" type="" align="left" alt="" pn="section-2.1-3">
+0x30 0x5c 0x30 0x17 0x06 0x08 0x2a 0x85
+0x03 0x07 0x01 0x01 0x01 0x01 0x30 0x0b
+0x06 0x09 0x2a 0x85 0x03 0x07 0x01 0x02
+0x01 0x01 0x01 0x03 0x41 0x00
+</artwork>
+        <t indent="0" pn="section-2.1-4">
+          These bytes provide the following ASN.1 structure suitable for parsing by cryptographic toolkits:
+        </t>
+        <sourcecode type="asn.1" markers="false" pn="section-2.1-5">
+  0  92: SEQUENCE {
+  2  23:   SEQUENCE {
+  4   8:     OBJECT IDENTIFIER '1 2 643 7 1 1 1 1'
+ 14  11:     SEQUENCE {
+ 16   9:       OBJECT IDENTIFIER '1 2 643 7 1 2 1 1 1'
+       :       }
+       :     }
+ 27  65:   BIT STRING
+</sourcecode>
+        <t indent="0" pn="section-2.1-6">
+          The OIDs in the structure above represent a GOST R 34.10-2012 public key with a 256-bit private key
+          length and parameter set A. The structure itself represents SubjectPublicKeyInfo field
+          of an X.509 certificate as defined in RFC 5280 <xref target="RFC5280" section="4.1" sectionFormat="comma" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-4.1" derivedContent="RFC5280"/>
+        </t>
+      </section>
+      <section numbered="true" toc="include" anchor="gost_dnskey_rr_ex" removeInRFC="false" pn="section-2.2">
+        <name slugifiedName="name-gost-dnskey-rr-example">GOST DNSKEY RR Example</name>
+        <t indent="0" pn="section-2.2-1">
+          Given a private key with the following value:
+        </t>
+        <artwork name="" type="" align="left" alt="" pn="section-2.2-2">
+Private-key-format: v1.2
+Algorithm: 23 (ECC-GOST12)
+Gost12Asn1: MD4CAQAwFwYIKoUDBwEBAQEwCwYJKoUDBwECAQEBBCD/Mw9o6R5lQHJ13
+            jz0W+C1tdsS4W7RJn04rk9MGJq3Hg==
+</artwork>
+        <t indent="0" pn="section-2.2-3">
+          The following DNSKEY RR stores a DNS zone key for example:
+        </t>
+        <sourcecode type="dns-rr" markers="false" pn="section-2.2-4">
+example.  600  IN  DNSKEY  256 3 23 (
+            XGiiHlKUJd5fSeAK5O3L4tUNCPxs4pGqum6wKbqjdkqu
+            IQ8nOXrilXZ9HcY8b2AETkWrtWHfwvJD4twPPJFQSA==
+    ) ;{id = 47355 (zsk), size = 512b}
+</sourcecode>
+        <t indent="0" pn="section-2.2-5">
+          The private key here is presented in PrivateKeyInfo ASN.1 structure, as described in RFC 5958 <xref target="RFC5958" sectionFormat="comma" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5958#section-2" derivedContent="RFC5958"/>.
+        </t>
+        <t indent="0" pn="section-2.2-6">
+          The public key can be calculated from the private key using algorithm described in RFC 7091 <xref target="RFC7091" format="default" sectionFormat="of" derivedContent="RFC7091"/>.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-rrsig-resource-records">RRSIG Resource Records</name>
+      <t indent="0" pn="section-3-1">
+       The value of the signature field in the RRSIG RR follows RFC 7091
+       <xref target="RFC7091" format="default" sectionFormat="of" derivedContent="RFC7091"/> and is calculated as follows.  The values for the RDATA
+       fields that precede the signature data are specified in RFC 4034
+       <xref target="RFC4034" format="default" sectionFormat="of" derivedContent="RFC4034"/>.
+      </t>
+      <artwork name="" type="" align="left" alt="" pn="section-3-2">
+hash = GOSTR3411-2012(data)
+</artwork>
+      <t indent="0" pn="section-3-3">
+        where "data" is the wire format data of the resource record set that
+        is signed, as specified in RFC 4034 <xref target="RFC4034" format="default" sectionFormat="of" derivedContent="RFC4034"/>.
+      </t>
+      <t indent="0" pn="section-3-4">
+        The signature is calculated from the hash according to 
+        GOST R 34.10-2012, and its wire format is compatible with
+        RFC 7091 <xref target="RFC7091" format="default" sectionFormat="of" derivedContent="RFC7091"/>.
+      </t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-3.1">
+        <name slugifiedName="name-rrsig-rr-example">RRSIG RR Example</name>
+        <t indent="0" pn="section-3.1-1">
+          Consider a given RRset consisting of one MX RR to be signed with the
+          private key described in <xref target="gost_dnskey_rr_ex" format="default" sectionFormat="of" derivedContent="Section 2.2"/> of this document:
+        </t>
+        <sourcecode type="dns-rr" markers="false" pn="section-3.1-2">
+example.  600  IN  MX  10 mail.example.</sourcecode>
+        <t indent="0" pn="section-3.1-3">
+          Setting the inception date to 2022-10-06 12:32:30 UTC and the
+          expiration date to 2022-11-03 12:32:30 UTC, the following signature
+          RR will be valid:
+        </t>
+        <sourcecode type="dns-rr" markers="false" pn="section-3.1-4">
+example.  600 IN  RRSIG MX 23 1 600 20221103123230 (
+                       20221006123230 47355 example.
+                       EuLO0Qpn6zT1pzj9T2H5AWjcgzfmjNiK/vj811bExa0V
+                       HMOVD9ma8rpf0B+D+V4Q0CWu1Ayzu+H/SyndnOWGxw==
+)
+</sourcecode>
+        <t indent="0" pn="section-3.1-5">
+          The GOST R 34.10-2012 signature algorithm uses random (pseudorandom) integer k as described in 
+          <xref target="RFC7091" section="6.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7091#section-6.1" derivedContent="RFC7091">RFC 7091</xref>.
+          The following value for k was used to produce the signature example.</t>
+        <artwork name="" type="" align="left" alt="" pn="section-3.1-6">
+k = 8BBD0CE7CAF3FC1C2503DF30D13ED5DB75EEC44060FA22FB7E29628407C1E34
+</artwork>
+        <t indent="0" pn="section-3.1-7">
+          This value for k <bcp14>MUST NOT</bcp14> be used when computing GOST R 34.10-2012 signatures.
+          It is provided only so the above signature example can be reproduced.
+          The actual signature value will differ between signature calculations.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-ds-resource-records">DS Resource Records</name>
+      <t indent="0" pn="section-4-1">
+        The GOST R 34.11-2012 digest algorithm is denoted in DS RRs by the
+        digest type 5. The wire format of a digest value is compatible with
+        RFC 6986 <xref target="RFC6986" format="default" sectionFormat="of" derivedContent="RFC6986"/>.
+      </t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.1">
+        <name slugifiedName="name-ds-rr-example">DS RR Example</name>
+        <t indent="0" pn="section-4.1-1">
+          For Key Signing Key (KSK):
+        </t>
+        <sourcecode type="dns-rr" markers="false" pn="section-4.1-2">
+example.  IN  DNSKEY  257 3 23 (
+                       p8Req8DLJOfPymO5vExuK4gCcihF5N1YL7veCJ47av+w
+                       h/qs9yJpD064k02rYUHfWnr7IjvJlbn3Z0sTZe9GRQ==
+                       ) ;{id = 29468 (ksk), size = 512b}
+</sourcecode>
+        <t indent="0" pn="section-4.1-3">
+          The DS RR will be:
+        </t>
+        <sourcecode type="dns-rr" markers="false" pn="section-4.1-4">
+example.  IN  DS  29468 23 5 (
+                      6033725b0ccfc05d1e9d844d49c6cf89
+                      0b13d5eac9439189947d5db6c8d1c1ec
+                      )
+</sourcecode>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-operational-considerations">Operational Considerations</name>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-5.1">
+        <name slugifiedName="name-key-sizes">Key Sizes</name>
+        <t indent="0" pn="section-5.1-1">
+          The key size of GOST R 34.10-2012 public keys conforming to this specification <bcp14>MUST</bcp14> be 512 bits according to RFC 7091 <xref target="RFC7091" format="default" sectionFormat="of" derivedContent="RFC7091"/>.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-5.2">
+        <name slugifiedName="name-signature-sizes">Signature Sizes</name>
+        <t indent="0" pn="section-5.2-1">
+          The size of a GOST R 34.10-2012 signature conforming to this specification <bcp14>MUST</bcp14> be 512 bits according to RFC 7091 <xref target="RFC7091" format="default" sectionFormat="of" derivedContent="RFC7091"/>.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-5.3">
+        <name slugifiedName="name-digest-sizes">Digest Sizes</name>
+        <t indent="0" pn="section-5.3-1">
+          The size of a GOST R 34.11-2012 digest conforming to this specification <bcp14>MUST</bcp14> be 256 bits according to RFC 6986 <xref target="RFC6986" format="default" sectionFormat="of" derivedContent="RFC6986"/>.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-implementation-consideratio">Implementation Considerations</name>
+      <t indent="0" pn="section-6-1">
+        The support of this cryptographic suite in DNSSEC-aware systems is <bcp14>OPTIONAL</bcp14>. According to RFC 6840 <xref target="RFC6840" section="5.2" sectionFormat="comma" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6840#section-5.2" derivedContent="RFC6840"/>, systems that do not support these algorithms <bcp14>MUST</bcp14> ignore the RRSIG, DNSKEY, and DS resource records associated with the GOST R 34.10-2012 digital signature algorithm.
+      </t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-7-1">
+        The following entry has been added to the IANA registry for
+        "DNS Security Algorithm Numbers":
+      </t>
+      <table align="center" pn="table-1">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Number</th>
+            <th align="left" colspan="1" rowspan="1">Description</th>
+            <th align="left" colspan="1" rowspan="1">Mnemonic</th>
+            <th align="left" colspan="1" rowspan="1">Zone Signing</th>
+            <th align="left" colspan="1" rowspan="1">Trans. Sec.</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">23</td>
+            <td align="left" colspan="1" rowspan="1">GOST R 34.10-2012</td>
+            <td align="left" colspan="1" rowspan="1">ECC-GOST12</td>
+            <td align="left" colspan="1" rowspan="1">Y</td>
+            <td align="left" colspan="1" rowspan="1">*</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9558</td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-7-3">
+        The following entry has been added to the IANA registry for "Digest Algorithms" in the
+        "Delegation Signer (DS) Resource Record (RR) Type Digest Algorithms" registry group:
+      </t>
+      <table align="center" pn="table-2">
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">Description</th>
+            <th align="left" colspan="1" rowspan="1">Status</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">5</td>
+            <td align="left" colspan="1" rowspan="1">GOST R 34.11-2012</td>
+            <td align="left" colspan="1" rowspan="1">OPTIONAL</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9558</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-8">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-8-1">
+	It is recommended to use a dual KSK algorithm signed zone until
+	GOST-aware DNSSEC software becomes more widespread, unless GOST-only
+	cryptography is to be used.  Otherwise, GOST-signed zones may be
+	considered unsigned by the DNSSEC software currently in use.
+      </t>
+      <t indent="0" pn="section-8-2">
+	Like all algorithms, it is possible that a significant flaw could be
+	discovered with GOST R 34.11-2012.  In that case, deployments should
+	roll over to another algorithm.  See RFC 7583 <xref target="RFC7583" format="default" sectionFormat="of" derivedContent="RFC7583"/>
+	on the timing of such changes.
+      </t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-9">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-9.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC3110" target="https://www.rfc-editor.org/info/rfc3110" quoteTitle="true" derivedAnchor="RFC3110">
+          <front>
+            <title>RSA/SHA-1 SIGs and RSA KEYs in the Domain Name System (DNS)</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <date month="May" year="2001"/>
+            <abstract>
+              <t indent="0">This document describes how to produce RSA/SHA1 SIG resource records (RRs) in Section 3 and, so as to completely replace RFC 2537, describes how to produce RSA KEY RRs in Section 2. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3110"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3110"/>
+        </reference>
+        <reference anchor="RFC4033" target="https://www.rfc-editor.org/info/rfc4033" quoteTitle="true" derivedAnchor="RFC4033">
+          <front>
+            <title>DNS Security Introduction and Requirements</title>
+            <author fullname="R. Arends" initials="R." surname="Arends"/>
+            <author fullname="R. Austein" initials="R." surname="Austein"/>
+            <author fullname="M. Larson" initials="M." surname="Larson"/>
+            <author fullname="D. Massey" initials="D." surname="Massey"/>
+            <author fullname="S. Rose" initials="S." surname="Rose"/>
+            <date month="March" year="2005"/>
+            <abstract>
+              <t indent="0">The Domain Name System Security Extensions (DNSSEC) add data origin authentication and data integrity to the Domain Name System. This document introduces these extensions and describes their capabilities and limitations. This document also discusses the services that the DNS security extensions do and do not provide. Last, this document describes the interrelationships between the documents that collectively describe DNSSEC. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4033"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4033"/>
+        </reference>
+        <reference anchor="RFC4034" target="https://www.rfc-editor.org/info/rfc4034" quoteTitle="true" derivedAnchor="RFC4034">
+          <front>
+            <title>Resource Records for the DNS Security Extensions</title>
+            <author fullname="R. Arends" initials="R." surname="Arends"/>
+            <author fullname="R. Austein" initials="R." surname="Austein"/>
+            <author fullname="M. Larson" initials="M." surname="Larson"/>
+            <author fullname="D. Massey" initials="D." surname="Massey"/>
+            <author fullname="S. Rose" initials="S." surname="Rose"/>
+            <date month="March" year="2005"/>
+            <abstract>
+              <t indent="0">This document is part of a family of documents that describe the DNS Security Extensions (DNSSEC). The DNS Security Extensions are a collection of resource records and protocol modifications that provide source authentication for the DNS. This document defines the public key (DNSKEY), delegation signer (DS), resource record digital signature (RRSIG), and authenticated denial of existence (NSEC) resource records. The purpose and format of each resource record is described in detail, and an example of each resource record is given.</t>
+              <t indent="0">This document obsoletes RFC 2535 and incorporates changes from all updates to RFC 2535. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4034"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4034"/>
+        </reference>
+        <reference anchor="RFC4035" target="https://www.rfc-editor.org/info/rfc4035" quoteTitle="true" derivedAnchor="RFC4035">
+          <front>
+            <title>Protocol Modifications for the DNS Security Extensions</title>
+            <author fullname="R. Arends" initials="R." surname="Arends"/>
+            <author fullname="R. Austein" initials="R." surname="Austein"/>
+            <author fullname="M. Larson" initials="M." surname="Larson"/>
+            <author fullname="D. Massey" initials="D." surname="Massey"/>
+            <author fullname="S. Rose" initials="S." surname="Rose"/>
+            <date month="March" year="2005"/>
+            <abstract>
+              <t indent="0">This document is part of a family of documents that describe the DNS Security Extensions (DNSSEC). The DNS Security Extensions are a collection of new resource records and protocol modifications that add data origin authentication and data integrity to the DNS. This document describes the DNSSEC protocol modifications. This document defines the concept of a signed zone, along with the requirements for serving and resolving by using DNSSEC. These techniques allow a security-aware resolver to authenticate both DNS resource records and authoritative DNS error indications.</t>
+              <t indent="0">This document obsoletes RFC 2535 and incorporates changes from all updates to RFC 2535. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4035"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4035"/>
+        </reference>
+        <reference anchor="RFC6840" target="https://www.rfc-editor.org/info/rfc6840" quoteTitle="true" derivedAnchor="RFC6840">
+          <front>
+            <title>Clarifications and Implementation Notes for DNS Security (DNSSEC)</title>
+            <author fullname="S. Weiler" initials="S." role="editor" surname="Weiler"/>
+            <author fullname="D. Blacka" initials="D." role="editor" surname="Blacka"/>
+            <date month="February" year="2013"/>
+            <abstract>
+              <t indent="0">This document is a collection of technical clarifications to the DNS Security (DNSSEC) document set. It is meant to serve as a resource to implementors as well as a collection of DNSSEC errata that existed at the time of writing.</t>
+              <t indent="0">This document updates the core DNSSEC documents (RFC 4033, RFC 4034, and RFC 4035) as well as the NSEC3 specification (RFC 5155). It also defines NSEC3 and SHA-2 (RFC 4509 and RFC 5702) as core parts of the DNSSEC specification.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6840"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6840"/>
+        </reference>
+        <reference anchor="RFC6986" target="https://www.rfc-editor.org/info/rfc6986" quoteTitle="true" derivedAnchor="RFC6986">
+          <front>
+            <title>GOST R 34.11-2012: Hash Function</title>
+            <author fullname="V. Dolmatov" initials="V." role="editor" surname="Dolmatov"/>
+            <author fullname="A. Degtyarev" initials="A." surname="Degtyarev"/>
+            <date month="August" year="2013"/>
+            <abstract>
+              <t indent="0">This document is intended to be a source of information about the Russian Federal standard hash function (GOST R 34.11-2012), which is one of the Russian cryptographic standard algorithms (called GOST algorithms). This document updates RFC 5831.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6986"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6986"/>
+        </reference>
+        <reference anchor="RFC7091" target="https://www.rfc-editor.org/info/rfc7091" quoteTitle="true" derivedAnchor="RFC7091">
+          <front>
+            <title>GOST R 34.10-2012: Digital Signature Algorithm</title>
+            <author fullname="V. Dolmatov" initials="V." role="editor" surname="Dolmatov"/>
+            <author fullname="A. Degtyarev" initials="A." surname="Degtyarev"/>
+            <date month="December" year="2013"/>
+            <abstract>
+              <t indent="0">This document provides information about the Russian Federal standard for digital signatures (GOST R 34.10-2012), which is one of the Russian cryptographic standard algorithms (called GOST algorithms). Recently, Russian cryptography is being used in Internet applications, and this document provides information for developers and users of GOST R 34.10-2012 regarding digital signature generation and verification. This document updates RFC 5832.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7091"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7091"/>
+        </reference>
+        <reference anchor="RFC7583" target="https://www.rfc-editor.org/info/rfc7583" quoteTitle="true" derivedAnchor="RFC7583">
+          <front>
+            <title>DNSSEC Key Rollover Timing Considerations</title>
+            <author fullname="S. Morris" initials="S." surname="Morris"/>
+            <author fullname="J. Ihren" initials="J." surname="Ihren"/>
+            <author fullname="J. Dickinson" initials="J." surname="Dickinson"/>
+            <author fullname="W. Mekking" initials="W." surname="Mekking"/>
+            <date month="October" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes the issues surrounding the timing of events in the rolling of a key in a DNSSEC-secured zone. It presents timelines for the key rollover and explicitly identifies the relationships between the various parameters affecting the process.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7583"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7583"/>
+        </reference>
+        <reference anchor="RFC7836" target="https://www.rfc-editor.org/info/rfc7836" quoteTitle="true" derivedAnchor="RFC7836">
+          <front>
+            <title>Guidelines on the Cryptographic Algorithms to Accompany the Usage of Standards GOST R 34.10-2012 and GOST R 34.11-2012</title>
+            <author fullname="S. Smyshlyaev" initials="S." role="editor" surname="Smyshlyaev"/>
+            <author fullname="E. Alekseev" initials="E." surname="Alekseev"/>
+            <author fullname="I. Oshkin" initials="I." surname="Oshkin"/>
+            <author fullname="V. Popov" initials="V." surname="Popov"/>
+            <author fullname="S. Leontiev" initials="S." surname="Leontiev"/>
+            <author fullname="V. Podobaev" initials="V." surname="Podobaev"/>
+            <author fullname="D. Belyavsky" initials="D." surname="Belyavsky"/>
+            <date month="March" year="2016"/>
+            <abstract>
+              <t indent="0">The purpose of this document is to make the specifications of the cryptographic algorithms defined by the Russian national standards GOST R 34.10-2012 and GOST R 34.11-2012 available to the Internet community for their implementation in the cryptographic protocols based on the accompanying algorithms.</t>
+              <t indent="0">These specifications define the pseudorandom functions, the key agreement algorithm based on the Diffie-Hellman algorithm and a hash function, the parameters of elliptic curves, the key derivation functions, and the key export functions.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7836"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7836"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+      </references>
+      <references pn="section-9.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC4509" target="https://www.rfc-editor.org/info/rfc4509" quoteTitle="true" derivedAnchor="RFC4509">
+          <front>
+            <title>Use of SHA-256 in DNSSEC Delegation Signer (DS) Resource Records (RRs)</title>
+            <author fullname="W. Hardaker" initials="W." surname="Hardaker"/>
+            <date month="May" year="2006"/>
+            <abstract>
+              <t indent="0">This document specifies how to use the SHA-256 digest type in DNS Delegation Signer (DS) Resource Records (RRs). DS records, when stored in a parent zone, point to DNSKEYs in a child zone. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4509"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4509"/>
+        </reference>
+        <reference anchor="RFC5280" target="https://www.rfc-editor.org/info/rfc5280" quoteTitle="true" derivedAnchor="RFC5280">
+          <front>
+            <title>Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile</title>
+            <author fullname="D. Cooper" initials="D." surname="Cooper"/>
+            <author fullname="S. Santesson" initials="S." surname="Santesson"/>
+            <author fullname="S. Farrell" initials="S." surname="Farrell"/>
+            <author fullname="S. Boeyen" initials="S." surname="Boeyen"/>
+            <author fullname="R. Housley" initials="R." surname="Housley"/>
+            <author fullname="W. Polk" initials="W." surname="Polk"/>
+            <date month="May" year="2008"/>
+            <abstract>
+              <t indent="0">This memo profiles the X.509 v3 certificate and X.509 v2 certificate revocation list (CRL) for use in the Internet. An overview of this approach and model is provided as an introduction. The X.509 v3 certificate format is described in detail, with additional information regarding the format and semantics of Internet name forms. Standard certificate extensions are described and two Internet-specific extensions are defined. A set of required certificate extensions is specified. The X.509 v2 CRL format is described in detail along with standard and Internet-specific extensions. An algorithm for X.509 certification path validation is described. An ASN.1 module and examples are provided in the appendices. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5280"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5280"/>
+        </reference>
+        <reference anchor="RFC5933" target="https://www.rfc-editor.org/info/rfc5933" quoteTitle="true" derivedAnchor="RFC5933">
+          <front>
+            <title>Use of GOST Signature Algorithms in DNSKEY and RRSIG Resource Records for DNSSEC</title>
+            <author fullname="V. Dolmatov" initials="V." role="editor" surname="Dolmatov"/>
+            <author fullname="A. Chuprina" initials="A." surname="Chuprina"/>
+            <author fullname="I. Ustinov" initials="I." surname="Ustinov"/>
+            <date month="July" year="2010"/>
+            <abstract>
+              <t indent="0">This document describes how to produce digital signatures and hash functions using the GOST R 34.10-2001 and GOST R 34.11-94 algorithms for DNSKEY, RRSIG, and DS resource records, for use in the Domain Name System Security Extensions (DNSSEC). [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5933"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5933"/>
+        </reference>
+        <reference anchor="RFC5958" target="https://www.rfc-editor.org/info/rfc5958" quoteTitle="true" derivedAnchor="RFC5958">
+          <front>
+            <title>Asymmetric Key Packages</title>
+            <author fullname="S. Turner" initials="S." surname="Turner"/>
+            <date month="August" year="2010"/>
+            <abstract>
+              <t indent="0">This document defines the syntax for private-key information and a content type for it. Private-key information includes a private key for a specified public-key algorithm and a set of attributes. The Cryptographic Message Syntax (CMS), as defined in RFC 5652, can be used to digitally sign, digest, authenticate, or encrypt the asymmetric key format content type. This document obsoletes RFC 5208. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5958"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5958"/>
+        </reference>
+        <reference anchor="RFC9215" target="https://www.rfc-editor.org/info/rfc9215" quoteTitle="true" derivedAnchor="RFC9215">
+          <front>
+            <title>Using GOST R 34.10-2012 and GOST R 34.11-2012 Algorithms with the Internet X.509 Public Key Infrastructure</title>
+            <author fullname="D. Baryshkov" initials="D." role="editor" surname="Baryshkov"/>
+            <author fullname="V. Nikolaev" initials="V." surname="Nikolaev"/>
+            <author fullname="A. Chelpanov" initials="A." surname="Chelpanov"/>
+            <date month="March" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes encoding formats, identifiers, and parameter formats for the GOST R 34.10-2012 and GOST R 34.11-2012 algorithms for use in the Internet X.509 Public Key Infrastructure (PKI).</t>
+              <t indent="0">This specification is developed to facilitate implementations that wish to support the GOST algorithms. This document does not imply IETF endorsement of the cryptographic algorithms used in this document.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9215"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9215"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">
+        This document is a minor extension to RFC 4034 <xref target="RFC4034" format="default" sectionFormat="of" derivedContent="RFC4034"/>. Also, we tried to follow the documents RFC 3110
+        <xref target="RFC3110" format="default" sectionFormat="of" derivedContent="RFC3110"/>, RFC 4509 <xref target="RFC4509" format="default" sectionFormat="of" derivedContent="RFC4509"/>, and RFC 5933 <xref target="RFC5933" format="default" sectionFormat="of" derivedContent="RFC5933"/> for consistency. The authors of
+        and contributors to these documents are gratefully acknowledged for
+        their hard work.
+      </t>
+      <t indent="0" pn="section-appendix.a-2">
+        The following people provided additional feedback, text, and valuable
+        assistance: <contact fullname="Alexander Venedyukhin"/>,
+        <contact fullname="Michael StJohns"/>, <contact fullname="Valery Smyslov"/>, <contact fullname="Tim Wicinski"/>, and <contact fullname="Stéphane Bortzmeyer"/>.  </t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Boris Makarenko" initials="B." surname="Makarenko">
+        <organization showOnFrontPage="true">The Technical center of Internet, LLC</organization>
+        <address>
+          <postal>
+            <street>8 marta St., 1, Bldg. 12</street>
+            <city>Moscow</city>
+            <code>127083</code>
+            <country>Russian Federation</country>
+          </postal>
+          <email>bmakarenko@tcinet.ru</email>
+        </address>
+      </author>
+      <author fullname="Vasily Dolmatov" initials="V." surname="Dolmatov" role="editor">
+        <organization showOnFrontPage="true">JSC "NPK Kryptonite"</organization>
+        <address>
+          <postal>
+            <street>Spartakovskaya Sq., 14, Bldg. 2</street>
+            <city>Moscow</city>
+            <code>105082</code>
+            <country>Russian Federation</country>
+          </postal>
+          <email>vdolmatov@gmail.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

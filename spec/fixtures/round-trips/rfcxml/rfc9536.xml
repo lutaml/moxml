@@ -1,0 +1,925 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-regext-rdap-reverse-search-25" number="9536" ipr="trust200902" tocInclude="true" tocDepth="4" sortRefs="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2024-04-11T09:02:33" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-regext-rdap-reverse-search-25" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9536" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="RDAP Reverse Search">Registration Data Access Protocol (RDAP) Reverse Search</title>
+    <seriesInfo name="RFC" value="9536" stream="IETF"/>
+    <author fullname="Mario Loffredo" initials="M." surname="Loffredo">
+      <organization showOnFrontPage="true">IIT-CNR/Registro.it</organization>
+      <address>
+        <postal>
+          <street>Via Moruzzi,1</street>
+          <city>Pisa</city>
+          <country>Italy</country>
+          <code>56124</code>
+        </postal>
+        <email>mario.loffredo@iit.cnr.it</email>
+        <uri>http://www.iit.cnr.it</uri>
+      </address>
+    </author>
+    <author fullname="Maurizio Martinelli" initials="M." surname="Martinelli">
+      <organization showOnFrontPage="true">IIT-CNR/Registro.it</organization>
+      <address>
+        <postal>
+          <street>Via Moruzzi,1</street>
+          <city>Pisa</city>
+          <country>Italy</country>
+          <code>56124</code>
+        </postal>
+        <email>maurizio.martinelli@iit.cnr.it</email>
+        <uri>http://www.iit.cnr.it</uri>
+      </address>
+    </author>
+    <date month="04" year="2024"/>
+    <area>art</area>
+    <workgroup>regext</workgroup>
+    <keyword>RDAP</keyword>
+    <keyword>Reverse search</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">The Registration Data Access Protocol (RDAP) does not include query capabilities for finding the list of domains related to a set of entities matching a given search pattern.  Considering that an RDAP entity can be associated with any defined object class and other relationships between RDAP object classes exist, a reverse search can be applied to other use cases besides the classic domain-entity scenario.  This document describes an RDAP extension that allows servers to provide a reverse search feature based on the relationship defined in RDAP between an object class for search and any related object class.  The reverse search based on the domain-entity relationship is treated as a particular case.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9536" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-background">Background</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-conventions-used-in-this-do">Conventions Used in This Document</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reverse-search-path-segment">Reverse Search Path Segment Specification</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reverse-search-definition">Reverse Search Definition</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reverse-search-properties-d">Reverse Search Properties Discovery</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reverse-search-properties-m">Reverse Search Properties Mapping</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reverse-search-response-spe">Reverse Search Response Specification</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reverse-search-query-proces">Reverse Search Query Processing</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reverse-searches-based-on-e">Reverse Searches Based on Entity Details</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-conformance">RDAP Conformance</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-implementation-consideratio">Implementation Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="11" format="counter" sectionFormat="of" target="section-11"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.11.2">
+              <li pn="section-toc.1-1.11.2.1">
+                <t indent="0" pn="section-toc.1-1.11.2.1.1"><xref derivedContent="11.1" format="counter" sectionFormat="of" target="section-11.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-extensions-registry">RDAP Extensions Registry</xref></t>
+              </li>
+              <li pn="section-toc.1-1.11.2.2">
+                <t indent="0" pn="section-toc.1-1.11.2.2.1"><xref derivedContent="11.2" format="counter" sectionFormat="of" target="section-11.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-reverse-search-registr">RDAP Reverse Search Registries</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.11.2.2.2">
+                  <li pn="section-toc.1-1.11.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.11.2.2.2.1.1"><xref derivedContent="11.2.1" format="counter" sectionFormat="of" target="section-11.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-creation-of-the-rdap-revers">Creation of the RDAP Reverse Search Registries</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.11.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.11.2.2.2.2.1"><xref derivedContent="11.2.2" format="counter" sectionFormat="of" target="section-11.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-submit-requests-to-iana">Submit Requests to IANA</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.11.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.11.2.2.2.3.1"><xref derivedContent="11.2.3" format="counter" sectionFormat="of" target="section-11.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-reverse-search-registry">RDAP Reverse Search Registry</xref></t>
+                    <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.11.2.2.2.3.2">
+                      <li pn="section-toc.1-1.11.2.2.2.3.2.1">
+                        <t indent="0" pn="section-toc.1-1.11.2.2.2.3.2.1.1"><xref derivedContent="11.2.3.1" format="counter" sectionFormat="of" target="section-11.2.3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-template">Template</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.11.2.2.2.3.2.2">
+                        <t indent="0" pn="section-toc.1-1.11.2.2.2.3.2.2.1"><xref derivedContent="11.2.3.2" format="counter" sectionFormat="of" target="section-11.2.3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-initial-content">Initial Content</xref></t>
+                      </li>
+                    </ul>
+                  </li>
+                  <li pn="section-toc.1-1.11.2.2.2.4">
+                    <t indent="0" pn="section-toc.1-1.11.2.2.2.4.1"><xref derivedContent="11.2.4" format="counter" sectionFormat="of" target="section-11.2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rdap-reverse-search-mapping">RDAP Reverse Search Mapping Registry</xref></t>
+                    <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.11.2.2.2.4.2">
+                      <li pn="section-toc.1-1.11.2.2.2.4.2.1">
+                        <t indent="0" pn="section-toc.1-1.11.2.2.2.4.2.1.1"><xref derivedContent="11.2.4.1" format="counter" sectionFormat="of" target="section-11.2.4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-template-2">Template</xref></t>
+                      </li>
+                      <li pn="section-toc.1-1.11.2.2.2.4.2.2">
+                        <t indent="0" pn="section-toc.1-1.11.2.2.2.4.2.2.1"><xref derivedContent="11.2.4.2" format="counter" sectionFormat="of" target="section-11.2.4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-initial-content-2">Initial Content</xref></t>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="12" format="counter" sectionFormat="of" target="section-12"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-privacy-considerations">Privacy Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="13" format="counter" sectionFormat="of" target="section-13"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.14">
+            <t indent="0" pn="section-toc.1-1.14.1"><xref derivedContent="14" format="counter" sectionFormat="of" target="section-14"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.14.2">
+              <li pn="section-toc.1-1.14.2.1">
+                <t indent="0" pn="section-toc.1-1.14.2.1.1"><xref derivedContent="14.1" format="counter" sectionFormat="of" target="section-14.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.14.2.2">
+                <t indent="0" pn="section-toc.1-1.14.2.2.1"><xref derivedContent="14.2" format="counter" sectionFormat="of" target="section-14.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.15">
+            <t indent="0" pn="section-toc.1-1.15.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-paradigms-to-enforce-access">Paradigms to Enforce Access Control on Reverse Search in RDAP</xref></t>
+          </li>
+          <li pn="section-toc.1-1.16">
+            <t indent="0" pn="section-toc.1-1.16.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.17">
+            <t indent="0" pn="section-toc.1-1.17.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">The protocol described in this specification aims to extend the RDAP query capabilities and response to enable reverse search based on the relationships defined in RDAP between an object class for search and a related object class.  The reverse search based on the domain-entity relationship is treated as a particular case of such a generic model.</t>
+      <t indent="0" pn="section-1-2">RDAP providers willing to implement this specification should carefully consider its implications on the efficiency (see <xref target="impl-considerations" format="default" sectionFormat="of" derivedContent="Section 10"/>), the security (see <xref target="security-considerations" format="default" sectionFormat="of" derivedContent="Section 13"/>), and the compliance with privacy regulations (see <xref target="privacy-considerations" format="default" sectionFormat="of" derivedContent="Section 12"/>) of their RDAP service.</t>
+      <section anchor="background" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-background">Background</name>
+        <t indent="0" pn="section-1.1-1">Reverse WHOIS is a service provided by many web applications that allows users to find domain names owned by an individual or a company starting from the owner's details, such as name and email.  Even if it has been considered useful for some legal purposes (e.g., uncovering trademark infringements and detecting cybercrimes), its availability as a standardized WHOIS <xref target="RFC3912" format="default" sectionFormat="of" derivedContent="RFC3912"/> capability has been objected to for two main reasons, which now don't seem to conflict with an RDAP implementation.</t>
+        <t indent="0" pn="section-1.1-2">The first objection concerns the potential risks of privacy violation.  However, the domain name community is considering a new generation of Registration Directory Services <xref target="ICANN-RDS" format="default" sectionFormat="of" derivedContent="ICANN-RDS"/> <xref target="ICANN-RA" format="default" sectionFormat="of" derivedContent="ICANN-RA"/> that provide access to sensitive data under some permissible purposes and in accordance with appropriate policies for requestor accreditation, authentication, and authorization.  RDAP's reliance on HTTP means that it can make use of common HTTP-based approaches to authentication and authorization, making it more useful than WHOIS in the context of such directory services.  Since RDAP consequently permits a reverse search implementation complying with privacy protection principles, this first objection is not well-founded.</t>
+        <t indent="0" pn="section-1.1-3">The second objection to the implementation of a reverse search capability has been connected with its impact on server processing.  However, the core RDAP specifications already define search queries, with similar processing requirements, so the basis of this objection is not clear.</t>
+        <t indent="0" pn="section-1.1-4">Reverse searches, such as finding the list of domain names associated with contacts or nameservers, may be useful to registrars as well.  Usually, registries adopt out-of-band solutions to provide results to registrars asking for reverse searches on their domains.  Possible reasons for such requests are:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1.1-5">
+          <li pn="section-1.1-5.1">the loss of synchronization between the registrar database and the registry database and
+          </li>
+          <li pn="section-1.1-5.2">the need for such data to perform bulk Extensible Provisioning Protocol (EPP) <xref target="RFC5730" format="default" sectionFormat="of" derivedContent="RFC5730"/> updates (e.g., changing the contacts of a set of domains, etc.).</li>
+        </ul>
+        <t indent="0" pn="section-1.1-6">Currently, RDAP does not provide any means for a client to search for the collection of domains associated with an entity <xref target="RFC9082" format="default" sectionFormat="of" derivedContent="RFC9082"/>.  A query (lookup or search) on domains can return the array of entities related to a domain with different roles (registrant, registrar, administrative, technical, reseller, etc.), but the reverse operation is not allowed.  Only reverse searches to find the collection of domains related to a nameserver (ldhName or ip) can be requested.  Since an entity can be in relationship with any RDAP object <xref target="RFC9083" format="default" sectionFormat="of" derivedContent="RFC9083"/>, the availability of a reverse search as largely intended can be common to all the object classes allowed for search.
+Through a further step of generalization, the meaning of reverse search
+   in the RDAP context can be extended to include any query for retrieving
+   all the objects that relates to another query matching a given
+   search pattern.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-conventions-used-in-this-do">Conventions Used in This Document</name>
+        <t indent="0" pn="section-1.2-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>", "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as shown here.</t>
+      </section>
+    </section>
+    <section anchor="reverse-search-path-segment-specification" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-reverse-search-path-segment">Reverse Search Path Segment Specification</name>
+      <t indent="0" pn="section-2-1">A generic reverse search path is described by the syntax:</t>
+      <t indent="0" pn="section-2-2">{searchable-resource-type}/reverse_search/{related-resource-type}?&lt;search-condition&gt;</t>
+      <t indent="0" pn="section-2-3">The path segments are defined as follows:</t>
+      <dl newline="false" spacing="normal" indent="3" pn="section-2-4">
+        <dt pn="section-2-4.1">"searchable-resource-type":</dt>
+        <dd pn="section-2-4.2">It <bcp14>MUST</bcp14> be one of the resource types for search defined in <xref target="RFC9082" section="3.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9082#section-3.2" derivedContent="RFC9082"/> (i.e., "domains", "nameservers", and "entities") or a resource type extension.
+        </dd>
+        <dt pn="section-2-4.3">"related-resource-type":</dt>
+        <dd pn="section-2-4.4">It <bcp14>MUST</bcp14> be one of the resource types for lookup defined in <xref target="RFC9082" section="3.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9082#section-3.1" derivedContent="RFC9082"/> (i.e., "domain", "nameserver", "entity", "ip", and "autnum") or a resource type extension.
+        </dd>
+        <dt pn="section-2-4.5">"search-condition":</dt>
+        <dd pn="section-2-4.6">A sequence of "property=search pattern" predicates separated by the ampersand character ('&amp;', US-ASCII value 0x0026).</dd>
+      </dl>
+      <t indent="0" pn="section-2-5">While related-resource-type is defined as having one of a number of different values, the only reverse searches defined in this document are for a related-resource-type of "entity".  Reverse searches for the other resource types specified in <xref target="RFC9082" format="default" sectionFormat="of" derivedContent="RFC9082"/> and resource type extensions may be defined by future documents.</t>
+    </section>
+    <section anchor="reverse-search-definition" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-reverse-search-definition">Reverse Search Definition</name>
+      <t indent="0" pn="section-3-1">Based on the content of <xref target="reverse-search-path-segment-specification" format="default" sectionFormat="of" derivedContent="Section 2"/>, defining a reverse search means to define the triple &lt;searchable resource type, related resource type, property&gt; and the mapping with the corresponding RDAP object member.  The mapping is done through the use of a JSONPath expression <xref target="RFC9535" format="default" sectionFormat="of" derivedContent="RFC9535"/>.  Reverse searches are registered in the "RDAP Reverse Search" registry (see <xref target="rdap-reverse-search-registry" format="default" sectionFormat="of" derivedContent="Section 11.2.3"/>), whereas reverse search mappings are registered in the "RDAP Reverse Search Mapping" registry (see <xref target="rdap-reverse-search-mapping-registry" format="default" sectionFormat="of" derivedContent="Section 11.2.4"/>).  The reason for having two registries is that it may be possible for a single type of reverse search to rely on different members, depending on the server's configuration (see <xref target="reverse-search-properties-mapping" format="default" sectionFormat="of" derivedContent="Section 5"/>).</t>
+      <t indent="0" pn="section-3-2">All of the reverse searches defined by this document (see <xref target="reverse-search-on-entities" format="default" sectionFormat="of" derivedContent="Section 8"/>) have property names that are the same as the name of the RDAP object member that is the subject of the search.  For example, the reverse search with the property name "fn" relies on the value of the "fn" member inside the jCard of an entity object.  However, it is not necessary that these two names be the same.  In particular, remapping of searches as part of the deprecation of an existing member (see <xref target="reverse-search-properties-mapping" format="default" sectionFormat="of" derivedContent="Section 5"/>) will typically lead to a member with a different name being used for the search.</t>
+      <t indent="0" pn="section-3-3">Servers <bcp14>MUST NOT</bcp14> provide or implement reverse searches or reverse search mappings that are not registered with IANA.</t>
+    </section>
+    <section anchor="reverse-search-properties-discovery" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-reverse-search-properties-d">Reverse Search Properties Discovery</name>
+      <t indent="0" pn="section-4-1">Servers complying with this specification <bcp14>MUST</bcp14> extend the help response <xref target="RFC9083" format="default" sectionFormat="of" derivedContent="RFC9083"/> with the "reverse_search_properties" member that contains an array of objects with the following mandatory child members:</t>
+      <dl newline="false" spacing="normal" indent="3" pn="section-4-2">
+        <dt pn="section-4-2.1">"searchableResourceType":</dt>
+        <dd pn="section-4-2.2">the searchable resource type of the reverse search query, as defined in <xref target="reverse-search-path-segment-specification" format="default" sectionFormat="of" derivedContent="Section 2"/></dd>
+        <dt pn="section-4-2.3">"relatedResourceType":</dt>
+        <dd pn="section-4-2.4">the related resource type of the reverse search query, as defined in <xref target="reverse-search-path-segment-specification" format="default" sectionFormat="of" derivedContent="Section 2"/></dd>
+        <dt pn="section-4-2.5">"property":</dt>
+        <dd pn="section-4-2.6">the reverse search property used in the predicate of the reverse search query, as defined in <xref target="reverse-search-path-segment-specification" format="default" sectionFormat="of" derivedContent="Section 2"/></dd>
+      </dl>
+      <t indent="0" pn="section-4-3">An example of the help response including the "reverse_search_properties" member is shown in <xref target="reverse-search-properties-example" format="default" sectionFormat="of" derivedContent="Figure 2"/></t>
+    </section>
+    <section anchor="reverse-search-properties-mapping" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-reverse-search-properties-m">Reverse Search Properties Mapping</name>
+      <t indent="0" pn="section-5-1">To permit clients to determine the member used by the server for a reverse search, servers <bcp14>MUST</bcp14> detail the mapping that is occurring by adding the "reverse_search_properties_mapping" member to the topmost object of a reverse search response.
+This data structure is included in the search response, rather
+than in the help response, because it may differ depending on the query that is sent to the server.</t>
+      <t indent="0" pn="section-5-2">Documents that deprecate or restructure RDAP responses such that a registered reverse search is no longer able to be used <bcp14>MUST</bcp14> either note that the relevant reverse search is no longer available (in the case of deprecation) or describe how to continue supporting the relevant search by adding another mapping for the reverse search property (in the case of restructuring).</t>
+      <t indent="0" pn="section-5-3">The "reverse_search_properties_mapping" member contains an array of objects with the following mandatory child members:</t>
+      <dl newline="false" spacing="normal" indent="3" pn="section-5-4">
+        <dt pn="section-5-4.1">"property":</dt>
+        <dd pn="section-5-4.2">the reverse search property used in the predicate of the current query, as defined in <xref target="reverse-search-path-segment-specification" format="default" sectionFormat="of" derivedContent="Section 2"/></dd>
+        <dt pn="section-5-4.3">"propertyPath":</dt>
+        <dd pn="section-5-4.4">the JSONPath expression of the object member (or members) corresponding to the reverse search property</dd>
+      </dl>
+      <t indent="0" pn="section-5-5">The searchable and the related resource types are derived from the query, so there is no need to include them in addition to the property in this member.</t>
+      <t indent="0" pn="section-5-6">This member <bcp14>MUST</bcp14> be included for all properties used in the search, regardless of whether that property has multiple registered mappings as at the time of the search, because new mappings may be registered at any time.</t>
+      <t indent="0" pn="section-5-7">When applied to an object, the JSONPath expression <bcp14>MUST</bcp14> produce a list of values, each of which is a JSON number or string.</t>
+      <t indent="0" pn="section-5-8">An example of a reverse search response including the "reverse_search_properties_mapping" member is shown in <xref target="reverse-search-properties-mapping-example" format="default" sectionFormat="of" derivedContent="Figure 3"/>.</t>
+    </section>
+    <section anchor="reverse-search-response-specification" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-reverse-search-response-spe">Reverse Search Response Specification</name>
+      <t indent="0" pn="section-6-1">Reverse search responses use the formats defined in <xref target="RFC9083" section="8" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9083#section-8" derivedContent="RFC9083"/>, which correspond to the searchable resource types defined in <xref target="reverse-search-path-segment-specification" format="default" sectionFormat="of" derivedContent="Section 2"/>.</t>
+    </section>
+    <section anchor="reverse-search-query-processing" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-reverse-search-query-proces">Reverse Search Query Processing</name>
+      <t indent="0" pn="section-7-1">To process a reverse search, the server returns the objects from its data store that are of type searchable-resource-type and that match each of the predicates from the search conditions.  To determine whether an object matches a predicate, the server:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-7-2">
+        <li pn="section-7-2.1">applies the mapping it uses for the reverse search property to the object in order to generate a list of values, each of which <bcp14>MUST</bcp14> be a JSON number or string and</li>
+        <li pn="section-7-2.2">checks whether the search pattern matches one or more of those values.</li>
+      </ul>
+      <t indent="0" pn="section-7-3">A search pattern matches a value where it equals the string representation of the value or where it is a match for the value in accordance with the partial string matching behavior defined in <xref target="RFC9082" section="4.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9082#section-4.1" derivedContent="RFC9082"/>.</t>
+      <t indent="0" pn="section-7-4">Objects are only included in the search results if they satisfy all included predicates.  This includes predicates that are for the same property; in such a case, it is necessary for the related object to match against each of those predicates.</t>
+      <t indent="0" pn="section-7-5">Servers <bcp14>MUST</bcp14> return an HTTP 501 (Not Implemented) <xref target="RFC9110" format="default" sectionFormat="of" derivedContent="RFC9110"/> response to inform clients of unsupported reverse searches.</t>
+      <t indent="0" pn="section-7-6">Based on their policy, servers <bcp14>MAY</bcp14> restrict how predicates are used to make a valid search condition by returning a 400 (Bad Request) response when a problematic request is received.</t>
+      <t indent="0" pn="section-7-7">A given reverse search or reverse search mapping <bcp14>MAY</bcp14> define additional or alternative search behavior past that set out in this section.</t>
+    </section>
+    <section anchor="reverse-search-on-entities" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-reverse-searches-based-on-e">Reverse Searches Based on Entity Details</name>
+      <t indent="0" pn="section-8-1">Since an entity can be associated with any other object class in RDAP, the most common kind of reverse search is one based on an entity's details.  Such reverse searches arise from the query model by setting the related resource type to "entity".</t>
+      <t indent="0" pn="section-8-2">By selecting a specific searchable resource type, the resulting reverse search aims at retrieving all the objects (e.g., all the domains) that are related to any entity object matching the search conditions.</t>
+      <t indent="0" pn="section-8-3">This section defines the reverse search properties servers <bcp14>SHOULD</bcp14> support for the domain, nameserver, entity-searchable resource types, and entity-related resource type:</t>
+      <dl newline="false" spacing="compact" indent="3" pn="section-8-4">
+        <dt pn="section-8-4.1">Reverse search property:</dt>
+        <dd pn="section-8-4.2">role</dd>
+        <dt pn="section-8-4.3">RDAP member path:</dt>
+        <dd pn="section-8-4.4">$.entities[*].roles</dd>
+        <dt pn="section-8-4.5">Reference:</dt>
+        <dd pn="section-8-4.6">
+          <xref target="RFC9083" section="10.2.4" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9083#section-10.2.4" derivedContent="RFC9083"/></dd>
+      </dl>
+      <dl newline="false" spacing="compact" indent="3" pn="section-8-5">
+        <dt pn="section-8-5.1">Reverse search property:</dt>
+        <dd pn="section-8-5.2">handle</dd>
+        <dt pn="section-8-5.3">RDAP member path:</dt>
+        <dd pn="section-8-5.4">$.entities[*].handle</dd>
+        <dt pn="section-8-5.5">Reference:</dt>
+        <dd pn="section-8-5.6">
+          <xref target="RFC9083" section="5.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9083#section-5.1" derivedContent="RFC9083"/></dd>
+      </dl>
+      <dl newline="false" spacing="compact" indent="3" pn="section-8-6">
+        <dt pn="section-8-6.1">Reverse search property:</dt>
+        <dd pn="section-8-6.2">fn</dd>
+        <dt pn="section-8-6.3">RDAP member path:</dt>
+        <dd pn="section-8-6.4">$.entities[*].vcardArray[1][?(@[0]=='fn')][3]</dd>
+        <dt pn="section-8-6.5">Reference:</dt>
+        <dd pn="section-8-6.6">
+          <xref target="RFC6350" section="6.2.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-6.2.1" derivedContent="RFC6350"/></dd>
+      </dl>
+      <dl newline="false" spacing="compact" indent="3" pn="section-8-7">
+        <dt pn="section-8-7.1">Reverse search property:</dt>
+        <dd pn="section-8-7.2">email</dd>
+        <dt pn="section-8-7.3">RDAP member path:</dt>
+        <dd pn="section-8-7.4">$.entities[*].vcardArray[1][?(@[0]=='email')][3]</dd>
+        <dt pn="section-8-7.5">Reference:</dt>
+        <dd pn="section-8-7.6">
+          <xref target="RFC6350" section="6.4.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6350#section-6.4.2" derivedContent="RFC6350"/></dd>
+      </dl>
+      <t indent="0" pn="section-8-8">The presence of a predicate on the reverse search property "role" means that the RDAP response property "roles" <bcp14>MUST</bcp14> contain at least the specified role.</t>
+      <t indent="0" pn="section-8-9">The last two properties are related to jCard elements <xref target="RFC7095" format="default" sectionFormat="of" derivedContent="RFC7095"/>, but the field references are to vCard <xref target="RFC6350" format="default" sectionFormat="of" derivedContent="RFC6350"/>, since jCard is the JSON format for vCard.</t>
+      <t indent="0" pn="section-8-10">Examples of reverse search paths based on the domain-entity relationship are presented in <xref target="reverse-search-request" format="default" sectionFormat="of" derivedContent="Figure 1"/>.</t>
+      <figure anchor="reverse-search-request" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-examples-of-reverse-search-">Examples of Reverse Search Queries</name>
+        <artwork align="left" pn="section-8-11.1">
+ /domains/reverse_search/entity?handle=CID-40*&amp;role=technical
+
+ /domains/reverse_search/entity?fn=Bobby*&amp;role=registrant
+
+ /domains/reverse_search/entity?handle=RegistrarX&amp;role=registrar
+        </artwork>
+      </figure>
+      <t indent="0" pn="section-8-12">An example of the help response including the supported reverse search properties is shown in <xref target="reverse-search-properties-example" format="default" sectionFormat="of" derivedContent="Figure 2"/>.</t>
+      <figure anchor="reverse-search-properties-example" align="left" suppress-title="false" pn="figure-2">
+        <name slugifiedName="name-an-example-of-the-help-resp">An Example of the Help Response including the "reverse_search_properties" Member</name>
+        <sourcecode type="json" markers="false" pn="section-8-13.1">
+   {
+     "rdapConformance": [
+       "rdap_level_0",
+       "reverse_search"
+     ],
+     ...
+     "reverse_search_properties": [
+       {
+         "searchableResourceType": "domains",
+         "relatedResourceType": "entity",
+         "property": "fn"
+       },
+       {
+         "searchableResourceType": "domains",
+         "relatedResourceType": "entity",
+         "property": "handle"
+       },
+       {
+         "searchableResourceType": "domains",
+         "relatedResourceType": "entity",
+         "property": "email"
+       },
+       {
+         "searchableResourceType": "domains",
+         "relatedResourceType": "entity",
+         "property": "role"
+       }
+     ],
+     ...
+   }
+</sourcecode>
+      </figure>
+      <t indent="0" pn="section-8-14">An example of a response including the mapping that is occurring for the first reverse search in <xref target="reverse-search-request" format="default" sectionFormat="of" derivedContent="Figure 1"/> is shown below.</t>
+      <figure anchor="reverse-search-properties-mapping-example" align="left" suppress-title="false" pn="figure-3">
+        <name slugifiedName="name-an-example-of-an-rdap-respo">An Example of an RDAP Response including the "reverse_search_properties_mapping" Member</name>
+        <sourcecode type="json" markers="false" pn="section-8-15.1">
+   {
+     "rdapConformance": [
+       "rdap_level_0",
+       "reverse_search"
+     ],
+     ...
+     "reverse_search_properties_mapping": [
+       {
+         "property": "handle",
+         "propertyPath": "$.entities[*].handle"
+       },
+       {
+         "property": "role",
+         "propertyPath": "$.entities[*].roles"
+       }
+     ],
+     ...
+   }
+</sourcecode>
+      </figure>
+    </section>
+    <section anchor="rdap-conformance" numbered="true" removeInRFC="false" toc="include" pn="section-9">
+      <name slugifiedName="name-rdap-conformance">RDAP Conformance</name>
+      <t indent="0" pn="section-9-1">Servers complying with this specification <bcp14>MUST</bcp14> include the value "reverse_search" in the rdapConformance property of the help response <xref target="RFC9083" format="default" sectionFormat="of" derivedContent="RFC9083"/> and any other response including the "reverse_search_properties_mapping" member.  The information needed to register this value in the "RDAP Extensions" registry is described in <xref target="rdap-extensions-registry" format="default" sectionFormat="of" derivedContent="Section 11.1"/>.</t>
+    </section>
+    <section anchor="impl-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-10">
+      <name slugifiedName="name-implementation-consideratio">Implementation Considerations</name>
+      <t indent="0" pn="section-10-1">To limit the impact of processing the search predicates, servers are <bcp14>RECOMMENDED</bcp14> to make use of techniques to speed up the data retrieval in their underlying data store, such as indexes or similar.  In addition, risks with respect to performance degradation or result set generation can be mitigated by adopting practices used for standard searches, e.g., restricting the search functionality, limiting the rate of search requests according to the user's authorization, truncating and paging the results <xref target="RFC8977" format="default" sectionFormat="of" derivedContent="RFC8977"/>, and returning partial responses <xref target="RFC8982" format="default" sectionFormat="of" derivedContent="RFC8982"/>.</t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-11">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section anchor="rdap-extensions-registry" numbered="true" removeInRFC="false" toc="include" pn="section-11.1">
+        <name slugifiedName="name-rdap-extensions-registry">RDAP Extensions Registry</name>
+        <t indent="0" pn="section-11.1-1">IANA has registered the following value in the "RDAP Extensions" registry:</t>
+        <dl spacing="normal" indent="3" newline="false" pn="section-11.1-2">
+          <dt pn="section-11.1-2.1">Extension Identifier:</dt>
+          <dd pn="section-11.1-2.2">reverse_search</dd>
+          <dt pn="section-11.1-2.3">Registry Operator:</dt>
+          <dd pn="section-11.1-2.4">Any</dd>
+          <dt pn="section-11.1-2.5">Specification:</dt>
+          <dd pn="section-11.1-2.6">RFC 9536</dd>
+          <dt pn="section-11.1-2.7">Contact:</dt>
+          <dd pn="section-11.1-2.8">IETF &lt;iesg@ietf.org&gt;</dd>
+          <dt pn="section-11.1-2.9">Intended Usage:</dt>
+          <dd pn="section-11.1-2.10">This extension identifier is used for both URI path segments and response extensions related to the reverse search in RDAP.</dd>
+        </dl>
+      </section>
+      <section anchor="rdap-reverse-search-registries" numbered="true" removeInRFC="false" toc="include" pn="section-11.2">
+        <name slugifiedName="name-rdap-reverse-search-registr">RDAP Reverse Search Registries</name>
+        <section anchor="rdap-reverse-search-registries-creation" numbered="true" removeInRFC="false" toc="include" pn="section-11.2.1">
+          <name slugifiedName="name-creation-of-the-rdap-revers">Creation of the RDAP Reverse Search Registries</name>
+          <t indent="0" pn="section-11.2.1-1">IANA has created the "RDAP Reverse Search" and "RDAP Reverse Search Mapping" registries within the "Registration Data Access Protocol (RDAP)" category in the protocol registries.
+          </t>
+          <t indent="0" pn="section-11.2.1-2">These registries follow the Specification Required registration policy, as defined in <xref target="RFC8126" section="4.6" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8126#section-4.6" derivedContent="RFC8126"/>.</t>
+          <t indent="0" pn="section-11.2.1-3">The designated expert should prevent collisions and confirm that suitable documentation, as described in <xref target="RFC8126" section="4.5" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8126#section-4.5" derivedContent="RFC8126"/>, is available to ensure interoperability.</t>
+          <t indent="0" pn="section-11.2.1-4">Creators of either new RDAP reverse searches or new mappings for registered reverse searches <bcp14>SHOULD NOT</bcp14> replicate functionality already available by way of other documents referenced in these registries.  Creators <bcp14>MAY</bcp14> register additional reverse search mappings for existing properties, but they <bcp14>SHOULD NOT</bcp14> map a registered reverse search property to a response field with a meaning other than that of the response fields referenced by the mappings already registered for that property.  In other words, all the mappings for a reverse search property <bcp14>MUST</bcp14> point to response fields with the same meaning.</t>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-11.2.2">
+          <name slugifiedName="name-submit-requests-to-iana">Submit Requests to IANA</name>
+          <t indent="0" pn="section-11.2.2-1">Registration requests can be sent to &lt;iana@iana.org&gt;.</t>
+        </section>
+        <section anchor="rdap-reverse-search-registry" numbered="true" removeInRFC="false" toc="include" pn="section-11.2.3">
+          <name slugifiedName="name-rdap-reverse-search-registry">RDAP Reverse Search Registry</name>
+          <section anchor="rdap-reverse-search-registry-template" numbered="true" removeInRFC="false" toc="include" pn="section-11.2.3.1">
+            <name slugifiedName="name-template">Template</name>
+            <dl newline="false" spacing="normal" indent="3" pn="section-11.2.3.1-1">
+              <dt pn="section-11.2.3.1-1.1">Property:</dt>
+              <dd pn="section-11.2.3.1-1.2">The name of the reverse search property.</dd>
+              <dt pn="section-11.2.3.1-1.3">Description:</dt>
+              <dd pn="section-11.2.3.1-1.4">A brief human-readable text describing the reverse search property.</dd>
+              <dt pn="section-11.2.3.1-1.5">Searchable Resource Type:</dt>
+              <dd pn="section-11.2.3.1-1.6">The searchable resource type of the reverse search query (<xref target="reverse-search-path-segment-specification" format="default" sectionFormat="of" derivedContent="Section 2"/>) including the reverse search property.  Multiple reverse search properties differing only by this field can be grouped together by listing all the searchable resource types separated by comma (see <xref target="rdap-reverse-search-registry-initial-content" format="default" sectionFormat="of" derivedContent="Section 11.2.3.2"/>).</dd>
+              <dt pn="section-11.2.3.1-1.7">Related Resource Type:</dt>
+              <dd pn="section-11.2.3.1-1.8">The related resource type of the reverse search query (<xref target="reverse-search-path-segment-specification" format="default" sectionFormat="of" derivedContent="Section 2"/>) including the reverse search property.</dd>
+              <dt pn="section-11.2.3.1-1.9">Registrant:</dt>
+              <dd pn="section-11.2.3.1-1.10">The name of the person registering the reverse search property.</dd>
+              <dt pn="section-11.2.3.1-1.11">Contact Information:</dt>
+              <dd pn="section-11.2.3.1-1.12">An email address, postal address, or some other information to be used to contact the registrant.</dd>
+              <dt pn="section-11.2.3.1-1.13">Reference:</dt>
+              <dd pn="section-11.2.3.1-1.14">Document (e.g., the RFC number) and section reference where the reverse search property is specified.</dd>
+            </dl>
+            <t indent="0" pn="section-11.2.3.1-2">The combination of Searchable Resource Type, Related Resource Type, and Property <bcp14>MUST</bcp14> be unique across the registry entries.</t>
+          </section>
+          <section anchor="rdap-reverse-search-registry-initial-content" numbered="true" removeInRFC="false" toc="include" pn="section-11.2.3.2">
+            <name slugifiedName="name-initial-content">Initial Content</name>
+            <t indent="0" pn="section-11.2.3.2-1">IANA has registered the following entries in the "RDAP Reverse Search" registry.  For all entries, the common values are shown in <xref target="table1" format="default" sectionFormat="of" derivedContent="Table 1"/>, whereas the specific values are shown in <xref target="table2" format="default" sectionFormat="of" derivedContent="Table 2"/>.</t>
+            <table anchor="table1" align="center" pn="table-1">
+              <name slugifiedName="name-common-values-for-all-entri">Common Values for All Entries in the RDAP Reverse Search Registry</name>
+              <thead>
+                <tr>
+                  <th align="left" colspan="1" rowspan="1">Registry Property</th>
+                  <th align="left" colspan="1" rowspan="1">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">Searchable Resource Type</td>
+                  <td align="left" colspan="1" rowspan="1">domains, nameservers, entities</td>
+                </tr>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">Related Resource Type</td>
+                  <td align="left" colspan="1" rowspan="1">entity</td>
+                </tr>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">Registrant</td>
+                  <td align="left" colspan="1" rowspan="1">IETF</td>
+                </tr>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">Contact Information</td>
+                  <td align="left" colspan="1" rowspan="1">iesg@ietf.org</td>
+                </tr>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">Reference</td>
+                  <td align="left" colspan="1" rowspan="1">RFC 9536</td>
+                </tr>
+              </tbody>
+            </table>
+            <table anchor="table2" align="center" pn="table-2">
+              <name slugifiedName="name-specific-values-for-entries">Specific Values for Entries in the RDAP Reverse Search Registry</name>
+              <thead>
+                <tr>
+                  <th align="left" colspan="1" rowspan="1">Property</th>
+                  <th align="left" colspan="1" rowspan="1">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">fn</td>
+                  <td align="left" colspan="1" rowspan="1">The server supports the domain/nameserver/entity search based on the full name (a.k.a. formatted name) of an associated entity</td>
+                </tr>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">handle</td>
+                  <td align="left" colspan="1" rowspan="1">The server supports the domain/nameserver/entity search based on the handle of an associated entity</td>
+                </tr>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">email</td>
+                  <td align="left" colspan="1" rowspan="1">The server supports the domain/nameserver/entity search based on the email address of an associated entity</td>
+                </tr>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">role</td>
+                  <td align="left" colspan="1" rowspan="1">The server supports the domain/nameserver/entity search based on the role of an associated entity</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </section>
+        <section anchor="rdap-reverse-search-mapping-registry" numbered="true" removeInRFC="false" toc="include" pn="section-11.2.4">
+          <name slugifiedName="name-rdap-reverse-search-mapping">RDAP Reverse Search Mapping Registry</name>
+          <section anchor="rdap-reverse-search-mapping-registry-template" numbered="true" removeInRFC="false" toc="include" pn="section-11.2.4.1">
+            <name slugifiedName="name-template-2">Template</name>
+            <dl newline="false" spacing="normal" indent="3" pn="section-11.2.4.1-1">
+              <dt pn="section-11.2.4.1-1.1">Property:</dt>
+              <dd pn="section-11.2.4.1-1.2">The same as defined in the "RDAP Reverse Search" registry.</dd>
+              <dt pn="section-11.2.4.1-1.3">Property Path:</dt>
+              <dd pn="section-11.2.4.1-1.4">The JSONPath of the RDAP property this reverse search property maps to.</dd>
+              <dt pn="section-11.2.4.1-1.5">Searchable Resource Type:</dt>
+              <dd pn="section-11.2.4.1-1.6">The same as defined in the "RDAP Reverse Search" registry.</dd>
+              <dt pn="section-11.2.4.1-1.7">Related Resource Type:</dt>
+              <dd pn="section-11.2.4.1-1.8">The same as defined in the "RDAP Reverse Search" registry.</dd>
+              <dt pn="section-11.2.4.1-1.9">Registrant:</dt>
+              <dd pn="section-11.2.4.1-1.10">The name of the person registering this reverse search property mapping.</dd>
+              <dt pn="section-11.2.4.1-1.11">Contact Information:</dt>
+              <dd pn="section-11.2.4.1-1.12">The same as defined in the "RDAP Reverse Search" registry.</dd>
+              <dt pn="section-11.2.4.1-1.13">Reference:</dt>
+              <dd pn="section-11.2.4.1-1.14">Document (e.g., the RFC number) and section reference where this reverse search property mapping is specified.</dd>
+            </dl>
+            <t indent="0" pn="section-11.2.4.1-2">The combination of Searchable Resource Type, Related Resource Type, Property, and Property Path <bcp14>MUST</bcp14> be unique across the registry entries.</t>
+          </section>
+          <section anchor="rdap-reverse-search-mapping-registry-initial-content" numbered="true" removeInRFC="false" toc="include" pn="section-11.2.4.2">
+            <name slugifiedName="name-initial-content-2">Initial Content</name>
+            <t indent="0" pn="section-11.2.4.2-1">IANA has registered the following entries in the "RDAP Reverse Search Mapping" registry. For all entries, the common values are the same as defined in the "RDAP Reverse Search" registry (see <xref target="table1" format="default" sectionFormat="of" derivedContent="Table 1"/>), whereas the specific values are shown below (see <xref target="table3" format="default" sectionFormat="of" derivedContent="Table 3"/>).</t>
+            <table anchor="table3" align="center" pn="table-3">
+              <name slugifiedName="name-specific-values-for-entries-">Specific Values for Entries in the RDAP Reverse Search Mapping Registry</name>
+              <thead>
+                <tr>
+                  <th align="left" colspan="1" rowspan="1">Property</th>
+                  <th align="left" colspan="1" rowspan="1">Property Path</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">fn</td>
+                  <td align="left" colspan="1" rowspan="1">$.entities[*].vcardArray[1][?(@[0]=='fn')][3]</td>
+                </tr>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">handle</td>
+                  <td align="left" colspan="1" rowspan="1">$.entities[*].handle</td>
+                </tr>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">email</td>
+                  <td align="left" colspan="1" rowspan="1">$.entities[*].vcardArray[1][?(@[0]=='email')][3]</td>
+                </tr>
+                <tr>
+                  <td align="left" colspan="1" rowspan="1">role</td>
+                  <td align="left" colspan="1" rowspan="1">$.entities[*].roles</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </section>
+      </section>
+    </section>
+    <section anchor="privacy-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-12">
+      <name slugifiedName="name-privacy-considerations">Privacy Considerations</name>
+      <t indent="0" pn="section-12-1">The search functionality defined in this document may affect the privacy of entities in the registry (and elsewhere) in various ways; see <xref target="RFC6973" format="default" sectionFormat="of" derivedContent="RFC6973"/> for a general treatment of privacy in protocol specifications.  Registry operators should be aware of the trade-offs that result from implementing this functionality.</t>
+      <t indent="0" pn="section-12-2">Many jurisdictions have laws or regulations that restrict the use of "personal data", per the definition in <xref target="RFC6973" format="default" sectionFormat="of" derivedContent="RFC6973"/>.  Given that, registry operators should ascertain whether the regulatory environment in which they operate permits implementation of the functionality defined in this document.</t>
+      <t indent="0" pn="section-12-3">In those cases where this functionality makes use of sensitive information, the information <bcp14>MUST</bcp14> only be accessible to authorized users under a lawful basis.</t>
+      <t indent="0" pn="section-12-4">Since reverse search requests and responses could contain Personally Identifiable Information (PII), reverse search functionality <bcp14>MUST</bcp14> be available over HTTPS only.</t>
+      <t indent="0" pn="section-12-5">Providing reverse search in RDAP carries the following threats as described in <xref target="RFC6973" format="default" sectionFormat="of" derivedContent="RFC6973"/>:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-12-6">
+        <li pn="section-12-6.1">Correlation</li>
+        <li pn="section-12-6.2">Disclosure</li>
+        <li pn="section-12-6.3">Misuse of data</li>
+      </ul>
+      <t indent="0" pn="section-12-7">Therefore, RDAP providers need to mitigate the risk of those threats by implementing appropriate measures supported by security services (see <xref target="security-considerations" format="default" sectionFormat="of" derivedContent="Section 13"/>).</t>
+    </section>
+    <section anchor="security-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-13">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-13-1">Security services that are required to provide controlled access to the operations specified in this document are described in <xref target="RFC7481" format="default" sectionFormat="of" derivedContent="RFC7481"/>.  A non-exhaustive list of access control paradigms an RDAP provider can implement is presented in <xref target="access-control-paradigms" format="default" sectionFormat="of" derivedContent="Appendix A"/>.</t>
+      <t indent="0" pn="section-13-2">As an additional measure to enforce security by preventing reverse searches to be accessed from unauthorized users, the RDAP providers may consider physically separating the reverse search endpoints from the other ones by configuring a proxy routing the reverse searches to a dedicated backend server and leveraging further security services offered by other protocol layers, such as digital certificates and IP allow-listing.</t>
+      <t indent="0" pn="section-13-3">Finally, the specification of the relationship within the reverse search path allows the RDAP servers to implement different authorization policies on a per-relationship basis.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-14">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-14.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC6350" target="https://www.rfc-editor.org/info/rfc6350" quoteTitle="true" derivedAnchor="RFC6350">
+          <front>
+            <title>vCard Format Specification</title>
+            <author fullname="S. Perreault" initials="S." surname="Perreault"/>
+            <date month="August" year="2011"/>
+            <abstract>
+              <t indent="0">This document defines the vCard data format for representing and exchanging a variety of information about individuals and other entities (e.g., formatted and structured name and delivery addresses, email address, multiple telephone numbers, photograph, logo, audio clips, etc.). This document obsoletes RFCs 2425, 2426, and 4770, and updates RFC 2739. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6350"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6350"/>
+        </reference>
+        <reference anchor="RFC7095" target="https://www.rfc-editor.org/info/rfc7095" quoteTitle="true" derivedAnchor="RFC7095">
+          <front>
+            <title>jCard: The JSON Format for vCard</title>
+            <author fullname="P. Kewisch" initials="P." surname="Kewisch"/>
+            <date month="January" year="2014"/>
+            <abstract>
+              <t indent="0">This specification defines "jCard", a JSON format for vCard data. The vCard data format is a text format for representing and exchanging information about individuals and other entities, for example, telephone numbers, email addresses, structured names, and delivery addresses. JSON is a lightweight, text-based, language- independent data interchange format commonly used in Internet applications.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7095"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7095"/>
+        </reference>
+        <reference anchor="RFC7481" target="https://www.rfc-editor.org/info/rfc7481" quoteTitle="true" derivedAnchor="RFC7481">
+          <front>
+            <title>Security Services for the Registration Data Access Protocol (RDAP)</title>
+            <author fullname="S. Hollenbeck" initials="S." surname="Hollenbeck"/>
+            <author fullname="N. Kong" initials="N." surname="Kong"/>
+            <date month="March" year="2015"/>
+            <abstract>
+              <t indent="0">The Registration Data Access Protocol (RDAP) provides "RESTful" web services to retrieve registration metadata from Domain Name and Regional Internet Registries. This document describes information security services, including access control, authentication, authorization, availability, data confidentiality, and data integrity for RDAP.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="95"/>
+          <seriesInfo name="RFC" value="7481"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7481"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC9082" target="https://www.rfc-editor.org/info/rfc9082" quoteTitle="true" derivedAnchor="RFC9082">
+          <front>
+            <title>Registration Data Access Protocol (RDAP) Query Format</title>
+            <author fullname="S. Hollenbeck" initials="S." surname="Hollenbeck"/>
+            <author fullname="A. Newton" initials="A." surname="Newton"/>
+            <date month="June" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes uniform patterns to construct HTTP URLs that may be used to retrieve registration information from registries (including both Regional Internet Registries (RIRs) and Domain Name Registries (DNRs)) using "RESTful" web access patterns. These uniform patterns define the query syntax for the Registration Data Access Protocol (RDAP). This document obsoletes RFC 7482.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="95"/>
+          <seriesInfo name="RFC" value="9082"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9082"/>
+        </reference>
+        <reference anchor="RFC9083" target="https://www.rfc-editor.org/info/rfc9083" quoteTitle="true" derivedAnchor="RFC9083">
+          <front>
+            <title>JSON Responses for the Registration Data Access Protocol (RDAP)</title>
+            <author fullname="S. Hollenbeck" initials="S." surname="Hollenbeck"/>
+            <author fullname="A. Newton" initials="A." surname="Newton"/>
+            <date month="June" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes JSON data structures representing registration information maintained by Regional Internet Registries (RIRs) and Domain Name Registries (DNRs). These data structures are used to form Registration Data Access Protocol (RDAP) query responses. This document obsoletes RFC 7483.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="95"/>
+          <seriesInfo name="RFC" value="9083"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9083"/>
+        </reference>
+        <reference anchor="RFC9110" target="https://www.rfc-editor.org/info/rfc9110" quoteTitle="true" derivedAnchor="RFC9110">
+          <front>
+            <title>HTTP Semantics</title>
+            <author fullname="R. Fielding" initials="R." role="editor" surname="Fielding"/>
+            <author fullname="M. Nottingham" initials="M." role="editor" surname="Nottingham"/>
+            <author fullname="J. Reschke" initials="J." role="editor" surname="Reschke"/>
+            <date month="June" year="2022"/>
+            <abstract>
+              <t indent="0">The Hypertext Transfer Protocol (HTTP) is a stateless application-level protocol for distributed, collaborative, hypertext information systems. This document describes the overall architecture of HTTP, establishes common terminology, and defines aspects of the protocol that are shared by all versions. In this definition are core protocol elements, extensibility mechanisms, and the "http" and "https" Uniform Resource Identifier (URI) schemes.</t>
+              <t indent="0">This document updates RFC 3864 and obsoletes RFCs 2818, 7231, 7232, 7233, 7235, 7538, 7615, 7694, and portions of 7230.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="97"/>
+          <seriesInfo name="RFC" value="9110"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9110"/>
+        </reference>
+        <reference anchor="RFC9535" target="https://www.rfc-editor.org/info/rfc9535" quoteTitle="true" derivedAnchor="RFC9535">
+          <front>
+            <title>JSONPath: Query Expressions for JSON</title>
+            <author fullname="S. Gössner" initials="S." role="editor" surname="Gössner"/>
+            <author fullname="G. Normington" initials="G." role="editor" surname="Normington"/>
+            <author fullname="C. Bormann" initials="C." role="editor" surname="Bormann"/>
+            <date month="February" year="2024"/>
+            <abstract>
+              <t indent="0">JSONPath defines a string syntax for selecting and extracting JSON (RFC 8259) values from within a given JSON value.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9535"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9535"/>
+        </reference>
+      </references>
+      <references pn="section-14.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="ICANN-RA" target="https://www.icann.org/en/registry-agreements/base-agreement" quoteTitle="true" derivedAnchor="ICANN-RA">
+          <front>
+            <title>Base Registry Agreement</title>
+            <author>
+              <organization showOnFrontPage="true">ICANN</organization>
+            </author>
+            <date month="January" year="2024"/>
+          </front>
+        </reference>
+        <reference anchor="ICANN-RDS" target="https://www.icann.org/en/system/files/files/final-report-06jun14-en.pdf" quoteTitle="true" derivedAnchor="ICANN-RDS">
+          <front>
+            <title>Final Report from the Expert Working Group on gTLD Directory Services: A Next-Generation Registration Directory Service (RDS)</title>
+            <author>
+              <organization showOnFrontPage="true">ICANN</organization>
+            </author>
+            <date year="2014" month="June"/>
+          </front>
+        </reference>
+        <reference anchor="OIDCC" target="http://openid.net/specs/openid-connect-core-1_0.html" quoteTitle="true" derivedAnchor="OIDCC">
+          <front>
+            <title>OpenID Connect Core 1.0 incorporating errata set 2</title>
+            <author initials="N" surname="Sakimura">
+            </author>
+            <author initials="J" surname="Bradley">
+	    </author>
+            <author initials="M" surname="Jones">
+	    </author>
+            <author initials="B" surname="de Medeiros">
+	    </author>
+            <author initials="C" surname="Mortimore">
+            </author>
+            <date month="December" year="2023"/>
+          </front>
+        </reference>
+        <reference anchor="RFC3912" target="https://www.rfc-editor.org/info/rfc3912" quoteTitle="true" derivedAnchor="RFC3912">
+          <front>
+            <title>WHOIS Protocol Specification</title>
+            <author fullname="L. Daigle" initials="L." surname="Daigle"/>
+            <date month="September" year="2004"/>
+            <abstract>
+              <t indent="0">This document updates the specification of the WHOIS protocol, thereby obsoleting RFC 954. The update is intended to remove the material from RFC 954 that does not have to do with the on-the-wire protocol, and is no longer applicable in today's Internet. This document does not attempt to change or update the protocol per se, or document other uses of the protocol that have come into existence since the publication of RFC 954. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3912"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3912"/>
+        </reference>
+        <reference anchor="RFC5730" target="https://www.rfc-editor.org/info/rfc5730" quoteTitle="true" derivedAnchor="RFC5730">
+          <front>
+            <title>Extensible Provisioning Protocol (EPP)</title>
+            <author fullname="S. Hollenbeck" initials="S." surname="Hollenbeck"/>
+            <date month="August" year="2009"/>
+            <abstract>
+              <t indent="0">This document describes an application-layer client-server protocol for the provisioning and management of objects stored in a shared central repository. Specified in XML, the protocol defines generic object management operations and an extensible framework that maps protocol operations to objects. This document includes a protocol specification, an object mapping template, and an XML media type registration. This document obsoletes RFC 4930. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="69"/>
+          <seriesInfo name="RFC" value="5730"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5730"/>
+        </reference>
+        <reference anchor="RFC6973" target="https://www.rfc-editor.org/info/rfc6973" quoteTitle="true" derivedAnchor="RFC6973">
+          <front>
+            <title>Privacy Considerations for Internet Protocols</title>
+            <author fullname="A. Cooper" initials="A." surname="Cooper"/>
+            <author fullname="H. Tschofenig" initials="H." surname="Tschofenig"/>
+            <author fullname="B. Aboba" initials="B." surname="Aboba"/>
+            <author fullname="J. Peterson" initials="J." surname="Peterson"/>
+            <author fullname="J. Morris" initials="J." surname="Morris"/>
+            <author fullname="M. Hansen" initials="M." surname="Hansen"/>
+            <author fullname="R. Smith" initials="R." surname="Smith"/>
+            <date month="July" year="2013"/>
+            <abstract>
+              <t indent="0">This document offers guidance for developing privacy considerations for inclusion in protocol specifications. It aims to make designers, implementers, and users of Internet protocols aware of privacy-related design choices. It suggests that whether any individual RFC warrants a specific privacy considerations section will depend on the document's content.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6973"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6973"/>
+        </reference>
+        <reference anchor="RFC8977" target="https://www.rfc-editor.org/info/rfc8977" quoteTitle="true" derivedAnchor="RFC8977">
+          <front>
+            <title>Registration Data Access Protocol (RDAP) Query Parameters for Result Sorting and Paging</title>
+            <author fullname="M. Loffredo" initials="M." surname="Loffredo"/>
+            <author fullname="M. Martinelli" initials="M." surname="Martinelli"/>
+            <author fullname="S. Hollenbeck" initials="S." surname="Hollenbeck"/>
+            <date month="January" year="2021"/>
+            <abstract>
+              <t indent="0">The Registration Data Access Protocol (RDAP) does not include core functionality for clients to provide sorting and paging parameters for control of large result sets. This omission can lead to unpredictable server processing of queries and client processing of responses. This unpredictability can be greatly reduced if clients can provide servers with their preferences for managing large responses. This document describes RDAP query extensions that allow clients to specify their preferences for sorting and paging result sets.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8977"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8977"/>
+        </reference>
+        <reference anchor="RFC8982" target="https://www.rfc-editor.org/info/rfc8982" quoteTitle="true" derivedAnchor="RFC8982">
+          <front>
+            <title>Registration Data Access Protocol (RDAP) Partial Response</title>
+            <author fullname="M. Loffredo" initials="M." surname="Loffredo"/>
+            <author fullname="M. Martinelli" initials="M." surname="Martinelli"/>
+            <date month="February" year="2021"/>
+            <abstract>
+              <t indent="0">The Registration Data Access Protocol (RDAP) does not include capabilities to request partial responses. Servers will only return full responses that include all of the information that a client is authorized to receive. A partial response capability that limits the amount of information returned, especially in the case of search queries, could bring benefits to both clients and servers. This document describes an RDAP query extension that allows clients to specify their preference for obtaining a partial response.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8982"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8982"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="access-control-paradigms" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-paradigms-to-enforce-access">Paradigms to Enforce Access Control on Reverse Search in RDAP</name>
+      <t indent="0" pn="section-appendix.a-1">Access control can be implemented according to different paradigms introducing increasingly stringent rules.  The paradigms listed below leverage the capabilities that are either built in or provided as extensions by the OpenID Connect <xref target="OIDCC" format="default" sectionFormat="of" derivedContent="OIDCC"/>:</t>
+      <dl spacing="normal" indent="3" newline="false" pn="section-appendix.a-2">
+        <dt pn="section-appendix.a-2.1">Role-Based Access Control (RBAC):</dt>
+        <dd pn="section-appendix.a-2.2">Access rights are granted depending on roles.  Generally, this is done by grouping users into fixed categories and assigning static grants to each category.  A more dynamic approach can be implemented by using the OpenID Connect "scope" claim.</dd>
+        <dt pn="section-appendix.a-2.3">Purpose-Based Access Control (PBAC):</dt>
+        <dd pn="section-appendix.a-2.4">Access rules are based on the notion of purpose, being the intended use of some data by a user.  It can be implemented by tagging a request with the usage purpose and making the RDAP server check the compliance between the given purpose and the control rules applied to the data to be returned.</dd>
+        <dt pn="section-appendix.a-2.5">Attribute-Based Access Control (ABAC):</dt>
+        <dd pn="section-appendix.a-2.6">Rules to manage access rights are evaluated and applied according to specific attributes describing the context within which data are requested.  It can be implemented within an out-of-band process by setting additional OpenID Connect claims that describe the request context and make the RDAP server check for compliance between the given context and the control rules that are applied to the data to be returned.</dd>
+        <dt pn="section-appendix.a-2.7">Time-Based Access Control (TBAC):</dt>
+        <dd pn="section-appendix.a-2.8">Data access is allowed for a limited time only.  It can be implemented by assigning users temporary credentials linked to access grants with limited scopes.</dd>
+      </dl>
+      <t indent="0" pn="section-appendix.a-3">With regard to the privacy threats reported in <xref target="privacy-considerations" format="default" sectionFormat="of" derivedContent="Section 12"/>, correlation and disclosure can be mitigated by minimizing both the request features and the response data based on user roles (i.e., RBAC).  Misuse can be mitigated by checking for the purpose of the request (i.e., PBAC).  It can be accomplished according to the following approaches:</t>
+      <dl spacing="normal" indent="3" newline="false" pn="section-appendix.a-4">
+        <dt pn="section-appendix.a-4.1">Full Trust:</dt>
+        <dd pn="section-appendix.a-4.2">The registry trusts the fairness of an accredited user.  The requestor is always legitimized to submit their requests under a lawful basis. Additionally, they can be required to specify the purpose as either a claim of their account or a query parameter.  In the former case, the purpose is assumed to be the same for every request.  In the latter case, the purpose must be one of those associated to the user.</dd>
+        <dt pn="section-appendix.a-4.3">Zero Trust:</dt>
+        <dd pn="section-appendix.a-4.4">The registry requires documents that assess whether the requestor is legitimized to submit a given request.  It can be implemented by assigning the requestor a temporary OpenID account linked to the given request (i.e., TBAC) and describing the request through a set of claims (i.e., ABAC).  The association between the temporary account and the claims about the request is made by an out-of-band application.  In so doing, the RDAP server is able to check that the incoming request is consistent with the request claims linked to the temporary account.</dd>
+      </dl>
+      <t indent="0" pn="section-appendix.a-5">The two approaches can be used together:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a-6">
+        <li pn="section-appendix.a-6.1">The former is suitable for users carrying out a task in the public interest or exercising their official authority (e.g., an officer of a cybercrime agency).  Similarly, registrars can submit reverse searches on their domains and contacts based on their contractual relationship with the domain holders.  In this case, the query results can be restricted to those pertaining to a registrar by adding an implicit predicate to the search condition.
+        </li>
+        <li pn="section-appendix.a-6.2">The latter can be taken to allow domain name dispute resolution service providers to request information in defense of the legitimate interests of complainants.</li>
+      </ul>
+    </section>
+    <section numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.b-1">The authors would like to acknowledge the following individuals for their contributions to this document: <contact fullname="Francesco Donini"/>, <contact fullname="Scott Hollenbeck"/>, <contact fullname="Francisco Arias"/>, <contact fullname="Gustavo Lozano"/>, <contact fullname="Eduardo Alvarez"/>, <contact fullname="Ulrich Wisser"/>, <contact fullname="James Gould"/>, and <contact fullname="Pawel Kowalik"/>.</t>
+      <t indent="0" pn="section-appendix.b-2"><contact fullname="Tom Harrison"/> and <contact fullname="Jasdip Singh"/> provided relevant feedback and constant support to the implementation of this proposal.  Their contributions have been greatly appreciated.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Mario Loffredo" initials="M." surname="Loffredo">
+        <organization showOnFrontPage="true">IIT-CNR/Registro.it</organization>
+        <address>
+          <postal>
+            <street>Via Moruzzi,1</street>
+            <city>Pisa</city>
+            <country>Italy</country>
+            <code>56124</code>
+          </postal>
+          <email>mario.loffredo@iit.cnr.it</email>
+          <uri>http://www.iit.cnr.it</uri>
+        </address>
+      </author>
+      <author fullname="Maurizio Martinelli" initials="M." surname="Martinelli">
+        <organization showOnFrontPage="true">IIT-CNR/Registro.it</organization>
+        <address>
+          <postal>
+            <street>Via Moruzzi,1</street>
+            <city>Pisa</city>
+            <country>Italy</country>
+            <code>56124</code>
+          </postal>
+          <email>maurizio.martinelli@iit.cnr.it</email>
+          <uri>http://www.iit.cnr.it</uri>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

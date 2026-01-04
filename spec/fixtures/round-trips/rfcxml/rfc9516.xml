@@ -1,0 +1,2351 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" ipr="trust200902" docName="draft-ietf-sfc-multi-layer-oam-28" number="9516" updates="" obsoletes="" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="true" prepTime="2023-11-20T22:04:32" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-sfc-multi-layer-oam-28" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9516" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Active OAM for SFC">Active Operations, Administration, and Maintenance (OAM) for Service Function Chaining (SFC)</title>
+    <seriesInfo name="RFC" value="9516" stream="IETF"/>
+    <author initials="G." surname="Mirsky" fullname="Greg Mirsky">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <email>gregimirsky@gmail.com</email>
+      </address>
+    </author>
+    <author initials="W" surname="Meng" fullname="Wei Meng">
+      <organization showOnFrontPage="true">ZTE Corporation</organization>
+      <address>
+        <postal>
+          <extaddr>Yuhuatai District</extaddr>
+          <street>No.50 Software Avenue</street>
+          <region>Nanjing</region>
+          <country>China</country>
+        </postal>
+        <email>meng.wei2@zte.com.cn</email>
+      </address>
+    </author>
+    <author fullname="Ting Ao" initials="T." surname="Ao">
+      <organization showOnFrontPage="true">China Mobile</organization>
+      <address>
+        <postal>
+          <street>No.889, BiBo Road</street>
+          <city>Shanghai</city>
+          <region/>
+          <code>201203</code>
+          <country>China</country>
+        </postal>
+        <phone>+86 17721209283</phone>
+        <email>18555817@qq.com</email>
+      </address>
+    </author>
+    <author initials="B" surname="Khasnabish" fullname="Bhumip Khasnabish">
+      <organization showOnFrontPage="true">Individual Contributor</organization>
+      <address>
+        <email>vumip1@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Kent Leung" initials="K." surname="Leung">
+      <organization showOnFrontPage="true">Individual Contributor</organization>
+      <address>
+        <postal>
+          <street>530 Showers Drive Ste 7</street>
+          <city>Mountain View</city>
+          <region>CA</region>
+          <code>94040</code>
+          <country>United States of America</country>
+        </postal>
+        <phone/>
+        <email>mail4kentl@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Gyan Mishra" initials="G." surname="Mishra">
+      <organization showOnFrontPage="true">Verizon Inc.</organization>
+      <address>
+        <email>gyan.s.mishra@verizon.com</email>
+      </address>
+    </author>
+    <date month="11" year="2023"/>
+    <area>rtg</area>
+    <workgroup>sfc</workgroup>
+    <keyword>NSH</keyword>
+    <keyword>Fault Management</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">	
+A set of requirements for active Operations, Administration,
+and Maintenance (OAM) for Service Function Chaining (SFC) in a network is presented in this document.  
+Based on these requirements, an encapsulation of active OAM messages in SFC and
+a mechanism to detect and localize defects are described.
+</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9516" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology-and-conventions">Terminology and Conventions</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-acronyms">Acronyms</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-for-active-oam">Requirements for Active OAM in SFC</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-active-oam-identification-i">Active OAM Identification in the NSH</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-active-oam-header">SFC Active OAM Header</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-echo-request-reply-for-sfc">Echo Request/Reply for SFC</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-return-codes">Return Codes</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-authentication-in-echo-requ">Authentication in Echo Request/Reply</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.3">
+                <t indent="0" pn="section-toc.1-1.6.2.3.1"><xref derivedContent="6.3" format="counter" sectionFormat="of" target="section-6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-echo-request-transmissi">SFC Echo Request Transmission</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.3.2">
+                  <li pn="section-toc.1-1.6.2.3.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.3.2.1.1"><xref derivedContent="6.3.1" format="counter" sectionFormat="of" target="section-6.3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-source-id-tlv">Source ID TLV</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.6.2.4">
+                <t indent="0" pn="section-toc.1-1.6.2.4.1"><xref derivedContent="6.4" format="counter" sectionFormat="of" target="section-6.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-processing-a-received-sfc-e">Processing a Received SFC Echo Request</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.4.2">
+                  <li pn="section-toc.1-1.6.2.4.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.4.2.1.1"><xref derivedContent="6.4.1" format="counter" sectionFormat="of" target="section-6.4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-errored-tlvs-tlv">Errored TLVs TLV</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.6.2.5">
+                <t indent="0" pn="section-toc.1-1.6.2.5.1"><xref derivedContent="6.5" format="counter" sectionFormat="of" target="section-6.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-echo-reply-transmission">SFC Echo Reply Transmission</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.5.2">
+                  <li pn="section-toc.1-1.6.2.5.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.5.2.1.1"><xref derivedContent="6.5.1" format="counter" sectionFormat="of" target="section-6.5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reply-service-function-path">Reply Service Function Path TLV</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.5.2.2">
+                    <t indent="0" pn="section-toc.1-1.6.2.5.2.2.1"><xref derivedContent="6.5.2" format="counter" sectionFormat="of" target="section-6.5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-theory-of-operation">Theory of Operation</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.5.2.3">
+                    <t indent="0" pn="section-toc.1-1.6.2.5.2.3.1"><xref derivedContent="6.5.3" format="counter" sectionFormat="of" target="section-6.5.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-echo-reply-reception">SFC Echo Reply Reception</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.5.2.4">
+                    <t indent="0" pn="section-toc.1-1.6.2.5.2.4.1"><xref derivedContent="6.5.4" format="counter" sectionFormat="of" target="section-6.5.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-tracing-an-sfp">Tracing an SFP</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.6.2.6">
+                <t indent="0" pn="section-toc.1-1.6.2.6.1"><xref derivedContent="6.6" format="counter" sectionFormat="of" target="section-6.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-use-of-the-consistency-">The Use of the Consistency Verification Request Message</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.6.2">
+                  <li pn="section-toc.1-1.6.2.6.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.6.2.1.1"><xref derivedContent="6.6.1" format="counter" sectionFormat="of" target="section-6.6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sff-information-record-tlv">SFF Information Record TLV</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.6.2.2">
+                    <t indent="0" pn="section-toc.1-1.6.2.6.2.2.1"><xref derivedContent="6.6.2" format="counter" sectionFormat="of" target="section-6.6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sf-information-sub-tlv">SF Information Sub-TLV</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.6.2.3">
+                    <t indent="0" pn="section-toc.1-1.6.2.6.2.3.1"><xref derivedContent="6.6.3" format="counter" sectionFormat="of" target="section-6.6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sf-information-sub-tlv-cons">SF Information Sub-TLV Construction</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-operational-considerations">Operational Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-active-oam-protocol">SFC Active OAM Protocol</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-active-oam">SFC Active OAM</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2.2.2">
+                  <li pn="section-toc.1-1.9.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.9.2.2.2.1.1"><xref derivedContent="9.2.1" format="counter" sectionFormat="of" target="section-9.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-active-oam-message-type">SFC Active OAM Message Types</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.9.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.9.2.2.2.2.1"><xref derivedContent="9.2.2" format="counter" sectionFormat="of" target="section-9.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-echo-request-flags">SFC Echo Request Flags</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.9.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.9.2.2.2.3.1"><xref derivedContent="9.2.3" format="counter" sectionFormat="of" target="section-9.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-echo-types">SFC Echo Types</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.9.2.2.2.4">
+                    <t indent="0" pn="section-toc.1-1.9.2.2.2.4.1"><xref derivedContent="9.2.4" format="counter" sectionFormat="of" target="section-9.2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-echo-reply-modes">SFC Echo Reply Modes</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.9.2.2.2.5">
+                    <t indent="0" pn="section-toc.1-1.9.2.2.2.5.1"><xref derivedContent="9.2.5" format="counter" sectionFormat="of" target="section-9.2.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-echo-return-codes">SFC Echo Return Codes</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.9.2.2.2.6">
+                    <t indent="0" pn="section-toc.1-1.9.2.2.2.6.1"><xref derivedContent="9.2.6" format="counter" sectionFormat="of" target="section-9.2.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sfc-active-oam-tlv-types">SFC Active OAM TLV Types</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.9.2.2.2.7">
+                    <t indent="0" pn="section-toc.1-1.9.2.2.2.7.1"><xref derivedContent="9.2.7" format="counter" sectionFormat="of" target="section-9.2.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sf-identifier-types">SF Identifier Types</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.10.2">
+              <li pn="section-toc.1-1.10.2.1">
+                <t indent="0" pn="section-toc.1-1.10.2.1.1"><xref derivedContent="10.1" format="counter" sectionFormat="of" target="section-10.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.10.2.2">
+                <t indent="0" pn="section-toc.1-1.10.2.2.1"><xref derivedContent="10.2" format="counter" sectionFormat="of" target="section-10.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">
+     <xref target="RFC7665" format="default" sectionFormat="of" derivedContent="RFC7665"/> defines data plane elements necessary to implement 
+     Service Function Chaining (SFC). These include the following:
+      </t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-1-2">
+      <li pn="section-1-2.1" derivedCounter="1.">
+     Classifiers that perform the classification of incoming packets. Such classification may result in associating a received packet to a service function chain. 
+     </li>
+        <li pn="section-1-2.2" derivedCounter="2.">
+     Service Function Forwarders (SFFs) 
+     that are responsible for forwarding traffic to one or more connected Service Functions (SFs) according to 
+     the information carried in the SFC encapsulation and handling traffic coming back from 
+     the SFs and forwarding it to the next SFF.
+     </li>
+        <li pn="section-1-2.3" derivedCounter="3.">
+     SFs that are responsible for executing specific service treatment 
+     on received packets.
+     </li>
+      </ol>
+      <t indent="0" pn="section-1-3">
+     There are different views from different levels of SFC.
+     One is the service function chain, an entirely abstract view, which defines an ordered set of SFs that must 
+     be applied to packets selected based on classification rules.
+     But the service function chain doesn't specify the exact mapping between SFFs and SFs. Thus, another  
+     logical construct used in SFC  is a Service Function Path (SFP).
+     According to <xref target="RFC7665" format="default" sectionFormat="of" derivedContent="RFC7665"/>, an SFP is
+     the instantiation of SFC in the network and provides a level of indirection 
+     between the entirely abstract SFCs and a fully specified, ordered 
+     list of SFF and SF identities that the packet will visit when
+     it traverses SFC. The latter entity is referred to as Rendered Service Path (RSP).
+     The main difference between an SFP and RSP is that the former is the logical construct,
+    while the latter is the realization of the SFP via the sequence of specific SFC data plane elements.
+      </t>
+      <t indent="0" pn="section-1-4">
+	   This document defines how active Operations, Administration,
+	   and Maintenance (OAM), per the definition of active OAM in <xref target="RFC7799" format="default" sectionFormat="of" derivedContent="RFC7799"/>, is
+	   implemented when the Network Service Header (NSH) <xref target="RFC8300" format="default" sectionFormat="of" derivedContent="RFC8300"/> is used as the SFC encapsulation.
+  Following the analysis of SFC OAM in <xref target="RFC8924" format="default" sectionFormat="of" derivedContent="RFC8924"/>, this document applies and, when necessary,
+  extends requirements listed in <xref target="RFC8924" section="4" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8924#section-4" derivedContent="RFC8924"/>
+  for the use of active OAM in an SFP supporting fault management and performance monitoring.
+  Active OAM tools that are conformant to this specification
+  improve OAM's ability for Fault Management (FM) by, for example, using the query mechanism
+  to troubleshoot and localize defects, which conforms to the stateless character
+  of transactions in SFC NSH <xref target="RFC8300" format="default" sectionFormat="of" derivedContent="RFC8300"/>.
+  Note that Performance Monitoring OAM, as required by <xref target="RFC8924" format="default" sectionFormat="of" derivedContent="RFC8924"/>,
+   is not satisfied by this document and is out of scope.
+   For the purpose of FM OAM in SFC, the SFC Echo Request and Echo Reply are specified in <xref target="sfc-echo-request-reply" format="default" sectionFormat="of" derivedContent="Section 6"/>. These mechanisms enable on-demand continuity check and connectivity verification, among other operations, over SFC in networks
+  and address functionalities discussed in Sections <xref target="RFC8924" section="4.1" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8924#section-4.1" derivedContent="RFC8924"/>, <xref target="RFC8924" section="4.2" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8924#section-4.2" derivedContent="RFC8924"/>, and <xref target="RFC8924" section="4.3" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8924#section-4.3" derivedContent="RFC8924"/> of <xref target="RFC8924" format="default" sectionFormat="of" derivedContent="RFC8924"/>.
+The SFC Echo Request and Echo Reply can be used with encapsulations other than the NSH, for example,
+using MPLS encapsulation, as described in <xref target="RFC8595" format="default" sectionFormat="of" derivedContent="RFC8595"/>. The applicability of the SFC Echo Request/Reply mechanism
+in SFC encapsulations other than the NSH is outside the scope of this document.
+      </t>
+      <t indent="0" pn="section-1-5">
+   The intended scope of SFC active OAM is for use within a single provider's
+   operational domain.  The SFC active OAM deployment scope is deliberately constrained,
+   as explained in <xref target="RFC7665" format="default" sectionFormat="of" derivedContent="RFC7665"/> and <xref target="RFC8300" format="default" sectionFormat="of" derivedContent="RFC8300"/>, and limited to a single
+   network administrative domain.</t>
+    </section>
+    <section anchor="sec_terminology" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-terminology-and-conventions">Terminology and Conventions</name>
+      <t indent="0" pn="section-2-1">
+   The terminology defined in <xref target="RFC7665" format="default" sectionFormat="of" derivedContent="RFC7665"/> is used extensively throughout this document,
+   and the reader is expected to be familiar with it.
+      </t>
+      <t indent="0" pn="section-2-2">
+      In this document, SFC OAM refers to an active OAM <xref target="RFC7799" format="default" sectionFormat="of" derivedContent="RFC7799"/> in an SFC architecture.
+      Additionally, "Echo Request/Reply" and "SFC Echo Request/Reply" are used interchangeably.
+      </t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-2.1">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-2.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are
+    to be interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/>
+          <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals,
+    as shown here. 
+</t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-2.2">
+        <name slugifiedName="name-acronyms">Acronyms</name>
+        <dl newline="false" indent="3" spacing="normal" pn="section-2.2-1">
+          <dt pn="section-2.2-1.1">E2E:</dt>
+          <dd pn="section-2.2-1.2">End-to-End</dd>
+          <dt pn="section-2.2-1.3">FM:</dt>
+          <dd pn="section-2.2-1.4">Fault Management</dd>
+          <dt pn="section-2.2-1.5">MAC:</dt>
+          <dd pn="section-2.2-1.6">Message Authentication Code</dd>
+          <dt pn="section-2.2-1.7">NSH:</dt>
+          <dd pn="section-2.2-1.8">Network Service Header</dd>
+          <dt pn="section-2.2-1.9">OAM:</dt>
+          <dd pn="section-2.2-1.10">Operations, Administration, and Maintenance</dd>
+          <dt pn="section-2.2-1.11">RSP:</dt>
+          <dd pn="section-2.2-1.12">Rendered Service Path</dd>
+          <dt pn="section-2.2-1.13">SF:</dt>
+          <dd pn="section-2.2-1.14">Service Function</dd>
+          <dt pn="section-2.2-1.15">SFC:</dt>
+          <dd pn="section-2.2-1.16">Service Function Chaining</dd>
+          <dt pn="section-2.2-1.17">SFF:</dt>
+          <dd pn="section-2.2-1.18">Service Function Forwarder</dd>
+          <dt pn="section-2.2-1.19">SFI:</dt>
+          <dd pn="section-2.2-1.20">Service Function Instance</dd>
+          <dt pn="section-2.2-1.21">SFP:</dt>
+          <dd pn="section-2.2-1.22">Service Function Path</dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="oam-req-sec" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-requirements-for-active-oam">Requirements for Active OAM in SFC</name>
+      <t indent="0" pn="section-3-1">
+     As discussed in <xref target="RFC8924" format="default" sectionFormat="of" derivedContent="RFC8924"/>, SFC-specific means are needed
+     to perform the FM OAM task in an SFC architecture, including failure detection, defect
+     characterization, and localization. This document defines the set of requirements
+     for active FM OAM mechanisms to be used in an SFC architecture.
+      </t>
+      <figure anchor="fig1" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-an-example-of-sfc-data-plan">An Example of SFC Data Plane Architecture</name>
+        <artwork name="" type="" align="left" alt="" pn="section-3-2.1">
+              +-----+ +-----+ +-----+ +-----+ +-----+ +-----+
+              |SFI11| |SFI12| |SFI21| |SFI22| |SFI31| |SFI32|
+              +-----+ +-----+ +-----+ +-----+ +-----+ +-----+
+                  \    /          \   /           \    / 
+   +----------+   +----+         +----+          +----+    
+   |Classifier|---|SFF1|---------|SFF2|----------|SFF3|
+   +----------+   +----+         +----+          +----+         
+       </artwork>
+      </figure>
+      <t indent="0" pn="section-3-3">
+    The architecture example depicted in <xref target="fig1" format="default" sectionFormat="of" derivedContent="Figure 1"/>
+    considers a service function chain that includes three distinct service functions.
+     In this example, the SFP traverses SFF1, SFF2, and SFF3. Each SFF is connected to two
+     Service Function Instances (SFIs) of the same SF.
+     End-to-End (E2E) SFC OAM has the Classifier as the ingress
+     and SFF3 as its egress. The scope of Segment SFC OAM is between two elements that are part of the same SFP.
+     The following are the requirements for an FM SFC OAM, whether with the E2E or segment scope:
+      </t>
+      <ol type="REQ%d:" group="reqs" start="1" indent="adaptive" spacing="normal" pn="section-3-4">
+<li pn="section-3-4.1" derivedCounter="REQ1:">Packets of SFC active OAM <bcp14>SHOULD</bcp14> be fate sharing with the monitored SFC data
+            in the forward direction from ingress toward egress endpoint(s) of the OAM test. </li>
+      </ol>
+      <t indent="0" pn="section-3-5">
+     The fate sharing, in the SFC environment, is achieved when a test packet traverses the same path
+     and receives the same treatment in the underlay network layer as an SFC-encapsulated packet.
+      </t>
+      <ol type="REQ%d:" group="reqs" start="2" indent="adaptive" spacing="normal" pn="section-3-6">
+<li pn="section-3-6.1" derivedCounter="REQ2:">     SFC OAM <bcp14>MUST</bcp14> support monitoring of the continuity of the SFP between any of its elements.
+     </li>
+      </ol>
+      <t indent="0" pn="section-3-7">
+	An SFC failure might be declared when several consecutive test packets are not received within a predetermined time.
+     For example, in the E2E FM SFC OAM case, i.e., the egress, SFF3 (<xref target="fig1" format="default" sectionFormat="of" derivedContent="Figure 1"/>)
+     could be the entity that detects the SFP's failure by monitoring a flow
+     of  periodic test packets. The ingress may be capable of recovering
+     from the failure, e.g., using redundant SFC elements. Thus, it is beneficial for the egress
+     to signal the new defect state to the ingress, which in this example, is the Classifier,
+     hence, the following requirement:
+      </t>
+      <ol type="REQ%d:" group="reqs" start="3" indent="adaptive" spacing="normal" pn="section-3-8">
+<li pn="section-3-8.1" derivedCounter="REQ3:">     SFC OAM <bcp14>MUST</bcp14> support Remote Defect Indication notification by the egress to the ingress.</li>
+        <li pn="section-3-8.2" derivedCounter="REQ4:">     SFC OAM <bcp14>MUST</bcp14> support connectivity verification of the SFP.
+     The definitions of the misconnection defect, entry, and exit criteria are outside the scope of this document.
+     </li>
+      </ol>
+      <t indent="0" pn="section-3-9">
+     Once an SFF detects the defect, the objective of the SFC OAM changes from the detection of a defect
+     to defect characterization and localization.
+      </t>
+      <ol type="REQ%d:" group="reqs" start="5" indent="adaptive" spacing="normal" pn="section-3-10">
+        <li pn="section-3-10.1" derivedCounter="REQ5:">
+     SFC OAM <bcp14>MUST</bcp14> support fault localization of the loss of continuity check within an SFP.
+     </li>
+        <li pn="section-3-10.2" derivedCounter="REQ6:">
+     SFC OAM <bcp14>MUST</bcp14> support an SFP tracing to discover the RSP.
+     </li>
+      </ol>
+      <t indent="0" pn="section-3-11">
+     In the example presented in <xref target="fig1" format="default" sectionFormat="of" derivedContent="Figure 1"/>, two distinct instances of the same SF share the same SFF.  
+     In this example, the SFP can be realized over several RSPs that use different instances of the SF of the same type,
+     for instance, RSP1(SFI11--SFI21--SFI31) and RSP2(SFI12--SFI22--SFI32).
+     Available RSPs can be discovered using the trace function discussed in <xref target="RFC8924" section="4.3" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8924#section-4.3" derivedContent="RFC8924"/>
+     or the procedure defined in <xref target="tracing-sfp" format="default" sectionFormat="of" derivedContent="Section 6.5.4"/>.
+</t>
+      <ol type="REQ%d:" group="reqs" start="7" indent="adaptive" spacing="normal" pn="section-3-12">
+        <li pn="section-3-12.1" derivedCounter="REQ7:">
+     SFC OAM <bcp14>MUST</bcp14> have the ability to discover and exercise all available RSPs in the network.
+     </li>
+      </ol>
+      <t indent="0" pn="section-3-13">
+     The SFC OAM layer model described in <xref target="RFC8924" format="default" sectionFormat="of" derivedContent="RFC8924"/>
+     offers an approach for defect localization within a service function chain.
+     As the first step, the SFP's continuity for SFFs that are part of the same SFP could be verified.
+     After the reachability of SFFs has already been verified, SFFs that serve an SF may be used as a test packet source.
+     In such a case, an SFF can act as a proxy for another element within the service function chain.
+      </t>
+      <ol type="REQ%d:" group="reqs" start="8" indent="adaptive" spacing="normal" pn="section-3-14">
+        <li pn="section-3-14.1" derivedCounter="REQ8:">
+     SFC OAM <bcp14>MUST</bcp14> be able to trigger on-demand FM remotely with
+            responses being directed toward the initiator of the remote request.
+     </li>
+      </ol>
+      <t indent="0" pn="section-3-15">The conformance of the SFC Echo Request/Reply mechanism to these requirements is  reflected below:</t>
+      <ol type="REQ%d:" indent="adaptive" spacing="normal" start="1" pn="section-3-16">
+      <li pn="section-3-16.1" derivedCounter="REQ1:">Fate sharing via the SFC Echo Request/Reply defined in <xref target="sfc-echo-request-reply" format="default" sectionFormat="of" derivedContent="Section 6"/>.</li>
+        <li pn="section-3-16.2" derivedCounter="REQ2:">Continuity monitoring via the SFP tracing defined in <xref target="tracing-sfp" format="default" sectionFormat="of" derivedContent="Section 6.5.4"/>.</li>
+        <li pn="section-3-16.3" derivedCounter="REQ3:">Remote defect detection via the SFC Echo Request/Reply defined in <xref target="sfc-echo-request-reply" format="default" sectionFormat="of" derivedContent="Section 6"/>.</li>
+        <li pn="section-3-16.4" derivedCounter="REQ4:">Connectivity verification via the SFP tracing defined in <xref target="tracing-sfp" format="default" sectionFormat="of" derivedContent="Section 6.5.4"/>.</li>
+        <li pn="section-3-16.5" derivedCounter="REQ5:">Fault localization via verification of the SFP consistency defined in <xref target="sf-consist-seq" format="default" sectionFormat="of" derivedContent="Section 6.6"/>.</li>
+        <li pn="section-3-16.6" derivedCounter="REQ6:">SFP tracing as described in <xref target="tracing-sfp" format="default" sectionFormat="of" derivedContent="Section 6.5.4"/> and verification of SFP consistency as defined in <xref target="sf-consist-seq" format="default" sectionFormat="of" derivedContent="Section 6.6"/>.</li>
+        <li pn="section-3-16.7" derivedCounter="REQ7:">Discover and exercise available RSPs via trace defined in <xref target="tracing-sfp" format="default" sectionFormat="of" derivedContent="Section 6.5.4"/>.</li>
+        <li pn="section-3-16.8" derivedCounter="REQ8:">Can be addressed by adding the proxying capability to the SFC Echo Request/Reply described in this document.
+      <xref target="RFC7555" format="default" sectionFormat="of" derivedContent="RFC7555"/> describes an example of a proxy function for an Echo Request.
+      Specification of a proxy function for SFC Echo Request is outside the scope of this document.</li>
+      </ol>
+    </section>
+    <section anchor="sfc-active-oam-def" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-active-oam-identification-i">Active OAM Identification in the NSH</name>
+      <t indent="0" pn="section-4-1">
+      SFC active OAM combines OAM commands and/or data included in a message that immediately follows the NSH.
+      To identify the SFC active OAM message, the Next Protocol field <bcp14>MUST</bcp14> be set to SFC Active OAM (0x07) 
+      (<xref target="iana-sfc-oam-protocol" format="default" sectionFormat="of" derivedContent="Section 9.1"/>). The O bit in the NSH <bcp14>MUST</bcp14> be set, according to <xref target="RFC9451" format="default" sectionFormat="of" derivedContent="RFC9451"/>.
+       A case when the O bit is clear and the Next Protocol field value is set to SFC Active OAM (0x07) is considered an erroneous combination.
+       An implementation <bcp14>MUST</bcp14> report it. Although the notification mechanism is outside the scope of this specification, note that it <bcp14>MUST</bcp14> include rate-limiting control.
+            The packet <bcp14>SHOULD</bcp14> be dropped. An implementation <bcp14>MAY</bcp14> have control to enable the processing of the OAM payload.
+      </t>
+    </section>
+    <section anchor="sfc-sfc-active-oam-hdr" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-sfc-active-oam-header">SFC Active OAM Header</name>
+      <t indent="0" pn="section-5-1">
+      SFC OAM is required to perform multiple tasks. Several active OAM protocols could be used to address all the requirements.
+     When IP/UDP encapsulation of an SFC OAM control message is used,
+     protocols can be demultiplexed using the destination UDP port number. But an extra IP/UDP header, especially
+      in an IPv6 network, adds overhead compared to the length of an Active OAM Control Packet
+      (e.g., BFD Control packet <xref target="RFC5880" format="default" sectionFormat="of" derivedContent="RFC5880"/>). In some environments, for example, when measuring performance metrics,
+      it is beneficial to transmit OAM packets in a broad range of lengths to emulate application traffic closer.
+      This document defines an Active OAM Header (<xref target="sfc-oam-header-pic" format="default" sectionFormat="of" derivedContent="Figure 2"/>)
+      to demultiplex active OAM protocols on SFC.
+      </t>
+      <figure anchor="sfc-oam-header-pic" align="left" suppress-title="false" pn="figure-2">
+        <name slugifiedName="name-sfc-active-oam-header-2">SFC Active OAM Header</name>
+        <artwork name="" type="" align="left" alt="" pn="section-5-2.1">    
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   V   | Msg Type  | Reserved  |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~              SFC Active OAM Control Packet                    ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+      </figure>
+      <dl newline="false" spacing="normal" indent="3" pn="section-5-3">
+        <dt pn="section-5-3.1">V -</dt>
+        <dd pn="section-5-3.2">a four-bit field that indicates the current version of the SFC Active OAM Header. The current value is 0.
+        The version number is to
+   be incremented whenever a change is made that affects the ability of
+   an implementation to parse or process the SFC Active OAM Header correctly,
+   for example, if syntactic or semantic changes are made to any of the fixed fields.</dd>
+        <dt pn="section-5-3.3">Msg Type -</dt>
+        <dd pn="section-5-3.4">a six-bit field that identifies the OAM protocol, e.g., the Echo Request/Reply.</dd>
+        <dt pn="section-5-3.5">Reserved -</dt>
+        <dd pn="section-5-3.6">a six-bit field. It <bcp14>MUST</bcp14> be zeroed on transmission and ignored on receipt.</dd>
+        <dt pn="section-5-3.7">Length -</dt>
+        <dd pn="section-5-3.8">a two-octet field that is the length of the SFC Active OAM Control Packet in octets.</dd>
+      </dl>
+    </section>
+    <section anchor="sfc-echo-request-reply" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-echo-request-reply-for-sfc">Echo Request/Reply for SFC</name>
+      <t indent="0" pn="section-6-1">
+   The Echo Request/Reply is a well-known active OAM mechanism
+   extensively used to verify a path's continuity, detect inconsistencies between a state in control
+   and the data planes, and localize defects in the data plane. ICMP (<xref target="RFC0792" format="default" sectionFormat="of" derivedContent="RFC0792"/> for IPv4
+   and <xref target="RFC4443" format="default" sectionFormat="of" derivedContent="RFC4443"/> for IPv6 networks) and MPLS <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/> are examples
+   of broadly used active OAM protocols based on the Echo Request/Reply principle.
+   The SFC Echo Request/Reply control message (format is presented in <xref target="sfc-ping-pic" format="default" sectionFormat="of" derivedContent="Figure 3"/>)
+   is an instance of the SFC Active OAM Control Packet that is a part of the SFC Active OAM Header (<xref target="sfc-oam-header-pic" format="default" sectionFormat="of" derivedContent="Figure 2"/>).
+      </t>
+      <figure anchor="sfc-ping-pic" align="left" suppress-title="false" pn="figure-3">
+        <name slugifiedName="name-sfc-echo-request-reply-form">SFC Echo Request/Reply Format</name>
+        <artwork name="" type="" align="left" alt="" pn="section-6-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Echo Request Flags       |          Reserved             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Echo Type   |   Reply Mode  |  Return Code  |Return Subcode |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Sender's Handle                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         Sequence Number                       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~                              TLVs                             ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+          </artwork>
+      </figure>
+      <t indent="0" pn="section-6-3">
+  The interpretation of the fields is as follows:
+      </t>
+      <dl newline="false" spacing="normal" indent="3" pn="section-6-4">
+        <dt pn="section-6-4.1">Echo Request Flags -</dt>
+        <dd pn="section-6-4.2">a two-octet bit vector field. <xref target="iana-echo-ping-global-flags" format="default" sectionFormat="of" derivedContent="Section 9.2.2"/> requests IANA to create 
+        a new registry for flags. This specification defines all flags for future use. Flags <bcp14>MUST</bcp14> be zeroed on transmission and ignored on receipt.</dd>
+        <dt pn="section-6-4.3">Reserved -</dt>
+        <dd pn="section-6-4.4">a two-octet field. It <bcp14>MUST</bcp14> be zeroed on transmission and ignored on receipt.</dd>
+        <dt pn="section-6-4.5">Echo Type -</dt>
+        <dd pn="section-6-4.6">a one-octet field that reflects the packet type. SFC Echo Request/Reply Echo Types,
+        defined in this document, are listed in <xref target="iana-sfc-echo-message-type" format="default" sectionFormat="of" derivedContent="Section 9.2.3"/>.</dd>
+        <dt pn="section-6-4.7">Reply Mode -</dt>
+        <dd pn="section-6-4.8">a one-octet field. It defines the type of the return path requested by the sender of the Echo Request.  </dd>
+        <dt pn="section-6-4.9">Return Code and Return Subcode -</dt>
+        <dd pn="section-6-4.10">one-octet fields each. These can be used
+  to inform the sender about the result of processing its request. 
+  For all Return Code values defined in this document (<xref target="iana-sfc-ping-return-codes" format="default" sectionFormat="of" derivedContent="Section 9.2.5"/>),
+  the value of the Return Subcode field <bcp14>MUST</bcp14> be set to zero.</dd>
+        <dt pn="section-6-4.11">Sender's Handle -</dt>
+        <dd pn="section-6-4.12">a four-octet field. It <bcp14>MUST</bcp14> be filled in by the sender of the Echo Request
+  and returned unchanged by the Echo Reply sender (if a reply is being sent). The sender of the Echo Request <bcp14>SHOULD</bcp14> use 
+ a pseudorandom number generator <xref target="RFC4086" format="default" sectionFormat="of" derivedContent="RFC4086"/> to set the value of the Sender's Handle field.
+ In some use cases, an implementation <bcp14>MAY</bcp14> use the Sender's Handle for proprietary signaling as long as the system
+ that receives the SFC Echo Request doesn't alter the value of the Sender's Handle field but copies it into the SFC Echo Reply.</dd>
+        <dt pn="section-6-4.13">
+  Sequence Number -</dt>
+        <dd pn="section-6-4.14">a four-octet field. It is assigned by the sender and can be, for example, used to detect missed replies. 
+  The initial Sequence Number contains an unsigned integer that wraps around. It <bcp14>MUST</bcp14> be pseudorandomly generated <xref target="RFC4086" format="default" sectionFormat="of" derivedContent="RFC4086"/>
+  and then <bcp14>SHOULD</bcp14> be monotonically increasing in the course of the test session. If a reply is sent, the sender of the SFC Echo Reply message <bcp14>MUST</bcp14> copy the value from the received
+  SFC Echo Request.
+  </dd>
+      </dl>
+      <t indent="0" pn="section-6-5">
+          TLV is a variable-length construct whose length is multiple four-octet words.  Multiple TLVs <bcp14>MAY</bcp14> be placed in an
+   SFC Echo Request/Reply packet. None, one, or more sub-TLVs may be enclosed
+   in the value part of a TLV, subject to the semantics of the (outer) TLV. If no TLVs are included in an SFC Echo Request/Reply,
+   the value of the Length field in the SFC Active OAM Header <bcp14>MUST</bcp14> be 16 octets.
+   <xref target="sfc-tlv-fig" format="default" sectionFormat="of" derivedContent="Figure 4"/> presents the format of an SFC Echo Request/Reply TLV, where the fields are defined as follows:
+</t>
+      <figure anchor="sfc-tlv-fig" align="left" suppress-title="false" pn="figure-4">
+        <name slugifiedName="name-sfc-echo-request-reply-tlv-">SFC Echo Request/Reply TLV Format</name>
+        <artwork name="" type="" align="left" alt="" pn="section-6-6.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Type     |    Reserved   |           Length              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~                            Value                              ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+      </figure>
+      <dl newline="false" spacing="normal" indent="3" pn="section-6-7">
+        <dt pn="section-6-7.1">
+Type -</dt>
+        <dd pn="section-6-7.2">a one-octet field that characterizes the interpretation of the Value field.
+   Type values are allocated according to <xref target="iana-sfc-active-oam-tlv" format="default" sectionFormat="of" derivedContent="Section 9.2.6"/>.
+</dd>
+        <dt pn="section-6-7.3">Reserved -</dt>
+        <dd pn="section-6-7.4">a one-octet field. The field <bcp14>MUST</bcp14> be zeroed on transmission and ignored on receipt.</dd>
+        <dt pn="section-6-7.5">
+Length -</dt>
+        <dd pn="section-6-7.6">a two-octet field equal to the Value field's length in octets as an unsigned integer.
+</dd>
+        <dt pn="section-6-7.7">
+Value -</dt>
+        <dd pn="section-6-7.8">a variable-length field. The value of the Type field determines its interpretation and encoding.
+      </dd>
+      </dl>
+      <section anchor="return-codes-sec" numbered="true" toc="include" removeInRFC="false" pn="section-6.1">
+        <name slugifiedName="name-return-codes">Return Codes</name>
+        <t indent="0" pn="section-6.1-1">
+   The value of the Return Code field <bcp14>MUST</bcp14> be set to zero by the sender of an Echo Request.  The
+   receiver of said Echo Request <bcp14>MUST</bcp14> set it to one of the values
+   in IANA's "SFC Echo Return Codes" registry (<xref target="iana-sfc-ping-return-codes" format="default" sectionFormat="of" derivedContent="Section 9.2.5"/>)
+  in the corresponding Echo Reply that it generates.
+        </t>
+      </section>
+      <section anchor="authen-sec" numbered="true" toc="include" removeInRFC="false" pn="section-6.2">
+        <name slugifiedName="name-authentication-in-echo-requ">Authentication in Echo Request/Reply</name>
+        <t indent="0" pn="section-6.2-1">
+Authentication can be used to protect the integrity of the information in the SFC Echo Request and/or Echo Reply.
+In <xref target="RFC9145" format="default" sectionFormat="of" derivedContent="RFC9145"/>, a variable-length Context Header has been defined to protect the integrity
+of the NSH and the payload. The header can also be used for the optional encryption of sensitive metadata.
+The MAC#1 Context Header is more suitable for the integrity protection of SFC active OAM,
+particularly of the SFC Echo Request and Echo Reply, as defined in this document. On the other hand, using the MAC#2 Context Header allows the detection
+of mishandling of the O bit by a transient SFC element.
+</t>
+      </section>
+      <section anchor="echo-request-send" numbered="true" toc="include" removeInRFC="false" pn="section-6.3">
+        <name slugifiedName="name-sfc-echo-request-transmissi">SFC Echo Request Transmission</name>
+        <t indent="0" pn="section-6.3-1">
+The SFC Echo Request control packet <bcp14>MUST</bcp14> use the appropriate underlay network encapsulation of the monitored
+SFP. The Echo Request <bcp14>MUST</bcp14> set the O bit in the NSH, as defined in <xref target="RFC9451" format="default" sectionFormat="of" derivedContent="RFC9451"/>.
+The NSH <bcp14>MUST</bcp14> be immediately followed by the SFC Active OAM Header defined in <xref target="sfc-active-oam-def" format="default" sectionFormat="of" derivedContent="Section 4"/>.
+The Echo Type field's value in the SFC Active OAM Header <bcp14>MUST</bcp14> be set to the SFC Echo Request/Reply value (1), per <xref target="iana-sfc-oam-msg-type" format="default" sectionFormat="of" derivedContent="Section 9.2.1"/>.
+</t>
+        <t indent="0" pn="section-6.3-2">
+The value of the Reply Mode field <bcp14>MUST</bcp14> be set to one of the following:
+        </t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-6.3-3">
+          <dt pn="section-6.3-3.1">
+Do Not Reply (1) -</dt>
+          <dd pn="section-6.3-3.2">This is the value if one-way monitoring is desired. If the Echo Request is used to measure synthetic packet loss,
+the receiver may report loss measurement results to a remote node. Ways of learning the identity of that node are
+outside the scope of this specification.
+</dd>
+          <dt pn="section-6.3-3.3">
+Reply via an IPv4/IPv6 UDP Packet (2) -</dt>
+          <dd pn="section-6.3-3.4">If an SFC Echo Request is not encapsulated in IP/UDP,
+then this value requests the use of the Source ID TLV <xref target="source-tlv-sec" format="default" sectionFormat="of" derivedContent="Section 6.3.1"/>).
+</dd>
+          <dt pn="section-6.3-3.5">
+Reply via Specified Path (4) -</dt>
+          <dd pn="section-6.3-3.6">This value requests the use of the particular
+return path specified in the included TLV to verify bidirectional continuity and
+may also increase the robustness of the monitoring by selecting a more stable path.
+<xref target="sfc-reply-tlv-sec" format="default" sectionFormat="of" derivedContent="Section 6.5.1"/> provides an example of communicating an explicit path for the Echo Reply.
+</dd>
+          <dt pn="section-6.3-3.7">
+Reply via an IPv4/IPv6 UDP Packet with the data integrity protection (5) -</dt>
+          <dd pn="section-6.3-3.8">This value requests the use of the MAC Context Header <xref target="RFC9145" format="default" sectionFormat="of" derivedContent="RFC9145"/>.
+</dd>
+          <dt pn="section-6.3-3.9">
+Reply via Specified Path with the data integrity protection (7) -</dt>
+          <dd pn="section-6.3-3.10">This value requests the use of the MAC Context Header <xref target="RFC9145" format="default" sectionFormat="of" derivedContent="RFC9145"/>.
+</dd>
+        </dl>
+        <section anchor="source-tlv-sec" numbered="true" toc="include" removeInRFC="false" pn="section-6.3.1">
+          <name slugifiedName="name-source-id-tlv">Source ID TLV</name>
+          <t indent="0" pn="section-6.3.1-1">
+     The responder to the SFC Echo Request encapsulates the SFC Echo Reply message in the IP/UDP packet if the Reply Mode is 
+     "Reply via an IPv4/IPv6 UDP Packet" or "Reply via an IPv4/IPv6 UDP Packet with the data integrity protection".
+     Because the NSH does not identify the ingress node that generated
+     the Echo Request, information that sufficiently identifies the source <bcp14>MUST</bcp14> be included in the message so that
+    the IP destination address and destination UDP port number for IP/UDP encapsulation of the SFC Echo Reply could be derived.
+     The sender of the SFC Echo Request <bcp14>MUST</bcp14> include the Source ID TLV (<xref target="sfc-source-tlv-fig" format="default" sectionFormat="of" derivedContent="Figure 5"/>). 
+          </t>
+          <figure anchor="sfc-source-tlv-fig" align="left" suppress-title="false" pn="figure-5">
+            <name slugifiedName="name-sfc-source-id-tlv">SFC Source ID TLV</name>
+            <artwork name="" type="" align="left" alt="" pn="section-6.3.1-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    Source ID  |   Reserved1   |           Length              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          Port Number          |           Reserved2           |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~                         IP Address                            ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+          </figure>
+          <t indent="0" pn="section-6.3.1-3">
+        The fields are defined as follows:
+          </t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-6.3.1-4">
+            <dt pn="section-6.3.1-4.1">
+        Source ID -</dt>
+            <dd pn="section-6.3.1-4.2">the value <bcp14>MUST</bcp14> be set to 1 (<xref target="iana-sfc-active-oam-tlv" format="default" sectionFormat="of" derivedContent="Section 9.2.6"/>).
+        </dd>
+            <dt pn="section-6.3.1-4.3">Reserved1 -</dt>
+            <dd pn="section-6.3.1-4.4">a one-octet field. The field <bcp14>MUST</bcp14> be zeroed on transmission and ignored on receipt.</dd>
+            <dt pn="section-6.3.1-4.5">
+        Length -</dt>
+            <dd pn="section-6.3.1-4.6">the value equals the length of the data following the Length field counted in octets.
+        The value of the Length field can be 8 or 20. If the value of the field is neither, the Source ID TLV is considered to be malformed.
+        </dd>
+            <dt pn="section-6.3.1-4.7">
+        Port Number -</dt>
+            <dd pn="section-6.3.1-4.8">a two-octet field. It contains the UDP port number of the sender of the SFC OAM control message.
+        The value of the field <bcp14>MUST</bcp14> be used as the destination UDP port number 
+        in the IP/UDP encapsulation of the SFC Echo Reply message.
+        </dd>
+            <dt pn="section-6.3.1-4.9">
+        Reserved2 -</dt>
+            <dd pn="section-6.3.1-4.10">a two-octet field. The field <bcp14>MUST</bcp14> be zeroed on transmit and ignored on receipt.
+      </dd>
+            <dt pn="section-6.3.1-4.11">
+        IP Address -</dt>
+            <dd pn="section-6.3.1-4.12">a field that contains the IP address of the sender of the SFC OAM control message, i.e., IPv4 or IPv6.
+        The value of the field <bcp14>MUST</bcp14> be used as the destination IP address
+        in the IP/UDP encapsulation of the SFC Echo Reply message.
+        </dd>
+          </dl>
+          <t indent="0" pn="section-6.3.1-5">
+        A single Source ID TLV for each address family, i.e., IPv4 and IPv6, <bcp14>MAY</bcp14> be present in an SFC Echo Request message.
+        If the Source ID TLVs for both address families are present in an SFC Echo Request message,
+        the SFF <bcp14>MUST NOT</bcp14> replicate an SFC Echo Reply
+        but choose the destination IP address for the one SFC Echo Reply it sends based on the local policy.
+        The source IP address used in the IP/UDP encapsulation of the SFC Echo Reply is one of the IP addresses associated with the responder.
+       The value of the Port Number field <bcp14>MUST</bcp14> be used as the destination UDP port number
+        in the IP/UDP encapsulation of the SFC Echo Reply message. The responder selects
+        the source UDP port number from the dynamic range of port numbers. 
+        If more than one Source ID TLV per the address family is present, the receiver <bcp14>MUST</bcp14> use the first TLV and ignore the rest.
+        The Echo Reply message, including relevant TLVs, follows the IP/UDP headers immediately.
+          </t>
+        </section>
+      </section>
+      <section anchor="echo-request-recieve" numbered="true" toc="include" removeInRFC="false" pn="section-6.4">
+        <name slugifiedName="name-processing-a-received-sfc-e">Processing a Received SFC Echo Request</name>
+        <t indent="0" pn="section-6.4-1">
+   Punting a received SFC Echo Request to the control plane for validation and processing is triggered by one
+   of the following packet processing exceptions: 
+   NSH TTL expiration, NSH Service Index expiration, or the receiver is the terminal SFF for an SFP.
+</t>
+        <t indent="0" pn="section-6.4-2">
+        An SFF that received the SFC Echo Request <bcp14>MUST</bcp14> validate the packet as follows:
+        </t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-6.4-3">
+		 <li pn="section-6.4-3.1" derivedCounter="1.">
+            <t indent="0" pn="section-6.4-3.1.1">If the SFC Echo Request is integrity protected, the receiving SFF first <bcp14>MUST</bcp14> verify the authentication.</t>
+            <ol type="1.%d." indent="adaptive" spacing="normal" start="1" pn="section-6.4-3.1.2">
+                <li pn="section-6.4-3.1.2.1" derivedCounter="1.1.">Suppose the authentication validation has failed and the Source ID TLV is considered properly formatted. 
+        In that case, the SFF <bcp14>MUST</bcp14> send an SFC Echo Reply with the Return Code
+        set to 3 ("Authentication failed") and the Subcode set to zero to the system identified in the Source ID TLV (see <xref target="echo-reply-send" format="default" sectionFormat="of" derivedContent="Section 6.5"/>),
+        according to a rate-limit control mechanism.</li>
+              <li pn="section-6.4-3.1.2.2" derivedCounter="1.2.">If the authentication is validated successfully, the SFF that has received
+        an SFC Echo Request verifies the rest of the packet's general consistency.</li>
+            </ol>
+          </li>
+          <li pn="section-6.4-3.2" derivedCounter="2.">
+            <t indent="0" pn="section-6.4-3.2.1">Validate the Source ID TLV, as defined in <xref target="source-tlv-sec" format="default" sectionFormat="of" derivedContent="Section 6.3.1"/>.</t>
+            <ol type="2.%d." indent="adaptive" spacing="normal" start="1" pn="section-6.4-3.2.2">
+        <li pn="section-6.4-3.2.2.1" derivedCounter="2.1.">If the Source ID TLV is determined to be malformed, the received SFC Echo Request processing is stopped,
+        the message is dropped, and the event <bcp14>SHOULD</bcp14> be logged, according to a rate-limiting control for logging.</li>
+            </ol>
+          </li>
+          <li pn="section-6.4-3.3" derivedCounter="3.">The Sender's Handle and Sequence Number fields are not examined but are copied in the SFC Echo Reply message.</li>
+          <li pn="section-6.4-3.4" derivedCounter="4.">If the packet is not well formed, i.e., not formed according to this specification,
+        the receiving SFF <bcp14>SHOULD</bcp14> send an SFC Echo Reply with the Return Code
+        set to 1 ("Malformed Echo Request received") and the Subcode set to zero under the control of the rate-limiting mechanism 
+        to the system identified in the Source ID TLV (see <xref target="echo-reply-send" format="default" sectionFormat="of" derivedContent="Section 6.5"/>).</li>
+          <li pn="section-6.4-3.5" derivedCounter="5.">If there are any TLVs that the SFF does not understand, the SFF <bcp14>MUST</bcp14> send
+        an SFC Echo Reply with the Return Code set to 2 ("One or more of the TLVs was not understood") and set the Subcode to zero. Also,
+        the SFF <bcp14>MAY</bcp14> include an Errored TLVs TLV (<xref target="errored-tlv-sec" format="default" sectionFormat="of" derivedContent="Section 6.4.1"/>) that,
+        as sub-TLVs, contains only the misunderstood TLVs.</li>
+          <li pn="section-6.4-3.6" derivedCounter="6.">If the consistency check of the received Echo Request succeeded, i.e., the Echo Request is deemed properly formed,
+        then the SFF at the end of the SFP <bcp14>MUST</bcp14>
+         send an SFC Echo Reply with the Return Code set to 5 ("End of the SFP") and the Subcode set to zero.</li>
+          <li pn="section-6.4-3.7" derivedCounter="7.">If the SFF is not at the end of the SFP and the NSH TTL value is 1, the SFF <bcp14>MUST</bcp14> send
+        an SFC Echo Reply with the Return Code set to 4 ("SFC TTL Exceeded") and the Subcode set to zero.</li>
+          <li pn="section-6.4-3.8" derivedCounter="8.">In all other cases, for the validated Echo Request message, a transit, i.e., not at the end of the SFP,
+        SFF <bcp14>MUST</bcp14> send an SFC Echo Reply with the Return Code set to 0 ("No Error") and the Subcode set to zero.</li>
+        </ol>
+        <section anchor="errored-tlv-sec" numbered="true" toc="include" removeInRFC="false" pn="section-6.4.1">
+          <name slugifiedName="name-errored-tlvs-tlv">Errored TLVs TLV</name>
+          <t indent="0" pn="section-6.4.1-1">
+   If the Return Code for the Echo Reply is determined as 2 ("One or more of the TLVs was not understood"),
+   the Errored TLVs TLV might be included in an Echo Reply. The use of this TLV
+is meant to inform the sender of an Echo Request of TLVs either not
+supported by an implementation or parsed and found to be in error.
+</t>
+          <figure anchor="errored-tlv-fig" align="left" suppress-title="false" pn="figure-6">
+            <name slugifiedName="name-errored-tlvs-tlv-2">Errored TLVs TLV</name>
+            <artwork name="" type="" align="left" alt="" pn="section-6.4.1-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Errored TLVs |    Reserved   |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             Value                             |
+.                                                               .
+.                                                               .
+.                                                               .
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+          </figure>
+          <t indent="0" pn="section-6.4.1-3">
+        The fields are defined as follows:
+          </t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-6.4.1-4">
+            <dt pn="section-6.4.1-4.1">
+Errored TLVs -</dt>
+            <dd pn="section-6.4.1-4.2">the field <bcp14>MUST</bcp14> be set to 2 (<xref target="iana-sfc-active-oam-tlv" format="default" sectionFormat="of" derivedContent="Section 9.2.6"/>).
+   </dd>
+            <dt pn="section-6.4.1-4.3">Reserved -</dt>
+            <dd pn="section-6.4.1-4.4">the field <bcp14>MUST</bcp14> be zeroed on transmission and ignored on receipt.</dd>
+            <dt pn="section-6.4.1-4.5">
+Length -</dt>
+            <dd pn="section-6.4.1-4.6">the value equals to length of the Value field in octets.
+</dd>
+            <dt pn="section-6.4.1-4.7">
+   Value -</dt>
+            <dd pn="section-6.4.1-4.8">the field contains the TLVs, encoded as sub-TLVs (as shown in <xref target="failed-tlv-fig" format="default" sectionFormat="of" derivedContent="Figure 7"/>), 
+that were not understood or failed to be parsed correctly.
+</dd>
+          </dl>
+          <figure anchor="failed-tlv-fig" align="left" suppress-title="false" pn="figure-7">
+            <name slugifiedName="name-not-understood-or-failed-tl">Not Understood or Failed TLV as a Sub-TLV</name>
+            <artwork name="" type="" align="left" alt="" pn="section-6.4.1-5.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Sub-TLV Type |    Reserved   |        Sub-TLV Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~                        Sub-TLV Value                          ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+          </figure>
+          <t indent="0" pn="section-6.4.1-6">
+        The fields are defined as follows:
+          </t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-6.4.1-7">
+            <dt pn="section-6.4.1-7.1">
+Sub-TLV Type -</dt>
+            <dd pn="section-6.4.1-7.2">a copy of the first octet of the TLV that is not understood or failed to be parsed.
+   </dd>
+            <dt pn="section-6.4.1-7.3">Reserved -</dt>
+            <dd pn="section-6.4.1-7.4">
+              <bcp14>MUST</bcp14> be zeroed on transmission and ignored on receipt.</dd>
+            <dt pn="section-6.4.1-7.5">
+Sub-TLV Length -</dt>
+            <dd pn="section-6.4.1-7.6">the value equals the value of the Length field of the errored TLV.
+</dd>
+            <dt pn="section-6.4.1-7.7">
+   Sub-TLV Value -</dt>
+            <dd pn="section-6.4.1-7.8">the field contains data that follows the Length field in the errored TLV.
+</dd>
+          </dl>
+        </section>
+      </section>
+      <section anchor="echo-reply-send" numbered="true" toc="include" removeInRFC="false" pn="section-6.5">
+        <name slugifiedName="name-sfc-echo-reply-transmission">SFC Echo Reply Transmission</name>
+        <t indent="0" pn="section-6.5-1">
+The Reply Mode field directs whether and how the Echo Reply message should be sent.
+The Echo Request sender <bcp14>MAY</bcp14> use TLVs to request that the corresponding Echo Reply
+be transmitted over the specified path. For example,  a TLV 
+that specifies the return path of the Echo Reply if the Return Mode in the Echo Request is set
+to Reply via Specified Path (4) is described in <xref target="sfc-reply-tlv-sec" format="default" sectionFormat="of" derivedContent="Section 6.5.1"/>.
+Value 1 is the "Do Not Reply" mode and
+suppresses the Echo Reply packet transmission. The value 2 of the Reply Mode field requests
+sending the Echo Reply packet out-of-band as an IPv4/IPv6 UDP packet.
+</t>
+        <section anchor="sfc-reply-tlv-sec" numbered="true" toc="include" removeInRFC="false" pn="section-6.5.1">
+          <name slugifiedName="name-reply-service-function-path">Reply Service Function Path TLV</name>
+          <t indent="0" pn="section-6.5.1-1">
+While the SFC Echo Request always traverses the SFP it is directed to by
+using the NSH, the corresponding Echo Reply usually is sent without the NSH.
+In some cases, an operator might choose to direct the responder
+to send and Echo Reply with the NSH over a particular SFP.
+This section defines a new TLV, i.e., Reply 
+	 Service Function Path TLV, for Reply via Specified Path mode of the SFC Echo Reply.
+          </t>
+          <t indent="0" pn="section-6.5.1-2">
+	The Reply Service Function Path TLV can provide an efficient mechanism to test
+	SFCs, such as bidirectional and hybrid SFC, as defined in <xref target="RFC7665" section="2.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7665#section-2.2" derivedContent="RFC7665"/>.
+	For example, it allows an operator to test both directions of the bidirectional or 
+	hybrid SFP with a single SFC Echo Request/Reply operation.
+          </t>
+          <t indent="0" pn="section-6.5.1-3">
+	The Reply Service Function Path TLV carries the information that sufficiently
+	identifies the return SFP that the SFC Echo Reply message is 
+	expected to follow.  The format of Reply Service Function Path TLV is shown 
+	in <xref target="sfc-reply-path-tlv-fig" format="default" sectionFormat="of" derivedContent="Figure 8"/>.
+          </t>
+          <figure anchor="sfc-reply-path-tlv-fig" align="left" suppress-title="false" pn="figure-8">
+            <name slugifiedName="name-sfc-reply-tlv-format">SFC Reply TLV Format</name>
+            <artwork name="" type="" align="left" alt="" pn="section-6.5.1-4.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Reply SFP   |    Reserved   |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    Reply Service Function Path Identifier     | Service Index |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   </artwork>
+          </figure>
+          <t indent="0" pn="section-6.5.1-5">The fields are defined as follows:</t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-6.5.1-6">
+            <dt pn="section-6.5.1-6.1">Reply SFP (3) -</dt>
+            <dd pn="section-6.5.1-6.2">identifies the TLV that contains information about
+         the SFC Reply path.</dd>
+            <dt pn="section-6.5.1-6.3">Reserved -</dt>
+            <dd pn="section-6.5.1-6.4">
+              <bcp14>MUST</bcp14> be zeroed on transmission and ignored on receipt.</dd>
+            <dt pn="section-6.5.1-6.5">Length -</dt>
+            <dd pn="section-6.5.1-6.6">the value <bcp14>MUST</bcp14> be equal to 4.</dd>
+            <dt pn="section-6.5.1-6.7">
+	  Reply Service Function Path Identifier -</dt>
+            <dd pn="section-6.5.1-6.8">a three-octet field that contains the SFP identifier for the path that 
+	  the SFC Echo Reply message is requested to be sent over.
+	  </dd>
+            <dt pn="section-6.5.1-6.9">
+	  Service Index -</dt>
+            <dd pn="section-6.5.1-6.10">a one-octet field. The value is set to the value of the Service Index field in the NSH
+	  of the SFC Echo Reply message.
+	  </dd>
+          </dl>
+        </section>
+        <section anchor="theory-operation-sec" numbered="true" toc="include" removeInRFC="false" pn="section-6.5.2">
+          <name slugifiedName="name-theory-of-operation">Theory of Operation</name>
+          <t indent="0" pn="section-6.5.2-1">
+	<xref target="RFC7110" format="default" sectionFormat="of" derivedContent="RFC7110"/> defines a mechanism to control the return path
+	for the MPLS Label Switched Path (LSP) Echo Reply. In the SFC's case, the return path is an SFP along which the SFC Echo 
+	Reply message <bcp14>MUST</bcp14> be transmitted. Hence, the Reply Service Function Path TLV included 
+	in the SFC Echo Request message <bcp14>MUST</bcp14> sufficiently identify the SFP
+    that the sender of the Echo Request message expects the receiver to use 
+	for the corresponding SFC Echo Reply. 
+          </t>
+          <t indent="0" pn="section-6.5.2-2">
+	When sending an Echo Request, the sender <bcp14>MUST</bcp14> set the value of the Reply Mode field to
+	"Reply via Specified Path", defined in <xref target="echo-request-send" format="default" sectionFormat="of" derivedContent="Section 6.3"/>,
+	and if the specified path is an SFC path, the Request <bcp14>MUST</bcp14> include the Reply Service Function Path TLV. 
+	The Reply Service Function Path TLV consists of the identifier of the reverse SFP and an appropriate Service Index. 
+          </t>
+          <t indent="0" pn="section-6.5.2-3">
+	If the NSH of the received SFC Echo Request includes the MAC Context Header,
+   the packet's authentication <bcp14>MUST</bcp14> be verified before using any data, as defined in <xref target="echo-request-recieve" format="default" sectionFormat="of" derivedContent="Section 6.4"/>.
+</t>
+          <t indent="0" pn="section-6.5.2-4">
+	The destination SFF of the SFP being tested and the SFF at which the NSH TTL expired
+	(as per <xref target="RFC8300" format="default" sectionFormat="of" derivedContent="RFC8300"/>)
+	are referred to as responding SFFs. The processing described
+      below equally applies to both cases.
+          </t>
+          <t indent="0" pn="section-6.5.2-5">
+	If the Echo Request message with the Reply Service Function Path TLV received by the responding
+	SFF has the Reply Mode value of "Reply via Specified Path" but no Reply Service Function Path TLV is present,
+	then the responding SFF <bcp14>MUST</bcp14> send an Echo Reply with the Return Code set to 6 ("Reply Service Function Path TLV is missing").
+	If the responding SFF cannot find the requested SFP, it <bcp14>MUST</bcp14> send an Echo Reply with the Return Code set to 7
+	("Reply SFP was not found") and include the Reply Service Function Path TLV from the Echo Request message.
+          </t>
+          <t indent="0" pn="section-6.5.2-6">
+ Suppose the SFC Echo Request receiver cannot determine
+ whether the specified return path SFP has the route to the initiator.
+ In that case, it <bcp14>SHOULD</bcp14> set the value of the Return Code field to
+ 8 ("Unverifiable Reply Service Function Path").
+ The receiver <bcp14>MAY</bcp14> drop the Echo Request when it cannot
+   determine whether the SFP's return path has the route to the
+  initiator. When sending the Echo Request, the sender
+   <bcp14>SHOULD</bcp14> choose a proper source address according to the specified return
+   path SFP to help the receiver find the viable return path.
+          </t>
+          <section numbered="true" toc="exclude" removeInRFC="false" pn="section-6.5.2.1">
+            <name slugifiedName="name-bidirectional-sfc-case">Bidirectional SFC Case</name>
+            <t indent="0" pn="section-6.5.2.1-1">
+	The ability to specify the return path for an Echo Reply might be used in the case of bidirectional 
+	SFC. The egress SFF of the forward SFP might not be
+	co-located with a classifier of the reverse SFP, and thus, the egress SFF has no
+	information about the reverse path of SFC. Because of that, even for bidirectional SFC, a 
+	reverse SFP needs to be indicated in a Reply Service Function Path TLV in the Echo Request 
+	message.
+            </t>
+          </section>
+        </section>
+        <section anchor="echo-reply-recieve" numbered="true" toc="include" removeInRFC="false" pn="section-6.5.3">
+          <name slugifiedName="name-sfc-echo-reply-reception">SFC Echo Reply Reception</name>
+          <t indent="0" pn="section-6.5.3-1">
+   An SFF <bcp14>SHOULD NOT</bcp14> accept the SFC Echo Reply unless the received message passes the following checks:
+          </t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.5.3-2">
+            <li pn="section-6.5.3-2.1">the received SFC Echo Reply is well formed;</li>
+            <li pn="section-6.5.3-2.2">the matching SFC Echo Request is found, that is, the value of the Sender's Handle 
+   in the Echo Request sent is equal to the value of Sender's Handle in the
+	  Echo Reply received;</li>
+            <li pn="section-6.5.3-2.3">the Sequence Number in the Echo Reply received
+   matches the Sequence Number of one of the outstanding transmitted Echo Requests; and</li>
+            <li pn="section-6.5.3-2.4">all other checks passed.</li>
+          </ul>
+        </section>
+        <section anchor="tracing-sfp" numbered="true" toc="include" removeInRFC="false" pn="section-6.5.4">
+          <name slugifiedName="name-tracing-an-sfp">Tracing an SFP</name>
+          <t indent="0" pn="section-6.5.4-1">
+        The SFC Echo Request/Reply can be used to isolate a defect detected in the SFP and trace an RSP.
+        As with the ICMP Echo Request/Reply <xref target="RFC0792" format="default" sectionFormat="of" derivedContent="RFC0792"/> and the MPLS Echo Request/Reply <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>,
+        this mode is referred to as "traceroute". In the traceroute mode, the sender transmits a sequence of SFC Echo Request
+        messages starting with the NSH TTL value set to 1 and is incremented by 1 in each next Echo Request packet.
+        The sender stops transmitting SFC Echo Request packets when the Return Code in the received Echo Reply equals
+        5 ("End of the SFP").
+          </t>
+          <t indent="0" pn="section-6.5.4-2">
+        Suppose a specialized information element (e.g., IPv6 Flow Label <xref target="RFC6437" format="default" sectionFormat="of" derivedContent="RFC6437"/> or
+   Flow ID <xref target="RFC9263" format="default" sectionFormat="of" derivedContent="RFC9263"/>) is used for distributing
+   the load across Equal Cost Multipath or Link
+   Aggregation Group paths. In that case, such an element <bcp14>SHOULD</bcp14> also be
+   used for the SFC OAM traffic. Doing so is meant to induce the SFC Echo Request to follow the same RSP as the
+   monitored flow. 
+          </t>
+        </section>
+      </section>
+      <section anchor="sf-consist-seq" numbered="true" toc="include" removeInRFC="false" pn="section-6.6">
+        <name slugifiedName="name-the-use-of-the-consistency-">The Use of the Consistency Verification Request Message</name>
+        <t indent="0" pn="section-6.6-1">
+	The consistency of an SFP can be verified by comparing the view of the SFP from the control or management plane with
+	information collected from traversing by an SFC Echo Request/Reply message (<xref target="sfc-ping-pic" format="default" sectionFormat="of" derivedContent="Figure 3"/>).
+	The sender of an SFP Consistency Verification Request (CVReq) message <bcp14>MUST</bcp14> set the value
+	of the SFC Echo Request/Reply Echo Type field to 3 ("SFP Consistency Verification Request").
+	The sender of  an SFP Consistency Verification Reply (CVRep) message <bcp14>MUST</bcp14> set the value
+	of the SFC Echo Request/Reply Echo Type field to 4 ("SFP Consistency Verification Reply").
+	All processing steps of SFC Echo Request and Echo Reply messages described in Sections <xref target="echo-request-send" format="counter" sectionFormat="of" derivedContent="6.3"/> through <xref target="echo-reply-send" format="counter" sectionFormat="of" derivedContent="6.5"/>
+	apply to the processing of CVReq and CVRep, respectively.
+        </t>
+        <t indent="0" pn="section-6.6-2">
+	Every SFF that
+	receives a CVReq message <bcp14>MUST</bcp14> perform the following actions:
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.6-3">
+          <li pn="section-6.6-3.1">
+	Collect information about the SFs traversed by the CVReq packet and send it to the ingress SFF as a CVRep packet over an IP network.
+	</li>
+          <li pn="section-6.6-3.2">Forward the CVReq to the next downstream SFF if the one exists.</li>
+        </ul>
+        <t indent="0" pn="section-6.6-4">As a result, the ingress SFF collects information about all traversed SFFs and SFs, i.e.,
+	information on the actual path the CVReq packet has traveled. That
+	 information can be used to verify the SFC's path consistency. The mechanism for the SFP consistency 
+	verification is outside the scope of this document.</t>
+        <section anchor="sff-record-tlv-sec" numbered="true" toc="include" removeInRFC="false" pn="section-6.6.1">
+          <name slugifiedName="name-sff-information-record-tlv">SFF Information Record TLV</name>
+          <t indent="0" pn="section-6.6.1-1">
+	For the received CVReq, an SFF that supports this specification <bcp14>MUST</bcp14> include in the CVRep message
+	the information about SFs that are available from that SFF instance for the specified SFP. The SFF <bcp14>MUST</bcp14> include the
+	SFF Information Record TLV (<xref target="sff-record-tlv" format="default" sectionFormat="of" derivedContent="Figure 9"/>) in the CVRep message.
+	Every SFF sends back a single CVRep message, including information on all the SFs
+	attached to that SFF on the SFP, as requested in the received CVReq message
+	 using the SF Information Sub-TLV (<xref target="sf-sub-tlv-sec" format="default" sectionFormat="of" derivedContent="Section 6.6.2"/>).
+          </t>
+          <figure anchor="sff-record-tlv" align="left" suppress-title="false" pn="figure-9">
+            <name slugifiedName="name-sff-information-record-tlv-2">SFF Information Record TLV</name>
+            <artwork align="center" name="" type="" alt="" pn="section-6.6.1-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|SFF Record TLV |    Reserved   |            Length             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       Service Path Identifier (SPI)           |   Reserved    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                   SF Information Sub-TLV                      |
+~                                                               ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   </artwork>
+          </figure>
+          <t keepWithPrevious="true" indent="0" pn="section-6.6.1-3"/>
+          <t indent="0" pn="section-6.6.1-4">
+      The SFF Information Record TLV is a variable-length TLV that includes
+      the information of all SFs available from the particular SFF instance for the specified SFP.
+      <xref target="sff-record-tlv" format="default" sectionFormat="of" derivedContent="Figure 9"/> presents the format of
+      an SFF Information Record TLV, where the fields are defined as follows:
+          </t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-6.6.1-5">
+            <dt pn="section-6.6.1-5.1">SFF Record TLV -</dt>
+            <dd pn="section-6.6.1-5.2">the value is (4) (<xref target="iana-sfc-active-oam-tlv" format="default" sectionFormat="of" derivedContent="Section 9.2.6"/>).</dd>
+            <dt pn="section-6.6.1-5.3">Reserved -</dt>
+            <dd pn="section-6.6.1-5.4">
+              <bcp14>MUST</bcp14> be zeroed on transmission and ignored on receipt.</dd>
+            <dt pn="section-6.6.1-5.5">Length -</dt>
+            <dd pn="section-6.6.1-5.6">the value equals the sum of lengths of the Service Path Identifier, reserved, and SF Information Sub-TLV fields in
+      octets.</dd>
+            <dt pn="section-6.6.1-5.7">Service Path Identifier (SPI) -</dt>
+            <dd pn="section-6.6.1-5.8">the identifier of SFP to which all the SFs in this TLV belong. </dd>
+            <dt pn="section-6.6.1-5.9">SF Information Sub-TLV -</dt>
+            <dd pn="section-6.6.1-5.10">the sub-TLV is as defined in <xref target="sf-sub-tlv-sec" format="default" sectionFormat="of" derivedContent="Section 6.6.2"/>.</dd>
+          </dl>
+          <t indent="0" pn="section-6.6.1-6">
+If the NSH of the received SFC Echo Reply includes the MAC Context Header <xref target="RFC9145" format="default" sectionFormat="of" derivedContent="RFC9145"/>,
+   the authentication of the packet <bcp14>MUST</bcp14> be verified before using any data. If the verification fails,
+   the receiver <bcp14>MUST</bcp14> stop processing the SFF Information Record TLV and notify an operator.
+  The notification mechanism <bcp14>SHOULD</bcp14> include control of rate-limited messages.
+  Specification of the notification mechanism is outside the scope of this document.
+</t>
+        </section>
+        <section anchor="sf-sub-tlv-sec" numbered="true" toc="include" removeInRFC="false" pn="section-6.6.2">
+          <name slugifiedName="name-sf-information-sub-tlv">SF Information Sub-TLV</name>
+          <t indent="0" pn="section-6.6.2-1">
+	Every SFF receiving a CVReq packet <bcp14>MUST</bcp14> include the SF characteristic data into the CVRep
+	packet. The format of an SF Information Sub-TLV, included in
+	a CVRep packet, is shown in <xref target="sf-data-sub-tlv" format="default" sectionFormat="of" derivedContent="Figure 10"/>.
+</t>
+          <t indent="0" pn="section-6.6.2-2">After the CVReq message traverses the SFP, all the information about the SFs on the SFP is available 
+from the TLVs included in CVRep messages. </t>
+          <figure anchor="sf-data-sub-tlv" align="left" suppress-title="false" pn="figure-10">
+            <name slugifiedName="name-service-function-informatio">Service Function Information Sub-TLV</name>
+            <artwork align="center" name="" type="" alt="" pn="section-6.6.2-3.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  SF Sub-TLV   |    Reserved   |          Length               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Service Index  |          SF Type              |   SF ID Type  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          SF Identifier                        |
+~                                                               ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   </artwork>
+          </figure>
+          <t keepWithPrevious="true" indent="0" pn="section-6.6.2-4"/>
+          <dl newline="false" spacing="normal" indent="3" pn="section-6.6.2-5">
+            <dt pn="section-6.6.2-5.1">SF Sub-TLV -</dt>
+            <dd pn="section-6.6.2-5.2">one-octet field. The value is (5) (<xref target="iana-sfc-active-oam-tlv" format="default" sectionFormat="of" derivedContent="Section 9.2.6"/>).</dd>
+            <dt pn="section-6.6.2-5.3">Reserved -</dt>
+            <dd pn="section-6.6.2-5.4">one-octet field. The field <bcp14>MUST</bcp14> be zeroed on transmission and ignored on receipt.</dd>
+            <dt pn="section-6.6.2-5.5">Length -</dt>
+            <dd pn="section-6.6.2-5.6">two-octet field. The value of this field is the length of the data following the Length field counted in octets.</dd>
+            <dt pn="section-6.6.2-5.7">Service Index -</dt>
+            <dd pn="section-6.6.2-5.8">indicates the SF's position on the SFP.</dd>
+            <dt pn="section-6.6.2-5.9">SF Type -</dt>
+            <dd pn="section-6.6.2-5.10">two-octet field. It is defined in <xref target="RFC9015" format="default" sectionFormat="of" derivedContent="RFC9015"/>
+	and indicates the type of SF, e.g., firewall, Deep Packet Inspection, WAN optimization controller, etc.</dd>
+            <dt pn="section-6.6.2-5.11">SF ID Type -</dt>
+            <dd pn="section-6.6.2-5.12">one-octet field with values defined as in <xref target="coam-sf-id-type-sec" format="default" sectionFormat="of" derivedContent="Section 9.2.7"/>.</dd>
+            <dt pn="section-6.6.2-5.13">SF Identifier -</dt>
+            <dd pn="section-6.6.2-5.14">an identifier of the SF. The length of the SF Identifier depends on the type of the SF ID Type.
+	For example, if the SF Identifier is its IPv4 address, the SF Identifier should be 32 bits. </dd>
+          </dl>
+        </section>
+        <section anchor="information-sub-tlv" numbered="true" toc="include" removeInRFC="false" pn="section-6.6.3">
+          <name slugifiedName="name-sf-information-sub-tlv-cons">SF Information Sub-TLV Construction</name>
+          <t indent="0" pn="section-6.6.3-1">Each SFF in the SFP <bcp14>MUST</bcp14> send one and only one CVRep corresponding to the CVReq.
+	If only one SF is attached to the SFF in the SFP, only one SF Information Sub-TLV is included in the CVRep. 
+	If several SFs are attached to the SFF in the SFP, the SF Information Sub-TLV <bcp14>MUST</bcp14> be constructed as described below in either Section <xref target="multi-hops" format="counter" sectionFormat="of" derivedContent="6.6.3.1"/> 
+	or <xref target="load-balance" format="counter" sectionFormat="of" derivedContent="6.6.3.2"/>. </t>
+          <section anchor="multi-hops" numbered="true" toc="exclude" removeInRFC="false" pn="section-6.6.3.1">
+            <name slugifiedName="name-multiple-sfs-as-hops-of-an-">Multiple SFs as Hops of an SFP</name>
+            <t indent="0" pn="section-6.6.3.1-1">
+          Multiple SFs attached to the same SFF can be the hops of the SFP.
+          The service indexes of these SFs on that SFP will be different. Service 
+	Function Types of these SFs could be different or be the same. Information about all SFs <bcp14>MAY</bcp14> be included in the CVRep message. 
+	Information about each SF <bcp14>MUST</bcp14> be listed as separate SF Information Sub-TLVs in the CVRep message.
+	The same SF can even appear more than once in an SFP with a different service index.
+            </t>
+            <t indent="0" pn="section-6.6.3.1-2">
+          An example of the SFP consistency verification procedure for this case is shown in <xref target="coam-reply-fig" format="default" sectionFormat="of" derivedContent="Figure 11"/>.
+          The Service Function Path (SPI=x)
+	is SF1-&gt;SF2-&gt;SF4-&gt;SF3. SF1, SF2, and SF3 are attached to SFF1, and SF4 is attached to SFF2.
+	The CVReq message is sent to the SFFs in the sequence of the
+  SFP(SFF1-&gt;SFF2-&gt;SFF1). Every SFF(SFF1, SFF2) replies with the information of SFs belonging 
+	to the SFP. The SF Information Sub-TLV in <xref target="sf-data-sub-tlv" format="default" sectionFormat="of" derivedContent="Figure 10"/> 
+	contains information for each SF (SF1, SF2, SF3, and SF4).
+            </t>
+            <figure anchor="coam-reply-fig" align="left" suppress-title="false" pn="figure-11">
+              <name slugifiedName="name-example-1-for-cvrep-with-mu">Example 1 for CVRep with Multiple SFs</name>
+              <artwork align="center" name="" type="" alt="" pn="section-6.6.3.1-3.1">
+                SF1         SF2           SF4                SF3 
+                +------+------+            |                  |
+   CVReq  ......&gt;  SFF1       ......&gt;  SFF2       ......&gt; SFF1
+   (SPI=x)             .                   .                  .
+           &lt;............         &lt;..........       &lt;...........
+             CVRep1(SF1,SF2)    CVRep2(SF4)    CVRep3(SF3)	   
+   </artwork>
+            </figure>
+            <t keepWithPrevious="true" indent="0" pn="section-6.6.3.1-4"/>
+          </section>
+          <section anchor="load-balance" numbered="true" toc="exclude" removeInRFC="false" pn="section-6.6.3.2">
+            <name slugifiedName="name-multiple-sfs-for-load-balan">Multiple SFs for Load Balance</name>
+            <t indent="0" pn="section-6.6.3.2-1">
+	Multiple SFs may be attached to the same SFF to spread the load; in other words, that means that the particular traffic flow will traverse only one of these SFs. 
+	These SFs have the same Service Function Type and Service Index.
+	      For this case, the SF ID Type, which must be the same for all of
+      these SFs, appears once, but all the respective SF Identifiers will
+      be listed sequentially in the SF Identifier field of the Service Function
+      Information Sub-TLV
+      (see <xref target="sf-data-sub-tlv" format="default" sectionFormat="of" derivedContent="Figure 10"/>). The number of these SFs can be calculated from
+      the SF ID Type and the value of the Length field of the sub-TLV.
+            </t>
+            <t indent="0" pn="section-6.6.3.2-2">
+	An example of the SFP consistency verification procedure for this case is shown in <xref target="coam-reply-fig2" format="default" sectionFormat="of" derivedContent="Figure 12"/>. The Service Function Path (SPI=x)
+	is SF1a/SF1b-&gt;SF2a/SF2b. The Service Functions SF1a and SF1b are attached to SFF1, which balances the load among them.
+	The Service Functions SF2a and SF2b are attached to SFF2, which in turn, balances its load between them. 
+	The CVReq message is sent to the SFFs in the sequence of the SFP (i.e., SFF1-&gt;SFF2). 
+	Every SFF (SFF1, SFF2) replies with the information of SFs belonging to the SFP. The SF Information Sub-TLV in <xref target="sf-data-sub-tlv" format="default" sectionFormat="of" derivedContent="Figure 10"/>
+    contains information for all SFs at that hop.
+            </t>
+            <figure anchor="coam-reply-fig2" align="left" suppress-title="false" pn="figure-12">
+              <name slugifiedName="name-example-2-for-cvrep-with-mu">Example 2 for CVRep with Multiple SFs</name>
+              <artwork align="center" name="" type="" alt="" pn="section-6.6.3.2-3.1">
+                      /SF1a                   /SF2a
+                      \SF1b                   \SF2b                                
+                        |                       |
+                       SFF1                    SFF2   
+   CVReq   .........&gt;  .           .........&gt;  . 
+   (SPI=x)                .                       .                    
+              &lt;............        &lt;...............
+       CVRep1(SF1a,SF1b)       CVRep2(SF2a,SF2b)	 
+       </artwork>
+            </figure>
+            <t keepWithPrevious="true" indent="0" pn="section-6.6.3.2-4"/>
+          </section>
+        </section>
+      </section>
+    </section>
+    <section anchor="sec_security" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-7-1">
+      As an element of SFC OAM and, specifically, based on the NSH, the Echo Request/Reply mechanism described in this document inherits
+      security considerations discussed in <xref target="RFC7665" format="default" sectionFormat="of" derivedContent="RFC7665"/> and <xref target="RFC8300" format="default" sectionFormat="of" derivedContent="RFC8300"/>.
+      </t>
+      <t indent="0" pn="section-7-2">
+When the integrity protection for SFC active OAM, particularly the SFC Echo Request/Reply, is required,
+using one of the Context Headers defined in <xref target="RFC9145" format="default" sectionFormat="of" derivedContent="RFC9145"/> is <bcp14>RECOMMENDED</bcp14>.
+The MAC#1 Context Header could be more suitable for SFC active OAM because it does not require recalculation of the
+MAC when the value of the NSH Base Header's TTL field is changed.
+Integrity protection for SFC active OAM can also be achieved
+using mechanisms in the underlay data plane.
+For example, if the underlay is an IPv6 network, i.e., an IP Authentication Header <xref target="RFC4302" format="default" sectionFormat="of" derivedContent="RFC4302"/>
+or IP Encapsulating Security Payload Header <xref target="RFC4303" format="default" sectionFormat="of" derivedContent="RFC4303"/>, it can be used to provide integrity protection.
+Confidentiality for the SFC Echo Request/Reply exchanges can be achieved using the IP Encapsulating Security
+Payload Header <xref target="RFC4303" format="default" sectionFormat="of" derivedContent="RFC4303"/>.
+Also, the security needs for the SFC Echo Request/Reply are similar to those of ICMP ping <xref target="RFC0792" format="default" sectionFormat="of" derivedContent="RFC0792"/> <xref target="RFC4443" format="default" sectionFormat="of" derivedContent="RFC4443"/>
+and MPLS LSP ping <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>. 
+      </t>
+      <t indent="0" pn="section-7-3">
+   There are at least three approaches to attacking a node in the overlay network using the
+   mechanisms defined in the document.  One is a Denial-of-Service attack, i.e.,
+   sending SFC Echo Requests to overload an element of SFC.
+  The second may use spoofing, hijacking, replying, or otherwise
+   tampering with SFC Echo Requests and/or Replies to 
+   misrepresent and alter the operator's view of the state of the SFC. 
+   The third is an unauthorized source using an SFC 
+   Echo Request/Reply to obtain information about the 
+   SFC and/or its elements, e.g., SFFs and/or SFs.
+      </t>
+      <t indent="0" pn="section-7-4">
+    It is <bcp14>RECOMMENDED</bcp14> that
+   implementations throttle the number of SFC Echo Request/Reply messages going to the control plane
+   to mitigate potential Denial-of-Service attacks.
+      </t>
+      <t indent="0" pn="section-7-5">
+   Reply and spoofing attacks involving faking or
+   replying to SFC Echo Reply messages would have to
+   match the Sender's Handle and Sequence Number of 
+   an outstanding SFC Echo Request message, which is highly unlikely for off-path attackers.  
+   A non-matching reply would be discarded. 
+      </t>
+      <t indent="0" pn="section-7-6">
+   To protect against unauthorized sources trying to obtain information about the overlay and/or underlay,
+   an implementation <bcp14>MUST</bcp14> have means to check that the source of the Echo Request is part of the SFP.
+      </t>
+      <t indent="0" pn="section-7-7">
+Also, since the SF Information Sub-TLV discloses information about the SFP, the spoofed CVReq packet
+may be used to obtain network information. Thus, implementations <bcp14>MUST</bcp14>
+  provide a means of checking the source addresses of CVReq messages, as
+   specified in <xref target="source-tlv-sec" format="default" sectionFormat="of" derivedContent="Section 6.3.1"/> ("Source ID TLV"),
+   against an access list before accepting the message.
+      </t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-8">
+      <name slugifiedName="name-operational-considerations">Operational Considerations</name>
+      <t indent="0" pn="section-8-1">
+This section provides information about operational aspects of the SFC NSH Echo Request/Reply
+according to recommendations in <xref target="RFC5706" format="default" sectionFormat="of" derivedContent="RFC5706"/>.
+      </t>
+      <t indent="0" pn="section-8-2">
+      The SFC NSH Echo Request/Reply provides essential OAM functions for network operators. The SFC NSH Echo Request/Reply
+      is intended to detect and localize defects in SFC.  For example, by comparing results of the trace function in operational and failed states,
+      an operator can locate the defect, e.g., the connection between SFF1 and SFF2 (<xref target="fig1" format="default" sectionFormat="of" derivedContent="Figure 1"/>).
+      After narrowing down a failure to an overlay link, a more specific failure location
+      can be determined using OAM tools in the underlay network. 
+      The mechanism defined in this document can be used on demand or
+      for periodic validation of an SFP or RSP. Because the protocol makes use of the control plane, which may
+      have limited capacity, an operator must be able to rate limit
+      Echo Request and Echo Reply messages. A reasonably
+      selected default interval between Echo Request control packets
+      can provide additional benefit for an operator. If the protocol is incrementally
+      deployed in the NSH domain, SFC elements, e.g., Classifier or SFF,
+      that don't support SFC active OAM will discard the protocol's packets.
+If SFC uses a reclassification along the SFP or when the principle of load balancing is unknown,
+the fate sharing between data and active OAM packets cannot be guaranteed.
+As a result, the OAM outcome might not reflect the state of the entire SFC properly but only its segment.
+In general, it is an operational task to consider the cases where active OAM may not share fate with the monitored SFP.
+      The SFC NSH Echo Request/Reply also can be used in combination with the existing
+      mechanisms discussed in <xref target="RFC8924" format="default" sectionFormat="of" derivedContent="RFC8924"/>, filling the gaps and extending their functionalities.
+      </t>
+      <t indent="0" pn="section-8-3">
+      Management of the SFC NSH Echo Request/Reply protocol can be provided by a proprietary tool, e.g., command line interface,
+      or based on a data model that is structured or standardized.
+      </t>
+    </section>
+    <section anchor="iana-considerations" numbered="true" toc="include" removeInRFC="false" pn="section-9">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-9-1">
+      The terms used in the IANA considerations below are intended to be consistent with <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>.
+      </t>
+      <section anchor="iana-sfc-oam-protocol" numbered="true" toc="include" removeInRFC="false" pn="section-9.1">
+        <name slugifiedName="name-sfc-active-oam-protocol">SFC Active OAM Protocol</name>
+        <t indent="0" pn="section-9.1-1">
+IANA has assigned the following new type in the "NSH Next Protocol" registry within the "Network Service Header (NSH) Parameters" group of registries:
+        </t>
+        <table anchor="iana-sfc-oam-tbl" align="center" pn="table-1">
+          <name slugifiedName="name-sfc-active-oam-protocol-2">SFC Active OAM Protocol</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Next Protocol</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">0x07</td>
+              <td align="left" colspan="1" rowspan="1">SFC Active OAM</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="iana-sfc-active-oam-parameters" numbered="true" toc="include" removeInRFC="false" pn="section-9.2">
+        <name slugifiedName="name-sfc-active-oam">SFC Active OAM</name>
+        <t indent="0" pn="section-9.2-1">
+IANA has created the "Service Function Chaining (SFC) Active Operations, Administration, and Maintenance (OAM)" group of registries, which contains the registries described in the following subsections.
+        </t>
+        <section anchor="iana-sfc-oam-msg-type" numbered="true" toc="include" removeInRFC="false" pn="section-9.2.1">
+          <name slugifiedName="name-sfc-active-oam-message-type">SFC Active OAM Message Types</name>
+          <t indent="0" pn="section-9.2.1-1">
+    IANA has created the "SFC Active OAM Message Types" registry as follows:
+          </t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.1-2">
+            <dt pn="section-9.2.1-2.1">Registry Name:</dt>
+            <dd pn="section-9.2.1-2.2">SFC Active OAM Message Types</dd>
+          </dl>
+          <dl newline="true" spacing="normal" indent="3" pn="section-9.2.1-3">
+            <dt pn="section-9.2.1-3.1">Assignment Policy:</dt>
+            <dd pn="section-9.2.1-3.2">
+              <dl newline="false" spacing="compact" indent="3" pn="section-9.2.1-3.2.1">
+                <dt pn="section-9.2.1-3.2.1.1">0 - 31</dt>
+                <dd pn="section-9.2.1-3.2.1.2">IETF Review</dd>
+                <dt pn="section-9.2.1-3.2.1.3">32 - 62</dt>
+                <dd pn="section-9.2.1-3.2.1.4">First Come First Served</dd>
+              </dl>
+            </dd>
+          </dl>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.1-4">
+            <dt pn="section-9.2.1-4.1">Reference:</dt>
+            <dd pn="section-9.2.1-4.2">RFC 9516</dd>
+          </dl>
+          <table anchor="iana-sfc-header-type-tbl" align="center" pn="table-2">
+            <name slugifiedName="name-sfc-active-oam-message-types">SFC Active OAM Message Types</name>
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Value</th>
+                <th align="left" colspan="1" rowspan="1">Description</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">0</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">1</td>
+                <td align="left" colspan="1" rowspan="1">SFC Echo Request/Reply</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">2 - 62</td>
+                <td align="left" colspan="1" rowspan="1">Unassigned</td>
+                <td align="left" colspan="1" rowspan="1"/>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">63</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section anchor="iana-echo-ping-global-flags" numbered="true" toc="include" removeInRFC="false" pn="section-9.2.2">
+          <name slugifiedName="name-sfc-echo-request-flags">SFC Echo Request Flags</name>
+          <t indent="0" pn="section-9.2.2-1">
+    IANA has created the "SFC Echo Request Flags" registry to track the assignment of the 16 flags in the SFC Echo Request Flags
+   field of the SFC Echo Request message. The flags are
+   numbered from 0 (the most significant bit is transmitted first) to 15.  
+</t>
+          <t indent="0" pn="section-9.2.2-2">IANA has created the "SFC Echo Request Flags" registry as follows:</t>
+          <dl indent="3" newline="false" spacing="normal" pn="section-9.2.2-3">
+            <dt pn="section-9.2.2-3.1">Registry Name:</dt>
+            <dd pn="section-9.2.2-3.2">SFC Echo Request Flags</dd>
+          </dl>
+          <dl newline="true" indent="3" spacing="normal" pn="section-9.2.2-4">
+            <dt pn="section-9.2.2-4.1">Assignment Policy:</dt>
+            <dd pn="section-9.2.2-4.2">
+              <dl spacing="compact" indent="3" newline="false" pn="section-9.2.2-4.2.1">
+                <dt pn="section-9.2.2-4.2.1.1">0 - 15</dt>
+                <dd pn="section-9.2.2-4.2.1.2">Standards Action</dd>
+              </dl>
+            </dd>
+            <dt pn="section-9.2.2-4.3">Reference:</dt>
+            <dd pn="section-9.2.2-4.4">RFC 9516</dd>
+          </dl>
+          <table anchor="iana-sfc-global-flags-tbl" align="center" pn="table-3">
+            <name slugifiedName="name-sfc-echo-request-flags-2">SFC Echo Request Flags</name>
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Bit Number</th>
+                <th align="left" colspan="1" rowspan="1">Description</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">0 - 15</td>
+                <td align="left" colspan="1" rowspan="1">Unassigned</td>
+                <td align="left" colspan="1" rowspan="1"/>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section anchor="iana-sfc-echo-message-type" numbered="true" toc="include" removeInRFC="false" pn="section-9.2.3">
+          <name slugifiedName="name-sfc-echo-types">SFC Echo Types</name>
+          <t indent="0" pn="section-9.2.3-1">
+    IANA has created the "SFC Echo Types" registry as follows: 
+          </t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.3-2">
+            <dt pn="section-9.2.3-2.1">Registry Name:</dt>
+            <dd pn="section-9.2.3-2.2">SFC Echo Types</dd>
+          </dl>
+          <dl newline="true" spacing="normal" indent="3" pn="section-9.2.3-3">
+            <dt pn="section-9.2.3-3.1">Assignment Policy:</dt>
+            <dd pn="section-9.2.3-3.2">
+              <dl newline="false" spacing="compact" indent="3" pn="section-9.2.3-3.2.1">
+                <dt pn="section-9.2.3-3.2.1.1">0 - 175</dt>
+                <dd pn="section-9.2.3-3.2.1.2">IETF Review</dd>
+                <dt pn="section-9.2.3-3.2.1.3">176 - 239</dt>
+                <dd pn="section-9.2.3-3.2.1.4">First Come First Served</dd>
+                <dt pn="section-9.2.3-3.2.1.5">240 - 251</dt>
+                <dd pn="section-9.2.3-3.2.1.6">Experimental Use</dd>
+                <dt pn="section-9.2.3-3.2.1.7">252 - 254</dt>
+                <dd pn="section-9.2.3-3.2.1.8">Private Use</dd>
+              </dl>
+            </dd>
+          </dl>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.3-4">
+            <dt pn="section-9.2.3-4.1">Reference:</dt>
+            <dd pn="section-9.2.3-4.2">RFC 9516</dd>
+          </dl>
+          <table anchor="iana-sfc-msg-type-tbl" align="center" pn="table-4">
+            <name slugifiedName="name-sfc-echo-types-2">SFC Echo Types</name>
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Value</th>
+                <th align="left" colspan="1" rowspan="1">Description</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">0</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">1</td>
+                <td align="left" colspan="1" rowspan="1">SFC Echo Request</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">2</td>
+                <td align="left" colspan="1" rowspan="1">SFC Echo Reply</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">3</td>
+                <td align="left" colspan="1" rowspan="1">SFP Consistency Verification Request</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">4</td>
+                <td align="left" colspan="1" rowspan="1">SFP Consistency Verification Reply</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">5 - 239</td>
+                <td align="left" colspan="1" rowspan="1">Unassigned</td>
+                <td align="left" colspan="1" rowspan="1"/>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">240 - 251</td>
+                <td align="left" colspan="1" rowspan="1">Reserved for Experimental Use</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">252 - 254</td>
+                <td align="left" colspan="1" rowspan="1">Reserved for Private Use</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">255</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section anchor="iana-sfc-ping-reply-mode" numbered="true" toc="include" removeInRFC="false" pn="section-9.2.4">
+          <name slugifiedName="name-sfc-echo-reply-modes">SFC Echo Reply Modes</name>
+          <t indent="0" pn="section-9.2.4-1">
+    IANA has created the "SFC Echo Reply Modes" registry as follows: 
+          </t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.4-2">
+            <dt pn="section-9.2.4-2.1">Registry Name:</dt>
+            <dd pn="section-9.2.4-2.2">SFC Echo Reply Modes</dd>
+          </dl>
+          <dl newline="true" spacing="normal" indent="3" pn="section-9.2.4-3">
+            <dt pn="section-9.2.4-3.1">Assignment Policy:</dt>
+            <dd pn="section-9.2.4-3.2">
+              <dl newline="false" spacing="compact" indent="3" pn="section-9.2.4-3.2.1">
+                <dt pn="section-9.2.4-3.2.1.1">0 - 175</dt>
+                <dd pn="section-9.2.4-3.2.1.2">IETF Review</dd>
+                <dt pn="section-9.2.4-3.2.1.3">176 - 239</dt>
+                <dd pn="section-9.2.4-3.2.1.4">First Come First Served</dd>
+                <dt pn="section-9.2.4-3.2.1.5">240 - 251</dt>
+                <dd pn="section-9.2.4-3.2.1.6">Experimental Use</dd>
+                <dt pn="section-9.2.4-3.2.1.7">252 - 254</dt>
+                <dd pn="section-9.2.4-3.2.1.8">Private Use</dd>
+              </dl>
+            </dd>
+          </dl>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.4-4">
+            <dt pn="section-9.2.4-4.1">Reference:</dt>
+            <dd pn="section-9.2.4-4.2">RFC 9516</dd>
+          </dl>
+          <table anchor="iana-sfc-reply-modes-tbl" align="center" pn="table-5">
+            <name slugifiedName="name-sfc-echo-reply-modes-2">SFC Echo Reply Modes</name>
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Value</th>
+                <th align="left" colspan="1" rowspan="1">Description</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">0</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">1</td>
+                <td align="left" colspan="1" rowspan="1">Do Not Reply</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">2</td>
+                <td align="left" colspan="1" rowspan="1">Reply via an IPv4/IPv6 UDP Packet</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">3</td>
+                <td align="left" colspan="1" rowspan="1">Unassigned</td>
+                <td align="left" colspan="1" rowspan="1"/>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">4</td>
+                <td align="left" colspan="1" rowspan="1">Reply via Specified Path</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">5</td>
+                <td align="left" colspan="1" rowspan="1">Reply via an IPv4/IPv6 UDP Packet with the data integrity protection</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">6</td>
+                <td align="left" colspan="1" rowspan="1">Unassigned</td>
+                <td align="left" colspan="1" rowspan="1"/>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">7</td>
+                <td align="left" colspan="1" rowspan="1">Reply via Specified Path with the data integrity protection</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">8 - 239</td>
+                <td align="left" colspan="1" rowspan="1">Unassigned</td>
+                <td align="left" colspan="1" rowspan="1"/>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">240 - 251</td>
+                <td align="left" colspan="1" rowspan="1">Reserved for Experimental Use</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">252 - 254</td>
+                <td align="left" colspan="1" rowspan="1">Reserved for Private Use</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">255</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section anchor="iana-sfc-ping-return-codes" numbered="true" toc="include" removeInRFC="false" pn="section-9.2.5">
+          <name slugifiedName="name-sfc-echo-return-codes">SFC Echo Return Codes</name>
+          <t indent="0" pn="section-9.2.5-1">
+    IANA has created the "SFC Echo Return Codes" registry as follows:
+          </t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.5-2">
+            <dt pn="section-9.2.5-2.1">Registry Name:</dt>
+            <dd pn="section-9.2.5-2.2">SFC Echo Return Codes</dd>
+          </dl>
+          <dl newline="true" spacing="normal" indent="3" pn="section-9.2.5-3">
+            <dt pn="section-9.2.5-3.1">Assignment Policy:</dt>
+            <dd pn="section-9.2.5-3.2">
+              <dl newline="false" spacing="compact" indent="3" pn="section-9.2.5-3.2.1">
+                <dt pn="section-9.2.5-3.2.1.1">0 - 191</dt>
+                <dd pn="section-9.2.5-3.2.1.2">IETF Review</dd>
+                <dt pn="section-9.2.5-3.2.1.3">192 - 251</dt>
+                <dd pn="section-9.2.5-3.2.1.4">First Come First Served</dd>
+                <dt pn="section-9.2.5-3.2.1.5">252 - 254</dt>
+                <dd pn="section-9.2.5-3.2.1.6">Private Use</dd>
+              </dl>
+            </dd>
+          </dl>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.5-4">
+            <dt pn="section-9.2.5-4.1">Reference:</dt>
+            <dd pn="section-9.2.5-4.2">RFC 9516</dd>
+          </dl>
+          <table anchor="iana-sfc-ping-return-codes-tbl" align="center" pn="table-6">
+            <name slugifiedName="name-sfc-echo-return-codes-2">SFC Echo Return Codes</name>
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Value</th>
+                <th align="left" colspan="1" rowspan="1">Description</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">0</td>
+                <td align="left" colspan="1" rowspan="1">No Error</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">1</td>
+                <td align="left" colspan="1" rowspan="1">Malformed Echo Request received</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">2</td>
+                <td align="left" colspan="1" rowspan="1">One or more of the TLVs was not understood</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">3</td>
+                <td align="left" colspan="1" rowspan="1">Authentication failed</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">4</td>
+                <td align="left" colspan="1" rowspan="1">SFC TTL Exceeded</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">5</td>
+                <td align="left" colspan="1" rowspan="1">End of the SFP</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">6</td>
+                <td align="left" colspan="1" rowspan="1">Reply Service Function Path TLV is missing</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">7</td>
+                <td align="left" colspan="1" rowspan="1">Reply SFP was not found</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">8</td>
+                <td align="left" colspan="1" rowspan="1">Unverifiable Reply Service Function Path</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">9 - 251</td>
+                <td align="left" colspan="1" rowspan="1">Unassigned</td>
+                <td align="left" colspan="1" rowspan="1"/>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">252 - 254</td>
+                <td align="left" colspan="1" rowspan="1">Reserved for Private Use</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">255</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section anchor="iana-sfc-active-oam-tlv" numbered="true" toc="include" removeInRFC="false" pn="section-9.2.6">
+          <name slugifiedName="name-sfc-active-oam-tlv-types">SFC Active OAM TLV Types</name>
+          <t indent="0" pn="section-9.2.6-1">
+    IANA has created the "SFC Active OAM TLV Types" registry as follows:
+          </t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.6-2">
+            <dt pn="section-9.2.6-2.1">Registry Name:</dt>
+            <dd pn="section-9.2.6-2.2">SFC Active OAM TLV Types</dd>
+          </dl>
+          <dl newline="true" spacing="normal" indent="3" pn="section-9.2.6-3">
+            <dt pn="section-9.2.6-3.1">Assignment Policy:</dt>
+            <dd pn="section-9.2.6-3.2">
+              <dl newline="false" spacing="compact" indent="3" pn="section-9.2.6-3.2.1">
+                <dt pn="section-9.2.6-3.2.1.1">0 - 175</dt>
+                <dd pn="section-9.2.6-3.2.1.2">IETF Review</dd>
+                <dt pn="section-9.2.6-3.2.1.3">176 - 239</dt>
+                <dd pn="section-9.2.6-3.2.1.4">First Come First Served</dd>
+                <dt pn="section-9.2.6-3.2.1.5">240 - 251</dt>
+                <dd pn="section-9.2.6-3.2.1.6">Experimental Use</dd>
+                <dt pn="section-9.2.6-3.2.1.7">252 - 254</dt>
+                <dd pn="section-9.2.6-3.2.1.8">Private Use</dd>
+              </dl>
+            </dd>
+          </dl>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.6-4">
+            <dt pn="section-9.2.6-4.1">Reference:</dt>
+            <dd pn="section-9.2.6-4.2">RFC 9516</dd>
+          </dl>
+          <table anchor="iana-sfc-active-oam-type-tbl" align="center" pn="table-7">
+            <name slugifiedName="name-sfc-active-oam-tlv-types-2">SFC Active OAM TLV Types</name>
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Value</th>
+                <th align="left" colspan="1" rowspan="1">Description</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">0</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">1</td>
+                <td align="left" colspan="1" rowspan="1">Source ID TLV</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">2</td>
+                <td align="left" colspan="1" rowspan="1">Errored TLVs</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">3</td>
+                <td align="left" colspan="1" rowspan="1">Reply Service Function Path Type</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">4</td>
+                <td align="left" colspan="1" rowspan="1">SFF Information Record Type</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">5</td>
+                <td align="left" colspan="1" rowspan="1">SF Information</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">6 - 239</td>
+                <td align="left" colspan="1" rowspan="1">Unassigned</td>
+                <td align="left" colspan="1" rowspan="1"/>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">240 - 251</td>
+                <td align="left" colspan="1" rowspan="1">Reserved for Experimental Use</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">252 - 254</td>
+                <td align="left" colspan="1" rowspan="1">Reserved for Private Use</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">255</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section anchor="coam-sf-id-type-sec" numbered="true" toc="include" removeInRFC="false" pn="section-9.2.7">
+          <name slugifiedName="name-sf-identifier-types">SF Identifier Types</name>
+          <t indent="0" pn="section-9.2.7-1">
+    IANA has created the "SF Identifier Types" as follows: 
+          </t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.7-2">
+            <dt pn="section-9.2.7-2.1">Registry Name:</dt>
+            <dd pn="section-9.2.7-2.2">SF Identifier Types</dd>
+          </dl>
+          <dl newline="true" spacing="normal" indent="3" pn="section-9.2.7-3">
+            <dt pn="section-9.2.7-3.1">Assignment Policy:</dt>
+            <dd pn="section-9.2.7-3.2">
+              <dl newline="false" spacing="compact" indent="3" pn="section-9.2.7-3.2.1">
+                <dt pn="section-9.2.7-3.2.1.1">0 - 191</dt>
+                <dd pn="section-9.2.7-3.2.1.2">IETF Review</dd>
+                <dt pn="section-9.2.7-3.2.1.3">192 - 251</dt>
+                <dd pn="section-9.2.7-3.2.1.4">First Come First Served</dd>
+                <dt pn="section-9.2.7-3.2.1.5">252 - 254</dt>
+                <dd pn="section-9.2.7-3.2.1.6">Private Use</dd>
+              </dl>
+            </dd>
+          </dl>
+          <dl newline="false" spacing="normal" indent="3" pn="section-9.2.7-4">
+            <dt pn="section-9.2.7-4.1">Reference:</dt>
+            <dd pn="section-9.2.7-4.2">RFC 9516</dd>
+          </dl>
+          <table anchor="iana-sf-id-type-tbl" align="center" pn="table-8">
+            <name slugifiedName="name-sf-identifier-types-2">SF Identifier Types</name>
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Value</th>
+                <th align="left" colspan="1" rowspan="1">Description</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">0</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">1</td>
+                <td align="left" colspan="1" rowspan="1">IPv4</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">2</td>
+                <td align="left" colspan="1" rowspan="1">IPv6</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">3</td>
+                <td align="left" colspan="1" rowspan="1">MAC</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">4 - 251</td>
+                <td align="left" colspan="1" rowspan="1">Unassigned</td>
+                <td align="left" colspan="1" rowspan="1"/>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">252 - 254</td>
+                <td align="left" colspan="1" rowspan="1">Reserved for Private Use</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">255</td>
+                <td align="left" colspan="1" rowspan="1">Reserved</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9516</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-10">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-10.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC7665" target="https://www.rfc-editor.org/info/rfc7665" quoteTitle="true" derivedAnchor="RFC7665">
+          <front>
+            <title>Service Function Chaining (SFC) Architecture</title>
+            <author fullname="J. Halpern" initials="J." role="editor" surname="Halpern"/>
+            <author fullname="C. Pignataro" initials="C." role="editor" surname="Pignataro"/>
+            <date month="October" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes an architecture for the specification, creation, and ongoing maintenance of Service Function Chains (SFCs) in a network. It includes architectural concepts, principles, and components used in the construction of composite services through deployment of SFCs, with a focus on those to be standardized in the IETF. This document does not propose solutions, protocols, or extensions to existing protocols.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7665"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7665"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8300" target="https://www.rfc-editor.org/info/rfc8300" quoteTitle="true" derivedAnchor="RFC8300">
+          <front>
+            <title>Network Service Header (NSH)</title>
+            <author fullname="P. Quinn" initials="P." role="editor" surname="Quinn"/>
+            <author fullname="U. Elzur" initials="U." role="editor" surname="Elzur"/>
+            <author fullname="C. Pignataro" initials="C." role="editor" surname="Pignataro"/>
+            <date month="January" year="2018"/>
+            <abstract>
+              <t indent="0">This document describes a Network Service Header (NSH) imposed on packets or frames to realize Service Function Paths (SFPs). The NSH also provides a mechanism for metadata exchange along the instantiated service paths. The NSH is the Service Function Chaining (SFC) encapsulation required to support the SFC architecture (defined in RFC 7665).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8300"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8300"/>
+        </reference>
+        <reference anchor="RFC9015" target="https://www.rfc-editor.org/info/rfc9015" quoteTitle="true" derivedAnchor="RFC9015">
+          <front>
+            <title>BGP Control Plane for the Network Service Header in Service Function Chaining</title>
+            <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <author fullname="J. Uttaro" initials="J." surname="Uttaro"/>
+            <author fullname="L. Jalil" initials="L." surname="Jalil"/>
+            <date month="June" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes the use of BGP as a control plane for networks that support service function chaining. The document introduces a new BGP address family called the "Service Function Chain (SFC) Address Family Identifier / Subsequent Address Family Identifier" (SFC AFI/SAFI) with two Route Types. One Route Type is originated by a node to advertise that it hosts a particular instance of a specified service function. This Route Type also provides "instructions" on how to send a packet to the hosting node in a way that indicates that the service function has to be applied to the packet. The other Route Type is used by a controller to advertise the paths of "chains" of service functions and give a unique designator to each such path so that they can be used in conjunction with the Network Service Header (NSH) defined in RFC 8300.</t>
+              <t indent="0">This document adopts the service function chaining architecture described in RFC 7665.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9015"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9015"/>
+        </reference>
+        <reference anchor="RFC9145" target="https://www.rfc-editor.org/info/rfc9145" quoteTitle="true" derivedAnchor="RFC9145">
+          <front>
+            <title>Integrity Protection for the Network Service Header (NSH) and Encryption of Sensitive Context Headers</title>
+            <author fullname="M. Boucadair" initials="M." surname="Boucadair"/>
+            <author fullname="T. Reddy.K" initials="T." surname="Reddy.K"/>
+            <author fullname="D. Wing" initials="D." surname="Wing"/>
+            <date month="December" year="2021"/>
+            <abstract>
+              <t indent="0">This specification presents an optional method to add integrity protection directly to the Network Service Header (NSH) used for Service Function Chaining (SFC). Also, this specification allows for the encryption of sensitive metadata (MD) that is carried in the NSH.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9145"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9145"/>
+        </reference>
+        <reference anchor="RFC9451" target="https://www.rfc-editor.org/info/rfc9451" quoteTitle="true" derivedAnchor="RFC9451">
+          <front>
+            <title>Operations, Administration, and Maintenance (OAM) Packet and Behavior in the Network Service Header (NSH)</title>
+            <author fullname="M. Boucadair" initials="M." surname="Boucadair"/>
+            <date month="August" year="2023"/>
+            <abstract>
+              <t indent="0">This document clarifies an ambiguity in the Network Service Header (NSH) specification related to the handling of O bit. In particular, this document clarifies the meaning of "OAM packet".</t>
+              <t indent="0">This document updates RFC 8300.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9451"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9451"/>
+        </reference>
+      </references>
+      <references pn="section-10.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC0792" target="https://www.rfc-editor.org/info/rfc792" quoteTitle="true" derivedAnchor="RFC0792">
+          <front>
+            <title>Internet Control Message Protocol</title>
+            <author fullname="J. Postel" initials="J." surname="Postel"/>
+            <date month="September" year="1981"/>
+          </front>
+          <seriesInfo name="STD" value="5"/>
+          <seriesInfo name="RFC" value="792"/>
+          <seriesInfo name="DOI" value="10.17487/RFC0792"/>
+        </reference>
+        <reference anchor="RFC4086" target="https://www.rfc-editor.org/info/rfc4086" quoteTitle="true" derivedAnchor="RFC4086">
+          <front>
+            <title>Randomness Requirements for Security</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <author fullname="J. Schiller" initials="J." surname="Schiller"/>
+            <author fullname="S. Crocker" initials="S." surname="Crocker"/>
+            <date month="June" year="2005"/>
+            <abstract>
+              <t indent="0">Security systems are built on strong cryptographic algorithms that foil pattern analysis attempts. However, the security of these systems is dependent on generating secret quantities for passwords, cryptographic keys, and similar quantities. The use of pseudo-random processes to generate secret quantities can result in pseudo-security. A sophisticated attacker may find it easier to reproduce the environment that produced the secret quantities and to search the resulting small set of possibilities than to locate the quantities in the whole of the potential number space.</t>
+              <t indent="0">Choosing random quantities to foil a resourceful and motivated adversary is surprisingly difficult. This document points out many pitfalls in using poor entropy sources or traditional pseudo-random number generation techniques for generating such quantities. It recommends the use of truly random hardware techniques and shows that the existing hardware on many systems can be used for this purpose. It provides suggestions to ameliorate the problem when a hardware solution is not available, and it gives examples of how large such quantities need to be for some applications. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="106"/>
+          <seriesInfo name="RFC" value="4086"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4086"/>
+        </reference>
+        <reference anchor="RFC4302" target="https://www.rfc-editor.org/info/rfc4302" quoteTitle="true" derivedAnchor="RFC4302">
+          <front>
+            <title>IP Authentication Header</title>
+            <author fullname="S. Kent" initials="S." surname="Kent"/>
+            <date month="December" year="2005"/>
+            <abstract>
+              <t indent="0">This document describes an updated version of the IP Authentication Header (AH), which is designed to provide authentication services in IPv4 and IPv6. This document obsoletes RFC 2402 (November 1998). [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4302"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4302"/>
+        </reference>
+        <reference anchor="RFC4303" target="https://www.rfc-editor.org/info/rfc4303" quoteTitle="true" derivedAnchor="RFC4303">
+          <front>
+            <title>IP Encapsulating Security Payload (ESP)</title>
+            <author fullname="S. Kent" initials="S." surname="Kent"/>
+            <date month="December" year="2005"/>
+            <abstract>
+              <t indent="0">This document describes an updated version of the Encapsulating Security Payload (ESP) protocol, which is designed to provide a mix of security services in IPv4 and IPv6. ESP is used to provide confidentiality, data origin authentication, connectionless integrity, an anti-replay service (a form of partial sequence integrity), and limited traffic flow confidentiality. This document obsoletes RFC 2406 (November 1998). [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4303"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4303"/>
+        </reference>
+        <reference anchor="RFC4443" target="https://www.rfc-editor.org/info/rfc4443" quoteTitle="true" derivedAnchor="RFC4443">
+          <front>
+            <title>Internet Control Message Protocol (ICMPv6) for the Internet Protocol Version 6 (IPv6) Specification</title>
+            <author fullname="A. Conta" initials="A." surname="Conta"/>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <author fullname="M. Gupta" initials="M." role="editor" surname="Gupta"/>
+            <date month="March" year="2006"/>
+            <abstract>
+              <t indent="0">This document describes the format of a set of control messages used in ICMPv6 (Internet Control Message Protocol). ICMPv6 is the Internet Control Message Protocol for Internet Protocol version 6 (IPv6). [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="89"/>
+          <seriesInfo name="RFC" value="4443"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4443"/>
+        </reference>
+        <reference anchor="RFC5706" target="https://www.rfc-editor.org/info/rfc5706" quoteTitle="true" derivedAnchor="RFC5706">
+          <front>
+            <title>Guidelines for Considering Operations and Management of New Protocols and Protocol Extensions</title>
+            <author fullname="D. Harrington" initials="D." surname="Harrington"/>
+            <date month="November" year="2009"/>
+            <abstract>
+              <t indent="0">New protocols or protocol extensions are best designed with due consideration of the functionality needed to operate and manage the protocols. Retrofitting operations and management is sub-optimal. The purpose of this document is to provide guidance to authors and reviewers of documents that define new protocols or protocol extensions regarding aspects of operations and management that should be considered. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5706"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5706"/>
+        </reference>
+        <reference anchor="RFC5880" target="https://www.rfc-editor.org/info/rfc5880" quoteTitle="true" derivedAnchor="RFC5880">
+          <front>
+            <title>Bidirectional Forwarding Detection (BFD)</title>
+            <author fullname="D. Katz" initials="D." surname="Katz"/>
+            <author fullname="D. Ward" initials="D." surname="Ward"/>
+            <date month="June" year="2010"/>
+            <abstract>
+              <t indent="0">This document describes a protocol intended to detect faults in the bidirectional path between two forwarding engines, including interfaces, data link(s), and to the extent possible the forwarding engines themselves, with potentially very low latency. It operates independently of media, data protocols, and routing protocols. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5880"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5880"/>
+        </reference>
+        <reference anchor="RFC6437" target="https://www.rfc-editor.org/info/rfc6437" quoteTitle="true" derivedAnchor="RFC6437">
+          <front>
+            <title>IPv6 Flow Label Specification</title>
+            <author fullname="S. Amante" initials="S." surname="Amante"/>
+            <author fullname="B. Carpenter" initials="B." surname="Carpenter"/>
+            <author fullname="S. Jiang" initials="S." surname="Jiang"/>
+            <author fullname="J. Rajahalme" initials="J." surname="Rajahalme"/>
+            <date month="November" year="2011"/>
+            <abstract>
+              <t indent="0">This document specifies the IPv6 Flow Label field and the minimum requirements for IPv6 nodes labeling flows, IPv6 nodes forwarding labeled packets, and flow state establishment methods. Even when mentioned as examples of possible uses of the flow labeling, more detailed requirements for specific use cases are out of the scope for this document.</t>
+              <t indent="0">The usage of the Flow Label field enables efficient IPv6 flow classification based only on IPv6 main header fields in fixed positions. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6437"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6437"/>
+        </reference>
+        <reference anchor="RFC7110" target="https://www.rfc-editor.org/info/rfc7110" quoteTitle="true" derivedAnchor="RFC7110">
+          <front>
+            <title>Return Path Specified Label Switched Path (LSP) Ping</title>
+            <author fullname="M. Chen" initials="M." surname="Chen"/>
+            <author fullname="W. Cao" initials="W." surname="Cao"/>
+            <author fullname="S. Ning" initials="S." surname="Ning"/>
+            <author fullname="F. Jounay" initials="F." surname="Jounay"/>
+            <author fullname="S. Delord" initials="S." surname="Delord"/>
+            <date month="January" year="2014"/>
+            <abstract>
+              <t indent="0">This document defines extensions to the data-plane failure-detection protocol for Multiprotocol Label Switching (MPLS) Label Switched Paths (LSPs) known as "LSP ping". These extensions allow a selection of the LSP to be used for the echo reply return path. Enforcing a specific return path can be used to verify bidirectional connectivity and also increase LSP ping robustness.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7110"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7110"/>
+        </reference>
+        <reference anchor="RFC7555" target="https://www.rfc-editor.org/info/rfc7555" quoteTitle="true" derivedAnchor="RFC7555">
+          <front>
+            <title>Proxy MPLS Echo Request</title>
+            <author fullname="G. Swallow" initials="G." surname="Swallow"/>
+            <author fullname="V. Lim" initials="V." surname="Lim"/>
+            <author fullname="S. Aldrin" initials="S." surname="Aldrin"/>
+            <date month="June" year="2015"/>
+            <abstract>
+              <t indent="0">This document defines a means of remotely initiating Multiprotocol Label Switched Protocol (MPLS) Pings on Label Switched Paths. An MPLS Proxy Ping Request is sent to any Label Switching Router along a Label Switched Path. The primary motivations for this facility are first to limit the number of messages and related processing when using LSP Ping in large Point-to-Multipoint LSPs, and second to enable tracing from leaf to leaf (or root).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7555"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7555"/>
+        </reference>
+        <reference anchor="RFC7799" target="https://www.rfc-editor.org/info/rfc7799" quoteTitle="true" derivedAnchor="RFC7799">
+          <front>
+            <title>Active and Passive Metrics and Methods (with Hybrid Types In-Between)</title>
+            <author fullname="A. Morton" initials="A." surname="Morton"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This memo provides clear definitions for Active and Passive performance assessment. The construction of Metrics and Methods can be described as either "Active" or "Passive". Some methods may use a subset of both Active and Passive attributes, and we refer to these as "Hybrid Methods". This memo also describes multiple dimensions to help evaluate new methods as they emerge.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7799"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7799"/>
+        </reference>
+        <reference anchor="RFC8029" target="https://www.rfc-editor.org/info/rfc8029" quoteTitle="true" derivedAnchor="RFC8029">
+          <front>
+            <title>Detecting Multiprotocol Label Switched (MPLS) Data-Plane Failures</title>
+            <author fullname="K. Kompella" initials="K." surname="Kompella"/>
+            <author fullname="G. Swallow" initials="G." surname="Swallow"/>
+            <author fullname="C. Pignataro" initials="C." role="editor" surname="Pignataro"/>
+            <author fullname="N. Kumar" initials="N." surname="Kumar"/>
+            <author fullname="S. Aldrin" initials="S." surname="Aldrin"/>
+            <author fullname="M. Chen" initials="M." surname="Chen"/>
+            <date month="March" year="2017"/>
+            <abstract>
+              <t indent="0">This document describes a simple and efficient mechanism to detect data-plane failures in Multiprotocol Label Switching (MPLS) Label Switched Paths (LSPs). It defines a probe message called an "MPLS echo request" and a response message called an "MPLS echo reply" for returning the result of the probe. The MPLS echo request is intended to contain sufficient information to check correct operation of the data plane and to verify the data plane against the control plane, thereby localizing faults.</t>
+              <t indent="0">This document obsoletes RFCs 4379, 6424, 6829, and 7537, and updates RFC 1122.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8029"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8029"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8595" target="https://www.rfc-editor.org/info/rfc8595" quoteTitle="true" derivedAnchor="RFC8595">
+          <front>
+            <title>An MPLS-Based Forwarding Plane for Service Function Chaining</title>
+            <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+            <author fullname="S. Bryant" initials="S." surname="Bryant"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <date month="June" year="2019"/>
+            <abstract>
+              <t indent="0">This document describes how Service Function Chaining (SFC) can be achieved in an MPLS network by means of a logical representation of the Network Service Header (NSH) in an MPLS label stack. That is, the NSH is not used, but the fields of the NSH are mapped to fields in the MPLS label stack. This approach does not deprecate or replace the NSH, but it acknowledges that there may be a need for an interim deployment of SFC functionality in brownfield networks.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8595"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8595"/>
+        </reference>
+        <reference anchor="RFC8924" target="https://www.rfc-editor.org/info/rfc8924" quoteTitle="true" derivedAnchor="RFC8924">
+          <front>
+            <title>Service Function Chaining (SFC) Operations, Administration, and Maintenance (OAM) Framework</title>
+            <author fullname="S. Aldrin" initials="S." surname="Aldrin"/>
+            <author fullname="C. Pignataro" initials="C." role="editor" surname="Pignataro"/>
+            <author fullname="N. Kumar" initials="N." role="editor" surname="Kumar"/>
+            <author fullname="R. Krishnan" initials="R." surname="Krishnan"/>
+            <author fullname="A. Ghanwani" initials="A." surname="Ghanwani"/>
+            <date month="October" year="2020"/>
+            <abstract>
+              <t indent="0">This document provides a reference framework for Operations, Administration, and Maintenance (OAM) for Service Function Chaining (SFC).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8924"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8924"/>
+        </reference>
+        <reference anchor="RFC9263" target="https://www.rfc-editor.org/info/rfc9263" quoteTitle="true" derivedAnchor="RFC9263">
+          <front>
+            <title>Network Service Header (NSH) Metadata Type 2 Variable-Length Context Headers</title>
+            <author fullname="Y. Wei" initials="Y." role="editor" surname="Wei"/>
+            <author fullname="U. Elzur" initials="U." surname="Elzur"/>
+            <author fullname="S. Majee" initials="S." surname="Majee"/>
+            <author fullname="C. Pignataro" initials="C." surname="Pignataro"/>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <date month="August" year="2022"/>
+            <abstract>
+              <t indent="0">Service Function Chaining (SFC) uses the Network Service Header (NSH) (RFC 8300) to steer and provide context metadata (MD) with each packet. Such metadata can be of various types, including MD Type 2, consisting of Variable-Length Context Headers. This document specifies several such Context Headers that can be used within a Service Function Path (SFP).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9263"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9263"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">
+         The authors greatly appreciate the thorough review and the most helpful comments from <contact fullname="Dan Wing"/>, <contact fullname="Dirk von Hugo"/>,
+        <contact fullname="Mohamed Boucadair"/>, <contact fullname="Donald Eastlake 3rd"/>, <contact fullname="Carlos Pignataro"/>, and <contact fullname="Frank Brockners"/>. The authors are thankful to <contact fullname="John Drake"/> for his review
+        and the reference to the work on BGP control plane for NSH SFC.
+	 The authors express their appreciation to <contact fullname="Joel M. Halpern"/> for his suggestion about the load-balancing scenario.
+	 The authors greatly appreciate the thoroughness of comments and thoughtful suggestions by <contact fullname="Darren Dukes"/> that significantly improved the document.
+      </t>
+    </section>
+    <section anchor="contr-sec" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.b">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <contact initials="C" surname="Wang" fullname="Cui Wang">
+        <organization showOnFrontPage="true">Individual contributor</organization>
+        <address>
+          <email>lindawangjoy@gmail.com</email>
+        </address>
+      </contact>
+      <contact fullname="Zhonghua Chen" initials="Z." surname="Chen">
+        <organization showOnFrontPage="true">China Telecom</organization>
+        <address>
+          <postal>
+            <street>No.1835, South PuDong Road</street>
+            <city>Shanghai</city>
+            <region></region>
+            <code>201203</code>
+            <country>China</country>
+          </postal>
+          <phone>+86 18918588897</phone>
+          <email>chenzhongh@chinatelecom.cn</email>
+        </address>
+      </contact>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="G." surname="Mirsky" fullname="Greg Mirsky">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <email>gregimirsky@gmail.com</email>
+        </address>
+      </author>
+      <author initials="W" surname="Meng" fullname="Wei Meng">
+        <organization showOnFrontPage="true">ZTE Corporation</organization>
+        <address>
+          <postal>
+            <extaddr>Yuhuatai District</extaddr>
+            <street>No.50 Software Avenue</street>
+            <region>Nanjing</region>
+            <country>China</country>
+          </postal>
+          <email>meng.wei2@zte.com.cn</email>
+        </address>
+      </author>
+      <author fullname="Ting Ao" initials="T." surname="Ao">
+        <organization showOnFrontPage="true">China Mobile</organization>
+        <address>
+          <postal>
+            <street>No.889, BiBo Road</street>
+            <city>Shanghai</city>
+            <region/>
+            <code>201203</code>
+            <country>China</country>
+          </postal>
+          <phone>+86 17721209283</phone>
+          <email>18555817@qq.com</email>
+        </address>
+      </author>
+      <author initials="B" surname="Khasnabish" fullname="Bhumip Khasnabish">
+        <organization showOnFrontPage="true">Individual Contributor</organization>
+        <address>
+          <email>vumip1@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Kent Leung" initials="K." surname="Leung">
+        <organization showOnFrontPage="true">Individual Contributor</organization>
+        <address>
+          <postal>
+            <street>530 Showers Drive Ste 7</street>
+            <city>Mountain View</city>
+            <region>CA</region>
+            <code>94040</code>
+            <country>United States of America</country>
+          </postal>
+          <phone/>
+          <email>mail4kentl@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Gyan Mishra" initials="G." surname="Mishra">
+        <organization showOnFrontPage="true">Verizon Inc.</organization>
+        <address>
+          <email>gyan.s.mishra@verizon.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

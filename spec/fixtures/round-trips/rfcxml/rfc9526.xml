@@ -1,0 +1,1869 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-homenet-front-end-naming-delegation-27" number="9526" submissionType="IETF" category="exp" consensus="true" tocInclude="true" sortRefs="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2024-01-28T20:37:15" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-homenet-front-end-naming-delegation-27" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9526" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Public Names for Residential Networks">Simple Provisioning of Public Names for Residential Networks</title>
+    <seriesInfo name="RFC" value="9526" stream="IETF"/>
+    <author initials="D." surname="Migault" fullname="Daniel Migault">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <street>8275 Trans Canada Route</street>
+          <city>Saint Laurent</city>
+          <region>QC</region>
+          <code>4S 0B6</code>
+          <country>Canada</country>
+        </postal>
+        <email>daniel.migault@ericsson.com</email>
+      </address>
+    </author>
+    <author initials="R." surname="Weber" fullname="Ralf Weber">
+      <organization showOnFrontPage="true">Nominum</organization>
+      <address>
+        <postal>
+          <street>2000 Seaport Blvd.</street>
+          <city>Redwood City</city>
+          <region>CA</region>
+          <code>94063</code>
+          <country>United States of America</country>
+        </postal>
+        <email>ralf.weber@nominum.com</email>
+      </address>
+    </author>
+    <author initials="M." surname="Richardson" fullname="Michael Richardson">
+      <organization showOnFrontPage="true">Sandelman Software Works</organization>
+      <address>
+        <postal>
+          <street>470 Dawson Avenue</street>
+          <city>Ottawa</city>
+          <region>ON</region>
+          <code>K1Z 5V7</code>
+          <country>Canada</country>
+        </postal>
+        <email>mcr+ietf@sandelman.ca</email>
+      </address>
+    </author>
+    <author initials="R." surname="Hunter" fullname="Ray Hunter">
+      <organization showOnFrontPage="true">Globis Consulting BV</organization>
+      <address>
+        <postal>
+          <street>Weegschaalstraat 3</street>
+          <city>Eindhoven</city>
+          <code>5632CW</code>
+          <country>Netherlands</country>
+        </postal>
+        <email>v6ops@globis.net</email>
+      </address>
+    </author>
+    <date month="01" year="2024"/>
+    <area>Internet</area>
+    <workgroup>Homenet</workgroup>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">Home network owners may have devices or services hosted on their home network that they wish to access from the Internet (i.e., from a network outside of the home network). Home networks are increasingly numbered using IPv6 addresses, which in principle makes this access simpler, but accessing home networks from the Internet requires the names and IP addresses of these devices and services to be made available in the public DNS.</t>
+      <t indent="0" pn="section-abstract-2">This document describes how a Home Naming Authority (NHA) instructs the outsourced infrastructure to publish these pieces of information in the public DNS. 
+The names and IP addresses of the home network are set in the Public Homenet Zone by the Homenet Naming Authority (HNA), which in turn instructs an outsourced infrastructure to publish the zone on behalf of the home network owner.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for examination, experimental implementation, and
+            evaluation.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document defines an Experimental Protocol for the Internet
+            community.  This document is a product of the Internet Engineering
+            Task Force (IETF).  It represents the consensus of the IETF community.
+            It has received public review and has been approved for publication
+            by the Internet Engineering Steering Group (IESG).  Not all documents
+            approved by the IESG are candidates for any level of Internet
+            Standard; see Section 2 of RFC 7841. 
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9526" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-selecting-names-and-address">Selecting Names and Addresses to Publish</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-envisioned-deployment-scena">Envisioned Deployment Scenarios</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-cpe-vendor">CPE Vendor</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-agnostic-cpe">Agnostic CPE</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-architecture-description">Architecture Description</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-architecture-overview">Architecture Overview</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-distribution-manager-dm-com">Distribution Manager (DM) Communication Channels</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-control-channel">Control Channel</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-building-the-public-homenet">Building the Public Homenet Zone</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-building-the-dnssec-chain-o">Building the DNSSEC Chain of Trust</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.3">
+                <t indent="0" pn="section-toc.1-1.6.2.3.1"><xref derivedContent="6.3" format="counter" sectionFormat="of" target="section-6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-setting-up-the-synchronizat">Setting Up the Synchronization Channel</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.4">
+                <t indent="0" pn="section-toc.1-1.6.2.4.1"><xref derivedContent="6.4" format="counter" sectionFormat="of" target="section-6.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-deleting-the-delegation">Deleting the Delegation</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.5">
+                <t indent="0" pn="section-toc.1-1.6.2.5.1"><xref derivedContent="6.5" format="counter" sectionFormat="of" target="section-6.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-message-exchange-descriptio">Message Exchange Description</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.5.2">
+                  <li pn="section-toc.1-1.6.2.5.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.5.2.1.1"><xref derivedContent="6.5.1" format="counter" sectionFormat="of" target="section-6.5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-retrieving-information-for-">Retrieving Information for the Public Homenet Zone</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.5.2.2">
+                    <t indent="0" pn="section-toc.1-1.6.2.5.2.2.1"><xref derivedContent="6.5.2" format="counter" sectionFormat="of" target="section-6.5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-providing-information-for-t">Providing Information for the DNSSEC Chain of Trust</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.5.2.3">
+                    <t indent="0" pn="section-toc.1-1.6.2.5.2.3.1"><xref derivedContent="6.5.3" format="counter" sectionFormat="of" target="section-6.5.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-providing-information-for-th">Providing Information for the Synchronization Channel</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.5.2.4">
+                    <t indent="0" pn="section-toc.1-1.6.2.5.2.4.1"><xref derivedContent="6.5.4" format="counter" sectionFormat="of" target="section-6.5.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-initiating-deletion-of-the-">Initiating Deletion of the Delegation</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.6.2.6">
+                <t indent="0" pn="section-toc.1-1.6.2.6.1"><xref derivedContent="6.6" format="counter" sectionFormat="of" target="section-6.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-securing-the-control-channe">Securing the Control Channel</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-synchronization-channel">Synchronization Channel</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-securing-the-synchronizatio">Securing the Synchronization Channel</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dm-distribution-channel">DM Distribution Channel</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-hna-security-policies">HNA Security Policies</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-public-homenet-reverse-zone">Public Homenet Reverse Zone</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="11" format="counter" sectionFormat="of" target="section-11"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-dnssec-compliant-homenet-ar">DNSSEC-Compliant Homenet Architecture</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="12" format="counter" sectionFormat="of" target="section-12"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-renumbering">Renumbering</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="13" format="counter" sectionFormat="of" target="section-13"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-privacy-considerations">Privacy Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.14">
+            <t indent="0" pn="section-toc.1-1.14.1"><xref derivedContent="14" format="counter" sectionFormat="of" target="section-14"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.14.2">
+              <li pn="section-toc.1-1.14.2.1">
+                <t indent="0" pn="section-toc.1-1.14.2.1.1"><xref derivedContent="14.1" format="counter" sectionFormat="of" target="section-14.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-registered-homenet-domain">Registered Homenet Domain</xref></t>
+              </li>
+              <li pn="section-toc.1-1.14.2.2">
+                <t indent="0" pn="section-toc.1-1.14.2.2.1"><xref derivedContent="14.2" format="counter" sectionFormat="of" target="section-14.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-hna-dm-channels">HNA DM Channels</xref></t>
+              </li>
+              <li pn="section-toc.1-1.14.2.3">
+                <t indent="0" pn="section-toc.1-1.14.2.3.1"><xref derivedContent="14.3" format="counter" sectionFormat="of" target="section-14.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-names-are-less-secure-than-">Names Are Less Secure than IP Addresses</xref></t>
+              </li>
+              <li pn="section-toc.1-1.14.2.4">
+                <t indent="0" pn="section-toc.1-1.14.2.4.1"><xref derivedContent="14.4" format="counter" sectionFormat="of" target="section-14.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-names-are-less-volatile-tha">Names Are Less Volatile than IP Addresses</xref></t>
+              </li>
+              <li pn="section-toc.1-1.14.2.5">
+                <t indent="0" pn="section-toc.1-1.14.2.5.1"><xref derivedContent="14.5" format="counter" sectionFormat="of" target="section-14.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-deployment-considerations">Deployment Considerations</xref></t>
+              </li>
+              <li pn="section-toc.1-1.14.2.6">
+                <t indent="0" pn="section-toc.1-1.14.2.6.1"><xref derivedContent="14.6" format="counter" sectionFormat="of" target="section-14.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-operational-considerations">Operational Considerations</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.15">
+            <t indent="0" pn="section-toc.1-1.15.1"><xref derivedContent="15" format="counter" sectionFormat="of" target="section-15"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.16">
+            <t indent="0" pn="section-toc.1-1.16.1"><xref derivedContent="16" format="counter" sectionFormat="of" target="section-16"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.16.2">
+              <li pn="section-toc.1-1.16.2.1">
+                <t indent="0" pn="section-toc.1-1.16.2.1.1"><xref derivedContent="16.1" format="counter" sectionFormat="of" target="section-16.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.16.2.2">
+                <t indent="0" pn="section-toc.1-1.16.2.2.1"><xref derivedContent="16.2" format="counter" sectionFormat="of" target="section-16.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.17">
+            <t indent="0" pn="section-toc.1-1.17.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-hna-channel-configurations">HNA Channel Configurations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.17.2">
+              <li pn="section-toc.1-1.17.2.1">
+                <t indent="0" pn="section-toc.1-1.17.2.1.1"><xref derivedContent="A.1" format="counter" sectionFormat="of" target="section-appendix.a.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-public-homenet-zone">Public Homenet Zone</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.18">
+            <t indent="0" pn="section-toc.1-1.18.1"><xref derivedContent="Appendix B" format="default" sectionFormat="of" target="section-appendix.b"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-information-model-for-outso">Information Model for Outsourced Information</xref></t>
+          </li>
+          <li pn="section-toc.1-1.19">
+            <t indent="0" pn="section-toc.1-1.19.1"><xref derivedContent="Appendix C" format="default" sectionFormat="of" target="section-appendix.c"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-example-a-manufacturer-prov">Example: A Manufacturer-Provisioned HNA Product Flow</xref></t>
+          </li>
+          <li pn="section-toc.1-1.20">
+            <t indent="0" pn="section-toc.1-1.20.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.d"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.21">
+            <t indent="0" pn="section-toc.1-1.21.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.e"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.22">
+            <t indent="0" pn="section-toc.1-1.22.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.f"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">Home network owners may have devices or services hosted on their home network
+that they wish to access from the Internet (i.e., from a network outside of the
+home network).
+The use of IPv6 addresses in the home makes, in principle, the actual network access simpler, while on the other hand, the addresses are much harder to remember and are subject to regular renumbering.
+To make this situation simpler for typical home owners to manage, there needs to be an easy way for the names and IP addresses of these devices and services to be published in the public DNS.</t>
+      <t indent="0" pn="section-1-2">As depicted in <xref target="fig-outsourcing-overview" format="default" sectionFormat="of" derivedContent="Figure 1"/>, the names and IP address of the home network are made available in the Public Homenet Zone by the Homenet Naming Authority (HNA), which in turn instructs the DNS Outsourcing Infrastructure (DOI) to publish the zone on behalf of the HNA.
+This document describes how an HNA can instruct a DOI to publish a Public Homenet Zone on its behalf.</t>
+      <t indent="0" pn="section-1-3">This document introduces the Synchronization Channel and the Control Channel between the HNA and the  Distribution Manager (DM), which is the main interface to the DOI.</t>
+      <t indent="0" pn="section-1-4">The Synchronization Channel (see <xref target="sec-synch" format="default" sectionFormat="of" derivedContent="Section 7"/>) is used to synchronize the Public Homenet Zone.</t>
+      <figure anchor="fig-outsourcing-overview" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-high-level-architecture-ove">High-Level Architecture Overview of Outsourcing the Public Homenet Zone</name>
+        <artwork align="center" pn="section-1-5.1">
+                               Internet       
+.---------------------.           .-------------------. 
+|      Home Network   | Control   |        DOI        | 
+|.-------------------.| Channel   |.-----------------.| 
+||         HNA       |&lt;-----------&gt;|  Distribution   || 
+||.-----------------.||           ||  Manager        || 
+|||  Public Homenet |||           ||                 ||   
+|||       Zone      ||&lt;-----------&gt;|                 || 
+||| myhome.example  ||| Synchron- |'-----------------'| 
+||'-----------------'|| ization   |         |         |
+|'-------------------'| Channel   |         V         |   
+|                     |           |.-----------------.|   
+|                     |           ||  Public Homenet ||   
+'---------------------'           ||       Zone      ||   
+                                  || myhome.example  ||
+                                  |'-----------------'|
+                                  '---^--^--^--^--^---'
+                                      |  |  |  |  |
+                                 (served on the Internet)
+</artwork>
+      </figure>
+      <t indent="0" pn="section-1-6">The Synchronization Channel is a zone transfer, with the HNA configured as a primary server and the Distribution Manager configured as a secondary server.
+Some operators refer to this kind of configuration as a "hidden primary", but that term is not used in this document as it is not precisely defined anywhere, but it has many slightly different meanings to many.</t>
+      <t indent="0" pn="section-1-7">The Control Channel (see <xref target="sec-ctrl" format="default" sectionFormat="of" derivedContent="Section 6"/>) is used to set up the Synchronization Channel.
+      This channel is in the form of a dynamic DNS update process, authenticated by TLS.</t>
+      <t indent="0" pn="section-1-8">For example, to build the Public Homenet Zone, the HNA needs the authoritative servers (and associated IP addresses) of the DOI's servers (the visible primaries) that are actually serving the zone.
+Similarly, the DOI needs to know the IP address of the (hidden) primary (HNA) as well as potentially the hash of the Key Signing Key (KSK) in the DS RRset to secure the DNSSEC delegation with the parent zone.</t>
+      <t indent="0" pn="section-1-9">The remainder of the document is as follows.</t>
+      <t indent="0" pn="section-1-10"><xref target="terminology" format="default" sectionFormat="of" derivedContent="Section 2"/> defines the terminology.
+<xref target="selectingnames" format="default" sectionFormat="of" derivedContent="Section 3"/> presents the general problem of publishing names and IP addresses. <xref target="sec-deployment" format="default" sectionFormat="of" derivedContent="Section 4"/> briefly describes some potential envisioned deployment scenarios.
+ And <xref target="sec-arch-desc" format="default" sectionFormat="of" derivedContent="Section 5"/> provides an architectural view of the  HNA, DM, and DOI as well as their different communication channels (Control Channel, Synchronization Channel, and DM Distribution Channel) described in Sections <xref target="sec-ctrl" format="counter" sectionFormat="of" derivedContent="6"/>, <xref target="sec-synch" format="counter" sectionFormat="of" derivedContent="7"/>, and <xref target="sec-dist" format="counter" sectionFormat="of" derivedContent="8"/>, respectively.</t>
+      <t indent="0" pn="section-1-11">Then, Sections <xref target="sec-ctrl" format="counter" sectionFormat="of" derivedContent="6"/> and <xref target="sec-synch" format="counter" sectionFormat="of" derivedContent="7"/> deal with the two channels that interface to the home.
+<xref target="sec-dist" format="default" sectionFormat="of" derivedContent="Section 8"/> provides a set of requirements and expectations on how the distribution system works.  This section is non-normative and not subject to standardization but reflects how many scalable DNS distribution systems operate.</t>
+      <t indent="0" pn="section-1-12">Sections <xref target="sec-cpe-sec-policies" format="counter" sectionFormat="of" derivedContent="9"/> and <xref target="sec-dnssec-deployment" format="counter" sectionFormat="of" derivedContent="11"/> respectively detail HNA security policies as well as DNSSEC compliance within the home network.</t>
+      <t indent="0" pn="section-1-13"><xref target="sec-renumbering" format="default" sectionFormat="of" derivedContent="Section 12"/> discusses how renumbering should be handled.</t>
+      <t indent="0" pn="section-1-14">Finally, Sections <xref target="sec-privacy" format="counter" sectionFormat="of" derivedContent="13"/> and <xref target="sec-security" format="counter" sectionFormat="of" derivedContent="14"/> respectively discuss privacy and security considerations when outsourcing the Public Homenet Zone.</t>
+      <t indent="0" pn="section-1-15">The appendices discuss the following aspects: management (see <xref target="sec-reverse" format="default" sectionFormat="of" derivedContent="Section 10"/>), provisioning (see <xref target="sec-reverse" format="default" sectionFormat="of" derivedContent="Section 10"/>), configurations (see <xref target="info-model" format="default" sectionFormat="of" derivedContent="Appendix B"/>), and deployment (see <xref target="sec-deployment" format="default" sectionFormat="of" derivedContent="Section 4"/> and <xref target="sec-ex-manu" format="default" sectionFormat="of" derivedContent="Appendix C"/>).</t>
+    </section>
+    <section anchor="terminology" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <t indent="0" pn="section-2-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+"<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they
+appear in all capitals, as shown here.</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-2-2">
+        <dt pn="section-2-2.1">Customer Premises Equipment (CPE):</dt>
+        <dd pn="section-2-2.2">
+          <t indent="0" pn="section-2-2.2.1">A router providing connectivity to the home network.</t>
+        </dd>
+        <dt pn="section-2-2.3">Homenet Zone:</dt>
+        <dd pn="section-2-2.4">
+          <t indent="0" pn="section-2-2.4.1">The DNS zone for use within the boundaries of the home network: "home.arpa" (see <xref target="RFC8375" format="default" sectionFormat="of" derivedContent="RFC8375"/>).
+This zone is not considered public and is out of scope for this document.</t>
+        </dd>
+        <dt pn="section-2-2.5">Registered Homenet Domain:</dt>
+        <dd pn="section-2-2.6">
+          <t indent="0" pn="section-2-2.6.1">The domain name that is associated with the home network. A given home network may have multiple Registered Homenet Domains.</t>
+        </dd>
+        <dt pn="section-2-2.7">Public Homenet Zone:</dt>
+        <dd pn="section-2-2.8">
+          <t indent="0" pn="section-2-2.8.1">Contains the names in the home network that are expected to be publicly resolvable on the Internet. A home network can have multiple Public Homenet Zones.</t>
+        </dd>
+        <dt pn="section-2-2.9">Homenet Naming Authority (HNA):</dt>
+        <dd pn="section-2-2.10">
+          <t indent="0" pn="section-2-2.10.1">A function responsible for managing the Public Homenet Zone.
+This includes populating the Public Homenet Zone, signing the zone for DNSSEC, as well as managing the distribution of that Homenet Zone to the DOI.</t>
+        </dd>
+        <dt pn="section-2-2.11">DNS Outsourcing Infrastructure (DOI):</dt>
+        <dd pn="section-2-2.12">
+          <t indent="0" pn="section-2-2.12.1">The infrastructure responsible for receiving the Public Homenet Zone and publishing it on the Internet.
+It is mainly composed of a Distribution Manager and Public Authoritative Servers.</t>
+        </dd>
+        <dt pn="section-2-2.13">Public Authoritative Servers:</dt>
+        <dd pn="section-2-2.14">
+          <t indent="0" pn="section-2-2.14.1">The authoritative name servers for the Public Homenet Zone.
+Name resolution requests for the Registered Homenet Domain are sent to these servers.
+Some DNS operators refer to these as public secondaries, and higher resiliency networks are often implemented in an anycast fashion.</t>
+        </dd>
+        <dt pn="section-2-2.15">Homenet Authoritative Servers:</dt>
+        <dd pn="section-2-2.16">
+          <t indent="0" pn="section-2-2.16.1">The authoritative name servers for the Homenet Zone within the Homenet network itself. These are sometimes called "hidden primary servers".</t>
+        </dd>
+        <dt pn="section-2-2.17">Distribution Manager (DM):</dt>
+        <dd pn="section-2-2.18">
+          <t indent="0" pn="section-2-2.18.1">The server (or set of servers) that the HNA synchronizes the Public Homenet Zone to and that then distributes the relevant information to the Public Authoritative Servers. This server has been historically known as the Distribution Master.</t>
+        </dd>
+        <dt pn="section-2-2.19">Public Homenet Reverse Zone:</dt>
+        <dd pn="section-2-2.20">
+          <t indent="0" pn="section-2-2.20.1">The reverse zone file associated with the Public Homenet Zone.</t>
+        </dd>
+        <dt pn="section-2-2.21">Reverse Public Authoritative Servers:</dt>
+        <dd pn="section-2-2.22">
+          <t indent="0" pn="section-2-2.22.1">These are equivalent to Public Authoritative Servers, specifically for reverse resolution.</t>
+        </dd>
+        <dt pn="section-2-2.23">Reverse Distribution Manager:</dt>
+        <dd pn="section-2-2.24">
+          <t indent="0" pn="section-2-2.24.1">This is equivalent to the Distribution Manager, specifically for reverse resolution.</t>
+        </dd>
+        <dt pn="section-2-2.25">DNS Resolver:</dt>
+        <dd pn="section-2-2.26">
+          <t indent="0" pn="section-2-2.26.1">A resolver that performs a DNS resolution on the Internet for the Public Homenet Zone.
+	  The resolution is performed by requesting the Public Authoritative Servers. While the resolver does not necessarily perform DNSSEC resolutions, it is <bcp14>RECOMMENDED</bcp14> that DNSSEC is enabled. </t>
+          <t indent="0" pn="section-2-2.26.2">Note that when "DNS Resolver" is used in this document, it refers to "DNS or DNSSEC Resolver".</t>
+        </dd>
+        <dt pn="section-2-2.27">Homenet DNS Resolver:</dt>
+        <dd pn="section-2-2.28">
+          <t indent="0" pn="section-2-2.28.1">A resolver that performs a DNS or DNSSEC resolution on the home network for the Public Homenet Zone. The resolution is performed by requesting the Homenet Authoritative Servers.</t>
+        </dd>
+      </dl>
+    </section>
+    <section anchor="selectingnames" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-selecting-names-and-address">Selecting Names and Addresses to Publish</name>
+      <t indent="0" pn="section-3-1">While this document does not create any normative mechanism to select the names to publish, it does anticipate that the home network administrator (a human being) will be presented with a list of current names and addresses either directly on the HNA or via another device such as a smartphone.</t>
+      <t indent="0" pn="section-3-2">The administrator will mark which devices and services (by name) are to be published. The HNA will then collect the IP address(es) associated with that device or service and put the name into the Public Homenet Zone. The address of the device or service can be collected from a number of places: Multicast DNS (mDNS) <xref target="RFC6762" format="default" sectionFormat="of" derivedContent="RFC6762"/>, DHCP <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/>, Universal Plug and Play (UPnP), the Port Control Protocol (PCP) <xref target="RFC6887" format="default" sectionFormat="of" derivedContent="RFC6887"/>, or manual configuration.</t>
+      <t indent="0" pn="section-3-3">A device or service <bcp14>SHOULD</bcp14> have Global Unicast Addresses (GUAs) (IPv6 <xref target="RFC3587" format="default" sectionFormat="of" derivedContent="RFC3587"/> or IPv4) but <bcp14>MAY</bcp14> also have IPv6 Unique Local Addresses (ULAs) <xref target="RFC4193" format="default" sectionFormat="of" derivedContent="RFC4193"/>, IPv6 Link-Local Addresses (LLAs) <xref target="RFC4291" format="default" sectionFormat="of" derivedContent="RFC4291"/> <xref target="RFC7404" format="default" sectionFormat="of" derivedContent="RFC7404"/>, IPv4 LLAs <xref target="RFC3927" format="default" sectionFormat="of" derivedContent="RFC3927"/>, and private IPv4 addresses <xref target="RFC1918" format="default" sectionFormat="of" derivedContent="RFC1918"/>.</t>
+      <t indent="0" pn="section-3-4">Of these, the LLAs are almost never useful for the Public Zone and should be omitted.</t>
+      <t indent="0" pn="section-3-5">The IPv6 ULA and private IPv4 addresses may be useful to publish, if the home network environment features a VPN that would allow the home owner to reach the network. <xref target="RFC1918" format="default" sectionFormat="of" derivedContent="RFC1918"/> addresses in public zones are generally filtered out by many DNS servers as they are considered rebind attacks <xref target="REBIND" format="default" sectionFormat="of" derivedContent="REBIND"/>.</t>
+      <t indent="0" pn="section-3-6">In general, one expects the GUA to be the default address to be published.
+A direct advantage of enabling local communication is to enable communications even in case of Internet disruption. Since communications are established with names that remain a global identifier, the communication can be protected (at the very least with integrity protection) by TLS the same way it is protected on the global Internet -- by using certificates.</t>
+    </section>
+    <section anchor="sec-deployment" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-envisioned-deployment-scena">Envisioned Deployment Scenarios</name>
+      <t indent="0" pn="section-4-1">A number of deployment scenarios have been envisioned; this section aims at
+providing a brief description. The use cases are not limitations, and this section is not normative.</t>
+      <t indent="0" pn="section-4-2">The main difference between the various deployments concerns the provisioning of the HNA -- that is, how it is configured to outsource the Public Homenet Zone to the DOI -- as well as how the Public Homenet Zone is being provisioned before being outsourced.
+In both cases, these configuration aspects are out of the scope of this document.</t>
+      <t indent="0" pn="section-4-3">Provisioning the configuration related to the DOI is expected to be automated as much as possible and require interaction with the end user as little as possible.
+Zero configuration can only be achieved under some circumstances, and <xref target="RFC9527" format="default" sectionFormat="of" derivedContent="RFC9527"/> provides one such example under the assumption that the ISP provides the DOI. <xref target="sec-cpe-vendor" format="default" sectionFormat="of" derivedContent="Section 4.1"/> describes another variant where the Customer Premises Equipment (CPE) is provided preconfigured with the DOI.
+<xref target="sec-agnostic-cpe" format="default" sectionFormat="of" derivedContent="Section 4.2"/> describes how an agnostic CPE may be configured by the home network administrator.
+      Of course even in this case, the configuration can leverage mechanisms to prevent the end user from manually entering all information.</t>
+      <t indent="0" pn="section-4-4">On the other hand, provisioning the Public Homenet Zone needs to combine the ability to closely reflect what the end user wishes to publish on the Internet while easing such interaction.
+The HNA may implement such interactions using web-based GUIs or specific mobile applications.</t>
+      <t indent="0" pn="section-4-5">With the CPE configured with the DOI, the HNA contacts the DOI to build a template for the
+Public Homenet Zone and then provisions the Public Homenet Zone.
+Once the Public Homenet Zone is built, the HNA starts synchronizing it with the DOI on the Synchronization Channel.</t>
+      <section anchor="sec-cpe-vendor" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-cpe-vendor">CPE Vendor</name>
+        <t indent="0" pn="section-4.1-1">A specific vendor that has specific relations with a registrar or a registry
+may sell a CPE that is provisioned with a domain name.
+Such a domain name is probably not human friendly and may consist of some kind of serial number associated with the device being sold.</t>
+        <t indent="0" pn="section-4.1-2">One possible scenario is that the vendor provisions the HNA with a private key with an associated certificate used for the mutual TLS authentication.
+Note that these keys are not expected to be used for DNSSEC signing.</t>
+        <t indent="0" pn="section-4.1-3">Instead, these keys are solely used by the HNA for the authentication to the DM.
+Normally, the keys are necessary and sufficient to proceed to the authentication.</t>
+        <t indent="0" pn="section-4.1-4">When the home network owner plugs in the CPE at home, the relation between the HNA and DM is expected to work out of the box.</t>
+      </section>
+      <section anchor="sec-agnostic-cpe" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-agnostic-cpe">Agnostic CPE</name>
+        <t indent="0" pn="section-4.2-1">A CPE that is not preconfigured may also use the protocol
+defined in this document, but some configuration steps will be needed.</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-4.2-2">
+  <li pn="section-4.2-2.1" derivedCounter="1.">The owner of the home network buys a domain name from a registrar and,
+as such, creates an account on that registrar.</li>
+          <li pn="section-4.2-2.2" derivedCounter="2.">The registrar may provide the outsourcing infrastructure,
+or the home network may need to create a specific account on the
+outsourcing infrastructure.</li>
+        </ol>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.2-3">
+          <li pn="section-4.2-3.1">If the DOI is the DNS Registrar, it has by design a proof of ownership of the domain name by the  Homenet owner.
+In this case, it is expected that the DOI provides the necessary parameters to the home network owner to configure the HNA. One potential mechanism to provide the parameters would be to provide the user with a JSON object that they can copy and paste into the CPE, such as described in <xref target="info-model" format="default" sectionFormat="of" derivedContent="Appendix B"/>.
+But what matters to the infrastructure is that the HNA is able to authenticate itself to the DOI.</li>
+          <li pn="section-4.2-3.2">If the DOI is not the DNS Registrar, then the proof of ownership needs to be established using some other protocol.
+	  Automatic Certificate Management Environment (ACME) <xref target="RFC8555" format="default" sectionFormat="of" derivedContent="RFC8555"/> is one protocol that would allow an owner of an existing domain name to prove their ownership (but it requires that they have DNS already set up!). There are other ways to establish proof such as providing a DOI-generated TXT record, or web site contents, as championed by entities like Google's Sitemaster and Postmaster protocols.
+<xref target="I-D.ietf-dnsop-domain-verification-techniques" format="default" sectionFormat="of" derivedContent="DOMAIN-VALIDATION"/> describes a few ways ownership or control of a domain can be achieved.</li>
+        </ul>
+      </section>
+    </section>
+    <section anchor="sec-arch-desc" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-architecture-description">Architecture Description</name>
+      <t indent="0" pn="section-5-1">This section provides an overview of the architecture for outsourcing the authoritative naming service from the HNA to the DOI.
+As a consequence, this prevents HNA from handling the DNS traffic from the Internet that is associated with the resolution of the Homenet Zone.</t>
+      <t indent="0" pn="section-5-2">The device-assigned zone or user-configurable zone that is used as the domain to publicly serve hostnames in the home network is called the Public Homenet Zone. 
+In this document, "myhome.example" is used as the example for an end-user-owned domain configured as a Public Homenet Zone.</t>
+      <t indent="0" pn="section-5-3">More specifically, DNS resolution for the Public Homenet Zone (here "myhome.example") from Internet DNSSEC resolvers is handled by the DOI as opposed to the HNA.
+The DOI benefits from a cloud infrastructure while the HNA is dimensioned for a home network and, as such, is likely unable to support any load.
+In the case where the HNA is a CPE, outsourcing to the DOI reduces the attack surface of the home network to DDoS, for example.
+      Of course, the DOI needs to be informed dynamically about the content of myhome.example. The description of such a synchronization mechanism is the purpose of this document.</t>
+      <t indent="0" pn="section-5-4">Note that <xref target="info-model" format="default" sectionFormat="of" derivedContent="Appendix B"/> shows the necessary parameters to configure the HNA.</t>
+      <section anchor="sec-arch-overview" numbered="true" removeInRFC="false" toc="include" pn="section-5.1">
+        <name slugifiedName="name-architecture-overview">Architecture Overview</name>
+        <figure anchor="fig-naming-arch" align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-homenet-naming-architecture">Homenet Naming Architecture</name>
+          <artwork align="center" pn="section-5.1-1.1">
+.----------------------------.         .-----------------------------.
+|        Home Network        |         |          Internet           |
+| .-----------------------.  | Control |  .-----------------------.  |
+| |          HNA          |  | Channel |  |          DOI          |  |
+| |   (hidden primary)    |&lt;-------------&gt;|   (hidden secondary)  |  |
+| |                       |  | DNSUPD  |  |  Distribution Manager |  |
+| | .-------------------. |  |         |  |                       |  |
+| | |  Public Homenet   | |  |         |  |  .-------------------.|  |
+| | |       Zone        |&lt;------------------&gt;|Public Homenet Zone||  |
+| | | myhome.example    | |  |Synchron-|  |  | myhome.example    ||  |
+| | '-------------------' |  |ization  |  |  '-------------------'|  |
+| '-----------------------'  |Channel  |  |             |         |  |
+|             ^              |  AXFR   |  |             |         |  |
+|             |              |         |  |             v         |  |
+| .-----------------------.  |         |  |.---------------------.|  |
+| | Homenet Authoritative |  |         |  || Public Authoritative||  |
+| |        Server         |  |         |  || (secondary) Servers ||  |
+| | + myhome.example      |  |         |  || + myhome.example    ||  |
+| | + home.arpa           |  |         |  || + x.y.z.ip6.arpa    ||  |
+| | + x.y.z.ip6.arpa      |  |         |  ||                     ||  |
+| '-----------------------'  |         |  ||                     ||  | 
+|        |       ^           |         |  |'---------------------'|  |
+|        |       |           |         |  |  ^            |       |  |
+|        |       |           |         |  '--|------------|-------'  |
+|        v       |           |         |     |            v          |
+|  .----------------------.  |         | .------------------------.  |
+|  | Homenet DNS Resolver |  |         | |   Internet Resolvers   |  |
+|  '----------------------'  |         | '------------------------'  |
+|                            |         |                             |
+'----------------------------'         |                             |
+                                       '-----------------------------'
+</artwork>
+        </figure>
+        <t indent="0" pn="section-5.1-2"><xref target="fig-naming-arch" format="default" sectionFormat="of" derivedContent="Figure 2"/> illustrates the architecture where the HNA outsources the publication of the Public Homenet Zone to the DOI.
+The DOI will serve every DNS request of the Public Homenet Zone coming from outside the home network. When the request is coming from within the home network, the resolution is expected to be handled by the Homenet DNS Resolver as further detailed below.</t>
+        <t indent="0" pn="section-5.1-3">In this example, the Public Homenet Zone is identified by the Registered Homenet Domain name "myhome.example".
+	This diagram also shows a reverse IPv6 map being hosted.</t>
+        <t indent="0" pn="section-5.1-4">".local" and ".home.arpa" are explicitly not considered Public Homenet Zones; therefore, they are represented as a Homenet Zone in <xref target="fig-naming-arch" format="default" sectionFormat="of" derivedContent="Figure 2"/>.
+They are resolved locally but are not published because they are considered local content.</t>
+        <t indent="0" pn="section-5.1-5">It is <bcp14>RECOMMENDED</bcp14> that the HNA implements DNSSEC, in which case the HNA <bcp14>MUST</bcp14> sign the Public Homenet Zone with DNSSEC.</t>
+        <t indent="0" pn="section-5.1-6">The HNA handles all operations and keying material required for DNSSEC, so there is no provision made in this architecture for transferring private DNSSEC-related keying material between the HNA and the DM.</t>
+        <t indent="0" pn="section-5.1-7">Once the Public Homenet Zone has been built, the HNA communicates and synchronizes it with the DOI using a primary/secondary setting as depicted in <xref target="fig-naming-arch" format="default" sectionFormat="of" derivedContent="Figure 2"/>.
+The HNA acts as a stealth server (see <xref target="RFC8499" format="default" sectionFormat="of" derivedContent="RFC8499"/>) while the DM behaves as a hidden secondary. It is responsible for distributing the Public Homenet Zone to the multiple Public Authoritative Server instances that DOI is responsible for. The DM has three communication channels:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.1-8">
+          <li pn="section-5.1-8.1">DM Control Channel (<xref target="sec-ctrl" format="default" sectionFormat="of" derivedContent="Section 6"/>) to configure the HNA and the DOI. This includes necessary parameters to configure the primary/secondary relation as well as some information provided by the DOI that needs to be included by the HNA in the Public Homenet Zone.</li>
+          <li pn="section-5.1-8.2">DM Synchronization Channel (<xref target="sec-synch" format="default" sectionFormat="of" derivedContent="Section 7"/>) to synchronize the Public Homenet Zone on the HNA and on the DM with the appropriately configured primary/secondary.
+This is a zone transfer over mutually authenticated TLS.</li>
+          <li pn="section-5.1-8.3">One or more Distribution Channels (<xref target="sec-dist" format="default" sectionFormat="of" derivedContent="Section 8"/>) that distribute the Public Homenet Zone from the DM to the Public Authoritative Servers serving the Public Homenet Zone on the Internet.</li>
+        </ul>
+        <t indent="0" pn="section-5.1-9">There might be multiple DMs and multiple servers per the DM.
+This document assumes a single DM server for simplicity, but there is no reason why each channel needs to be implemented on the same server or use the same code base.</t>
+        <t indent="0" pn="section-5.1-10">It is important to note that while the HNA is configured as an authoritative server, it is not expected to answer DNS requests from the <em>public</em> Internet for the Public Homenet Zone.
+More specifically, the addresses associated with the HNA <bcp14>SHOULD NOT</bcp14> be mentioned in the NS records of the Public Homenet Zone, unless additional security provisions necessary to protect the HNA from external attack have been taken.</t>
+        <t indent="0" pn="section-5.1-11">The DOI is also responsible for ensuring the DS record has been updated in the parent zone.</t>
+        <t indent="0" pn="section-5.1-12">Resolution is performed by DNS Resolvers.
+When the resolution is performed outside the home network, the DNS Resolver resolves the DS record on the Global DNS and the name associated with the Public Homenet Zone (myhome.example) on the Public Authoritative Servers.</t>
+        <t indent="0" pn="section-5.1-13">In order to provide resilience to the Public Homenet Zone in case of WAN connectivity disruption, the Homenet DNS Resolver <bcp14>MUST</bcp14> be able to perform the resolution on the Homenet Authoritative Servers.
+Note that the use of the Homenet DNS Resolver enhances privacy since the user on the home network would no longer be leaking interactions with internal services to an external DNS provider and to an on-path observer.
+These servers are not expected to be mentioned in the Public Homenet Zone nor to be accessible from the Internet.
+As such, their information as well as the corresponding signed DS record <bcp14>MAY</bcp14> be provided by the HNA to the Homenet DNS Resolvers, e.g., by using the Home Networking Control Protocol (HNCP) <xref target="RFC7788" format="default" sectionFormat="of" derivedContent="RFC7788"/> or by configuring a trust anchor <xref target="I-D.ietf-dnsop-dnssec-validator-requirements" format="default" sectionFormat="of" derivedContent="DRO-RECS"/>.
+Such configuration is outside the scope of this document.
+Since the scope of the Homenet Authoritative Servers is limited to the home network, these servers are expected to serve the Homenet Zone as represented in <xref target="fig-naming-arch" format="default" sectionFormat="of" derivedContent="Figure 2"/>.</t>
+      </section>
+      <section anchor="sec-comms" numbered="true" removeInRFC="false" toc="include" pn="section-5.2">
+        <name slugifiedName="name-distribution-manager-dm-com">Distribution Manager (DM) Communication Channels</name>
+        <t indent="0" pn="section-5.2-1">This section details the DM channels: the Control Channel, Synchronization Channel, and Distribution Channel.</t>
+        <t indent="0" pn="section-5.2-2">The Control Channel and the Synchronization Channel are the interfaces used between the HNA and the DOI. The entity within the DOI responsible for handling these communications is the DM. Communications between the HNA and the DM <bcp14>MUST</bcp14> be protected and mutually authenticated.
+The different protocols that can be used for security are discussed in more depth in <xref target="sec-ctrl-security" format="default" sectionFormat="of" derivedContent="Section 6.6"/>.</t>
+        <t indent="0" pn="section-5.2-3">The information exchanged between the HNA and the DM uses DNS messages protected by DNS over TLS (DoT) <xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/>.
+	This is configured identically to that described in <xref target="RFC9103" sectionFormat="comma" section="9.3.3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9103#section-9.3.3" derivedContent="RFC9103"/>.</t>
+        <t indent="0" pn="section-5.2-4">It is worth noting that both the DM and HNA need to agree on a common configuration in order to set up the Synchronization Channel and build and serve a coherent Public Homenet Zone.
+As previously noted, the visible NS records of the Public Homenet Zone (built by the HNA) remain pointing at the IP address of the DOI's Public Authoritative Servers.
+Unless the HNA is able to support the traffic load, the HNA <bcp14>SHOULD NOT</bcp14> appear as a visible NS record of the Public Homenet Zone. 
+In addition, and depending on the configuration of the DOI, the DM also needs to update the parent zone's NS, DS, and associated A or AAAA glue records.
+Refer to <xref target="sec-chain-of-trust" format="default" sectionFormat="of" derivedContent="Section 6.2"/> for more details.</t>
+        <t indent="0" pn="section-5.2-5">This specification assumes:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.2-6">
+          <li pn="section-5.2-6.1">The DM serves both the Control Channel and Synchronization Channel on a single IP address, on a single port, and by using a single transport protocol.</li>
+          <li pn="section-5.2-6.2">By default, the HNA uses a single IP address for both the Control and Synchronization channels; however, the HNA <bcp14>MAY</bcp14> use distinct IP addresses for the Control Channel and the Synchronization Channel -- see Sections <xref target="sec-synch" format="counter" sectionFormat="of" derivedContent="7"/> and <xref target="sec-sync-info" format="counter" sectionFormat="of" derivedContent="6.3"/> for more details.</li>
+        </ul>
+        <t indent="0" pn="section-5.2-7">The Distribution Channel is internal to the DOI and, as such, is not normatively defined by this specification.</t>
+      </section>
+    </section>
+    <section anchor="sec-ctrl" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-control-channel">Control Channel</name>
+      <t indent="0" pn="section-6-1">The DM Control Channel is used by the HNA and the DOI to exchange information related to the configuration of the delegation, which includes information to build the Public Homenet Zone (<xref target="sec-pbl-homenet-zone" format="default" sectionFormat="of" derivedContent="Section 6.1"/>), to build the DNSSEC chain of trust (<xref target="sec-chain-of-trust" format="default" sectionFormat="of" derivedContent="Section 6.2"/>), and to set the Synchronization Channel (<xref target="sec-sync-info" format="default" sectionFormat="of" derivedContent="Section 6.3"/>).</t>
+      <t indent="0" pn="section-6-2">Some information is carried from the DOI to the HNA, as described in the next section.
+The HNA updates the DOI with the IP address on which the zone is to be transferred using the Synchronization Channel.
+The HNA is always initiating the exchange in both directions.</t>
+      <t indent="0" pn="section-6-3">As such, the HNA has a prior knowledge of the DM identity (via an X.509 certificate), the IP address and port number to use, and the protocol to establish a secure session.
+      The DM acquires knowledge of the identity of the HNA (X.509 certificate) as well as the Registered Homenet Domain. For more detail on how this can be achieved, please see <xref target="hna-provisioning" format="default" sectionFormat="of" derivedContent="Appendix A.1"/>.</t>
+      <section anchor="sec-pbl-homenet-zone" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-building-the-public-homenet">Building the Public Homenet Zone</name>
+        <t indent="0" pn="section-6.1-1">The HNA builds the Public Homenet Zone based on a template that is returned by the DM to the HNA.  <xref target="sec-ctrl-messages" format="default" sectionFormat="of" derivedContent="Section 6.5"/> explains how this leverages the Authoritative Transfer (AXFR) mechanism.</t>
+        <t indent="0" pn="section-6.1-2">In order to build its zone completely, the HNA needs the names (and possibly IP addresses) of the Public Authoritative Name Servers.
+These are used to populate the NS records for the zone.
+All the content of the zone <bcp14>MUST</bcp14> be created by the HNA because the zone is DNSSEC signed.</t>
+        <t indent="0" pn="section-6.1-3">In addition, the HNA needs to know what to put into the MNAME of the SOA, and only the DOI knows what to put there.
+The DM <bcp14>MUST</bcp14> also provide useful operational parameters such as other fields of the SOA (SERIAL, RNAME, REFRESH, RETRY, EXPIRE, and MINIMUM); however, the HNA is free to override these values based upon local configuration.
+For instance, an HNA might want to change these values if it thinks that a renumbering event is approaching.</t>
+        <t indent="0" pn="section-6.1-4">Because the information associated with the DM is necessary for the HNA to proceed, this information exchange is mandatory.</t>
+        <t indent="0" pn="section-6.1-5">The HNA then performs a DNS Update operation to the DOI, updating the DOI with an NS, a DS, and A and AAAA records. These indicate where its Synchronization Channel is.
+The DOI does not publish this NS record but uses it to perform zone transfers.</t>
+      </section>
+      <section anchor="sec-chain-of-trust" numbered="true" removeInRFC="false" toc="include" pn="section-6.2">
+        <name slugifiedName="name-building-the-dnssec-chain-o">Building the DNSSEC Chain of Trust</name>
+        <t indent="0" pn="section-6.2-1">The HNA <bcp14>MUST</bcp14> provide the hash of the KSK via the DS RRset so that the DOI can provide this value to the parent zone.
+A common deployment use case is that the DOI is the registrar of the Registered Homenet Domain; therefore, its relationship with the registry of the parent zone enables it to update the parent zone. When such relation exists, the HNA should be able to request the DOI to update the DS RRset in the parent zone.
+A direct update is especially necessary to initialize the chain of trust.</t>
+        <t indent="0" pn="section-6.2-2">Though the HNA may also directly update the values of the DS via the Control Channel at a later time, it is <bcp14>RECOMMENDED</bcp14> to use other mechanisms such as CDS and CDNSKEY <xref target="RFC7344" format="default" sectionFormat="of" derivedContent="RFC7344"/> for transparent updates during key rollovers.</t>
+        <t indent="0" pn="section-6.2-3">As some deployments may not provide a DOI that will be able to update the DS in the parent zone, this information exchange is <bcp14>OPTIONAL</bcp14>.</t>
+        <t indent="0" pn="section-6.2-4">By accepting the DS RR, the DM commits to advertise the DS to the parent zone.
+On the other hand, if the DM does not have the capacity to advertise the DS to the parent  zone, it indicates this by refusing the update to the DS RR.</t>
+      </section>
+      <section anchor="sec-sync-info" numbered="true" removeInRFC="false" toc="include" pn="section-6.3">
+        <name slugifiedName="name-setting-up-the-synchronizat">Setting Up the Synchronization Channel</name>
+        <t indent="0" pn="section-6.3-1">The HNA works as a hidden primary authoritative DNS server while the DM works like a secondary one.
+As a result, the HNA needs to provide the IP address that the DM should use to reach the HNA.</t>
+        <t indent="0" pn="section-6.3-2">If the HNA detects that it has been renumbered, then it <bcp14>MUST</bcp14> use the Control Channel to update the DOI with the new IPv6 address it has been assigned.</t>
+        <t indent="0" pn="section-6.3-3">The Synchronization Channel will be set between the new IPv6 (and IPv4) address and the IP address of the DM.
+By default, the IP address used by the HNA in the Control Channel is considered by the DM, and the explicit specification of the IP by the HNA is only <bcp14>OPTIONAL</bcp14>.
+The transport channel (including the port number) is the same as the one used between the HNA and the DM for the Control Channel.</t>
+      </section>
+      <section anchor="deleting-the-delegation" numbered="true" removeInRFC="false" toc="include" pn="section-6.4">
+        <name slugifiedName="name-deleting-the-delegation">Deleting the Delegation</name>
+        <t indent="0" pn="section-6.4-1">The purpose of the previous sections is to exchange information in order to set a delegation.
+The HNA <bcp14>MUST</bcp14> also be able to delete a delegation with a specific DM.</t>
+        <t indent="0" pn="section-6.4-2"><xref target="sec-zone-delete" format="default" sectionFormat="of" derivedContent="Section 6.5.4"/> explains how a DNS Update operation on the Control Channel is used.</t>
+        <t indent="0" pn="section-6.4-3">Upon receiving the instruction to delete the delegation, the DM <bcp14>MUST</bcp14> stop serving the Public Homenet Zone.</t>
+        <t indent="0" pn="section-6.4-4">The decision to delete an inactive HNA by the DM is part of the commercial agreement between the DOI and HNA.</t>
+      </section>
+      <section anchor="sec-ctrl-messages" numbered="true" removeInRFC="false" toc="include" pn="section-6.5">
+        <name slugifiedName="name-message-exchange-descriptio">Message Exchange Description</name>
+        <t indent="0" pn="section-6.5-1">Multiple ways were considered on how the control information could be exchanged between  the HNA and the DM.</t>
+        <t indent="0" pn="section-6.5-2">This specification defines a mechanism that reuses the DNS zone transfer format.
+Note that while information is provided using DNS exchanges, the exchanged information is not expected to be set in any zone file; instead, this information is used as commands between the HNA and the DM.
+This was found to be simpler on the home router side, as the HNA already has to have code to deal with all the DNS encodings/decodings.
+Inventing a new way to encode the DNS information in, for instance, JSON seemed to add complexity for no return on investment.</t>
+        <t indent="0" pn="section-6.5-3">The Control Channel is not expected to be a long-term session.
+After a predefined timer (similar to those used for TCP), the Control Channel is expected to be terminated by closing the transport channel. The Control Channel <bcp14>MAY</bcp14> be reopened at any later time.</t>
+        <t indent="0" pn="section-6.5-4">The use of TLS session tickets (see <xref section="4.6.1" sectionFormat="comma" target="RFC8446" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8446#section-4.6.1" derivedContent="RFC8446"/>) is <bcp14>RECOMMENDED</bcp14>.</t>
+        <t indent="0" pn="section-6.5-5">The authentication of the channel <bcp14>MUST</bcp14> be based on certificates for both the DM and each HNA.
+The DM may also create the initial configuration for the delegation zone in the parent zone during the provisioning process.</t>
+        <section anchor="zonetemplate" numbered="true" removeInRFC="false" toc="include" pn="section-6.5.1">
+          <name slugifiedName="name-retrieving-information-for-">Retrieving Information for the Public Homenet Zone</name>
+          <t indent="0" pn="section-6.5.1-1">The information provided by the DM to the HNA is retrieved by the HNA with an AXFR exchange <xref target="RFC1034" format="default" sectionFormat="of" derivedContent="RFC1034"/>.
+AXFR enables the response to contain any type of RRsets.</t>
+          <t indent="0" pn="section-6.5.1-2">To retrieve the necessary information to build the Public Homenet Zone, the HNA <bcp14>MUST</bcp14> send a DNS request of type AXFR associated with the Registered Homenet Domain.</t>
+          <t indent="0" pn="section-6.5.1-3">The zone that is returned by the DM is used by the HNA as a template to build its own zone.</t>
+          <t indent="0" pn="section-6.5.1-4">The zone template <bcp14>MUST</bcp14> contain an RRset of type SOA, one or multiple RRsets of type NS, and zero or more RRsets of type A or AAAA (if the NS is in-domain <xref target="RFC8499" format="default" sectionFormat="of" derivedContent="RFC8499"/>). The zone template will include Time-To-Live (TTL) values for each RR, and the HNA <bcp14>SHOULD</bcp14> take these as suggested maximum values, but it <bcp14>MAY</bcp14> use lower values for operational reasons, such as for impending renumbering events.</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.5.1-5">
+            <li pn="section-6.5.1-5.1">The SOA RR indicates the value of the MNAME of the Public Homenet Zone to the HNA.</li>
+            <li pn="section-6.5.1-5.2">The NAME of the SOA RR <bcp14>MUST</bcp14> be the Registered Homenet Domain.</li>
+            <li pn="section-6.5.1-5.3">The MNAME value of the SOA RDATA is the value provided by the DOI to the HNA.</li>
+            <li pn="section-6.5.1-5.4">Other RDATA values (RNAME, REFRESH, RETRY, EXPIRE, and MINIMUM) are provided by the DOI as suggestions.</li>
+          </ul>
+          <t indent="0" pn="section-6.5.1-6">The NS RRsets carry the Public Authoritative Servers of the DOI.
+Their associated NAME <bcp14>MUST</bcp14> be the Registered Homenet Domain.</t>
+          <t indent="0" pn="section-6.5.1-7">In addition to the considerations above about default TTL, the HNA <bcp14>SHOULD</bcp14>
+take care to not pick a TTL larger than the parent NS, based upon the resolver's guidelines in <xref target="I-D.ietf-dnsop-ns-revalidation" format="default" sectionFormat="of" derivedContent="NS-REVALIDATION"/> and <xref target="I-D.ietf-dnsop-dnssec-validator-requirements" format="default" sectionFormat="of" derivedContent="DRO-RECS"/>.
+	  The RRsets of Type A and AAAA <bcp14>MUST</bcp14> have their NAME matching the NSDNAME of one of the NS RRsets.</t>
+          <t indent="0" pn="section-6.5.1-8">Upon receiving the response, the HNA <bcp14>MUST</bcp14> validate the format and properties of the SOA, NS, and A or AAAA RRsets.
+If an error occurs, the HNA <bcp14>MUST</bcp14> stop proceeding and <bcp14>MUST</bcp14> log an error.
+Otherwise, the HNA builds the Public Homenet Zone by setting the MNAME value of the SOA as indicated by the SOA provided by the AXFR response. The HNA <bcp14>MUST NOT</bcp14> exceed the values of NAME, REFRESH, RETRY, EXPIRE, and MINIMUM of the SOA provided by the AXFR response. The HNA <bcp14>MUST</bcp14> insert the NS and corresponding A or AAAA RRsets in its Public Homenet Zone. The HNA <bcp14>MUST</bcp14> ignore other RRsets.</t>
+          <t indent="0" pn="section-6.5.1-9">If an error message is returned by the DM, the HNA <bcp14>MUST</bcp14> proceed as a regular DNS resolution. Error messages <bcp14>SHOULD</bcp14> be logged for further analysis.
+If the resolution does not succeed, the outsourcing operation is aborted and the HNA <bcp14>MUST</bcp14> close the Control Channel.</t>
+        </section>
+        <section anchor="sec-ds" numbered="true" removeInRFC="false" toc="include" pn="section-6.5.2">
+          <name slugifiedName="name-providing-information-for-t">Providing Information for the DNSSEC Chain of Trust</name>
+          <t indent="0" pn="section-6.5.2-1">To provide the DS RRset to initialize the DNSSEC chain of trust, the HNA <bcp14>MAY</bcp14> send a DNS update <xref target="RFC3007" format="default" sectionFormat="of" derivedContent="RFC3007"/> message.</t>
+          <t indent="0" pn="section-6.5.2-2">The DNS update message is composed of a Header section, a Zone section, a Prerequisite section, an Update section, and an additional section.
+The Zone section <bcp14>MUST</bcp14> set the ZNAME to the parent zone of the Registered Homenet Domain, which is where the DS records should be inserted. As described in <xref target="RFC2136" format="default" sectionFormat="of" derivedContent="RFC2136"/>, ZTYPE is set to SOA and ZCLASS is set to the zone's class.
+The Prerequisite section <bcp14>MUST</bcp14> be empty.
+The Update section is a DS RRset with its NAME set to the Registered Homenet Domain, and the associated RDATA corresponds to the value of the DS.
+The Additional Data section <bcp14>MUST</bcp14> be empty.</t>
+          <t indent="0" pn="section-6.5.2-3">Though the Prerequisite section <bcp14>MAY</bcp14> be ignored by the DM, this value is fixed to remain coherent with a standard DNS update.</t>
+          <t indent="0" pn="section-6.5.2-4">Upon receiving the DNS update request, the DM reads the DS RRset in the Update section.
+The DM checks that ZNAME corresponds to the parent zone. The DM <bcp14>MUST</bcp14> ignore the Prerequisite and Additional Data sections, if present. The DM <bcp14>MAY</bcp14> update the TTL value before updating the DS RRset in the parent zone. Upon a successful update, the DM should return a NOERROR response as a commitment to update the parent zone with the provided DS. An error indicates that the DM does not update the DS, and the HNA needs to act accordingly; otherwise, another method should be used by the HNA.</t>
+          <t indent="0" pn="section-6.5.2-5">The regular DNS error message <bcp14>MUST</bcp14> be returned to the HNA when an error occurs. In particular, a FORMERR is returned when a format error is found, including when unexpected RRsets are added or when RRsets are missing. A SERVFAIL error is returned when an internal error is encountered.
+A NOTZONE error is returned when the Update and Zone sections are not coherent, and a NOTAUTH error is returned when the DM is not authoritative for the Zone section. A REFUSED error is returned when the DM refuses the configuration or performing the requested action.</t>
+        </section>
+        <section anchor="sec-ip-hna" numbered="true" removeInRFC="false" toc="include" pn="section-6.5.3">
+          <name slugifiedName="name-providing-information-for-th">Providing Information for the Synchronization Channel</name>
+          <t indent="0" pn="section-6.5.3-1">The default IP address used by the HNA for the Synchronization Channel is the IP address of the Control Channel. To provide a different IP address, the HNA <bcp14>MAY</bcp14> send a DNS UPDATE message.</t>
+          <t indent="0" pn="section-6.5.3-2">Similar to what is described in <xref target="sec-ds" format="default" sectionFormat="of" derivedContent="Section 6.5.2"/>, the HNA <bcp14>MAY</bcp14> specify the IP address using a DNS update message. The Zone section sets its ZNAME to the parent zone of the Registered Homenet Domain, ZTYPE to SOA, and ZCLASS to the zone's type. Prerequisite is empty. The Update section is an RRset of type NS. The Additional Data section contains the RRsets of type A or AAAA that designate the IP addresses associated with the primary (or the HNA).</t>
+          <t indent="0" pn="section-6.5.3-3">The reason to provide these IP addresses is to keep them unpublished and prevent them from being resolved. It is <bcp14>RECOMMENDED</bcp14> that the IP address of the HNA be randomly chosen to prevent it from being easily discovered as well.</t>
+          <t indent="0" pn="section-6.5.3-4">Upon receiving the DNS update request, the DM reads the IP addresses and checks that the ZNAME corresponds to the parent zone. The DM <bcp14>MUST</bcp14> ignore a non-empty Prerequisite section. The DM configures the secondary with the IP addresses and returns a NOERROR response to indicate it is committed to serve as a secondary.</t>
+          <t indent="0" pn="section-6.5.3-5">Similar to what is described in <xref target="sec-ds" format="default" sectionFormat="of" derivedContent="Section 6.5.2"/>, DNS errors are used, and an error indicates the DM is not configured as a secondary.</t>
+        </section>
+        <section anchor="sec-zone-delete" numbered="true" removeInRFC="false" toc="include" pn="section-6.5.4">
+          <name slugifiedName="name-initiating-deletion-of-the-">Initiating Deletion of the Delegation</name>
+          <t indent="0" pn="section-6.5.4-1">To initiate the deletion of the delegation, the HNA sends a DNS UPDATE Delete message.</t>
+          <t indent="0" pn="section-6.5.4-2">The Zone section sets its ZNAME to the Registered Homenet Domain, the ZTYPE to SOA, and the ZCLASS to the zone's type. The Prerequisite section is empty. The Update section is an RRset of type NS with the NAME set to the Registered Domain Name.
+	  As indicated by <xref target="RFC2136" sectionFormat="comma" section="2.5.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc2136#section-2.5.2" derivedContent="RFC2136"/>, the delete instruction is initiated by setting TTL to 0, CLASS to ANY, and RDLENGTH to 0, and RDATA <bcp14>MUST</bcp14> be empty. The Additional Data section is empty.</t>
+          <t indent="0" pn="section-6.5.4-3">Upon receiving the DNS update request, the DM checks the request and removes the delegation. The DM returns a NOERROR response to indicate the delegation has been deleted. Similar to what is described in <xref target="sec-ds" format="default" sectionFormat="of" derivedContent="Section 6.5.2"/>, DNS errors are used, and an error indicates that the delegation has not been deleted.</t>
+        </section>
+      </section>
+      <section anchor="sec-ctrl-security" numbered="true" removeInRFC="false" toc="include" pn="section-6.6">
+        <name slugifiedName="name-securing-the-control-channe">Securing the Control Channel</name>
+        <t indent="0" pn="section-6.6-1">TLS <xref target="RFC8446" format="default" sectionFormat="of" derivedContent="RFC8446"/> <bcp14>MUST</bcp14> be used to secure the transactions between the DM and the HNA, and the DM and HNA <bcp14>MUST</bcp14> be mutually authenticated.
+The DNS exchanges are performed using DNS over TLS <xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/>.</t>
+        <t indent="0" pn="section-6.6-2">The HNA may be provisioned by the manufacturer or during some user-initiated onboarding process, for example, with a browser, by signing up to a service provider, and with a resulting OAuth 2.0 token to be provided to the HNA. Such a process may result in a passing of a settings from a registrar into the HNA through an http API interface. (This is not in scope for this document.)</t>
+        <t indent="0" pn="section-6.6-3">When the HNA connects to the DM's Control Channel, TLS will be used, and the connection will be mutually authenticated.
+The DM will authenticate the HNA's certificate based upon having participated in some provisioning process that is not standardized by this document. The results of the provisioning process is a series of settings described in <xref target="hna-provisioning" format="default" sectionFormat="of" derivedContent="Appendix A.1"/>.</t>
+        <t indent="0" pn="section-6.6-4">The HNA will validate the DM's Control Channel certificate by performing a DNS-ID check on the name as described in <xref target="RFC9525" format="default" sectionFormat="of" derivedContent="RFC9525"/>.</t>
+        <t indent="0" pn="section-6.6-5">In the future, other specifications may consider protecting DNS messages with other transport layers such as DNS over DTLS <xref target="RFC8094" format="default" sectionFormat="of" derivedContent="RFC8094"/>, DNS over HTTPS (DoH) <xref target="RFC8484" format="default" sectionFormat="of" derivedContent="RFC8484"/>, or DNS over QUIC <xref target="RFC9250" format="default" sectionFormat="of" derivedContent="RFC9250"/>.</t>
+      </section>
+    </section>
+    <section anchor="sec-synch" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-synchronization-channel">Synchronization Channel</name>
+      <t indent="0" pn="section-7-1">The DM Synchronization Channel is used for communication between the HNA and the DM for synchronizing the Public Homenet Zone. Note that the Control Channel and the Synchronization Channel are different channels by construction even though they may use the same IP address. Suppose the HNA and the DM are using a single IP address designated by XX, and YYYYY and ZZZZZ are the various ports involved in the communications.</t>
+      <t indent="0" pn="section-7-2">The Control Channel is between</t>
+      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-7-3">
+        <li pn="section-7-3.1">the HNA working as a client using port number YYYYY (an ephemeral also commonly designated as a high range port) and</li>
+        <li pn="section-7-3.2">a service provided by the DM at port 853, when using DoT.</li>
+      </ul>
+      <t indent="0" pn="section-7-4">On the other hand, the Synchronization Channel is between</t>
+      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-7-5">
+        <li pn="section-7-5.1">the DM working as a client using port ZZZZZ (another ephemeral port) and</li>
+        <li pn="section-7-5.2">a service provided by the HNA at port 853.</li>
+      </ul>
+      <t indent="0" pn="section-7-6">As a result, even though the same pair of IP addresses may be involved, the Control Channel and the Synchronization Channel are always distinct channels.</t>
+      <t indent="0" pn="section-7-7">Uploading and dynamically updating the zone file on the DM can be seen as zone provisioning between the HNA (hidden primary server) and the DM (secondary server).
+This is handled using the normal zone transfer mechanism involving the AXFR and Incremental Zone Transfer (IXFR).</t>
+      <t indent="0" pn="section-7-8">Part of the process to update the zone involves the owner of the zone (the hidden primary server, the HNA) sending a DNS Notify to the secondaries. In this situation, the only destination that is known by the HNA is the DM's Control Channel, so DNS Notifies are sent over the Control Channel, secured by a mutually authenticated TLS.</t>
+      <t indent="0" pn="section-7-9">Please note that DNS Notifies are not critical to normal operation, as the DM will be checking the zone regularly based upon SOA record comments.  DNS Notifies do speed things up as they cause the DM to use the Synchronization Channel to immediately do an SOA query to detect any updates.  If there are any changes, then the DM immediately transfers the zone updates.</t>
+      <t indent="0" pn="section-7-10">This specification standardizes the use of a primary/secondary mechanism <xref target="RFC1996" format="default" sectionFormat="of" derivedContent="RFC1996"/> rather than an extended series of DNS update messages. The primary/secondary mechanism was selected as it scales better and avoids DoS attacks. Because this AXFR runs over a TCP channel secured by a mutually authenticated TLS, the DNS update is more complicated.</t>
+      <t indent="0" pn="section-7-11">Note that this document provides no standard way to distribute a DNS primary between multiple devices. As a result, if multiple devices are candidates for hosting the hidden primary server, some specific mechanisms should be designed so the home network only selects a single HNA for the hidden primary server. Selection mechanisms based on HNCP <xref target="RFC7788" format="default" sectionFormat="of" derivedContent="RFC7788"/> are good candidates for future work.</t>
+      <section anchor="sec-synch-security" numbered="true" removeInRFC="false" toc="include" pn="section-7.1">
+        <name slugifiedName="name-securing-the-synchronizatio">Securing the Synchronization Channel</name>
+        <t indent="0" pn="section-7.1-1">The Synchronization Channel uses mutually authenticated TLS, as described by <xref target="RFC9103" format="default" sectionFormat="of" derivedContent="RFC9103"/>.</t>
+        <t indent="0" pn="section-7.1-2">There is a TLS client certificate used by the DM to authenticate itself.
+The DM uses the same certificate that was configured into the HNA for authenticating the Control Channel, but as a client certificate rather than a server certificate.</t>
+        <t indent="0" pn="section-7.1-3"><xref target="RFC9103" format="default" sectionFormat="of" derivedContent="RFC9103"/> makes no requirements or recommendations on any extended key usage flags for zone transfers, and this document adopts the view that none should be required. Note that once an update to <xref target="RFC9103" format="default" sectionFormat="of" derivedContent="RFC9103"/> is published, this document's normative reference to <xref target="RFC9103" format="default" sectionFormat="of" derivedContent="RFC9103"/> will be considered updated as well.</t>
+        <t indent="0" pn="section-7.1-4">For the TLS server certificate, the HNA uses the same certificate that it uses to authenticate itself to the DM for the Control Channel.</t>
+        <t indent="0" pn="section-7.1-5">The HNA <bcp14>MAY</bcp14> use this certificate as the authorization for the zone transfer, or the HNA <bcp14>MAY</bcp14> have been configured with an Access Control List (ACL) that will determine if the zone transfer can proceed. This is a local configuration option as it is premature to determine which will be operationally simpler.</t>
+        <t indent="0" pn="section-7.1-6">When the HNA expects to do zone transfer authorization by certificate only, the HNA <bcp14>MAY</bcp14> still apply an ACL on inbound connection requests to avoid load.
+In this case, the HNA <bcp14>MUST</bcp14> regularly check (via a DNS resolution) the validity of the address(es) of the DM in the filter.</t>
+      </section>
+    </section>
+    <section anchor="sec-dist" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-dm-distribution-channel">DM Distribution Channel</name>
+      <t indent="0" pn="section-8-1">The DM Distribution Channel is used for communication between the DM and the Public Authoritative Servers.
+The architecture and communication used for the DM Distribution Channels are outside the scope of this document, but there are many existing solutions available, e.g., rsync, DNS AXFR, REST, and DB copy.</t>
+    </section>
+    <section anchor="sec-cpe-sec-policies" numbered="true" removeInRFC="false" toc="include" pn="section-9">
+      <name slugifiedName="name-hna-security-policies">HNA Security Policies</name>
+      <t indent="0" pn="section-9-1">The HNA, as the hidden primary server, processes only limited message exchanges on its Internet-facing interface.
+This should be enforced using security policies to allow only a subset of DNS requests to be received by HNA.</t>
+      <t indent="0" pn="section-9-2">The hidden primary server on the HNA differs from the regular authoritative server for the home network due to the following:</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-9-3">
+        <dt pn="section-9-3.1">Interface Binding:</dt>
+        <dd pn="section-9-3.2">The hidden primary server will almost certainly listen on the WAN Interface, whereas a regular Homenet Authoritative Server will listen on the internal home network interface.
+        </dd>
+        <dt pn="section-9-3.3">Limited Exchanges:</dt>
+        <dd pn="section-9-3.4">The purpose of the hidden primary server is to synchronize with the DM, not to serve any zones to end users or the public Internet. This results in a limited number of possible exchanges (AXFR/IXFR) with a small number of IP addresses, and an implementation <bcp14>MUST</bcp14> enable filtering policies: it should only respond to queries that are required to do zone transfers.
+That list includes SOA queries and AXFR/IXFR queries.
+        </dd>
+      </dl>
+    </section>
+    <section anchor="sec-reverse" numbered="true" removeInRFC="false" toc="include" pn="section-10">
+      <name slugifiedName="name-public-homenet-reverse-zone">Public Homenet Reverse Zone</name>
+      <t indent="0" pn="section-10-1">The Public Homenet Reverse Zone works similarly to the Public Homenet Zone.
+The main difference is that the ISP that provides the IPv6 connectivity is likely to also be the owner of the corresponding IPv6 reverse zone who administrates the Reverse Public Authoritative Servers. The configuration and the setting of the Synchronization Channel and Control Channel can largely be automated using DHCPv6 messages that are a part of the IPv6 prefix delegation process.</t>
+      <t indent="0" pn="section-10-2">The Public Homenet Zone is associated with a Registered Homenet Domain, and the ownership of that domain requires a specific registration from the end user as well as the HNA being provisioned with some authentication credentials. Such steps are mandatory unless the DOI has some other means to authenticate the HNA. Such situation may occur, for example, when the ISP provides the Homenet Domain as well as the DOI.</t>
+      <t indent="0" pn="section-10-3">In this case, the HNA may be authenticated by the physical link layer, in which case the authentication of the HNA may be performed without additional provisioning of the HNA.
+While this may not be so common for the Public Homenet Zone, this situation is expected to be quite common for the Reverse Homenet Zone as the ISP owns the IP address or IP prefix.</t>
+      <t indent="0" pn="section-10-4">More specifically, a common case is that the upstream ISP provides the IPv6 prefix to the Homenet with an identity association for a prefix delegation (IA_PD) option <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/> and manages the DOI of the associated reverse zone.</t>
+      <t indent="0" pn="section-10-5">This leaves a place for setting up the relation between the HNA and DOI automatically as described in <xref target="RFC9527" format="default" sectionFormat="of" derivedContent="RFC9527"/>.</t>
+      <t indent="0" pn="section-10-6">In the case of the reverse zone, the DOI authenticates the source of the updates by IPv6 ACLs, and the ISP knows exactly what addresses have been delegated. Therefore, the HNA <bcp14>SHOULD</bcp14> always originate Synchronization Channel updates from an IP address within the zone that is being updated. Exceptionally, the Synchronization Channel might be from a different zone delegated to the HNA (if there were multiple zones or renumbering events were in progress).</t>
+      <t indent="0" pn="section-10-7">For example, if the ISP has assigned 2001:db8:f00d:1234::/64 to the WAN interface (by DHCPv6 or PPP with Router Advertisement (RA)), then the HNA should originate Synchronization Channel updates from, for example, 2001:db8:f00d:1234::2.</t>
+      <t indent="0" pn="section-10-8">If an ISP has delegated 2001:db8:aeae::/56 to the HNA via DHCPv6-PD, then the HNA should originate Synchronization Channel updates to an IP address within that subnet, such as 2001:db8:aeae:1::2.</t>
+      <t indent="0" pn="section-10-9">With this relation automatically configured, the synchronization between the Home network and the DOI happens in a similar way to the synchronization of the Public Homenet Zone described earlier in this document.</t>
+      <t indent="0" pn="section-10-10">Note that for home networks connected to multiple ISPs, each ISP provides only the DOI of the reverse zones associated with the delegated prefix. It is also likely that the DNS exchanges will need to be performed on dedicated interfaces to be accepted by the ISP. More specifically, the reverse zone update associated with prefix 1 cannot be performed by the HNA using an IP address that belongs to prefix 2.  Such constraints do not raise major concerns for hot standby or load-sharing configuration.</t>
+      <t indent="0" pn="section-10-11">With IPv6, the reverse domain space for IP addresses associated with a subnet such as ::/64 is so large that the reverse zone may be confronted with scalability issues.
+How the reverse zone is generated is out of scope of this document.
+<xref target="RFC8501" format="default" sectionFormat="of" derivedContent="RFC8501"/> provides guidance on how to address scalability issues.</t>
+    </section>
+    <section anchor="sec-dnssec-deployment" numbered="true" removeInRFC="false" toc="include" pn="section-11">
+      <name slugifiedName="name-dnssec-compliant-homenet-ar">DNSSEC-Compliant Homenet Architecture</name>
+      <t indent="0" pn="section-11-1"><xref target="RFC7368" sectionFormat="of" section="3.7.3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7368#section-3.7.3" derivedContent="RFC7368"/> recommends that DNSSEC be deployed on both the authoritative server and the resolver.</t>
+      <t indent="0" pn="section-11-2">The resolver side is out of scope of this document, and only the authoritative part of the server is considered.
+      Other documents such as <xref target="RFC5011" format="default" sectionFormat="of" derivedContent="RFC5011"/> deal with the continuous update of trust anchors required for operation of a DNSSEC Resolver.</t>
+      <t indent="0" pn="section-11-3">The Public Homenet Zone and the Public Reverse Zone <bcp14>MUST</bcp14> be DNSSEC signed by the HNA.</t>
+      <t indent="0" pn="section-11-4">Secure delegation is achieved only if the DS RRset is properly set in the parent zone.
+Secure delegation can be performed by the HNA or the DOIs, and the choice highly depends on which entity is authorized to perform such updates.
+Typically, the DS RRset is updated manually through a registrar interface and can be maintained with mechanisms such as CDS <xref target="RFC7344" format="default" sectionFormat="of" derivedContent="RFC7344"/>.</t>
+      <t indent="0" pn="section-11-5">When the operator of the DOI is also the registrar for the domain, then it is a trivial matter for the DOI to initialize the relevant DS records in the parent zone.
+In other cases, some other initialization will be required, and that will be specific to the infrastructure involved.
+It is beyond the scope of this document.</t>
+      <t indent="0" pn="section-11-6">There may be some situations where the HNA is unable to arrange for secure delegation of the zones, but the HNA <bcp14>MUST</bcp14> still sign the zones.</t>
+    </section>
+    <section anchor="sec-renumbering" numbered="true" removeInRFC="false" toc="include" pn="section-12">
+      <name slugifiedName="name-renumbering">Renumbering</name>
+      <t indent="0" pn="section-12-1">During a renumbering of the home network, the HNA IP address may be changed and the Public Homenet Zone will be updated by the HNA with new AAAA records.</t>
+      <t indent="0" pn="section-12-2">The HNA will then advertise to the DM via a NOTIFY on the Control Channel.
+The DM will need to note the new originating IP for the connection, and it will need to update its internal database of Synchronization Channels.
+A new zone transfer will occur with the new records for the resources that the HNA wishes to publish.</t>
+      <t indent="0" pn="section-12-3">The remainder of the section provides recommendations regarding the provisioning of the Public Homenet Zone, especially the IP addresses.</t>
+      <t indent="0" pn="section-12-4">Renumbering has been extensively described in <xref target="RFC4192" format="default" sectionFormat="of" derivedContent="RFC4192"/> and analyzed in <xref target="RFC7010" format="default" sectionFormat="of" derivedContent="RFC7010"/>, and the reader is expected to be familiar with them before reading this section.
+In the make-before-break renumbering scenario, the new prefix is advertised, and the network is configured to prepare the transition to the new prefix. During a period of time, the two prefixes (old and new) coexist before the old prefix is completely removed. New resource records containing the new prefix <bcp14>SHOULD</bcp14> be published, while the old resource records with the old prefixes <bcp14>SHOULD</bcp14> be withdrawn. If the HNA anticipates that the period of overlap will be long (perhaps due to the knowledge of router and DHCPv6 lifetimes), it <bcp14>MAY</bcp14> publish the old prefixes with a significantly lower TTL.</t>
+      <t indent="0" pn="section-12-5">In break-before-make renumbering scenarios, including flash renumbering scenarios <xref target="RFC8978" format="default" sectionFormat="of" derivedContent="RFC8978"/>, the old prefix becomes unusable before the new prefix is known or advertised.
+As explained in <xref target="RFC8978" format="default" sectionFormat="of" derivedContent="RFC8978"/>, some flash renumberings occur due to power cycling of the HNA, where ISPs do not properly remember what prefixes have been assigned to which user.</t>
+      <t indent="0" pn="section-12-6">An HNA that boots up <bcp14>MUST</bcp14> immediately use the Control Channel to update the location for the Synchronization Channel. This is a reasonable thing to do on every boot, as the HNA has no idea how long it has been offline or if the (DNSSEC) zone has perhaps expired during the time the HNA was powered off.</t>
+      <t indent="0" pn="section-12-7">The HNA will have a list of names that should be published, but it might not yet have IP addresses for those devices. This could be because at the time of power on, the other devices were not yet online.
+If the HNA is sure that the prefix has not changed, then it should use the previously known addresses, with a very low TTL.</t>
+      <t indent="0" pn="section-12-8">Although the new and old IP addresses may be stored in the Public Homenet Zone, it is <bcp14>RECOMMENDED</bcp14> that only the newly reachable IP addresses be published.</t>
+      <t indent="0" pn="section-12-9">Regarding the Public Homenet Reverse Zone, the new Public Homenet Reverse Zone has to be populated as soon as possible, and the old Public Homenet Reverse Zone will be deleted by the owner of the zone (and the owner of the old prefix, which is usually the ISP) once the prefix is no longer assigned to the HNA.
+The ISP <bcp14>MUST</bcp14> ensure that the DNS cache has expired before reassigning the prefix to a new home network.
+This may be enforced by controlling the TTL values.</t>
+      <t indent="0" pn="section-12-10">To avoid reachability disruption, IP connectivity information provided by the DNS <bcp14>MUST</bcp14> be coherent with the IP in use.
+In our case, this means the old IP address <bcp14>MUST NOT</bcp14> be provided via the DNS when it is not reachable anymore.</t>
+      <t indent="0" pn="section-12-11">In the make-before-break scenario, it is possible to make the transition seamless.
+Let T be the TTL associated with an RRset of the Public Homenet Zone;
+Time_NEW be the time the new IP address replaces the old IP address in the Homenet Zone; and Time_OLD_UNREACHABLE be the time the old IP will not be reachable anymore.</t>
+      <t indent="0" pn="section-12-12">In the case of the make-before-break scenario, seamless reachability is provided as long as Time_OLD_UNREACHABLE - T_NEW &gt; (2 * T).
+If this is not satisfied, then devices associated with the old IP address in the home network may become unreachable for 2 * T - (Time_OLD_UNREACHABLE - Time_NEW).</t>
+      <t indent="0" pn="section-12-13">In the case of a break-before-make scenario, Time_OLD_UNREACHABLE = Time_NEW, and the device may become unreachable up to 2 * T.
+Of course, if Time_NEW &gt;= Time_OLD_UNREACHABLE, then the outage is not seamless.</t>
+    </section>
+    <section anchor="sec-privacy" numbered="true" removeInRFC="false" toc="include" pn="section-13">
+      <name slugifiedName="name-privacy-considerations">Privacy Considerations</name>
+      <t indent="0" pn="section-13-1">Outsourcing the DNS Authoritative service from the HNA to a third party raises a few privacy-related concerns.</t>
+      <t indent="0" pn="section-13-2">The Public Homenet Zone lists the names of services hosted in the home network.
+Combined with blocking of AXFR queries, the use of NSEC3 <xref target="RFC5155" format="default" sectionFormat="of" derivedContent="RFC5155"/> (vs. NSEC <xref target="RFC4034" format="default" sectionFormat="of" derivedContent="RFC4034"/>) prevents an  attacker from being able to walk the zone to discover all the names.
+However, recent work <xref target="GPUNSEC3" format="default" sectionFormat="of" derivedContent="GPUNSEC3"/> <xref target="ZONEENUM" format="default" sectionFormat="of" derivedContent="ZONEENUM"/> has shown that the protection provided by NSEC3 against dictionary attacks should be considered cautiously, and <xref target="RFC9276" format="default" sectionFormat="of" derivedContent="RFC9276"/> provides guidelines to configure NSEC3 properly. In addition, the attacker may be able to walk the reverse DNS zone or use other reconnaissance techniques to learn this information as described in <xref target="RFC7707" format="default" sectionFormat="of" derivedContent="RFC7707"/>.</t>
+      <t indent="0" pn="section-13-3">The zone may be also exposed during the synchronization between the primary and the secondary. The casual risk of this occurring is low, and the use of <xref target="RFC9103" format="default" sectionFormat="of" derivedContent="RFC9103"/> significantly reduces this. Even if DNS zone transfer over TLS <xref target="RFC9103" format="default" sectionFormat="of" derivedContent="RFC9103"/> is used by the DOI, it may still leak the existence of the zone through Notifies. The protocol described in this document does not increase that risk, as all Notifies use the encrypted Control Channel.</t>
+      <t indent="0" pn="section-13-4">In general, a home network owner is expected to publish only names for which there is some need to reference them externally. Publication of the name does not imply that the service is necessarily reachable from any or all parts of the Internet. <xref target="RFC7084" format="default" sectionFormat="of" derivedContent="RFC7084"/> mandates that the outgoing-only policy <xref target="RFC6092" format="default" sectionFormat="of" derivedContent="RFC6092"/> be available, and in many cases, it is configured by default.
+A well-designed user interface would combine a policy for making a service public by a name with a policy on who may access it.</t>
+      <t indent="0" pn="section-13-5">In many cases, and for privacy reasons, the home network owner has wanted to publish names only for services that they will be able to access. The access control may consist of an IP source address range, or access may be restricted via some VPN functionality. The main advantages of publishing the names are that the service may be accessed by the same name both within and outside the home, and the DNS resolution can be handled similarly both within and outside the home. This considerably eases the ability to use VPNs where the VPN can be chosen according to the IP address of the service. Typically, a user may configure its device to reach its Homenet devices via a VPN while the remaining traffic is accessed directly.</t>
+      <t indent="0" pn="section-13-6">Enterprise networks have generally adopted another strategy designated as split-horizon-DNS. While such strategy might appear as providing more privacy at first sight, its implementation remains challenging and the privacy advantages need to be considered carefully. In split-horizon-DNS, names are designated with internal names that can only be resolved within the corporate network. When such strategy is applied to the homenet, VPNs need to be configured with naming resolution policies and routing policies. Such an approach might be reasonable with a single VPN, but maintaining a coherent DNS space and IP space among various VPNs comes with serious complexities. Firstly, if multiple homenets are using the same domain name -- like home.arpa -- it becomes difficult to determine on which network the resolution should be performed. As a result, homenets should at least be differentiated by a domain name. Secondly, the use of split-horizon-DNS requires each VPN to be associated with a resolver and specific resolutions to be performed by the dedicated resolver. Such policies can easily raise some conflicts (with significant privacy issues) while remaining hard to be implemented.</t>
+      <t indent="0" pn="section-13-7">In addition to the Public Homenet Zone, pervasive DNS monitoring can also monitor the traffic associated with the Public Homenet Zone.
+This traffic may provide an indication of the services an end user accesses, plus how and when they use these services. Although, caching may obfuscate this information inside the home network, it is likely that this information will not be cached outside the home network.</t>
+    </section>
+    <section anchor="sec-security" numbered="true" removeInRFC="false" toc="include" pn="section-14">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-14-1">The HNA never answers DNS requests from the Internet.
+These requests are instead served by the DOI.</t>
+      <t indent="0" pn="section-14-2">While this limits the level of exposure of the HNA, the HNA still has some exposure to attacks from the Internet.
+This section analyses the attack surface associated with these communications, the data published by the DOI, as well as operational considerations.</t>
+      <section anchor="registered-homenet-domain" numbered="true" removeInRFC="false" toc="include" pn="section-14.1">
+        <name slugifiedName="name-registered-homenet-domain">Registered Homenet Domain</name>
+        <t indent="0" pn="section-14.1-1">The DOI <bcp14>MUST NOT</bcp14> serve any Public Homenet Zone when it is not confident that the HNA owns the Registered Homenet Domain. 
+Proof of ownership is outside the scope of this document, and it is assumed that such a phase has preceded the outsourcing of the zone.</t>
+      </section>
+      <section anchor="hna-dm-channels" numbered="true" removeInRFC="false" toc="include" pn="section-14.2">
+        <name slugifiedName="name-hna-dm-channels">HNA DM Channels</name>
+        <t indent="0" pn="section-14.2-1">The channels between HNA and DM are mutually authenticated and encrypted with TLS <xref target="RFC8446" format="default" sectionFormat="of" derivedContent="RFC8446"/>, and its associated security considerations apply.</t>
+        <t indent="0" pn="section-14.2-2">To ensure that the multiple TLS sessions are continuously authenticating the same entity, TLS may take advantage of second-factor authentication as described in <xref target="RFC8672" format="default" sectionFormat="of" derivedContent="RFC8672"/> for the TLS server certificate for the Control Channel. The HNA should also cache the TLS server certificate used by the DM, in order to authenticate the DM during the setup of the Synchronization Channel. (Alternatively, the HNA is configured with an ACL from which Synchronization Channel connections will originate.)</t>
+        <t indent="0" pn="section-14.2-3">The Control Channel and Synchronization Channel follow the guidelines in <xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/> and <xref target="RFC9103" format="default" sectionFormat="of" derivedContent="RFC9103"/>, respectively.</t>
+        <t indent="0" pn="section-14.2-4">The DNS protocol is subject to reflection attacks; however, these attacks are largely applicable when DNS is carried over UDP. The interfaces between the HNA and DM are using TLS over TCP, which prevents such reflection attacks.
+Note that Public Authoritative servers hosted by the DOI are subject to such attacks, but that is out of scope of this document.</t>
+        <t indent="0" pn="section-14.2-5">Note that in the case of the Reverse Homenet Zone, the data is less subject to attacks than in the Public Homenet Zone. In addition, the DM and Reverse Distribution Manager (RDM) may be provided by the ISP -- as described in <xref target="RFC9527" format="default" sectionFormat="of" derivedContent="RFC9527"/>, in which case DM and RDM might be less exposed to attacks -- as communications within a network.</t>
+      </section>
+      <section anchor="sec-name-less-secure" numbered="true" removeInRFC="false" toc="include" pn="section-14.3">
+        <name slugifiedName="name-names-are-less-secure-than-">Names Are Less Secure than IP Addresses</name>
+        <t indent="0" pn="section-14.3-1">This document describes how an end user can make their services and devices from their home network reachable on the Internet by using names rather than IP addresses.
+	This exposes the home network to attackers because names are expected to include less entropy than IP addresses. IPv4 addresses are 4-bytes long leading to 2<sup>32</sup> possibilities.
+With IPv6 addresses, the Interface Identifier is 64-bits long leading to up to 2<sup>64</sup> possibilities  for a given subnetwork. This is not to mention that the subnet prefix is also 64-bits long, thus providing up to 2<sup>64</sup> possibilities. On the other hand, names used for either the home network domain or the devices present less entropy (livebox, router, printer, nicolas, jennifer, ...) and thus potentially expose the devices to dictionary attacks.</t>
+      </section>
+      <section anchor="sec-name-less-volatile" numbered="true" removeInRFC="false" toc="include" pn="section-14.4">
+        <name slugifiedName="name-names-are-less-volatile-tha">Names Are Less Volatile than IP Addresses</name>
+        <t indent="0" pn="section-14.4-1">IP addresses may be used to locate a device, a host, or a service.
+However, home networks are not expected to be assigned a time-invariant prefix by ISPs. In addition, IPv6 enables temporary addresses that makes them even more volatile <xref target="RFC8981" format="default" sectionFormat="of" derivedContent="RFC8981"/>. As a result, observing IP addresses only provides some ephemeral information about who is accessing the service. On the other hand, names are not expected to be as volatile as IP addresses. As a result, logging names over time may be more valuable than logging IP addresses, especially to profile an end user's characteristics.</t>
+        <t indent="0" pn="section-14.4-2">PTR provides a way to bind an IP address to a name.
+In that sense, responding to PTR DNS queries may affect the end user's privacy.
+For that reason, PTR DNS queries <bcp14>MAY</bcp14> be configured to return with NXDOMAIN instead.</t>
+      </section>
+      <section anchor="deployment-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-14.5">
+        <name slugifiedName="name-deployment-considerations">Deployment Considerations</name>
+        <t indent="0" pn="section-14.5-1">The HNA is expected to sign the DNSSEC zone and, as such, hold the private KSK and Zone Signing Key (ZSK).</t>
+        <t indent="0" pn="section-14.5-2">In this case, there is no strong justification to use a separate KSK and ZSK.
+If an attacker can get access to one of them, it is likely that they will access both of them.
+If the HNA is run in a home router with a secure element (SE) or trusted platform module (TPM), storing the private keys in the secure element would be a useful precaution. The DNSSEC keys are generally needed on an hourly to weekly basis, but not more often.</t>
+        <t indent="0" pn="section-14.5-3">While there is some risk that the DNSSEC keys might be disclosed by malicious parties, the bigger risk is that they will simply be lost if the home router is factory reset or just thrown out / replaced with a newer model.</t>
+        <t indent="0" pn="section-14.5-4">Generating new DNSSEC keys is relatively easy; they can be deployed using the Control Channel to the DM.
+The key that is used to authenticate that connection is the critical key that needs protection and should ideally be backed up to offline storage (such as a USB key).</t>
+      </section>
+      <section anchor="operational-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-14.6">
+        <name slugifiedName="name-operational-considerations">Operational Considerations</name>
+        <t indent="0" pn="section-14.6-1">Homenet technologies make it easier to expose devices and services to the
+Internet.  This imposes broader operational considerations for the operator and
+the Internet as follows:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-14.6-2">
+          <li pn="section-14.6-2.1">The home network operator must carefully assess whether a device or service
+previously fielded only on a home network is robust enough to be exposed to the
+Internet.</li>
+          <li pn="section-14.6-2.2">The home network operator will need to increase the diligence to regularly
+managing these exposed devices due to their increased risk posture of being
+exposed to the Internet.</li>
+          <li pn="section-14.6-2.3">Depending on the operational practices of the home network operators, there
+is an increased risk to the Internet through the possible
+introduction of additional Internet-exposed systems that are poorly managed and
+likely to be compromised.</li>
+        </ul>
+      </section>
+    </section>
+    <section anchor="iana-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-15">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-15-1">This document has no IANA actions.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-dnsop-domain-verification-techniques" to="DOMAIN-VALIDATION"/>
+    <displayreference target="I-D.ietf-dnsop-dnssec-validator-requirements" to="DRO-RECS"/>
+    <displayreference target="I-D.ietf-dnsop-ns-revalidation" to="NS-REVALIDATION"/>
+    <displayreference target="I-D.richardson-homerouter-provisioning" to="HOMEROUTER-PROVISION"/>
+    <references pn="section-16">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-16.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC1034" target="https://www.rfc-editor.org/info/rfc1034" quoteTitle="true" derivedAnchor="RFC1034">
+          <front>
+            <title>Domain names - concepts and facilities</title>
+            <author fullname="P. Mockapetris" initials="P." surname="Mockapetris"/>
+            <date month="November" year="1987"/>
+            <abstract>
+              <t indent="0">This RFC is the revised basic definition of The Domain Name System. It obsoletes RFC-882. This memo describes the domain style names and their used for host address look up and electronic mail forwarding. It discusses the clients and servers in the domain name system and the protocol used between them.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="13"/>
+          <seriesInfo name="RFC" value="1034"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1034"/>
+        </reference>
+        <reference anchor="RFC1918" target="https://www.rfc-editor.org/info/rfc1918" quoteTitle="true" derivedAnchor="RFC1918">
+          <front>
+            <title>Address Allocation for Private Internets</title>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <author fullname="B. Moskowitz" initials="B." surname="Moskowitz"/>
+            <author fullname="D. Karrenberg" initials="D." surname="Karrenberg"/>
+            <author fullname="G. J. de Groot" initials="G. J." surname="de Groot"/>
+            <author fullname="E. Lear" initials="E." surname="Lear"/>
+            <date month="February" year="1996"/>
+            <abstract>
+              <t indent="0">This document describes address allocation for private internets. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="5"/>
+          <seriesInfo name="RFC" value="1918"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1918"/>
+        </reference>
+        <reference anchor="RFC1996" target="https://www.rfc-editor.org/info/rfc1996" quoteTitle="true" derivedAnchor="RFC1996">
+          <front>
+            <title>A Mechanism for Prompt Notification of Zone Changes (DNS NOTIFY)</title>
+            <author fullname="P. Vixie" initials="P." surname="Vixie"/>
+            <date month="August" year="1996"/>
+            <abstract>
+              <t indent="0">This memo describes the NOTIFY opcode for DNS, by which a master server advises a set of slave servers that the master's data has been changed and that a query should be initiated to discover the new data. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="1996"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1996"/>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC3007" target="https://www.rfc-editor.org/info/rfc3007" quoteTitle="true" derivedAnchor="RFC3007">
+          <front>
+            <title>Secure Domain Name System (DNS) Dynamic Update</title>
+            <author fullname="B. Wellington" initials="B." surname="Wellington"/>
+            <date month="November" year="2000"/>
+            <abstract>
+              <t indent="0">This document proposes a method for performing secure Domain Name System (DNS) dynamic updates. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3007"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3007"/>
+        </reference>
+        <reference anchor="RFC4034" target="https://www.rfc-editor.org/info/rfc4034" quoteTitle="true" derivedAnchor="RFC4034">
+          <front>
+            <title>Resource Records for the DNS Security Extensions</title>
+            <author fullname="R. Arends" initials="R." surname="Arends"/>
+            <author fullname="R. Austein" initials="R." surname="Austein"/>
+            <author fullname="M. Larson" initials="M." surname="Larson"/>
+            <author fullname="D. Massey" initials="D." surname="Massey"/>
+            <author fullname="S. Rose" initials="S." surname="Rose"/>
+            <date month="March" year="2005"/>
+            <abstract>
+              <t indent="0">This document is part of a family of documents that describe the DNS Security Extensions (DNSSEC). The DNS Security Extensions are a collection of resource records and protocol modifications that provide source authentication for the DNS. This document defines the public key (DNSKEY), delegation signer (DS), resource record digital signature (RRSIG), and authenticated denial of existence (NSEC) resource records. The purpose and format of each resource record is described in detail, and an example of each resource record is given.</t>
+              <t indent="0">This document obsoletes RFC 2535 and incorporates changes from all updates to RFC 2535. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4034"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4034"/>
+        </reference>
+        <reference anchor="RFC5155" target="https://www.rfc-editor.org/info/rfc5155" quoteTitle="true" derivedAnchor="RFC5155">
+          <front>
+            <title>DNS Security (DNSSEC) Hashed Authenticated Denial of Existence</title>
+            <author fullname="B. Laurie" initials="B." surname="Laurie"/>
+            <author fullname="G. Sisson" initials="G." surname="Sisson"/>
+            <author fullname="R. Arends" initials="R." surname="Arends"/>
+            <author fullname="D. Blacka" initials="D." surname="Blacka"/>
+            <date month="March" year="2008"/>
+            <abstract>
+              <t indent="0">The Domain Name System Security (DNSSEC) Extensions introduced the NSEC resource record (RR) for authenticated denial of existence. This document introduces an alternative resource record, NSEC3, which similarly provides authenticated denial of existence. However, it also provides measures against zone enumeration and permits gradual expansion of delegation-centric zones. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5155"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5155"/>
+        </reference>
+        <reference anchor="RFC7344" target="https://www.rfc-editor.org/info/rfc7344" quoteTitle="true" derivedAnchor="RFC7344">
+          <front>
+            <title>Automating DNSSEC Delegation Trust Maintenance</title>
+            <author fullname="W. Kumari" initials="W." surname="Kumari"/>
+            <author fullname="O. Gudmundsson" initials="O." surname="Gudmundsson"/>
+            <author fullname="G. Barwood" initials="G." surname="Barwood"/>
+            <date month="September" year="2014"/>
+            <abstract>
+              <t indent="0">This document describes a method to allow DNS Operators to more easily update DNSSEC Key Signing Keys using the DNS as a communication channel. The technique described is aimed at delegations in which it is currently hard to move information from the Child to Parent.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7344"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7344"/>
+        </reference>
+        <reference anchor="RFC7858" target="https://www.rfc-editor.org/info/rfc7858" quoteTitle="true" derivedAnchor="RFC7858">
+          <front>
+            <title>Specification for DNS over Transport Layer Security (TLS)</title>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <author fullname="L. Zhu" initials="L." surname="Zhu"/>
+            <author fullname="J. Heidemann" initials="J." surname="Heidemann"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This document describes the use of Transport Layer Security (TLS) to provide privacy for DNS. Encryption provided by TLS eliminates opportunities for eavesdropping and on-path tampering with DNS queries in the network, such as discussed in RFC 7626. In addition, this document specifies two usage profiles for DNS over TLS and provides advice on performance considerations to minimize overhead from using TCP and TLS with DNS.</t>
+              <t indent="0">This document focuses on securing stub-to-recursive traffic, as per the charter of the DPRIVE Working Group. It does not prevent future applications of the protocol to recursive-to-authoritative traffic.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7858"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7858"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8375" target="https://www.rfc-editor.org/info/rfc8375" quoteTitle="true" derivedAnchor="RFC8375">
+          <front>
+            <title>Special-Use Domain 'home.arpa.'</title>
+            <author fullname="P. Pfister" initials="P." surname="Pfister"/>
+            <author fullname="T. Lemon" initials="T." surname="Lemon"/>
+            <date month="May" year="2018"/>
+            <abstract>
+              <t indent="0">This document specifies the behavior that is expected from the Domain Name System with regard to DNS queries for names ending with '.home.arpa.' and designates this domain as a special-use domain name. 'home.arpa.' is designated for non-unique use in residential home networks. The Home Networking Control Protocol (HNCP) is updated to use the 'home.arpa.' domain instead of '.home'.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8375"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8375"/>
+        </reference>
+        <reference anchor="RFC8446" target="https://www.rfc-editor.org/info/rfc8446" quoteTitle="true" derivedAnchor="RFC8446">
+          <front>
+            <title>The Transport Layer Security (TLS) Protocol Version 1.3</title>
+            <author fullname="E. Rescorla" initials="E." surname="Rescorla"/>
+            <date month="August" year="2018"/>
+            <abstract>
+              <t indent="0">This document specifies version 1.3 of the Transport Layer Security (TLS) protocol. TLS allows client/server applications to communicate over the Internet in a way that is designed to prevent eavesdropping, tampering, and message forgery.</t>
+              <t indent="0">This document updates RFCs 5705 and 6066, and obsoletes RFCs 5077, 5246, and 6961. This document also specifies new requirements for TLS 1.2 implementations.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8446"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8446"/>
+        </reference>
+        <reference anchor="RFC8499" target="https://www.rfc-editor.org/info/rfc8499" quoteTitle="true" derivedAnchor="RFC8499">
+          <front>
+            <title>DNS Terminology</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="A. Sullivan" initials="A." surname="Sullivan"/>
+            <author fullname="K. Fujiwara" initials="K." surname="Fujiwara"/>
+            <date month="January" year="2019"/>
+            <abstract>
+              <t indent="0">The Domain Name System (DNS) is defined in literally dozens of different RFCs. The terminology used by implementers and developers of DNS protocols, and by operators of DNS systems, has sometimes changed in the decades since the DNS was first defined. This document gives current definitions for many of the terms used in the DNS in a single document.</t>
+              <t indent="0">This document obsoletes RFC 7719 and updates RFC 2308.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="219"/>
+          <seriesInfo name="RFC" value="8499"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8499"/>
+        </reference>
+        <reference anchor="RFC9103" target="https://www.rfc-editor.org/info/rfc9103" quoteTitle="true" derivedAnchor="RFC9103">
+          <front>
+            <title>DNS Zone Transfer over TLS</title>
+            <author fullname="W. Toorop" initials="W." surname="Toorop"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="S. Sahib" initials="S." surname="Sahib"/>
+            <author fullname="P. Aras" initials="P." surname="Aras"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <date month="August" year="2021"/>
+            <abstract>
+              <t indent="0">DNS zone transfers are transmitted in cleartext, which gives attackers the opportunity to collect the content of a zone by eavesdropping on network connections. The DNS Transaction Signature (TSIG) mechanism is specified to restrict direct zone transfer to authorized clients only, but it does not add confidentiality. This document specifies the use of TLS, rather than cleartext, to prevent zone content collection via passive monitoring of zone transfers: XFR over TLS (XoT). Additionally, this specification updates RFC 1995 and RFC 5936 with respect to efficient use of TCP connections and RFC 7766 with respect to the recommended number of connections between a client and server for each transport.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9103"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9103"/>
+        </reference>
+        <reference anchor="RFC9525" target="https://www.rfc-editor.org/info/rfc9525" quoteTitle="true" derivedAnchor="RFC9525">
+          <front>
+            <title>Service Identity in TLS</title>
+            <author fullname="P. Saint-Andre" initials="P." surname="Saint-Andre"/>
+            <author fullname="R. Salz" initials="R." surname="Salz"/>
+            <date month="November" year="2023"/>
+            <abstract>
+              <t indent="0">Many application technologies enable secure communication between two entities by means of Transport Layer Security (TLS) with Internet Public Key Infrastructure using X.509 (PKIX) certificates. This document specifies procedures for representing and verifying the identity of application services in such interactions.</t>
+              <t indent="0">This document obsoletes RFC 6125.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9525"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9525"/>
+        </reference>
+      </references>
+      <references pn="section-16.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.ietf-dnsop-domain-verification-techniques" target="https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-domain-verification-techniques-03" quoteTitle="true" derivedAnchor="DOMAIN-VALIDATION">
+          <front>
+            <title>Domain Control Validation using DNS</title>
+            <author fullname="Shivan Kaul Sahib" initials="S." surname="Sahib">
+              <organization showOnFrontPage="true">Brave Software</organization>
+            </author>
+            <author fullname="Shumon Huque" initials="S." surname="Huque">
+              <organization showOnFrontPage="true">Salesforce</organization>
+            </author>
+            <author fullname="Paul Wouters" initials="P." surname="Wouters">
+              <organization showOnFrontPage="true">Aiven</organization>
+            </author>
+            <author fullname="Erik Nygren" initials="E." surname="Nygren">
+              <organization showOnFrontPage="true">Akamai Technologies</organization>
+            </author>
+            <date day="17" month="October" year="2023"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-dnsop-domain-verification-techniques-03"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="I-D.ietf-dnsop-dnssec-validator-requirements" target="https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-dnssec-validator-requirements-07" quoteTitle="true" derivedAnchor="DRO-RECS">
+          <front>
+            <title>Recommendations for DNSSEC Resolvers Operators</title>
+            <author initials="D." surname="Migault" fullname="Daniel Migault">
+              <organization showOnFrontPage="true">Ericsson</organization>
+            </author>
+            <author initials="E." surname="Lewis" fullname="Edward Lewis">
+              <organization showOnFrontPage="true">ICANN</organization>
+            </author>
+            <author initials="D." surname="York" fullname="Dan York">
+              <organization showOnFrontPage="true">Internet Society</organization>
+            </author>
+            <date month="November" day="13" year="2023"/>
+            <abstract>
+              <t indent="0">   The DNS Security Extensions (DNSSEC) defines a process for validating
+   received data and assert them authentic and complete as opposed to
+   forged.
+
+   While DNSSEC comes with some complexity, at least for non expert,
+   that complexity is mostly abstracted by the resolver.  As result,
+   running a resolver with DNSSEC enabled only requires the operator to
+   only follow a very limited set of recommendations.  This document
+   provides such recommendations.
+
+              </t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-dnsop-dnssec-validator-requirements-07"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="GPUNSEC3" target="https://doi.org/10.1109/NCA.2014.27" quoteTitle="true" derivedAnchor="GPUNSEC3">
+          <front>
+            <title>GPU-Based NSEC3 Hash Breaking</title>
+            <author initials="M." surname="Wander">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="L." surname="Schwittmann">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="C." surname="Boelmann">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="T." surname="Weis">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date month="August" year="2014"/>
+          </front>
+          <seriesInfo name="DOI" value="10.1109/NCA.2014.27"/>
+        </reference>
+        <reference anchor="I-D.richardson-homerouter-provisioning" target="https://datatracker.ietf.org/doc/html/draft-richardson-homerouter-provisioning-02" quoteTitle="true" derivedAnchor="HOMEROUTER-PROVISION">
+          <front>
+            <title>Provisioning Initial Device Identifiers into Home Routers</title>
+            <author initials="M." surname="Richardson" fullname="Michael Richardson">
+              <organization showOnFrontPage="true">Sandelman Software Works</organization>
+            </author>
+            <date month="November" day="14" year="2021"/>
+            <abstract>
+              <t indent="0">   This document describes a method to provisioning an 802.1AR-style
+   certificate into a router intended for use in the home.
+
+   The proceedure results in a certificate which can be validated with a
+   public trust anchor ("WebPKI"), using a name rather than an IP
+   address.  This method is focused on home routers, but can in some
+   cases be used by other classes of IoT devices.
+
+   (RFCEDITOR please remove: this document can be found at
+   https://github.com/mcr/homerouter-provisioning)
+
+              </t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-richardson-homerouter-provisioning-02"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="I-D.ietf-dnsop-ns-revalidation" target="https://datatracker.ietf.org/doc/html/draft-ietf-dnsop-ns-revalidation-04" quoteTitle="true" derivedAnchor="NS-REVALIDATION">
+          <front>
+            <title>Delegation Revalidation by DNS Resolvers</title>
+            <author fullname="Shumon Huque" initials="S." surname="Huque">
+              <organization showOnFrontPage="true">Salesforce</organization>
+            </author>
+            <author fullname="Paul A. Vixie" initials="P." surname="Vixie">
+              <organization showOnFrontPage="true">SIE Europe, U.G.</organization>
+            </author>
+            <author fullname="Ralph Dolmans" initials="R." surname="Dolmans">
+              <organization showOnFrontPage="true">NLnet Labs</organization>
+            </author>
+            <date day="13" month="March" year="2023"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-dnsop-ns-revalidation-04"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="REBIND" target="https://en.wikipedia.org/w/index.php?title=DNS_rebinding&amp;oldid=1173433859" quoteTitle="true" derivedAnchor="REBIND">
+          <front>
+            <title>DNS rebinding</title>
+            <author>
+              <organization showOnFrontPage="true">Wikipedia</organization>
+            </author>
+            <date month="September" year="2023"/>
+          </front>
+        </reference>
+        <reference anchor="RFC2136" target="https://www.rfc-editor.org/info/rfc2136" quoteTitle="true" derivedAnchor="RFC2136">
+          <front>
+            <title>Dynamic Updates in the Domain Name System (DNS UPDATE)</title>
+            <author fullname="P. Vixie" initials="P." role="editor" surname="Vixie"/>
+            <author fullname="S. Thomson" initials="S." surname="Thomson"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <author fullname="J. Bound" initials="J." surname="Bound"/>
+            <date month="April" year="1997"/>
+            <abstract>
+              <t indent="0">Using this specification of the UPDATE opcode, it is possible to add or delete RRs or RRsets from a specified zone. Prerequisites are specified separately from update operations, and can specify a dependency upon either the previous existence or nonexistence of an RRset, or the existence of a single RR. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2136"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2136"/>
+        </reference>
+        <reference anchor="RFC3587" target="https://www.rfc-editor.org/info/rfc3587" quoteTitle="true" derivedAnchor="RFC3587">
+          <front>
+            <title>IPv6 Global Unicast Address Format</title>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <author fullname="E. Nordmark" initials="E." surname="Nordmark"/>
+            <date month="August" year="2003"/>
+            <abstract>
+              <t indent="0">This document obsoletes RFC 2374, "An IPv6 Aggregatable Global Unicast Address Format". It defined an IPv6 address allocation structure that includes Top Level Aggregator (TLA) and Next Level Aggregator (NLA). This document makes RFC 2374 and the TLA/NLA structure historic. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3587"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3587"/>
+        </reference>
+        <reference anchor="RFC3927" target="https://www.rfc-editor.org/info/rfc3927" quoteTitle="true" derivedAnchor="RFC3927">
+          <front>
+            <title>Dynamic Configuration of IPv4 Link-Local Addresses</title>
+            <author fullname="S. Cheshire" initials="S." surname="Cheshire"/>
+            <author fullname="B. Aboba" initials="B." surname="Aboba"/>
+            <author fullname="E. Guttman" initials="E." surname="Guttman"/>
+            <date month="May" year="2005"/>
+            <abstract>
+              <t indent="0">To participate in wide-area IP networking, a host needs to be configured with IP addresses for its interfaces, either manually by the user or automatically from a source on the network such as a Dynamic Host Configuration Protocol (DHCP) server. Unfortunately, such address configuration information may not always be available. It is therefore beneficial for a host to be able to depend on a useful subset of IP networking functions even when no address configuration is available. This document describes how a host may automatically configure an interface with an IPv4 address within the 169.254/16 prefix that is valid for communication with other devices connected to the same physical (or logical) link.</t>
+              <t indent="0">IPv4 Link-Local addresses are not suitable for communication with devices not directly connected to the same physical (or logical) link, and are only used where stable, routable addresses are not available (such as on ad hoc or isolated networks). This document does not recommend that IPv4 Link-Local addresses and routable addresses be configured simultaneously on the same interface. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3927"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3927"/>
+        </reference>
+        <reference anchor="RFC4192" target="https://www.rfc-editor.org/info/rfc4192" quoteTitle="true" derivedAnchor="RFC4192">
+          <front>
+            <title>Procedures for Renumbering an IPv6 Network without a Flag Day</title>
+            <author fullname="F. Baker" initials="F." surname="Baker"/>
+            <author fullname="E. Lear" initials="E." surname="Lear"/>
+            <author fullname="R. Droms" initials="R." surname="Droms"/>
+            <date month="September" year="2005"/>
+            <abstract>
+              <t indent="0">This document describes a procedure that can be used to renumber a network from one prefix to another. It uses IPv6's intrinsic ability to assign multiple addresses to a network interface to provide continuity of network service through a "make-before-break" transition, as well as addresses naming and configuration management issues. It also uses other IPv6 features to minimize the effort and time required to complete the transition from the old prefix to the new prefix. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4192"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4192"/>
+        </reference>
+        <reference anchor="RFC4193" target="https://www.rfc-editor.org/info/rfc4193" quoteTitle="true" derivedAnchor="RFC4193">
+          <front>
+            <title>Unique Local IPv6 Unicast Addresses</title>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <author fullname="B. Haberman" initials="B." surname="Haberman"/>
+            <date month="October" year="2005"/>
+            <abstract>
+              <t indent="0">This document defines an IPv6 unicast address format that is globally unique and is intended for local communications, usually inside of a site. These addresses are not expected to be routable on the global Internet. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4193"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4193"/>
+        </reference>
+        <reference anchor="RFC4291" target="https://www.rfc-editor.org/info/rfc4291" quoteTitle="true" derivedAnchor="RFC4291">
+          <front>
+            <title>IP Version 6 Addressing Architecture</title>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <date month="February" year="2006"/>
+            <abstract>
+              <t indent="0">This specification defines the addressing architecture of the IP Version 6 (IPv6) protocol. The document includes the IPv6 addressing model, text representations of IPv6 addresses, definition of IPv6 unicast addresses, anycast addresses, and multicast addresses, and an IPv6 node's required addresses.</t>
+              <t indent="0">This document obsoletes RFC 3513, "IP Version 6 Addressing Architecture". [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4291"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4291"/>
+        </reference>
+        <reference anchor="RFC5011" target="https://www.rfc-editor.org/info/rfc5011" quoteTitle="true" derivedAnchor="RFC5011">
+          <front>
+            <title>Automated Updates of DNS Security (DNSSEC) Trust Anchors</title>
+            <author fullname="M. StJohns" initials="M." surname="StJohns"/>
+            <date month="September" year="2007"/>
+            <abstract>
+              <t indent="0">This document describes a means for automated, authenticated, and authorized updating of DNSSEC "trust anchors". The method provides protection against N-1 key compromises of N keys in the trust point key set. Based on the trust established by the presence of a current anchor, other anchors may be added at the same place in the hierarchy, and, ultimately, supplant the existing anchor(s).</t>
+              <t indent="0">This mechanism will require changes to resolver management behavior (but not resolver resolution behavior), and the addition of a single flag bit to the DNSKEY record. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="74"/>
+          <seriesInfo name="RFC" value="5011"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5011"/>
+        </reference>
+        <reference anchor="RFC6092" target="https://www.rfc-editor.org/info/rfc6092" quoteTitle="true" derivedAnchor="RFC6092">
+          <front>
+            <title>Recommended Simple Security Capabilities in Customer Premises Equipment (CPE) for Providing Residential IPv6 Internet Service</title>
+            <author fullname="J. Woodyatt" initials="J." role="editor" surname="Woodyatt"/>
+            <date month="January" year="2011"/>
+            <abstract>
+              <t indent="0">This document identifies a set of recommendations for the makers of devices and describes how to provide for "simple security" capabilities at the perimeter of local-area IPv6 networks in Internet-enabled homes and small offices. This document is not an Internet Standards Track specification; it is published for informational purposes.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6092"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6092"/>
+        </reference>
+        <reference anchor="RFC6749" target="https://www.rfc-editor.org/info/rfc6749" quoteTitle="true" derivedAnchor="RFC6749">
+          <front>
+            <title>The OAuth 2.0 Authorization Framework</title>
+            <author fullname="D. Hardt" initials="D." role="editor" surname="Hardt"/>
+            <date month="October" year="2012"/>
+            <abstract>
+              <t indent="0">The OAuth 2.0 authorization framework enables a third-party application to obtain limited access to an HTTP service, either on behalf of a resource owner by orchestrating an approval interaction between the resource owner and the HTTP service, or by allowing the third-party application to obtain access on its own behalf. This specification replaces and obsoletes the OAuth 1.0 protocol described in RFC 5849. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6749"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6749"/>
+        </reference>
+        <reference anchor="RFC6762" target="https://www.rfc-editor.org/info/rfc6762" quoteTitle="true" derivedAnchor="RFC6762">
+          <front>
+            <title>Multicast DNS</title>
+            <author fullname="S. Cheshire" initials="S." surname="Cheshire"/>
+            <author fullname="M. Krochmal" initials="M." surname="Krochmal"/>
+            <date month="February" year="2013"/>
+            <abstract>
+              <t indent="0">As networked devices become smaller, more portable, and more ubiquitous, the ability to operate with less configured infrastructure is increasingly important. In particular, the ability to look up DNS resource record data types (including, but not limited to, host names) in the absence of a conventional managed DNS server is useful.</t>
+              <t indent="0">Multicast DNS (mDNS) provides the ability to perform DNS-like operations on the local link in the absence of any conventional Unicast DNS server. In addition, Multicast DNS designates a portion of the DNS namespace to be free for local use, without the need to pay any annual fee, and without the need to set up delegations or otherwise configure a conventional DNS server to answer for those names.</t>
+              <t indent="0">The primary benefits of Multicast DNS names are that (i) they require little or no administration or configuration to set them up, (ii) they work when no infrastructure is present, and (iii) they work during infrastructure failures.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6762"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6762"/>
+        </reference>
+        <reference anchor="RFC6887" target="https://www.rfc-editor.org/info/rfc6887" quoteTitle="true" derivedAnchor="RFC6887">
+          <front>
+            <title>Port Control Protocol (PCP)</title>
+            <author fullname="D. Wing" initials="D." role="editor" surname="Wing"/>
+            <author fullname="S. Cheshire" initials="S." surname="Cheshire"/>
+            <author fullname="M. Boucadair" initials="M." surname="Boucadair"/>
+            <author fullname="R. Penno" initials="R." surname="Penno"/>
+            <author fullname="P. Selkirk" initials="P." surname="Selkirk"/>
+            <date month="April" year="2013"/>
+            <abstract>
+              <t indent="0">The Port Control Protocol allows an IPv6 or IPv4 host to control how incoming IPv6 or IPv4 packets are translated and forwarded by a Network Address Translator (NAT) or simple firewall, and also allows a host to optimize its outgoing NAT keepalive messages.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6887"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6887"/>
+        </reference>
+        <reference anchor="RFC7010" target="https://www.rfc-editor.org/info/rfc7010" quoteTitle="true" derivedAnchor="RFC7010">
+          <front>
+            <title>IPv6 Site Renumbering Gap Analysis</title>
+            <author fullname="B. Liu" initials="B." surname="Liu"/>
+            <author fullname="S. Jiang" initials="S." surname="Jiang"/>
+            <author fullname="B. Carpenter" initials="B." surname="Carpenter"/>
+            <author fullname="S. Venaas" initials="S." surname="Venaas"/>
+            <author fullname="W. George" initials="W." surname="George"/>
+            <date month="September" year="2013"/>
+            <abstract>
+              <t indent="0">This document briefly introduces the existing mechanisms that could be utilized for IPv6 site renumbering and tries to cover most of the explicit issues and requirements associated with IPv6 renumbering. The content is mainly a gap analysis that provides a basis for future works to identify and develop solutions or to stimulate such development as appropriate. The gap analysis is organized by the main steps of a renumbering process.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7010"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7010"/>
+        </reference>
+        <reference anchor="RFC7084" target="https://www.rfc-editor.org/info/rfc7084" quoteTitle="true" derivedAnchor="RFC7084">
+          <front>
+            <title>Basic Requirements for IPv6 Customer Edge Routers</title>
+            <author fullname="H. Singh" initials="H." surname="Singh"/>
+            <author fullname="W. Beebee" initials="W." surname="Beebee"/>
+            <author fullname="C. Donley" initials="C." surname="Donley"/>
+            <author fullname="B. Stark" initials="B." surname="Stark"/>
+            <date month="November" year="2013"/>
+            <abstract>
+              <t indent="0">This document specifies requirements for an IPv6 Customer Edge (CE) router. Specifically, the current version of this document focuses on the basic provisioning of an IPv6 CE router and the provisioning of IPv6 hosts attached to it. The document also covers IP transition technologies. Two transition technologies in RFC 5969's IPv6 Rapid Deployment on IPv4 Infrastructures (6rd) and RFC 6333's Dual-Stack Lite (DS-Lite) are covered in the document. The document obsoletes RFC 6204.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7084"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7084"/>
+        </reference>
+        <reference anchor="RFC7368" target="https://www.rfc-editor.org/info/rfc7368" quoteTitle="true" derivedAnchor="RFC7368">
+          <front>
+            <title>IPv6 Home Networking Architecture Principles</title>
+            <author fullname="T. Chown" initials="T." role="editor" surname="Chown"/>
+            <author fullname="J. Arkko" initials="J." surname="Arkko"/>
+            <author fullname="A. Brandt" initials="A." surname="Brandt"/>
+            <author fullname="O. Troan" initials="O." surname="Troan"/>
+            <author fullname="J. Weil" initials="J." surname="Weil"/>
+            <date month="October" year="2014"/>
+            <abstract>
+              <t indent="0">This text describes evolving networking technology within residential home networks with increasing numbers of devices and a trend towards increased internal routing. The goal of this document is to define a general architecture for IPv6-based home networking, describing the associated principles, considerations, and requirements. The text briefly highlights specific implications of the introduction of IPv6 for home networking, discusses the elements of the architecture, and suggests how standard IPv6 mechanisms and addressing can be employed in home networking. The architecture describes the need for specific protocol extensions for certain additional functionality. It is assumed that the IPv6 home network is not actively managed and runs as an IPv6-only or dual-stack network. There are no recommendations in this text for the IPv4 part of the network.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7368"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7368"/>
+        </reference>
+        <reference anchor="RFC7404" target="https://www.rfc-editor.org/info/rfc7404" quoteTitle="true" derivedAnchor="RFC7404">
+          <front>
+            <title>Using Only Link-Local Addressing inside an IPv6 Network</title>
+            <author fullname="M. Behringer" initials="M." surname="Behringer"/>
+            <author fullname="E. Vyncke" initials="E." surname="Vyncke"/>
+            <date month="November" year="2014"/>
+            <abstract>
+              <t indent="0">In an IPv6 network, it is possible to use only link-local addresses on infrastructure links between routers. This document discusses the advantages and disadvantages of this approach to facilitate the decision process for a given network.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7404"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7404"/>
+        </reference>
+        <reference anchor="RFC7707" target="https://www.rfc-editor.org/info/rfc7707" quoteTitle="true" derivedAnchor="RFC7707">
+          <front>
+            <title>Network Reconnaissance in IPv6 Networks</title>
+            <author fullname="F. Gont" initials="F." surname="Gont"/>
+            <author fullname="T. Chown" initials="T." surname="Chown"/>
+            <date month="March" year="2016"/>
+            <abstract>
+              <t indent="0">IPv6 offers a much larger address space than that of its IPv4 counterpart. An IPv6 subnet of size /64 can (in theory) accommodate approximately 1.844 * 10^19 hosts, thus resulting in a much lower host density (#hosts/#addresses) than is typical in IPv4 networks, where a site typically has 65,000 or fewer unique addresses. As a result, it is widely assumed that it would take a tremendous effort to perform address-scanning attacks against IPv6 networks; therefore, IPv6 address-scanning attacks have been considered unfeasible. This document formally obsoletes RFC 5157, which first discussed this assumption, by providing further analysis on how traditional address-scanning techniques apply to IPv6 networks and exploring some additional techniques that can be employed for IPv6 network reconnaissance.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7707"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7707"/>
+        </reference>
+        <reference anchor="RFC7788" target="https://www.rfc-editor.org/info/rfc7788" quoteTitle="true" derivedAnchor="RFC7788">
+          <front>
+            <title>Home Networking Control Protocol</title>
+            <author fullname="M. Stenberg" initials="M." surname="Stenberg"/>
+            <author fullname="S. Barth" initials="S." surname="Barth"/>
+            <author fullname="P. Pfister" initials="P." surname="Pfister"/>
+            <date month="April" year="2016"/>
+            <abstract>
+              <t indent="0">This document describes the Home Networking Control Protocol (HNCP), an extensible configuration protocol, and a set of requirements for home network devices. HNCP is described as a profile of and extension to the Distributed Node Consensus Protocol (DNCP). HNCP enables discovery of network borders, automated configuration of addresses, name resolution, service discovery, and the use of any routing protocol that supports routing based on both the source and destination address.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7788"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7788"/>
+        </reference>
+        <reference anchor="RFC8094" target="https://www.rfc-editor.org/info/rfc8094" quoteTitle="true" derivedAnchor="RFC8094">
+          <front>
+            <title>DNS over Datagram Transport Layer Security (DTLS)</title>
+            <author fullname="T. Reddy" initials="T." surname="Reddy"/>
+            <author fullname="D. Wing" initials="D." surname="Wing"/>
+            <author fullname="P. Patil" initials="P." surname="Patil"/>
+            <date month="February" year="2017"/>
+            <abstract>
+              <t indent="0">DNS queries and responses are visible to network elements on the path between the DNS client and its server. These queries and responses can contain privacy-sensitive information, which is valuable to protect.</t>
+              <t indent="0">This document proposes the use of Datagram Transport Layer Security (DTLS) for DNS, to protect against passive listeners and certain active attacks. As latency is critical for DNS, this proposal also discusses mechanisms to reduce DTLS round trips and reduce the DTLS handshake size. The proposed mechanism runs over port 853.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8094"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8094"/>
+        </reference>
+        <reference anchor="RFC8415" target="https://www.rfc-editor.org/info/rfc8415" quoteTitle="true" derivedAnchor="RFC8415">
+          <front>
+            <title>Dynamic Host Configuration Protocol for IPv6 (DHCPv6)</title>
+            <author fullname="T. Mrugalski" initials="T." surname="Mrugalski"/>
+            <author fullname="M. Siodelski" initials="M." surname="Siodelski"/>
+            <author fullname="B. Volz" initials="B." surname="Volz"/>
+            <author fullname="A. Yourtchenko" initials="A." surname="Yourtchenko"/>
+            <author fullname="M. Richardson" initials="M." surname="Richardson"/>
+            <author fullname="S. Jiang" initials="S." surname="Jiang"/>
+            <author fullname="T. Lemon" initials="T." surname="Lemon"/>
+            <author fullname="T. Winters" initials="T." surname="Winters"/>
+            <date month="November" year="2018"/>
+            <abstract>
+              <t indent="0">This document describes the Dynamic Host Configuration Protocol for IPv6 (DHCPv6): an extensible mechanism for configuring nodes with network configuration parameters, IP addresses, and prefixes. Parameters can be provided statelessly, or in combination with stateful assignment of one or more IPv6 addresses and/or IPv6 prefixes. DHCPv6 can operate either in place of or in addition to stateless address autoconfiguration (SLAAC).</t>
+              <t indent="0">This document updates the text from RFC 3315 (the original DHCPv6 specification) and incorporates prefix delegation (RFC 3633), stateless DHCPv6 (RFC 3736), an option to specify an upper bound for how long a client should wait before refreshing information (RFC 4242), a mechanism for throttling DHCPv6 clients when DHCPv6 service is not available (RFC 7083), and relay agent handling of unknown messages (RFC 7283). In addition, this document clarifies the interactions between models of operation (RFC 7550). As such, this document obsoletes RFC 3315, RFC 3633, RFC 3736, RFC 4242, RFC 7083, RFC 7283, and RFC 7550.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8415"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8415"/>
+        </reference>
+        <reference anchor="RFC8484" target="https://www.rfc-editor.org/info/rfc8484" quoteTitle="true" derivedAnchor="RFC8484">
+          <front>
+            <title>DNS Queries over HTTPS (DoH)</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="P. McManus" initials="P." surname="McManus"/>
+            <date month="October" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a protocol for sending DNS queries and getting DNS responses over HTTPS. Each DNS query-response pair is mapped into an HTTP exchange.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8484"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8484"/>
+        </reference>
+        <reference anchor="RFC8501" target="https://www.rfc-editor.org/info/rfc8501" quoteTitle="true" derivedAnchor="RFC8501">
+          <front>
+            <title>Reverse DNS in IPv6 for Internet Service Providers</title>
+            <author fullname="L. Howard" initials="L." surname="Howard"/>
+            <date month="November" year="2018"/>
+            <abstract>
+              <t indent="0">In IPv4, Internet Service Providers (ISPs) commonly provide IN-ADDR.ARPA information for their customers by prepopulating the zone with one PTR record for every available address. This practice does not scale in IPv6. This document analyzes different approaches and considerations for ISPs in managing the IP6.ARPA zone.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8501"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8501"/>
+        </reference>
+        <reference anchor="RFC8555" target="https://www.rfc-editor.org/info/rfc8555" quoteTitle="true" derivedAnchor="RFC8555">
+          <front>
+            <title>Automatic Certificate Management Environment (ACME)</title>
+            <author fullname="R. Barnes" initials="R." surname="Barnes"/>
+            <author fullname="J. Hoffman-Andrews" initials="J." surname="Hoffman-Andrews"/>
+            <author fullname="D. McCarney" initials="D." surname="McCarney"/>
+            <author fullname="J. Kasten" initials="J." surname="Kasten"/>
+            <date month="March" year="2019"/>
+            <abstract>
+              <t indent="0">Public Key Infrastructure using X.509 (PKIX) certificates are used for a number of purposes, the most significant of which is the authentication of domain names. Thus, certification authorities (CAs) in the Web PKI are trusted to verify that an applicant for a certificate legitimately represents the domain name(s) in the certificate. As of this writing, this verification is done through a collection of ad hoc mechanisms. This document describes a protocol that a CA and an applicant can use to automate the process of verification and certificate issuance. The protocol also provides facilities for other certificate management functions, such as certificate revocation.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8555"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8555"/>
+        </reference>
+        <reference anchor="RFC8610" target="https://www.rfc-editor.org/info/rfc8610" quoteTitle="true" derivedAnchor="RFC8610">
+          <front>
+            <title>Concise Data Definition Language (CDDL): A Notational Convention to Express Concise Binary Object Representation (CBOR) and JSON Data Structures</title>
+            <author fullname="H. Birkholz" initials="H." surname="Birkholz"/>
+            <author fullname="C. Vigano" initials="C." surname="Vigano"/>
+            <author fullname="C. Bormann" initials="C." surname="Bormann"/>
+            <date month="June" year="2019"/>
+            <abstract>
+              <t indent="0">This document proposes a notational convention to express Concise Binary Object Representation (CBOR) data structures (RFC 7049). Its main goal is to provide an easy and unambiguous way to express structures for protocol messages and data formats that use CBOR or JSON.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8610"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8610"/>
+        </reference>
+        <reference anchor="RFC8672" target="https://www.rfc-editor.org/info/rfc8672" quoteTitle="true" derivedAnchor="RFC8672">
+          <front>
+            <title>TLS Server Identity Pinning with Tickets</title>
+            <author fullname="Y. Sheffer" initials="Y." surname="Sheffer"/>
+            <author fullname="D. Migault" initials="D." surname="Migault"/>
+            <date month="October" year="2019"/>
+            <abstract>
+              <t indent="0">Misissued public-key certificates can prevent TLS clients from appropriately authenticating the TLS server. Several alternatives have been proposed to detect this situation and prevent a client from establishing a TLS session with a TLS end point authenticated with an illegitimate public-key certificate. These mechanisms are either not widely deployed or limited to public web browsing.</t>
+              <t indent="0">This document proposes experimental extensions to TLS with opaque pinning tickets as a way to pin the server's identity. During an initial TLS session, the server provides an original encrypted pinning ticket. In subsequent TLS session establishment, upon receipt of the pinning ticket, the server proves its ability to decrypt the pinning ticket and thus the ownership of the pinning protection key. The client can now safely conclude that the TLS session is established with the same TLS server as the original TLS session. One of the important properties of this proposal is that no manual management actions are required.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8672"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8672"/>
+        </reference>
+        <reference anchor="RFC8978" target="https://www.rfc-editor.org/info/rfc8978" quoteTitle="true" derivedAnchor="RFC8978">
+          <front>
+            <title>Reaction of IPv6 Stateless Address Autoconfiguration (SLAAC) to Flash-Renumbering Events</title>
+            <author fullname="F. Gont" initials="F." surname="Gont"/>
+            <author fullname="J. Žorž" initials="J." surname="Žorž"/>
+            <author fullname="R. Patterson" initials="R." surname="Patterson"/>
+            <date month="March" year="2021"/>
+            <abstract>
+              <t indent="0">In scenarios where network configuration information related to IPv6 prefixes becomes invalid without any explicit and reliable signaling of that condition (such as when a Customer Edge router crashes and reboots without knowledge of the previously employed prefixes), hosts on the local network may continue using stale prefixes for an unacceptably long time (on the order of several days), thus resulting in connectivity problems. This document describes this issue and discusses operational workarounds that may help to improve network robustness. Additionally, it highlights areas where further work may be needed.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8978"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8978"/>
+        </reference>
+        <reference anchor="RFC8981" target="https://www.rfc-editor.org/info/rfc8981" quoteTitle="true" derivedAnchor="RFC8981">
+          <front>
+            <title>Temporary Address Extensions for Stateless Address Autoconfiguration in IPv6</title>
+            <author fullname="F. Gont" initials="F." surname="Gont"/>
+            <author fullname="S. Krishnan" initials="S." surname="Krishnan"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <author fullname="R. Draves" initials="R." surname="Draves"/>
+            <date month="February" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes an extension to IPv6 Stateless Address Autoconfiguration that causes hosts to generate temporary addresses with randomized interface identifiers for each prefix advertised with autoconfiguration enabled. Changing addresses over time limits the window of time during which eavesdroppers and other information collectors may trivially perform address-based network-activity correlation when the same address is employed for multiple transactions by the same host. Additionally, it reduces the window of exposure of a host as being accessible via an address that becomes revealed as a result of active communication. This document obsoletes RFC 4941.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8981"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8981"/>
+        </reference>
+        <reference anchor="RFC9250" target="https://www.rfc-editor.org/info/rfc9250" quoteTitle="true" derivedAnchor="RFC9250">
+          <front>
+            <title>DNS over Dedicated QUIC Connections</title>
+            <author fullname="C. Huitema" initials="C." surname="Huitema"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <date month="May" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes the use of QUIC to provide transport confidentiality for DNS. The encryption provided by QUIC has similar properties to those provided by TLS, while QUIC transport eliminates the head-of-line blocking issues inherent with TCP and provides more efficient packet-loss recovery than UDP. DNS over QUIC (DoQ) has privacy properties similar to DNS over TLS (DoT) specified in RFC 7858, and latency characteristics similar to classic DNS over UDP. This specification describes the use of DoQ as a general-purpose transport for DNS and includes the use of DoQ for stub to recursive, recursive to authoritative, and zone transfer scenarios.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9250"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9250"/>
+        </reference>
+        <reference anchor="RFC9276" target="https://www.rfc-editor.org/info/rfc9276" quoteTitle="true" derivedAnchor="RFC9276">
+          <front>
+            <title>Guidance for NSEC3 Parameter Settings</title>
+            <author fullname="W. Hardaker" initials="W." surname="Hardaker"/>
+            <author fullname="V. Dukhovni" initials="V." surname="Dukhovni"/>
+            <date month="August" year="2022"/>
+            <abstract>
+              <t indent="0">NSEC3 is a DNSSEC mechanism providing proof of nonexistence by asserting that there are no names that exist between two domain names within a zone. Unlike its counterpart NSEC, NSEC3 avoids directly disclosing the bounding domain name pairs. This document provides guidance on setting NSEC3 parameters based on recent operational deployment experience. This document updates RFC 5155 with guidance about selecting NSEC3 iteration and salt parameters.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="236"/>
+          <seriesInfo name="RFC" value="9276"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9276"/>
+        </reference>
+        <reference anchor="RFC9527" target="https://www.rfc-editor.org/info/rfc9527" quoteTitle="true" derivedAnchor="RFC9527">
+          <front>
+            <title>DHCPv6 Options for the Homenet Naming Authority</title>
+            <author initials="D" surname="Migault" fullname="Daniel Migault">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="R" surname="Weber" fullname="Ralf Weber">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="T" surname="Mrugalski" fullname="Tomek Mrugalski">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2024" month="January"/>
+          </front>
+          <seriesInfo name="RFC" value="9527"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9527"/>
+        </reference>
+        <reference anchor="ZONEENUM" quoteTitle="true" target="https://doi.org/10.2495/MIIT130591" derivedAnchor="ZONEENUM">
+          <front>
+            <title>An efficient DNSSEC zone enumeration algorithm</title>
+            <author initials="Z." surname="Wang">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="L." surname="Xiao">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="R." surname="Wang">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date month="April" year="2014"/>
+          </front>
+          <seriesInfo name="DOI" value="10.2495/MIIT130591"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="hna-channel-configurations" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-hna-channel-configurations">HNA Channel Configurations</name>
+      <section anchor="hna-provisioning" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.1">
+        <name slugifiedName="name-public-homenet-zone">Public Homenet Zone</name>
+        <t indent="0" pn="section-appendix.a.1-1">This document does not deal with how the HNA is provisioned with a trusted relationship to the Distribution Manager for the forward zone.</t>
+        <t indent="0" pn="section-appendix.a.1-2">This section details what needs to be provisioned into the HNA and serves as a requirements statement for mechanisms.</t>
+        <t indent="0" pn="section-appendix.a.1-3">The HNA needs to be provisioned with:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a.1-4">
+          <li pn="section-appendix.a.1-4.1">the Registered Domain (e.g., myhome.example);</li>
+          <li pn="section-appendix.a.1-4.2">the contact information for the DM, including the DNS name (the fully qualified domain name (FQDN)), possibly the IP literal, and a certificate (or anchor) to be used to authenticate the service;</li>
+          <li pn="section-appendix.a.1-4.3">the DM transport protocol and port (the default is DNS over TLS, on port 853); and</li>
+          <li pn="section-appendix.a.1-4.4">the HNA credentials used by the DM for its authentication.</li>
+        </ul>
+        <t indent="0" pn="section-appendix.a.1-5">The HNA will need to select an IP address for communication for the Synchronization Channel.
+This is typically the WAN address of the CPE, but it could be an IPv6 LAN address in the case of a home with multiple ISPs (and multiple border routers).
+This is detailed in <xref target="sec-ip-hna" format="default" sectionFormat="of" derivedContent="Section 6.5.3"/> when the NS and A or AAAA RRsets are communicated.</t>
+        <t indent="0" pn="section-appendix.a.1-6">The above parameters <bcp14>MUST</bcp14> be provisioned for ISP-specific reverse zones.
+One example of how to do this can be found in  <xref target="RFC9527" format="default" sectionFormat="of" derivedContent="RFC9527"/>.
+ISP-specific forward zones <bcp14>MAY</bcp14> also be provisioned using <xref target="RFC9527" format="default" sectionFormat="of" derivedContent="RFC9527"/>, but zones that are not related to a specific ISP zone (such as with a DNS provider) must be provisioned through other means.</t>
+        <t indent="0" pn="section-appendix.a.1-7">Similarly, if the HNA is provided by a registrar, the HNA may be handed preconfigured to the end user.</t>
+        <t indent="0" pn="section-appendix.a.1-8">In the absence of specific pre-established relations, these pieces of information may be entered manually by the end user. In order to ease the configuration from the end user, the following scheme may be implemented.</t>
+        <t indent="0" pn="section-appendix.a.1-9">The HNA may present the end user with a web interface that provides the end user the ability to indicate the Registered Homenet Domain or the registrar with, for example, a preselected list.
+Once the registrar has been selected, the HNA redirects the end user to that registrar in order to receive an access token. The access token will enable the HNA to retrieve the DM parameters associated with the Registered Domain.
+These parameters will include the credentials used by the HNA to establish the Control and Synchronization Channels.</t>
+        <t indent="0" pn="section-appendix.a.1-10">Such architecture limits the necessary steps to configure the HNA from the end user.</t>
+      </section>
+    </section>
+    <section anchor="info-model" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-information-model-for-outso">Information Model for Outsourced Information</name>
+      <t indent="0" pn="section-appendix.b-1">This section specifies an optional format for the set of parameters required by the HNA to configure the naming architecture of this document.</t>
+      <t indent="0" pn="section-appendix.b-2">In cases where a home router has not been provisioned by the manufacturer (when forward zones are provided by the manufacturer) or by the ISP (when the ISP provides this service), then a home user/owner will need to configure these settings via an administrative interface.</t>
+      <t indent="0" pn="section-appendix.b-3">By defining a standard format (in JSON) for this configuration information, the user/owner may be able to copy and paste a configuration blob from the service provider into the administrative interface of the HNA.</t>
+      <t indent="0" pn="section-appendix.b-4">This format may also provide the basis for a future OAuth 2.0 <xref target="RFC6749" format="default" sectionFormat="of" derivedContent="RFC6749"/> flow that could do the set up automatically.</t>
+      <t indent="0" pn="section-appendix.b-5">The HNA needs to be configured with the following parameters as described by the Concise Data Definition Language (CDDL) <xref target="RFC8610" format="default" sectionFormat="of" derivedContent="RFC8610"/>.  These parameters are necessary to establish a secure channel between the HNA and the DM as well as to specify the DNS zone that is in the scope of the communication.</t>
+      <sourcecode type="cddl" markers="false" pn="section-appendix.b-6">
+hna-configuration = {
+  "registered_domain" : tstr,
+  "dm"                : tstr,
+  ? "dm_transport" : "DoT"
+  ? "dm_port"        : uint,
+  ? "dm_acl"         : hna-acl / [ +hna-acl ]
+  ? "hna_auth_method": hna-auth-method
+  ? "hna_certificate": tstr
+}
+
+hna-acl          = tstr
+hna-auth-method  /= "certificate"
+</sourcecode>
+      <t indent="0" pn="section-appendix.b-7">For example:</t>
+      <sourcecode markers="false" pn="section-appendix.b-8">
+{
+  "registered_domain" : "n8d234f.r.example.net",
+  "dm"                : "2001:db8:1234:111:222::2",
+  "dm_transport"      : "DoT",
+  "dm_port"           : 4433,
+  "dm_acl"            : "2001:db8:1f15:62e::/64"
+                   or [ "2001:db8:1f15:62e::/64", ... ]
+  "hna_auth_method"   : "certificate",
+  "hna_certificate"   : "-----BEGIN CERTIFICATE-----\nMIIDTjCCFGy..",
+}
+</sourcecode>
+      <dl indent="3" newline="false" spacing="normal" pn="section-appendix.b-9">
+        <dt pn="section-appendix.b-9.1">Registered Homenet Domain (registered_domain):</dt>
+        <dd pn="section-appendix.b-9.2">The Domain Name of the zone. Multiple Registered Homenet Domains may be provided.
+This will generate the creation of multiple Public Homenet Zones. This parameter is mandatory.
+        </dd>
+        <dt pn="section-appendix.b-9.3">Distribution Manager notification address (dm):</dt>
+        <dd pn="section-appendix.b-9.4">The associated FQDNs or IP addresses of the DM to which DNS Notifies should be sent.
+This parameter is mandatory. IP addresses are optional, and the FQDN is sufficient and preferred.
+If there are concerns about the security of the name to IP translation, then DNSSEC should be employed.
+        </dd>
+      </dl>
+      <t indent="0" pn="section-appendix.b-10">As the session between the HNA and the DM is authenticated with TLS, the use of names is easier.</t>
+      <t indent="0" pn="section-appendix.b-11">As certificates are more commonly emitted for FQDN than for IP addresses, it is preferred to use names and authenticate the name of the DM during the TLS session establishment.</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-appendix.b-12">
+        <dt pn="section-appendix.b-12.1">Supported Transport (dm_transport):</dt>
+        <dd pn="section-appendix.b-12.2">The transport that carries the DNS exchanges between the HNA and the DM.
+The typical value is "DoT", but it may be extended in the future with "DoH" or "DoQ", for example.
+This parameter is optional, and the HNA uses DoT by default.
+        </dd>
+        <dt pn="section-appendix.b-12.3">Distribution Manager Port (dm_port):</dt>
+        <dd pn="section-appendix.b-12.4">Indicates the port used by the DM.
+This parameter is optional, and the default value is provided by the Supported Transport.
+In the future, an additional transport may not have a default port, in which case either a default port needs to be defined or this parameter becomes mandatory.
+        </dd>
+      </dl>
+      <t indent="0" pn="section-appendix.b-13">Note that HNA does not define ports for the Synchronization Channel.
+In any case, this is not expected to be a part of the configuration but is instead negotiated through the Configuration Channel. Currently, the Configuration Channel does not provide this and limits its agility to a dedicated IP address. If such agility is needed in the future, additional exchanges will need to be defined.</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-appendix.b-14">
+        <dt pn="section-appendix.b-14.1">Authentication Method ("hna_auth_method"):</dt>
+        <dd pn="section-appendix.b-14.2">How the HNA authenticates itself to the DM within the TLS connection(s).
+The authentication method can typically be "certificate", "psk", or "none".
+This parameter is optional, and the Authentication Method is "certificate" by default.
+        </dd>
+        <dt pn="section-appendix.b-14.3">Authentication data ("hna_certificate", "hna_key"):</dt>
+        <dd pn="section-appendix.b-14.4">The certificate chain used to authenticate the HNA.
+This parameter is optional, and when not specified, a self-signed certificate is used.
+        </dd>
+        <dt pn="section-appendix.b-14.5">Distribution Manager AXFR permission netmask (dm_acl):</dt>
+        <dd pn="section-appendix.b-14.6">The subnet from which the CPE should accept SOA queries and AXFR requests.
+A subnet is used in the case where the DOI consists of a number of different systems. An
+array of addresses is permitted. This parameter is optional, and if unspecified, the CPE uses the IP addresses provided by the dm parameter either directly when the dm indicates the IP address(es) returned by the DNS or DNSSEC resolution when dm indicates an FQDN.
+        </dd>
+      </dl>
+      <t indent="0" pn="section-appendix.b-15">For forward zones, the relationship between the HNA and the forward zone provider may be the result of a number of transactions:</t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-appendix.b-16">
+	<li pn="section-appendix.b-16.1" derivedCounter="1.">The forward zone outsourcing may be provided by the maker of the Homenet router.
+In this case, the identity and authorization could be built in the device at the manufacturer provisioning time. The device would need to be provisioned with a device-unique credential, and it is likely that the Registered Homenet Domain would be derived from a public attribute of the device, such as a serial number (see <xref target="sec-ex-manu" format="default" sectionFormat="of" derivedContent="Appendix C"/> or <xref target="I-D.richardson-homerouter-provisioning" format="default" sectionFormat="of" derivedContent="HOMEROUTER-PROVISION"/> for more details).</li>
+        <li pn="section-appendix.b-16.2" derivedCounter="2.">The forward zone outsourcing may be provided by the ISP.
+In this case, the use of <xref target="RFC9527" format="default" sectionFormat="of" derivedContent="RFC9527"/> to provide the credentials is appropriate.</li>
+        <li pn="section-appendix.b-16.3" derivedCounter="3.">The forward zone may be outsourced to a third party, such as a domain registrar.
+In this case, the use of the JSON-serialized YANG data model described in this section is appropriate, as it can easily be copy and pasted by the user or downloaded as part of a web transaction.</li>
+      </ol>
+      <t indent="0" pn="section-appendix.b-17">For reverse zones, the relationship is always with the upstream ISP (although there may be more than one), so <xref target="RFC9527" format="default" sectionFormat="of" derivedContent="RFC9527"/> always applies.</t>
+      <t indent="0" pn="section-appendix.b-18">The following is an abridged example of a set of data that represents the needed configuration parameters for outsourcing.</t>
+    </section>
+    <section anchor="sec-ex-manu" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-example-a-manufacturer-prov">Example: A Manufacturer-Provisioned HNA Product Flow</name>
+      <t indent="0" pn="section-appendix.c-1">This scenario is one where a Homenet router device manufacturer decides to offer DNS hosting as a value add.</t>
+      <t indent="0" pn="section-appendix.c-2"><xref target="I-D.richardson-homerouter-provisioning" format="default" sectionFormat="of" derivedContent="HOMEROUTER-PROVISION"/> describes a process for a home router
+credential provisioning system.
+The outline of it is that near the end of the manufacturing process, as part of the firmware loading, the manufacturer provisions a private key and certificate into the device.</t>
+      <t indent="0" pn="section-appendix.c-3">In addition to having an asymmetric credential known to the manufacturer, the device also has
+been provisioned with an agreed-upon name.  In the example in the above document, the name "n8d234f.r.example.net" has already been allocated and confirmed with the manufacturer.</t>
+      <t indent="0" pn="section-appendix.c-4">The HNA can use the above domain for itself.
+It is not very pretty or personal, but if the owner would like to have a better name, they can arrange it.</t>
+      <t indent="0" pn="section-appendix.c-5">The configuration would look like the following:</t>
+      <artwork align="left" pn="section-appendix.c-6">
+{
+  "dm" : "2001:db8:1234:111:222::2",
+  "dm_acl"    : "2001:db8:1234:111:222::/64",
+  "dm_ctrl"   : "manufacturer.example.net",
+  "dm_port"   : "4433",
+  "ns_list"   : [ "ns1.publicdns.example", "ns2.publicdns.example"],
+  "zone"      : "n8d234f.r.example.net",
+  "auth_method" : "certificate",
+  "hna_certificate":"-----BEGIN CERTIFICATE-----\nMIIDTjCCFGy....",
+}
+</artwork>
+      <t indent="0" pn="section-appendix.c-7">The dm_ctrl and dm_port values would be built into the firmware.</t>
+    </section>
+    <section anchor="acknowledgment" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.d">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.d-1">The authors wish to thank <contact fullname="Philippe Lemordant"/> for his contributions to
+the earlier draft versions of this document; <contact fullname="Ole Troan"/> for pointing out issues with
+the IPv6-routed home concept and placing the scope of this document in a
+wider picture; <contact fullname="Mark Townsley"/> for encouragement and injecting a healthy
+debate on the merits of the idea; <contact fullname="Ulrik de Bie"/> for providing alternative
+solutions; <contact fullname="Paul Mockapetris"/>, <contact fullname="Christian Jacquenet"/>, <contact fullname="Francis Dupont"/>, and <contact fullname="Ludovic Eschard"/> for their remarks on HNA and low power devices; <contact fullname="Olafur Gudmundsson"/> for clarifying DNSSEC capabilities of small devices; <contact fullname="Simon Kelley"/> for its feedback as dnsmasq implementer; <contact fullname="Andrew Sullivan"/>, <contact fullname="Mark Andrew"/>, <contact fullname="Ted Lemon"/>, <contact fullname="Mikael Abrahamson"/>, <contact fullname="Stephen Farrell"/>, and <contact fullname="Ray Bellis"/>
+for their feedback on handling different views as well as clarifying the
+impact of outsourcing the zone-signing operation outside the HNA; and <contact fullname="Mark Andrew"/> and <contact fullname="Peter Koch"/> for clarifying the renumbering.</t>
+      <t indent="0" pn="section-appendix.d-2">The authors would like to thank <contact fullname="Kiran Makhijani"/> for her in-depth review that contributed to shaping the final version of this document.</t>
+      <t indent="0" pn="section-appendix.d-3">The authors would also like to thank our Area Director <contact fullname="Éric Vyncke"/> for his constant support and pushing the document through the IESG process and the many reviewers from various directorates including <contact fullname="Anthony Somerset"/>, <contact fullname="Geoff Huston"/>, <contact fullname="Tim Chown"/>, <contact fullname="Tim Wicinski"/>, <contact fullname="Matt Brown"/>, <contact fullname="Darrel Miller"/>, and <contact fullname="Christer Holmberg"/>.</t>
+    </section>
+    <section anchor="contributors" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.e">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <t indent="0" pn="section-appendix.e-1">The coauthors would like to thank <contact fullname="Chris Griffiths"/> and <contact fullname="Wouter Cloetens"/> for providing significant contributions to the earlier draft versions of this document.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.f">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="D." surname="Migault" fullname="Daniel Migault">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <street>8275 Trans Canada Route</street>
+            <city>Saint Laurent</city>
+            <region>QC</region>
+            <code>4S 0B6</code>
+            <country>Canada</country>
+          </postal>
+          <email>daniel.migault@ericsson.com</email>
+        </address>
+      </author>
+      <author initials="R." surname="Weber" fullname="Ralf Weber">
+        <organization showOnFrontPage="true">Nominum</organization>
+        <address>
+          <postal>
+            <street>2000 Seaport Blvd.</street>
+            <city>Redwood City</city>
+            <region>CA</region>
+            <code>94063</code>
+            <country>United States of America</country>
+          </postal>
+          <email>ralf.weber@nominum.com</email>
+        </address>
+      </author>
+      <author initials="M." surname="Richardson" fullname="Michael Richardson">
+        <organization showOnFrontPage="true">Sandelman Software Works</organization>
+        <address>
+          <postal>
+            <street>470 Dawson Avenue</street>
+            <city>Ottawa</city>
+            <region>ON</region>
+            <code>K1Z 5V7</code>
+            <country>Canada</country>
+          </postal>
+          <email>mcr+ietf@sandelman.ca</email>
+        </address>
+      </author>
+      <author initials="R." surname="Hunter" fullname="Ray Hunter">
+        <organization showOnFrontPage="true">Globis Consulting BV</organization>
+        <address>
+          <postal>
+            <street>Weegschaalstraat 3</street>
+            <city>Eindhoven</city>
+            <code>5632CW</code>
+            <country>Netherlands</country>
+          </postal>
+          <email>v6ops@globis.net</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

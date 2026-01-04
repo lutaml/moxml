@@ -1,0 +1,1593 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-opsawg-ipfix-srv6-srh-14" number="9487" ipr="trust200902" obsoletes="" updates="" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="true" prepTime="2023-11-08T02:57:18" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-opsawg-ipfix-srv6-srh-14" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9487" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="IPFIX Segment Routing over IPv6">Export of Segment Routing over IPv6 Information in IP Flow Information Export (IPFIX)</title>
+    <seriesInfo name="RFC" value="9487" stream="IETF"/>
+    <author fullname="Thomas Graf" initials="T" surname="Graf">
+      <organization showOnFrontPage="true">Swisscom</organization>
+      <address>
+        <postal>
+          <street>Binzring 17</street>
+          <city>Zurich</city>
+          <code>8045</code>
+          <country>Switzerland</country>
+        </postal>
+        <email>thomas.graf@swisscom.com</email>
+      </address>
+    </author>
+    <author fullname="Benoit Claise" initials="B" surname="Claise">
+      <organization showOnFrontPage="true">Huawei</organization>
+      <address>
+        <email>benoit.claise@huawei.com</email>
+      </address>
+    </author>
+    <author fullname="Pierre Francois" initials="P." surname="Francois">
+      <organization showOnFrontPage="true">INSA-Lyon</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Lyon</city>
+          <region/>
+          <code/>
+          <country>France</country>
+        </postal>
+        <phone/>
+        <email>pierre.francois@insa-lyon.fr</email>
+        <uri/>
+      </address>
+    </author>
+    <date month="11" year="2023"/>
+    <area>ops</area>
+    <workgroup>opsawg</workgroup>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document introduces new IP Flow Information Export (IPFIX)
+      Information Elements (IEs) to identify a set of information related to Segment Routing over IPv6
+      (SRv6) such as data contained in a Segment Routing
+      Header (SRH), the SRv6 control plane, and the SRv6 Endpoint behavior
+      that traffic is being forwarded with.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9487" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-ipfix-ipv6-srh-informat">New IPFIX IPv6 SRH Information Elements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sample-use-cases">Sample Use Cases</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipfix-information-elements-">IPFIX Information Elements Registry</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2.1.2">
+                  <li pn="section-toc.1-1.5.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.1.1"><xref derivedContent="5.1.1" format="counter" sectionFormat="of" target="section-5.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srhflagsipv6">srhFlagsIPv6</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.2.1"><xref derivedContent="5.1.2" format="counter" sectionFormat="of" target="section-5.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srhtagipv6">srhTagIPv6</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.3">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.3.1"><xref derivedContent="5.1.3" format="counter" sectionFormat="of" target="section-5.1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srhsegmentipv6">srhSegmentIPv6</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.4">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.4.1"><xref derivedContent="5.1.4" format="counter" sectionFormat="of" target="section-5.1.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srhactivesegmentipv6">srhActiveSegmentIPv6</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.5">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.5.1"><xref derivedContent="5.1.5" format="counter" sectionFormat="of" target="section-5.1.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srhsegmentipv6basiclist">srhSegmentIPv6BasicList</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.6">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.6.1"><xref derivedContent="5.1.6" format="counter" sectionFormat="of" target="section-5.1.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srhsegmentipv6listsection">srhSegmentIPv6ListSection</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.7">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.7.1"><xref derivedContent="5.1.7" format="counter" sectionFormat="of" target="section-5.1.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srhsegmentsipv6left">srhSegmentsIPv6Left</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.8">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.8.1"><xref derivedContent="5.1.8" format="counter" sectionFormat="of" target="section-5.1.8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srhipv6section">srhIPv6Section</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.9">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.9.1"><xref derivedContent="5.1.9" format="counter" sectionFormat="of" target="section-5.1.9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srhipv6activesegmenttype">srhIPv6ActiveSegmentType</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.10">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.10.1"><xref derivedContent="5.1.10" format="counter" sectionFormat="of" target="section-5.1.10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-srhsegmentipv6locatorlength">srhSegmentIPv6LocatorLength</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.5.2.1.2.11">
+                    <t indent="0" pn="section-toc.1-1.5.2.1.2.11.1"><xref derivedContent="5.1.11" format="counter" sectionFormat="of" target="section-5.1.11"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-srhsegmentipv6endpointbehav">srhSegmentIPv6EndpointBehavior</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-ipfix-ipv6-srh-segment-">New IPFIX IPv6 SRH Segment Type (Value 500) Subregistry</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-operational-considerations">Operational Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-srv6-segment-list">SRv6 Segment List</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-compressed-srv6-segment-lis">Compressed SRv6 Segment List Decomposition</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipfix-encoding-examples">IPFIX Encoding Examples</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="A.1" format="counter" sectionFormat="of" target="section-appendix.a.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-three-observed-srh-headers-a">Three Observed SRH Headers and Their Routing Protocols</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2.1.2">
+                  <li pn="section-toc.1-1.9.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.9.2.1.2.1.1"><xref derivedContent="A.1.1" format="counter" sectionFormat="of" target="section-appendix.a.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-template-record-and-data-se">Template Record and Data Set with Segment Basic List</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.9.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.9.2.1.2.2.1"><xref derivedContent="A.1.2" format="counter" sectionFormat="of" target="section-appendix.a.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-template-record-and-data-set">Template Record and Data Set with Segment List Section</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.9.2.1.2.3">
+                    <t indent="0" pn="section-toc.1-1.9.2.1.2.3.1"><xref derivedContent="A.1.3" format="counter" sectionFormat="of" target="section-appendix.a.1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-template-record-and-data-set-">Template Record and Data Set with SRH Section</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="A.2" format="counter" sectionFormat="of" target="section-appendix.a.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-options-template-record-and">Options Template Record and Data Set for SRv6 Segment Endpoint
+        Behavior and Locator Length</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="Introduction" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">A dedicated Routing Extension Header, called "Segment Routing Header
+      (SRH)", is defined in <xref target="RFC8754" format="default" sectionFormat="of" derivedContent="RFC8754"/> for use
+      of Segment Routing over IPv6 (SRv6) data plane.</t>
+      <t indent="0" pn="section-1-2">Also, three routing protocol extensions, <xref target="I-D.ietf-lsr-ospfv3-srv6-extensions" format="default" sectionFormat="of" derivedContent="OSPFV3-SRV6-EXT">OSPFv3</xref>, <xref target="RFC9352" format="default" sectionFormat="of" derivedContent="RFC9352">IS-IS</xref>, and <xref target="RFC8669" format="default" sectionFormat="of" derivedContent="RFC8669">BGP Prefix Segment Identifiers (Prefix-SIDs)</xref>;
+      the <xref target="I-D.ietf-pce-segment-routing-ipv6" format="default" sectionFormat="of" derivedContent="PCEP-SRV6-EXT">Path
+      Computation Element Communication Protocol (PCEP) Extension</xref>; and
+      the <xref target="RFC9256" format="default" sectionFormat="of" derivedContent="RFC9256">Segment Routing Policy</xref>
+      are defined to propagate Segment Identifiers (SIDs).</t>
+      <t indent="0" pn="section-1-3">SRv6 Segment Endpoint behaviors describe how packets should be
+      processed by SRv6 Segment Endpoint Nodes. Such behaviors are defined in
+      <xref target="RFC8986" format="default" sectionFormat="of" derivedContent="RFC8986"/>.</t>
+      <t indent="0" pn="section-1-4">This document specifies eleven new IPFIX Information Elements (IEs)
+      and one new subregistry within the "IPFIX Information Elements" registry
+      <xref target="RFC7012" format="default" sectionFormat="of" derivedContent="RFC7012"/>, for SRv6 purposes.</t>
+      <t indent="0" pn="section-1-5">These IEs are used to export the SRv6 active segment and its control
+      plane protocol, the SRv6 Segment List, the next SRv6 node and its type,
+      and the numbers of SRv6 segments left.</t>
+      <t indent="0" pn="section-1-6">Some examples are provided in <xref target="Encoding-Example" format="default" sectionFormat="of" derivedContent="Appendix A"/>.</t>
+    </section>
+    <section anchor="notation" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <t indent="0" pn="section-2-1"> The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+        "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+        "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+        "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+        are to be interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they
+        appear in all capitals, as shown here.
+      </t>
+      <t indent="0" pn="section-2-2">This document makes use of the terms defined in <xref target="RFC7011" format="default" sectionFormat="of" derivedContent="RFC7011"/>, <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>, and <xref target="RFC8754" format="default" sectionFormat="of" derivedContent="RFC8754"/>.</t>
+      <t indent="0" pn="section-2-3">The following terms are used as defined in <xref target="RFC7011" format="default" sectionFormat="of" derivedContent="RFC7011"/>:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-4">
+        <li pn="section-2-4.1">IPFIX</li>
+        <li pn="section-2-4.2">IPFIX Information Elements</li>
+        <li pn="section-2-4.3">Template</li>
+        <li pn="section-2-4.4">Template Record</li>
+        <li pn="section-2-4.5">Options Template</li>
+        <li pn="section-2-4.6">Options Template Record</li>
+        <li pn="section-2-4.7">Data Record</li>
+        <li pn="section-2-4.8">Data Set</li>
+      </ul>
+      <t indent="0" pn="section-2-5">The following terms are used as defined in <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-6">
+        <li pn="section-2-6.1">Segment Routing (SR)</li>
+        <li pn="section-2-6.2">Segment</li>
+        <li pn="section-2-6.3">Segment List</li>
+        <li pn="section-2-6.4">Active Segment</li>
+        <li pn="section-2-6.5">Segment Identifier (SID)</li>
+        <li pn="section-2-6.6">SRv6</li>
+        <li pn="section-2-6.7">SRv6 SID</li>
+      </ul>
+      <t indent="0" pn="section-2-7">The following terms are used as defined in <xref target="RFC8754" format="default" sectionFormat="of" derivedContent="RFC8754"/>:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-8">
+        <li pn="section-2-8.1">Segment Routing Header (SRH)</li>
+        <li pn="section-2-8.2">SR Source Node</li>
+        <li pn="section-2-8.3">Transit Node</li>
+        <li pn="section-2-8.4">SR Segment Endpoint Node</li>
+        <li pn="section-2-8.5">Reduced SRH</li>
+        <li pn="section-2-8.6">Segments Left</li>
+        <li pn="section-2-8.7">Last Entry</li>
+      </ul>
+    </section>
+    <section anchor="IE" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-new-ipfix-ipv6-srh-informat">New IPFIX IPv6 SRH Information Elements</name>
+      <t indent="0" pn="section-3-1">This section specifies the new IPFIX IPv6 SRH IEs.</t>
+      <dl newline="true" spacing="normal" indent="3" pn="section-3-2">
+        <dt pn="section-3-2.1">srhFlagsIPv6</dt>
+        <dd pn="section-3-2.2">The 8-bit Flags field defined in the SRH (<xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>).</dd>
+        <dt pn="section-3-2.3">srhTagIPv6</dt>
+        <dd pn="section-3-2.4">The 16-bit Tag field defined in the SRH (<xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>). A tag is used to mark a packet as
+        part of a class or group of packets sharing the same set of
+        properties.</dd>
+        <dt pn="section-3-2.5">srhSegmentIPv6</dt>
+        <dd pn="section-3-2.6">The 128-bit IPv6
+          address that represents an SRv6 segment.</dd>
+        <dt pn="section-3-2.7">srhActiveSegmentIPv6</dt>
+        <dd pn="section-3-2.8">The  128-bit
+          IPv6 address that represents the active SRv6 segment.</dd>
+        <dt pn="section-3-2.9">srhSegmentIPv6BasicList</dt>
+        <dd pn="section-3-2.10">
+          The ordered basicList <xref target="RFC6313" format="default" sectionFormat="of" derivedContent="RFC6313"/> of zero
+          or more 128-bit IPv6 addresses in the SRH that represents the SRv6
+          Segment List. As specified in <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>, the Segment List is encoded
+          starting from the last segment of the SR Policy. That is, the first
+          element of the Segment List (Segment List[0]) contains the last
+          segment of the SR Policy, the second element contains the
+          penultimate segment of the SR Policy, and so on.</dd>
+        <dt pn="section-3-2.11">srhSegmentIPv6ListSection</dt>
+        <dd pn="section-3-2.12"> The SRH Segment List as defined in <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/> as a series of octets in IPFIX.</dd>
+        <dt pn="section-3-2.13">srhSegmentsIPv6Left</dt>
+        <dd pn="section-3-2.14">The 8-bit unsigned integer that defines the number of segments remaining
+        to reach the end of the Segment List from the SRH, as specified by the
+        "Segments Left" field in <xref target="RFC8200" sectionFormat="of" section="4.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8200#section-4.4" derivedContent="RFC8200"/> and as mentioned in the SRH part of <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>.</dd>
+        <dt pn="section-3-2.15">srhIPv6Section</dt>
+        <dd pn="section-3-2.16"> The SRH and its TLVs as specified in <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/> as a series of
+        octets in IPFIX.</dd>
+        <dt pn="section-3-2.17">srhIPv6ActiveSegmentType</dt>
+        <dd pn="section-3-2.18">
+          The designator of the routing protocol or PCEP extension where the
+          active SRv6 segment has been learned from.</dd>
+        <dt pn="section-3-2.19">srhSegmentIPv6LocatorLength</dt>
+        <dd pn="section-3-2.20">
+          The length of the SRH segment IPv6 locator specified as the number of
+          significant bits. Together with srhSegmentIPv6, it enables the
+          calculation of the SRv6 Locator.</dd>
+        <dt pn="section-3-2.21">srhSegmentIPv6EndpointBehavior</dt>
+        <dd pn="section-3-2.22">The 16-bit unsigned integer that represents an SRv6 Endpoint behavior
+        as per <xref target="RFC8986" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8986#section-4" derivedContent="RFC8986"/>.</dd>
+      </dl>
+      <t indent="0" pn="section-3-3">Note that the srhSegmentIPv6, srhSegmentIPv6LocatorLength, and
+      srhSegmentIPv6EndpointBehavior IPFIX IEs are generic fields to be used
+      in the context of IPFIX Options Templates or IPFIX Structured Data <xref target="RFC6313" format="default" sectionFormat="of" derivedContent="RFC6313"/>.</t>
+    </section>
+    <section anchor="Sample-Use-Cases" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-sample-use-cases">Sample Use Cases</name>
+      <t indent="0" pn="section-4-1">The IPFIX IEs srhSegmentIPv6BasicList (496) or alternatively  srhSegmentIPv6ListSection (497), srhActiveSegmentIPv6 (495),
+      srhSegmentsIPv6Left (498), srhIPv6ActiveSegmentType (500), and 
+      forwardingStatus (89) <xref target="RFC7270" format="default" sectionFormat="of" derivedContent="RFC7270"/> <xref target="IANA-IPFIX" format="default" sectionFormat="of" derivedContent="IANA-IPFIX"/> as well as some existing counter
+      information <xref target="IANA-IPFIX" format="default" sectionFormat="of" derivedContent="IANA-IPFIX"/> provide
+      answers to the following questions (amongst others):</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-2">
+        <li pn="section-4-2.1">How many packets steered with an SR policy are forwarded or
+          dropped using SRv6 in a network?</li>
+        <li pn="section-4-2.2">If dropped, for which reasons?</li>
+        <li pn="section-4-2.3">What is the current active segment and its associated control
+          plane protocol?</li>
+        <li pn="section-4-2.4">What is the SRv6 Segment List?</li>
+        <li pn="section-4-2.5">What is the next SRv6 node and its type?</li>
+        <li pn="section-4-2.6">How many SRv6 segments are left?</li>
+      </ul>
+    </section>
+    <section anchor="IANA" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section anchor="sec-new-ies" numbered="true" toc="include" removeInRFC="false" pn="section-5.1">
+        <name slugifiedName="name-ipfix-information-elements-">IPFIX Information Elements Registry</name>
+        <t indent="0" pn="section-5.1-1">IANA has added the following new IEs to the "IPFIX Information Elements" registry
+        <xref target="RFC7012" format="default" sectionFormat="of" derivedContent="RFC7012"/> at <xref target="IANA-IPFIX" format="default" sectionFormat="of" derivedContent="IANA-IPFIX"/>:</t>
+        <table anchor="table1" align="center" pn="table-1">
+          <name slugifiedName="name-ipfix-information-elements-r">IPFIX Information Elements Registry</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">ElementID</th>
+              <th align="left" colspan="1" rowspan="1">Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">492</td>
+              <td align="left" colspan="1" rowspan="1">srhFlagsIPv6</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">493</td>
+              <td align="left" colspan="1" rowspan="1">srhTagIPv6</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">494</td>
+              <td align="left" colspan="1" rowspan="1">srhSegmentIPv6</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">495</td>
+              <td align="left" colspan="1" rowspan="1">srhActiveSegmentIPv6</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">496</td>
+              <td align="left" colspan="1" rowspan="1">srhSegmentIPv6BasicList</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">497</td>
+              <td align="left" colspan="1" rowspan="1">srhSegmentIPv6ListSection</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">498</td>
+              <td align="left" colspan="1" rowspan="1">srhSegmentsIPv6Left</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">499</td>
+              <td align="left" colspan="1" rowspan="1">srhIPv6Section</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">500</td>
+              <td align="left" colspan="1" rowspan="1">srhIPv6ActiveSegmentType</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">501</td>
+              <td align="left" colspan="1" rowspan="1">srhSegmentIPv6LocatorLength</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">502</td>
+              <td align="left" colspan="1" rowspan="1">srhSegmentIPv6EndpointBehavior</td>
+            </tr>
+          </tbody>
+        </table>
+        <section anchor="IANAsrhFlagsIPv6" numbered="true" toc="include" removeInRFC="false" pn="section-5.1.1">
+          <name slugifiedName="name-srhflagsipv6">srhFlagsIPv6</name>
+          <dl spacing="compact" newline="false" indent="3" pn="section-5.1.1-1">
+            <dt pn="section-5.1.1-1.1">ElementID:</dt>
+            <dd pn="section-5.1.1-1.2">492</dd>
+            <dt pn="section-5.1.1-1.3">Name:</dt>
+            <dd pn="section-5.1.1-1.4">srhFlagsIPv6</dd>
+            <dt pn="section-5.1.1-1.5">Abstract Data Type:</dt>
+            <dd pn="section-5.1.1-1.6">unsigned8</dd>
+            <dt pn="section-5.1.1-1.7">Data Type Semantics:</dt>
+            <dd pn="section-5.1.1-1.8">flags</dd>
+            <dt pn="section-5.1.1-1.9">Description:</dt>
+            <dd pn="section-5.1.1-1.10">The 8-bit Flags field defined in the SRH (<xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>). Assigned flags and their
+            meanings are provided in the "Segment Routing Header Flags" IANA
+            registry.</dd>
+            <dt pn="section-5.1.1-1.11">Additional Information:</dt>
+            <dd pn="section-5.1.1-1.12">See the assignments in the "Segment Routing Header Flags"
+            registry at <eref target="https://www.iana.org/assignments/ipv6-parameters" brackets="angle"/>.  See also <xref target="RFC8754" format="default" sectionFormat="of" derivedContent="RFC8754"/> for the SRH specification.</dd>
+            <dt pn="section-5.1.1-1.13">Reference:</dt>
+            <dd pn="section-5.1.1-1.14">RFC 9487</dd>
+          </dl>
+        </section>
+        <section anchor="IANAsrhTagIPv6" numbered="true" toc="include" removeInRFC="false" pn="section-5.1.2">
+          <name slugifiedName="name-srhtagipv6">srhTagIPv6</name>
+          <dl spacing="compact" newline="false" indent="3" pn="section-5.1.2-1">
+            <dt pn="section-5.1.2-1.1">ElementID:</dt>
+            <dd pn="section-5.1.2-1.2">493</dd>
+            <dt pn="section-5.1.2-1.3">Name:</dt>
+            <dd pn="section-5.1.2-1.4">srhTagIPv6</dd>
+            <dt pn="section-5.1.2-1.5">Abstract Data Type:</dt>
+            <dd pn="section-5.1.2-1.6">unsigned16</dd>
+            <dt pn="section-5.1.2-1.7">Data Type Semantics:</dt>
+            <dd pn="section-5.1.2-1.8">identifier</dd>
+            <dt pn="section-5.1.2-1.9">Description:</dt>
+            <dd pn="section-5.1.2-1.10">The 16-bit Tag field defined in the SRH (<xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>). A tag is used
+            to mark a packet as part of a class or group of packets sharing
+            the same set of properties.</dd>
+            <dt pn="section-5.1.2-1.11">Additional Information:</dt>
+            <dd pn="section-5.1.2-1.12">See <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>
+            for more details about the Tag.</dd>
+            <dt pn="section-5.1.2-1.13">Reference:</dt>
+            <dd pn="section-5.1.2-1.14">RFC 9487</dd>
+          </dl>
+        </section>
+        <section anchor="IANAsrhSegmentIPv6" numbered="true" toc="include" removeInRFC="false" pn="section-5.1.3">
+          <name slugifiedName="name-srhsegmentipv6">srhSegmentIPv6</name>
+          <dl spacing="compact" newline="false" indent="3" pn="section-5.1.3-1">
+            <dt pn="section-5.1.3-1.1">ElementID:</dt>
+            <dd pn="section-5.1.3-1.2">494</dd>
+            <dt pn="section-5.1.3-1.3">Name:</dt>
+            <dd pn="section-5.1.3-1.4">srhSegmentIPv6</dd>
+            <dt pn="section-5.1.3-1.5">Abstract Data Type:</dt>
+            <dd pn="section-5.1.3-1.6">ipv6Address</dd>
+            <dt pn="section-5.1.3-1.7">Data Type Semantics:</dt>
+            <dd pn="section-5.1.3-1.8">default</dd>
+            <dt pn="section-5.1.3-1.9">Description:</dt>
+            <dd pn="section-5.1.3-1.10">The 128-bit IPv6 address that represents an SRv6 segment.</dd>
+            <dt pn="section-5.1.3-1.11">Additional Information:</dt>
+            <dd pn="section-5.1.3-1.12">Specified in <xref target="RFC8402" sectionFormat="of" section="1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8402#section-1" derivedContent="RFC8402"/> and mentioned in "Segment List" in <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>.</dd>
+            <dt pn="section-5.1.3-1.13">Reference:</dt>
+            <dd pn="section-5.1.3-1.14">RFC 9487</dd>
+          </dl>
+        </section>
+        <section anchor="IANAsrhActiveSegmentIPv6" numbered="true" toc="include" removeInRFC="false" pn="section-5.1.4">
+          <name slugifiedName="name-srhactivesegmentipv6">srhActiveSegmentIPv6</name>
+          <dl spacing="compact" newline="false" indent="3" pn="section-5.1.4-1">
+            <dt pn="section-5.1.4-1.1">ElementID:</dt>
+            <dd pn="section-5.1.4-1.2">495</dd>
+            <dt pn="section-5.1.4-1.3">Name:</dt>
+            <dd pn="section-5.1.4-1.4">srhActiveSegmentIPv6</dd>
+            <dt pn="section-5.1.4-1.5">Abstract Data Type:</dt>
+            <dd pn="section-5.1.4-1.6">ipv6Address</dd>
+            <dt pn="section-5.1.4-1.7">Data Type Semantics:</dt>
+            <dd pn="section-5.1.4-1.8">default</dd>
+            <dt pn="section-5.1.4-1.9">Description:</dt>
+            <dd pn="section-5.1.4-1.10">The 128-bit IPv6 address that represents the active SRv6
+            segment.</dd>
+            <dt pn="section-5.1.4-1.11">Additional Information:</dt>
+            <dd pn="section-5.1.4-1.12">See <xref target="RFC8402" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8402#section-2" derivedContent="RFC8402"/> for the definition
+            of "active segment".</dd>
+            <dt pn="section-5.1.4-1.13">Reference:</dt>
+            <dd pn="section-5.1.4-1.14">RFC 9487</dd>
+          </dl>
+        </section>
+        <section anchor="IANAsrhSegmentIPv6BasicList" numbered="true" toc="include" removeInRFC="false" pn="section-5.1.5">
+          <name slugifiedName="name-srhsegmentipv6basiclist">srhSegmentIPv6BasicList</name>
+          <dl newline="false" spacing="compact" indent="3" pn="section-5.1.5-1">
+            <dt pn="section-5.1.5-1.1">ElementID:</dt>
+            <dd pn="section-5.1.5-1.2">496</dd>
+            <dt pn="section-5.1.5-1.3">Name:</dt>
+            <dd pn="section-5.1.5-1.4">srhSegmentIPv6BasicList</dd>
+            <dt pn="section-5.1.5-1.5">Abstract Data Type:</dt>
+            <dd pn="section-5.1.5-1.6">basicList</dd>
+            <dt pn="section-5.1.5-1.7">Data Type Semantics:</dt>
+            <dd pn="section-5.1.5-1.8">list</dd>
+            <dt pn="section-5.1.5-1.9">Description:</dt>
+            <dd pn="section-5.1.5-1.10">The ordered basicList <xref target="RFC6313" format="default" sectionFormat="of" derivedContent="RFC6313"/> of zero or more 128-bit IPv6 addresses in the
+            SRH that represents the SRv6 Segment List. As specified in <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>, the Segment
+            List is encoded starting from the last segment of the SR Policy.
+            That is, the first element of the Segment List (Segment List[0])
+            contains the last segment of the SR Policy, the second element
+            contains the penultimate segment of the SR Policy, and so on.</dd>
+            <dt pn="section-5.1.5-1.11">Additional Information:</dt>
+            <dd pn="section-5.1.5-1.12">See <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/> for more details
+            about the SRv6 Segment List.</dd>
+            <dt pn="section-5.1.5-1.13">Reference:</dt>
+            <dd pn="section-5.1.5-1.14">RFC 9487</dd>
+          </dl>
+        </section>
+        <section anchor="IANAsrhSegmentIPv6ListSection" numbered="true" toc="include" removeInRFC="false" pn="section-5.1.6">
+          <name slugifiedName="name-srhsegmentipv6listsection">srhSegmentIPv6ListSection</name>
+          <dl spacing="compact" newline="false" indent="3" pn="section-5.1.6-1">
+            <dt pn="section-5.1.6-1.1">ElementID:</dt>
+            <dd pn="section-5.1.6-1.2">497</dd>
+            <dt pn="section-5.1.6-1.3">Name:</dt>
+            <dd pn="section-5.1.6-1.4">srhSegmentIPv6ListSection</dd>
+            <dt pn="section-5.1.6-1.5">Abstract Data Type:</dt>
+            <dd pn="section-5.1.6-1.6">octetArray</dd>
+            <dt pn="section-5.1.6-1.7">Data Type Semantics:</dt>
+            <dd pn="section-5.1.6-1.8">default</dd>
+            <dt pn="section-5.1.6-1.9">Description:</dt>
+            <dd pn="section-5.1.6-1.10">The SRv6 Segment List as defined in <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/> as a series of octets in
+            IPFIX.</dd>
+            <dt pn="section-5.1.6-1.11">Additional Information:</dt>
+            <dd pn="section-5.1.6-1.12">See <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>
+            for more details about the SRv6 Segment List.</dd>
+            <dt pn="section-5.1.6-1.13">Reference:</dt>
+            <dd pn="section-5.1.6-1.14">RFC 9487</dd>
+          </dl>
+        </section>
+        <section anchor="IANAsrhSegmentsIPv6Left" numbered="true" toc="include" removeInRFC="false" pn="section-5.1.7">
+          <name slugifiedName="name-srhsegmentsipv6left">srhSegmentsIPv6Left</name>
+          <dl spacing="compact" newline="false" indent="3" pn="section-5.1.7-1">
+            <dt pn="section-5.1.7-1.1">ElementID:</dt>
+            <dd pn="section-5.1.7-1.2">498</dd>
+            <dt pn="section-5.1.7-1.3">Name:</dt>
+            <dd pn="section-5.1.7-1.4">srhSegmentsIPv6Left</dd>
+            <dt pn="section-5.1.7-1.5">Abstract Data Type:</dt>
+            <dd pn="section-5.1.7-1.6">unsigned8</dd>
+            <dt pn="section-5.1.7-1.7">Data Type Semantics:</dt>
+            <dd pn="section-5.1.7-1.8">quantity</dd>
+            <dt pn="section-5.1.7-1.9">Description:</dt>
+            <dd pn="section-5.1.7-1.10">The 8-bit unsigned integer defining the number of segments
+            remaining to reach the end of the Segment List from the SRH.</dd>
+            <dt pn="section-5.1.7-1.11">Additional Information:</dt>
+            <dd pn="section-5.1.7-1.12">Specified by the "Segments Left" field in <xref target="RFC8200" sectionFormat="of" section="4.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8200#section-4.4" derivedContent="RFC8200"/> and mentioned
+            in <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>.</dd>
+            <dt pn="section-5.1.7-1.13">Reference:</dt>
+            <dd pn="section-5.1.7-1.14">RFC 9487</dd>
+          </dl>
+        </section>
+        <section anchor="IANAsrhIPv6Section" numbered="true" toc="include" removeInRFC="false" pn="section-5.1.8">
+          <name slugifiedName="name-srhipv6section">srhIPv6Section</name>
+          <dl spacing="compact" newline="false" indent="3" pn="section-5.1.8-1">
+            <dt pn="section-5.1.8-1.1">ElementID:</dt>
+            <dd pn="section-5.1.8-1.2">499</dd>
+            <dt pn="section-5.1.8-1.3">Name:</dt>
+            <dd pn="section-5.1.8-1.4">srhIPv6Section</dd>
+            <dt pn="section-5.1.8-1.5">Abstract Data Type:</dt>
+            <dd pn="section-5.1.8-1.6">octetArray</dd>
+            <dt pn="section-5.1.8-1.7">Data Type Semantics:</dt>
+            <dd pn="section-5.1.8-1.8">default</dd>
+            <dt pn="section-5.1.8-1.9">Description:</dt>
+            <dd pn="section-5.1.8-1.10">The SRH and its TLVs as defined in <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/> as a series of octets in
+            IPFIX.</dd>
+            <dt pn="section-5.1.8-1.11">Additional Information:</dt>
+            <dd pn="section-5.1.8-1.12">See <xref target="RFC8754" sectionFormat="of" section="2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8754#section-2" derivedContent="RFC8754"/>
+            for more details about the structure of an SRH.</dd>
+            <dt pn="section-5.1.8-1.13">Reference:</dt>
+            <dd pn="section-5.1.8-1.14">RFC 9487</dd>
+          </dl>
+        </section>
+        <section anchor="IANAsrhIPv6ActiveSegmentType" numbered="true" toc="include" removeInRFC="false" pn="section-5.1.9">
+          <name slugifiedName="name-srhipv6activesegmenttype">srhIPv6ActiveSegmentType</name>
+          <dl spacing="compact" newline="false" indent="3" pn="section-5.1.9-1">
+            <dt pn="section-5.1.9-1.1">ElementID:</dt>
+            <dd pn="section-5.1.9-1.2">500</dd>
+            <dt pn="section-5.1.9-1.3">Name:</dt>
+            <dd pn="section-5.1.9-1.4">srhIPv6ActiveSegmentType</dd>
+            <dt pn="section-5.1.9-1.5">Abstract Data Type:</dt>
+            <dd pn="section-5.1.9-1.6">unsigned8</dd>
+            <dt pn="section-5.1.9-1.7">Data Type Semantics:</dt>
+            <dd pn="section-5.1.9-1.8">identifier</dd>
+            <dt pn="section-5.1.9-1.9">Description:</dt>
+            <dd pn="section-5.1.9-1.10">The designator of the routing protocol or PCEP extension
+            where the active SRv6 segment has been learned from. Values for
+            this Information Element are listed in the "IPFIX IPv6 SRH Segment
+            Type (Value 500)" subregistry.</dd>
+            <dt pn="section-5.1.9-1.11">Additional Information:</dt>
+            <dd pn="section-5.1.9-1.12">See the assigned types in the "IPFIX IPv6 SRH Segment (Value 500)" registry at <eref target="https://www.iana.org/assignments/ipfix" brackets="angle"/>.</dd>
+            <dt pn="section-5.1.9-1.13">Reference:</dt>
+            <dd pn="section-5.1.9-1.14">RFC 9487</dd>
+          </dl>
+        </section>
+        <section anchor="IANAsrhSegmentIPv6LocatorLength" numbered="true" toc="include" removeInRFC="false" pn="section-5.1.10">
+          <name slugifiedName="name-srhsegmentipv6locatorlength">srhSegmentIPv6LocatorLength</name>
+          <dl spacing="compact" newline="false" indent="3" pn="section-5.1.10-1">
+            <dt pn="section-5.1.10-1.1">ElementID:</dt>
+            <dd pn="section-5.1.10-1.2">501</dd>
+            <dt pn="section-5.1.10-1.3">Name:</dt>
+            <dd pn="section-5.1.10-1.4">srhSegmentIPv6LocatorLength</dd>
+            <dt pn="section-5.1.10-1.5">Data Type Semantics:</dt>
+            <dd pn="section-5.1.10-1.6">default</dd>
+            <dt pn="section-5.1.10-1.7">Description:</dt>
+            <dd pn="section-5.1.10-1.8">The length of the SRH segment IPv6 locator specified as the number of
+            significant bits. Together with srhSegmentIPv6, it enables the
+            calculation of the SRv6 Locator.</dd>
+            <dt pn="section-5.1.10-1.9">Additional Information:</dt>
+            <dd pn="section-5.1.10-1.10">See <xref target="RFC8986" sectionFormat="of" section="3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8986#section-3.1" derivedContent="RFC8986"/>
+            for more details about the SID format.</dd>
+            <dt pn="section-5.1.10-1.11">Reference:</dt>
+            <dd pn="section-5.1.10-1.12">RFC 9487</dd>
+          </dl>
+        </section>
+        <section anchor="IANAsrhSegmentIPv6EndpointBehavior" numbered="true" toc="include" removeInRFC="false" pn="section-5.1.11">
+          <name slugifiedName="name-srhsegmentipv6endpointbehav">srhSegmentIPv6EndpointBehavior</name>
+          <dl spacing="compact" newline="false" indent="3" pn="section-5.1.11-1">
+            <dt pn="section-5.1.11-1.1">ElementID:</dt>
+            <dd pn="section-5.1.11-1.2">502</dd>
+            <dt pn="section-5.1.11-1.3">Name:</dt>
+            <dd pn="section-5.1.11-1.4">srhSegmentIPv6EndpointBehavior</dd>
+            <dt pn="section-5.1.11-1.5">Abstract Data Type:</dt>
+            <dd pn="section-5.1.11-1.6">unsigned16</dd>
+            <dt pn="section-5.1.11-1.7">Data Type Semantics:</dt>
+            <dd pn="section-5.1.11-1.8">identifier</dd>
+            <dt pn="section-5.1.11-1.9">Description:</dt>
+            <dd pn="section-5.1.11-1.10">The 16-bit unsigned integer that represents an SRv6 Endpoint
+            behavior as per <xref target="RFC8986" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8986#section-4" derivedContent="RFC8986"/>. Assigned values and their meanings are provided in
+            the "SRv6 Endpoint Behaviors" registry.</dd>
+            <dt pn="section-5.1.11-1.11">Additional Information:</dt>
+            <dd pn="section-5.1.11-1.12">See the assigned behaviors in the "SRv6 Endpoint Behaviors"
+            registry at <eref target="https://www.iana.org/assignments/segment-routing" brackets="angle"/>. See <xref target="RFC8986" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8986#section-4" derivedContent="RFC8986"/> for more details about the processing of endpoint behaviors.</dd>
+            <dt pn="section-5.1.11-1.13">Reference:</dt>
+            <dd pn="section-5.1.11-1.14">RFC 9487</dd>
+          </dl>
+        </section>
+      </section>
+      <section anchor="IPFIXIPv6SRHSegmentTypeSubregistry" numbered="true" toc="include" removeInRFC="false" pn="section-5.2">
+        <name slugifiedName="name-new-ipfix-ipv6-srh-segment-">New IPFIX IPv6 SRH Segment Type (Value 500) Subregistry</name>
+        <t indent="0" pn="section-5.2-1">IANA has created a new subregistry called
+        "IPFIX IPv6 SRH Segment Type (Value 500)" under the "IPFIX Information Elements"
+        registry <xref target="RFC7012" format="default" sectionFormat="of" derivedContent="RFC7012"/> at <xref target="IANA-IPFIX" format="default" sectionFormat="of" derivedContent="IANA-IPFIX"/>.</t>
+        <t indent="0" pn="section-5.2-2">The allocation policy of this new subregistry is Expert Review
+        (<xref target="RFC8126" sectionFormat="of" section="4.5" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8126#section-4.5" derivedContent="RFC8126"/>).</t>
+        <t indent="0" pn="section-5.2-3">The designated experts for this registry should be familiar with
+        SRH. The guidelines that are being followed by the designated experts
+        for the "IPFIX Information Elements" registry should be followed for this subregistry. In
+        particular, criteria that should be applied by the designated experts
+        include determining whether the proposed registration duplicates
+        existing entries and whether the registration description is clear and
+        fits the purpose of this registry. Within the review period, the
+        designated experts will either approve or deny the registration
+        request, communicating this decision to IANA. Denials should include
+        an explanation and, if applicable, suggestions as to how to make the
+        request successful.</t>
+        <t indent="0" pn="section-5.2-4">Initial values in the registry are defined in <xref target="table2" format="default" sectionFormat="of" derivedContent="Table 2"/>.</t>
+        <table anchor="table2" align="center" pn="table-2">
+          <name slugifiedName="name-ipfix-ipv6-srh-segment-type">IPFIX IPv6 SRH Segment Type (Value 500) Subregistry</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">0</td>
+              <td align="left" colspan="1" rowspan="1">Unknown</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9487</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1</td>
+              <td align="left" colspan="1" rowspan="1">Segment Routing Policy</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9487, <xref target="RFC9256" format="default" sectionFormat="of" derivedContent="RFC9256"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">2</td>
+              <td align="left" colspan="1" rowspan="1">Path Computation Element</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9487, <xref target="I-D.ietf-pce-segment-routing-ipv6" format="default" sectionFormat="of" derivedContent="PCEP-SRV6-EXT"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">3</td>
+              <td align="left" colspan="1" rowspan="1">OSPFv3 Segment Routing</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9487, <xref target="I-D.ietf-lsr-ospfv3-srv6-extensions" format="default" sectionFormat="of" derivedContent="OSPFV3-SRV6-EXT"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">4</td>
+              <td align="left" colspan="1" rowspan="1">IS-IS Segment Routing</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9487, <xref target="RFC9352" format="default" sectionFormat="of" derivedContent="RFC9352"/></td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">5</td>
+              <td align="left" colspan="1" rowspan="1">BGP Segment Routing Prefix-SID</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9487, <xref target="RFC8669" format="default" sectionFormat="of" derivedContent="RFC8669"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+    <section anchor="Operational" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-operational-considerations">Operational Considerations</name>
+      <section anchor="OpsSidList" numbered="true" toc="include" removeInRFC="false" pn="section-6.1">
+        <name slugifiedName="name-srv6-segment-list">SRv6 Segment List</name>
+        <t indent="0" pn="section-6.1-1">The zero or more 128-bit IPv6 addresses in the SRH <xref target="RFC8754" format="default" sectionFormat="of" derivedContent="RFC8754"/> can be exported in two different
+        ways, with two different IPFIX IEs:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.1-2">
+          <li pn="section-6.1-2.1">srhSegmentIPv6BasicList</li>
+          <li pn="section-6.1-2.2">srhSegmentIPv6ListSection</li>
+        </ul>
+        <t indent="0" pn="section-6.1-3">The srhSegmentIPv6BasicList encodes the SRv6 Segment List with a
+        basicList, specified in the IPFIX Structured Data <xref target="RFC6313" format="default" sectionFormat="of" derivedContent="RFC6313"/>.	
+        This encoding is an advantage for data collection since the different IPv6
+        addresses are already structured as a list, without the need of
+        post-processing. However, this method requires some extra processing
+        on the exporter to realize the basicList data mapping.</t>
+        <t indent="0" pn="section-6.1-4">The srhSegmentIPv6ListSection, on the other hand, encodes the list
+        of IPv6 addresses as an octetArray. This doesn't impose any data flow
+        manipulation on the exporter, facilitating the immediate export.
+        However, the data collection <bcp14>MUST</bcp14> be able to decode the
+        IPv6 addresses according to the SR specifications. Compared to the
+        srhSegmentIPv6BasicList, the srhSegmentIPv6ListSection flow records
+        length is slightly reduced.</t>
+        <t indent="0" pn="section-6.1-5">It is not expected that an exporter would support both
+        srhSegmentIPv6BasicList and srhSegmentIPv6ListSection at the same
+        time.</t>
+      </section>
+      <section anchor="OpsSidListDecompose" numbered="true" toc="include" removeInRFC="false" pn="section-6.2">
+        <name slugifiedName="name-compressed-srv6-segment-lis">Compressed SRv6 Segment List Decomposition</name>
+        <t indent="0" pn="section-6.2-1">The SRv6 Segment List in the IPFIX IEs srhSegmentIPv6BasicList,
+        srhSegmentIPv6ListSection, and destinationIPv6Address could contain
+        compressed-SID containers as described in <xref target="I-D.ietf-spring-srv6-srh-compression" format="default" sectionFormat="of" derivedContent="SRV6-SRH-COM"/>. The
+        SR Endpoint Flavors, as described in Section 4 of <xref target="I-D.ietf-spring-srv6-srh-compression" format="default" sectionFormat="of" derivedContent="SRV6-SRH-COM"/>,
+        define new flavors for SID Endpoint behaviors and determine wherever
+        the Segment List encoding is compressed, along with the flavor. The
+        SID Locator, as described in <xref target="RFC8986" sectionFormat="of" section="3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8986#section-3.1" derivedContent="RFC8986"/>, determines the common most significant bits. By using
+        described information from srhSegmentIPv6EndpointBehavior and
+        srhSegmentIPv6LocatorLength, the compressed-SID containers can be
+        decoded at the data collection.</t>
+      </section>
+    </section>
+    <section anchor="Security" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-7-1">There are no additional security considerations regarding allocation of
+      these new IPFIX IEs compared to <xref target="RFC7012" format="default" sectionFormat="of" derivedContent="RFC7012"/>.</t>
+      <t indent="0" pn="section-7-2">The IEs described in this document export provider plane data metrics
+      on how packets are being forwarded within an SRv6 network. Applications
+      and operators using the IEs described in this document must evaluate the
+      sensitivity of this information in their implementation context and
+      apply the data-at-rest storage guidance in <xref target="RFC7011" sectionFormat="of" section="11.8" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7011#section-11.8" derivedContent="RFC7011"/> as appropriate.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-lsr-ospfv3-srv6-extensions" to="OSPFV3-SRV6-EXT"/>
+    <displayreference target="I-D.ietf-pce-segment-routing-ipv6" to="PCEP-SRV6-EXT"/>
+    <displayreference target="I-D.ietf-spring-srv6-srh-compression" to="SRV6-SRH-COM"/>
+    <references pn="section-8">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-8.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC6313" target="https://www.rfc-editor.org/info/rfc6313" quoteTitle="true" derivedAnchor="RFC6313">
+          <front>
+            <title>Export of Structured Data in IP Flow Information Export (IPFIX)</title>
+            <author fullname="B. Claise" initials="B." surname="Claise"/>
+            <author fullname="G. Dhandapani" initials="G." surname="Dhandapani"/>
+            <author fullname="P. Aitken" initials="P." surname="Aitken"/>
+            <author fullname="S. Yates" initials="S." surname="Yates"/>
+            <date month="July" year="2011"/>
+            <abstract>
+              <t indent="0">This document specifies an extension to the IP Flow Information Export (IPFIX) protocol specification in RFC 5101 and the IPFIX information model specified in RFC 5102 to support hierarchical structured data and lists (sequences) of Information Elements in data records. This extension allows definition of complex data structures such as variable-length lists and specification of hierarchical containment relationships between Templates. Finally, the semantics are provided in order to express the relationship among multiple list elements in a structured data record. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6313"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6313"/>
+        </reference>
+        <reference anchor="RFC7011" target="https://www.rfc-editor.org/info/rfc7011" quoteTitle="true" derivedAnchor="RFC7011">
+          <front>
+            <title>Specification of the IP Flow Information Export (IPFIX) Protocol for the Exchange of Flow Information</title>
+            <author fullname="B. Claise" initials="B." role="editor" surname="Claise"/>
+            <author fullname="B. Trammell" initials="B." role="editor" surname="Trammell"/>
+            <author fullname="P. Aitken" initials="P." surname="Aitken"/>
+            <date month="September" year="2013"/>
+            <abstract>
+              <t indent="0">This document specifies the IP Flow Information Export (IPFIX) protocol, which serves as a means for transmitting Traffic Flow information over the network. In order to transmit Traffic Flow information from an Exporting Process to a Collecting Process, a common representation of flow data and a standard means of communicating them are required. This document describes how the IPFIX Data and Template Records are carried over a number of transport protocols from an IPFIX Exporting Process to an IPFIX Collecting Process. This document obsoletes RFC 5101.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="77"/>
+          <seriesInfo name="RFC" value="7011"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7011"/>
+        </reference>
+        <reference anchor="RFC7012" target="https://www.rfc-editor.org/info/rfc7012" quoteTitle="true" derivedAnchor="RFC7012">
+          <front>
+            <title>Information Model for IP Flow Information Export (IPFIX)</title>
+            <author fullname="B. Claise" initials="B." role="editor" surname="Claise"/>
+            <author fullname="B. Trammell" initials="B." role="editor" surname="Trammell"/>
+            <date month="September" year="2013"/>
+            <abstract>
+              <t indent="0">This document defines the data types and management policy for the information model for the IP Flow Information Export (IPFIX) protocol. This information model is maintained as the IANA "IPFIX Information Elements" registry, the initial contents of which were defined by RFC 5102. This information model is used by the IPFIX protocol for encoding measured traffic information and information related to the traffic Observation Point, the traffic Metering Process, and the Exporting Process. Although this model was developed for the IPFIX protocol, it is defined in an open way that allows it to be easily used in other protocols, interfaces, and applications. This document obsoletes RFC 5102.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7012"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7012"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8200" target="https://www.rfc-editor.org/info/rfc8200" quoteTitle="true" derivedAnchor="RFC8200">
+          <front>
+            <title>Internet Protocol, Version 6 (IPv6) Specification</title>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <date month="July" year="2017"/>
+            <abstract>
+              <t indent="0">This document specifies version 6 of the Internet Protocol (IPv6). It obsoletes RFC 2460.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="86"/>
+          <seriesInfo name="RFC" value="8200"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8200"/>
+        </reference>
+        <reference anchor="RFC8754" target="https://www.rfc-editor.org/info/rfc8754" quoteTitle="true" derivedAnchor="RFC8754">
+          <front>
+            <title>IPv6 Segment Routing Header (SRH)</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="D. Dukes" initials="D." role="editor" surname="Dukes"/>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="J. Leddy" initials="J." surname="Leddy"/>
+            <author fullname="S. Matsushima" initials="S." surname="Matsushima"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <date month="March" year="2020"/>
+            <abstract>
+              <t indent="0">Segment Routing can be applied to the IPv6 data plane using a new type of Routing Extension Header called the Segment Routing Header (SRH). This document describes the SRH and how it is used by nodes that are Segment Routing (SR) capable.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8754"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8754"/>
+        </reference>
+      </references>
+      <references pn="section-8.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="IANA-IPFIX" target="https://www.iana.org/assignments/ipfix" quoteTitle="true" derivedAnchor="IANA-IPFIX">
+          <front>
+            <title>IP Flow Information Export (IPFIX) Entities</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+            <date/>
+          </front>
+        </reference>
+        <reference anchor="I-D.ietf-lsr-ospfv3-srv6-extensions" quoteTitle="true" target="https://datatracker.ietf.org/doc/html/draft-ietf-lsr-ospfv3-srv6-extensions-15" derivedAnchor="OSPFV3-SRV6-EXT">
+          <front>
+            <title>OSPFv3 Extensions for SRv6</title>
+            <author initials="Z." surname="Li" fullname="Zhenbin Li">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author initials="Z." surname="Hu" fullname="Zhibo Hu">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author initials="K." surname="Talaulikar" fullname="Ketan Talaulikar" role="editor">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <author initials="P." surname="Psenak" fullname="Peter Psenak">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <date month="June" day="21" year="2023"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-lsr-ospfv3-srv6-extensions-15"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="I-D.ietf-pce-segment-routing-ipv6" target="https://datatracker.ietf.org/doc/html/draft-ietf-pce-segment-routing-ipv6-20" quoteTitle="true" derivedAnchor="PCEP-SRV6-EXT">
+          <front>
+            <title>Path Computation Element Communication Protocol (PCEP) Extensions for Segment Routing leveraging the IPv6 dataplane</title>
+            <author fullname="Cheng Li" initials="C." surname="Li">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author fullname="Prejeeth Kaladharan" initials="P." surname="Kaladharan">
+              <organization showOnFrontPage="true">RtBrick Inc</organization>
+            </author>
+            <author fullname="Siva Sivabalan" initials="S." surname="Sivabalan">
+              <organization showOnFrontPage="true">Ciena Corporation</organization>
+            </author>
+            <author fullname="Mike Koldychev" initials="M." surname="Koldychev">
+              <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+            </author>
+            <author fullname="Yongqing Zhu" initials="Y." surname="Zhu">
+              <organization showOnFrontPage="true">China Telecom</organization>
+            </author>
+            <date day="8" month="September" year="2023"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) can be used to steer packets through an IPv6 or MPLS network using the source routing paradigm. SR enables any head- end node to select any path without relying on a hop-by-hop signaling technique (e.g., LDP or RSVP-TE). A Segment Routed Path can be derived from a variety of mechanisms, including an IGP Shortest Path Tree (SPT), explicit configuration, or a PCE. Since SR can be applied to both MPLS and IPv6 forwarding planes, a PCE should be able to compute SR-Path for both MPLS and IPv6 forwarding planes. The PCEP extension and mechanisms to support SR- MPLS have been defined. This document describes the extensions required for SR support for IPv6 data plane in the Path Computation Element communication Protocol (PCEP).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-pce-segment-routing-ipv6-20"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC7270" target="https://www.rfc-editor.org/info/rfc7270" quoteTitle="true" derivedAnchor="RFC7270">
+          <front>
+            <title>Cisco-Specific Information Elements Reused in IP Flow Information Export (IPFIX)</title>
+            <author fullname="A. Yourtchenko" initials="A." surname="Yourtchenko"/>
+            <author fullname="P. Aitken" initials="P." surname="Aitken"/>
+            <author fullname="B. Claise" initials="B." surname="Claise"/>
+            <date month="June" year="2014"/>
+            <abstract>
+              <t indent="0">This document describes some additional IP Flow Information Export (IPFIX) Information Elements in the range of 1-127, which is the range compatible with field types used by NetFlow version 9 in RFC 3954, as specified in the IPFIX Information Model in RFC 7012.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7270"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7270"/>
+        </reference>
+        <reference anchor="RFC8402" target="https://www.rfc-editor.org/info/rfc8402" quoteTitle="true" derivedAnchor="RFC8402">
+          <front>
+            <title>Segment Routing Architecture</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="S. Previdi" initials="S." role="editor" surname="Previdi"/>
+            <author fullname="L. Ginsberg" initials="L." surname="Ginsberg"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="S. Litkowski" initials="S." surname="Litkowski"/>
+            <author fullname="R. Shakir" initials="R." surname="Shakir"/>
+            <date month="July" year="2018"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) leverages the source routing paradigm. A node steers a packet through an ordered list of instructions, called "segments". A segment can represent any instruction, topological or service based. A segment can have a semantic local to an SR node or global within an SR domain. SR provides a mechanism that allows a flow to be restricted to a specific topological path, while maintaining per-flow state only at the ingress node(s) to the SR domain.</t>
+              <t indent="0">SR can be directly applied to the MPLS architecture with no change to the forwarding plane. A segment is encoded as an MPLS label. An ordered list of segments is encoded as a stack of labels. The segment to process is on the top of the stack. Upon completion of a segment, the related label is popped from the stack.</t>
+              <t indent="0">SR can be applied to the IPv6 architecture, with a new type of routing header. A segment is encoded as an IPv6 address. An ordered list of segments is encoded as an ordered list of IPv6 addresses in the routing header. The active segment is indicated by the Destination Address (DA) of the packet. The next active segment is indicated by a pointer in the new routing header.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8402"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8402"/>
+        </reference>
+        <reference anchor="RFC8669" target="https://www.rfc-editor.org/info/rfc8669" quoteTitle="true" derivedAnchor="RFC8669">
+          <front>
+            <title>Segment Routing Prefix Segment Identifier Extensions for BGP</title>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="A. Lindem" initials="A." role="editor" surname="Lindem"/>
+            <author fullname="A. Sreekantiah" initials="A." surname="Sreekantiah"/>
+            <author fullname="H. Gredler" initials="H." surname="Gredler"/>
+            <date month="December" year="2019"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) leverages the source-routing paradigm. A node steers a packet through an ordered list of instructions called "segments". A segment can represent any instruction, topological or service based. The ingress node prepends an SR header to a packet containing a set of segment identifiers (SIDs). Each SID represents a topological or service-based instruction. Per-flow state is maintained only on the ingress node of the SR domain. An "SR domain" is defined as a single administrative domain for global SID assignment.</t>
+              <t indent="0">This document defines an optional, transitive BGP attribute for announcing information about BGP Prefix Segment Identifiers (BGP Prefix-SIDs) and the specification for SR-MPLS SIDs.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8669"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8669"/>
+        </reference>
+        <reference anchor="RFC8986" target="https://www.rfc-editor.org/info/rfc8986" quoteTitle="true" derivedAnchor="RFC8986">
+          <front>
+            <title>Segment Routing over IPv6 (SRv6) Network Programming</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="P. Camarillo" initials="P." role="editor" surname="Camarillo"/>
+            <author fullname="J. Leddy" initials="J." surname="Leddy"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <author fullname="S. Matsushima" initials="S." surname="Matsushima"/>
+            <author fullname="Z. Li" initials="Z." surname="Li"/>
+            <date month="February" year="2021"/>
+            <abstract>
+              <t indent="0">The Segment Routing over IPv6 (SRv6) Network Programming framework enables a network operator or an application to specify a packet processing program by encoding a sequence of instructions in the IPv6 packet header.</t>
+              <t indent="0">Each instruction is implemented on one or several nodes in the network and identified by an SRv6 Segment Identifier in the packet.</t>
+              <t indent="0">This document defines the SRv6 Network Programming concept and specifies the base set of SRv6 behaviors that enables the creation of interoperable overlays with underlay optimization.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8986"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8986"/>
+        </reference>
+        <reference anchor="RFC9256" target="https://www.rfc-editor.org/info/rfc9256" quoteTitle="true" derivedAnchor="RFC9256">
+          <front>
+            <title>Segment Routing Policy Architecture</title>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="K. Talaulikar" initials="K." role="editor" surname="Talaulikar"/>
+            <author fullname="D. Voyer" initials="D." surname="Voyer"/>
+            <author fullname="A. Bogdanov" initials="A." surname="Bogdanov"/>
+            <author fullname="P. Mattes" initials="P." surname="Mattes"/>
+            <date month="July" year="2022"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) allows a node to steer a packet flow along any path. Intermediate per-path states are eliminated thanks to source routing. SR Policy is an ordered list of segments (i.e., instructions) that represent a source-routed policy. Packet flows are steered into an SR Policy on a node where it is instantiated called a headend node. The packets steered into an SR Policy carry an ordered list of segments associated with that SR Policy.</t>
+              <t indent="0">This document updates RFC 8402 as it details the concepts of SR Policy and steering into an SR Policy.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9256"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9256"/>
+        </reference>
+        <reference anchor="RFC9352" target="https://www.rfc-editor.org/info/rfc9352" quoteTitle="true" derivedAnchor="RFC9352">
+          <front>
+            <title>IS-IS Extensions to Support Segment Routing over the IPv6 Data Plane</title>
+            <author fullname="P. Psenak" initials="P." role="editor" surname="Psenak"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="A. Bashandy" initials="A." surname="Bashandy"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <date month="February" year="2023"/>
+            <abstract>
+              <t indent="0">The Segment Routing (SR) architecture allows a flexible definition of the end-to-end path by encoding it as a sequence of topological elements called "segments". It can be implemented over the MPLS or the IPv6 data plane. This document describes the IS-IS extensions required to support SR over the IPv6 data plane.</t>
+              <t indent="0">This document updates RFC 7370 by modifying an existing registry.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9352"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9352"/>
+        </reference>
+        <reference anchor="I-D.ietf-spring-srv6-srh-compression" quoteTitle="true" target="https://datatracker.ietf.org/doc/html/draft-ietf-spring-srv6-srh-compression-09" derivedAnchor="SRV6-SRH-COM">
+          <front>
+            <title>Compressed SRv6 Segment List Encoding</title>
+            <author initials="W." surname="Cheng" fullname="Weiqiang Cheng" role="editor">
+              <organization showOnFrontPage="true">China Mobile</organization>
+            </author>
+            <author initials="C." surname="Filsfils" fullname="Clarence Filsfils">
+              <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+            </author>
+            <author initials="Z." surname="Li" fullname="Zhenbin Li">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author initials="B." surname="Decraene" fullname="Bruno Decraene">
+              <organization showOnFrontPage="true">Orange</organization>
+            </author>
+            <author initials="F." surname="Clad" fullname="Francois Clad" role="editor">
+              <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+            </author>
+            <date month="October" day="23" year="2023"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-spring-srv6-srh-compression-09"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section anchor="Encoding-Example" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-ipfix-encoding-examples">IPFIX Encoding Examples</name>
+      <t indent="0" pn="section-appendix.a-1">This appendix represents three different encodings for the newly
+      introduced IEs, for the example values in <xref target="table3" format="default" sectionFormat="of" derivedContent="Table 3"/>. The
+      three different encodings use the following IEs, respectively:
+      srhSegmentIPv6BasicList, srhSegmentIPv6ListSection, and
+      srhIPv6Section.</t>
+      <table anchor="table3" align="center" pn="table-3">
+        <name slugifiedName="name-three-observed-srh-headers-">Three Observed SRH Headers and Their Associated Routing Protocols</name>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">SRH Nr</th>
+            <th align="left" colspan="1" rowspan="1">SRH Flags</th>
+            <th align="left" colspan="1" rowspan="1">SRH Tag</th>
+            <th align="left" colspan="1" rowspan="1">Active Segment Type</th>
+            <th align="left" colspan="1" rowspan="1">Segment List</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">1</td>
+            <td align="left" colspan="1" rowspan="1">0</td>
+            <td align="left" colspan="1" rowspan="1">123</td>
+            <td align="left" colspan="1" rowspan="1">IS-IS [4]</td>
+            <td align="left" colspan="1" rowspan="1">2001:db8::1, 2001:db8::2, 2001:db8::3</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">2</td>
+            <td align="left" colspan="1" rowspan="1">0</td>
+            <td align="left" colspan="1" rowspan="1">456</td>
+            <td align="left" colspan="1" rowspan="1">IS-IS [4]</td>
+            <td align="left" colspan="1" rowspan="1">2001:db8::4, 2001:db8::5</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">3</td>
+            <td align="left" colspan="1" rowspan="1">0</td>
+            <td align="left" colspan="1" rowspan="1">789</td>
+            <td align="left" colspan="1" rowspan="1">IS-IS [4]</td>
+            <td align="left" colspan="1" rowspan="1">2001:db8::6</td>
+          </tr>
+        </tbody>
+      </table>
+      <section anchor="Three-Observed-SRH-Headers-and-their-routing-protocol" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.1">
+        <name slugifiedName="name-three-observed-srh-headers-a">Three Observed SRH Headers and Their Routing Protocols</name>
+        <section anchor="Template-Record-and-Data-Set-with-BasicList" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.1.1">
+          <name slugifiedName="name-template-record-and-data-se">Template Record and Data Set with Segment Basic List</name>
+          <t indent="0" pn="section-appendix.a.1.1-1">With encoding in <xref target="fig1" format="default" sectionFormat="of" derivedContent="Figure 1"/>, the examples in <xref target="table3" format="default" sectionFormat="of" derivedContent="Table 3"/> are represented with the following IEs, where
+          "=&gt;" is used to indicate which IE is mapped to given
+          information:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a.1.1-2">
+            <li pn="section-appendix.a.1.1-2.1">SRH Flags =&gt; srhFlagsIPv6 (492)</li>
+            <li pn="section-appendix.a.1.1-2.2">SRH Tag =&gt; srhTagIPv6 (493)</li>
+            <li pn="section-appendix.a.1.1-2.3">Active Segment Type =&gt; srhIPv6ActiveSegmentType (500)</li>
+            <li pn="section-appendix.a.1.1-2.4">Segment List =&gt; srhSegmentIPv6BasicList (496)</li>
+          </ul>
+          <figure anchor="fig1" align="center" suppress-title="false" pn="figure-1">
+            <name slugifiedName="name-template-record-with-basic-">Template Record with Basic List Encoding Format</name>
+            <artwork name="" type="" align="center" alt="" pn="section-appendix.a.1.1-3.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          SET ID = 2           |       Length = 24             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Template ID = 256        |      Field Count = 4          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|     srhFlagsIPv6 = 492      |      Field Length = 1         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|      srhTagIPv6 = 493       |      Field Length = 2         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|srhIPv6ActiveSegmentType= 500|      Field Length = 1         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|srhSegmentIPv6BasicList = 496|      Field Length = 0xFFFF    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+          </figure>
+          <t indent="0" pn="section-appendix.a.1.1-4">In this example, the Template ID is 256, which will be used in
+          the Data Record. The field length for srhSegmentIPv6BasicList is
+          0xFFFF, which means the length of this IE is variable, and the
+          actual length of this IE is indicated by the List Length field in
+          the basicList format as per <xref target="RFC6313" format="default" sectionFormat="of" derivedContent="RFC6313"/>.</t>
+          <t indent="0" pn="section-appendix.a.1.1-5">The data set is represented as follows:</t>
+          <figure anchor="fig2" align="center" suppress-title="false" pn="figure-2">
+            <name slugifiedName="name-data-set-encoding-format-fo">Data Set Encoding Format for Basic List</name>
+            <artwork name="" type="" align="center" alt="" pn="section-appendix.a.1.1-6.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         SET ID = 256          |           Length = 136        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| srhFlagsIPv6  |        srhTagIPv6 = 123        |srhIPv6Active |
+| = 0           |                                |SegmentType= 4|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      255      |        List Length = 53       |semantic=      |
+|               |                               |ordered        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     srhSegmentIPv6 = 494      |        Field Length = 16      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Segment List[0] = 2001:db8::1                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Segment List[1] = 2001:db8::2                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Segment List[2] = 2001:db8::3                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| srhFlagsIPv6  |        srhTagIPv6 = 456       | srhIPv6Active |
+| = 0           |                               | SegmentType= 4|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      255      |        List Length = 37       |semantic=      |
+|               |                               |ordered        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     srhSegmentIPv6 = 494      |        Field Length = 16      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Segment List[0] = 2001:db8::4                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Segment List[1] = 2001:db8::5  (16 bytes)         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| srhFlagsIPv6  |        srhTagIPv6 = 789       | srhIPv6Active |
+| = 0           |                               | SegmentType= 4|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      255      |        List Length = 21       |semantic=      |
+|               |                               |ordered        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     srhSegmentIPv6 = 494      |        Field Length = 16      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             Segment List[0] = 2001:db8::6  ...                |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+          </figure>
+        </section>
+        <section anchor="Template-Record-and-Data-Set-with-Segment-List-Section" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.1.2">
+          <name slugifiedName="name-template-record-and-data-set">Template Record and Data Set with Segment List Section</name>
+          <t indent="0" pn="section-appendix.a.1.2-1">With encoding in <xref target="fig3" format="default" sectionFormat="of" derivedContent="Figure 3"/>, the examples in <xref target="table3" format="default" sectionFormat="of" derivedContent="Table 3"/> are represented with the following IEs, where
+          "=&gt;" is used to indicate which IE is mapped to given
+          information:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a.1.2-2">
+            <li pn="section-appendix.a.1.2-2.1">SRH Flags =&gt; srhFlagsIPv6 (492)</li>
+            <li pn="section-appendix.a.1.2-2.2">SRH Tag =&gt; srhTagIPv6 (493)</li>
+            <li pn="section-appendix.a.1.2-2.3">Active Segment Type =&gt; srhIPv6ActiveSegmentType (500)</li>
+            <li pn="section-appendix.a.1.2-2.4">Segment List =&gt; srhSegmentIPv6ListSection (497)</li>
+          </ul>
+          <figure align="center" anchor="fig3" suppress-title="false" pn="figure-3">
+            <name slugifiedName="name-template-record-with-segmen">Template Record with Segment List Section Encoding Format</name>
+            <artwork name="" type="" align="center" alt="" pn="section-appendix.a.1.2-3.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          SET ID = 2           |       Length = 24             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Template ID = 257        |      Field Count = 4          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|     srhFlagsIPv6 = 492      |      Field Length = 1         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|      srhTagIPv6 = 493       |      Field Length = 2         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|srhIPv6ActiveSegmentType= 500|      Field Length = 1         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|srhSegmentIPv6ListSection=497|      Field Length = 0xFFFF    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+          </figure>
+          <t indent="0" pn="section-appendix.a.1.2-4">In this example, the Template ID is 257, which will be used in
+          the Data Record. The field length for srhSegmentIPv6ListSection in
+          the Template Record is 0xFFFF, which means that the length of this
+          IE is variable: its actual length is encoded in the Data Set. Note
+          that, with an actual length inferior to 255 in the Data Record
+          example, the length field is encoded in 8 bits (<xref target="RFC7011" sectionFormat="of" section="7" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7011#section-7" derivedContent="RFC7011"/>).</t>
+          <t indent="0" pn="section-appendix.a.1.2-5">The data can be represented as follows:</t>
+          <figure align="center" anchor="fig4" suppress-title="false" pn="figure-4">
+            <name slugifiedName="name-data-set-encoding-format-for">Data Set Encoding Format for Segment List Section</name>
+            <artwork name="" type="" align="center" alt="" pn="section-appendix.a.1.2-6.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         SET ID = 257          |           Length = 116        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| srhFlagsIPv6  |        srhTagIPv6 = 123       | srhIPv6Active |
+| = 0           |                               | SegmentType= 4|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Length = 48   |   2001:db8::1                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      ...      |   2001:db8::2                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      ...      |   2001:db8::3                                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      ...      | srhFlagsIPv6  |        srhTagIPv6 = 456       |
+|               | = 0           |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| srhIPv6Active | Length = 32   |   2001:db8::4                 |
+| SegmentType= 4|               |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      ...                      |   2001:db8::5                 |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      ...                      |srhFlagsIPv6=0 | srhTagIPv6 =  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   789         | srhIPv6ActiveSegmentType = 4  | Length = 16   |
+|               |                               |               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        2001:db8::6 ...                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+          </figure>
+        </section>
+        <section anchor="Template-Record-and-Data-Set-with-SRH-Section" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.1.3">
+          <name slugifiedName="name-template-record-and-data-set-">Template Record and Data Set with SRH Section</name>
+          <t indent="0" pn="section-appendix.a.1.3-1">With encoding in <xref target="fig5" format="default" sectionFormat="of" derivedContent="Figure 5"/>, the examples in <xref target="table3" format="default" sectionFormat="of" derivedContent="Table 3"/> are represented with the following IEs, where
+          "=&gt;" is used to indicate which IE is mapped to given
+          information:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.a.1.3-2">
+            <li pn="section-appendix.a.1.3-2.1">SRH Flags + SRH Tag + Segment List =&gt; srhIPv6Section
+              (499)</li>
+            <li pn="section-appendix.a.1.3-2.2">Active Segment Type =&gt; srhIPv6ActiveSegmentType (500)</li>
+          </ul>
+          <figure anchor="fig5" align="center" suppress-title="false" pn="figure-5">
+            <name slugifiedName="name-template-record-with-srh-se">Template Record with SRH Section Encoding Format</name>
+            <artwork name="" type="" align="center" alt="" pn="section-appendix.a.1.3-3.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          SET ID = 2           |       Length = 16             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      Template ID = 258        |      Field Count = 2          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|srhIPv6ActiveSegmentType= 500|      Field Length = 1         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|0|    srhIPv6Section = 499     |      Field Length = 0xFFFF    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+          </figure>
+          <t indent="0" pn="section-appendix.a.1.3-4">In this example, the Template ID is 258, which will be used in
+          the Data Record. The field length for srhIPv6Section in the Template
+          Record is 0xFFFF, which means that the length of this IE is
+          variable: its actual length is encoded in the Data Set. Note that,
+          with an actual length inferior to 255 in the Data Record example,
+          the length field is encoded in 8 bits (<xref target="RFC7011" sectionFormat="of" section="7" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7011#section-7" derivedContent="RFC7011"/>).</t>
+          <t indent="0" pn="section-appendix.a.1.3-5">The data can be represented as follows:</t>
+          <figure anchor="fig6" align="center" suppress-title="false" pn="figure-6">
+            <name slugifiedName="name-data-set-encoding-format-for-">Data Set Encoding Format for SRH Section</name>
+            <artwork name="" type="" align="center" alt="" pn="section-appendix.a.1.3-6.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         SET ID = 258          |           Length = (*)        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        srhIPv6ActiveSegmentType = 4           |  Length = (*) |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Next Header   |  Hdr Ext Len  | Routing Type  | Segments Left |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Last Entry   |     Flags     |              Tag              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           2001:db8::1                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           2001:db8::2                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           2001:db8::3                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~          Optional Type Length Value objects (variable)        ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        srhIPv6ActiveSegmentType = 4           |    0xFFFF     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Next Header   |  Hdr Ext Len  | Routing Type  | Segments Left |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Last Entry   |     Flags     |              Tag              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           2001:db8::4                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           2001:db8::5                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~          Optional Type Length Value objects (variable)        ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        srhIPv6ActiveSegmentType = 4           |    0xFFFF     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Next Header   |  Hdr Ext Len  | Routing Type  | Segments Left |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Last Entry   |     Flags     |              Tag              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           2001:db8::6                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~          Optional Type Length Value objects (variable)        ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+          </figure>
+          <t indent="0" pn="section-appendix.a.1.3-7">(*) The Length must be calculated to include the optional Type
+	    Length Value objects.</t>
+        </section>
+      </section>
+      <section anchor="Options-Template-Record-and-Data-Set-for-SRv6-Segment-Endpoint-Behavior" numbered="true" toc="include" removeInRFC="false" pn="section-appendix.a.2">
+        <name slugifiedName="name-options-template-record-and">Options Template Record and Data Set for SRv6 Segment Endpoint
+        Behavior and Locator Length</name>
+        <t indent="0" pn="section-appendix.a.2-1">This appendix provides an SRv6 Endpoint Behavior Options Template
+        example, for the values presented in <xref target="table4" format="default" sectionFormat="of" derivedContent="Table 4"/>. In the
+        Options Template case, the srhActiveSegmentIPv6 IE is
+        a Scope field.</t>
+        <table anchor="table4" align="center" pn="table-4">
+          <name slugifiedName="name-three-observed-srv6-segment">Three Observed SRv6 Segment Endpoint Behaviors</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Entry Nr</th>
+              <th align="left" colspan="1" rowspan="1">SRH Endpoint IPv6</th>
+              <th align="left" colspan="1" rowspan="1">SRH Endpoint Behavior</th>
+              <th align="left" colspan="1" rowspan="1">SRH Segment Locator Length</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1</td>
+              <td align="left" colspan="1" rowspan="1">2001:db8::1</td>
+              <td align="left" colspan="1" rowspan="1">End [1]</td>
+              <td align="left" colspan="1" rowspan="1">48</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">2</td>
+              <td align="left" colspan="1" rowspan="1">2001:db8::4</td>
+              <td align="left" colspan="1" rowspan="1">End with NEXT-CSID [43]</td>
+              <td align="left" colspan="1" rowspan="1">48</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">3</td>
+              <td align="left" colspan="1" rowspan="1">2001:db8::6</td>
+              <td align="left" colspan="1" rowspan="1">End.DX6 [16]</td>
+              <td align="left" colspan="1" rowspan="1">48</td>
+            </tr>
+          </tbody>
+        </table>
+        <figure anchor="fig7" align="center" suppress-title="false" pn="figure-7">
+          <name slugifiedName="name-segment-endpoint-behavior-o">Segment Endpoint Behavior Options Template Record</name>
+          <artwork name="" type="" align="center" alt="" pn="section-appendix.a.2-3.1">
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Set ID = 3            |          Length = 24          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       Template ID 259         |        Field Count = 3        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Scope Field Count = 1     |0| srhActiveSegmentIPv6 = 495  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   Scope 1 Field Length = 4    |0|srhSegmentIPv6End.Behav = 502|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       Field Length = 1        |0|srhSegmentIPv6Lo.Length = 501|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       Field Length = 4        |           Padding             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-appendix.a.2-4">In this example, the Template ID is 259, which will be used in the
+        Data Record.</t>
+        <t indent="0" pn="section-appendix.a.2-5">The data set is represented as follows:</t>
+        <figure anchor="fig8" align="center" suppress-title="false" pn="figure-8">
+          <name slugifiedName="name-data-set-encoding-format-for-s">Data Set Encoding Format for Segment Endpoint Behaviors</name>
+          <artwork name="" type="" align="center" alt="" pn="section-appendix.a.2-6.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         SET ID = 259          |           Length = 28         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               srhActiveSegmentIPv6 = 2001:db8::1              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|srhSegmentIPv6EndpointBehavior |srhSegmentIPv6LocatorLength= 48|
+|= End [1]                      |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               srhActiveSegmentIPv6 = 2001:db8::4              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|srhSegmentIPv6EndpointBehavior |srhSegmentIPv6LocatorLength= 48|
+|= End with NEXT-CSID [43]      |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               srhActiveSegmentIPv6 = 2001:db8::6              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|srhSegmentIPv6EndpointBehavior |srhSegmentIPv6LocatorLength= 48|      
+|= End.DX6 [16]                 |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-appendix.a.2-7">(*) The Length must be calculated to include the optional Type
+	  Length Value objects.</t>
+      </section>
+    </section>
+    <section anchor="Acknowledgements" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.b">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.b-1">The authors would like to thank <contact fullname="Yao Liu"/>,
+      <contact fullname="Eduard Vasilenko"/>, <contact fullname="Bruno       Decraene"/>, <contact fullname="Mohamed Boucadair"/>, <contact fullname="Kamran Raza"/>, <contact fullname="Qin Wu"/>, <contact fullname="Jim Guichard"/>, <contact fullname="Tero Kivinen"/>, <contact fullname="Paul Aitken"/>, <contact fullname="Roman Danyliw"/>, <contact fullname="John Scudder"/>, <contact fullname="Éric Vyncke"/>, <contact fullname="Erik Kline"/>, <contact fullname="Lars Eggert"/>, and <contact fullname="Andrew Alston"/> for their reviews and valuable comments. And
+      thank you to <contact fullname="Paolo Lucente"/> and <contact fullname="Alex Huang       Feng"/> for the implementation and validation.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Thomas Graf" initials="T" surname="Graf">
+        <organization showOnFrontPage="true">Swisscom</organization>
+        <address>
+          <postal>
+            <street>Binzring 17</street>
+            <city>Zurich</city>
+            <code>8045</code>
+            <country>Switzerland</country>
+          </postal>
+          <email>thomas.graf@swisscom.com</email>
+        </address>
+      </author>
+      <author fullname="Benoit Claise" initials="B" surname="Claise">
+        <organization showOnFrontPage="true">Huawei</organization>
+        <address>
+          <email>benoit.claise@huawei.com</email>
+        </address>
+      </author>
+      <author fullname="Pierre Francois" initials="P." surname="Francois">
+        <organization showOnFrontPage="true">INSA-Lyon</organization>
+        <address>
+          <postal>
+            <street/>
+            <city>Lyon</city>
+            <region/>
+            <code/>
+            <country>France</country>
+          </postal>
+          <phone/>
+          <email>pierre.francois@insa-lyon.fr</email>
+          <uri/>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

@@ -1,0 +1,624 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" category="std" consensus="true" number="9534" docName="draft-ietf-ippm-stamp-on-lag-06" ipr="trust200902" sortRefs="true" submissionType="IETF" tocInclude="true" obsoletes="" updates="" xml:lang="en" tocDepth="3" symRefs="true" prepTime="2024-01-31T16:28:02" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-ippm-stamp-on-lag-06" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9534" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="STAMP PM on LAG">Simple Two-Way Active Measurement Protocol Extensions for Performance Measurement on a Link Aggregation Group</title>
+    <seriesInfo name="RFC" value="9534" stream="IETF"/>
+    <author fullname="Zhenqiang Li" initials="Z." surname="Li">
+      <organization showOnFrontPage="true">China Mobile</organization>
+      <address>
+        <postal>
+          <street>No. 29 Finance Avenue</street>
+          <cityarea>Xicheng District</cityarea>
+          <city>Beijing</city>
+          <code/>
+          <country>China</country>
+        </postal>
+        <email>li_zhenqiang@hotmail.com</email>
+      </address>
+    </author>
+    <author fullname="Tianran Zhou" initials="T." surname="Zhou">
+      <organization showOnFrontPage="true">Huawei</organization>
+      <address>
+        <postal>
+          <country>China</country>
+        </postal>
+        <email>zhoutianran@huawei.com</email>
+      </address>
+    </author>
+    <author fullname="Jun Guo" initials="J." surname="Guo">
+      <organization showOnFrontPage="true">ZTE Corp.</organization>
+      <address>
+        <postal>
+          <country>China</country>
+        </postal>
+        <email>guo.jun2@zte.com.cn</email>
+        <uri/>
+      </address>
+    </author>
+    <author fullname="Greg Mirsky" initials="G." surname="Mirsky">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <country>United States of America</country>
+        </postal>
+        <email>gregimirsky@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Rakesh Gandhi" initials="R." surname="Gandhi">
+      <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+      <address>
+        <postal>
+          <country>Canada</country>
+        </postal>
+        <email>rgandhi@cisco.com</email>
+        <uri/>
+      </address>
+    </author>
+    <date month="01" year="2024"/>
+    <area>Transport Area</area>
+    <workgroup>IPPM</workgroup>
+    <keyword>STAMP</keyword>
+    <keyword>Performance Measurement</keyword>
+    <keyword>LAG</keyword>
+    <keyword>Micro Session</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document extends Simple Two-way Active Measurement Protocol
+      (STAMP) to implement performance measurement on every member link of a
+      Link Aggregation Group (LAG). Knowing the measured metrics of each
+      member link of a LAG enables operators to enforce a performance-based
+      traffic steering policy across the member links.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9534" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-micro-sessions-on-a-lag">Micro Sessions on a LAG</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-member-link-validation">Member Link Validation</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-micro-session-id-tlv">Micro-session ID TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-micro-stamp-test-procedures">Micro STAMP-Test Procedures</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-applicability">Applicability</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">A Link Aggregation Group (LAG), as defined in <xref target="IEEE802.1AX" format="default" sectionFormat="of" derivedContent="IEEE802.1AX"/>, provides mechanisms to combine multiple physical
+      links into a single logical link. This logical link offers higher
+      bandwidth and better resiliency because, if one of the physical member
+      links fails, the aggregate logical link can continue to forward traffic
+      over the remaining operational physical member links.</t>
+      <t indent="0" pn="section-1-2">Usually, when forwarding traffic over a LAG, a hash-based mechanism is
+      used to load balance the traffic across the LAG member links. The link
+      delay might vary between member links because of different transport
+      paths, especially when a LAG is used in a wide area network. To provide
+      low-latency service for time-sensitive traffic, we need to explicitly steer
+      the traffic across the LAG member links based on the link delay, loss,
+      and so on. That requires a solution to measure the performance metrics
+      of each member link of a LAG. Hence, the measured performance metrics
+      can work together with <xref target="RFC8668" format="default" sectionFormat="of" derivedContent="RFC8668">Layer 2 bundle member link
+      attributes advertisement</xref> for traffic steering.</t>
+      <t indent="0" pn="section-1-3">According to the classifications in <xref target="RFC7799" format="default" sectionFormat="of" derivedContent="RFC7799"/>, <xref target="RFC8762" format="default" sectionFormat="of" derivedContent="RFC8762">Simple Two-way Active Measurement Protocol
+      (STAMP)</xref> is an active measurement method, and it can complement
+      passive and hybrid methods. It provides a mechanism to measure both
+      one-way and round-trip performance metrics, like delay, delay variation,
+      and packet loss. A STAMP test session over the LAG can be used to measure the
+      performance of a member link using a specially constructed 5-tuple. The session can be used to measure
+      an average of some or all member links of the LAG by varying one or more elements of that
+      5-tuple. However, without the knowledge of each member link, a STAMP test
+      session cannot measure the performance of every physical member
+      link.</t>
+      <t indent="0" pn="section-1-4">This document extends STAMP to implement performance measurement on
+      every member link of a LAG. It can provide the same metrics as <xref target="RFC4656" format="default" sectionFormat="of" derivedContent="RFC4656">One-Way Active Measurement Protocol (OWAMP)</xref> and <xref target="RFC5357" format="default" sectionFormat="of" derivedContent="RFC5357">Two-Way Active Measurement Protocol (TWAMP)</xref>
+      can measure, such as delay, jitter, and packet loss.</t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.1">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.1-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.</t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-micro-sessions-on-a-lag">Micro Sessions on a LAG</name>
+      <t indent="0" pn="section-2-1">This document addresses the scenario where a LAG directly connects
+      two nodes. An example of this is in <xref target="PMonLAG" format="default" sectionFormat="of" derivedContent="Figure 1"/>, where the LAG consisting
+      of four links connects nodes A and B. The goal is to measure the
+      performance of each link of the LAG.</t>
+      <figure anchor="PMonLAG" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-performance-measurement-on-">Performance Measurement on a LAG</name>
+        <artwork name="" type="" align="left" alt="" pn="section-2-2.1">                  +---+                       +---+
+                  |   |-----------------------|   | 
+                  | A |-----------------------| B | 
+                  |   |-----------------------|   |
+                  |   |-----------------------|   |
+                  +---+                       +---+ 
+</artwork>
+      </figure>
+      <t indent="0" pn="section-2-3">To measure the performance metrics of every member link of a LAG,
+      multiple sessions (one session for each member link) need to be
+      established between the two endpoints that are connected by the LAG.
+      These sessions are called "micro sessions" in the remainder of this
+      document. Although micro sessions are in fact STAMP sessions established
+      on member links of a LAG, test packets of micro sessions <bcp14>MUST</bcp14> carry
+      member link information for validation.</t>
+      <t indent="0" pn="section-2-4">All micro sessions of a LAG share the same Sender IP Address and
+      Receiver IP Address. As for the UDP port, the micro sessions
+      may share the same Sender Port and Receiver Port pair or each micro
+      session may be configured with a different Sender Port and Receiver Port
+      pair. From the operational point of view, the former is simpler and
+      is <bcp14>RECOMMENDED</bcp14>.</t>
+      <t indent="0" pn="section-2-5">Test packets of a micro session <bcp14>MUST</bcp14> carry the member link
+      information for validation checks. For example, when a micro STAMP
+      Session-Sender receives a reflected test packet, it checks whether the
+      test packet is from the expected member link. The member link
+      information is encoded in the Micro-session ID TLV introduced in <xref target="validation" format="default" sectionFormat="of" derivedContent="Section 3"/>,
+      which also provides a detailed description about  member link
+      validation.</t>
+      <t indent="0" pn="section-2-6">A micro STAMP Session-Sender <bcp14>MAY</bcp14> include the <xref target="RFC8972" format="default" sectionFormat="of" derivedContent="RFC8972">Follow-Up Telemetry TLV</xref> to request information
+      from the micro Session-Reflector. This timestamp might be important for
+      the micro Session-Sender, as it improves the accuracy of network delay
+      measurement by minimizing the impact of egress queuing delays on the
+      measurement.</t>
+    </section>
+    <section numbered="true" toc="include" anchor="validation" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-member-link-validation">Member Link Validation</name>
+      <t indent="0" pn="section-3-1">Test packets <bcp14>MUST</bcp14> carry member link information in the Micro-session ID
+      TLV introduced in this section for validation checks. The micro
+      Session-Sender verifies whether the test packet is received from the
+      expected member link. It also verifies whether the packet is sent from
+      the expected member link at the Reflector side. The micro
+      Session-Reflector verifies whether the test packet is received from the
+      expected member link.</t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-3.1">
+        <name slugifiedName="name-micro-session-id-tlv">Micro-session ID TLV</name>
+        <t indent="0" pn="section-3.1-1">The <xref target="RFC8972" format="default" sectionFormat="of" derivedContent="RFC8972">STAMP TLV mechanism</xref> extends STAMP
+        test packets with one or more optional TLVs. This document defines the
+        TLV Type (value 11) for the Micro-session ID TLV that carries the
+        micro STAMP Session-Sender member link identifier and
+        Session-Reflector member link identifier in the Sender Micro-session ID
+        field and the Reflector Micro-session ID field, respectively. The format of
+        the Micro-session ID TLV is shown as follows:</t>
+        <figure anchor="STAMPSender" align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-micro-session-id-tlv-2">Micro-session ID TLV</name>
+          <artwork name="" type="" align="left" alt="" pn="section-3.1-2.1">    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |STAMP TLV Flags|  Type = 11    |           Length              |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |     Sender Micro-session ID   |   Reflector Micro-session ID  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <dl spacing="normal" indent="3" newline="false" pn="section-3.1-3">
+          <dt pn="section-3.1-3.1">Type (1 octet in length):</dt>
+          <dd pn="section-3.1-3.2">This field is defined to indicate this TLV
+            is a Micro-session ID TLV. Value 11 has been allocated by IANA
+            (<xref target="IANA" format="default" sectionFormat="of" derivedContent="Section 5"/>).</dd>
+          <dt pn="section-3.1-3.3">Length (2 octets in length):</dt>
+          <dd pn="section-3.1-3.4">This field is defined to carry the length
+            of the Value field in octets. The Length field value <bcp14>MUST</bcp14> be
+            4.</dd>
+          <dt pn="section-3.1-3.5">Sender Micro-session ID (2 octets in length):</dt>
+          <dd pn="section-3.1-3.6">This field is defined
+            to carry the LAG member link identifier of the Sender side. In the
+            future, it may be used generically to cover use cases beyond LAGs.
+            The value of this field <bcp14>MUST</bcp14> be unique within a STAMP session at
+            the Session-Sender.</dd>
+          <dt pn="section-3.1-3.7">Reflector Micro-session ID (2 octets in length):</dt>
+          <dd pn="section-3.1-3.8">This field is
+            defined to carry the LAG member link identifier of the Reflector
+            side. In the future, it may be used generically to cover use cases
+            beyond LAGs. The value of this field <bcp14>MUST</bcp14> be unique within a STAMP
+            session at the Session-Reflector.</dd>
+        </dl>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-3.2">
+        <name slugifiedName="name-micro-stamp-test-procedures">Micro STAMP-Test Procedures</name>
+        <t indent="0" pn="section-3.2-1">The micro STAMP-Test reuses the procedures as defined in Section 
+        <xref target="RFC8762" sectionFormat="bare" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8762#section-4" derivedContent="RFC8762"/> of 
+        <xref target="RFC8762" format="default" sectionFormat="of" derivedContent="RFC8762">STAMP</xref> with the following
+        additions.</t>
+        <t indent="0" pn="section-3.2-2">The micro STAMP Session-Sender <bcp14>MUST</bcp14> send the micro STAMP-Test
+        packets over the member link with which the session is associated. The
+        mapping between a micro STAMP session and the Sender/Reflector member
+        link identifiers can be configured by augmenting the <xref target="I-D.ietf-ippm-stamp-yang" format="default" sectionFormat="of" derivedContent="STAMP-YANG">STAMP
+        YANG</xref>. The detailed augmentation is not in the scope of this
+        document.</t>
+        <t indent="0" pn="section-3.2-3">When sending a test packet, the micro STAMP Session-Sender <bcp14>MUST</bcp14> set
+        the Sender Micro-session ID field with the member link identifier
+        associated with the micro STAMP session. If the Session-Sender knows
+        the Reflector member link identifier, the Reflector Micro-session ID
+        field <bcp14>MUST</bcp14> be set. Otherwise, the Reflector Micro-session ID field
+        <bcp14>MUST</bcp14> be zero. The Reflector member link identifier can be obtained
+        from preconfiguration or learned from data plane (e.g., the reflected
+        test packet). This document does not specify the way to obtain the
+        Reflector member link identifier.</t>
+        <t indent="0" pn="section-3.2-4">When the micro STAMP Session-Reflector receives a test packet, if
+        the Reflector Micro-session ID is not zero, the micro STAMP
+        Session-Reflector <bcp14>MUST</bcp14> use the Reflector member link identifier to
+        check whether it is associated with the micro STAMP session. If the
+        validation fails, the test packet <bcp14>MUST</bcp14> be discarded. If the Reflector
+        Micro-session ID is zero, it will not be verified. If all validations
+        passed, the Session-Reflector sends a reflected test packet to the
+        Session-Sender. The micro STAMP Session-Reflector <bcp14>MUST</bcp14> put the Sender
+        and Reflector member link identifiers that are associated with the
+        micro STAMP session in the Sender Micro-session ID and Reflector
+        Micro-session ID fields, respectively. The Sender member link
+        identifier is copied from the received test packet.</t>
+        <t indent="0" pn="section-3.2-5">When receiving a reflected test packet, the micro Session-Sender
+        <bcp14>MUST</bcp14> use the Sender Micro-session ID to validate whether the reflected
+        test packet is correctly received from the expected member link. If
+        the validation fails, the test packet <bcp14>MUST</bcp14> be discarded. The micro
+        Session-Sender <bcp14>MUST</bcp14> use the Reflector Micro-session ID to validate the
+        Reflector's behavior. If the validation fails, the test packet <bcp14>MUST</bcp14> be
+        discarded.</t>
+        <t indent="0" pn="section-3.2-6">Two modes of the STAMP Session-Reflector, stateless and stateful,
+        characterize the expected behavior as described in Section <xref target="RFC8762" sectionFormat="bare" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8762#section-4" derivedContent="RFC8762"/> of <xref target="RFC8762" format="default" sectionFormat="of" derivedContent="RFC8762">STAMP</xref>. The micro STAMP-Test also supports both
+        stateless and stateful modes. However, the micro STAMP-Test does not
+        introduce any additional state to STAMP, i.e., any procedure with
+        regard to the Micro-session ID is stateless.</t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-applicability">Applicability</name>
+      <t indent="0" pn="section-4-1">The micro STAMP Session-Sender sends micro Session-Sender packets
+      with the Micro-session ID TLV. The micro Session-Reflector checks
+      whether a test packet is received from the member link associated with
+      the correct micro STAMP session if the Reflector Micro-session ID field
+      is set. When reflecting, the micro STAMP Session-Reflector copies the
+      Sender Micro-session ID from the received micro Session-Sender packet to
+      the micro Session-Reflector packet and sets the Reflector Micro-session
+      ID field with the member link identifier that is associated with the
+      micro STAMP session. When receiving the micro Session-Reflector packet,
+      the micro Session-Sender uses the Sender Micro-session ID to check
+      whether the packet is received from the member link associated with the
+      correct micro STAMP session. The micro Session-Sender also use the
+      Reflector Micro-session ID to validate the Reflector's behavior.</t>
+    </section>
+    <section anchor="IANA" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-5-1">IANA has allocated the following STAMP 
+      TLV Type for the Micro-session ID TLV in the "STAMP TLV Types" registry <xref target="RFC8972" format="default" sectionFormat="of" derivedContent="RFC8972"/>:</t>
+      <table anchor="reg_table" align="center" pn="table-1">
+        <name slugifiedName="name-new-stamp-tlv-type">New STAMP TLV Type</name>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">Description</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">11</td>
+            <td align="left" colspan="1" rowspan="1">Micro-session ID</td>
+            <td align="left" colspan="1" rowspan="1">This Document</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section anchor="Security" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-6-1">The STAMP extension defined in this document is intended for
+      deployment in the LAG scenario where Session-Sender and Session-Reflector
+      are directly connected. As such, it's assumed that a node involved in
+      a STAMP operation has previously verified the integrity of the
+      LAG connection and the identity of its one-hop-away peer node.</t>
+      <t indent="0" pn="section-6-2">This document does not introduce any additional security issues, and
+      the security mechanisms defined in <xref target="RFC8762" format="default" sectionFormat="of" derivedContent="RFC8762"/> and <xref target="RFC8972" format="default" sectionFormat="of" derivedContent="RFC8972"/> apply in this document.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-ippm-stamp-yang" to="STAMP-YANG"/>
+    <references pn="section-7">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-7.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8762" target="https://www.rfc-editor.org/info/rfc8762" quoteTitle="true" derivedAnchor="RFC8762">
+          <front>
+            <title>Simple Two-Way Active Measurement Protocol</title>
+            <author fullname="G. Mirsky" initials="G." surname="Mirsky"/>
+            <author fullname="G. Jun" initials="G." surname="Jun"/>
+            <author fullname="H. Nydell" initials="H." surname="Nydell"/>
+            <author fullname="R. Foote" initials="R." surname="Foote"/>
+            <date month="March" year="2020"/>
+            <abstract>
+              <t indent="0">This document describes the Simple Two-way Active Measurement Protocol (STAMP), which enables the measurement of both one-way and round-trip performance metrics, like delay, delay variation, and packet loss.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8762"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8762"/>
+        </reference>
+        <reference anchor="RFC8972" target="https://www.rfc-editor.org/info/rfc8972" quoteTitle="true" derivedAnchor="RFC8972">
+          <front>
+            <title>Simple Two-Way Active Measurement Protocol Optional Extensions</title>
+            <author fullname="G. Mirsky" initials="G." surname="Mirsky"/>
+            <author fullname="X. Min" initials="X." surname="Min"/>
+            <author fullname="H. Nydell" initials="H." surname="Nydell"/>
+            <author fullname="R. Foote" initials="R." surname="Foote"/>
+            <author fullname="A. Masputra" initials="A." surname="Masputra"/>
+            <author fullname="E. Ruffini" initials="E." surname="Ruffini"/>
+            <date month="January" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes optional extensions to Simple Two-way Active Measurement Protocol (STAMP) that enable measurement of performance metrics. The document also defines a STAMP Test Session Identifier and thus updates RFC 8762.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8972"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8972"/>
+        </reference>
+      </references>
+      <references pn="section-7.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="IEEE802.1AX" target="https://ieeexplore.ieee.org/document/9105034" quoteTitle="true" derivedAnchor="IEEE802.1AX">
+          <front>
+            <title>IEEE Standard for Local and Metropolitan Area Networks -- Link Aggregation</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date month="May" year="2020"/>
+          </front>
+          <seriesInfo name="IEEE Std" value="802.1AX-2020"/>
+          <seriesInfo name="DOI" value="10.1109/IEEESTD.2020.9105034"/>
+        </reference>
+        <reference anchor="RFC4656" target="https://www.rfc-editor.org/info/rfc4656" quoteTitle="true" derivedAnchor="RFC4656">
+          <front>
+            <title>A One-way Active Measurement Protocol (OWAMP)</title>
+            <author fullname="S. Shalunov" initials="S." surname="Shalunov"/>
+            <author fullname="B. Teitelbaum" initials="B." surname="Teitelbaum"/>
+            <author fullname="A. Karp" initials="A." surname="Karp"/>
+            <author fullname="J. Boote" initials="J." surname="Boote"/>
+            <author fullname="M. Zekauskas" initials="M." surname="Zekauskas"/>
+            <date month="September" year="2006"/>
+            <abstract>
+              <t indent="0">The One-Way Active Measurement Protocol (OWAMP) measures unidirectional characteristics such as one-way delay and one-way loss. High-precision measurement of these one-way IP performance metrics became possible with wider availability of good time sources (such as GPS and CDMA). OWAMP enables the interoperability of these measurements. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4656"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4656"/>
+        </reference>
+        <reference anchor="RFC5357" target="https://www.rfc-editor.org/info/rfc5357" quoteTitle="true" derivedAnchor="RFC5357">
+          <front>
+            <title>A Two-Way Active Measurement Protocol (TWAMP)</title>
+            <author fullname="K. Hedayat" initials="K." surname="Hedayat"/>
+            <author fullname="R. Krzanowski" initials="R." surname="Krzanowski"/>
+            <author fullname="A. Morton" initials="A." surname="Morton"/>
+            <author fullname="K. Yum" initials="K." surname="Yum"/>
+            <author fullname="J. Babiarz" initials="J." surname="Babiarz"/>
+            <date month="October" year="2008"/>
+            <abstract>
+              <t indent="0">The One-way Active Measurement Protocol (OWAMP), specified in RFC 4656, provides a common protocol for measuring one-way metrics between network devices. OWAMP can be used bi-directionally to measure one-way metrics in both directions between two network elements. However, it does not accommodate round-trip or two-way measurements. This memo specifies a Two-Way Active Measurement Protocol (TWAMP), based on the OWAMP, that adds two-way or round-trip measurement capabilities. The TWAMP measurement architecture is usually comprised of two hosts with specific roles, and this allows for some protocol simplifications, making it an attractive alternative in some circumstances. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5357"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5357"/>
+        </reference>
+        <reference anchor="RFC7799" target="https://www.rfc-editor.org/info/rfc7799" quoteTitle="true" derivedAnchor="RFC7799">
+          <front>
+            <title>Active and Passive Metrics and Methods (with Hybrid Types In-Between)</title>
+            <author fullname="A. Morton" initials="A." surname="Morton"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This memo provides clear definitions for Active and Passive performance assessment. The construction of Metrics and Methods can be described as either "Active" or "Passive". Some methods may use a subset of both Active and Passive attributes, and we refer to these as "Hybrid Methods". This memo also describes multiple dimensions to help evaluate new methods as they emerge.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7799"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7799"/>
+        </reference>
+        <reference anchor="RFC8668" target="https://www.rfc-editor.org/info/rfc8668" quoteTitle="true" derivedAnchor="RFC8668">
+          <front>
+            <title>Advertising Layer 2 Bundle Member Link Attributes in IS-IS</title>
+            <author fullname="L. Ginsberg" initials="L." role="editor" surname="Ginsberg"/>
+            <author fullname="A. Bashandy" initials="A." surname="Bashandy"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="M. Nanduri" initials="M." surname="Nanduri"/>
+            <author fullname="E. Aries" initials="E." surname="Aries"/>
+            <date month="December" year="2019"/>
+            <abstract>
+              <t indent="0">There are deployments where the Layer 3 interface on which IS-IS operates is a Layer 2 interface bundle. Existing IS-IS advertisements only support advertising link attributes of the Layer 3 interface. If entities external to IS-IS wish to control traffic flows on the individual physical links that comprise the Layer 2 interface bundle, link attribute information about the bundle members is required.</t>
+              <t indent="0">This document introduces the ability for IS-IS to advertise the link attributes of Layer 2 (L2) Bundle Members.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8668"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8668"/>
+        </reference>
+        <reference anchor="I-D.ietf-ippm-stamp-yang" target="https://datatracker.ietf.org/doc/html/draft-ietf-ippm-stamp-yang-12" quoteTitle="true" derivedAnchor="STAMP-YANG">
+          <front>
+            <title>Simple Two-way Active Measurement Protocol (STAMP) Data Model</title>
+            <author fullname="Greg Mirsky" initials="G." surname="Mirsky">
+              <organization showOnFrontPage="true">Ericsson</organization>
+            </author>
+            <author fullname="Xiao Min" initials="X." surname="Min">
+              <organization showOnFrontPage="true">ZTE Corp.</organization>
+            </author>
+            <author fullname="Wei S Luo" initials="W. S." surname="Luo">
+              <organization showOnFrontPage="true">Ericsson</organization>
+            </author>
+            <author fullname="Rakesh Gandhi" initials="R." surname="Gandhi">
+              <organization showOnFrontPage="true">Cisco</organization>
+            </author>
+            <date day="5" month="November" year="2023"/>
+            <abstract>
+              <t indent="0">This document specifies the data model for implementations of Session-Sender and Session-Reflector for Simple Two-way Active Measurement Protocol (STAMP) mode using YANG.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-ippm-stamp-yang-12"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section anchor="Acknowledgements" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">The authors would like to thank <contact fullname="Mach Chen"/>, <contact fullname="Min Xiao"/>, <contact fullname="Fang Xin"/>, <contact fullname="Marcus Ihlar"/>, and <contact fullname="Richard Foote"/> for the valuable comments to this work.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Zhenqiang Li" initials="Z." surname="Li">
+        <organization showOnFrontPage="true">China Mobile</organization>
+        <address>
+          <postal>
+            <street>No. 29 Finance Avenue</street>
+            <cityarea>Xicheng District</cityarea>
+            <city>Beijing</city>
+            <code/>
+            <country>China</country>
+          </postal>
+          <email>li_zhenqiang@hotmail.com</email>
+        </address>
+      </author>
+      <author fullname="Tianran Zhou" initials="T." surname="Zhou">
+        <organization showOnFrontPage="true">Huawei</organization>
+        <address>
+          <postal>
+            <country>China</country>
+          </postal>
+          <email>zhoutianran@huawei.com</email>
+        </address>
+      </author>
+      <author fullname="Jun Guo" initials="J." surname="Guo">
+        <organization showOnFrontPage="true">ZTE Corp.</organization>
+        <address>
+          <postal>
+            <country>China</country>
+          </postal>
+          <email>guo.jun2@zte.com.cn</email>
+          <uri/>
+        </address>
+      </author>
+      <author fullname="Greg Mirsky" initials="G." surname="Mirsky">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>gregimirsky@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Rakesh Gandhi" initials="R." surname="Gandhi">
+        <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+        <address>
+          <postal>
+            <country>Canada</country>
+          </postal>
+          <email>rgandhi@cisco.com</email>
+          <uri/>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

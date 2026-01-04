@@ -1,0 +1,1209 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-dnsop-caching-resolution-failures-08" number="9520" ipr="trust200902" updates="2308, 4035, 4697" obsoletes="" tocInclude="true" tocDepth="4" symRefs="true" sortRefs="true" xml:lang="en" prepTime="2023-12-22T11:12:51" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-dnsop-caching-resolution-failures-08" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9520" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Caching Resolution Failures">Negative Caching of DNS Resolution Failures</title>
+    <seriesInfo name="RFC" value="9520" stream="IETF"/>
+    <author fullname="Duane Wessels" initials="D." surname="Wessels">
+      <organization showOnFrontPage="true">Verisign</organization>
+      <address>
+        <postal>
+          <street>12061 Bluemont Way</street>
+          <city>Reston</city>
+          <region>VA</region>
+          <code>20190</code>
+          <country>United States of America</country>
+        </postal>
+        <phone>+1 703 948-3200</phone>
+        <email>dwessels@verisign.com</email>
+        <uri>https://verisign.com</uri>
+      </address>
+    </author>
+    <author fullname="William Carroll" initials="W." surname="Carroll">
+      <organization showOnFrontPage="true">Verisign</organization>
+      <address>
+        <postal>
+          <street>12061 Bluemont Way</street>
+          <city>Reston</city>
+          <region>VA</region>
+          <code>20190</code>
+          <country>United States of America</country>
+        </postal>
+        <phone>+1 703 948-3200</phone>
+        <email>wicarroll@verisign.com</email>
+        <uri>https://verisign.com</uri>
+      </address>
+    </author>
+    <author fullname="Matthew Thomas" initials="M." surname="Thomas">
+      <organization showOnFrontPage="true">Verisign</organization>
+      <address>
+        <postal>
+          <street>12061 Bluemont Way</street>
+          <city>Reston</city>
+          <region>VA</region>
+          <code>20190</code>
+          <country>United States of America</country>
+        </postal>
+        <phone>+1 703 948-3200</phone>
+        <email>mthomas@verisign.com</email>
+        <uri>https://verisign.com</uri>
+      </address>
+    </author>
+    <date month="12" year="2023"/>
+    <area>ops</area>
+    <workgroup>dnsop</workgroup>
+    <keyword>DNS</keyword>
+    <keyword>Negative</keyword>
+    <keyword>Caching</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">In the DNS, resolvers employ caching to reduce both latency for end
+      users and load on authoritative name servers.  The process of resolution
+      may result in one of three types of responses: (1) a response containing
+      the requested data, (2) a response indicating the requested data does
+      not exist, or (3) a non-response due to a resolution failure in which
+      the resolver does not receive any useful information regarding the
+      data's existence.  This document concerns itself only with the third
+      type.</t>
+      <t indent="0" pn="section-abstract-2">RFC 2308 specifies requirements for DNS negative caching.  There,
+      caching of TYPE 2 responses is mandatory and caching of TYPE 3
+      responses is optional.  This document updates RFC 2308 to require
+      negative caching for DNS resolution failures.</t>
+      <t indent="0" pn="section-abstract-3">RFC 4035 allows DNSSEC validation failure caching. This document
+      updates RFC 4035 to require caching for DNSSEC validation failures.</t>
+      <t indent="0" pn="section-abstract-4">RFC 4697 prohibits aggressive requerying for NS records at a failed
+      zone's parent zone. This document updates RFC 4697 to expand this
+      requirement to all query types and to all ancestor zones.
+      </t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9520" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-motivation">Motivation</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-related-work">Related Work</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.3">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.3.1"><xref derivedContent="1.3" format="counter" sectionFormat="of" target="section-1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-conditions-that-lead-to-dns">Conditions That Lead to DNS Resolution Failures</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-servfail-responses">SERVFAIL Responses</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-refused-responses">REFUSED Responses</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.3">
+                <t indent="0" pn="section-toc.1-1.2.2.3.1"><xref derivedContent="2.3" format="counter" sectionFormat="of" target="section-2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-timeouts-and-unreachable-se">Timeouts and Unreachable Servers</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.4">
+                <t indent="0" pn="section-toc.1-1.2.2.4.1"><xref derivedContent="2.4" format="counter" sectionFormat="of" target="section-2.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-delegation-loops">Delegation Loops</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.5">
+                <t indent="0" pn="section-toc.1-1.2.2.5.1"><xref derivedContent="2.5" format="counter" sectionFormat="of" target="section-2.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-alias-loops">Alias Loops</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.6">
+                <t indent="0" pn="section-toc.1-1.2.2.6.1"><xref derivedContent="2.6" format="counter" sectionFormat="of" target="section-2.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dnssec-validation-failures">DNSSEC Validation Failures</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.7">
+                <t indent="0" pn="section-toc.1-1.2.2.7.1"><xref derivedContent="2.7" format="counter" sectionFormat="of" target="section-2.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-formerr-responses">FORMERR Responses</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-for-caching-dn">Requirements for Caching DNS Resolution Failures</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-retries-and-timeouts">Retries and Timeouts</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-caching">Caching</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requerying-delegation-infor">Requerying Delegation Information</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.4">
+                <t indent="0" pn="section-toc.1-1.3.2.4.1"><xref derivedContent="3.4" format="counter" sectionFormat="of" target="section-3.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dnssec-validation-failures-2">DNSSEC Validation Failures</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-privacy-considerations">Privacy Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">Caching has always been a fundamental component of DNS resolution on
+      the Internet.  For example, <xref target="RFC0882" format="default" sectionFormat="of" derivedContent="RFC0882"/> states:</t>
+      <blockquote pn="section-1-2">
+         The sheer size of the database and frequency of updates suggest
+         that it must be maintained in a distributed manner, with local
+         caching to improve performance.
+      </blockquote>
+      <t indent="0" pn="section-1-3">The early DNS RFCs (<xref target="RFC0882" format="default" sectionFormat="of" derivedContent="RFC0882"/>, <xref target="RFC0883" format="default" sectionFormat="of" derivedContent="RFC0883"/>, <xref target="RFC1034" format="default" sectionFormat="of" derivedContent="RFC1034"/>, and <xref target="RFC1035" format="default" sectionFormat="of" derivedContent="RFC1035"/>) primarily discuss caching in the context of what
+      <xref target="RFC2308" format="default" sectionFormat="of" derivedContent="RFC2308"/> calls "positive responses", that is, when the
+      response includes the requested data.  In this case, a TTL is associated
+      with each Resource Record (RR) in the response.  Resolvers can cache and
+      reuse the data until the TTL expires.
+      </t>
+      <t indent="0" pn="section-1-4">
+        <xref target="RFC1034" sectionFormat="of" section="4.3.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc1034#section-4.3.4" derivedContent="RFC1034"/> describes negative
+        response caching, but notes it is optional and only talks
+        about name errors (NXDOMAIN).  This is the origin of using
+        the SOA MINIMUM field as a negative caching TTL.
+      </t>
+      <t indent="0" pn="section-1-5">
+        <xref target="RFC2308" format="default" sectionFormat="of" derivedContent="RFC2308"/> updated <xref target="RFC1034" format="default" sectionFormat="of" derivedContent="RFC1034"/> to specify
+        new requirements for DNS negative caching, including making it
+        mandatory for caching resolvers to cache name error (NXDOMAIN) and no
+        data (NODATA) responses when an SOA record is available to provide a
+        TTL.  <xref target="RFC2308" format="default" sectionFormat="of" derivedContent="RFC2308"/> further specified optional negative
+        caching for two DNS resolution failure cases: server failure and dead/unreachable servers.
+      </t>
+      <t indent="0" pn="section-1-6">
+        This document updates <xref target="RFC2308" format="default" sectionFormat="of" derivedContent="RFC2308"/> to require negative
+        caching of all DNS resolution failures and provides additional
+        examples of resolution failures, <xref target="RFC4035" format="default" sectionFormat="of" derivedContent="RFC4035"/> to require caching for DNSSEC validation failures,
+        as well as <xref target="RFC4697" format="default" sectionFormat="of" derivedContent="RFC4697"/> to expand the scope of prohibiting
+        aggressive requerying for NS records at a failed zone's parent zone to
+        all query types and to all ancestor zones.
+      </t>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-motivation">Motivation</name>
+        <t indent="0" pn="section-1.1-1">
+          Operators of DNS services have known for some time that
+          recursive resolvers become more aggressive when they
+          experience resolution failures.  A number of different
+          anecdotes, experiments, and incidents support this
+          claim.
+        </t>
+        <t indent="0" pn="section-1.1-2">
+          In December 2009, a secondary server for a number of
+          in-addr.arpa subdomains saw its traffic suddenly double, and
+          queries of type DNSKEY in particular increase by approximately
+          two orders of magnitude, coinciding with a DNSSEC key rollover
+          by the zone operator <xref target="DNSSEC-ROLLOVER" format="default" sectionFormat="of" derivedContent="DNSSEC-ROLLOVER"/>.
+          This predated a signed root zone, and an operating system
+          vendor was providing non-root trust anchors to the recursive
+          resolver, which became out of date following the rollover.
+          Unable to validate responses for the affected in-addr.arpa
+          zones, recursive resolvers aggressively retried their queries.
+        </t>
+        <t indent="0" pn="section-1.1-3">
+          In 2016, the Internet infrastructure company Dyn experienced
+          a large attack that impacted many high-profile customers.
+          As documented in a technical presentation detailing the attack (see <xref target="RETRY-STORM" format="default" sectionFormat="of" derivedContent="RETRY-STORM"/>), Dyn staff wrote:</t>
+        <blockquote pn="section-1.1-4">
+          <t indent="0" pn="section-1.1-4.1">At this point we are now experiencing botnet attack
+	  traffic and what is best classified as a "retry storm"</t>
+          <t indent="0" pn="section-1.1-4.2">Looking at certain large recursive platforms &gt; 10x normal
+	  volume</t>
+        </blockquote>
+        <t indent="0" pn="section-1.1-5">
+          In 2018, the root zone Key Signing Key (KSK) was rolled over
+          <xref target="KSK-ROLLOVER" format="default" sectionFormat="of" derivedContent="KSK-ROLLOVER"/>.  Throughout the rollover
+          period, the root servers experienced a significant increase in
+          DNSKEY queries.  Before the rollover, a.root-servers.net and
+          j.root-servers.net together received about 15 million DNSKEY
+          queries per day.  At the end of the revocation period, they
+          received 1.2 billion per day: an 80x increase.  Removal of
+          the revoked key from the zone caused DNSKEY queries to drop
+          to post-rollover but pre-revoke levels, indicating there is
+          still a population of recursive resolvers using the previous
+          root trust anchor and aggressively retrying DNSKEY queries.
+        </t>
+        <t indent="0" pn="section-1.1-6">
+          In 2021, Verisign researchers used botnet query traffic to
+          demonstrate that certain large public recursive DNS services exhibit
+          very high query rates when all authoritative name servers for a zone
+          return refused (REFUSED) or server failure (SERVFAIL) responses (see
+          <xref target="BOTNET" format="default" sectionFormat="of" derivedContent="BOTNET"/>). When the authoritative servers were
+          configured normally, query rates for a single botnet domain averaged
+          approximately 50 queries per second.  However, with the servers
+          configured to return SERVFAIL, the query rate increased to 60,000
+          per second.  Furthermore, increases were also observed at the root
+          and Top-Level Domain (TLD) levels, even though delegations at those
+          levels were unchanged and continued operating normally.
+        </t>
+        <t indent="0" pn="section-1.1-7">
+          Later that same year, on October 4, Facebook experienced a
+          widespread and well-publicized outage <xref target="FB-OUTAGE" format="default" sectionFormat="of" derivedContent="FB-OUTAGE"/>. During the 6-hour outage, none of Facebook's
+          authoritative name servers were reachable and did not respond to
+          queries. Recursive name servers attempting to resolve Facebook
+          domains experienced timeouts. During this time, query traffic on the
+          .COM/.NET infrastructure increased from 7,000 to 900,000 queries per
+          second <xref target="OUTAGE-RESOLVER" format="default" sectionFormat="of" derivedContent="OUTAGE-RESOLVER"/>.
+        </t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-related-work">Related Work</name>
+        <t indent="0" pn="section-1.2-1">
+          <xref target="RFC2308" format="default" sectionFormat="of" derivedContent="RFC2308"/> describes negative caching for four types
+          of DNS queries and responses: name errors, no data, server failures,
+          and dead/unreachable servers.  It places the strongest
+          requirements on negative caching for name errors and no data
+          responses, while server failures and dead servers are left as
+          optional.
+        </t>
+        <t indent="0" pn="section-1.2-2">
+          <xref target="RFC4697" format="default" sectionFormat="of" derivedContent="RFC4697"/> is a Best Current Practice that
+          documents observed resolution misbehaviors.  It describes a
+          number of situations that can lead to excessive queries from
+          recursive resolvers, including requerying for delegation data,
+          lame servers, responses blocked by firewalls, and records
+          with zero TTL.  <xref target="RFC4697" format="default" sectionFormat="of" derivedContent="RFC4697"/> makes a number of
+          recommendations, varying from "<bcp14>SHOULD</bcp14>" to "<bcp14>MUST</bcp14>".
+        </t>
+        <t indent="0" pn="section-1.2-3"><xref target="I-D.muks-dnsop-dns-thundering-herd" format="default" sectionFormat="of" derivedContent="THUNDERING-HERD"/> describes "The
+        DNS thundering herd problem" as a situation arising when cached data
+        expires at the same time for a large number of users.  Although that
+        document is not focused on negative caching, it does describe the
+        benefits of combining multiple identical queries to upstream name
+        servers.  That is, when a recursive resolver receives multiple queries
+        for the same name, class, and type that cannot be answered from cached
+        data, it should combine or join them into a single upstream query
+        rather than emit repeated identical upstream queries.
+        </t>
+        <t indent="0" pn="section-1.2-4">
+          <xref target="RFC5452" format="default" sectionFormat="of" derivedContent="RFC5452"/>, "<xref target="RFC5452" format="title" sectionFormat="of" derivedContent="Measures for Making DNS More Resilient against Forged Answers"/>",
+          includes a section that describes the phenomenon known as "Birthday
+          Attacks".  Here, again, the problem arises when a recursive resolver
+          emits multiple identical upstream queries.  Multiple outstanding
+          queries make it easier for an attacker to guess and correctly match
+          some of the DNS message parameters, such as the port number and ID
+          field.  This situation is further exacerbated in the case of
+          timeout-based resolution failures.  Of course, DNSSEC is a suitable
+          defense to spoofing attacks.
+        </t>
+        <t indent="0" pn="section-1.2-5">
+          <xref target="RFC8767" format="default" sectionFormat="of" derivedContent="RFC8767"/> describes "<xref target="RFC8767" format="title" sectionFormat="of" derivedContent="Serving Stale Data to Improve DNS Resiliency"/>". This permits a recursive resolver to return
+          possibly stale data when it is unable to refresh cached, expired
+          data.  It introduces the idea of a failure recheck timer and
+          says:</t>
+        <blockquote pn="section-1.2-6">Attempts to refresh from non-responsive or
+          otherwise failing authoritative nameservers are recommended
+          to be done no more frequently than every 30 seconds.</blockquote>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-1.3">
+        <name slugifiedName="name-terminology">Terminology</name>
+        <t indent="0" pn="section-1.3-1"> The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+        "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+        "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+        "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+        are to be interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they
+        appear in all capitals, as shown here.
+        </t>
+        <dl indent="3" newline="false" spacing="normal" pn="section-1.3-2">
+          <dt pn="section-1.3-2.1">DNS transport:</dt>
+          <dd pn="section-1.3-2.2">In this document, "DNS transport" means a protocol used to
+	  transport DNS messages between a client and a server.  This includes
+	  "classic DNS" transports, i.e., DNS-over-UDP and DNS-over-TCP <xref target="RFC1034" format="default" sectionFormat="of" derivedContent="RFC1034"/> <xref target="RFC7766" format="default" sectionFormat="of" derivedContent="RFC7766"/>, as well as newer
+	  encrypted DNS transports, such as DNS-over-TLS <xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/>, DNS-over-HTTPS <xref target="RFC8484" format="default" sectionFormat="of" derivedContent="RFC8484"/>,
+	  DNS-over-QUIC <xref target="RFC9250" format="default" sectionFormat="of" derivedContent="RFC9250"/>, and similar communication of
+	  DNS messages using other protocols.  Note: at the time of writing,
+	  not all DNS transports are standardized for all types
+	  of servers but may become standardized in the future.</dd>
+        </dl>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-conditions-that-lead-to-dns">Conditions That Lead to DNS Resolution Failures</name>
+      <t indent="0" pn="section-2-1">
+        A DNS resolution failure occurs when none of the servers available
+        to a resolver client provide any useful response data for a
+        particular query name, type, and class. A response is considered
+        useful when it provides either the requested data, a referral to a descendant zone,
+        or an indication that no data exists at the given name.
+      </t>
+      <t indent="0" pn="section-2-2">
+        It is common for resolvers to have multiple servers from
+        which to choose for a particular query.  For example,
+        in the case of stub-to-recursive, the stub resolver may be
+        configured with multiple recursive resolver addresses.  In the case of
+        recursive-to-authoritative, a given zone usually has more than
+        one name server (NS record), each of which can have multiple
+        IP addresses and multiple DNS transports.
+      </t>
+      <t indent="0" pn="section-2-3">
+        Nothing in this document prevents a resolver from retrying a
+        query at a different server or the same server over a different
+        DNS transport.  In the case of timeouts, a resolver can retry the
+        same server and DNS transport a limited number of times.
+      </t>
+      <t indent="0" pn="section-2-4">
+        If any one of the available servers provides a useful response, then
+        it is not considered a resolution failure.  However, if
+        none of the servers for a given query tuple &lt;name, type, class&gt;
+        provide a useful response, the result is a resolution failure.
+      </t>
+      <t indent="0" pn="section-2-5">
+        Note that NXDOMAIN and NOERROR/NODATA responses are not conditions
+        for resolution failure.  In these cases, the server is providing
+        a useful response, indicating either that a name does not exist
+        or that no data of the requested type exists at the name.
+        These negative responses can be cached as described in <xref target="RFC2308" format="default" sectionFormat="of" derivedContent="RFC2308"/>.
+      </t>
+      <t indent="0" pn="section-2-6">
+        The remainder of this section describes a number of different
+        conditions that can lead to resolution failure. This section is not
+        exhaustive. Additional conditions
+        may be expected to cause similar resolution failures.
+      </t>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-servfail-responses">SERVFAIL Responses</name>
+        <t indent="0" pn="section-2.1-1">
+          Server failure is defined in <xref target="RFC1035" format="default" sectionFormat="of" derivedContent="RFC1035"/> as:
+          "The name server was unable to process this query due to a
+          problem with the name server." A server failure is signaled
+          by setting the RCODE field to SERVFAIL.
+        </t>
+        <t indent="0" pn="section-2.1-2">
+          Authoritative servers return SERVFAIL when they don't have any valid
+          data for a zone.  For example, a secondary server has been
+          configured to serve a particular zone but is unable to retrieve or
+          refresh the zone data from the primary server.
+        </t>
+        <t indent="0" pn="section-2.1-3">
+          Recursive servers return SERVFAIL in response to a
+          number of different conditions, including many described below.
+        </t>
+        <t indent="0" pn="section-2.1-4">
+          Although the extended DNS errors method exists "primarily to extend
+          SERVFAIL to provide additional information," it "does not change the
+          processing of RCODEs" <xref target="RFC8914" format="default" sectionFormat="of" derivedContent="RFC8914"/>.  This document
+          operates at the level of resolution failure and does not concern
+          particular causes.
+        </t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-refused-responses">REFUSED Responses</name>
+        <t indent="0" pn="section-2.2-1">
+          A name server returns a message with the RCODE field set to REFUSED when it refuses to
+          process the query, e.g., for policy or other reasons <xref target="RFC1035" format="default" sectionFormat="of" derivedContent="RFC1035"/>.
+        </t>
+        <t indent="0" pn="section-2.2-2">
+          Authoritative servers generally return REFUSED when processing
+          a query for which they are not authoritative.  For example,
+          a server that is configured to be authoritative for only the
+          example.net zone may return REFUSED in response to a query
+          for example.com.
+        </t>
+        <t indent="0" pn="section-2.2-3">
+          Recursive servers generally return REFUSED for query
+          sources that do not match configured access control lists.
+          For example, a server that is configured to allow queries from
+          only 2001:db8:1::/48 may return REFUSED in response to a query
+          from 2001:db8:5::1.
+        </t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-2.3">
+        <name slugifiedName="name-timeouts-and-unreachable-se">Timeouts and Unreachable Servers</name>
+        <t indent="0" pn="section-2.3-1">
+          A timeout occurs when a resolver fails to receive any response from
+          a server within a reasonable amount of time.  Additionally, a DNS
+          transport may more quickly indicate lack of reachability in a way
+          that wouldn't be considered a timeout: for example, an ICMP port
+          unreachable message, a TCP "connection refused" error, or a TLS
+          handshake failure.  <xref target="RFC2308" format="default" sectionFormat="of" derivedContent="RFC2308"/> refers to these
+          conditions collectively as "dead / unreachable servers".
+        </t>
+        <t indent="0" pn="section-2.3-2">
+          Note that resolver implementations may have two types of
+          timeouts: a smaller timeout that might trigger a query retry
+          and a larger timeout after which the server is considered
+          unresponsive.  <xref target="reqs-retries-timeouts" format="default" sectionFormat="of" derivedContent="Section 3.1"/> discusses
+          the requirements for resolvers when retrying queries.
+        </t>
+        <t indent="0" pn="section-2.3-3">
+          Timeouts can present a particular problem for negative
+          caching, depending on how the resolver handles multiple
+          outstanding queries for the same &lt;query name, type,
+          class&gt; tuple.  For example, consider a very popular
+          website in a zone whose name servers are all unresponsive.
+          A recursive resolver might receive tens or hundreds of queries
+          per second for that website.  If the recursive server
+          implementation joins these outstanding queries together,
+          then it only sends one recursive-to-authoritative query for
+          the numerous pending stub-to-recursive queries.  However, if
+          the implementation does not join outstanding queries together,
+          then it sends one recursive-to-authoritative query for each
+          stub-to-recursive query.  If the incoming query rate is high
+          and the timeout is large, this might result in hundreds or
+          thousands of recursive-to-authoritative queries while waiting
+          for an authoritative server to time out.
+        </t>
+        <t indent="0" pn="section-2.3-4">
+          A recursive resolver that does not join outstanding queries together
+          is more susceptible to Birthday Attacks (<xref target="RFC5452" sectionFormat="comma" section="5" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5452#section-5" derivedContent="RFC5452"/>), especially when those queries
+          result in timeouts.
+        </t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-2.4">
+        <name slugifiedName="name-delegation-loops">Delegation Loops</name>
+        <t indent="0" pn="section-2.4-1">
+          A delegation loop, or cycle, can occur when one domain utilizes
+          name servers in a second domain, and the second domain uses
+          name servers in the first.  For example:
+        </t>
+        <sourcecode type="dns-rr" markers="false" pn="section-2.4-2">
+FOO.EXAMPLE.    NS      NS1.EXAMPLE.COM.
+FOO.EXAMPLE.    NS      NS2.EXAMPLE.COM.
+
+EXAMPLE.COM.    NS      NS1.FOO.EXAMPLE.
+EXAMPLE.COM.    NS      NS2.FOO.EXAMPLE.
+</sourcecode>
+        <t indent="0" pn="section-2.4-3">
+          In this example, no names under foo.example or example.com can be
+          resolved because of the delegation loop.  Note that a delegation loop
+          may involve more than two domains.  A resolver that does not
+          detect delegation loops may generate DDoS-levels of attack traffic
+          to authoritative name servers, as documented in the TsuNAME vulnerability
+          <xref target="TsuNAME" format="default" sectionFormat="of" derivedContent="TsuNAME"/>.
+        </t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-2.5">
+        <name slugifiedName="name-alias-loops">Alias Loops</name>
+        <t indent="0" pn="section-2.5-1">
+          An alias loop, or cycle, can occur when one CNAME or DNAME RR refers to
+          a second name, which, in turn, is specified as an alias for the first.
+          For example:
+        </t>
+        <sourcecode type="dns-rr" markers="false" pn="section-2.5-2">
+APP.FOO.EXAMPLE.        CNAME   APP.EXAMPLE.NET.
+APP.EXAMPLE.NET.        CNAME   APP.FOO.EXAMPLE.
+</sourcecode>
+        <t indent="0" pn="section-2.5-3">
+        The need to detect CNAME loops has been known since at least <xref target="RFC1034" format="default" sectionFormat="of" derivedContent="RFC1034"/>, which states in Section <xref target="RFC1034" sectionFormat="bare" section="3.6.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc1034#section-3.6.2" derivedContent="RFC1034"/>:
+        </t>
+        <blockquote pn="section-2.5-4">
+        Of course, by the robustness principle, domain software should
+        not fail when presented with CNAME chains or loops; CNAME chains
+        should be followed and CNAME loops signalled as an error.
+        </blockquote>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-2.6">
+        <name slugifiedName="name-dnssec-validation-failures">DNSSEC Validation Failures</name>
+        <t indent="0" pn="section-2.6-1">
+          For zones that are signed with DNSSEC, a resolution failure can
+          occur when a security-aware resolver believes it should be able
+          to establish a chain of trust for an RRset but is unable to do
+          so, possibly after trying multiple authoritative name servers.
+          DNSSEC validation failures may be due to signature mismatch,
+          missing DNSKEY RRs, problems with denial-of-existence records,
+          clock skew,
+          or other reasons.
+        </t>
+        <t indent="0" pn="section-2.6-2">
+          <xref target="RFC4035" sectionFormat="of" section="4.7" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4035#section-4.7" derivedContent="RFC4035"/> already discusses
+          the requirements and reasons for caching validation failures.
+          <xref target="dnssec-reqs" format="default" sectionFormat="of" derivedContent="Section 3.4"/> of this document strengthens those requirements.
+        </t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-2.7">
+        <name slugifiedName="name-formerr-responses">FORMERR Responses</name>
+        <t indent="0" pn="section-2.7-1">
+          A name server returns a message with the RCODE field set to
+          FORMERR when it is unable to interpret the query <xref target="RFC1035" format="default" sectionFormat="of" derivedContent="RFC1035"/>.  FORMERR
+          responses are often associated with problems processing Extension Mechanisms for DNS (EDNS(0)) <xref target="RFC6891" format="default" sectionFormat="of" derivedContent="RFC6891"/>.  Authoritative servers
+          may return FORMERR when they do not implement EDNS(0), or
+          when EDNS(0) option fields are malformed, but not for unknown
+          EDNS(0) options.
+        </t>
+        <t indent="0" pn="section-2.7-2">
+          Upon receipt of a FORMERR response, some recursive clients will
+          retry their queries without EDNS(0), while others will not.  Nonetheless, resolution failures
+          from FORMERR responses are rare.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-requirements-for-caching-dn">Requirements for Caching DNS Resolution Failures</name>
+      <section anchor="reqs-retries-timeouts" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-retries-and-timeouts">Retries and Timeouts</name>
+        <t indent="0" pn="section-3.1-1">
+          A resolver <bcp14>MUST NOT</bcp14> retry a given query to a server address over a given DNS transport more than twice
+          (i.e., three queries in total) before considering the server address
+          unresponsive over that DNS transport for that query.
+        </t>
+        <t indent="0" pn="section-3.1-2">
+          A resolver <bcp14>MAY</bcp14> retry a given query over a different DNS transport to the same server
+          if it has reason to believe the DNS transport is available for that server and is
+          compatible with the resolver's security policies.
+        </t>
+        <t indent="0" pn="section-3.1-3">
+          This document does not place any requirements on how long an implementation should
+          wait before retrying a query (aka a timeout value),
+          which may be implementation or configuration dependent.
+          It is generally expected that typical timeout values range
+          from 3 to 30 seconds.
+        </t>
+      </section>
+      <section anchor="caching" numbered="true" removeInRFC="false" toc="include" pn="section-3.2">
+        <name slugifiedName="name-caching">Caching</name>
+        <t indent="0" pn="section-3.2-1">
+          Resolvers <bcp14>MUST</bcp14> implement a cache for resolution failures.
+          The purpose of this cache is to eliminate repeated upstream
+          queries that cannot be resolved.
+          When an incoming query matches a cached resolution failure, the resolver <bcp14>MUST NOT</bcp14> send
+          any corresponding outgoing queries until after the cache entries expire.
+        </t>
+        <t indent="0" pn="section-3.2-2">
+          Implementation details for such a cache are not specified
+          in this document.  The implementation might cache different
+          resolution failure conditions differently.  For example, DNSSEC
+          validation failures might be cached according to the queried
+          name, class, and type, whereas unresponsive servers might be
+          cached only according to the server's IP address.
+          Developers should document their implementation choices so
+          that operators know what behaviors to expect when resolution
+          failures are cached.
+        </t>
+        <t indent="0" pn="section-3.2-3">
+          Resolvers <bcp14>MUST</bcp14> cache resolution failures for at least
+          1 second.  Resolvers <bcp14>MAY</bcp14> cache different types of
+          resolution failures for different (i.e., longer) amounts of time.
+          Consistent with <xref target="RFC2308" format="default" sectionFormat="of" derivedContent="RFC2308"/>, resolution failures
+          <bcp14>MUST NOT</bcp14> be cached for longer than 5 minutes.
+        </t>
+        <t indent="0" pn="section-3.2-4">
+          The minimum cache duration <bcp14>SHOULD</bcp14> be configurable by
+          the operator.  A longer cache duration for resolution failures will
+          reduce the processing burden from repeated queries but may also
+          increase the time to recover from transitory issues.
+        </t>
+        <t indent="0" pn="section-3.2-5">
+          Resolvers <bcp14>SHOULD</bcp14> employ an exponential or linear
+          backoff algorithm to increase the cache duration for persistent
+          resolution failures. For example, the initial time for negatively
+          caching a resolution failure might be set to 5 seconds and
+          increased after each retry that results in another resolution
+          failure, up to a configurable maximum, not to exceed the 5-minute
+          upper limit.
+        </t>
+        <t indent="0" pn="section-3.2-6">
+          Notwithstanding the above, resolvers <bcp14>SHOULD</bcp14> implement
+          measures to mitigate resource exhaustion attacks on the failed
+          resolution cache. That is, the resolver should limit the amount of
+          memory and/or processing time devoted to this cache.
+        </t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-3.3">
+        <name slugifiedName="name-requerying-delegation-infor">Requerying Delegation Information</name>
+        <t indent="0" pn="section-3.3-1">
+      	<xref target="RFC4697" sectionFormat="of" section="2.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4697#section-2.1" derivedContent="RFC4697"/> identifies
+      	circumstances in which:</t>
+        <blockquote pn="section-3.3-2">...every name server in a zone's NS RRSet is unreachable
+	(e.g., during a network outage), unavailable (e.g., the name server
+	process is not running on the server host), or misconfigured (e.g.,
+	the name server is not authoritative for the given zone, also known as
+	"lame").</blockquote>
+        <t indent="0" pn="section-3.3-3">It prohibits unnecessary "aggressive requerying" to the
+          parent of a non-responsive zone by sending NS queries.
+        </t>
+        <t indent="0" pn="section-3.3-4">
+          The problem of aggressive requerying to parent zones is not limited
+          to queries of type NS.  This document updates the requirement from
+          <xref target="RFC4697" sectionFormat="of" section="2.1.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4697#section-2.1.1" derivedContent="RFC4697"/> to apply
+          more generally:</t>
+        <blockquote pn="section-3.3-5">
+	  Upon encountering a zone whose name servers are all
+          non-responsive, a resolver <bcp14>MUST</bcp14> cache the resolution
+          failure.  Furthermore, the resolver <bcp14>MUST</bcp14> limit
+          queries to the non-responsive zone's parent zone (and to other
+          ancestor zones) just as it would limit subsequent queries to the
+          non-responsive zone.</blockquote>
+      </section>
+      <section anchor="dnssec-reqs" numbered="true" removeInRFC="false" toc="include" pn="section-3.4">
+        <name slugifiedName="name-dnssec-validation-failures-2">DNSSEC Validation Failures</name>
+        <t indent="0" pn="section-3.4-1">
+          <xref target="RFC4035" sectionFormat="of" section="4.7" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4035#section-4.7" derivedContent="RFC4035"/> states:
+        </t>
+        <blockquote pn="section-3.4-2">
+          To prevent such unnecessary DNS traffic, security-aware
+          resolvers <bcp14>MAY</bcp14> cache data with invalid signatures, with some
+          restrictions.
+        </blockquote>
+        <t indent="0" pn="section-3.4-3">
+          This document updates <xref target="RFC4035" format="default" sectionFormat="of" derivedContent="RFC4035"/> with the following, stronger, requirement:
+        </t>
+        <blockquote pn="section-3.4-4">
+          To prevent such unnecessary DNS traffic, security-aware
+          resolvers <bcp14>MUST</bcp14> cache DNSSEC validation failures, with some
+          restrictions.
+        </blockquote>
+        <t indent="0" pn="section-3.4-5">
+          One of the restrictions mentioned in <xref target="RFC4035" format="default" sectionFormat="of" derivedContent="RFC4035"/>
+          is to use a small TTL when caching data that fails DNSSEC
+          validation. This is, in part, because the provided TTL cannot
+          be trusted.  The advice from <xref target="caching" format="default" sectionFormat="of" derivedContent="Section 3.2"/>
+          herein can be used as guidance on TTLs for caching DNSSEC
+          validation failures.
+        </t>
+      </section>
+    </section>
+    <section anchor="iana" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-4-1">
+        This document has no IANA actions.
+      </t>
+    </section>
+    <section anchor="security" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-5-1">
+        As noted in <xref target="caching" format="default" sectionFormat="of" derivedContent="Section 3.2"/>, an attacker might attempt a resource
+        exhaustion attack by sending queries for a large number
+        of names and/or types that result in resolution failure.  Resolvers
+        <bcp14>SHOULD</bcp14> implement measures to protect themselves and bound the
+        amount of memory devoted to caching resolution failures.
+      </t>
+      <t indent="0" pn="section-5-2">
+        A cache poisoning attack (see <xref target="RFC7873" sectionFormat="of" section="2.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7873#section-2.2" derivedContent="RFC7873"/>) resulting in denial of service may be possible
+        because failure messages cannot be signed. An attacker might generate
+        queries and send forged failure messages, causing the resolver to
+        cease sending queries to the authoritative name server (see <xref target="RFC4732" sectionFormat="of" section="2.6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4732#section-2.6" derivedContent="RFC4732"/> for a similar
+        "data corruption attack" and Section 5.2 of <xref target="TuDoor" format="default" sectionFormat="of" derivedContent="TuDoor"/>
+        for a "DNSDoS attack").	However, this would require continued
+        spoofing throughout the backoff period and repeated attacks due to the
+        5-minute cache limit. As in <xref target="RFC4686" sectionFormat="of" section="4.1.12" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4686#section-4.1.12" derivedContent="RFC4686"/>, this attack's effects would be "localized and of
+        limited duration".
+      </t>
+    </section>
+    <section anchor="privacy" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-privacy-considerations">Privacy Considerations</name>
+      <t indent="0" pn="section-6-1">This specification has no impact on user privacy.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.muks-dnsop-dns-thundering-herd" to="THUNDERING-HERD"/>
+    <references pn="section-7">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-7.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC1034" target="https://www.rfc-editor.org/info/rfc1034" quoteTitle="true" derivedAnchor="RFC1034">
+          <front>
+            <title>Domain names - concepts and facilities</title>
+            <author fullname="P. Mockapetris" initials="P." surname="Mockapetris"/>
+            <date month="November" year="1987"/>
+            <abstract>
+              <t indent="0">This RFC is the revised basic definition of The Domain Name System. It obsoletes RFC-882. This memo describes the domain style names and their used for host address look up and electronic mail forwarding. It discusses the clients and servers in the domain name system and the protocol used between them.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="13"/>
+          <seriesInfo name="RFC" value="1034"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1034"/>
+        </reference>
+        <reference anchor="RFC1035" target="https://www.rfc-editor.org/info/rfc1035" quoteTitle="true" derivedAnchor="RFC1035">
+          <front>
+            <title>Domain names - implementation and specification</title>
+            <author fullname="P. Mockapetris" initials="P." surname="Mockapetris"/>
+            <date month="November" year="1987"/>
+            <abstract>
+              <t indent="0">This RFC is the revised specification of the protocol and format used in the implementation of the Domain Name System. It obsoletes RFC-883. This memo documents the details of the domain name client - server communication.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="13"/>
+          <seriesInfo name="RFC" value="1035"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1035"/>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC2308" target="https://www.rfc-editor.org/info/rfc2308" quoteTitle="true" derivedAnchor="RFC2308">
+          <front>
+            <title>Negative Caching of DNS Queries (DNS NCACHE)</title>
+            <author fullname="M. Andrews" initials="M." surname="Andrews"/>
+            <date month="March" year="1998"/>
+            <abstract>
+              <t indent="0">RFC1034 provided a description of how to cache negative responses. It however had a fundamental flaw in that it did not allow a name server to hand out those cached responses to other resolvers, thereby greatly reducing the effect of the caching. This document addresses issues raise in the light of experience and replaces RFC1034 Section 4.3.4. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2308"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2308"/>
+        </reference>
+        <reference anchor="RFC4035" target="https://www.rfc-editor.org/info/rfc4035" quoteTitle="true" derivedAnchor="RFC4035">
+          <front>
+            <title>Protocol Modifications for the DNS Security Extensions</title>
+            <author fullname="R. Arends" initials="R." surname="Arends"/>
+            <author fullname="R. Austein" initials="R." surname="Austein"/>
+            <author fullname="M. Larson" initials="M." surname="Larson"/>
+            <author fullname="D. Massey" initials="D." surname="Massey"/>
+            <author fullname="S. Rose" initials="S." surname="Rose"/>
+            <date month="March" year="2005"/>
+            <abstract>
+              <t indent="0">This document is part of a family of documents that describe the DNS Security Extensions (DNSSEC). The DNS Security Extensions are a collection of new resource records and protocol modifications that add data origin authentication and data integrity to the DNS. This document describes the DNSSEC protocol modifications. This document defines the concept of a signed zone, along with the requirements for serving and resolving by using DNSSEC. These techniques allow a security-aware resolver to authenticate both DNS resource records and authoritative DNS error indications.</t>
+              <t indent="0">This document obsoletes RFC 2535 and incorporates changes from all updates to RFC 2535. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4035"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4035"/>
+        </reference>
+        <reference anchor="RFC4697" target="https://www.rfc-editor.org/info/rfc4697" quoteTitle="true" derivedAnchor="RFC4697">
+          <front>
+            <title>Observed DNS Resolution Misbehavior</title>
+            <author fullname="M. Larson" initials="M." surname="Larson"/>
+            <author fullname="P. Barber" initials="P." surname="Barber"/>
+            <date month="October" year="2006"/>
+            <abstract>
+              <t indent="0">This memo describes DNS iterative resolver behavior that results in a significant query volume sent to the root and top-level domain (TLD) name servers. We offer implementation advice to iterative resolver developers to alleviate these unnecessary queries. The recommendations made in this document are a direct byproduct of observation and analysis of abnormal query traffic patterns seen at two of the thirteen root name servers and all thirteen com/net TLD name servers. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="123"/>
+          <seriesInfo name="RFC" value="4697"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4697"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+      </references>
+      <references pn="section-7.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="BOTNET" target="https://indico.dns-oarc.net/event/38/contributions/841/" quoteTitle="true" derivedAnchor="BOTNET">
+          <front>
+            <title>Botnet Traffic Observed at Various Levels of the DNS Hierarchy</title>
+            <author initials="D." surname="Wessels" fullname="Duane Wessels"/>
+            <author initials="M." surname="Thomas" fullname="Matt Thomas"/>
+            <date year="2021" month="May"/>
+          </front>
+        </reference>
+        <reference anchor="DNSSEC-ROLLOVER" target="https://www.potaroo.net/ispcol/2010-02/rollover.html" quoteTitle="true" derivedAnchor="DNSSEC-ROLLOVER">
+          <front>
+            <title>Roll Over and Die?</title>
+            <author initials="G." surname="Michaleson" fullname="George Michaleson"/>
+            <author initials="P." surname="Wallström" fullname="Patrik Wallström"/>
+            <author initials="R." surname="Arends" fullname="Roy Arends"/>
+            <author initials="G." surname="Huston" fullname="Geoff Huston"/>
+            <date year="2010" month="February"/>
+          </front>
+        </reference>
+        <reference anchor="FB-OUTAGE" target="https://engineering.fb.com/2021/10/05/networking-traffic/outage-details/" quoteTitle="true" derivedAnchor="FB-OUTAGE">
+          <front>
+            <title>More details about the October 4 outage</title>
+            <author initials="S." surname="Janardhan" fullname="Santosh Janardhan"/>
+            <date year="2021" month="October"/>
+          </front>
+        </reference>
+        <reference anchor="KSK-ROLLOVER" quoteTitle="true" target="https://doi.org/10.1145/3355369.3355570" derivedAnchor="KSK-ROLLOVER">
+          <front>
+            <title>Roll, Roll, Roll Your Root: A Comprehensive Analysis of the First Ever DNSSEC Root KSK Rollover</title>
+            <author fullname="Moritz Müller" initials="M." surname="Müller"/>
+            <author fullname="Matthew Thomas" initials="M." surname="Thomas"/>
+            <author fullname="Duane Wessels" initials="D." surname="Wessels"/>
+            <author fullname="Wes Hardaker" initials="W." surname="Hardaker"/>
+            <author fullname="Taejoong Chung" initials="T." surname="Chung"/>
+            <author fullname="Willem Toorop" initials="W." surname="Toorop"/>
+            <author fullname="Roland van Rijswijk-Deij" initials="R." surname="van Rijswijk-Deij"/>
+            <date year="2019" month="Oct"/>
+          </front>
+          <refcontent>IMC '19: Proceedings of the Internet Measurement Conference, Pages 1-14</refcontent>
+          <seriesInfo name="DOI" value="10.1145/3355369.3355570"/>
+        </reference>
+        <reference anchor="OUTAGE-RESOLVER" target="https://blog.verisign.com/security/facebook-dns-outage/" quoteTitle="true" derivedAnchor="OUTAGE-RESOLVER">
+          <front>
+            <title>Observations on Resolver Behavior During DNS Outages</title>
+            <author>
+              <organization showOnFrontPage="true">Verisign</organization>
+            </author>
+            <date year="2022" month="January"/>
+          </front>
+        </reference>
+        <reference anchor="RETRY-STORM" target="https://ccnso.icann.org/sites/default/files/file/field-file-attach/2017-04/presentation-oracle-dyn-ddos-dns-13mar17-en.pdf" quoteTitle="true" derivedAnchor="RETRY-STORM">
+          <front>
+            <title>Dyn, DDoS, and DNS</title>
+            <author initials="A." surname="Sullivan" fullname="Andrew Sullivan"/>
+            <date year="2017" month="March"/>
+          </front>
+        </reference>
+        <reference anchor="RFC0882" target="https://www.rfc-editor.org/info/rfc882" quoteTitle="true" derivedAnchor="RFC0882">
+          <front>
+            <title>Domain names: Concepts and facilities</title>
+            <author fullname="P. Mockapetris" initials="P." surname="Mockapetris"/>
+            <date month="November" year="1983"/>
+            <abstract>
+              <t indent="0">This RFC introduces domain style names, their use for ARPA Internet mail and host address support, and the protocol and servers used to implement domain name facilities.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="882"/>
+          <seriesInfo name="DOI" value="10.17487/RFC0882"/>
+        </reference>
+        <reference anchor="RFC0883" target="https://www.rfc-editor.org/info/rfc883" quoteTitle="true" derivedAnchor="RFC0883">
+          <front>
+            <title>Domain names: Implementation specification</title>
+            <author fullname="P. Mockapetris" initials="P." surname="Mockapetris"/>
+            <date month="November" year="1983"/>
+            <abstract>
+              <t indent="0">This RFC discusses the implementation of domain name servers and resolvers, specifies the format of transactions, and discusses the use of domain names in the context of existing mail systems and other network software.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="883"/>
+          <seriesInfo name="DOI" value="10.17487/RFC0883"/>
+        </reference>
+        <reference anchor="RFC4686" target="https://www.rfc-editor.org/info/rfc4686" quoteTitle="true" derivedAnchor="RFC4686">
+          <front>
+            <title>Analysis of Threats Motivating DomainKeys Identified Mail (DKIM)</title>
+            <author fullname="J. Fenton" initials="J." surname="Fenton"/>
+            <date month="September" year="2006"/>
+            <abstract>
+              <t indent="0">This document provides an analysis of some threats against Internet mail that are intended to be addressed by signature-based mail authentication, in particular DomainKeys Identified Mail. It discusses the nature and location of the bad actors, what their capabilities are, and what they intend to accomplish via their attacks. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4686"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4686"/>
+        </reference>
+        <reference anchor="RFC4732" target="https://www.rfc-editor.org/info/rfc4732" quoteTitle="true" derivedAnchor="RFC4732">
+          <front>
+            <title>Internet Denial-of-Service Considerations</title>
+            <author fullname="M. Handley" initials="M." role="editor" surname="Handley"/>
+            <author fullname="E. Rescorla" initials="E." role="editor" surname="Rescorla"/>
+            <author>
+              <organization abbrev="IAB" showOnFrontPage="true">Internet Architecture Board</organization>
+            </author>
+            <date month="December" year="2006"/>
+            <abstract>
+              <t indent="0">This document provides an overview of possible avenues for denial-of-service (DoS) attack on Internet systems. The aim is to encourage protocol designers and network engineers towards designs that are more robust. We discuss partial solutions that reduce the effectiveness of attacks, and how some solutions might inadvertently open up alternative vulnerabilities. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4732"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4732"/>
+        </reference>
+        <reference anchor="RFC5452" target="https://www.rfc-editor.org/info/rfc5452" quoteTitle="true" derivedAnchor="RFC5452">
+          <front>
+            <title>Measures for Making DNS More Resilient against Forged Answers</title>
+            <author fullname="A. Hubert" initials="A." surname="Hubert"/>
+            <author fullname="R. van Mook" initials="R." surname="van Mook"/>
+            <date month="January" year="2009"/>
+            <abstract>
+              <t indent="0">The current Internet climate poses serious threats to the Domain Name System. In the interim period before the DNS protocol can be secured more fully, measures can already be taken to harden the DNS to make 'spoofing' a recursing nameserver many orders of magnitude harder.</t>
+              <t indent="0">Even a cryptographically secured DNS benefits from having the ability to discard bogus responses quickly, as this potentially saves large amounts of computation.</t>
+              <t indent="0">By describing certain behavior that has previously not been standardized, this document sets out how to make the DNS more resilient against accepting incorrect responses. This document updates RFC 2181. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5452"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5452"/>
+        </reference>
+        <reference anchor="RFC6891" target="https://www.rfc-editor.org/info/rfc6891" quoteTitle="true" derivedAnchor="RFC6891">
+          <front>
+            <title>Extension Mechanisms for DNS (EDNS(0))</title>
+            <author fullname="J. Damas" initials="J." surname="Damas"/>
+            <author fullname="M. Graff" initials="M." surname="Graff"/>
+            <author fullname="P. Vixie" initials="P." surname="Vixie"/>
+            <date month="April" year="2013"/>
+            <abstract>
+              <t indent="0">The Domain Name System's wire protocol includes a number of fixed fields whose range has been or soon will be exhausted and does not allow requestors to advertise their capabilities to responders. This document describes backward-compatible mechanisms for allowing the protocol to grow.</t>
+              <t indent="0">This document updates the Extension Mechanisms for DNS (EDNS(0)) specification (and obsoletes RFC 2671) based on feedback from deployment experience in several implementations. It also obsoletes RFC 2673 ("Binary Labels in the Domain Name System") and adds considerations on the use of extended labels in the DNS.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="75"/>
+          <seriesInfo name="RFC" value="6891"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6891"/>
+        </reference>
+        <reference anchor="RFC7766" target="https://www.rfc-editor.org/info/rfc7766" quoteTitle="true" derivedAnchor="RFC7766">
+          <front>
+            <title>DNS Transport over TCP - Implementation Requirements</title>
+            <author fullname="J. Dickinson" initials="J." surname="Dickinson"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="R. Bellis" initials="R." surname="Bellis"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <date month="March" year="2016"/>
+            <abstract>
+              <t indent="0">This document specifies the requirement for support of TCP as a transport protocol for DNS implementations and provides guidelines towards DNS-over-TCP performance on par with that of DNS-over-UDP. This document obsoletes RFC 5966 and therefore updates RFC 1035 and RFC 1123.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7766"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7766"/>
+        </reference>
+        <reference anchor="RFC7858" target="https://www.rfc-editor.org/info/rfc7858" quoteTitle="true" derivedAnchor="RFC7858">
+          <front>
+            <title>Specification for DNS over Transport Layer Security (TLS)</title>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <author fullname="L. Zhu" initials="L." surname="Zhu"/>
+            <author fullname="J. Heidemann" initials="J." surname="Heidemann"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This document describes the use of Transport Layer Security (TLS) to provide privacy for DNS. Encryption provided by TLS eliminates opportunities for eavesdropping and on-path tampering with DNS queries in the network, such as discussed in RFC 7626. In addition, this document specifies two usage profiles for DNS over TLS and provides advice on performance considerations to minimize overhead from using TCP and TLS with DNS.</t>
+              <t indent="0">This document focuses on securing stub-to-recursive traffic, as per the charter of the DPRIVE Working Group. It does not prevent future applications of the protocol to recursive-to-authoritative traffic.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7858"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7858"/>
+        </reference>
+        <reference anchor="RFC7873" target="https://www.rfc-editor.org/info/rfc7873" quoteTitle="true" derivedAnchor="RFC7873">
+          <front>
+            <title>Domain Name System (DNS) Cookies</title>
+            <author fullname="D. Eastlake 3rd" initials="D." surname="Eastlake 3rd"/>
+            <author fullname="M. Andrews" initials="M." surname="Andrews"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">DNS Cookies are a lightweight DNS transaction security mechanism that provides limited protection to DNS servers and clients against a variety of increasingly common denial-of-service and amplification/ forgery or cache poisoning attacks by off-path attackers. DNS Cookies are tolerant of NAT, NAT-PT (Network Address Translation - Protocol Translation), and anycast and can be incrementally deployed. (Since DNS Cookies are only returned to the IP address from which they were originally received, they cannot be used to generally track Internet users.)</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7873"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7873"/>
+        </reference>
+        <reference anchor="RFC8484" target="https://www.rfc-editor.org/info/rfc8484" quoteTitle="true" derivedAnchor="RFC8484">
+          <front>
+            <title>DNS Queries over HTTPS (DoH)</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="P. McManus" initials="P." surname="McManus"/>
+            <date month="October" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a protocol for sending DNS queries and getting DNS responses over HTTPS. Each DNS query-response pair is mapped into an HTTP exchange.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8484"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8484"/>
+        </reference>
+        <reference anchor="RFC8767" target="https://www.rfc-editor.org/info/rfc8767" quoteTitle="true" derivedAnchor="RFC8767">
+          <front>
+            <title>Serving Stale Data to Improve DNS Resiliency</title>
+            <author fullname="D. Lawrence" initials="D." surname="Lawrence"/>
+            <author fullname="W. Kumari" initials="W." surname="Kumari"/>
+            <author fullname="P. Sood" initials="P." surname="Sood"/>
+            <date month="March" year="2020"/>
+            <abstract>
+              <t indent="0">This document defines a method (serve-stale) for recursive resolvers to use stale DNS data to avoid outages when authoritative nameservers cannot be reached to refresh expired data. One of the motivations for serve-stale is to make the DNS more resilient to DoS attacks and thereby make them less attractive as an attack vector. This document updates the definitions of TTL from RFCs 1034 and 1035 so that data can be kept in the cache beyond the TTL expiry; it also updates RFC 2181 by interpreting values with the high-order bit set as being positive, rather than 0, and suggests a cap of 7 days.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8767"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8767"/>
+        </reference>
+        <reference anchor="RFC8914" target="https://www.rfc-editor.org/info/rfc8914" quoteTitle="true" derivedAnchor="RFC8914">
+          <front>
+            <title>Extended DNS Errors</title>
+            <author fullname="W. Kumari" initials="W." surname="Kumari"/>
+            <author fullname="E. Hunt" initials="E." surname="Hunt"/>
+            <author fullname="R. Arends" initials="R." surname="Arends"/>
+            <author fullname="W. Hardaker" initials="W." surname="Hardaker"/>
+            <author fullname="D. Lawrence" initials="D." surname="Lawrence"/>
+            <date month="October" year="2020"/>
+            <abstract>
+              <t indent="0">This document defines an extensible method to return additional information about the cause of DNS errors. Though created primarily to extend SERVFAIL to provide additional information about the cause of DNS and DNSSEC failures, the Extended DNS Errors option defined in this document allows all response types to contain extended error information. Extended DNS Error information does not change the processing of RCODEs.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8914"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8914"/>
+        </reference>
+        <reference anchor="RFC9250" target="https://www.rfc-editor.org/info/rfc9250" quoteTitle="true" derivedAnchor="RFC9250">
+          <front>
+            <title>DNS over Dedicated QUIC Connections</title>
+            <author fullname="C. Huitema" initials="C." surname="Huitema"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <date month="May" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes the use of QUIC to provide transport confidentiality for DNS. The encryption provided by QUIC has similar properties to those provided by TLS, while QUIC transport eliminates the head-of-line blocking issues inherent with TCP and provides more efficient packet-loss recovery than UDP. DNS over QUIC (DoQ) has privacy properties similar to DNS over TLS (DoT) specified in RFC 7858, and latency characteristics similar to classic DNS over UDP. This specification describes the use of DoQ as a general-purpose transport for DNS and includes the use of DoQ for stub to recursive, recursive to authoritative, and zone transfer scenarios.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9250"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9250"/>
+        </reference>
+        <reference anchor="I-D.muks-dnsop-dns-thundering-herd" target="https://datatracker.ietf.org/doc/html/draft-muks-dnsop-dns-thundering-herd-00" quoteTitle="true" derivedAnchor="THUNDERING-HERD">
+          <front>
+            <title>The DNS thundering herd problem</title>
+            <author fullname="Mukund Sivaraman" initials="M." surname="Sivaraman">
+              <organization showOnFrontPage="true">Akira Systems Private Limited</organization>
+            </author>
+            <author fullname="Cricket Liu" initials="C." surname="Liu">
+              <organization showOnFrontPage="true">Infoblox</organization>
+            </author>
+            <date day="25" month="June" year="2020"/>
+            <abstract>
+              <t indent="0">This document describes an observed regular pattern of spikes in queries that affects caching resolvers, and recommends software mitigations for it.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-muks-dnsop-dns-thundering-herd-00"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="TsuNAME" quoteTitle="true" target="https://doi.org/10.1145/3487552.3487824" derivedAnchor="TsuNAME">
+          <front>
+            <title>TsuNAME: exploiting misconfiguration and vulnerability to DDoS DNS</title>
+            <author initials="G. C. M." surname="Moura" fullname="Giovane C. M. Moura"/>
+            <author initials="S." surname="Castro" fullname="Sebastian Castro"/>
+            <author initials="J." surname="Heidemann" fullname="John Heidemann"/>
+            <author initials="W." surname="Hardaker" fullname="Wes Hardaker"/>
+            <date year="2021" month="November"/>
+          </front>
+          <refcontent>IMC '21: Proceedings of the 21st ACM Internet
+	  Measurement Conference, Pages 398-418</refcontent>
+          <seriesInfo name="DOI" value="10.1145/3487552.3487824"/>
+        </reference>
+        <reference anchor="TuDoor" target="https://doi.ieeecomputersociety.org/10.1109/SP54263.2024.00046" quoteTitle="true" derivedAnchor="TuDoor">
+          <front>
+            <title>TuDoor Attack: Systematically Exploring and Exploiting Logic Vulnerabilities in DNS Response Pre-processing with Malformed Packets</title>
+            <author fullname="Xiang Li" initials="X." surname="Li"/>
+            <author fullname="Wei Xu" initials="W." surname="Xu"/>
+            <author fullname="Baojun Liu" initials="B." surname="Liu"/>
+            <author fullname="Mingming Zhang" initials="M." surname="Zhang"/>
+            <author fullname="Zhou Li" initials="Z." surname="Li"/>
+            <author fullname="Jia Zhang" initials="J." surname="Zhang"/>
+            <author fullname="Deliang Chang" initials="D." surname="Chang"/>
+            <author fullname="Xiaofeng Zheng" initials="X." surname="Zheng"/>
+            <author fullname="Chuhan Wang" initials="C." surname="Wang"/>
+            <author fullname="Jianjun Chen" initials="J." surname="Chen"/>
+            <author fullname="Haixin Duan" initials="H." surname="Duan"/>
+            <author fullname="Qi Li" initials="Q." surname="Li"/>
+            <date year="2024"/>
+          </front>
+          <refcontent>IEEE Symposium on Security and Privacy (SP)</refcontent>
+          <seriesInfo name="DOI" value="10.1109/SP54263.2024.00046"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="acknowledgments" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">
+        The authors wish to thank <contact fullname="Mukund Sivaraman"/>,
+        <contact fullname="Petr Spacek"/>, <contact fullname="Peter van         Dijk"/>, <contact fullname="Tim Wicinksi"/>, <contact fullname="Joe         Abley"/>, <contact fullname="Evan Hunt"/>, <contact fullname="Barry         Leiba"/>, <contact fullname="Lucas Pardue"/>, <contact fullname="Paul         Wouters"/>, and other members of the DNSOP Working Group for their
+        feedback and contributions.
+      </t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Duane Wessels" initials="D." surname="Wessels">
+        <organization showOnFrontPage="true">Verisign</organization>
+        <address>
+          <postal>
+            <street>12061 Bluemont Way</street>
+            <city>Reston</city>
+            <region>VA</region>
+            <code>20190</code>
+            <country>United States of America</country>
+          </postal>
+          <phone>+1 703 948-3200</phone>
+          <email>dwessels@verisign.com</email>
+          <uri>https://verisign.com</uri>
+        </address>
+      </author>
+      <author fullname="William Carroll" initials="W." surname="Carroll">
+        <organization showOnFrontPage="true">Verisign</organization>
+        <address>
+          <postal>
+            <street>12061 Bluemont Way</street>
+            <city>Reston</city>
+            <region>VA</region>
+            <code>20190</code>
+            <country>United States of America</country>
+          </postal>
+          <phone>+1 703 948-3200</phone>
+          <email>wicarroll@verisign.com</email>
+          <uri>https://verisign.com</uri>
+        </address>
+      </author>
+      <author fullname="Matthew Thomas" initials="M." surname="Thomas">
+        <organization showOnFrontPage="true">Verisign</organization>
+        <address>
+          <postal>
+            <street>12061 Bluemont Way</street>
+            <city>Reston</city>
+            <region>VA</region>
+            <code>20190</code>
+            <country>United States of America</country>
+          </postal>
+          <phone>+1 703 948-3200</phone>
+          <email>mthomas@verisign.com</email>
+          <uri>https://verisign.com</uri>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

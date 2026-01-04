@@ -1,0 +1,741 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" number="9545" docName="draft-ietf-spring-mpls-path-segment-22" obsoletes="" updates="" category="std" consensus="true" submissionType="IETF" tocDepth="3" xml:lang="en" tocInclude="true" sortRefs="true" symRefs="true" prepTime="2024-02-22T13:50:16" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-spring-mpls-path-segment-22" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9545" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="PSID in SR-MPLS">Path Segment Identifier in MPLS-Based Segment Routing Networks</title>
+    <seriesInfo name="RFC" value="9545" stream="IETF"/>
+    <author initials="W." surname="Cheng" fullname="Weiqiang Cheng" role="editor">
+      <organization showOnFrontPage="true">China Mobile</organization>
+      <address>
+        <email>chengweiqiang@chinamobile.com</email>
+      </address>
+    </author>
+    <author initials="H." surname="Li" fullname="Han Li">
+      <organization showOnFrontPage="true">China Mobile</organization>
+      <address>
+        <email>lihan@chinamobile.com</email>
+      </address>
+    </author>
+    <author initials="C." surname="Li" fullname="Cheng Li" role="editor">
+      <organization showOnFrontPage="true">Huawei Technologies</organization>
+      <address>
+        <postal>
+          <country>China</country>
+        </postal>
+        <email>c.l@huawei.com</email>
+      </address>
+    </author>
+    <author initials="R." surname="Gandhi" fullname="Rakesh Gandhi">
+      <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+      <address>
+        <postal>
+          <country>Canada</country>
+        </postal>
+        <email>rgandhi@cisco.com</email>
+      </address>
+    </author>
+    <author initials="R." surname="Zigler" fullname="Royi Zigler">
+      <organization showOnFrontPage="true">Broadcom</organization>
+      <address>
+        <email>royi.zigler@broadcom.com</email>
+      </address>
+    </author>
+    <date month="02" year="2024"/>
+    <area>rtg</area>
+    <workgroup>spring</workgroup>
+    <keyword>Performance Measurement</keyword>
+    <keyword>Bidirectional SR Path</keyword>
+    <keyword>End-to-End Path Protection</keyword>
+    <keyword>SR Path Segment</keyword>
+    <keyword>Path Segment</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">A Segment Routing (SR) path is identified by an SR segment list. A
+      subset of segments from the segment list cannot be leveraged to
+      distinguish one SR path from another as they may be partially
+      congruent. SR path identification is a prerequisite for various
+      use cases such as performance measurement and end-to-end 1+1 path
+      protection.</t>
+      <t indent="0" pn="section-abstract-2">In an SR over MPLS (SR-MPLS) data plane, an egress node cannot determine
+      on which SR path a packet traversed the network from the label stack
+      because the segment identifiers are removed from the label stack as the
+      packet transits the network.</t>
+      <t indent="0" pn="section-abstract-3">This document defines a Path Segment Identifier (PSID) to identify an SR
+      path on the egress node of the path.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9545" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-abbreviations-and-terms">Abbreviations and Terms</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-path-segment">Path Segment</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-equal-cost-multipath-ecmp-c">Equal-Cost Multipath (ECMP) Considerations</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-use-cases">Use Cases</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-psid-for-performance-measur">PSID for Performance Measurement</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-psid-for-bidirectional-sr-p">PSID for Bidirectional SR Paths</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-psid-for-end-to-end-path-pr">PSID for End-to-End Path Protection</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.4">
+                <t indent="0" pn="section-toc.1-1.3.2.4.1"><xref derivedContent="3.4" format="counter" sectionFormat="of" target="section-3.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-nesting-of-psids">Nesting of PSIDs</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">Segment Routing (SR) <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/> leverages the source-routing paradigm to steer packets from a source node through a controlled set of instructions, called "segments", by prepending the packet with an SR header. In SR with the MPLS data plane <xref target="RFC8660" format="default" sectionFormat="of" derivedContent="RFC8660"/>, the SR header is instantiated through a label stack.</t>
+      <t indent="0" pn="section-1-2">In an SR-MPLS network, when a packet is transmitted along an SR path, the labels in the MPLS label stack will be swapped or popped. The result of this is that no label or only the last label may be left in the MPLS label stack when the packet reaches the egress node. Thus, the egress node cannot use the SR label stack to determine along which SR path the packet came.</t>
+      <t indent="0" pn="section-1-3">However, identifying a path on the egress node is a prerequisite for various use cases in SR-MPLS networks, such as performance measurement (<xref target="psid-for-pm" format="default" sectionFormat="of" derivedContent="Section 3.1"/>), bidirectional paths (<xref target="psid-for-bpath" format="default" sectionFormat="of" derivedContent="Section 3.2"/>), and end-to-end 1+1 path protection (a Live-Live case) (<xref target="psid-for-protection" format="default" sectionFormat="of" derivedContent="Section 3.3"/>).</t>
+      <t indent="0" pn="section-1-4">Therefore, this document defines a new segment type, referred to herein as a "Path Segment". A Path Segment is defined to uniquely identify an SR path on the egress node of the path. It <bcp14>MAY</bcp14> be used by the egress node for path identification. Note that per-path state will be maintained in the egress node due to the requirements in the aforementioned use cases, though in normal cases, the per-path state will be maintained in the ingress node only.</t>
+      <section anchor="requirements-language" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+        </t>
+      </section>
+      <section anchor="abbreviations-and-terms" numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-abbreviations-and-terms">Abbreviations and Terms</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-1.2-1">
+          <dt pn="section-1.2-1.1">MPLS:</dt>
+          <dd pn="section-1.2-1.2">Multiprotocol Label Switching</dd>
+          <dt pn="section-1.2-1.3">PSID:</dt>
+          <dd pn="section-1.2-1.4">Path Segment Identifier</dd>
+          <dt pn="section-1.2-1.5">SID:</dt>
+          <dd pn="section-1.2-1.6">Segment Identifier</dd>
+          <dt pn="section-1.2-1.7">SR:</dt>
+          <dd pn="section-1.2-1.8">Segment Routing</dd>
+          <dt pn="section-1.2-1.9">SR-MPLS:</dt>
+          <dd pn="section-1.2-1.10">SR over MPLS</dd>
+          <dt pn="section-1.2-1.11">SR path:</dt>
+          <dd pn="section-1.2-1.12">A path described by a segment list.</dd>
+          <dt pn="section-1.2-1.13">Sub-Path:</dt>
+          <dd pn="section-1.2-1.14">A part of a path, which contains a subset of
+          the nodes and links of the path.</dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="path-segment" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-path-segment">Path Segment</name>
+      <t indent="0" pn="section-2-1">A Path Segment is a local segment <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/> that uniquely identifies an SR path on the egress node. A Path Segment Identifier (PSID) is a single label that is assigned from the Segment Routing Local Block (SRLB) <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/> of the egress node of an SR path.</t>
+      <t indent="0" pn="section-2-2">A PSID is used to identify a segment list. However, one PSID can be used to identify multiple segment lists in some use cases if needed. For example, one single PSID <bcp14>MAY</bcp14> be used to identify some or all segment lists in a candidate path or an SR policy if an operator would like to aggregate these segment lists in operation.</t>
+      <t indent="0" pn="section-2-3">When a PSID is used, the PSID can be inserted at the ingress node and <bcp14>MUST</bcp14> immediately follow the last label of the SR path; in other words, it must be inserted after the routing segment (adjacency, node, or prefix segment) that is pointing to the egress node of the SR path. Therefore, a PSID will not be the top label in the label stack when received on an intermediate node of the associated path, but it can be the top label in the label stack on the penultimate node.</t>
+      <t indent="0" pn="section-2-4">The value of the TTL field in the MPLS label stack entry containing a PSID can be set to any value except 0. If a PSID is the bottom label, the S bit <bcp14>MUST</bcp14> be set, and if the PSID is NOT the bottom label, the S bit <bcp14>MUST</bcp14> be 0.</t>
+      <t indent="0" pn="section-2-5">The egress node <bcp14>MUST</bcp14> pop the PSID. The egress node <bcp14>MAY</bcp14> use the PSID for further processing. For example, when performance measurement is enabled on the SR path, it can trigger packet counting or timestamping.</t>
+      <t indent="0" pn="section-2-6">The addition of the PSID will require the egress to read and process the PSID label in addition to the regular processing. This additional processing may have an impact on forwarding performance. Behavior relating to the use of explicit null directly preceding the PSID is undefined in this document.</t>
+      <t indent="0" pn="section-2-7">A Generic Associated Channel Label (GAL) <bcp14>MAY</bcp14> be used for Operations, Administration, and Maintenance (OAM) in MPLS networks. As per <xref target="RFC5586" format="default" sectionFormat="of" derivedContent="RFC5586"/>, when a GAL is used, the Associated Channel Header (ACH) appears immediately after the bottom of the label stack.</t>
+      <t indent="0" pn="section-2-8">The SR path computation needs to know the Maximum SID Depth (MSD) that can be imposed at the ingress node of a given SR path <xref target="RFC8664" format="default" sectionFormat="of" derivedContent="RFC8664"/>. This ensures that the SID stack depth of a computed path does not exceed the number of SIDs the node is capable of imposing. As per <xref target="RFC8491" format="default" sectionFormat="of" derivedContent="RFC8491"/>, the MSD signals the total number of MPLS labels that can be imposed, where the total number of MPLS labels includes the PSID.</t>
+      <t indent="0" pn="section-2-9">An example label stack with a PSID is shown in <xref target="figure1" format="default" sectionFormat="of" derivedContent="Figure 1"/>:</t>
+      <figure anchor="figure1" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-label-stack-with-a-psid">Label Stack with a PSID</name>
+        <artwork align="left" pn="section-2-10.1">
+            +--------------------+
+            |       ...          |
+            +--------------------+
+            |      Label 1       |
+            +--------------------+
+            |      Label 2       |
+            +--------------------+
+            |       ...          |
+            +--------------------+
+            |      Label n       |
+            +--------------------+
+            |        PSID        |
+            +--------------------+
+            ~       Payload      ~
+            +--------------------+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-2-11">Where:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-12">
+        <li pn="section-2-12.1">
+          <t indent="0" pn="section-2-12.1.1">The Labels 1 to n are the segment label stack used to direct how
+to steer the packets along the SR path.</t>
+        </li>
+        <li pn="section-2-12.2">
+          <t indent="0" pn="section-2-12.2.1">The PSID identifies the SR path in the context of the egress node of the SR path.</t>
+        </li>
+      </ul>
+      <t indent="0" pn="section-2-13">The signaling of the PSID between the egress node, the ingress node, and possibly a centralized controller is out of the scope of this document.</t>
+      <section anchor="equal-cost-multipathecmp-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-equal-cost-multipath-ecmp-c">Equal-Cost Multipath (ECMP) Considerations</name>
+        <t indent="0" pn="section-2.1-1">If an Entropy Label (EL) is also used on the egress node, as per <xref target="RFC6790" format="default" sectionFormat="of" derivedContent="RFC6790"/>, the EL and Entropy Label Indicator (ELI) would be placed before the tunnel label; hence, they do not interfere with the PSID, which is placed below.</t>
+        <t indent="0" pn="section-2.1-2">It is worthy to note that in the case of ECMP, with or without the use of an EL, the SR packets may be forwarded over multiple paths. In this case, the SID list cannot directly reflect the actual forwarding path and the PSID can only identify the SID list rather than the actual forwarding path.</t>
+        <t indent="0" pn="section-2.1-3">Also, similar to a Synonymous Flow Label (SFL) <xref target="RFC8957" format="default" sectionFormat="of" derivedContent="RFC8957"/>, the introduction of a PSID to an existing flow may cause that flow to take a different path through the network under the conditions of ECMP. In turn, this may invalidate certain uses of the PSID, such as performance measurement applications. Therefore, the considerations of SFLs as per <xref section="5" sectionFormat="of" target="RFC8957" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8957#section-5" derivedContent="RFC8957"/> also apply to PSIDs in implementation.</t>
+      </section>
+    </section>
+    <section anchor="use-cases" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-use-cases">Use Cases</name>
+      <t indent="0" pn="section-3-1">This section describes use cases that can leverage the PSID. The content is for informative purposes, and the detailed solutions might be defined in other documents in the future.</t>
+      <section anchor="psid-for-pm" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-psid-for-performance-measur">PSID for Performance Measurement</name>
+        <t indent="0" pn="section-3.1-1">As defined in <xref target="RFC7799" format="default" sectionFormat="of" derivedContent="RFC7799"/>, performance measurement can
+be classified into Passive, Active, and Hybrid measurements. Since a PSID is encoded in the SR-MPLS label stack, as shown in <xref target="figure1" format="default" sectionFormat="of" derivedContent="Figure 1"/>,
+existing implementations on the egress node can leverage a PSID for
+measuring packet counts.</t>
+        <t indent="0" pn="section-3.1-2">For Passive performance measurement, path identification at the
+measuring points is the prerequisite. A PSID can be used by the
+measuring points (e.g., the ingress and egress nodes of the SR path or a
+centralized controller) to correlate the packet counts and timestamps
+from the ingress and egress nodes for a specific SR path; then, packet
+loss and delay can be calculated for the end-to-end path, respectively.</t>
+        <t indent="0" pn="section-3.1-3">Furthermore, a PSID can also be used for:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1-4">
+          <li pn="section-3.1-4.1">
+            <t indent="0" pn="section-3.1-4.1.1">Active performance measurement for
+an SR path in SR-MPLS networks for collecting packet counters and
+timestamps from the egress node using probe messages.</t>
+          </li>
+          <li pn="section-3.1-4.2">
+            <t indent="0" pn="section-3.1-4.2.1">In situ OAM <xref target="RFC9197" format="default" sectionFormat="of" derivedContent="RFC9197"/> for SR-MPLS to identify
+the SR path associated with the in situ data fields in the data packets
+on the egress node.</t>
+          </li>
+          <li pn="section-3.1-4.3">
+            <t indent="0" pn="section-3.1-4.3.1">In-band performance measurement for SR-MPLS to identify
+the SR path associated with the collected performance metrics.</t>
+          </li>
+        </ul>
+      </section>
+      <section anchor="psid-for-bpath" numbered="true" removeInRFC="false" toc="include" pn="section-3.2">
+        <name slugifiedName="name-psid-for-bidirectional-sr-p">PSID for Bidirectional SR Paths</name>
+        <t indent="0" pn="section-3.2-1">In some scenarios (e.g., mobile backhaul transport networks),
+there are requirements to support bidirectional paths <xref target="RFC6965" format="default" sectionFormat="of" derivedContent="RFC6965"/>, and the path is
+normally treated as a single entity. Forward and reverse directions of the path
+have the same fate; for example, failure in one direction will result in
+switching traffic at both directions. MPLS supports this by introducing
+the concepts of a co-routed bidirectional Label Switched Path (LSP) and an associated bidirectional
+LSP <xref target="RFC5654" format="default" sectionFormat="of" derivedContent="RFC5654"/>.</t>
+        <t indent="0" pn="section-3.2-2">In the current SR architecture, an SR path is a unidirectional path
+<xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>.
+In order to support bidirectional SR paths, a straightforward way is
+to bind two unidirectional SR paths to a single bidirectional SR
+path. PSIDs can be used to identify and correlate the
+traffic for the two unidirectional SR paths at both ends of the
+bidirectional path.</t>
+        <t indent="0" pn="section-3.2-3">The mechanism of constructing bidirectional paths using a PSID is out of the scope of this document and has been described in several documents, such as <xref target="I-D.ietf-pce-sr-bidir-path" format="default" sectionFormat="of" derivedContent="BIDIR-PATH"/> and <xref target="I-D.ietf-idr-sr-policy-path-segment" format="default" sectionFormat="of" derivedContent="SR-EXTENSIONS"/>.</t>
+      </section>
+      <section anchor="psid-for-protection" numbered="true" removeInRFC="false" toc="include" pn="section-3.3">
+        <name slugifiedName="name-psid-for-end-to-end-path-pr">PSID for End-to-End Path Protection</name>
+        <t indent="0" pn="section-3.3-1">For end-to-end 1+1 path protection (i.e., a Live-Live case), the egress
+node of the path needs to know the set of paths that constitute the
+primary and the secondaries in order to select the primary path packets
+for onward transmission and to discard the packets from the secondaries <xref target="RFC4426" format="default" sectionFormat="of" derivedContent="RFC4426"/>.</t>
+        <t indent="0" pn="section-3.3-2">To do this in SR, each SR path needs a path identifier
+that is unique at the egress node. For SR-MPLS, this can be the Path
+Segment label allocated by the egress node.</t>
+        <t indent="0" pn="section-3.3-3">The detailed solution of using a PSID in end-to-end 1+1 path protection is out of the scope of this document.</t>
+      </section>
+      <section anchor="psid-nesting" numbered="true" removeInRFC="false" toc="include" pn="section-3.4">
+        <name slugifiedName="name-nesting-of-psids">Nesting of PSIDs</name>
+        <t indent="0" pn="section-3.4-1">A Binding SID (BSID) <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/> can be used for SID list
+compression. With a BSID, an end-to-end SR path in a trusted domain can be split into several
+sub-paths, where each sub-path is identified by a BSID. Then, an end-to-end SR
+path can be identified by a list of BSIDs; therefore, it can provide
+better scalability.</t>
+        <t indent="0" pn="section-3.4-2">A BSID and a PSID can be combined to achieve both sub-path and
+end-to-end path monitoring. A reference model for such a combination (<xref target="figure2" format="default" sectionFormat="of" derivedContent="Figure 2"/>) shows
+an end-to-end path (A-&gt;D) in a trusted domain that spans three subdomains
+(the Access, Aggregation, and Core domains) and consists of three sub-paths,
+one in each subdomain (sub-path (A-&gt;B), sub-path (B-&gt;C), and
+sub-path (C-&gt;D)).</t>
+        <t indent="0" pn="section-3.4-3">The SID list of a sub-path can be expressed as &lt;SID1, SID2, ..., SIDn, s-PSID&gt;, where the s-PSID is the PSID of the sub-path. Each sub-path is associated with a BSID and an s-PSID.</t>
+        <t indent="0" pn="section-3.4-4">The SID list of the end-to-end path can be expressed as &lt;BSID1, BSID2, ..., BSIDn, e-PSID&gt;, where the e-PSID is the PSID of the end-to-end path.</t>
+        <t indent="0" pn="section-3.4-5"><xref target="figure2" format="default" sectionFormat="of" derivedContent="Figure 2"/> shows the details of the label stacks when a PSID and a BSID are
+used to support both sub-path and end-to-end path monitoring in a
+	multi-domain scenario.</t>
+        <figure anchor="figure2" align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-nesting-of-psids-2">Nesting of PSIDs</name>
+          <artwork align="left" pn="section-3.4-6.1">
+         /--------\       /--------\       /--------\
+       /            \   /            \   /            \
+     A{    Access    }B{  Aggregation }C{     Core     }D
+       \            /   \            /   \            /
+         \--------/       \--------/       \--------/
+       sub-path(A-&gt;B)    sub-path(B-&gt;C)   sub-path(C-&gt;D)
+    |&lt;---------------&gt;|&lt;--------------&gt;|&lt;--------------&gt;|
+                          E2E Path(A-&gt;D)
+    |&lt;-------------------------------------------------&gt;|
+
+ +-------------+
+ ~A-&gt;B sub-path~
+ +-------------+  +-------------+
+ |s-PSID(A-&gt;B) |  ~B-&gt;C sub-path~
+ +-------------+  +-------------+  +-------------+
+ | BSID(B-&gt;C)  |  |s-PSID(B-&gt;C) |  ~C-&gt;D sub-path~
+ +-------------+  +-------------+  +-------------+
+ | BSID(C-&gt;D)  |  | BSID(C-&gt;D)  |  |s-PSID(C-&gt;D) | 
+ +-------------+  +-------------+  +-------------+  +------------+
+ |e-PSID(A-&gt;D) |  |e-PSID(A-&gt;D) |  |e-PSID(A-&gt;D) |  |e-PSID(A-&gt;D)|
+ +-------------+  +-------------+  +-------------+  +------------+
+</artwork>
+        </figure>
+      </section>
+    </section>
+    <section anchor="Security" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-4-1">A PSID in SR-MPLS is a local label similar to other labels and segments, such as a VPN label, defined in MPLS and SR-MPLS. The data plane processing of a PSID is a local implementation of an ingress node or an egress node, which follows the same logic of an existing MPLS data plane. As per the definition of a PSID, only the egress node and the ingress node of the associated path will learn the information of a PSID. The intermediate nodes of this path will not learn it.</t>
+      <t indent="0" pn="section-4-2">A PSID may be used on an ingress node that is not the ingress of the associated path if the associated label stack with the PSID is part of a deeper label stack that represents a longer path. For example, the case described in <xref target="psid-nesting" format="default" sectionFormat="of" derivedContent="Section 3.4"/> and the related BSID are not used while the original label stack of a sub-path is inserted as a part of the whole label stack. In this case, the PSID must be distributed in a trusted domain under the considerations defined in <xref section="8.1" sectionFormat="of" target="RFC8402" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8402#section-8.1" derivedContent="RFC8402"/>.</t>
+      <t indent="0" pn="section-4-3">A PSID is used within an SR-MPLS trusted domain <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/> and must not leak outside the domain; therefore, no new security threats are introduced compared to current SR-MPLS. As per <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>, SR domain boundary routers <bcp14>MUST</bcp14> filter any external traffic destined
+   to a label associated with a segment within the trusted domain; this applies to a PSID as well. Other security considerations of SR-MPLS described in <xref section="8.1" sectionFormat="of" target="RFC8402" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8402#section-8.1" derivedContent="RFC8402"/> apply to this document.</t>
+      <t indent="0" pn="section-4-4">The distribution of a PSID from an egress node to an ingress node is performed within an SR-trusted domain, and it is out of the scope of this document. The details of the mechanism and related security considerations will be described in other documents.</t>
+    </section>
+    <section anchor="IANA" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-5-1">This document has no IANA actions.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-pce-sr-bidir-path" to="BIDIR-PATH"/>
+    <displayreference target="I-D.ietf-idr-sr-policy-path-segment" to="SR-EXTENSIONS"/>
+    <references pn="section-6">
+      <name slugifiedName="name-references">References</name>
+      <references anchor="sec-normative-references" pn="section-6.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8402" target="https://www.rfc-editor.org/info/rfc8402" quoteTitle="true" derivedAnchor="RFC8402">
+          <front>
+            <title>Segment Routing Architecture</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="S. Previdi" initials="S." role="editor" surname="Previdi"/>
+            <author fullname="L. Ginsberg" initials="L." surname="Ginsberg"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="S. Litkowski" initials="S." surname="Litkowski"/>
+            <author fullname="R. Shakir" initials="R." surname="Shakir"/>
+            <date month="July" year="2018"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) leverages the source routing paradigm. A node steers a packet through an ordered list of instructions, called "segments". A segment can represent any instruction, topological or service based. A segment can have a semantic local to an SR node or global within an SR domain. SR provides a mechanism that allows a flow to be restricted to a specific topological path, while maintaining per-flow state only at the ingress node(s) to the SR domain.</t>
+              <t indent="0">SR can be directly applied to the MPLS architecture with no change to the forwarding plane. A segment is encoded as an MPLS label. An ordered list of segments is encoded as a stack of labels. The segment to process is on the top of the stack. Upon completion of a segment, the related label is popped from the stack.</t>
+              <t indent="0">SR can be applied to the IPv6 architecture, with a new type of routing header. A segment is encoded as an IPv6 address. An ordered list of segments is encoded as an ordered list of IPv6 addresses in the routing header. The active segment is indicated by the Destination Address (DA) of the packet. The next active segment is indicated by a pointer in the new routing header.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8402"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8402"/>
+        </reference>
+        <reference anchor="RFC8660" target="https://www.rfc-editor.org/info/rfc8660" quoteTitle="true" derivedAnchor="RFC8660">
+          <front>
+            <title>Segment Routing with the MPLS Data Plane</title>
+            <author fullname="A. Bashandy" initials="A." role="editor" surname="Bashandy"/>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="S. Litkowski" initials="S." surname="Litkowski"/>
+            <author fullname="R. Shakir" initials="R." surname="Shakir"/>
+            <date month="December" year="2019"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) leverages the source-routing paradigm. A node steers a packet through a controlled set of instructions, called segments, by prepending the packet with an SR header. In the MPLS data plane, the SR header is instantiated through a label stack. This document specifies the forwarding behavior to allow instantiating SR over the MPLS data plane (SR-MPLS).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8660"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8660"/>
+        </reference>
+      </references>
+      <references anchor="sec-informative-references" pn="section-6.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.ietf-pce-sr-bidir-path" target="https://datatracker.ietf.org/doc/html/draft-ietf-pce-sr-bidir-path-13" quoteTitle="true" derivedAnchor="BIDIR-PATH">
+          <front>
+            <title>Path Computation Element Communication Protocol (PCEP) Extensions for Associated Bidirectional Segment Routing (SR) Paths</title>
+            <author fullname="Cheng Li" initials="C." surname="Li">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author fullname="Mach Chen" initials="M." surname="Chen">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author fullname="Weiqiang Cheng" initials="W." surname="Cheng">
+              <organization showOnFrontPage="true">China Mobile</organization>
+            </author>
+            <author fullname="Rakesh Gandhi" initials="R." surname="Gandhi">
+              <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+            </author>
+            <author fullname="Quan Xiong" initials="Q." surname="Xiong">
+              <organization showOnFrontPage="true">ZTE Corporation</organization>
+            </author>
+            <date day="13" month="February" year="2024"/>
+            <abstract>
+              <t indent="0">The Path Computation Element Communication Protocol (PCEP) provides mechanisms for Path Computation Elements (PCEs) to perform path computations in response to Path Computation Clients (PCCs) requests. Segment routing (SR) leverages the source routing and tunneling paradigms. The Stateful PCEP extensions allow stateful control of Segment Routing Traffic Engineering (TE) Paths. Furthermore, PCEP can be used for computing SR TE paths in the network. This document defines PCEP extensions for grouping two unidirectional SR Paths (one in each direction in the network) into a single associated bidirectional SR Path. The mechanisms defined in this document can also be applied using a stateful PCE for both PCE- initiated and PCC-initiated LSPs or when using a stateless PCE.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-pce-sr-bidir-path-13"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC4426" target="https://www.rfc-editor.org/info/rfc4426" quoteTitle="true" derivedAnchor="RFC4426">
+          <front>
+            <title>Generalized Multi-Protocol Label Switching (GMPLS) Recovery Functional Specification</title>
+            <author fullname="J. Lang" initials="J." role="editor" surname="Lang"/>
+            <author fullname="B. Rajagopalan" initials="B." role="editor" surname="Rajagopalan"/>
+            <author fullname="D. Papadimitriou" initials="D." role="editor" surname="Papadimitriou"/>
+            <date month="March" year="2006"/>
+            <abstract>
+              <t indent="0">This document presents a functional description of the protocol extensions needed to support Generalized Multi-Protocol Label Switching (GMPLS)-based recovery (i.e., protection and restoration). Protocol specific formats and mechanisms will be described in companion documents. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4426"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4426"/>
+        </reference>
+        <reference anchor="RFC5586" target="https://www.rfc-editor.org/info/rfc5586" quoteTitle="true" derivedAnchor="RFC5586">
+          <front>
+            <title>MPLS Generic Associated Channel</title>
+            <author fullname="M. Bocci" initials="M." role="editor" surname="Bocci"/>
+            <author fullname="M. Vigoureux" initials="M." role="editor" surname="Vigoureux"/>
+            <author fullname="S. Bryant" initials="S." role="editor" surname="Bryant"/>
+            <date month="June" year="2009"/>
+            <abstract>
+              <t indent="0">This document generalizes the applicability of the pseudowire (PW) Associated Channel Header (ACH), enabling the realization of a control channel associated to MPLS Label Switched Paths (LSPs) and MPLS Sections in addition to MPLS pseudowires. In order to identify the presence of this Associated Channel Header in the label stack, this document also assigns one of the reserved MPLS label values to the Generic Associated Channel Label (GAL), to be used as a label based exception mechanism.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5586"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5586"/>
+        </reference>
+        <reference anchor="RFC5654" target="https://www.rfc-editor.org/info/rfc5654" quoteTitle="true" derivedAnchor="RFC5654">
+          <front>
+            <title>Requirements of an MPLS Transport Profile</title>
+            <author fullname="B. Niven-Jenkins" initials="B." role="editor" surname="Niven-Jenkins"/>
+            <author fullname="D. Brungard" initials="D." role="editor" surname="Brungard"/>
+            <author fullname="M. Betts" initials="M." role="editor" surname="Betts"/>
+            <author fullname="N. Sprecher" initials="N." surname="Sprecher"/>
+            <author fullname="S. Ueno" initials="S." surname="Ueno"/>
+            <date month="September" year="2009"/>
+            <abstract>
+              <t indent="0">This document specifies the requirements of an MPLS Transport Profile (MPLS-TP). This document is a product of a joint effort of the International Telecommunications Union (ITU) and IETF to include an MPLS Transport Profile within the IETF MPLS and PWE3 architectures to support the capabilities and functionalities of a packet transport network as defined by International Telecommunications Union - Telecommunications Standardization Sector (ITU-T).</t>
+              <t indent="0">This work is based on two sources of requirements: MPLS and PWE3 architectures as defined by IETF, and packet transport networks as defined by ITU-T.</t>
+              <t indent="0">The requirements expressed in this document are for the behavior of the protocol mechanisms and procedures that constitute building blocks out of which the MPLS Transport Profile is constructed. The requirements are not implementation requirements. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5654"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5654"/>
+        </reference>
+        <reference anchor="RFC6790" target="https://www.rfc-editor.org/info/rfc6790" quoteTitle="true" derivedAnchor="RFC6790">
+          <front>
+            <title>The Use of Entropy Labels in MPLS Forwarding</title>
+            <author fullname="K. Kompella" initials="K." surname="Kompella"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <author fullname="S. Amante" initials="S." surname="Amante"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <author fullname="L. Yong" initials="L." surname="Yong"/>
+            <date month="November" year="2012"/>
+            <abstract>
+              <t indent="0">Load balancing is a powerful tool for engineering traffic across a network. This memo suggests ways of improving load balancing across MPLS networks using the concept of "entropy labels". It defines the concept, describes why entropy labels are useful, enumerates properties of entropy labels that allow maximal benefit, and shows how they can be signaled and used for various applications. This document updates RFCs 3031, 3107, 3209, and 5036. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6790"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6790"/>
+        </reference>
+        <reference anchor="RFC6965" target="https://www.rfc-editor.org/info/rfc6965" quoteTitle="true" derivedAnchor="RFC6965">
+          <front>
+            <title>MPLS Transport Profile (MPLS-TP) Applicability: Use Cases and Design</title>
+            <author fullname="L. Fang" initials="L." role="editor" surname="Fang"/>
+            <author fullname="N. Bitar" initials="N." surname="Bitar"/>
+            <author fullname="R. Zhang" initials="R." surname="Zhang"/>
+            <author fullname="M. Daikoku" initials="M." surname="Daikoku"/>
+            <author fullname="P. Pan" initials="P." surname="Pan"/>
+            <date month="August" year="2013"/>
+            <abstract>
+              <t indent="0">This document describes the applicability of the MPLS Transport Profile (MPLS-TP) with use case studies and network design considerations. The use cases include Metro Ethernet access and aggregation transport, mobile backhaul, and packet optical transport.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6965"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6965"/>
+        </reference>
+        <reference anchor="RFC7799" target="https://www.rfc-editor.org/info/rfc7799" quoteTitle="true" derivedAnchor="RFC7799">
+          <front>
+            <title>Active and Passive Metrics and Methods (with Hybrid Types In-Between)</title>
+            <author fullname="A. Morton" initials="A." surname="Morton"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This memo provides clear definitions for Active and Passive performance assessment. The construction of Metrics and Methods can be described as either "Active" or "Passive". Some methods may use a subset of both Active and Passive attributes, and we refer to these as "Hybrid Methods". This memo also describes multiple dimensions to help evaluate new methods as they emerge.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7799"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7799"/>
+        </reference>
+        <reference anchor="RFC8491" target="https://www.rfc-editor.org/info/rfc8491" quoteTitle="true" derivedAnchor="RFC8491">
+          <front>
+            <title>Signaling Maximum SID Depth (MSD) Using IS-IS</title>
+            <author fullname="J. Tantsura" initials="J." surname="Tantsura"/>
+            <author fullname="U. Chunduri" initials="U." surname="Chunduri"/>
+            <author fullname="S. Aldrin" initials="S." surname="Aldrin"/>
+            <author fullname="L. Ginsberg" initials="L." surname="Ginsberg"/>
+            <date month="November" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a way for an Intermediate System to Intermediate System (IS-IS) router to advertise multiple types of supported Maximum SID Depths (MSDs) at node and/or link granularity. Such advertisements allow entities (e.g., centralized controllers) to determine whether a particular Segment ID (SID) stack can be supported in a given network. This document only defines one type of MSD: Base MPLS Imposition. However, it defines an encoding that can support other MSD types. This document focuses on MSD use in a network that is Segment Routing (SR) enabled, but MSD may also be useful when SR is not enabled.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8491"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8491"/>
+        </reference>
+        <reference anchor="RFC8664" target="https://www.rfc-editor.org/info/rfc8664" quoteTitle="true" derivedAnchor="RFC8664">
+          <front>
+            <title>Path Computation Element Communication Protocol (PCEP) Extensions for Segment Routing</title>
+            <author fullname="S. Sivabalan" initials="S." surname="Sivabalan"/>
+            <author fullname="C. Filsfils" initials="C." surname="Filsfils"/>
+            <author fullname="J. Tantsura" initials="J." surname="Tantsura"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <author fullname="J. Hardwick" initials="J." surname="Hardwick"/>
+            <date month="December" year="2019"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) enables any head-end node to select any path without relying on a hop-by-hop signaling technique (e.g., LDP or RSVP-TE). It depends only on "segments" that are advertised by link-state Interior Gateway Protocols (IGPs). An SR path can be derived from a variety of mechanisms, including an IGP Shortest Path Tree (SPT), an explicit configuration, or a Path Computation Element (PCE). This document specifies extensions to the Path Computation Element Communication Protocol (PCEP) that allow a stateful PCE to compute and initiate Traffic-Engineering (TE) paths, as well as a Path Computation Client (PCC) to request a path subject to certain constraints and optimization criteria in SR networks.</t>
+              <t indent="0">This document updates RFC 8408.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8664"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8664"/>
+        </reference>
+        <reference anchor="RFC8957" target="https://www.rfc-editor.org/info/rfc8957" quoteTitle="true" derivedAnchor="RFC8957">
+          <front>
+            <title>Synonymous Flow Label Framework</title>
+            <author fullname="S. Bryant" initials="S." surname="Bryant"/>
+            <author fullname="M. Chen" initials="M." surname="Chen"/>
+            <author fullname="G. Swallow" initials="G." surname="Swallow"/>
+            <author fullname="S. Sivabalan" initials="S." surname="Sivabalan"/>
+            <author fullname="G. Mirsky" initials="G." surname="Mirsky"/>
+            <date month="January" year="2021"/>
+            <abstract>
+              <t indent="0">RFC 8372 ("MPLS Flow Identification Considerations") describes the requirement for introducing flow identities within the MPLS architecture. This document describes a method of accomplishing this by using a technique called "Synonymous Flow Labels" in which labels that mimic the behavior of other labels provide the identification service. These identifiers can be used to trigger per-flow operations on the packet at the receiving label switching router.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8957"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8957"/>
+        </reference>
+        <reference anchor="RFC9197" target="https://www.rfc-editor.org/info/rfc9197" quoteTitle="true" derivedAnchor="RFC9197">
+          <front>
+            <title>Data Fields for In Situ Operations, Administration, and Maintenance (IOAM)</title>
+            <author fullname="F. Brockners" initials="F." role="editor" surname="Brockners"/>
+            <author fullname="S. Bhandari" initials="S." role="editor" surname="Bhandari"/>
+            <author fullname="T. Mizrahi" initials="T." role="editor" surname="Mizrahi"/>
+            <date month="May" year="2022"/>
+            <abstract>
+              <t indent="0">In situ Operations, Administration, and Maintenance (IOAM) collects operational and telemetry information in the packet while the packet traverses a path between two points in the network. This document discusses the data fields and associated data types for IOAM. IOAM-Data-Fields can be encapsulated into a variety of protocols, such as Network Service Header (NSH), Segment Routing, Generic Network Virtualization Encapsulation (Geneve), or IPv6. IOAM can be used to complement OAM mechanisms based on, e.g., ICMP or other types of probe packets.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9197"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9197"/>
+        </reference>
+        <reference anchor="I-D.ietf-idr-sr-policy-path-segment" target="https://datatracker.ietf.org/doc/html/draft-ietf-idr-sr-policy-path-segment-09" quoteTitle="true" derivedAnchor="SR-EXTENSIONS">
+          <front>
+            <title>SR Policy Extensions for Path Segment and Bidirectional Path</title>
+            <author fullname="Cheng Li" initials="C." surname="Li">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author fullname="Zhenbin Li" initials="Z." surname="Li">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author fullname="Yuanyang Yin" initials="Y." surname="Yin">
+              <organization showOnFrontPage="true">China Telecom</organization>
+            </author>
+            <author fullname="Weiqiang Cheng" initials="W." surname="Cheng">
+              <organization showOnFrontPage="true">China Mobile</organization>
+            </author>
+            <author fullname="Ketan Talaulikar" initials="K." surname="Talaulikar">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <date day="19" month="February" year="2024"/>
+            <abstract>
+              <t indent="0">A Segment Routing (SR) policy is a set of candidate SR paths consisting of one or more segment lists with necessary path attributes. For each SR path, it may also have its own path attributes, and Path Segment is one of them. A Path Segment is defined to identify an SR path, which can be used for performance measurement, path correlation, and end-2-end path protection. Path Segment can be also used to correlate two unidirectional SR paths into a bidirectional SR path which is required in some scenarios, for example, mobile backhaul transport network. This document defines extensions to BGP to distribute SR policies carrying Path Segment and bidirectional path information.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-idr-sr-policy-path-segment-09"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" anchor="Acknowledgements" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">The authors would like to thank <contact fullname="Adrian Farrel"/>, <contact fullname="Stewart Bryant"/>, <contact fullname="Shuangping       Zhan"/>, <contact fullname="Alexander       Vainshtein"/>, <contact fullname="Andrew       G. Malis"/>, <contact fullname="Ketan       Talaulikar"/>, <contact fullname="Shraddha       Hegde"/>, <contact fullname="Xinyue Zhang"/>, <contact fullname="Loa Andersson"/>, and <contact fullname="Bruno Decraene"/> for their
+      review, suggestions, comments, and contributions to this document.</t>
+      <t indent="0" pn="section-appendix.a-2">The authors would like to acknowledge the contribution from <contact fullname="Alexander Vainshtein"/> on "Nesting of PSIDs" (<xref target="psid-nesting" format="default" sectionFormat="of" derivedContent="Section 3.4"/>).</t>
+    </section>
+    <section anchor="contributors" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.b">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <t indent="0" pn="section-appendix.b-1">The following people have substantially contributed to this document.</t>
+      <contact initials="M." surname="Chen" fullname="Mach(Guoyi) Chen">
+        <organization showOnFrontPage="true">Huawei Technologies Co., Ltd.</organization>
+        <address>
+          <email>mach.chen@huawei.com</email>
+        </address>
+      </contact>
+      <contact initials="L." surname="Wang" fullname="Lei Wang">
+        <organization showOnFrontPage="true">China Mobile</organization>
+        <address>
+          <email>wangleiyj@chinamobile.com</email>
+        </address>
+      </contact>
+      <contact initials="A." surname="Liu" fullname="Aihua Liu">
+        <organization showOnFrontPage="true">ZTE Corp.</organization>
+        <address>
+          <email>liu.aihua@zte.com.cn</email>
+        </address>
+      </contact>
+      <contact initials="G." surname="Mirsky" fullname="Greg Mirsky">
+        <organization showOnFrontPage="true">ZTE Corp.</organization>
+        <address>
+          <email>gregimirsky@gmail.com</email>
+        </address>
+      </contact>
+      <contact initials="G. S." surname="Mishra" fullname="Gyan S. Mishra">
+        <organization showOnFrontPage="true">Verizon Inc.</organization>
+        <address>
+          <email>gyan.s.mishra@verizon.com</email>
+        </address>
+      </contact>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="W." surname="Cheng" fullname="Weiqiang Cheng" role="editor">
+        <organization showOnFrontPage="true">China Mobile</organization>
+        <address>
+          <email>chengweiqiang@chinamobile.com</email>
+        </address>
+      </author>
+      <author initials="H." surname="Li" fullname="Han Li">
+        <organization showOnFrontPage="true">China Mobile</organization>
+        <address>
+          <email>lihan@chinamobile.com</email>
+        </address>
+      </author>
+      <author initials="C." surname="Li" fullname="Cheng Li" role="editor">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <postal>
+            <country>China</country>
+          </postal>
+          <email>c.l@huawei.com</email>
+        </address>
+      </author>
+      <author initials="R." surname="Gandhi" fullname="Rakesh Gandhi">
+        <organization showOnFrontPage="true">Cisco Systems, Inc.</organization>
+        <address>
+          <postal>
+            <country>Canada</country>
+          </postal>
+          <email>rgandhi@cisco.com</email>
+        </address>
+      </author>
+      <author initials="R." surname="Zigler" fullname="Royi Zigler">
+        <organization showOnFrontPage="true">Broadcom</organization>
+        <address>
+          <email>royi.zigler@broadcom.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

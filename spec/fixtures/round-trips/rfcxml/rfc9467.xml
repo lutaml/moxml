@@ -1,0 +1,456 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" docName="draft-ietf-babel-mac-relaxed-05" number="9467" ipr="trust200902" submissionType="IETF" category="std" consensus="true" updates="8967" obsoletes="" xml:lang="en" tocInclude="true" symRefs="true" sortRefs="true" prepTime="2024-01-16T13:14:15" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-babel-mac-relaxed-05" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9467" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Babel MAC Relaxed Verification">Relaxed Packet Counter Verification for Babel MAC Authentication</title>
+    <seriesInfo name="RFC" value="9467" stream="IETF"/>
+    <author fullname="Juliusz Chroboczek" initials="J." surname="Chroboczek">
+      <organization showOnFrontPage="true">IRIF, University of Paris-Cité</organization>
+      <address>
+        <postal>
+          <street>Case 7014</street>
+          <city>Paris CEDEX 13</city>
+          <code>75205</code>
+          <country>France</country>
+        </postal>
+        <email>jch@irif.fr</email>
+      </address>
+    </author>
+    <author fullname="Toke Høiland-Jørgensen" initials="T." surname="Høiland-Jørgensen">
+      <organization showOnFrontPage="true">Red Hat</organization>
+      <address>
+        <email>toke@toke.dk</email>
+      </address>
+    </author>
+    <date month="01" year="2024"/>
+    <area>rtg</area>
+    <workgroup>babel</workgroup>
+    <keyword>security, authentication, packet reordering, wifi</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document relaxes the packet verification rules defined in "MAC
+Authentication for the Babel Routing Protocol" (RFC 8967) in order to make
+the protocol more robust in the presence of packet reordering.  This
+document updates RFC 8967.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9467" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-specification-of-requiremen">Specification of Requirements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-relaxing-pc-verification">Relaxing PC Verification</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-multiple-highest-pc-values">Multiple Highest PC Values</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2.1.2">
+                  <li pn="section-toc.1-1.3.2.1.2.1">
+                    <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.2.1.2.1.1"><xref derivedContent="3.1.1" format="counter" sectionFormat="of" target="section-3.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-generalisations">Generalisations</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-window-based-verification">Window-Based Verification</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-combining-the-two-technique">Combining the Two Techniques</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">The design of the Babel MAC authentication mechanism <xref target="RFC8967" format="default" sectionFormat="of" derivedContent="RFC8967"/> assumes that packet reordering is an exceptional
+occurrence, and the protocol drops any packets that arrive out-of-order.
+The assumption that packets are not routinely reordered is generally
+correct on wired links, but turns out to be incorrect on some kinds of
+wireless links.</t>
+      <t indent="0" pn="section-1-2">In particular, IEEE 802.11 (Wi-Fi) <xref target="IEEE80211" format="default" sectionFormat="of" derivedContent="IEEE80211"/> defines
+a number of power-saving modes that allow stations (mobile nodes) to
+switch their radio off for extended periods of time, ranging in the
+hundreds of milliseconds.  The access point (network switch) buffers all
+multicast packets and only sends them out after the power-saving interval
+ends.  The result is that multicast packets are delayed by up to a few
+hundred milliseconds with respect to unicast packets, which, under some
+traffic patterns, causes the Packet Counter (PC) verification procedure in
+RFC 8967 to systematically fail for multicast packets.</t>
+      <t indent="0" pn="section-1-3">This document defines two distinct ways to relax the PC validation:</t>
+      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-1-4">
+        <li pn="section-1-4.1">using two separate receiver-side states, one for unicast and one for
+multicast packets (<xref target="separate-pc" format="default" sectionFormat="of" derivedContent="Section 3.1"/>), which allows arbitrary
+reordering between unicast and multicast packets, and</li>
+        <li pn="section-1-4.2">using a window of
+previously received PC values (<xref target="window" format="default" sectionFormat="of" derivedContent="Section 3.2"/>), which allows
+a bounded amount of reordering between arbitrary packets.</li>
+      </ul>
+      <t indent="0" pn="section-1-5">We assume that
+reordering between arbitrary packets only happens occasionally, and, since
+Babel is designed to gracefully deal with occasional packet loss, usage of
+the former mechanism is <bcp14>RECOMMENDED</bcp14>, while usage of the latter is <bcp14>OPTIONAL</bcp14>.
+The two mechanisms <bcp14>MAY</bcp14> be used simultaneously (<xref target="combining" format="default" sectionFormat="of" derivedContent="Section 3.3"/>).</t>
+      <t indent="0" pn="section-1-6">This document updates RFC 8967 by relaxing the packet verification rules
+defined therein.  It does not change the security properties of the
+protocol.</t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-specification-of-requiremen">Specification of Requirements</name>
+      <t indent="0" pn="section-2-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+      </t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-relaxing-pc-verification">Relaxing PC Verification</name>
+      <t indent="0" pn="section-3-1">The Babel MAC authentication mechanism prevents replay by decorating
+every sent packet with a strictly increasing value, the Packet Counter
+(PC).  Notwithstanding the name, the PC does not actually count packets:
+a sender is permitted to increment the PC by more than one between two successively transmitted packets.</t>
+      <t indent="0" pn="section-3-2">A receiver maintains the highest PC received from each neighbour.  When
+a new packet is received, the receiver compares the PC contained in the
+packet with the highest received PC:</t>
+      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-3-3">
+        <li pn="section-3-3.1">if the new value is smaller or equal,
+then the packet is discarded;</li>
+        <li pn="section-3-3.2">otherwise, the packet is accepted, and the
+highest PC value for that neighbour is updated.</li>
+      </ul>
+      <t indent="0" pn="section-3-4">Note that there does not exist a one-to-one correspondence between
+sender states and receiver states: multiple receiver states track a single
+sender state.  The receiver states corresponding to a single sender state
+are not necessarily identical, since only a subset of receiver states are
+updated when a packet is sent to a unicast address or when a multicast
+packet is received by a subset of the receivers.</t>
+      <section anchor="separate-pc" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-multiple-highest-pc-values">Multiple Highest PC Values</name>
+        <t indent="0" pn="section-3.1-1">Instead of maintaining a single highest PC value for each neighbour, an
+implementation of the procedure described in this section uses two values:
+the highest multicast value PCm and the highest non-multicast (unicast)
+value PCu.  More precisely, the (Index, PC) pair contained in the
+neighbour table (<xref target="RFC8967" section="3.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8967#section-3.2" derivedContent="RFC8967"/>) is replaced
+by a triple (Index, PCm, PCu), where:</t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-3.1-2">
+          <li pn="section-3.1-2.1">Index is an arbitrary string of 0 to 32 octets, and</li>
+          <li pn="section-3.1-2.2">PCm and PCu are 32-bit (4-octet) integers.</li>
+        </ul>
+        <t indent="0" pn="section-3.1-3">When a Challenge Reply is successful, both highest PC values are updated
+to the value contained in the PC TLV from the packet containing the
+successful challenge.  More precisely, the last sentence of the fourth
+bullet point of <xref target="RFC8967" section="4.3" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8967#section-4.3" derivedContent="RFC8967"/> is replaced
+as follows:</t>
+        <t indent="0" pn="section-3.1-4">OLD:</t>
+        <blockquote pn="section-3.1-5">
+          <t indent="0" pn="section-3.1-5.1">If the packet contains a successful Challenge Reply, then the PC
+and Index contained in the PC TLV <bcp14>MUST</bcp14> be stored in the
+neighbour table entry corresponding to the sender (which already exists in
+this case), and the packet is accepted.</t>
+        </blockquote>
+        <t indent="0" pn="section-3.1-6">NEW:</t>
+        <blockquote pn="section-3.1-7">
+          <t indent="0" pn="section-3.1-7.1">If the packet contains a successful Challenge Reply, then the Index
+contained in the PC TLV <bcp14>MUST</bcp14> be stored in the Index field of the neighbour
+table entry corresponding to the sender (which already exists in this
+case), the PC contained in the TLV <bcp14>MUST</bcp14> be stored in both the PCm and
+PCu fields of the neighbour table entry, and the packet is accepted.</t>
+        </blockquote>
+        <t indent="0" pn="section-3.1-8">When a packet that does not contain a successful Challenge Reply is
+received, the PC value that it contains is compared to either the PCu or
+the PCm field of the corresponding neighbour entry, depending on whether
+or not the packet was sent to a multicast address.  If the comparison is
+successful, then the same value (PCm or PCu) is updated.  More precisely,
+the last bullet point of <xref target="RFC8967" section="4.3" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8967#section-4.3" derivedContent="RFC8967"/> is
+replaced as follows:</t>
+        <t indent="0" pn="section-3.1-9">OLD:</t>
+        <blockquote pn="section-3.1-10">
+          <t indent="0" pn="section-3.1-10.1">At this stage, the packet contains no successful Challenge Reply, and the Index contained in the PC TLV is equal to the Index in the neighbour table entry corresponding to the sender. The receiver compares the received PC with the PC contained in the neighbour table; if the received PC is smaller or equal than the PC contained in the neighbour table, the packet <bcp14>MUST</bcp14> be dropped and processing stops (no challenge is sent in this case, since the mismatch might be caused by harmless packet reordering on the link). Otherwise, the PC contained in the neighbour table entry is set to the received PC, and the packet is accepted.</t>
+        </blockquote>
+        <t indent="0" pn="section-3.1-11">NEW:</t>
+        <blockquote pn="section-3.1-12">
+          <t indent="0" pn="section-3.1-12.1">At this stage, the packet contains no successful Challenge Reply and
+the Index contained in the PC TLV is equal to the Index in the neighbour
+table entry corresponding to the sender.  The receiver compares the
+received PC with either the PCm field (if the packet was sent to a multicast
+IP address) or the PCu field (otherwise) in the neighbour table. If the
+received PC is smaller than or equal to the value contained in the neighbour
+table, the packet <bcp14>MUST</bcp14> be dropped and processing stops. Note that no challenge is
+sent in this case, since the mismatch might be caused by harmless packet
+reordering on the link.  Otherwise, the PCm (if the packet was sent to
+a multicast address) or the PCu (otherwise) field contained in the
+neighbour table entry is set to the received PC, and the packet is
+accepted.</t>
+        </blockquote>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-3.1.1">
+          <name slugifiedName="name-generalisations">Generalisations</name>
+          <t indent="0" pn="section-3.1.1-1">Modern networking hardware tends to maintain more than just two queues,
+and it might be tempting to generalise the approach taken to more than
+just the two last PC values.  For example, one might be tempted to use
+distinct last PC values for packets received with different values of the
+Type of Service (TOS) field, or with different IEEE 802.11 access
+categories.  However, choosing a highest PC field by consulting a value
+that is not protected by the Message Authentication Code (MAC) (<xref target="RFC8967" section="4.1" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8967#section-4.1" derivedContent="RFC8967"/>) would no longer protect against replay.
+In effect, this means that only the destination address and port number
+as well as the data stored in the packet body may be used for choosing the highest PC
+value, since these are the only fields that are protected by the MAC (in
+addition to the source address and port number, which are already used
+when choosing the neighbour table entry and therefore provide no
+additional information).  Since Babel implementations do not usually send
+packets with differing TOS values or IEEE 802.11 access categories, this
+is unlikely to be an issue in practice.</t>
+          <t indent="0" pn="section-3.1.1-2">The following example shows why it would be unsafe to select the highest
+PC depending on the TOS field.  Suppose that a node B were to maintain
+distinct highest PC values for different values T1 and T2 of the TOS field,
+and that, initially, all of the highest PC fields at B have value 42.  Suppose
+now that a node A sends a packet P1 with TOS equal to T1 and PC equal to
+43; when B receives the packet, it sets the highest PC value associated with
+TOS T1 to 43.  If an attacker were now to send an exact copy of P1 but
+with TOS equal to T2, B would consult the highest PC value associated with
+T2, which is still equal to 42, and accept the replayed packet.</t>
+        </section>
+      </section>
+      <section anchor="window" numbered="true" removeInRFC="false" toc="include" pn="section-3.2">
+        <name slugifiedName="name-window-based-verification">Window-Based Verification</name>
+        <t indent="0" pn="section-3.2-1">Window-based verification is similar to what is described in <xref target="RFC4303" section="3.4.3" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc4303#section-3.4.3" derivedContent="RFC4303"/>.  When using window-based verification,
+in addition to retaining within its neighbour table the highest PC value
+PCh seen from every neighbour, an implementation maintains a fixed-size
+window of booleans corresponding to PC values directly below PCh.  More
+precisely, the (Index, PC) pair contained in the neighbour table (<xref target="RFC8967" section="3.2" sectionFormat="of" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8967#section-3.2" derivedContent="RFC8967"/>) is replaced by:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.2-2">
+          <li pn="section-3.2-2.1">a triple (Index, PCh, Window), where Index is an arbitrary string of
+0 to 32 octets, PCh is a 32-bit (4-octet) integer, and Window is a vector
+of booleans of size S (the default value S=128 is <bcp14>RECOMMENDED</bcp14>).</li>
+        </ul>
+        <t indent="0" pn="section-3.2-3">The window is a vector of S boolean values numbered from 0 (the "left
+edge" of the window) up to S-1 (the "right edge"); the boolean associated
+with the index i indicates whether a packet with a PC value of (PCh - (S-1) + i)
+has been seen before.  Shifting the window to the left by an integer
+amount k is defined as moving all values so that the value previously at
+index n is now at index (n - k); k values are discarded at the left edge,
+and k new unset values are inserted at the right edge.</t>
+        <t indent="0" pn="section-3.2-4">Whenever a packet is received, the receiver computes its index
+i = (PC - PCh + S - 1).  It then proceeds as follows:</t>
+        <ol spacing="normal" indent="adaptive" start="1" type="1" pn="section-3.2-5">
+  <li pn="section-3.2-5.1" derivedCounter="1.">If the index i is negative, the packet is considered too old,
+  and it <bcp14>MUST</bcp14> be discarded.</li>
+          <li pn="section-3.2-5.2" derivedCounter="2.">If the index i is non-negative and strictly less than the
+  window size S, the window value at the index is checked. If this
+  value is already set, the received PC has been seen before and the
+  packet <bcp14>MUST</bcp14> be discarded.  Otherwise, the corresponding window value is marked as set, and the packet is accepted.</li>
+          <li pn="section-3.2-5.3" derivedCounter="3.">If the index i is larger or equal to the window size (i.e., PC
+  is strictly larger than PCh), the window <bcp14>MUST</bcp14> be shifted to the left by
+  (i - S + 1) values (or, equivalently, by the difference PC - PCh), and
+  the highest PC value PCh <bcp14>MUST</bcp14> be set to the received PC.  The value at
+  the right of the window (the value with index S - 1) <bcp14>MUST</bcp14> be set, and
+  the packet is accepted.</li>
+        </ol>
+        <t indent="0" pn="section-3.2-6">When receiving a successful Challenge Reply, the remembered highest PC
+value PCh <bcp14>MUST</bcp14> be set to the value received in the Challenge Reply, and
+all of the values in the window <bcp14>MUST</bcp14> be reset except the value at index
+S - 1, which <bcp14>MUST</bcp14> be set.</t>
+      </section>
+      <section anchor="combining" numbered="true" removeInRFC="false" toc="include" pn="section-3.3">
+        <name slugifiedName="name-combining-the-two-technique">Combining the Two Techniques</name>
+        <t indent="0" pn="section-3.3-1">The two techniques described above serve complementary purposes:</t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-3.3-2">
+          <li pn="section-3.3-2.1">splitting the state allows multicast packets to be reordered with respect
+  to unicast ones by an arbitrary number of PC values, while</li>
+          <li pn="section-3.3-2.2">the window-based technique allows arbitrary packets to be reordered but only
+by a bounded number of PC values.</li>
+        </ul>
+        <t indent="0" pn="section-3.3-3"> Thus, they can profitably be combined.</t>
+        <t indent="0" pn="section-3.3-4">An implementation that uses both techniques <bcp14>MUST</bcp14> maintain, for every
+entry of the neighbour table, two distinct windows, one for multicast and
+one for unicast packets.  When a successful Challenge Reply is received,
+both windows <bcp14>MUST</bcp14> be reset.  When a packet that does not contain
+a Challenge Reply is received, if the packet's destination address is
+a multicast address, the multicast window <bcp14>MUST</bcp14> be consulted and possibly
+updated, as described in <xref target="window" format="default" sectionFormat="of" derivedContent="Section 3.2"/>. Otherwise, the unicast
+window <bcp14>MUST</bcp14> be consulted and possibly updated.</t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-4-1">The procedures described in this document do not change the security
+properties described in <xref target="RFC8967" sectionFormat="of" section="1.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8967#section-1.2" derivedContent="RFC8967"/>.  In particular, the choice between the multicast and the
+unicast packet counter is made by examining a packet's destination IP address,
+which is included in the pseudo-header and therefore participates in MAC
+computation. Hence, an attacker cannot change the destination address without
+invalidating the MAC, and therefore cannot replay a unicast packet as a
+multicast one or vice versa.</t>
+      <t indent="0" pn="section-4-2">While these procedures do slightly increase the amount of per-neighbour
+state maintained by each node, this increase is marginal (between 4 and 36
+octets per neighbour, depending on implementation choices), and should not
+significantly impact the ability of nodes to survive denial-of-service
+attacks.</t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-5-1">This document has no IANA actions.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-6">
+      <name slugifiedName="name-normative-references">Normative References</name>
+      <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+        <front>
+          <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+          <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+          <date month="March" year="1997"/>
+          <abstract>
+            <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="BCP" value="14"/>
+        <seriesInfo name="RFC" value="2119"/>
+        <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+      </reference>
+      <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+        <front>
+          <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+          <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+          <date month="May" year="2017"/>
+          <abstract>
+            <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="BCP" value="14"/>
+        <seriesInfo name="RFC" value="8174"/>
+        <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+      </reference>
+      <reference anchor="RFC8967" target="https://www.rfc-editor.org/info/rfc8967" quoteTitle="true" derivedAnchor="RFC8967">
+        <front>
+          <title>MAC Authentication for the Babel Routing Protocol</title>
+          <author fullname="C. Dô" initials="C." surname="Dô"/>
+          <author fullname="W. Kolodziejak" initials="W." surname="Kolodziejak"/>
+          <author fullname="J. Chroboczek" initials="J." surname="Chroboczek"/>
+          <date month="January" year="2021"/>
+          <abstract>
+            <t indent="0">This document describes a cryptographic authentication mechanism for the Babel routing protocol that has provisions for replay avoidance. This document obsoletes RFC 7298.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="8967"/>
+        <seriesInfo name="DOI" value="10.17487/RFC8967"/>
+      </reference>
+    </references>
+    <references pn="section-7">
+      <name slugifiedName="name-informative-references">Informative References</name>
+      <reference anchor="IEEE80211" target="https://ieeexplore.ieee.org/document/9363693" quoteTitle="true" derivedAnchor="IEEE80211">
+        <front>
+          <title>IEEE Standard for Information Technology--Telecommunications and Information Exchange between Systems - Local and Metropolitan Area Networks--Specific requirements - Part 11: Wireless LAN Medium Access Control (MAC) and Physical Layer (PHY) Specifications</title>
+          <author>
+            <organization showOnFrontPage="true">IEEE</organization>
+          </author>
+          <date month="February" year="2021"/>
+        </front>
+        <seriesInfo name="DOI" value="10.1109/IEEESTD.2021.9363693"/>
+        <seriesInfo name="IEEE Std" value="802.11-2020"/>
+      </reference>
+      <reference anchor="RFC4303" target="https://www.rfc-editor.org/info/rfc4303" quoteTitle="true" derivedAnchor="RFC4303">
+        <front>
+          <title>IP Encapsulating Security Payload (ESP)</title>
+          <author fullname="S. Kent" initials="S." surname="Kent"/>
+          <date month="December" year="2005"/>
+          <abstract>
+            <t indent="0">This document describes an updated version of the Encapsulating Security Payload (ESP) protocol, which is designed to provide a mix of security services in IPv4 and IPv6. ESP is used to provide confidentiality, data origin authentication, connectionless integrity, an anti-replay service (a form of partial sequence integrity), and limited traffic flow confidentiality. This document obsoletes RFC 2406 (November 1998). [STANDARDS-TRACK]</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="4303"/>
+        <seriesInfo name="DOI" value="10.17487/RFC4303"/>
+      </reference>
+    </references>
+    <section numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">The authors are greatly indebted to <contact fullname="Daniel Gröber"/>,
+who first identified the problem that this document aims to solve and first
+suggested the solution described in <xref target="separate-pc" format="default" sectionFormat="of" derivedContent="Section 3.1"/>.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Juliusz Chroboczek" initials="J." surname="Chroboczek">
+        <organization showOnFrontPage="true">IRIF, University of Paris-Cité</organization>
+        <address>
+          <postal>
+            <street>Case 7014</street>
+            <city>Paris CEDEX 13</city>
+            <code>75205</code>
+            <country>France</country>
+          </postal>
+          <email>jch@irif.fr</email>
+        </address>
+      </author>
+      <author fullname="Toke Høiland-Jørgensen" initials="T." surname="Høiland-Jørgensen">
+        <organization showOnFrontPage="true">Red Hat</organization>
+        <address>
+          <email>toke@toke.dk</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

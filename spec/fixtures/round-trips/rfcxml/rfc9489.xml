@@ -1,0 +1,1132 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-bess-evpn-lsp-ping-11" number="9489" ipr="trust200902" updates="" obsoletes="" xml:lang="en" tocInclude="true" symRefs="true" sortRefs="true" prepTime="2023-11-09T00:47:07" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-bess-evpn-lsp-ping-11" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9489" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="LSP Ping for EVPN and PBB-EVPN">Label Switched Path (LSP) Ping Mechanisms for EVPN and Provider Backbone Bridging EVPN (PBB-EVPN)</title>
+    <seriesInfo name="RFC" value="9489" stream="IETF"/>
+    <author fullname="Parag Jain" initials="P." surname="Jain">
+      <organization showOnFrontPage="true">Cisco</organization>
+      <address>
+        <postal>
+          <country>Canada</country>
+        </postal>
+        <email>paragj@cisco.com</email>
+      </address>
+    </author>
+    <author fullname="Ali Sajassi" initials="A." surname="Sajassi">
+      <organization showOnFrontPage="true">Cisco</organization>
+      <address>
+        <postal>
+          <country>United States of America</country>
+        </postal>
+        <email>sajassi@cisco.com</email>
+      </address>
+    </author>
+    <author fullname="Samer Salam" initials="S." surname="Salam">
+      <organization showOnFrontPage="true">Cisco</organization>
+      <address>
+        <postal>
+          <country>Canada</country>
+        </postal>
+        <email>ssalam@cisco.com</email>
+      </address>
+    </author>
+    <author fullname="Sami Boutros" initials="S." surname="Boutros">
+      <organization showOnFrontPage="true">Ciena</organization>
+      <address>
+        <postal>
+          <country>United States of America</country>
+        </postal>
+        <email>sboutros@ciena.com</email>
+      </address>
+    </author>
+    <author fullname="Greg Mirsky" initials="G." surname="Mirsky">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <country>United States of America</country>
+        </postal>
+        <email>gregimirsky@gmail.com</email>
+      </address>
+    </author>
+    <date month="11" year="2023"/>
+    <area>rtg</area>
+    <workgroup>bess</workgroup>
+    <keyword>EVPN</keyword>
+    <keyword>LSP Ping</keyword>
+    <keyword>MPLS OAM</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">Label Switched Path (LSP) Ping is a widely deployed Operations, Administration, and 
+   Maintenance (OAM) mechanism in MPLS networks. 
+This document describes mechanisms for detecting data plane failures using LSP
+Ping in MPLS-based Ethernet VPN (EVPN) and Provider Backbone Bridging EVPN (PBB-EVPN) networks.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9489" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-specification-of-requiremen">Specification of Requirements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-target-fec-stack-sub-tlvs">Target FEC Stack Sub-TLVs</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-evpn-mac-ip-sub-tlv">EVPN MAC/IP Sub-TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-evpn-inclusive-multicast-su">EVPN Inclusive Multicast Sub-TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-evpn-ethernet-auto-discover">EVPN Ethernet Auto-Discovery (A-D) Sub-TLV</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2.3.2">
+                  <li pn="section-toc.1-1.4.2.3.2.1">
+                    <t indent="0" pn="section-toc.1-1.4.2.3.2.1.1"><xref derivedContent="4.3.1" format="counter" sectionFormat="of" target="section-4.3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ethernet-tag-value">Ethernet Tag Value</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.3.2.2">
+                    <t indent="0" pn="section-toc.1-1.4.2.3.2.2.1"><xref derivedContent="4.3.2" format="counter" sectionFormat="of" target="section-4.3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-per-es-evpn-auto-discovery-">Per-ES EVPN Auto-Discovery Route with Different RDs</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.3.2.3">
+                    <t indent="0" pn="section-toc.1-1.4.2.3.2.3.1"><xref derivedContent="4.3.3" format="counter" sectionFormat="of" target="section-4.3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-evpn-vpws">EVPN VPWS</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.4.2.4">
+                <t indent="0" pn="section-toc.1-1.4.2.4.1"><xref derivedContent="4.4" format="counter" sectionFormat="of" target="section-4.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-evpn-ip-prefix-sub-tlv">EVPN IP Prefix Sub-TLV</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-encapsulation-of-oam-ping-p">Encapsulation of OAM Ping Packets</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-operations">Operations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-unicast-data-plane-connecti">Unicast Data Plane Connectivity Checks</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-inclusive-multicast-data-pl">Inclusive Multicast Data Plane Connectivity Checks</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.2.2">
+                  <li pn="section-toc.1-1.6.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.2.2.1.1"><xref derivedContent="6.2.1" format="counter" sectionFormat="of" target="section-6.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ingress-replication">Ingress Replication</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.6.2.2.2.2.1"><xref derivedContent="6.2.2" format="counter" sectionFormat="of" target="section-6.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-using-p2mp-p-tree">Using P2MP P-Tree</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.6.2.2.2.3.1"><xref derivedContent="6.2.3" format="counter" sectionFormat="of" target="section-6.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-controlling-echo-responses-">Controlling Echo Responses When Using P2MP P-Tree</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.6.2.3">
+                <t indent="0" pn="section-toc.1-1.6.2.3.1"><xref derivedContent="6.3" format="counter" sectionFormat="of" target="section-6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-evpn-aliasing-data-plane-co">EVPN Aliasing Data Plane Connectivity Check</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.4">
+                <t indent="0" pn="section-toc.1-1.6.2.4.1"><xref derivedContent="6.4" format="counter" sectionFormat="of" target="section-6.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-evpn-ip-prefix-rt-5-data-pl">EVPN IP Prefix (RT-5) Data Plane Connectivity Check</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-sub-tlv-type">Sub-TLV Type</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-return-codes">New Return Codes</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1"><xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> describes MPLS-based EVPN
+      technology.  An EVPN comprises one or more Customer Edge devices (CEs) connected to one or more
+      Provider Edge devices (PEs). The PEs provide Layer 2 (L2) EVPN among the
+      CE(s) over the MPLS core infrastructure.  In EVPN networks, the PEs
+      advertise the Media Access Control (MAC) addresses learned from the
+      locally connected CE(s), along with the MPLS label, to remote PE(s)
+      in the control plane using multiprotocol BGP <xref target="RFC4760" format="default" sectionFormat="of" derivedContent="RFC4760"/>. EVPN enables multihoming of CE(s) connected to
+      multiple PEs and load balancing of traffic to and from multihomed
+      CE(s).</t>
+      <t indent="0" pn="section-1-2"><xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> describes the use of
+      Provider Backbone Bridging EVPN. PBB-EVPN maintains the Customer
+      MAC (C-MAC) learning in the data plane and only advertises Backbone MAC
+      (B-MAC) addresses in a control plane using BGP.</t>
+      <t indent="0" pn="section-1-3">Procedures for simple and efficient mechanisms to detect data plane 
+   failures using LSP Ping in MPLS networks are well defined in 
+   <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/> and <xref target="RFC6425" format="default" sectionFormat="of" derivedContent="RFC6425"/>. 
+   The basic idea for the LSP Ping mechanism is to send an MPLS Echo Request packet
+   along the same data path as data packets belonging to the same Forwarding 
+   Equivalent Class (FEC). The Echo Request packet carries the FEC being verified 
+   in the Target FEC Stack TLV <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>. Once the Echo Request packet reaches the end of 
+   the MPLS path, it is sent to the control plane of the egress PE. 
+   The Echo Request packet contains sufficient information to verify the correctness 
+   of data plane operations and validate the data plane against the control plane.
+   The egress PE sends the results of the validation in an Echo Reply packet to the 
+   originating PE of the Echo Request packet.</t>
+      <t indent="0" pn="section-1-4">This document defines procedures to detect data 
+   plane failures using LSP Ping in MPLS networks deploying EVPN and 
+   PBB-EVPN. This document defines four new sub-TLVs for the Target FEC Stack TLV 
+   with the purpose of identifying the FEC on the egress PE.</t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-specification-of-requiremen">Specification of Requirements</name>
+      <t indent="0" pn="section-2-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+      </t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <dl indent="3" newline="false" spacing="normal" pn="section-3-1">
+        <dt pn="section-3-1.1">A-D:</dt>
+        <dd pn="section-3-1.2">Auto-Discovery</dd>
+        <dt pn="section-3-1.3">B-MAC:</dt>
+        <dd pn="section-3-1.4">Backbone MAC</dd>
+        <dt pn="section-3-1.5">BUM:</dt>
+        <dd pn="section-3-1.6">Broadcast, Unknown Unicast, and Multicast</dd>
+        <dt pn="section-3-1.7">CE:</dt>
+        <dd pn="section-3-1.8">Customer Edge device</dd>
+        <dt pn="section-3-1.9">C-MAC:</dt>
+        <dd pn="section-3-1.10">Customer MAC</dd>
+        <dt pn="section-3-1.11">DF:</dt>
+        <dd pn="section-3-1.12">Designated Forwarder</dd>
+        <dt pn="section-3-1.13">ES:</dt>
+        <dd pn="section-3-1.14">Ethernet Segment</dd>
+        <dt pn="section-3-1.15">ESI:</dt>
+        <dd pn="section-3-1.16">Ethernet Segment Identifier</dd>
+        <dt pn="section-3-1.17">EVI:</dt>
+        <dd pn="section-3-1.18">EVPN Instance Identifier that globally identifies the EVPN Instance</dd>
+        <dt pn="section-3-1.19">EVPN:</dt>
+        <dd pn="section-3-1.20">Ethernet Virtual Private Network</dd>
+        <dt pn="section-3-1.21">FEC:</dt>
+        <dd pn="section-3-1.22">Forwarding Equivalent Class</dd>
+        <dt pn="section-3-1.23">G-ACh:</dt>
+        <dd pn="section-3-1.24">Generic Associated Channel</dd>
+        <dt pn="section-3-1.25">GAL:</dt>
+        <dd pn="section-3-1.26">G-ACh Label</dd>
+        <dt pn="section-3-1.27">MAC-VRF:</dt>
+        <dd pn="section-3-1.28">A Virtual Routing and Forwarding table for MAC
+      addresses on a PE</dd>
+        <dt pn="section-3-1.29">ND:</dt>
+        <dd pn="section-3-1.30">Neighbor Discovery</dd>
+        <dt pn="section-3-1.31">OAM:</dt>
+        <dd pn="section-3-1.32">Operations, Administration, and Maintenance</dd>
+        <dt pn="section-3-1.33">P2MP:</dt>
+        <dd pn="section-3-1.34">Point-to-Multipoint</dd>
+        <dt pn="section-3-1.35">PBB-EVPN:</dt>
+        <dd pn="section-3-1.36">Provider Backbone Bridging EVPN</dd>
+        <dt pn="section-3-1.37">PE:</dt>
+        <dd pn="section-3-1.38">Provider Edge device</dd>
+        <dt pn="section-3-1.39">VPWS:</dt>
+        <dd pn="section-3-1.40">Virtual Private Wire Service</dd>
+      </dl>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-target-fec-stack-sub-tlvs">Target FEC Stack Sub-TLVs</name>
+      <t indent="0" pn="section-4-1">This document introduces four new Target FEC Stack sub-TLVs that 
+   are included in the MPLS Echo Request packet. The Echo Request packets 
+   are used for connectivity checks in the data plane in EVPN and PBB-EVPN networks. 
+   The Target FEC Stack sub-TLVs <bcp14>MAY</bcp14> be used to validate that an identifier 
+   for a given EVPN is programmed at the target node.</t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.1">
+        <name slugifiedName="name-evpn-mac-ip-sub-tlv">EVPN MAC/IP Sub-TLV</name>
+        <t indent="0" pn="section-4.1-1">The EVPN MAC/IP sub-TLV identifies the target MAC, MAC/IP binding for ARP/ND, 
+        or IP address for an EVI under test at an egress PE.
+        This sub-TLV is included in the Echo Request sent by an
+        EVPN/PBB-EVPN PE to a peer PE.</t>
+        <t indent="0" pn="section-4.1-2">The fields of the EVPN MAC/IP sub-TLV are derived from the MAC/IP Advertisement 
+   route defined in <xref target="RFC7432" sectionFormat="of" section="7.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7432#section-7.2" derivedContent="RFC7432"/> and have the format 
+   shown in <xref target="fig1" format="default" sectionFormat="of" derivedContent="Figure 1"/>. The fields of the EVPN MAC/IP sub-TLV should be set according to the 
+   following, which is consistent with <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> and <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.1-3">
+          <li pn="section-4.1-3.1">The Ethernet Tag ID field can be 0 or a valid VLAN ID for EVPN VLAN-aware bundle 
+         service <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>. For PBB-EVPN, the value of this field is always 0 as 
+         per <xref target="RFC7623" sectionFormat="of" section="5.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7623#section-5.2" derivedContent="RFC7623"/>.</li>
+          <li pn="section-4.1-3.2">The Ethernet Segment Identifier field is a 10-octet field. For EVPN, it is set to 0 for a
+         single-homed ES or to a valid ESI ID for a multihomed ES. For PBB-EVPN, the Ethernet 
+         Segment Identifier field must be set to either 0 (for single-homed segments or multihomed segments with per-I-SID load balancing) or to MAX-ESI (for multihomed segments with per-flow load balancing) as
+         described in <xref target="RFC7623" sectionFormat="of" section="5.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7623#section-5.2" derivedContent="RFC7623"/>.</li>
+          <li pn="section-4.1-3.3">The MAC Addr Len field specifies the MAC length in bits. Only 48-bit MAC addresses
+         are supported as this document follows the MAC address length supported by <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</li>
+          <li pn="section-4.1-3.4">The MAC Address field is set to the 6-octet MAC address.</li>
+          <li pn="section-4.1-3.5">The IP Address field is optional. When the IP Address field is not present, 
+         the IP Addr Len field is set to 0. When the IP Address field is present, the IP Addr Len field is in
+         bits and is set to either 32 for IPv4 addresses or 128 for IPv6 addresses. </li>
+          <li pn="section-4.1-3.6">The Must Be Zero fields are set to 0. The receiving PE should ignore the 
+         Must Be Zero fields. </li>
+        </ul>
+        <figure anchor="fig1" align="left" suppress-title="false" pn="figure-1">
+          <name slugifiedName="name-evpn-mac-ip-sub-tlv-format">EVPN MAC/IP Sub-TLV Format</name>
+          <artwork align="left" name="" type="" alt="" pn="section-4.1-4.1">
+ 0                   1                   2                   3 
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                    Route Distinguisher                        | 
+|                        (8 octets)                             | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                     Ethernet Tag ID                           | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|               Ethernet Segment Identifier                     | 
+|                     (10 octets)                               | 
++                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                               | Must Be Zero  |  MAC Addr Len | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                MAC Address                                    | 
++                 (6 octets)    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                               | Must Be Zero  |  IP Addr Len  |          
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                IP Address (0, 4 or 16 octets)                 | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-4.1-5">The MPLS Echo Request is sent by the ingress PE using the EVPN MPLS label(s) associated with the MAC/IP Advertisement route announced by the egress PE and the MPLS transport label(s) to reach the egress PE.</t>
+        <t indent="0" pn="section-4.1-6">In EVPN, the MAC/IP Advertisement route has multiple uses and is used for
+the following cases:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.1-7">
+          <li pn="section-4.1-7.1">This route with only a MAC address and MPLS Label1 is used for populating MAC-VRF and performing MAC forwarding.</li>
+          <li pn="section-4.1-7.2">This route with MAC and IP addresses and only MPLS Label1 is used for populating both MAC-VRF and ARP/ND tables (for ARP suppression) as well as for performing MAC forwarding.</li>
+          <li pn="section-4.1-7.3">This route with MAC and IP addresses and both MPLS Label1 and Label2 is used for populating MAC-VRF and IP-VRF tables as well as for both MAC and IP forwarding in the case of symmetric Integrated Routing and Bridging (IRB).</li>
+        </ul>
+        <t indent="0" pn="section-4.1-8">When an MPLS Echo Request is sent by an ingress PE, the contents of the Echo Request and the egress PE mode of operation (i.e., IRB mode or L2 mode) along with EVPN MPLS label of the packet determine which of the three cases above this Echo Request is for. When the egress PE receives the EVPN MAC/IP sub-TLV containing only the MAC address, the egress PE validates the MAC state and forwarding.  When the egress PE receives the EVPN MAC/IP sub-TLV containing both MAC and IP addresses and if the EVPN label points to a MAC-VRF, then the egress PE validates the MAC state and forwarding. If the egress PE is not configured in symmetric IRB mode, it also validates ARP/ND state. However, if the EVPN label points to an IP-VRF, then the egress PE validates IP state and forwarding. 
+Any other combinations (e.g., the egress PE receiving
+   the EVPN MAC/IP sub-TLV containing only the MAC address but with the EVPN label
+   pointing to an IP-VRF) should be considered invalid, 
+   and the egress PE should send an Echo Reply with the appropriate Return          
+   Code to the ingress PE.</t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.2">
+        <name slugifiedName="name-evpn-inclusive-multicast-su">EVPN Inclusive Multicast Sub-TLV</name>
+        <t indent="0" pn="section-4.2-1">The fields of the EVPN Inclusive Multicast sub-TLV are based on the EVPN 
+   Inclusive Multicast Tag route defined in <xref target="RFC7432" sectionFormat="of" section="7.3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7432#section-7.3" derivedContent="RFC7432"/>.
+   This TLV is included in the Echo Request sent to the EVPN 
+   peer PE by the originator of the request to verify the multicast 
+   connectivity state on the peer PE(s) in EVPN and PBB-EVPN networks.
+        </t>
+        <t indent="0" pn="section-4.2-2">The EVPN Inclusive Multicast sub-TLV has the format shown in 
+   <xref target="fig2" format="default" sectionFormat="of" derivedContent="Figure 2"/>. The fields of this sub-TLV should be set according to the 
+   following, which is consistent with <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> and 
+   <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.2-3">
+          <li pn="section-4.2-3.1">The Route Distinguisher (RD) field is a 10-octet field and is set to the RD
+         of the MAC-VRF on the peer PE.</li>
+          <li pn="section-4.2-3.2">For EVPN, the Ethernet Tag ID field can be set to 0 or a valid VLAN ID for 
+         EVPN VLAN-aware bundle service <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.
+         For PBB-EVPN, the value of this field is set to the Service 
+         Instance Identifier (I-SID) value as per <xref target="RFC7623" sectionFormat="of" section="5.3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7623#section-5.3" derivedContent="RFC7623"/>.</li>
+          <li pn="section-4.2-3.3">The IP Addr Len field specifies the length of the Originating Router's IP Addr field in bits and is set to either 32 for IPv4 addresses or 128 for IPv6 addresses.</li>
+          <li pn="section-4.2-3.4">The Originating Router's IP Addr field is set to the IPv4 or IPv6 address of the peer PE.</li>
+        </ul>
+        <figure anchor="fig2" align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-evpn-inclusive-multicast-sub">EVPN Inclusive Multicast Sub-TLV Format</name>
+          <artwork align="left" name="" type="" alt="" pn="section-4.2-4.1">
+ 0                   1                   2                   3 
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                    Route Distinguisher                        | 
+|                        (8 octets)                             | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                     Ethernet Tag ID                           |       
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+    
+| IP Addr Len |                                                 |
++-+-+-+-+-+-+-+                                                 |
+~               Originating Router's IP Addr                    ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-4.2-5">BUM traffic can be sent using ingress replication or P2MP P-tree in
+        EVPN and PBB-EVPN networks.  When using ingress replication, the Echo
+        Request is sent using a label stack of [Transport label, Inclusive
+        Multicast label] to each egress PE participating in EVPN or
+        PBB-EVPN. The Inclusive Multicast label is the downstream-assigned
+        label announced by the egress PE to which the Echo Request is being
+        sent. The Inclusive Multicast label is the inner label in the MPLS
+        label stack.</t>
+        <t indent="0" pn="section-4.2-6">When using P2MP P-tree in EVPN or PBB-EVPN, the Echo Request is 
+   sent using a P2MP P-tree transport label for the Inclusive P-tree 
+   arrangement or using a label stack of [P2MP P-tree Transport label,
+   upstream-assigned EVPN Inclusive Multicast label] for the Aggregate 
+   Inclusive P2MP P-tree arrangement as described in <xref target="operations" format="default" sectionFormat="of" derivedContent="Section 6"/>.</t>
+        <t indent="0" pn="section-4.2-7"> In an EVPN network, to emulate traffic coming from a multihomed site, an
+additional EVPN Ethernet A-D sub-TLV in the Target FEC Stack TLV
+and an ESI Split Horizon Group MPLS label as the bottom label are also
+included in the Echo Request packet.  When using P2MP P-tree, the ESI Split
+Horizon Group MPLS label is upstream assigned. Please see <xref target="p2mp-ptree" format="default" sectionFormat="of" derivedContent="Section 6.2.2"/> for operations using P2MP P-trees.</t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.3">
+        <name slugifiedName="name-evpn-ethernet-auto-discover">EVPN Ethernet Auto-Discovery (A-D) Sub-TLV</name>
+        <t indent="0" pn="section-4.3-1">The fields in the EVPN Ethernet A-D sub-TLV are based on the 
+   EVPN Ethernet A-D route advertisement defined in <xref target="RFC7432" sectionFormat="of" section="7.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7432#section-7.1" derivedContent="RFC7432"/>.  The EVPN Ethernet A-D sub-TLV only applies to EVPN.</t>
+        <t indent="0" pn="section-4.3-2">The EVPN Ethernet A-D sub-TLV has the format shown in <xref target="fig3" format="default" sectionFormat="of" derivedContent="Figure 3"/>.
+      The fields of this sub-TLV should be set according to the 
+          following, which is consistent with <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.3-3">
+          <li pn="section-4.3-3.1">The Route Distinguisher (RD) field is a 10-octet field and is set to the RD
+         of the MAC-VRF on the peer PE. Please see <xref target="adroute" format="default" sectionFormat="of" derivedContent="Section 4.3.2"/> for the case when a
+         per-ES A-D route is announced with different RDs.</li>
+          <li pn="section-4.3-3.2">The Ethernet Tag ID field can be 0, MAX-ET, or a valid VLAN ID as described in 
+         <xref target="etagvalue" format="default" sectionFormat="of" derivedContent="Section 4.3.1"/>.</li>
+          <li pn="section-4.3-3.3">The Ethernet Segment Identifier field is a 10-octet field and is set to 0 for 
+        a single-homed ES or to a valid ESI ID for a multihomed ES.</li>
+          <li pn="section-4.3-3.4">The Must Be Zero field is set to 0. The receiving PE should ignore the 
+         Must Be Zero field. </li>
+        </ul>
+        <figure anchor="fig3" align="left" suppress-title="false" pn="figure-3">
+          <name slugifiedName="name-evpn-ethernet-a-d-sub-tlv-f">EVPN Ethernet A-D Sub-TLV Format</name>
+          <artwork align="left" name="" type="" alt="" pn="section-4.3-4.1">
+ 0                   1                   2                   3 
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                    Route Distinguisher                        | 
+|                        (8 octets)                             | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                     Ethernet Tag ID                           |    
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|               Ethernet Segment Identifier                     | 
+|                     (10 octets)                               | 
++                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                               |      Must Be Zero             | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <section anchor="etagvalue" numbered="true" toc="include" removeInRFC="false" pn="section-4.3.1">
+          <name slugifiedName="name-ethernet-tag-value">Ethernet Tag Value</name>
+          <t indent="0" pn="section-4.3.1-1">The EVPN Ethernet A-D sub-TLV can be sent in the context of per-ES or per-EVI.
+When an operator performs a connectivity check for the BUM L2 service, 
+         an Echo Request packet is sent and <bcp14>MAY</bcp14> contain the EVPN Ethernet A-D sub-TLV to emulate traffic 
+         coming from a multihomed site.  In this case, the EVPN Ethernet A-D sub-TLV is 
+         added in the per-ES context. When an Echo Request packet is sent for the connectivity 
+         check for EVPN Aliasing state, the context for the EVPN Ethernet A-D 
+         sub-TLV is per-EVI.</t>
+          <t indent="0" pn="section-4.3.1-2">The Ethernet Tag field value in the EVPN Ethernet A-D sub-TLV <bcp14>MUST</bcp14> be set according 
+         to the context:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.3.1-3">
+            <li pn="section-4.3.1-3.1">For the per-ES context, the Ethernet Tag field in the sub-TLV <bcp14>MUST</bcp14> be set to 
+         the reserved MAX-ET value <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</li>
+            <li pn="section-4.3.1-3.2">For the per-EVI context, the Ethernet Tag field in the sub-TLV <bcp14>MUST</bcp14> be set to 
+         the non-reserved value.</li>
+          </ul>
+        </section>
+        <section anchor="adroute" numbered="true" toc="include" removeInRFC="false" pn="section-4.3.2">
+          <name slugifiedName="name-per-es-evpn-auto-discovery-">Per-ES EVPN Auto-Discovery Route with Different RDs</name>
+          <t indent="0" pn="section-4.3.2-1"><xref target="RFC7432" sectionFormat="of" section="8.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7432#section-8.2" derivedContent="RFC7432"/> specifies that a per-ES EVPN A-D route for 
+        a given multihomed ES may be advertised more than once with different RD values 
+        because many EVIs may be associated with the same ES and Route Targets for all these 
+        EVIs may not fit in a single BGP Update message.  In this case, the RD value used 
+        in the EVPN Ethernet A-D sub-TLV <bcp14>MUST</bcp14> be the RD value received for the EVI in the 
+        per-ES EVPN A-D route.</t>
+        </section>
+        <section numbered="true" toc="include" removeInRFC="false" pn="section-4.3.3">
+          <name slugifiedName="name-evpn-vpws">EVPN VPWS</name>
+          <t indent="0" pn="section-4.3.3-1">LSP Ping can also be used to detect data plane failures for the EVPN VPWS described in <xref target="RFC8214" format="default" sectionFormat="of" derivedContent="RFC8214"/>. 
+        The Echo Request packet carries the EVPN Ethernet A-D sub-TLV with fields populated from 
+        the EVPN Ethernet A-D per-EVI route announced by the egress PE for the EVPN VPWS under test.
+        The Echo Request is sent by the ingress 
+        PE using the EVPN MPLS label associated with the EVPN Ethernet A-D route announced by the 
+        egress PE and the MPLS transport label(s) to reach the egress PE.</t>
+          <t indent="0" pn="section-4.3.3-2">The egress PE processes the Echo Request packet and performs
+          checks for the EVPN Ethernet A-D sub-TLV present in the Target FEC
+          Stack TLV as described in <xref target="RFC8029" sectionFormat="of" section="4.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-4.4" derivedContent="RFC8029"/> and responds according to processing rules in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>.  The egress PE can identify
+          that the Echo Request is for the EVPN VPWS instance as EVI
+          (identified by the RD) for EVPN VPWS is different from EVI assigned
+          for EVPN. The egress PE will use the information from the EVPN
+          Ethernet A-D sub-TLV in the Target FEC Stack TLV and validate the
+          VLAN state for the EVPN VPWS under test.  For the success case, the
+          egress PE will reply with Return Code 3 ("Replying router is an
+          egress for the FEC at stack-depth &lt;RSC&gt;").</t>
+        </section>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.4">
+        <name slugifiedName="name-evpn-ip-prefix-sub-tlv">EVPN IP Prefix Sub-TLV</name>
+        <t indent="0" pn="section-4.4-1">The EVPN IP Prefix sub-TLV identifies the IP prefix for an EVI under 
+   test at a peer PE.</t>
+        <t indent="0" pn="section-4.4-2">The EVPN IP Prefix sub-TLV fields are derived from the IP Prefix route (RT-5) 
+          advertisement defined in <xref target="RFC9136" format="default" sectionFormat="of" derivedContent="RFC9136"/>. This sub-TLV only applies to 
+          EVPN.</t>
+        <t indent="0" pn="section-4.4-3">The EVPN IP Prefix sub-TLV has the format shown in <xref target="fig4" format="default" sectionFormat="of" derivedContent="Figure 4"/>.  The
+           total length (not shown) of this sub-TLV <bcp14>MUST</bcp14> be either 32 bytes (if
+           IPv4 addresses are carried) or 56 bytes (if IPv6 addresses are carried).
+          The IP prefix and gateway IP address <bcp14>MUST</bcp14> be from the same IP address
+          family, as described in <xref target="RFC9136" sectionFormat="of" section="3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9136#section-3.1" derivedContent="RFC9136"/>.</t>
+        <t indent="0" pn="section-4.4-4">The fields of the EVPN IP Prefix sub-TLV should be set according to the 
+          following, which is consistent with <xref target="RFC9136" format="default" sectionFormat="of" derivedContent="RFC9136"/>:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.4-5">
+          <li pn="section-4.4-5.1">The Route Distinguisher (RD) field is a 10-octet field and is set to the RD
+         of the IP-VRF on the peer PE.</li>
+          <li pn="section-4.4-5.2">The Ethernet Tag ID field can be 0 or a valid VLAN ID for EVPN VLAN-aware bundle 
+         service <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.</li>
+          <li pn="section-4.4-5.3">The Ethernet Segment Identifier field is a 10-octet field and is set to 
+         a valid ESI ID if the ESI is used as an Overlay Index as per <xref target="RFC9136" sectionFormat="of" section="3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9136#section-3.1" derivedContent="RFC9136"/>.
+         Otherwise, the Ethernet Segment Identifier field is set to 0.</li>
+          <li pn="section-4.4-5.4">The IP Prefix Len field specifies the number of bits in the IP Prefix field. It 
+        is set to a value between 0 and 32 for IPv4 or between 0 to 128 for IPv6.</li>
+          <li pn="section-4.4-5.5">The IP Prefix field is set to a 4-octet IPv4 address (with
+         trailing 0 bits to make 32 bits in all) or a 16-octet IPv6 address
+         (with trailing 0 bits to make 128 bits in all). The address family
+         of this field is inferred from the sub-TLV length field, as
+         discussed above.</li>
+          <li pn="section-4.4-5.6"> The Gateway (GW) IP Address field is set to a 4-octet IPv4 address
+          or a 16-octet IPv6 address if it's used as an Overlay Index for the
+         IP prefixes.  If the GW IP Address is not being used, it must be
+         set to 0 as described in <xref target="RFC9136" sectionFormat="of" section="3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9136#section-3.1" derivedContent="RFC9136"/>. The address
+         family of this field is inferred from the sub-TLV length field, as
+         discussed above.</li>
+          <li pn="section-4.4-5.7">The Must Be Zero field is set to 0. The receiving PE should ignore the 
+         Must Be Zero field. </li>
+        </ul>
+        <figure anchor="fig4" align="left" suppress-title="false" pn="figure-4">
+          <name slugifiedName="name-evpn-ip-prefix-sub-tlv-form">EVPN IP Prefix Sub-TLV Format</name>
+          <artwork align="left" name="" type="" alt="" pn="section-4.4-6.1">
+ 0                   1                   2                   3 
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                    Route Distinguisher                        | 
+|                        (8 octets)                             | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                     Ethernet Tag ID                           |     
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|               Ethernet Segment Identifier                     | 
+|                     (10 octets)                               | 
++                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                               | Must Be Zero  | IP Prefix Len |      
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+~                 IP Prefix  (4 or 16 octets)                   ~ 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+~                GW IP Address (4 or 16 octets)                 ~ 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-4.4-7">The MPLS Echo Request is sent by the ingress PE using the EVPN MPLS label(s) 
+   associated with the IP Prefix route announced by the egress PE and the MPLS 
+   transport label(s) to reach the egress PE.</t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-encapsulation-of-oam-ping-p">Encapsulation of OAM Ping Packets</name>
+      <t indent="0" pn="section-5-1">The MPLS Echo Request IP/UDP packets <bcp14>MUST</bcp14> be encapsulated 
+         with the Transport and EVPN label(s) followed by the
+         GAL <xref target="RFC5586" format="default" sectionFormat="of" derivedContent="RFC5586"/>, which is the bottommost label.
+         The GAL is followed by a G-ACh header carrying the 
+         IPv4(0x0021) or IPv6(0x0057) Channel Type. The code points for IPv4 and 
+         IPv6 channels are defined in the "Generic Associated Channel (G-ACh) Parameters" IANA registry.</t>
+    </section>
+    <section anchor="operations" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-operations">Operations</name>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-6.1">
+        <name slugifiedName="name-unicast-data-plane-connecti">Unicast Data Plane Connectivity Checks</name>
+        <t indent="0" pn="section-6.1-1"><xref target="fig5" format="default" sectionFormat="of" derivedContent="Figure 5"/> is an example of a PBB-EVPN network. CE1 is dual-homed to 
+  PE1 and PE2. Assume that PE1 announced a MAC route with RD 192.0.2.1:00 and 
+  B-MAC 00-AA-00-BB-00-CC and with MPLS label 16001 for EVI 10. Similarly, 
+  PE2 announced a MAC route with RD 203.0.113.2:00 and B-MAC 00-AA-00-BB-00-CC 
+  and with MPLS label 16002.</t>
+        <t indent="0" pn="section-6.1-2">On PE3, when an operator performs a connectivity check for the B-MAC 
+  address 00-AA-00-BB-00-CC on PE1, the operator initiates an LSP Ping
+  request with the Target FEC Stack TLV containing the EVPN MAC/IP sub-TLV in 
+  the Echo Request packet. The Echo Request packet is sent with the 
+  {Transport label(s) to reach PE1, EVPN label = 16001, GAL} MPLS label 
+  stack and IP ACH Channel header. Once the Echo Request packet reaches PE1, 
+  PE1 will use the GAL and the IP ACH Channel header
+  to determine if the packet is an IPv4 or IPv6 OAM packet. The PE1 will process the 
+  packet and perform checks for the EVPN MAC/IP sub-TLV present in the 
+  Target FEC Stack TLV as described in <xref target="RFC8029" sectionFormat="of" section="4.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-4.4" derivedContent="RFC8029"/> and 
+  respond according to the processing rules in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>.</t>
+        <figure anchor="fig5" align="left" suppress-title="false" pn="figure-5">
+          <name slugifiedName="name-pbb-evpn-network">PBB-EVPN Network</name>
+          <artwork align="left" name="" type="" alt="" pn="section-6.1-3.1">
+                  +-----------------+
+                  |                 |
+                  |                 |
++----+ AC1  +-----+                 +-----+     +----+
+| CE1|------|     |                 | PE3 |-----| CE2|
++----+\     | PE1 |     IP/MPLS     |     |     +----+
+       \    +-----+     Network     +-----+
+        \         |                 |
+      AC2\  +-----+                 |
+          \ |     |                 |
+           \| PE2 |                 |
+            +-----+                 |
+                  |                 |
+                  +-----------------+
+
+  &lt;-802.1Q-&gt;  &lt;------PBB over MPLS------&gt;  &lt;-802.1Q-&gt;
+</artwork>
+        </figure>
+        <t indent="0" pn="section-6.1-4">Similarly, on PE3, when an operator performs a connectivity check for 
+  the B-MAC address 00-AA-00-BB-00-CC on PE2, the operator initiates an 
+  LSP Ping request with the Target FEC Stack TLV containing the EVPN MAC/IP 
+  sub-TLV in the Echo Request packet. The Echo Request packet is sent 
+  with the {MPLS Transport label(s) to reach PE2, EVPN label = 16002, GAL} 
+  MPLS label stack and IP ACH Channel header.</t>
+        <t indent="0" pn="section-6.1-5">LSP Ping operations for unicast data plane connectivity checks in EVPN
+  are similar to those described above for PBB-EVPN, except that the 
+  checks are for C-MAC addresses instead of B-MAC addresses.</t>
+        <t indent="0" pn="section-6.1-6"> In EVPN networks, an operator can also perform a MAC state test using an aliasing 
+    label for the MAC to verify the MAC state on the egress multihoming PE that did 
+    not learn the MAC from the multihomed CE on a local ESI but has announced Ethernet 
+    A-D per-EVI and per-ESI routes for the ESI. This is due to the fact that
+    MAC state on multihoming PEs that did not learn the MAC locally get created
+    from EVPN MAC/IP route advertisement from the multihoming PE that has
+    learned the CE's MAC address locally.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-6.2">
+        <name slugifiedName="name-inclusive-multicast-data-pl">Inclusive Multicast Data Plane Connectivity Checks</name>
+        <section numbered="true" toc="include" removeInRFC="false" pn="section-6.2.1">
+          <name slugifiedName="name-ingress-replication">Ingress Replication</name>
+          <t indent="0" pn="section-6.2.1-1">Assume PE1 announced an Inclusive Multicast route for EVI 10, with 
+   RD 192.0.2.1:00, Ethernet Tag (ISID 10), PMSI tunnel attribute Tunnel 
+   type set to ingress replication, and downstream-assigned Inclusive 
+   Multicast MPLS label 17001. Similarly, PE2 announced an Inclusive 
+   Multicast route for EVI 10, with RD 203.0.113.2:00, Ethernet Tag (ISID 
+   10), PMSI tunnel attribute Tunnel type set to ingress replication, 
+   and downstream-assigned Inclusive Multicast MPLS label 17002.</t>
+          <t indent="0" pn="section-6.2.1-2">Given CE1 is dual-homed to PE1 and PE2, assume that PE1 is the DF 
+   for ISID 10 for the port corresponding to the ESI 11aa.22bb.33cc. 
+   44dd.5500.</t>
+          <t indent="0" pn="section-6.2.1-3">When an operator at PE3 initiates a connectivity check for the 
+   Inclusive Multicast on PE1, the operator initiates an LSP Ping 
+   request with the Target FEC Stack TLV containing the EVPN Inclusive 
+   Multicast sub-TLV in the Echo Request packet. The Echo Request 
+   packet is sent with the {Transport label(s) to reach PE1, EVPN 
+   Inclusive Multicast label = 17001, GAL} MPLS label stack and IP ACH Channel header. 
+   Once the Echo Request packet reaches PE1, 
+   PE1 will use the GAL and the IP ACH Channel header
+   to determine if the packet is an IPv4 or IPv6 OAM packet. 
+   The packet will have the EVPN Inclusive Multicast label. 
+   PE1 will process the packet and perform checks for the EVPN 
+   Inclusive Multicast sub-TLV present in the Target FEC Stack TLV as 
+   described in <xref target="RFC8029" sectionFormat="of" section="4.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-4.4" derivedContent="RFC8029"/> and respond according to 
+   the processing rules in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>. For the success case, PE1 will reply 
+   with Return Code 3 ("Replying router is an egress for the FEC at stack-depth &lt;RSC&gt;"). </t>
+          <t indent="0" pn="section-6.2.1-4">Similarly, an operator at PE3 may initiate an LSP Ping to PE2 with 
+   the Target FEC Stack TLV containing the EVPN Inclusive Multicast sub-TLV in the 
+   Echo Request packet. The Echo Request packet is sent with 
+   the {Transport label(s) to reach PE2, EVPN Inclusive Multicast label = 
+   17002, GAL} MPLS label stack and IP ACH Channel header. 
+   Once the Echo Request packet reaches PE2, 
+   PE2 will use the GAL and the IP ACH Channel header
+   to determine if the packet is an IPv4 or IPv6 OAM packet. The processing on PE2 will be similar 
+   to that on PE1 as described above. For the success case, PE2 will 
+   reply with Return Code 3 ("Replying 
+   router is an egress for the FEC at stack-depth &lt;RSC&gt;") as per <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>.</t>
+          <t indent="0" pn="section-6.2.1-5">In an Echo Request packet for EVPN, a combination of an EVPN
+          Ethernet A-D sub-TLV and the associated MPLS Split Horizon label,
+          immediately preceding the GAL in the MPLS label stack, may be used
+          to emulate traffic coming from a multihomed site.  The Split Horizon
+          label is used by leaf PE(s) attached to the same multihomed site to
+          prevent forwarding of packets back to the multihomed site. If the
+          behavior on a leaf PE is to not forward the packet to the multihomed
+          site on the ESI identified by the EVPN Ethernet A-D sub-TLV because
+          of Split Horizon filtering, the PE will reply with Return Code 37 (see <xref target="iana" format="default" sectionFormat="of" derivedContent="Section 8"/>) and drop the BUM packets on the ES corresponding to the ESI received in the EVPN
+Ethernet A-D sub-TLV because of the Split Horizon Group filtering.</t>
+        </section>
+        <section anchor="p2mp-ptree" numbered="true" toc="include" removeInRFC="false" pn="section-6.2.2">
+          <name slugifiedName="name-using-p2mp-p-tree">Using P2MP P-Tree</name>
+          <t indent="0" pn="section-6.2.2-1">Both Inclusive P-tree and Aggregate Inclusive P-tree can be used in 
+  EVPN or PBB-EVPN networks.</t>
+          <t indent="0" pn="section-6.2.2-2">When using an Inclusive P-tree arrangement, the P2MP P-tree transport 
+  label itself is used to identify the L2 service associated with the 
+  Inclusive Multicast route. This L2 service could be a Customer 
+  Bridge or a Provider Backbone Bridge.</t>
+          <t indent="0" pn="section-6.2.2-3">For an Inclusive P-tree arrangement, when an operator performs a 
+  connectivity check for the multicast L2 service, the operator 
+  initiates an LSP Ping request with the Target FEC Stack TLV 
+  containing the EVPN Inclusive Multicast sub-TLV in the Echo Request 
+  packet. The Echo Request packet is sent over P2MP LSP
+  with the {P2MP P-tree Transport label, GAL} 
+  MPLS label stack and IP ACH Channel header.</t>
+          <t indent="0" pn="section-6.2.2-4">When using an Aggregate Inclusive P-tree arrangement, a PE announces an upstream-assigned MPLS label along with the P-tree ID, so both the 
+  P2MP P-tree MPLS transport label and the upstream MPLS label can be 
+  used to identify the L2 service.</t>
+          <t indent="0" pn="section-6.2.2-5">For an Aggregate Inclusive P-tree arrangement, when an operator 
+  performs a connectivity check for the multicast L2 service, the 
+  operator initiates an LSP Ping request with the Target FEC Stack TLV 
+  containing the EVPN Inclusive Multicast sub-TLV in the Echo Request 
+  packet. The Echo Request packet is sent over P2MP LSP using the 
+  IP-ACH Control channel with the {P2MP P-tree Transport label, 
+  EVPN upstream-assigned Multicast label, GAL} MPLS label stack and
+  IP ACH Channel header.</t>
+          <t indent="0" pn="section-6.2.2-6">The leaf PE(s) of the P2MP P-tree will process the packet and perform 
+  checks for the EVPN Inclusive Multicast sub-TLV present in the 
+  Target FEC Stack TLV as described in <xref target="RFC8029" sectionFormat="of" section="4.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-4.4" derivedContent="RFC8029"/> and 
+  respond according to the processing rules in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>. 
+  For the success case, the leaf PE will reply with Return Code 3 
+  ("Replying router is an egress for the FEC at stack-depth &lt;RSC&gt;").</t>
+          <t indent="0" pn="section-6.2.2-7">In an Echo Request packet for EVPN, a combination of an EVPN
+          Ethernet A-D sub-TLV and the associated MPLS Split Horizon label,
+          immediately preceding the GAL in the MPLS label stack, may be used
+          to emulate traffic coming from a multihomed site.  When using P2MP
+          P-tree, the Split Horizon label is upstream assigned and is received
+          by all the leaf PEs of the P2MP P-tree. The Split Horizon label is
+          used by leaf PE(s) attached to the same multihomed site so that
+          packets will not be forwarded back to the multihomed site. If the
+          behavior on a leaf PE is to not forward the packet to the multihomed
+          site on the ESI in the EVPN Ethernet A-D sub-TLV because of Split
+          Horizon filtering, the PE will reply with Return Code 37 (see <xref target="iana" format="default" sectionFormat="of" derivedContent="Section 8"/>) and drop the BUM packets on the ES
+corresponding to the ESI received in the EVPN Ethernet A-D sub-TLV
+because of the Split Horizon Group filtering.
+          
+          If the leaf PE does not have the ESI identified in the
+          EVPN Ethernet A-D sub-TLV, the PE <bcp14>MAY</bcp14> reply with Return Code 38 (see <xref target="iana" format="default" sectionFormat="of" derivedContent="Section 8"/>), and the BUM packets are forwarded
+because there is no ES corresponding to the
+ESI received in the EVPN Ethernet A-D sub-TLV.</t>
+        </section>
+        <section numbered="true" toc="include" removeInRFC="false" pn="section-6.2.3">
+          <name slugifiedName="name-controlling-echo-responses-">Controlling Echo Responses When Using P2MP P-Tree</name>
+          <t indent="0" pn="section-6.2.3-1">The procedures described in <xref target="RFC6425" format="default" sectionFormat="of" derivedContent="RFC6425"/> for preventing congestion of
+   Echo Responses (Echo Jitter TLV) and limiting the Echo Reply to a
+   single egress node (P2MP Responder Identifier TLV with either the
+   IPv4 Node Address P2MP Responder sub-TLV or the IPv6 Node Address P2MP
+   Responder sub-TLV) can
+   be applied to LSP Ping in EVPN and PBB-EVPN when using P2MP P-trees
+   for BUM traffic.</t>
+        </section>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-6.3">
+        <name slugifiedName="name-evpn-aliasing-data-plane-co">EVPN Aliasing Data Plane Connectivity Check</name>
+        <t indent="0" pn="section-6.3-1">Assume PE1 announced an Ethernet A-D per-EVI route with the ESI 
+   set to CE1 system ID and MPLS label 19001. Additionally, assume PE2 announced an Ethernet A-D per-EVI route 
+   with the ESI set to CE1 system ID and MPLS label 19002.</t>
+        <t indent="0" pn="section-6.3-2">At PE3, when an operator performs a connectivity check for the 
+   aliasing aspect of the EVPN Ethernet A-D route on PE1, the operator 
+   initiates an LSP Ping request with the Target FEC Stack TLV 
+   containing the EVPN Ethernet A-D sub-TLV in the Echo Request packet. The 
+   Echo Request packet is sent with the {Transport label(s) to reach 
+   PE1, EVPN Ethernet A-D label 19001, GAL} MPLS label stack and 
+   IP ACH Channel header.</t>
+        <t indent="0" pn="section-6.3-3">When PE1 receives the packet, it will process the packet and perform 
+   checks for the EVPN Ethernet A-D sub-TLV present in the Target FEC 
+   Stack TLV as described in <xref target="RFC8029" sectionFormat="of" section="4.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-4.4" derivedContent="RFC8029"/> and respond 
+   according to the processing rules in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>.</t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-6.4">
+        <name slugifiedName="name-evpn-ip-prefix-rt-5-data-pl">EVPN IP Prefix (RT-5) Data Plane Connectivity Check</name>
+        <t indent="0" pn="section-6.4-1">Assume PE1 in <xref target="fig5" format="default" sectionFormat="of" derivedContent="Figure 5"/> announced an IP Prefix route (RT-5) with an IP prefix  
+   reachable behind CE1 and MPLS label 20001. When an operator on PE3 performs a 
+   connectivity check for the IP prefix on PE1, the operator 
+   initiates an LSP Ping request with the Target FEC Stack TLV 
+   containing the EVPN IP Prefix sub-TLV in the Echo Request packet. The 
+   Echo Request packet is sent with the {Transport label(s) to reach 
+   PE1, EVPN IP Prefix label 20001 } MPLS label stack.</t>
+        <t indent="0" pn="section-6.4-2">When PE1 receives the packet, it will process the packet and perform 
+   checks for the EVPN IP Prefix sub-TLV present in the Target FEC 
+   Stack TLV as described in <xref target="RFC8029" sectionFormat="of" section="4.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8029#section-4.4" derivedContent="RFC8029"/> and respond 
+   according to the processing rules in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>.</t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-7-1">  This document does not introduce any new 
+           security considerations beyond those that apply in
+           <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>, 
+           <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>, and  
+           <xref target="RFC6425" format="default" sectionFormat="of" derivedContent="RFC6425"/>.
+
+          Furthermore, the security considerations 
+          discussed in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/> apply to this document and need to be 
+          considered. As described in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>, these security considerations 
+          are:
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-7-2">
+        <li pn="section-7-2.1">A Denial-of-Service (DoS) attack by sending MPLS Echo 
+                Requests/Replies to Label Switching Routers (LSRs) and thereby increasing their workload.</li>
+        <li pn="section-7-2.2">Obfuscating the state of the MPLS data plane liveness by spoofing, 
+                 hijacking, replaying, or otherwise tampering with MPLS Echo Requests 
+                 and Replies.</li>
+        <li pn="section-7-2.3">Obtaining information about the network through an unauthorized source 
+                using an LSP Ping.</li>
+      </ul>
+      <t indent="0" pn="section-7-3"> There are mitigations described in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>.  The same mitigations  
+            can be applied to the LSP Ping procedures described in this document; thus, this document 
+            doesn't require additional security considerations beyond the ones described 
+            in <xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/>.</t>
+      <t indent="0" pn="section-7-4"> This document does not introduce any new privacy concerns because these TLVs contain the same information that are present in data packets and EVPN routes. 
+      </t>
+    </section>
+    <section anchor="iana" numbered="true" toc="include" removeInRFC="false" pn="section-8">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-8.1">
+        <name slugifiedName="name-sub-tlv-type">Sub-TLV Type</name>
+        <t indent="0" pn="section-8.1-1">   This document defines four new sub-TLV types to be included in the Target 
+   FEC Stack TLV (TLV types 1, 16, and 21) <xref target="RFC9041" format="default" sectionFormat="of" derivedContent="RFC9041"/> in Echo Request and Echo 
+   Reply messages in EVPN and PBB-EVPN networks.</t>
+        <t indent="0" pn="section-8.1-2">IANA has assigned the following values
+        from the "Standards Action" (0-16383) range in the "Sub-TLVs for TLV
+        Types 1, 16, and 21" subregistry within the "TLVs" registry of the
+        "Multiprotocol Label Switching (MPLS) Label Switched Paths (LSPs)
+        Ping Parameters" name space. </t>
+        <table anchor="iana1" align="center" pn="table-1">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Sub-Type</th>
+              <th align="left" colspan="1" rowspan="1">Sub-TLV Name</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">42</td>
+              <td align="left" colspan="1" rowspan="1">EVPN MAC/IP</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9489</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">43</td>
+              <td align="left" colspan="1" rowspan="1">EVPN Inclusive Multicast</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9489</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">44</td>
+              <td align="left" colspan="1" rowspan="1">EVPN Ethernet Auto-Discovery</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9489</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">45</td>
+              <td align="left" colspan="1" rowspan="1">EVPN IP Prefix</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9489</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-8.2">
+        <name slugifiedName="name-new-return-codes">New Return Codes</name>
+        <t indent="0" pn="section-8.2-1"><xref target="RFC8029" format="default" sectionFormat="of" derivedContent="RFC8029"/> defines values for the Return Code field of Echo Reply messages. 
+   This document defines two new Return Codes that <bcp14>SHOULD</bcp14> be 
+   included in the Echo Reply message by a PE in response to  
+   an Echo Request message in EVPN and PBB-EVPN networks. </t>
+        <t indent="0" pn="section-8.2-2"> IANA has assigned the following values in the "Return Codes"
+        registry of the "Multiprotocol Label Switching (MPLS) Label Switched
+        Paths (LSPs) Ping Parameters" name space.</t>
+        <table anchor="iana2" align="center" pn="table-2">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Meaning</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">37</td>
+              <td align="left" colspan="1" rowspan="1">Replying router is egress for the FEC at the stack depth. In
+      addition, the BUM packets are dropped on the ES corresponding to the ESI
+      received in the EVPN Ethernet Auto-Discovery sub-TLV because of the Split Horizon Group
+      filtering.</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9489</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">38</td>
+              <td align="left" colspan="1" rowspan="1">Replying router is egress for the FEC at the stack depth. In
+      addition, the BUM packets are forwarded because there is no ES
+      corresponding to the ESI received in the EVPN Ethernet Auto-Discovery sub-TLV.</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9489</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-9">
+      <name slugifiedName="name-normative-references">Normative References</name>
+      <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+        <front>
+          <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+          <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+          <date month="March" year="1997"/>
+          <abstract>
+            <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="BCP" value="14"/>
+        <seriesInfo name="RFC" value="2119"/>
+        <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+      </reference>
+      <reference anchor="RFC4760" target="https://www.rfc-editor.org/info/rfc4760" quoteTitle="true" derivedAnchor="RFC4760">
+        <front>
+          <title>Multiprotocol Extensions for BGP-4</title>
+          <author fullname="T. Bates" initials="T." surname="Bates"/>
+          <author fullname="R. Chandra" initials="R." surname="Chandra"/>
+          <author fullname="D. Katz" initials="D." surname="Katz"/>
+          <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+          <date month="January" year="2007"/>
+          <abstract>
+            <t indent="0">This document defines extensions to BGP-4 to enable it to carry routing information for multiple Network Layer protocols (e.g., IPv6, IPX, L3VPN, etc.). The extensions are backward compatible - a router that supports the extensions can interoperate with a router that doesn't support the extensions. [STANDARDS-TRACK]</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="4760"/>
+        <seriesInfo name="DOI" value="10.17487/RFC4760"/>
+      </reference>
+      <reference anchor="RFC5586" target="https://www.rfc-editor.org/info/rfc5586" quoteTitle="true" derivedAnchor="RFC5586">
+        <front>
+          <title>MPLS Generic Associated Channel</title>
+          <author fullname="M. Bocci" initials="M." role="editor" surname="Bocci"/>
+          <author fullname="M. Vigoureux" initials="M." role="editor" surname="Vigoureux"/>
+          <author fullname="S. Bryant" initials="S." role="editor" surname="Bryant"/>
+          <date month="June" year="2009"/>
+          <abstract>
+            <t indent="0">This document generalizes the applicability of the pseudowire (PW) Associated Channel Header (ACH), enabling the realization of a control channel associated to MPLS Label Switched Paths (LSPs) and MPLS Sections in addition to MPLS pseudowires. In order to identify the presence of this Associated Channel Header in the label stack, this document also assigns one of the reserved MPLS label values to the Generic Associated Channel Label (GAL), to be used as a label based exception mechanism.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="5586"/>
+        <seriesInfo name="DOI" value="10.17487/RFC5586"/>
+      </reference>
+      <reference anchor="RFC6425" target="https://www.rfc-editor.org/info/rfc6425" quoteTitle="true" derivedAnchor="RFC6425">
+        <front>
+          <title>Detecting Data-Plane Failures in Point-to-Multipoint MPLS - Extensions to LSP Ping</title>
+          <author fullname="S. Saxena" initials="S." role="editor" surname="Saxena"/>
+          <author fullname="G. Swallow" initials="G." surname="Swallow"/>
+          <author fullname="Z. Ali" initials="Z." surname="Ali"/>
+          <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+          <author fullname="S. Yasukawa" initials="S." surname="Yasukawa"/>
+          <author fullname="T. Nadeau" initials="T." surname="Nadeau"/>
+          <date month="November" year="2011"/>
+          <abstract>
+            <t indent="0">Recent proposals have extended the scope of Multiprotocol Label Switching (MPLS) Label Switched Paths (LSPs) to encompass point-to-multipoint (P2MP) LSPs.</t>
+            <t indent="0">The requirement for a simple and efficient mechanism that can be used to detect data-plane failures in point-to-point (P2P) MPLS LSPs has been recognized and has led to the development of techniques for fault detection and isolation commonly referred to as "LSP ping".</t>
+            <t indent="0">The scope of this document is fault detection and isolation for P2MP MPLS LSPs. This documents does not replace any of the mechanisms of LSP ping, but clarifies their applicability to MPLS P2MP LSPs, and extends the techniques and mechanisms of LSP ping to the MPLS P2MP environment.</t>
+            <t indent="0">This document updates RFC 4379. [STANDARDS-TRACK]</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="6425"/>
+        <seriesInfo name="DOI" value="10.17487/RFC6425"/>
+      </reference>
+      <reference anchor="RFC7432" target="https://www.rfc-editor.org/info/rfc7432" quoteTitle="true" derivedAnchor="RFC7432">
+        <front>
+          <title>BGP MPLS-Based Ethernet VPN</title>
+          <author fullname="A. Sajassi" initials="A." role="editor" surname="Sajassi"/>
+          <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+          <author fullname="N. Bitar" initials="N." surname="Bitar"/>
+          <author fullname="A. Isaac" initials="A." surname="Isaac"/>
+          <author fullname="J. Uttaro" initials="J." surname="Uttaro"/>
+          <author fullname="J. Drake" initials="J." surname="Drake"/>
+          <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+          <date month="February" year="2015"/>
+          <abstract>
+            <t indent="0">This document describes procedures for BGP MPLS-based Ethernet VPNs (EVPN). The procedures described here meet the requirements specified in RFC 7209 -- "Requirements for Ethernet VPN (EVPN)".</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="7432"/>
+        <seriesInfo name="DOI" value="10.17487/RFC7432"/>
+      </reference>
+      <reference anchor="RFC7623" target="https://www.rfc-editor.org/info/rfc7623" quoteTitle="true" derivedAnchor="RFC7623">
+        <front>
+          <title>Provider Backbone Bridging Combined with Ethernet VPN (PBB-EVPN)</title>
+          <author fullname="A. Sajassi" initials="A." role="editor" surname="Sajassi"/>
+          <author fullname="S. Salam" initials="S." surname="Salam"/>
+          <author fullname="N. Bitar" initials="N." surname="Bitar"/>
+          <author fullname="A. Isaac" initials="A." surname="Isaac"/>
+          <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+          <date month="September" year="2015"/>
+          <abstract>
+            <t indent="0">This document discusses how Ethernet Provider Backbone Bridging (PBB) can be combined with Ethernet VPN (EVPN) in order to reduce the number of BGP MAC Advertisement routes by aggregating Customer/Client MAC (C-MAC) addresses via Provider Backbone MAC (B-MAC) address, provide client MAC address mobility using C-MAC aggregation, confine the scope of C-MAC learning to only active flows, offer per-site policies, and avoid C-MAC address flushing on topology changes. The combined solution is referred to as PBB-EVPN.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="7623"/>
+        <seriesInfo name="DOI" value="10.17487/RFC7623"/>
+      </reference>
+      <reference anchor="RFC8029" target="https://www.rfc-editor.org/info/rfc8029" quoteTitle="true" derivedAnchor="RFC8029">
+        <front>
+          <title>Detecting Multiprotocol Label Switched (MPLS) Data-Plane Failures</title>
+          <author fullname="K. Kompella" initials="K." surname="Kompella"/>
+          <author fullname="G. Swallow" initials="G." surname="Swallow"/>
+          <author fullname="C. Pignataro" initials="C." role="editor" surname="Pignataro"/>
+          <author fullname="N. Kumar" initials="N." surname="Kumar"/>
+          <author fullname="S. Aldrin" initials="S." surname="Aldrin"/>
+          <author fullname="M. Chen" initials="M." surname="Chen"/>
+          <date month="March" year="2017"/>
+          <abstract>
+            <t indent="0">This document describes a simple and efficient mechanism to detect data-plane failures in Multiprotocol Label Switching (MPLS) Label Switched Paths (LSPs). It defines a probe message called an "MPLS echo request" and a response message called an "MPLS echo reply" for returning the result of the probe. The MPLS echo request is intended to contain sufficient information to check correct operation of the data plane and to verify the data plane against the control plane, thereby localizing faults.</t>
+            <t indent="0">This document obsoletes RFCs 4379, 6424, 6829, and 7537, and updates RFC 1122.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="8029"/>
+        <seriesInfo name="DOI" value="10.17487/RFC8029"/>
+      </reference>
+      <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+        <front>
+          <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+          <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+          <date month="May" year="2017"/>
+          <abstract>
+            <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="BCP" value="14"/>
+        <seriesInfo name="RFC" value="8174"/>
+        <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+      </reference>
+      <reference anchor="RFC8214" target="https://www.rfc-editor.org/info/rfc8214" quoteTitle="true" derivedAnchor="RFC8214">
+        <front>
+          <title>Virtual Private Wire Service Support in Ethernet VPN</title>
+          <author fullname="S. Boutros" initials="S." surname="Boutros"/>
+          <author fullname="A. Sajassi" initials="A." surname="Sajassi"/>
+          <author fullname="S. Salam" initials="S." surname="Salam"/>
+          <author fullname="J. Drake" initials="J." surname="Drake"/>
+          <author fullname="J. Rabadan" initials="J." surname="Rabadan"/>
+          <date month="August" year="2017"/>
+          <abstract>
+            <t indent="0">This document describes how Ethernet VPN (EVPN) can be used to support the Virtual Private Wire Service (VPWS) in MPLS/IP networks. EVPN accomplishes the following for VPWS: provides Single-Active as well as All-Active multihoming with flow-based load-balancing, eliminates the need for Pseudowire (PW) signaling, and provides fast protection convergence upon node or link failure.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="8214"/>
+        <seriesInfo name="DOI" value="10.17487/RFC8214"/>
+      </reference>
+      <reference anchor="RFC9041" target="https://www.rfc-editor.org/info/rfc9041" quoteTitle="true" derivedAnchor="RFC9041">
+        <front>
+          <title>Updating the MPLS Label Switched Paths (LSPs) Ping Parameters IANA Registry</title>
+          <author fullname="L. Andersson" initials="L." surname="Andersson"/>
+          <author fullname="M. Chen" initials="M." surname="Chen"/>
+          <author fullname="C. Pignataro" initials="C." surname="Pignataro"/>
+          <author fullname="T. Saad" initials="T." surname="Saad"/>
+          <date month="July" year="2021"/>
+          <abstract>
+            <t indent="0">This document updates RFCs 8029 and 8611, both of which define IANA registries for MPLS Label Switched Path (LSP) Ping. In particular, the registration procedure "Private Use" (previously known as "Vendor Private Use") has been changed to "First Come First Served" for the TLV and sub-TLV registries.</t>
+            <t indent="0">It also updates the description of the procedures for the responses sent when an unknown or erroneous code point is found. The updates are to clarify and align this namespace with recent developments, e.g., aligning terminology with RFC 8126 instead of the now obsoleted RFC 5226 (both titled "Guidelines for Writing an IANA Considerations Section in RFCs").</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="9041"/>
+        <seriesInfo name="DOI" value="10.17487/RFC9041"/>
+      </reference>
+      <reference anchor="RFC9136" target="https://www.rfc-editor.org/info/rfc9136" quoteTitle="true" derivedAnchor="RFC9136">
+        <front>
+          <title>IP Prefix Advertisement in Ethernet VPN (EVPN)</title>
+          <author fullname="J. Rabadan" initials="J." role="editor" surname="Rabadan"/>
+          <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+          <author fullname="J. Drake" initials="J." surname="Drake"/>
+          <author fullname="W. Lin" initials="W." surname="Lin"/>
+          <author fullname="A. Sajassi" initials="A." surname="Sajassi"/>
+          <date month="October" year="2021"/>
+          <abstract>
+            <t indent="0">The BGP MPLS-based Ethernet VPN (EVPN) (RFC 7432) mechanism provides a flexible control plane that allows intra-subnet connectivity in an MPLS and/or Network Virtualization Overlay (NVO) (RFC 7365) network. In some networks, there is also a need for dynamic and efficient inter-subnet connectivity across Tenant Systems and end devices that can be physical or virtual and do not necessarily participate in dynamic routing protocols. This document defines a new EVPN route type for the advertisement of IP prefixes and explains some use-case examples where this new route type is used.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="9136"/>
+        <seriesInfo name="DOI" value="10.17487/RFC9136"/>
+      </reference>
+    </references>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">The authors would like to thank <contact fullname="Loa Andersson"/>,
+      <contact fullname="Alexander Vainshtein"/>, <contact fullname="Ron       Sdayoor"/>, <contact fullname="Jim Guichard"/>, <contact fullname="Lars       Eggert"/>, <contact fullname="John Scudder"/>, <contact fullname="Éric       Vyncke"/>, <contact fullname="Warren Kumari"/>, <contact fullname="Patrice Brissette"/>, and <contact fullname="Weiguo Hao"/> for
+      their valuable comments.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Parag Jain" initials="P." surname="Jain">
+        <organization showOnFrontPage="true">Cisco</organization>
+        <address>
+          <postal>
+            <country>Canada</country>
+          </postal>
+          <email>paragj@cisco.com</email>
+        </address>
+      </author>
+      <author fullname="Ali Sajassi" initials="A." surname="Sajassi">
+        <organization showOnFrontPage="true">Cisco</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>sajassi@cisco.com</email>
+        </address>
+      </author>
+      <author fullname="Samer Salam" initials="S." surname="Salam">
+        <organization showOnFrontPage="true">Cisco</organization>
+        <address>
+          <postal>
+            <country>Canada</country>
+          </postal>
+          <email>ssalam@cisco.com</email>
+        </address>
+      </author>
+      <author fullname="Sami Boutros" initials="S." surname="Boutros">
+        <organization showOnFrontPage="true">Ciena</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>sboutros@ciena.com</email>
+        </address>
+      </author>
+      <author fullname="Greg Mirsky" initials="G." surname="Mirsky">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <country>United States of America</country>
+          </postal>
+          <email>gregimirsky@gmail.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

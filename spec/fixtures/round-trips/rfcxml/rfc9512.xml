@@ -1,0 +1,956 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" submissionType="IETF" category="info" consensus="true" docName="draft-ietf-httpapi-yaml-mediatypes-10" number="9512" tocInclude="true" sortRefs="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2024-02-14T13:51:14" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-httpapi-yaml-mediatypes-10" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9512" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title>YAML Media Type</title>
+    <seriesInfo name="RFC" value="9512" stream="IETF"/>
+    <author initials="R." surname="Polli" fullname="Roberto Polli">
+      <organization abbrev="DTD, Italian Government" showOnFrontPage="true">Digital Transformation Department, Italian Government</organization>
+      <address>
+        <postal>
+          <country>Italy</country>
+        </postal>
+        <email>robipolli@gmail.com</email>
+      </address>
+    </author>
+    <author initials="E." surname="Wilde" fullname="Erik Wilde">
+      <organization showOnFrontPage="true">Axway</organization>
+      <address>
+        <postal>
+          <country>Switzerland</country>
+        </postal>
+        <email>erik.wilde@dret.net</email>
+      </address>
+    </author>
+    <author initials="E." surname="Aro" fullname="Eemeli Aro">
+      <organization showOnFrontPage="true">Mozilla</organization>
+      <address>
+        <postal>
+          <country>Finland</country>
+        </postal>
+        <email>eemeli@gmail.com</email>
+      </address>
+    </author>
+    <date month="02" year="2024"/>
+    <area>art</area>
+    <workgroup>httpapi</workgroup>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document registers the <tt>application/yaml</tt> media type and the
+<tt>+yaml</tt> structured syntax suffix with IANA. Both identify document
+components that are serialized according to the YAML specification.
+</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for informational purposes.  
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by the
+            Internet Engineering Steering Group (IESG).  Not all documents
+            approved by the IESG are candidates for any level of Internet
+            Standard; see Section 2 of RFC 7841. 
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9512" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-notational-conventions">Notational Conventions</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-fragment-identification">Fragment Identification</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2.2.2">
+                  <li pn="section-toc.1-1.1.2.2.2.1">
+                    <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.2.1.1"><xref derivedContent="1.2.1" format="counter" sectionFormat="of" target="section-1.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-fragment-identification-via">Fragment Identification via Alias Nodes</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-media-type-and-structured-s">Media Type and Structured Syntax Suffix Registrations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-media-type-application-yaml">Media Type <tt>application/yaml</tt></xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-yaml-structured-syntax-">The <tt>+yaml</tt> Structured Syntax Suffix</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-interoperability-considerat">Interoperability Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-yaml-is-an-evolving-languag">YAML Is an Evolving Language</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-yaml-streams">YAML Streams</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-filename-extension">Filename Extension</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.4">
+                <t indent="0" pn="section-toc.1-1.3.2.4.1"><xref derivedContent="3.4" format="counter" sectionFormat="of" target="section-3.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-yaml-and-json">YAML and JSON</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.5">
+                <t indent="0" pn="section-toc.1-1.3.2.5.1"><xref derivedContent="3.5" format="counter" sectionFormat="of" target="section-3.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-fragment-identifiers">Fragment Identifiers</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-arbitrary-code-execution">Arbitrary Code Execution</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-resource-exhaustion">Resource Exhaustion</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-yaml-streams-2">YAML Streams</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.4">
+                <t indent="0" pn="section-toc.1-1.4.2.4.1"><xref derivedContent="4.4" format="counter" sectionFormat="of" target="section-4.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-expressing-booleans">Expressing Booleans</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-examples-related-to-fragmen">Examples Related to Fragment Identifier Interoperability</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="A.1" format="counter" sectionFormat="of" target="section-appendix.a.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-unreferenceable-nodes">Unreferenceable Nodes</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="A.2" format="counter" sectionFormat="of" target="section-appendix.a.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-referencing-a-missing-node">Referencing a Missing Node</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.3">
+                <t indent="0" pn="section-toc.1-1.7.2.3.1"><xref derivedContent="A.3" format="counter" sectionFormat="of" target="section-appendix.a.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-representation-graph-with-a">Representation Graph with Anchors and Cyclic References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">YAML <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/> is a data serialization format that is
+      capable of conveying one or multiple documents in a single presentation
+      stream (e.g., a file or a network resource).  It is widely used on the
+      Internet, including in the API sector (e.g., see <xref target="OAS" format="default" sectionFormat="of" derivedContent="OAS"/>),
+      but a corresponding media type and structured syntax suffix had not
+      previously been registered by IANA.</t>
+      <t indent="0" pn="section-1-2">To increase interoperability when exchanging YAML streams and
+      leverage content negotiation mechanisms when exchanging YAML resources,
+      this specification registers the <tt>application/yaml</tt> media type
+      and the <tt>+yaml</tt> structured syntax suffix <xref target="RFC6838" format="default" sectionFormat="of" derivedContent="MEDIATYPE"/>.</t>
+      <t indent="0" pn="section-1-3">Moreover, it provides security considerations and interoperability
+      considerations related to <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>, including its relation
+      with <xref target="RFC8259" format="default" sectionFormat="of" derivedContent="JSON"/>.</t>
+      <section anchor="notational-conventions" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-notational-conventions">Notational Conventions</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+        </t>
+        <t indent="0" pn="section-1.1-2">The terms "content negotiation" and "resource"
+        in this document are to be interpreted as in <xref target="RFC9110" format="default" sectionFormat="of" derivedContent="HTTP"/>.</t>
+        <t indent="0" pn="section-1.1-3">The terms "fragment" and "fragment identifier" in this document are
+        to be interpreted as in <xref target="RFC3986" format="default" sectionFormat="of" derivedContent="URI"/>.</t>
+        <t indent="0" pn="section-1.1-4">The terms "presentation", "stream", "YAML document",
+        "representation graph", "tag", "serialization detail", "node", "alias
+        node", "anchor", and "anchor name" in this document are to be
+        interpreted as in <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>.</t>
+        <t indent="0" pn="section-1.1-5">Figures containing YAML code always start with the <tt>%YAML</tt>
+        directive to improve readability.</t>
+      </section>
+      <section anchor="application-yaml-fragment" numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-fragment-identification">Fragment Identification</name>
+        <t indent="0" pn="section-1.2-1">A fragment identifies a node in a stream.</t>
+        <t indent="0" pn="section-1.2-2">A fragment identifier starting with "*"
+is to be interpreted as a YAML alias node (see <xref target="fragment-alias-node" format="default" sectionFormat="of" derivedContent="Section 1.2.1"/>).</t>
+        <t indent="0" pn="section-1.2-3">For single-document YAML streams, a fragment identifier that is
+        empty or that starts with "/" is to be interpreted as a JSON Pointer
+        <xref target="RFC6901" format="default" sectionFormat="of" derivedContent="JSON-POINTER"/> and is evaluated on the YAML
+        representation graph, traversing alias nodes; in particular, the
+        empty fragment identifier references the root node.  This syntax can
+        only reference the YAML nodes that are on a path that is made up of
+        nodes interoperable with the JSON data model (see <xref target="int-yaml-and-json" format="default" sectionFormat="of" derivedContent="Section 3.4"/>).</t>
+        <t indent="0" pn="section-1.2-4">A fragment identifier is not guaranteed to reference an existing node.
+Therefore, applications <bcp14>SHOULD</bcp14> define how an unresolved alias node
+ought to be handled.</t>
+        <section anchor="fragment-alias-node" numbered="true" removeInRFC="false" toc="include" pn="section-1.2.1">
+          <name slugifiedName="name-fragment-identification-via">Fragment Identification via Alias Nodes</name>
+          <t indent="0" pn="section-1.2.1-1">This section describes how to use
+alias nodes (see Sections 3.2.2.2 and 7.1 of <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>)
+as fragment identifiers to designate nodes.</t>
+          <t indent="0" pn="section-1.2.1-2">A YAML alias node can be represented in a URI fragment identifier
+by encoding it into bytes using UTF-8 <xref target="RFC3629" format="default" sectionFormat="of" derivedContent="UTF-8"/>,
+but percent-encoding of those characters is not allowed by the fragment rule
+in <xref section="3.5" sectionFormat="of" target="RFC3986" format="default" derivedLink="https://rfc-editor.org/rfc/rfc3986#section-3.5" derivedContent="URI"/>.</t>
+          <t indent="0" pn="section-1.2.1-3">If multiple nodes match a fragment identifier,
+the first occurrence of such a match is selected.</t>
+          <t indent="0" pn="section-1.2.1-4">Users concerned with interoperability of fragment identifiers:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1.2.1-5">
+            <li pn="section-1.2.1-5.1">
+              <bcp14>SHOULD</bcp14> limit alias nodes to a set of characters
+that do not require encoding
+to be expressed as URI fragment identifiers
+(this is generally possible since
+anchor names are a serialization detail), and</li>
+            <li pn="section-1.2.1-5.2">
+              <bcp14>SHOULD NOT</bcp14> use alias nodes that match multiple nodes.</li>
+          </ul>
+          <t indent="0" pn="section-1.2.1-6">In the example resource below, the relative reference (see <xref section="4.2" sectionFormat="of" target="RFC3986" format="default" derivedLink="https://rfc-editor.org/rfc/rfc3986#section-4.2" derivedContent="URI"/>)
+          <tt>file.yaml#*foo</tt> identifies the first alias node
+          <tt>*foo</tt> pointing to the node with value <tt>scalar</tt> and
+          not to the one in the second document, whereas the relative reference
+          <tt>file.yaml#*document_2</tt> identifies the root node of the
+          second document <tt>{one: [a, sequence]}</tt>.</t>
+          <figure align="left" suppress-title="false" pn="figure-1">
+            <name slugifiedName="name-a-yaml-stream-containing-tw">A YAML Stream Containing Two YAML Documents</name>
+            <sourcecode type="yaml" markers="false" pn="section-1.2.1-7.1">
+ %YAML 1.2
+ ---
+ one: &amp;foo scalar
+ two: &amp;bar
+   - some
+   - sequence
+   - items
+ ...
+ %YAML 1.2
+ ---
+ &amp;document_2
+ one: &amp;foo [a, sequence]
+</sourcecode>
+          </figure>
+        </section>
+      </section>
+    </section>
+    <section anchor="media-type-and-structured-syntax-suffix-registrations" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-media-type-and-structured-s">Media Type and Structured Syntax Suffix Registrations</name>
+      <t indent="0" pn="section-2-1"> This section includes the information required for IANA to register
+      the <tt>application/yaml</tt> media type and the <tt>+yaml</tt> structured syntax suffix
+      per <xref target="RFC6838" format="default" sectionFormat="of" derivedContent="MEDIATYPE"/>.</t>
+      <section anchor="application-yaml" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-media-type-application-yaml">Media Type <tt>application/yaml</tt></name>
+        <t indent="0" pn="section-2.1-1">The media type for YAML is <tt>application/yaml</tt>;
+the following information serves as the registration form for this media type.</t>
+        <dl indent="3" newline="false" spacing="normal" pn="section-2.1-2">
+          <dt pn="section-2.1-2.1">Type name:</dt>
+          <dd pn="section-2.1-2.2">
+            <t indent="0" pn="section-2.1-2.2.1">application</t>
+          </dd>
+          <dt pn="section-2.1-2.3">Subtype name:</dt>
+          <dd pn="section-2.1-2.4">
+            <t indent="0" pn="section-2.1-2.4.1">yaml</t>
+          </dd>
+          <dt pn="section-2.1-2.5">Required parameters:</dt>
+          <dd pn="section-2.1-2.6">
+            <t indent="0" pn="section-2.1-2.6.1">N/A</t>
+          </dd>
+          <dt pn="section-2.1-2.7">Optional parameters:</dt>
+          <dd pn="section-2.1-2.8">
+            <t indent="0" pn="section-2.1-2.8.1">N/A; unrecognized parameters should be ignored.</t>
+          </dd>
+          <dt pn="section-2.1-2.9">Encoding considerations:</dt>
+          <dd pn="section-2.1-2.10">
+            <t indent="0" pn="section-2.1-2.10.1">binary</t>
+          </dd>
+          <dt pn="section-2.1-2.11">Security considerations:</dt>
+          <dd pn="section-2.1-2.12">
+            <t indent="0" pn="section-2.1-2.12.1">See <xref target="security-considerations" format="default" sectionFormat="of" derivedContent="Section 4"/> of this document.</t>
+          </dd>
+          <dt pn="section-2.1-2.13">Interoperability considerations:</dt>
+          <dd pn="section-2.1-2.14">
+            <t indent="0" pn="section-2.1-2.14.1">See <xref target="interoperability-considerations" format="default" sectionFormat="of" derivedContent="Section 3"/> of this document.</t>
+          </dd>
+          <dt pn="section-2.1-2.15">Published specification:</dt>
+          <dd pn="section-2.1-2.16">
+            <t indent="0" pn="section-2.1-2.16.1"><xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>, this document</t>
+          </dd>
+          <dt pn="section-2.1-2.17">Applications that use this media type:</dt>
+          <dd pn="section-2.1-2.18">
+            <t indent="0" pn="section-2.1-2.18.1">Applications that need a human-friendly, cross-language, and Unicode-based data serialization language designed around the common data types of dynamic programming languages.</t>
+          </dd>
+          <dt pn="section-2.1-2.19">Fragment identifier considerations:</dt>
+          <dd pn="section-2.1-2.20">
+            <t indent="0" pn="section-2.1-2.20.1">See <xref target="application-yaml-fragment" format="default" sectionFormat="of" derivedContent="Section 1.2"/> of this document.</t>
+          </dd>
+          <dt pn="section-2.1-2.21">Additional information:</dt>
+          <dd pn="section-2.1-2.22">
+            <t indent="0" pn="section-2.1-2.22.1"><br/></t>
+            <dl spacing="compact" indent="3" newline="false" pn="section-2.1-2.22.2">
+              <dt pn="section-2.1-2.22.2.1">Deprecated alias names for this
+          type:</dt>
+              <dd pn="section-2.1-2.22.2.2">application/x-yaml, text/yaml, and text/x-yaml. These
+          names are used but are not registered.</dd>
+              <dt pn="section-2.1-2.22.2.3">Magic number(s):</dt>
+              <dd pn="section-2.1-2.22.2.4">N/A</dd>
+              <dt pn="section-2.1-2.22.2.5">File extension(s):</dt>
+              <dd pn="section-2.1-2.22.2.6">"yaml" (preferred) and "yml". See <xref target="int-yaml-filename-extension" format="default" sectionFormat="of" derivedContent="Section 3.3"/> of this document.</dd>
+              <dt pn="section-2.1-2.22.2.7">Macintosh file type code(s):</dt>
+              <dd pn="section-2.1-2.22.2.8">N/A</dd>
+              <dt pn="section-2.1-2.22.2.9">Windows Clipboard Name:</dt>
+              <dd pn="section-2.1-2.22.2.10">YAML</dd>
+            </dl>
+          </dd>
+          <dt pn="section-2.1-2.23">Person and email address to contact for further information:</dt>
+          <dd pn="section-2.1-2.24">
+            <t indent="0" pn="section-2.1-2.24.1">See the Authors' Addresses section of this document.</t>
+          </dd>
+          <dt pn="section-2.1-2.25">Intended usage:</dt>
+          <dd pn="section-2.1-2.26">
+            <t indent="0" pn="section-2.1-2.26.1">COMMON</t>
+          </dd>
+          <dt pn="section-2.1-2.27">Restrictions on usage:</dt>
+          <dd pn="section-2.1-2.28">
+            <t indent="0" pn="section-2.1-2.28.1">None</t>
+          </dd>
+          <dt pn="section-2.1-2.29">Author:</dt>
+          <dd pn="section-2.1-2.30">
+            <t indent="0" pn="section-2.1-2.30.1">See the Authors' Addresses section of this document.</t>
+          </dd>
+          <dt pn="section-2.1-2.31">Change controller:</dt>
+          <dd pn="section-2.1-2.32">
+            <t indent="0" pn="section-2.1-2.32.1">IETF</t>
+          </dd>
+        </dl>
+      </section>
+      <section anchor="suffix-yaml" numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-the-yaml-structured-syntax-">The <tt>+yaml</tt> Structured Syntax Suffix</name>
+        <t indent="0" pn="section-2.2-1">The suffix
+<tt>+yaml</tt> <bcp14>MAY</bcp14> be used with any media type whose representation follows
+that established for <tt>application/yaml</tt>.
+The structured syntax suffix registration form follows.
+	See <xref target="RFC6838" format="default" sectionFormat="of" derivedContent="MEDIATYPE"/> for definitions of each part of the registration form.</t>
+        <dl indent="3" newline="false" spacing="normal" pn="section-2.2-2">
+          <dt pn="section-2.2-2.1">Name:</dt>
+          <dd pn="section-2.2-2.2">
+            <t indent="0" pn="section-2.2-2.2.1">YAML Ain't Markup Language (YAML)</t>
+          </dd>
+          <dt pn="section-2.2-2.3">+suffix:</dt>
+          <dd pn="section-2.2-2.4">
+            <t indent="0" pn="section-2.2-2.4.1"><tt>+yaml</tt></t>
+          </dd>
+          <dt pn="section-2.2-2.5">References:</dt>
+          <dd pn="section-2.2-2.6">
+            <t indent="0" pn="section-2.2-2.6.1"><xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>, this document</t>
+          </dd>
+          <dt pn="section-2.2-2.7">Encoding considerations:</dt>
+          <dd pn="section-2.2-2.8">
+            <t indent="0" pn="section-2.2-2.8.1">Same as <tt>application/yaml</tt></t>
+          </dd>
+          <dt pn="section-2.2-2.9">Interoperability considerations:</dt>
+          <dd pn="section-2.2-2.10">
+            <t indent="0" pn="section-2.2-2.10.1">Same as <tt>application/yaml</tt></t>
+          </dd>
+          <dt pn="section-2.2-2.11">Fragment identifier considerations:</dt>
+          <dd pn="section-2.2-2.12">
+            <t indent="0" pn="section-2.2-2.12.1">Unlike <tt>application/yaml</tt>,
+there is no fragment identification syntax defined
+for <tt>+yaml</tt>.
+</t>
+            <t indent="0" pn="section-2.2-2.12.2">A specific <tt>xxx/yyy+yaml</tt> media type
+needs to define the syntax and semantics for fragment identifiers
+because the ones defined for <tt>application/yaml</tt>
+do not apply unless explicitly expressed.</t>
+          </dd>
+          <dt pn="section-2.2-2.13">Security considerations:</dt>
+          <dd pn="section-2.2-2.14">
+            <t indent="0" pn="section-2.2-2.14.1">Same as <tt>application/yaml</tt></t>
+          </dd>
+          <dt pn="section-2.2-2.15">Contact:</dt>
+          <dd pn="section-2.2-2.16">
+            <t indent="0" pn="section-2.2-2.16.1">httpapi@ietf.org or art@ietf.org</t>
+          </dd>
+          <dt pn="section-2.2-2.17">Author:</dt>
+          <dd pn="section-2.2-2.18">
+            <t indent="0" pn="section-2.2-2.18.1">See the Authors' Addresses section of this document.</t>
+          </dd>
+          <dt pn="section-2.2-2.19">Change controller:</dt>
+          <dd pn="section-2.2-2.20">
+            <t indent="0" pn="section-2.2-2.20.1">IETF</t>
+          </dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="interoperability-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-interoperability-considerat">Interoperability Considerations</name>
+      <section anchor="int-yaml-evolving" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-yaml-is-an-evolving-languag">YAML Is an Evolving Language</name>
+        <t indent="0" pn="section-3.1-1">YAML is an evolving language, and over time,
+some features have been added and others removed.</t>
+        <t indent="0" pn="section-3.1-2">The <tt>application/yaml</tt> media type registration is independent of the YAML version.
+This allows content negotiation of version-independent YAML resources.</t>
+        <t indent="0" pn="section-3.1-3">Implementers concerned about features related to a specific YAML version
+can specify it in YAML documents using the <tt>%YAML</tt> directive
+(see Section 6.8.1 of <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>).</t>
+      </section>
+      <section anchor="int-yaml-streams" numbered="true" removeInRFC="false" toc="include" pn="section-3.2">
+        <name slugifiedName="name-yaml-streams">YAML Streams</name>
+        <t indent="0" pn="section-3.2-1">A YAML stream can contain zero or more YAML documents.</t>
+        <t indent="0" pn="section-3.2-2">When receiving a multi-document stream,
+an application that only expects single-document streams
+should signal an error instead of ignoring the extra documents.</t>
+        <t indent="0" pn="section-3.2-3">Current implementations consider different documents in a stream independent,
+similarly to JSON text sequences (see <xref target="RFC7464" format="default" sectionFormat="of" derivedContent="RFC7464"/>);
+elements such as anchors are not guaranteed to be referenceable
+across different documents.</t>
+      </section>
+      <section anchor="int-yaml-filename-extension" numbered="true" removeInRFC="false" toc="include" pn="section-3.3">
+        <name slugifiedName="name-filename-extension">Filename Extension</name>
+        <t indent="0" pn="section-3.3-1">The "yaml" filename extension is the preferred one;
+it is the most popular and widely used on the web.
+The "yml" filename extension is still used.
+The simultaneous usage of two filename extensions in the same context
+might cause interoperability issues
+(e.g., when both a "config.yaml" and a "config.yml" are present).</t>
+      </section>
+      <section anchor="int-yaml-and-json" numbered="true" removeInRFC="false" toc="include" pn="section-3.4">
+        <name slugifiedName="name-yaml-and-json">YAML and JSON</name>
+        <t indent="0" pn="section-3.4-1">When using flow collection styles (see Section 7.4 of <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>),
+a YAML document could look like JSON <xref target="RFC8259" format="default" sectionFormat="of" derivedContent="JSON"/>;
+thus, similar interoperability considerations apply.</t>
+        <t indent="0" pn="section-3.4-2">When using YAML as a more efficient format
+to serialize information intended to be consumed as JSON,
+information not reflected in the representation graph
+and classified as presentation or serialization details
+(see Section 3.2 of <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>) can be discarded.
+This includes comments (see Section 3.2.3.3 of <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>),
+directives, and alias nodes (see Section 7.1 of <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>)
+that do not have a JSON counterpart.</t>
+        <figure anchor="example-json-discards-information" align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-json-replaces-alias-nodes-w">JSON Replaces Alias Nodes with Static Values</name>
+          <sourcecode type="yaml" markers="false" pn="section-3.4-3.1">
+ %YAML 1.2
+ ---
+ # This comment will be lost
+ # when serializing in JSON.
+ Title:
+   type: string
+   maxLength: &amp;text_limit 64
+
+ Name:
+   type: string
+   maxLength: *text_limit  # Replaced by the value 64.
+</sourcecode>
+        </figure>
+        <t indent="0" pn="section-3.4-4">Implementers need to ensure that relevant
+information will not be lost during processing.
+For example, they might consider 
+alias nodes being replaced by static values as acceptable.</t>
+        <t indent="0" pn="section-3.4-5">In some cases, an implementer may want to
+define a list of allowed YAML features,
+taking into account that the following features might have interoperability
+issues with <xref target="RFC8259" format="default" sectionFormat="of" derivedContent="JSON"/>:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.4-6">
+          <li pn="section-3.4-6.1">multi-document YAML streams</li>
+          <li pn="section-3.4-6.2">non-UTF-8 encoding. Before encoding YAML streams in UTF-16 or UTF-32,
+it is important to note that <xref section="8.1" sectionFormat="of" target="RFC8259" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8259#section-8.1" derivedContent="JSON"/> mandates the use of UTF-8
+when exchanging JSON texts between systems that are not part of a closed ecosystem
+and that Section 5.2 of <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/> recommends the use of UTF-8.</li>
+          <li pn="section-3.4-6.3">mapping keys that are not strings</li>
+          <li pn="section-3.4-6.4">cyclic references represented using anchors (see <xref target="sec-yaml-exhaustion" format="default" sectionFormat="of" derivedContent="Section 4.2"/>
+and <xref target="example-yaml-cyclic" format="default" sectionFormat="of" derivedContent="Figure 4"/>)</li>
+          <li pn="section-3.4-6.5">
+            <tt>.inf</tt> and <tt>.nan</tt> float values, since JSON does not support them</li>
+          <li pn="section-3.4-6.6">non-JSON types,
+including the ones associated with tags like <tt>!!timestamp</tt>
+that were included in the default schema of older YAML versions</li>
+          <li pn="section-3.4-6.7">tags in general, specifically ones that do not map to JSON
+          types, e.g., custom and local tags such as <tt>!!python/object</tt>
+          and <tt>!mytag</tt> (see Section 2.4 of <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>)</li>
+        </ul>
+        <figure anchor="example-unsupported-keys" align="left" suppress-title="false" pn="figure-3">
+          <name slugifiedName="name-example-of-mapping-keys-and">Example of Mapping Keys and Values Not Supported in JSON in a Multi‑Document YAML Stream</name>
+          <sourcecode type="yaml" markers="false" pn="section-3.4-7.1">
+ %YAML 1.2
+ ---
+ non-json-keys:
+   0: a number
+   [0, 1]: a sequence
+   ? {k: v}
+   : a map
+ ---
+ non-json-keys:
+   !date 2020-01-01: a timestamp
+ non-json-value: !date 2020-01-01
+ ...
+</sourcecode>
+        </figure>
+      </section>
+      <section anchor="int-fragment" numbered="true" removeInRFC="false" toc="include" pn="section-3.5">
+        <name slugifiedName="name-fragment-identifiers">Fragment Identifiers</name>
+        <t indent="0" pn="section-3.5-1">To allow fragment identifiers to traverse alias nodes, the YAML
+        representation graph needs to be generated before the fragment
+        identifier evaluation.  It is important that this evaluation does not
+        cause the issues mentioned in Sections <xref target="int-yaml-and-json" format="counter" sectionFormat="of" derivedContent="3.4"/> and <xref target="security-considerations" format="counter" sectionFormat="of" derivedContent="4"/>, such as infinite loops and
+        unexpected code execution.</t>
+        <t indent="0" pn="section-3.5-2">Implementers need to consider that the YAML version and supported features (e.g., merge keys)
+can affect the generation of the representation graph (see <xref target="example-merge-keys" format="default" sectionFormat="of" derivedContent="Figure 9"/>).</t>
+        <t indent="0" pn="section-3.5-3">In <xref target="application-yaml-fragment" format="default" sectionFormat="of" derivedContent="Section 1.2"/>, this document extends the use of specifications based on
+the JSON data model with support for YAML fragment identifiers.
+This is to improve the interoperability of already-consolidated practices,
+such as writing <xref target="OAS" format="default" sectionFormat="of" derivedContent="OAS">OpenAPI documents</xref> in YAML.</t>
+        <t indent="0" pn="section-3.5-4"><xref target="ex-fragid" format="default" sectionFormat="of" derivedContent="Appendix A"/> provides a non-exhaustive list of examples to help
+readers understand interoperability issues related to fragment identifiers.</t>
+      </section>
+    </section>
+    <section anchor="security-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-4-1">Security requirements for both media types and media type suffixes
+are discussed in <xref target="RFC6838" sectionFormat="of" section="4.6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6838#section-4.6" derivedContent="MEDIATYPE"/>.</t>
+      <section anchor="sec-yaml-code-execution" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-arbitrary-code-execution">Arbitrary Code Execution</name>
+        <t indent="0" pn="section-4.1-1">Care should be used when using YAML tags because their resolution
+        might trigger unexpected code execution.</t>
+        <t indent="0" pn="section-4.1-2">Code execution in deserializers should be disabled by default
+and only be enabled explicitly.
+In the latter case, the implementation should ensure (for example, via specific functions)
+that the code execution results in strictly bounded time/memory limits.</t>
+        <t indent="0" pn="section-4.1-3">Many implementations provide safe deserializers that address these issues.</t>
+      </section>
+      <section anchor="sec-yaml-exhaustion" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-resource-exhaustion">Resource Exhaustion</name>
+        <t indent="0" pn="section-4.2-1">YAML documents are rooted, connected, directed graphs
+and can contain reference cycles,
+so they can't be treated as simple trees (see Section 3.2.1 of <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/>).
+An implementation that treats them as simple trees
+risks going into an infinite loop while traversing the YAML representation graph.
+This can happen:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.2-2">
+          <li pn="section-4.2-2.1">when trying to serialize it as JSON or </li>
+          <li pn="section-4.2-2.2">when searching/identifying nodes using specifications based on the JSON data model (e.g., <xref target="RFC6901" format="default" sectionFormat="of" derivedContent="JSON-POINTER"/>).</li>
+        </ul>
+        <figure anchor="example-yaml-cyclic" align="left" suppress-title="false" pn="figure-4">
+          <name slugifiedName="name-a-cyclic-document">A Cyclic Document</name>
+          <sourcecode type="yaml" markers="false" pn="section-4.2-3.1">
+ %YAML 1.2
+ ---
+ x: &amp;x
+   y: *x
+</sourcecode>
+        </figure>
+        <t indent="0" pn="section-4.2-4">Even if a representation graph is not cyclic, treating it as a
+        simple tree could lead to improper behaviors, such as triggering an
+        Exponential Data Expansion (e.g., a Billion Laughs Attack).
+        </t>
+        <figure anchor="example-yaml-1e9lol" align="left" suppress-title="false" pn="figure-5">
+          <name slugifiedName="name-a-billion-laughs-document">A Billion Laughs Document</name>
+          <sourcecode type="yaml" markers="false" pn="section-4.2-5.1">
+ %YAML 1.2
+ ---
+ x1: &amp;a1 ["a", "a"]
+ x2: &amp;a2 [*a1, *a1]
+ x3: &amp;a3 [*a2, *a2]
+</sourcecode>
+        </figure>
+        <t indent="0" pn="section-4.2-6">This can be addressed using processors that limit the anchor recursion depth
+and validate the input before processing it;
+even in these cases, it is important
+to carefully test the implementation you are going to use.
+The same considerations apply when serializing a YAML representation graph
+in a format that does not support reference cycles (see <xref target="int-yaml-and-json" format="default" sectionFormat="of" derivedContent="Section 3.4"/>).</t>
+      </section>
+      <section anchor="yaml-streams" numbered="true" removeInRFC="false" toc="include" pn="section-4.3">
+        <name slugifiedName="name-yaml-streams-2">YAML Streams</name>
+        <t indent="0" pn="section-4.3-1">Incremental parsing and processing of a YAML stream can produce partial results
+and later indicate failure to parse the remainder of the stream;
+to prevent partial processing, implementers might prefer validating and processing all the documents in a stream at the same time.</t>
+        <t indent="0" pn="section-4.3-2">Repeated parsing and re-encoding of a YAML stream can result
+in the addition or removal of document delimiters (e.g., <tt>---</tt> or <tt>...</tt>)
+as well as the modification of anchor names and other serialization details that can break signature validation.</t>
+      </section>
+      <section anchor="expressing-booleans" numbered="true" removeInRFC="false" toc="include" pn="section-4.4">
+        <name slugifiedName="name-expressing-booleans">Expressing Booleans</name>
+        <t indent="0" pn="section-4.4-1">Section 10.3.2 of <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/> specifies that only the scalars matching the
+regular expression <tt>true|True|TRUE|false|False|FALSE</tt> are interpreted as booleans.
+Older YAML versions were more tolerant (e.g., interpreting <tt>NO</tt> and <tt>N</tt> as <tt>False</tt> and interpreting
+<tt>YES</tt> and <tt>Y</tt> as <tt>True</tt>).
+When the older syntax is used, a YAML implementation could then interpret
+<tt>{insecure: n}</tt> as <tt>{insecure: "n"}</tt> instead of <tt>{insecure: false}</tt>.
+Using the syntax defined in Section 10.3.2 of <xref target="YAML" format="default" sectionFormat="of" derivedContent="YAML"/> prevents these issues.</t>
+      </section>
+    </section>
+    <section anchor="iana-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-5-1"> IANA has updated the <eref target="https://www.iana.org/assignments/media-types" brackets="none">"Media Types"
+      registry</eref> with the registration information in <xref target="application-yaml" format="default" sectionFormat="of" derivedContent="Section 2.1"/> for the
+      media type <tt>application/yaml</tt>.
+      </t>
+      <t indent="0" pn="section-5-2">IANA has updated the <eref target="https://www.iana.org/assignments/media-type-structured-suffix" brackets="none">"Structured
+      Syntax Suffixes" registry</eref> with the registration information in
+      <xref target="suffix-yaml" format="default" sectionFormat="of" derivedContent="Section 2.2"/> for the structured syntax suffix
+      <tt>+yaml</tt>.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="RFC3986" to="URI"/>
+    <displayreference target="RFC3629" to="UTF-8"/>
+    <displayreference target="RFC6838" to="MEDIATYPE"/>
+    <displayreference target="RFC6901" to="JSON-POINTER"/>
+    <displayreference target="RFC9110" to="HTTP"/>
+    <displayreference target="RFC8259" to="JSON"/>
+    <references pn="section-6">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-6.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC9110" target="https://www.rfc-editor.org/info/rfc9110" quoteTitle="true" derivedAnchor="HTTP">
+          <front>
+            <title>HTTP Semantics</title>
+            <author fullname="R. Fielding" initials="R." role="editor" surname="Fielding"/>
+            <author fullname="M. Nottingham" initials="M." role="editor" surname="Nottingham"/>
+            <author fullname="J. Reschke" initials="J." role="editor" surname="Reschke"/>
+            <date month="June" year="2022"/>
+            <abstract>
+              <t indent="0">The Hypertext Transfer Protocol (HTTP) is a stateless application-level protocol for distributed, collaborative, hypertext information systems. This document describes the overall architecture of HTTP, establishes common terminology, and defines aspects of the protocol that are shared by all versions. In this definition are core protocol elements, extensibility mechanisms, and the "http" and "https" Uniform Resource Identifier (URI) schemes.</t>
+              <t indent="0">This document updates RFC 3864 and obsoletes RFCs 2818, 7231, 7232, 7233, 7235, 7538, 7615, 7694, and portions of 7230.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="97"/>
+          <seriesInfo name="RFC" value="9110"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9110"/>
+        </reference>
+        <reference anchor="RFC8259" target="https://www.rfc-editor.org/info/rfc8259" quoteTitle="true" derivedAnchor="JSON">
+          <front>
+            <title>The JavaScript Object Notation (JSON) Data Interchange Format</title>
+            <author fullname="T. Bray" initials="T." role="editor" surname="Bray"/>
+            <date month="December" year="2017"/>
+            <abstract>
+              <t indent="0">JavaScript Object Notation (JSON) is a lightweight, text-based, language-independent data interchange format. It was derived from the ECMAScript Programming Language Standard. JSON defines a small set of formatting rules for the portable representation of structured data.</t>
+              <t indent="0">This document removes inconsistencies with other specifications of JSON, repairs specification errors, and offers experience-based interoperability guidance.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="90"/>
+          <seriesInfo name="RFC" value="8259"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8259"/>
+        </reference>
+        <reference anchor="RFC6901" target="https://www.rfc-editor.org/info/rfc6901" quoteTitle="true" derivedAnchor="JSON-POINTER">
+          <front>
+            <title>JavaScript Object Notation (JSON) Pointer</title>
+            <author fullname="P. Bryan" initials="P." role="editor" surname="Bryan"/>
+            <author fullname="K. Zyp" initials="K." surname="Zyp"/>
+            <author fullname="M. Nottingham" initials="M." role="editor" surname="Nottingham"/>
+            <date month="April" year="2013"/>
+            <abstract>
+              <t indent="0">JSON Pointer defines a string syntax for identifying a specific value within a JavaScript Object Notation (JSON) document.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6901"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6901"/>
+        </reference>
+        <reference anchor="RFC6838" target="https://www.rfc-editor.org/info/rfc6838" quoteTitle="true" derivedAnchor="MEDIATYPE">
+          <front>
+            <title>Media Type Specifications and Registration Procedures</title>
+            <author fullname="N. Freed" initials="N." surname="Freed"/>
+            <author fullname="J. Klensin" initials="J." surname="Klensin"/>
+            <author fullname="T. Hansen" initials="T." surname="Hansen"/>
+            <date month="January" year="2013"/>
+            <abstract>
+              <t indent="0">This document defines procedures for the specification and registration of media types for use in HTTP, MIME, and other Internet protocols. This memo documents an Internet Best Current Practice.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="13"/>
+          <seriesInfo name="RFC" value="6838"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6838"/>
+        </reference>
+        <reference anchor="OAS" quoteTitle="true" derivedAnchor="OAS">
+          <front>
+            <title>OpenAPI Specification</title>
+            <author initials="D" surname="Miller">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="J" surname="Whitlock">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="M" surname="Gardiner">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="M" surname="Ralphson">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="R" surname="Ratovsky">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="U" surname="Sarid">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2017" month="July" day="26"/>
+          </front>
+          <refcontent>v3.0.0</refcontent>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC3986" target="https://www.rfc-editor.org/info/rfc3986" quoteTitle="true" derivedAnchor="URI">
+          <front>
+            <title>Uniform Resource Identifier (URI): Generic Syntax</title>
+            <author fullname="T. Berners-Lee" initials="T." surname="Berners-Lee"/>
+            <author fullname="R. Fielding" initials="R." surname="Fielding"/>
+            <author fullname="L. Masinter" initials="L." surname="Masinter"/>
+            <date month="January" year="2005"/>
+            <abstract>
+              <t indent="0">A Uniform Resource Identifier (URI) is a compact sequence of characters that identifies an abstract or physical resource. This specification defines the generic URI syntax and a process for resolving URI references that might be in relative form, along with guidelines and security considerations for the use of URIs on the Internet. The URI syntax defines a grammar that is a superset of all valid URIs, allowing an implementation to parse the common components of a URI reference without knowing the scheme-specific requirements of every possible identifier. This specification does not define a generative grammar for URIs; that task is performed by the individual specifications of each URI scheme. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="66"/>
+          <seriesInfo name="RFC" value="3986"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3986"/>
+        </reference>
+        <reference anchor="RFC3629" target="https://www.rfc-editor.org/info/rfc3629" quoteTitle="true" derivedAnchor="UTF-8">
+          <front>
+            <title>UTF-8, a transformation format of ISO 10646</title>
+            <author fullname="F. Yergeau" initials="F." surname="Yergeau"/>
+            <date month="November" year="2003"/>
+            <abstract>
+              <t indent="0">ISO/IEC 10646-1 defines a large character set called the Universal Character Set (UCS) which encompasses most of the world's writing systems. The originally proposed encodings of the UCS, however, were not compatible with many current applications and protocols, and this has led to the development of UTF-8, the object of this memo. UTF-8 has the characteristic of preserving the full US-ASCII range, providing compatibility with file systems, parsers and other software that rely on US-ASCII values but are transparent to other values. This memo obsoletes and replaces RFC 2279.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="63"/>
+          <seriesInfo name="RFC" value="3629"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3629"/>
+        </reference>
+        <reference anchor="YAML" target="https://yaml.org/spec/1.2.2/" quoteTitle="true" derivedAnchor="YAML">
+          <front>
+            <title>YAML Ain't Markup Language Version 1.2</title>
+            <author initials="O" surname="Ben-Kiki">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="C" surname="Evans">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="I" surname="dot Net">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="T" surname="Müller">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="P" surname="Antoniou">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="E" surname="Aro">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="T" surname="Smith">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2021" month="October" day="01"/>
+          </front>
+        </reference>
+      </references>
+      <references pn="section-6.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC7464" target="https://www.rfc-editor.org/info/rfc7464" quoteTitle="true" derivedAnchor="RFC7464">
+          <front>
+            <title>JavaScript Object Notation (JSON) Text Sequences</title>
+            <author fullname="N. Williams" initials="N." surname="Williams"/>
+            <date month="February" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes the JavaScript Object Notation (JSON) text sequence format and associated media type "application/json-seq". A JSON text sequence consists of any number of JSON texts, all encoded in UTF-8, each prefixed by an ASCII Record Separator (0x1E), and each ending with an ASCII Line Feed character (0x0A).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7464"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7464"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="ex-fragid" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-examples-related-to-fragmen">Examples Related to Fragment Identifier Interoperability</name>
+      <section anchor="unreferenceable-nodes" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.1">
+        <name slugifiedName="name-unreferenceable-nodes">Unreferenceable Nodes</name>
+        <t indent="0" pn="section-appendix.a.1-1"> This example shows a couple of YAML nodes that cannot be
+        referenced based on the JSON data model since their mapping keys are
+        not strings.</t>
+        <figure anchor="example-unsupported-paths" align="left" suppress-title="false" pn="figure-6">
+          <name slugifiedName="name-example-of-yaml-nodes-that-">Example of YAML Nodes That Are Not Referenceable Based on JSON Data Model</name>
+          <sourcecode type="yaml" markers="false" pn="section-appendix.a.1-2.1">
+ %YAML 1.2
+ ---
+ a-map-cannot:
+   ? {be: expressed}
+   : with a JSON Pointer
+
+ 0: no numeric mapping keys in JSON
+</sourcecode>
+        </figure>
+      </section>
+      <section anchor="referencing-a-missing-node" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.2">
+        <name slugifiedName="name-referencing-a-missing-node">Referencing a Missing Node</name>
+        <t indent="0" pn="section-appendix.a.2-1">In this example, the fragment <tt>#/0</tt> does not reference an existing node.</t>
+        <figure anchor="example-missing-node" align="left" suppress-title="false" pn="figure-7">
+          <name slugifiedName="name-example-of-a-json-pointer-t">Example of a JSON Pointer That Does Not Reference an Existing Node</name>
+          <sourcecode type="yaml" markers="false" pn="section-appendix.a.2-2.1">
+ %YAML 1.2
+ ---
+ 0: "JSON Pointer `#/0` references a string mapping key."
+</sourcecode>
+        </figure>
+      </section>
+      <section anchor="representation-graph-with-anchors-and-cyclic-references" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.3">
+        <name slugifiedName="name-representation-graph-with-a">Representation Graph with Anchors and Cyclic References</name>
+        <t indent="0" pn="section-appendix.a.3-1">In this YAML document, the <tt>#/foo/bar/baz</tt> fragment identifier
+traverses the representation graph and references the string <tt>you</tt>.
+Moreover, the presence of a cyclic reference implies that
+there are infinite fragment identifiers <tt>#/foo/bat/../bat/bar</tt>
+referencing the <tt>&amp;anchor</tt> node.</t>
+        <figure anchor="example-cyclic-graph" align="left" suppress-title="false" pn="figure-8">
+          <name slugifiedName="name-example-of-a-cyclic-referen">Example of a Cyclic Reference and Alias Nodes</name>
+          <sourcecode type="yaml" markers="false" pn="section-appendix.a.3-2.1">
+ %YAML 1.2
+ ---
+ anchor: &amp;anchor
+   baz: you
+ foo: &amp;foo
+   bar: *anchor
+   bat: *foo
+</sourcecode>
+        </figure>
+        <t indent="0" pn="section-appendix.a.3-3">Many YAML implementations will resolve
+<eref target="https://yaml.org/type/merge.html" brackets="none">the merge key "&lt;&lt;:"</eref> defined in YAML 1.1
+in the representation graph.
+This means that the fragment <tt>#/book/author/given_name</tt> references the string <tt>Federico</tt>
+and that the fragment <tt>#/book/&lt;&lt;</tt> will not reference any existing node.</t>
+        <figure anchor="example-merge-keys" align="left" suppress-title="false" pn="figure-9">
+          <name slugifiedName="name-example-of-yaml-merge-keys">Example of YAML Merge Keys</name>
+          <sourcecode type="yaml" markers="false" pn="section-appendix.a.3-4.1">
+ %YAML 1.1
+ ---
+ # Many implementations use merge keys.
+ the-viceroys: &amp;the-viceroys
+   title: The Viceroys
+   author:
+     given_name: Federico
+     family_name: De Roberto
+ book:
+   &lt;&lt;: *the-viceroys
+   title: The Illusion
+</sourcecode>
+        </figure>
+      </section>
+    </section>
+    <section numbered="false" anchor="acknowledgements" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.b-1">Thanks to <contact fullname="Erik Wilde"/> and <contact fullname="David Biesack"/> for being the initial contributors to this specification
+and to <contact fullname="Darrel Miller"/> and <contact fullname="Rich Salz"/> for their support during the adoption phase.</t>
+      <t indent="0" pn="section-appendix.b-2">In addition, this document owes a lot to the
+      extensive discussion inside and outside the HTTPAPI Working Group.  The
+      following contributors helped improve this specification by opening
+      pull requests, reporting bugs, asking smart questions, drafting or
+      reviewing text, and evaluating open issues: <contact fullname="Tina       (tinita) Müller"/>, <contact fullname="Ben Hutton"/>, <contact fullname="Carsten Bormann"/>, <contact fullname="Manu Sporny"/>, and
+      <contact fullname="Jason Desrosiers."/></t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="R." surname="Polli" fullname="Roberto Polli">
+        <organization abbrev="DTD, Italian Government" showOnFrontPage="true">Digital Transformation Department, Italian Government</organization>
+        <address>
+          <postal>
+            <country>Italy</country>
+          </postal>
+          <email>robipolli@gmail.com</email>
+        </address>
+      </author>
+      <author initials="E." surname="Wilde" fullname="Erik Wilde">
+        <organization showOnFrontPage="true">Axway</organization>
+        <address>
+          <postal>
+            <country>Switzerland</country>
+          </postal>
+          <email>erik.wilde@dret.net</email>
+        </address>
+      </author>
+      <author initials="E." surname="Aro" fullname="Eemeli Aro">
+        <organization showOnFrontPage="true">Mozilla</organization>
+        <address>
+          <postal>
+            <country>Finland</country>
+          </postal>
+          <email>eemeli@gmail.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

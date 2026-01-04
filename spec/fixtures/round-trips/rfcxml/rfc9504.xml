@@ -1,0 +1,1568 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-pce-pcep-stateful-pce-gmpls-23" number="9504" submissionType="IETF" category="std" consensus="true" obsoletes="" updates="" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="true" prepTime="2023-12-06T16:52:32" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-pce-pcep-stateful-pce-gmpls-23" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9504" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Stateful PCEP for GMPLS">Path Computation Element Communication Protocol (PCEP) Extensions for Stateful PCE Usage in GMPLS-Controlled Networks</title>
+    <seriesInfo name="RFC" value="9504" stream="IETF"/>
+    <author fullname="Young Lee" initials="Y." surname="Lee">
+      <organization showOnFrontPage="true">Samsung</organization>
+      <address>
+        <email>younglee.tx@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Haomian Zheng" initials="H." surname="Zheng">
+      <organization showOnFrontPage="true">Huawei Technologies</organization>
+      <address>
+        <email>zhenghaomian@huawei.com</email>
+      </address>
+    </author>
+    <author fullname="Oscar Gonzalez de Dios" initials="O." surname="Gonzalez de Dios">
+      <organization showOnFrontPage="true">Telefonica</organization>
+      <address>
+        <email>oscar.gonzalezdedios@telefonica.com</email>
+      </address>
+    </author>
+    <author fullname="Victor Lopez" initials="V." surname="Lopez">
+      <organization showOnFrontPage="true">Nokia</organization>
+      <address>
+        <email>victor.lopez@nokia.com</email>
+      </address>
+    </author>
+    <author fullname="Zafar Ali" initials="Z." surname="Ali">
+      <organization showOnFrontPage="true">Cisco</organization>
+      <address>
+        <email>zali@cisco.com</email>
+      </address>
+    </author>
+    <date month="12" year="2023"/>
+    <area>rtg</area>
+    <workgroup>pce</workgroup>
+    <keyword>Stateful PCE</keyword>
+    <keyword>GMPLS</keyword>
+    <keyword>PCE-initiated LSP</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">The Path Computation Element Communication Protocol (PCEP) has been extended to support stateful PCE
+         functions where the stateful PCE maintains information about paths and resource
+         usage within a network; however, these extensions do not cover all requirements for
+         GMPLS networks.</t>
+      <t indent="0" pn="section-abstract-2">This document provides the extensions required for PCEP so as to enable the usage
+         of a stateful PCE capability in GMPLS-controlled networks.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9504" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-conventions-used-in-this-do">Conventions Used in This Document</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-general-context-of-stateful">General Context of Stateful PCE and PCEP for GMPLS</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-main-requirements">Main Requirements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-overview-of-stateful-pcep-e">Overview of Stateful PCEP Extensions for GMPLS Networks</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-capability-advertisement-fo">Capability Advertisement for Stateful PCEP in GMPLS</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-lsp-synchronization">LSP Synchronization</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.3">
+                <t indent="0" pn="section-toc.1-1.5.2.3.1"><xref derivedContent="5.3" format="counter" sectionFormat="of" target="section-5.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-lsp-delegation-and-cleanup">LSP Delegation and Cleanup</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.4">
+                <t indent="0" pn="section-toc.1-1.5.2.4.1"><xref derivedContent="5.4" format="counter" sectionFormat="of" target="section-5.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-lsp-operations">LSP Operations</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-pcep-object-extensions">PCEP Object Extensions</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-existing-extensions-used-fo">Existing Extensions Used for Stateful GMPLS</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-extensions">New Extensions</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2.2.2">
+                  <li pn="section-toc.1-1.6.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.6.2.2.2.1.1"><xref derivedContent="6.2.1" format="counter" sectionFormat="of" target="section-6.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-gmpls-capability-tlv-in-ope">GMPLS-CAPABILITY TLV in OPEN Object</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.6.2.2.2.2.1"><xref derivedContent="6.2.2" format="counter" sectionFormat="of" target="section-6.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-lsp-exclusion-subobject">New LSP Exclusion Subobject in the XRO</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.6.2.2.2.3">
+                    <t indent="0" pn="section-toc.1-1.6.2.2.2.3.1"><xref derivedContent="6.2.3" format="counter" sectionFormat="of" target="section-6.2.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-flags-in-the-lsp-extend">New Flags in the LSP-EXTENDED-FLAG TLV in LSP Object</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-update-to-error-handling">Update to Error Handling</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-error-handling-in-pcep-capa">Error Handling in PCEP Capabilities Advertisement</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-error-handling-in-lsp-reopt">Error Handling in LSP Reoptimization</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.3">
+                <t indent="0" pn="section-toc.1-1.7.2.3.1"><xref derivedContent="7.3" format="counter" sectionFormat="of" target="section-7.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-error-handling-in-route-exc">Error Handling in Route Exclusion</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.4">
+                <t indent="0" pn="section-toc.1-1.7.2.4.1"><xref derivedContent="7.4" format="counter" sectionFormat="of" target="section-7.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-error-handling-for-the-gene">Error Handling for the Generalized END-POINTS Object</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-flags-in-the-gmpls-capa">New Flags in the GMPLS-CAPABILITY TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-subobject-for-the-exclu">New Subobject for the Exclude Route Object</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.3">
+                <t indent="0" pn="section-toc.1-1.8.2.3.1"><xref derivedContent="8.3" format="counter" sectionFormat="of" target="section-8.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-flags-field-for-the-lsp-exc">Flags Field for the LSP Exclusion Subobject</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.4">
+                <t indent="0" pn="section-toc.1-1.8.2.4.1"><xref derivedContent="8.4" format="counter" sectionFormat="of" target="section-8.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-flags-in-the-lsp-extende">New Flags in the LSP-EXTENDED-FLAGS TLV</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.5">
+                <t indent="0" pn="section-toc.1-1.8.2.5.1"><xref derivedContent="8.5" format="counter" sectionFormat="of" target="section-8.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-new-pcep-error-codes">New PCEP Error Codes</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-manageability-consideration">Manageability Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-control-of-function-through">Control of Function through Configuration and Policy</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-information-and-data-models">Information and Data Models</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.3">
+                <t indent="0" pn="section-toc.1-1.9.2.3.1"><xref derivedContent="9.3" format="counter" sectionFormat="of" target="section-9.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-liveness-detection-and-moni">Liveness Detection and Monitoring</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.4">
+                <t indent="0" pn="section-toc.1-1.9.2.4.1"><xref derivedContent="9.4" format="counter" sectionFormat="of" target="section-9.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-verifying-correct-operation">Verifying Correct Operation</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.5">
+                <t indent="0" pn="section-toc.1-1.9.2.5.1"><xref derivedContent="9.5" format="counter" sectionFormat="of" target="section-9.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-on-other-proto">Requirements on Other Protocols and Functional Components</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.6">
+                <t indent="0" pn="section-toc.1-1.9.2.6.1"><xref derivedContent="9.6" format="counter" sectionFormat="of" target="section-9.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-impact-on-network-operation">Impact on Network Operation</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="11" format="counter" sectionFormat="of" target="section-11"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.11.2">
+              <li pn="section-toc.1-1.11.2.1">
+                <t indent="0" pn="section-toc.1-1.11.2.1.1"><xref derivedContent="11.1" format="counter" sectionFormat="of" target="section-11.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.11.2.2">
+                <t indent="0" pn="section-toc.1-1.11.2.2.1"><xref derivedContent="11.2" format="counter" sectionFormat="of" target="section-11.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-pcep-messages">PCEP Messages</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.12.2">
+              <li pn="section-toc.1-1.12.2.1">
+                <t indent="0" pn="section-toc.1-1.12.2.1.1"><xref derivedContent="A.1" format="counter" sectionFormat="of" target="section-appendix.a.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-pcrpt-message">The PCRpt Message</xref></t>
+              </li>
+              <li pn="section-toc.1-1.12.2.2">
+                <t indent="0" pn="section-toc.1-1.12.2.2.1"><xref derivedContent="A.2" format="counter" sectionFormat="of" target="section-appendix.a.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-pcupd-message">The PCUpd Message</xref></t>
+              </li>
+              <li pn="section-toc.1-1.12.2.3">
+                <t indent="0" pn="section-toc.1-1.12.2.3.1"><xref derivedContent="A.3" format="counter" sectionFormat="of" target="section-appendix.a.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-pcinitiate-message">The PCInitiate Message</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.14">
+            <t indent="0" pn="section-toc.1-1.14.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.15">
+            <t indent="0" pn="section-toc.1-1.15.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.d"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="intro" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1"><xref target="RFC4655" format="default" sectionFormat="of" derivedContent="RFC4655"/> presents the architecture of a PCE-based model for computing Multiprotocol Label Switching (MPLS) and Generalized
+      MPLS (GMPLS) Traffic Engineering Label Switched Paths (TE LSPs).  To perform such a
+      constrained computation, a PCE stores the network topology (i.e., TE links and nodes)
+      and resource information (i.e., TE attributes) in its TE Database (TED).  A PCE that
+      only maintains a TED is referred to as a "stateless PCE".  <xref target="RFC5440" format="default" sectionFormat="of" derivedContent="RFC5440"/>
+      describes the Path Computation Element Communication Protocol (PCEP) for interaction
+      between a Path Computation Client (PCC) and a PCE or between two PCEs, enabling
+      computation of TE LSPs.  PCEP is further extended to support GMPLS-controlled networks
+      as per <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>.</t>
+      <t indent="0" pn="section-1-2">Stateful PCEs are shown to be helpful in many application scenarios, in both MPLS
+      and GMPLS networks, as illustrated in <xref target="RFC8051" format="default" sectionFormat="of" derivedContent="RFC8051"/>.  Further discussion
+      of the concept of a stateful PCE can be found in <xref target="RFC7399" format="default" sectionFormat="of" derivedContent="RFC7399"/>.  In order for
+      these applications to be able to exploit the capability of stateful PCEs, extensions to
+      stateful PCEP for GMPLS are required.</t>
+      <t indent="0" pn="section-1-3"><xref target="RFC8051" format="default" sectionFormat="of" derivedContent="RFC8051"/> describes how a stateful PCE can be applied to solve
+      various problems for MPLS-TE and GMPLS networks and the benefits it brings to such
+      deployments.</t>
+      <t indent="0" pn="section-1-4"><xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/> specifies a set of extensions to PCEP to enable stateful
+      control of TE LSPs where they are configured on the PCC and control over them could
+      be delegated to the PCE. Furthermore, <xref target="RFC8281" format="default" sectionFormat="of" derivedContent="RFC8281"/> describes the setup
+      and teardown of PCE-initiated LSPs under the active stateful PCE model, without the
+      need for local configuration on the PCC. However, both documents omit the specification
+      for technology-specific objects and TLVs, and they do not cover GMPLS-controlled networks (e.g.,
+      Wavelength Switched Optical Network (WSON), Optical Transport Network (OTN), Synchronous
+      Optical Network (SONET) / Synchronous Digital Hierarchy (SDH)).</t>
+      <t indent="0" pn="section-1-5">This document focuses on the extensions that are necessary in order for the deployment
+      of stateful PCEs and the requirements for PCE-initiated LSPs in GMPLS-controlled networks.
+      <xref target="context" format="default" sectionFormat="of" derivedContent="Section 3"/> provides a general context of the usage of stateful PCEs and PCEP for GMPLS.
+      The various requirements for stateful GMPLS, including PCE initiation for GMPLS LSPs,
+      are provided in <xref target="reqs" format="default" sectionFormat="of" derivedContent="Section 4"/>. An overview of the PCEP extensions is specified in <xref target="overview" format="default" sectionFormat="of" derivedContent="Section 5"/>.
+      A solution to address such requirements with PCEP object extensions is specified in <xref target="objs" format="default" sectionFormat="of" derivedContent="Section 6"/>.</t>
+      <section anchor="conventions" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-conventions-used-in-this-do">Conventions Used in This Document</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+        </t>
+      </section>
+    </section>
+    <section anchor="terms" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <t indent="0" pn="section-2-1">Terminology used in this document is the same as terminology used in <xref target="RFC5440" format="default" sectionFormat="of" derivedContent="RFC5440"/>,
+      <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/>, <xref target="RFC8281" format="default" sectionFormat="of" derivedContent="RFC8281"/>, and <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>.</t>
+    </section>
+    <section anchor="context" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-general-context-of-stateful">General Context of Stateful PCE and PCEP for GMPLS</name>
+      <t indent="0" pn="section-3-1">This section is built on the basis of stateful PCEs specified in <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/> and PCEP
+      for GMPLS specified in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>.</t>
+      <t indent="0" pn="section-3-2">The operation of a stateful PCE on LSPs can be divided into two types: active stateful PCE and
+      passive stateful PCE (as described in <xref target="RFC8051" format="default" sectionFormat="of" derivedContent="RFC8051"/>).</t>
+      <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-3-3">
+        <li pn="section-3-3.1">For active stateful PCEs, a Path Computation Update Request (PCUpd)  message is sent from the PCE to
+      the PCC to update the LSP state for the LSPs delegated to the PCE. Any changes to the delegated LSPs
+      generate a Path Computation State Report (PCRpt) message from the PCC to the PCE to convey the changes
+      of the LSPs. Any modifications to the objects and TLVs that are identified in this document to support
+      GMPLS-specific attributes will be carried in the PCRpt and PCUpd messages.</li>
+        <li pn="section-3-3.2">For passive stateful PCEs, Path Computation Request (PCReq) and Path Computation Reply (PCRep)
+      messages are used to request path computation. GMPLS-specific objects and TLVs are
+      defined in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>, which this document builds on and adds the stateful PCE aspects
+      where applicable. A passive stateful PCE makes use of PCRpt messages when reporting LSP state changes
+      sent by PCCs to PCEs.  Any modifications to the objects and TLVs that are identified in this document
+      to support GMPLS-specific attributes will be carried in the PCRpt message.</li>
+      </ul>
+      <t indent="0" pn="section-3-4">Furthermore, the LSP Initiation function of PCEP is defined in <xref target="RFC8281" format="default" sectionFormat="of" derivedContent="RFC8281"/> to allow
+      the PCE to initiate LSP establishment after the path is computed. An LSP Initiate Request (PCInitiate)
+      message is used to trigger the end node to set up the LSP. Any modifications to the objects and TLVs that
+      are identified in this document to support GMPLS-specific attributes will be carried in the
+      PCInitiate messages.</t>
+      <t indent="0" pn="section-3-5"><xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/> defines GMPLS-specific objects and TLVs in stateless PCEP; this
+      document makes use of these objects and TLVs without modifications where applicable. Where these objects and TLVs
+      require modifications to incorporate stateful PCEs, they are described in this document. PCE-initiated
+      LSPs follow the principle specified in <xref target="RFC8281" format="default" sectionFormat="of" derivedContent="RFC8281"/>, and the GMPLS-specific extensions are
+      also included in this document.</t>
+    </section>
+    <section anchor="reqs" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-main-requirements">Main Requirements</name>
+      <t indent="0" pn="section-4-1">This section notes the main functional requirements for PCEP extensions to support stateful PCEs for
+      use in GMPLS-controlled networks, based on the description in <xref target="RFC8051" format="default" sectionFormat="of" derivedContent="RFC8051"/>.  Many
+      requirements are common across a variety of network types (e.g., MPLS-TE networks and GMPLS networks)
+      and the protocol extensions to meet the requirements are already described in <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/>
+      (such as LSP update, delegation, and state synchronization/report).  Protection context information that
+      describes the GMPLS requirement can also follow the description in <xref target="RFC8745" format="default" sectionFormat="of" derivedContent="RFC8745"/>.  This
+      document does not repeat the description of those protocol extensions.  This document presents protocol
+      extensions for a set of requirements that are specific to the use of a stateful PCE in a GMPLS-controlled
+      network.</t>
+      <t indent="0" pn="section-4-2">The requirements for GMPLS-specific stateful PCEs are as follows:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-3">
+        <li pn="section-4-3.1">Advertisement of the stateful PCE capability.  This generic
+           requirement is covered in <xref target="RFC8231" sectionFormat="of" section="5.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8231#section-5.4" derivedContent="RFC8231"/>. The GMPLS-CAPABILITY TLV specified in <xref target="RFC8779" sectionFormat="of" section="2.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8779#section-2.1" derivedContent="RFC8779"/> and its
+           extension in this document need to be advertised as well. </li>
+        <li pn="section-4-3.2">All the PCEP messages need to be capable of indicating
+           GMPLS-specific switching capabilities.  GMPLS LSP
+           creation, modification, and deletion require knowledge of LSP switching
+           capabilities (e.g., Time-Division Multiplex Capable (TDM), Layer 2
+           Switch Capable (L2SC), OTN-TDM, Lambda Switch Capable (LSC), etc.)
+           and the Generalized Payload Identifier (G-PID) to be used according to <xref target="RFC3471" format="default" sectionFormat="of" derivedContent="RFC3471"/> and <xref target="RFC3473" format="default" sectionFormat="of" derivedContent="RFC3473"/>.  It also requires that traffic parameters that are both data flow and technology specific be defined. These traffic parameters are also known as "Traffic Specification" or "Tspec".  Such information would need to be included in various
+           PCEP messages.</li>
+        <li pn="section-4-3.3">In some technologies, path calculation is tightly coupled with
+           label selection along the route.  For example, path calculation in
+           a Wavelength Division Multiplexing (WDM) network may include lambda
+           continuity and/or lambda feasibility constraints; hence, a path
+           computed by the PCE is associated with a specific lambda (label).
+           Thus, in such networks, the label information needs to be provided
+           to a PCC in order for a PCE to initiate GMPLS LSPs under the active
+           stateful PCE model, i.e., Explicit Label Control (ELC) may be
+           required.</li>
+        <li pn="section-4-3.4">Stateful PCEP messages also need to indicate the protection
+           context information for the LSP specified by GMPLS, as defined in
+           <xref target="RFC4872" format="default" sectionFormat="of" derivedContent="RFC4872"/> and <xref target="RFC4873" format="default" sectionFormat="of" derivedContent="RFC4873"/>.</li>
+      </ul>
+    </section>
+    <section anchor="overview" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-overview-of-stateful-pcep-e">Overview of Stateful PCEP Extensions for GMPLS Networks</name>
+      <section anchor="capadv" numbered="true" removeInRFC="false" toc="include" pn="section-5.1">
+        <name slugifiedName="name-capability-advertisement-fo">Capability Advertisement for Stateful PCEP in GMPLS</name>
+        <t indent="0" pn="section-5.1-1">Capability advertisement is specified in <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/>; it can be achieved by using
+        the STATEFUL-PCE-CAPABILITY TLV in the Open message. Another GMPLS-CAPABILITY TLV is defined in
+        <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>.  A subregistry to manage the Flag field of the GMPLS-CAPABILITY TLV has been created by IANA as requested by <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>.  The following bits are introduced by this document
+        in the GMPLS-CAPABILITY TLV as flags to indicate the capability for LSP report, update, and initiation in
+        GMPLS networks: LSP-REPORT-CAPABILITY (31), LSP-UPDATE-CAPABILITY (30), and LSP-INSTANTIATION-CAPABILITY (29). </t>
+      </section>
+      <section anchor="lspsync" numbered="true" removeInRFC="false" toc="include" pn="section-5.2">
+        <name slugifiedName="name-lsp-synchronization">LSP Synchronization</name>
+        <t indent="0" pn="section-5.2-1">After the session between the PCC and a stateful PCE is initialized, the PCE must learn the state of a
+        PCC's LSPs (including its attributes) before it can perform path computations or update LSP attributes in
+        a PCC. This process is known as "LSP state synchronization".  The LSP attributes, including bandwidth,
+        associated route, and protection information etc., are stored by the PCE in the LSP database (LSP-DB).
+        Note that, as described in <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/>, the LSP state synchronization covers both the bulk
+        reporting of LSPs at initialization as well as the reporting of new or modified LSPs during normal operation.
+        Incremental LSP-DB synchronization may be desired in a GMPLS-controlled network; it is specified in
+        <xref target="RFC8232" format="default" sectionFormat="of" derivedContent="RFC8232"/>.</t>
+        <t indent="0" pn="section-5.2-2">The format of the PCRpt message is specified in <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/> and extended in
+        <xref target="RFC8623" format="default" sectionFormat="of" derivedContent="RFC8623"/> to include the END-POINTS object. The END-POINTS object is extended for
+        GMPLS in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>. The END-POINTS object can be carried in the PCRpt message as
+        specified in <xref target="RFC8623" format="default" sectionFormat="of" derivedContent="RFC8623"/>. The END-POINTS object type for GMPLS is included in the PCRpt
+        message as per the same. </t>
+        <t indent="0" pn="section-5.2-3">The following objects are extended for GMPLS in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/> and are also used in the PCRpt in the same
+        manner: BANDWIDTH, LSP Attributes (LSPA), Include Route Object (IRO), and Exclude Route Object (XRO). These objects are carried in the PCRpt message as specified in
+        <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/> (as the attribute-list defined in <xref target="RFC5440" sectionFormat="of" section="6.5" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5440#section-6.5" derivedContent="RFC5440"/> and extended by
+        many other documents that define PCEP extensions for specific
+        scenarios). </t>
+        <t indent="0" pn="section-5.2-4">The SWITCH-LAYER object is defined in <xref target="RFC8282" format="default" sectionFormat="of" derivedContent="RFC8282"/>. This object is carried in the PCRpt message as specified in <xref target="RFC8282" sectionFormat="of" section="3.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8282#section-3.2" derivedContent="RFC8282"/>.</t>
+      </section>
+      <section anchor="delnclean" numbered="true" removeInRFC="false" toc="include" pn="section-5.3">
+        <name slugifiedName="name-lsp-delegation-and-cleanup">LSP Delegation and Cleanup</name>
+        <t indent="0" pn="section-5.3-1">The LSP delegation and cleanup procedure specified in <xref target="RFC8281" format="default" sectionFormat="of" derivedContent="RFC8281"/> are equally applicable
+        to GMPLS LSPs and this document does not modify the associated usage.</t>
+      </section>
+      <section anchor="lspops" numbered="true" removeInRFC="false" toc="include" pn="section-5.4">
+        <name slugifiedName="name-lsp-operations">LSP Operations</name>
+        <t indent="0" pn="section-5.4-1">Both passive and active stateful PCE mechanisms in <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/> are applicable in
+        GMPLS-controlled networks. Remote LSP Initiation in <xref target="RFC8281" format="default" sectionFormat="of" derivedContent="RFC8281"/> is also applicable in
+        GMPLS-controlled networks.</t>
+      </section>
+    </section>
+    <section anchor="objs" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-pcep-object-extensions">PCEP Object Extensions</name>
+      <section anchor="exist" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-existing-extensions-used-fo">Existing Extensions Used for Stateful GMPLS</name>
+        <t indent="0" pn="section-6.1-1">Existing extensions defined in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/> can be used in stateful PCEP with no
+        or slight changes for GMPLS network control, including the following: </t>
+        <dl spacing="normal" newline="false" indent="3" pn="section-6.1-2">
+          <dt pn="section-6.1-2.1">END-POINTS:</dt>
+          <dd pn="section-6.1-2.2">
+            <t indent="0" pn="section-6.1-2.2.1">The END-POINTS object was specified in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/> to include GMPLS capabilities. All stateful PCEP messages
+	  <bcp14>MUST</bcp14> include the END-POINTS object with Generalized Endpoint
+	  object type, containing the LABEL-REQUEST TLV.  Further note
+	  that:</t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.1-2.2.2">
+              <li pn="section-6.1-2.2.2.1">As per <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>, for stateless GMPLS path
+            computation, the Generalized END-POINTS object may contain a
+            LABEL-REQUEST and/or LABEL-SET TLV. In this document, only the
+            LABEL-REQUEST TLV is used to specify the switching type, encoding
+            type, and G-PID of the LSP. </li>
+              <li pn="section-6.1-2.2.2.2">If unnumbered endpoint addresses are used for the LSP, the
+            UNNUMBERED-ENDPOINT TLV <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>
+                <bcp14>MUST</bcp14> be used to specify the unnumbered endpoint
+            addresses.</li>
+              <li pn="section-6.1-2.2.2.3">The Generalized END-POINTS object <bcp14>MAY</bcp14> contain other
+            TLVs defined in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>.</li>
+            </ul>
+          </dd>
+          <dt pn="section-6.1-2.3">RP:</dt>
+          <dd pn="section-6.1-2.4">The Request Parameter (RP) object extension (together with the Routing Granularity (RG)
+	  flag defined in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>) is applicable in 
+	  stateful PCEP for GMPLS networks. </dd>
+          <dt pn="section-6.1-2.5">BANDWIDTH:</dt>
+          <dd pn="section-6.1-2.6">Generalized BANDWIDTH is specified in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>
+	  to represent GMPLS features, including asymmetric bandwidth and
+	  G-PID information. </dd>
+          <dt pn="section-6.1-2.7">LSPA:</dt>
+          <dd pn="section-6.1-2.8">LSPA Extensions in <xref target="RFC8779" sectionFormat="of" section="2.8" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8779#section-2.8" derivedContent="RFC8779"/> are applicable in stateful PCEP for GMPLS
+	  networks. </dd>
+          <dt pn="section-6.1-2.9">IRO:</dt>
+          <dd pn="section-6.1-2.10">IRO Extensions in <xref target="RFC8779" sectionFormat="of" section="2.6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8779#section-2.6" derivedContent="RFC8779"/> are applicable in stateful PCEP for GMPLS
+	  networks.</dd>
+          <dt pn="section-6.1-2.11">XRO:</dt>
+          <dd pn="section-6.1-2.12">XRO Extensions in <xref target="RFC8779" sectionFormat="of" section="2.7" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8779#section-2.7" derivedContent="RFC8779"/> are applicable in stateful PCEP for GMPLS networks. A
+	  new flag is defined in <xref target="flags" format="default" sectionFormat="of" derivedContent="Section 6.2.3"/> of this
+	  document.</dd>
+          <dt pn="section-6.1-2.13">ERO:</dt>
+          <dd pn="section-6.1-2.14">The Explicit Route Object (ERO) is not extended in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>, nor is it in this document.</dd>
+          <dt pn="section-6.1-2.15">SWITCH-LAYER:</dt>
+          <dd pn="section-6.1-2.16">The SWITCH-LAYER definition in <xref target="RFC8282" sectionFormat="of" section="3.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8282#section-3.2" derivedContent="RFC8282"/> is applicable in stateful PCEP
+	  messages for GMPLS networks.</dd>
+        </dl>
+      </section>
+      <section anchor="new" numbered="true" removeInRFC="false" toc="include" pn="section-6.2">
+        <name slugifiedName="name-new-extensions">New Extensions</name>
+        <section anchor="captlv" numbered="true" removeInRFC="false" toc="include" pn="section-6.2.1">
+          <name slugifiedName="name-gmpls-capability-tlv-in-ope">GMPLS-CAPABILITY TLV in OPEN Object</name>
+          <t indent="0" pn="section-6.2.1-1">In <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>, IANA allocates value 45
+          (GMPLS-CAPABILITY) from the "PCEP TLV Type Indicators" subregistry.	  
+          This specification adds three flags to the Flag field of this TLV to
+          indicate the Report, Update, and Initiation capabilities.</t>
+          <dl newline="true" spacing="normal" indent="3" pn="section-6.2.1-2">
+            <dt pn="section-6.2.1-2.1">R (LSP-REPORT-CAPABILITY (31) -- 1 bit):</dt>
+            <dd pn="section-6.2.1-2.2">If set to 1 by a PCC, the R flag indicates that the PCC is
+	    capable of reporting the current state of a GMPLS LSP whenever
+	    there's a change to the parameters or operational status of the
+	    GMPLS LSP.  If set to 1 by a PCE, the R flag indicates that the PCE
+	    is interested in receiving GMPLS LSP State Reports whenever there
+	    is a parameter or operational status change to the LSP.  The
+	    LSP-REPORT-CAPABILITY flag must be advertised by both a PCC and a
+	    PCE for PCRpt messages to be allowed on a PCEP session for GMPLS
+	    LSP.</dd>
+            <dt pn="section-6.2.1-2.3">U (LSP-UPDATE-CAPABILITY (30) -- 1 bit):</dt>
+            <dd pn="section-6.2.1-2.4">If set to 1 by a PCC, the U flag indicates that the PCC allows
+	    modification of GMPLS LSP parameters.  If set to 1 by a PCE, the U
+	    flag indicates that the PCE is capable of updating GMPLS LSP
+	    parameters.  The LSP-UPDATE-CAPABILITY flag must be advertised by
+	    both a PCC and a PCE for PCUpd messages to be allowed on a PCEP
+	    session for GMPLS LSP.</dd>
+            <dt pn="section-6.2.1-2.5">I (LSP-INSTANTIATION-CAPABILITY (29) -- 1 bit):</dt>
+            <dd pn="section-6.2.1-2.6">If set to 1 by a PCC, the I flag indicates that the PCC allows
+	    instantiation of a GMPLS LSP by a PCE.  If set to 1 by a PCE, the
+	    I flag indicates that the PCE supports instantiating GMPLS LSPs.
+	    The LSP-INSTANTIATION-CAPABILITY flag must be set by both the PCC
+	    and PCE in order to enable PCE-initiated LSP
+	    instantiation.</dd>
+          </dl>
+        </section>
+        <section anchor="exclusion" numbered="true" removeInRFC="false" toc="include" pn="section-6.2.2">
+          <name slugifiedName="name-new-lsp-exclusion-subobject">New LSP Exclusion Subobject in the XRO</name>
+          <t indent="0" pn="section-6.2.2-1"><xref target="RFC5521" format="default" sectionFormat="of" derivedContent="RFC5521"/> defines a mechanism for a PCC to request or demand that
+          specific nodes, links, or other network resources be excluded from paths computed by
+          a PCE.  A PCC may wish to request the computation of a path that avoids all links and
+          nodes traversed by some other LSP.</t>
+          <t indent="0" pn="section-6.2.2-2">To this end, this document defines a new subobject for use with route exclusion defined
+          in <xref target="RFC5521" format="default" sectionFormat="of" derivedContent="RFC5521"/>.  The LSP Exclusion subobject is as follows:</t>
+          <figure anchor="lspexcl-fig" align="left" suppress-title="false" pn="figure-1">
+            <name slugifiedName="name-new-lsp-exclusion-subobject-">New LSP Exclusion Subobject Format</name>
+            <artwork align="left" pn="section-6.2.2-3.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|X|Type (11)    |     Length    |   Reserved    |    Flags      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+//                    Symbolic Path Name                       //
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+          </figure>
+          <dl newline="false" spacing="normal" indent="3" pn="section-6.2.2-4">
+            <dt pn="section-6.2.2-4.1">X:</dt>
+            <dd pn="section-6.2.2-4.2">
+              <t indent="0" pn="section-6.2.2-4.2.1">This field is the same as the X-bit defined in the XRO subobjects in <xref target="RFC5521" sectionFormat="of" section="2.1.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5521#section-2.1.1" derivedContent="RFC5521"/> where it says:</t>
+              <t indent="3" pn="section-6.2.2-4.2.2">The X-bit indicates whether the exclusion is mandatory or desired.  0
+	indicates that the resource specified <bcp14>MUST</bcp14> be excluded
+	from the path computed by the PCE.  1 indicates that the resource
+	specified <bcp14>SHOULD</bcp14> be excluded from the path computed by
+	the PCE, but <bcp14>MAY</bcp14> be included subject to PCE policy and
+	the absence of a viable path that meets the other constraints and
+	excludes the resource.</t>
+            </dd>
+            <dt pn="section-6.2.2-4.3">Type:</dt>
+            <dd pn="section-6.2.2-4.4">The subobject type for an LSP Exclusion subobject. Value of 11.</dd>
+            <dt pn="section-6.2.2-4.5">Length:</dt>
+            <dd pn="section-6.2.2-4.6">The Length contains the total length of the subobject in bytes,
+	including the Type and Length fields.</dd>
+            <dt pn="section-6.2.2-4.7">Reserved:</dt>
+            <dd pn="section-6.2.2-4.8">Reserved <bcp14>MUST</bcp14> be set to zero on transmission and ignored on
+	receipt.</dd>
+            <dt pn="section-6.2.2-4.9">Flags:</dt>
+            <dd pn="section-6.2.2-4.10">This field may be used to further specify the exclusion constraint
+	with regard to the LSP. Currently, no flags are defined.</dd>
+            <dt pn="section-6.2.2-4.11">Symbolic Path Name:</dt>
+            <dd pn="section-6.2.2-4.12">
+              <t indent="0" pn="section-6.2.2-4.12.1">This is the identifier given to an LSP. Its syntax and
+	semantics are identical to those of the Symbolic Path Name field
+	defined in <xref target="RFC8231" sectionFormat="of" section="7.3.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8231#section-7.3.2" derivedContent="RFC8231"/>
+	where it says: "symbolic name for the LSP, unique in the PCC.  It
+	<bcp14>SHOULD</bcp14> be a string of printable ASCII characters,
+	without a NULL terminator."  The symbolic path name in the LSP
+	Exclusion subobject <bcp14>MUST</bcp14> only vary from being a string
+	of printable ASCII characters without a NULL terminator when it is
+	matching the value contained in another subobject.  It is worth noting
+	that given that the symbolic path name is unique in the context of the
+	headnode, only LSPs that share the same headnode or PCC could be
+	excluded.</t>
+              <t indent="0" pn="section-6.2.2-4.12.2">This subobject <bcp14>MAY</bcp14> be present multiple times in the
+        XRO to exclude resources from multiple LSPs.
+        When a stateful PCE receives a PCReq message carrying this subobject,
+        it <bcp14>MUST</bcp14> search for the identified LSP in its LSP-DB and
+        then exclude from the new path computation all resources used by the
+        identified LSP.</t>
+              <t indent="0" pn="section-6.2.2-4.12.3">Note that this XRO subobject could also be used by non-GMPLS LSPs.
+        The usage of the XRO subobject for any non-GMPLS LSPs is not in the scope of this document. </t>
+            </dd>
+          </dl>
+        </section>
+        <section anchor="flags" numbered="true" removeInRFC="false" toc="include" pn="section-6.2.3">
+          <name slugifiedName="name-new-flags-in-the-lsp-extend">New Flags in the LSP-EXTENDED-FLAG TLV in LSP Object</name>
+          <t indent="0" pn="section-6.2.3-1">The LSP object is defined in <xref target="RFC8231" sectionFormat="of" section="7.3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8231#section-7.3" derivedContent="RFC8231"/>, and the new extended flags TLV
+          is defined in <xref target="RFC9357" format="default" sectionFormat="of" derivedContent="RFC9357"/>.  This TLV is used in PCUpd,
+          PCRpt and PCInitiate messages for GMPLS, with the following flags
+          defined in this document:</t>
+          <dl spacing="normal" newline="true" indent="3" pn="section-6.2.3-2">
+            <dt pn="section-6.2.3-2.1">G (GMPLS LSP (0) -- 1 bit):</dt>
+            <dd pn="section-6.2.3-2.2">If set to 1, it indicates the LSP is a GMPLS LSP.</dd>
+            <dt pn="section-6.2.3-2.3">B (Bidirectional LSP (1) -- 1 bit):</dt>
+            <dd pn="section-6.2.3-2.4">If set to 0, it indicates a request to create a
+	    unidirectional LSP.  If set to 1, it indicates a request to
+	    create a bidirectional co-routed LSP.</dd>
+            <dt pn="section-6.2.3-2.5">RG (Routing Granularity (2-3) -- 2 bits):</dt>
+            <dd pn="section-6.2.3-2.6">
+              <t indent="0" pn="section-6.2.3-2.6.1">The RG flag for GMPLS is also defined in the LSP-EXTENDED-FLAG
+	    TLV. The values are defined as per <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>:</t>
+              <dl spacing="compact" indent="3" newline="false" pn="section-6.2.3-2.6.2">
+                <dt pn="section-6.2.3-2.6.2.1">00:</dt>
+                <dd pn="section-6.2.3-2.6.2.2">reserved</dd>
+                <dt pn="section-6.2.3-2.6.2.3">01:</dt>
+                <dd pn="section-6.2.3-2.6.2.4">node</dd>
+                <dt pn="section-6.2.3-2.6.2.5">10:</dt>
+                <dd pn="section-6.2.3-2.6.2.6">link</dd>
+                <dt pn="section-6.2.3-2.6.2.7">11:</dt>
+                <dd pn="section-6.2.3-2.6.2.8">label</dd>
+              </dl>
+            </dd>
+          </dl>
+        </section>
+      </section>
+    </section>
+    <section anchor="errors" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-update-to-error-handling">Update to Error Handling</name>
+      <t indent="0" pn="section-7-1">A PCEP-ERROR object is used to report a PCEP error and is
+      characterized by an Error-Type that specifies the type of error and an
+      Error-value that provides additional information about the error.  This
+      section adds additional error handling procedures to those specified in
+      <xref target="RFC8779" sectionFormat="of" section="3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8779#section-3" derivedContent="RFC8779"/>.  Please note
+      that all error handling specified in <xref target="RFC8779" sectionFormat="of" section="3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8779#section-3" derivedContent="RFC8779"/> is applicable and <bcp14>MUST</bcp14>
+      be supported for a stateful PCE in GMPLS networks.</t>
+      <section anchor="errcap" numbered="true" removeInRFC="false" toc="include" pn="section-7.1">
+        <name slugifiedName="name-error-handling-in-pcep-capa">Error Handling in PCEP Capabilities Advertisement</name>
+        <t indent="0" pn="section-7.1-1">The PCEP extensions described in this document for stateful PCEs with GMPLS capabilities
+        <bcp14>MUST NOT</bcp14> be used if the PCE has not advertised its capabilities with GMPLS as per <xref target="captlv" format="default" sectionFormat="of" derivedContent="Section 6.2.1"/>.</t>
+        <t indent="0" pn="section-7.1-2">If the PCC understands the U flag that indicates the stateful LSP-UPDATE-CAPABILITY, but did
+        not advertise this capability, then upon receipt of a PCUpd message for GMPLS LSP from the PCE,
+        it <bcp14>SHOULD</bcp14>
+	generate a PCErr with Error-Type 19 ("Invalid Operation") Error-value 25 ("Attempted LSP update request for GMPLS if stateful PCE capability not advertised") and terminate
+        the PCEP session. Such a PCC <bcp14>MAY</bcp14> decide to utilize the capability even though it did not advertise
+        support for it. </t>
+        <t indent="0" pn="section-7.1-3">If the PCE understands the R flag that indicates the stateful LSP-REPORT-CAPABILITY, but did not
+        advertise this capability, then upon receipt of a PCRpt message for GMPLS LSP from the PCC, it <bcp14>SHOULD</bcp14>
+        generate a PCErr with Error-Type 19 ("Invalid Operation") Error-value 26 ("Attempted LSP State Report for GMPLS if stateful PCE capability not advertised") and terminate the PCEP
+        session. Such a PCE <bcp14>MAY</bcp14> decide to utilize the capability even though it did not advertise support
+        for it.</t>
+        <t indent="0" pn="section-7.1-4">If the PCC  understands the I flag that indicates LSP-INSTANTIATION-CAPABILITY, but did not
+        advertise this capability, then upon receipt of a PCInitiate message for GMPLS LSP from the PCE,
+        it <bcp14>SHOULD</bcp14> generate a PCErr with Error-Type 19 ("Invalid Operation") Error-value 27 ("Attempted
+        LSP instantiation request for GMPLS if stateful PCE instantiation capability for not
+        advertised") and terminate the PCEP session. Such a PCC <bcp14>MAY</bcp14> decide to utilize the capability
+        even though it did not advertise support for it.</t>
+      </section>
+      <section anchor="erropt" numbered="true" removeInRFC="false" toc="include" pn="section-7.2">
+        <name slugifiedName="name-error-handling-in-lsp-reopt">Error Handling in LSP Reoptimization</name>
+        <t indent="0" pn="section-7.2-1">A stateful PCE is expected to perform an LSP reoptimization when receiving a message with the
+        R bit set in the RP object.
+
+	If no LSP state information is available to carry out reoptimization,
+        the stateful PCE <bcp14>SHOULD</bcp14> report Error-Type 19 ("Invalid Operation") Error-value 23 ("LSP state info unavailable for reoptimization"), although such a PCE <bcp14>MAY</bcp14> consider the
+        reoptimization to have successfully completed.  Note that this error message could also be
+        used by non-GMPLS LSPs.</t>
+      </section>
+      <section anchor="errex" numbered="true" removeInRFC="false" toc="include" pn="section-7.3">
+        <name slugifiedName="name-error-handling-in-route-exc">Error Handling in Route Exclusion</name>
+        <t indent="0" pn="section-7.3-1">The LSP Exclusion subobject in XRO, as defined in <xref target="exclusion" format="default" sectionFormat="of" derivedContent="Section 6.2.2"/> of this document, <bcp14>MAY</bcp14> be present
+        multiple times.  When a stateful PCE receives a PCEP message carrying this subobject, it searches
+        for the identified LSP in its LSP-DB.  It then excludes from the new path computation all the
+        resources used by the identified LSP.  If the stateful PCE cannot recognize the symbolic path
+        name of the identified LSP, it <bcp14>SHOULD</bcp14> send an error message PCErr reporting Error-Type 19 ("Invalid Operation") Error-value 24 ("LSP state info for route exclusion not found").  Along with the unrecognized symbolic path name, it <bcp14>MAY</bcp14> also provide information to the requesting PCC using the error-reporting techniques described in <xref target="RFC5440" format="default" sectionFormat="of" derivedContent="RFC5440"/>.
+
+	An implementation <bcp14>MAY</bcp14> choose to ignore the requested exclusion when the
+        LSP cannot be found because it could claim that it has avoided using all resources associated
+        with an LSP that doesn't exist. </t>
+      </section>
+      <section anchor="errgen" numbered="true" removeInRFC="false" toc="include" pn="section-7.4">
+        <name slugifiedName="name-error-handling-for-the-gene">Error Handling for the Generalized END-POINTS Object</name>
+        <t indent="0" pn="section-7.4-1">Note that the END-POINTS object in stateful PCEP messages was introduced for Point-to-Multipoint (P2MP)
+        <xref target="RFC8623" format="default" sectionFormat="of" derivedContent="RFC8623"/>. Similarly, the END-POINTS object <bcp14>MUST</bcp14> be carried for the GMPLS
+        LSP.  If the END-POINTS object is missing and the GMPLS flag in LSP-EXTENDED-FLAG is set,
+        the receiving PCE or PCC <bcp14>MUST</bcp14> send a PCErr message with Error-Type 6 ("Mandatory Object missing") and Error-value 3 ("END-POINTS object missing") (defined in <xref target="RFC5440" format="default" sectionFormat="of" derivedContent="RFC5440"/>).
+        Similarly, if the END-POINTS object with the Generalized Endpoint object type is received but 
+        the LSP-EXTENDED-FLAG TLV is missing in the LSP object or the G flag in the LSP-EXTENDED-FLAG
+        TLV is not set, the receiving PCE or PCC <bcp14>MUST</bcp14> send a PCErr message with Error-Type 19 ("Invalid Operation") Error-value 28 ("Use of the Generalized Endpoint object type for non-GMPLS LSPs").</t>
+        <t indent="0" pn="section-7.4-2">If the END-POINTS object with Generalized Endpoint object type is missing the LABEL-REQUEST
+        TLV, the receiving PCE or PCC <bcp14>MUST</bcp14> send a PCErr message with Error-Type 6 ("Mandatory Object missing") Error-value 20 ("LABEL-REQUEST TLV missing"). </t>
+      </section>
+    </section>
+    <section anchor="iana" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section anchor="iana-flag" numbered="true" removeInRFC="false" toc="include" pn="section-8.1">
+        <name slugifiedName="name-new-flags-in-the-gmpls-capa">New Flags in the GMPLS-CAPABILITY TLV</name>
+        <t indent="0" pn="section-8.1-1"><xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/> defines the GMPLS-CAPABILITY TLV; per that RFC, IANA created the "GMPLS-CAPABILITY TLV Flag Field" registry to manage the values of the GMPLS-CAPABILITY TLV's Flag field.  This document registers new bits in this registry as follows:</t>
+        <table anchor="iana-1" align="center" pn="table-1">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Bit</th>
+              <th align="left" colspan="1" rowspan="1">Capability Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">31</td>
+              <td align="left" colspan="1" rowspan="1">LSP-REPORT-CAPABILITY (R)</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">30</td>
+              <td align="left" colspan="1" rowspan="1">LSP-UPDATE-CAPABILITY (U)</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">29</td>
+              <td align="left" colspan="1" rowspan="1">LSP-INSTANTIATION-CAPABILITY (I)</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="iana-xro" numbered="true" removeInRFC="false" toc="include" pn="section-8.2">
+        <name slugifiedName="name-new-subobject-for-the-exclu">New Subobject for the Exclude Route Object</name>
+        <t indent="0" pn="section-8.2-1">IANA maintains the various XRO subobject types within the "XRO Subobjects" subregistry
+        of the "Path Computation Element Protocol (PCEP) Numbers" registry.  IANA has allocated a codepoint for another XRO
+        subobject as follows:</t>
+        <table anchor="iana-2" align="center" pn="table-2">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">11</td>
+              <td align="left" colspan="1" rowspan="1">LSP</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="iana-excl" numbered="true" removeInRFC="false" toc="include" pn="section-8.3">
+        <name slugifiedName="name-flags-field-for-the-lsp-exc">Flags Field for the LSP Exclusion Subobject</name>
+        <t indent="0" pn="section-8.3-1">IANA has created a registry named "LSP Exclusion Subobject Flag Field",
+        within the "Path Computation Element Protocol (PCEP) Numbers" group, to manage the Flag
+        field of the LSP Exclusion subobject in the XRO. No flag is currently defined for this
+        Flag field in this document.</t>
+        <t indent="0" pn="section-8.3-2">Codespace of the Flag field (LSP Exclusion Subobject)</t>
+        <table anchor="iana-3" align="center" pn="table-3">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Bit</th>
+              <th align="left" colspan="1" rowspan="1">Capability Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">0-7</td>
+              <td align="left" colspan="1" rowspan="1">Unassigned</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+          </tbody>
+        </table>
+        <t indent="0" pn="section-8.3-4">New values are to be assigned by Standards Action <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>.
+        Each bit should be registered with the following entries:</t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-8.3-5">
+          <li pn="section-8.3-5.1">Bit number (counting from bit 0 as the most significant bit)</li>
+          <li pn="section-8.3-5.2">Capability description</li>
+          <li pn="section-8.3-5.3">Reference to defining RFC</li>
+        </ul>
+      </section>
+      <section anchor="iana-extend" numbered="true" removeInRFC="false" toc="include" pn="section-8.4">
+        <name slugifiedName="name-new-flags-in-the-lsp-extende">New Flags in the LSP-EXTENDED-FLAGS TLV</name>
+        <t indent="0" pn="section-8.4-1"><xref target="RFC9357" format="default" sectionFormat="of" derivedContent="RFC9357"/> requested IANA to create a
+        subregistry, named the "LSP-EXTENDED-FLAG TLV Flag Field", within the "Path Computation
+        Element Protocol (PCEP) Numbers" registry, to manage the Flag field of the
+        LSP-EXTENDED-FLAG TLV.</t>
+        <t indent="0" pn="section-8.4-2">IANA has made assignments from this registry as follows:</t>
+        <table anchor="iana-4" align="center" pn="table-4">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Bit</th>
+              <th align="left" colspan="1" rowspan="1">Capability Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">0</td>
+              <td align="left" colspan="1" rowspan="1">GMPLS LSP (G)</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">1</td>
+              <td align="left" colspan="1" rowspan="1">Bidirectional Co-routed LSP (B)</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">2-3</td>
+              <td align="left" colspan="1" rowspan="1">Routing Granularity (RG)</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="iana-er" numbered="true" removeInRFC="false" toc="include" pn="section-8.5">
+        <name slugifiedName="name-new-pcep-error-codes">New PCEP Error Codes</name>
+        <t indent="0" pn="section-8.5-1">IANA has made the following allocations in the "PCEP-ERROR Object
+        Error Types and Values" registry.</t>
+        <table anchor="iana-5" align="center" pn="table-5">
+          <name/>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Error-Type</th>
+              <th align="left" colspan="1" rowspan="1">Meaning</th>
+              <th align="left" colspan="1" rowspan="1">Error-value</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">6</td>
+              <td align="left" colspan="1" rowspan="1">Mandatory Object missing</td>
+              <td align="left" colspan="1" rowspan="1">20: LABEL-REQUEST TLV missing</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+            <tr>
+              <td rowspan="6" align="left" colspan="1">19</td>
+              <td rowspan="6" align="left" colspan="1">Invalid Operation</td>
+              <td align="left" colspan="1" rowspan="1">23: LSP state info unavailable for reoptimization</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">24: LSP state info for route exclusion not found</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">25: Attempted LSP update request for GMPLS if stateful PCE capability not advertised</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">26: Attempted LSP State Report for GMPLS if stateful PCE capability not advertised</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">27: Attempted LSP instantiation request for GMPLS if stateful PCE instantiation capability not advertised</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">28: Use of the Generalized Endpoint object type for non-GMPLS LSPs</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9504</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+    <section anchor="mgmt" numbered="true" removeInRFC="false" toc="include" pn="section-9">
+      <name slugifiedName="name-manageability-consideration">Manageability Considerations</name>
+      <t indent="0" pn="section-9-1">General PCE management considerations are discussed in <xref target="RFC4655" format="default" sectionFormat="of" derivedContent="RFC4655"/>
+      and <xref target="RFC5440" format="default" sectionFormat="of" derivedContent="RFC5440"/>, and GMPLS-specific PCEP management considerations are
+      described in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>.  In this document, the management considerations
+      for stateful PCEP extension in GMPLS are described. </t>
+      <t indent="0" pn="section-9-2">This section follows the guidance of <xref target="RFC6123" format="default" sectionFormat="of" derivedContent="RFC6123"/>.</t>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-9.1">
+        <name slugifiedName="name-control-of-function-through">Control of Function through Configuration and Policy</name>
+        <t indent="0" pn="section-9.1-1">In addition to the parameters already listed in <xref target="RFC5440" sectionFormat="of" section="8.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5440#section-8.1" derivedContent="RFC5440"/>, a PCEP
+        implementation <bcp14>SHOULD</bcp14> allow configuration of the
+        following PCEP session parameters on a PCC.  However, an implementation
+        <bcp14>MAY</bcp14> choose to make these features available on all PCEP
+        sessions:</t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-9.1-2">
+          <li pn="section-9.1-2.1">The ability to send stateful PCEP messages for GMPLS LSPs.</li>
+          <li pn="section-9.1-2.2">The ability to use path computation constraints (e.g., XRO).</li>
+        </ul>
+        <t indent="0" pn="section-9.1-3">In addition to the parameters already listed in <xref target="RFC5440" sectionFormat="of" section="8.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5440#section-8.1" derivedContent="RFC5440"/>, a PCEP
+        implementation <bcp14>SHOULD</bcp14> allow configuration of the
+        following PCEP session parameters on a PCE:</t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-9.1-4">
+          <li pn="section-9.1-4.1">The ability to compute paths in a stateful manner in GMPLS networks.</li>
+          <li pn="section-9.1-4.2">A set of GMPLS-specific constraints.</li>
+        </ul>
+        <t indent="0" pn="section-9.1-5">These parameters may be configured as default parameters for any PCEP session the PCEP
+        speaker participates in or they may apply to a specific session with a given PCEP peer
+        or a specific group of sessions with a specific group of PCEP peers.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-9.2">
+        <name slugifiedName="name-information-and-data-models">Information and Data Models</name>
+        <t indent="0" pn="section-9.2-1">The YANG module in <xref target="I-D.ietf-pce-pcep-yang" format="default" sectionFormat="of" derivedContent="PCE-PCEP-YANG"/> can be used to configure and
+        monitor PCEP states and messages. To make sure that the YANG module is useful for the
+        extensions as described in this document, it would need to include advertised GMPLS stateful
+        capabilities etc. A future version of <xref target="I-D.ietf-pce-pcep-yang" format="default" sectionFormat="of" derivedContent="PCE-PCEP-YANG"/> will include
+        this.</t>
+        <t indent="0" pn="section-9.2-2">As described in <xref target="I-D.ietf-teas-yang-path-computation" format="default" sectionFormat="of" derivedContent="YANG-PATH-COMPUTATION"/>, a YANG-based
+        interface can be used in some cases to request GMPLS path computations, instead of PCEP.
+        Refer to <xref target="I-D.ietf-teas-yang-path-computation" format="default" sectionFormat="of" derivedContent="YANG-PATH-COMPUTATION"/> for details.  </t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-9.3">
+        <name slugifiedName="name-liveness-detection-and-moni">Liveness Detection and Monitoring</name>
+        <t indent="0" pn="section-9.3-1">This document makes no change to the basic operation of PCEP, so
+        there are no changes to the requirements for liveness detection and
+        monitoring in <xref target="RFC4657" format="default" sectionFormat="of" derivedContent="RFC4657"/> and <xref target="RFC5440" sectionFormat="of" section="8.3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5440#section-8.3" derivedContent="RFC5440"/>.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-9.4">
+        <name slugifiedName="name-verifying-correct-operation">Verifying Correct Operation</name>
+        <t indent="0" pn="section-9.4-1">This document makes no change to the basic operations of PCEP and
+        the considerations described in <xref target="RFC5440" sectionFormat="of" section="8.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5440#section-8.4" derivedContent="RFC5440"/>.  New errors defined by this
+        document should satisfy the requirement to log error events.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-9.5">
+        <name slugifiedName="name-requirements-on-other-proto">Requirements on Other Protocols and Functional Components</name>
+        <t indent="0" pn="section-9.5-1">When the detailed route information is included for LSP state synchronization (either
+        at the initial stage or during the LSP State Report process), this requires the ingress node
+        of an LSP to carry the Record Route Object (RRO) object in order to enable the collection of such information. </t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-9.6">
+        <name slugifiedName="name-impact-on-network-operation">Impact on Network Operation</name>
+        <t indent="0" pn="section-9.6-1">The management considerations concerning the impact on network
+        operations described in <xref target="RFC8779" sectionFormat="of" section="4.6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8779#section-4.6" derivedContent="RFC8779"/> apply here.</t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-10">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-10-1">The security considerations elaborated in <xref target="RFC5440" format="default" sectionFormat="of" derivedContent="RFC5440"/> apply to this
+      document.  The PCEP extensions to support GMPLS-controlled networks should be considered
+      under the same security as for MPLS networks, as noted in <xref target="RFC7025" format="default" sectionFormat="of" derivedContent="RFC7025"/>.  Therefore,
+      the PCEP extension to support GMPLS specified in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/> is used as the
+      foundation of this document; the security considerations in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/>
+      should also be applicable to this document.  The secure transport of PCEP specified in
+      <xref target="RFC8253" format="default" sectionFormat="of" derivedContent="RFC8253"/> allows the usage of Transport Layer Security (TLS).  The same
+      can also be used by the PCEP extension defined in this document. </t>
+      <t indent="0" pn="section-10-2">This document provides additional extensions to PCEP so as to facilitate stateful
+      PCE usage in GMPLS-controlled networks, on top of <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/> and
+      <xref target="RFC8281" format="default" sectionFormat="of" derivedContent="RFC8281"/>.  Security issues caused by the extension in
+      <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/> and <xref target="RFC8281" format="default" sectionFormat="of" derivedContent="RFC8281"/> are not altered by the additions
+      in this document.  The security considerations in <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/> and
+      <xref target="RFC8281" format="default" sectionFormat="of" derivedContent="RFC8281"/>, including both issues and solutions, apply to this document
+      as well.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-pce-pcep-yang" to="PCE-PCEP-YANG"/>
+    <displayreference target="I-D.ietf-teas-yang-path-computation" to="YANG-PATH-COMPUTATION"/>
+    <references pn="section-11">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-11.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC5440" target="https://www.rfc-editor.org/info/rfc5440" quoteTitle="true" derivedAnchor="RFC5440">
+          <front>
+            <title>Path Computation Element (PCE) Communication Protocol (PCEP)</title>
+            <author fullname="JP. Vasseur" initials="JP." role="editor" surname="Vasseur"/>
+            <author fullname="JL. Le Roux" initials="JL." role="editor" surname="Le Roux"/>
+            <date month="March" year="2009"/>
+            <abstract>
+              <t indent="0">This document specifies the Path Computation Element (PCE) Communication Protocol (PCEP) for communications between a Path Computation Client (PCC) and a PCE, or between two PCEs. Such interactions include path computation requests and path computation replies as well as notifications of specific states related to the use of a PCE in the context of Multiprotocol Label Switching (MPLS) and Generalized MPLS (GMPLS) Traffic Engineering. PCEP is designed to be flexible and extensible so as to easily allow for the addition of further messages and objects, should further requirements be expressed in the future. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5440"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5440"/>
+        </reference>
+        <reference anchor="RFC5511" target="https://www.rfc-editor.org/info/rfc5511" quoteTitle="true" derivedAnchor="RFC5511">
+          <front>
+            <title>Routing Backus-Naur Form (RBNF): A Syntax Used to Form Encoding Rules in Various Routing Protocol Specifications</title>
+            <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+            <date month="April" year="2009"/>
+            <abstract>
+              <t indent="0">Several protocols have been specified in the Routing Area of the IETF using a common variant of the Backus-Naur Form (BNF) of representing message syntax. However, there is no formal definition of this version of BNF.</t>
+              <t indent="0">There is value in using the same variant of BNF for the set of protocols that are commonly used together. This reduces confusion and simplifies implementation.</t>
+              <t indent="0">Updating existing documents to use some other variant of BNF that is already formally documented would be a substantial piece of work.</t>
+              <t indent="0">This document provides a formal definition of the variant of BNF that has been used (that we call Routing BNF) and makes it available for use by new protocols. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5511"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5511"/>
+        </reference>
+        <reference anchor="RFC5521" target="https://www.rfc-editor.org/info/rfc5521" quoteTitle="true" derivedAnchor="RFC5521">
+          <front>
+            <title>Extensions to the Path Computation Element Communication Protocol (PCEP) for Route Exclusions</title>
+            <author fullname="E. Oki" initials="E." surname="Oki"/>
+            <author fullname="T. Takeda" initials="T." surname="Takeda"/>
+            <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+            <date month="April" year="2009"/>
+            <abstract>
+              <t indent="0">The Path Computation Element (PCE) provides functions of path computation in support of traffic engineering (TE) in Multi-Protocol Label Switching (MPLS) and Generalized MPLS (GMPLS) networks.</t>
+              <t indent="0">When a Path Computation Client (PCC) requests a PCE for a route, it may be useful for the PCC to specify, as constraints to the path computation, abstract nodes, resources, and Shared Risk Link Groups (SRLGs) that are to be explicitly excluded from the computed route. Such constraints are termed "route exclusions".</t>
+              <t indent="0">The PCE Communication Protocol (PCEP) is designed as a communication protocol between PCCs and PCEs. This document presents PCEP extensions for route exclusions. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5521"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5521"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8231" target="https://www.rfc-editor.org/info/rfc8231" quoteTitle="true" derivedAnchor="RFC8231">
+          <front>
+            <title>Path Computation Element Communication Protocol (PCEP) Extensions for Stateful PCE</title>
+            <author fullname="E. Crabbe" initials="E." surname="Crabbe"/>
+            <author fullname="I. Minei" initials="I." surname="Minei"/>
+            <author fullname="J. Medved" initials="J." surname="Medved"/>
+            <author fullname="R. Varga" initials="R." surname="Varga"/>
+            <date month="September" year="2017"/>
+            <abstract>
+              <t indent="0">The Path Computation Element Communication Protocol (PCEP) provides mechanisms for Path Computation Elements (PCEs) to perform path computations in response to Path Computation Client (PCC) requests.</t>
+              <t indent="0">Although PCEP explicitly makes no assumptions regarding the information available to the PCE, it also makes no provisions for PCE control of timing and sequence of path computations within and across PCEP sessions. This document describes a set of extensions to PCEP to enable stateful control of MPLS-TE and GMPLS Label Switched Paths (LSPs) via PCEP.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8231"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8231"/>
+        </reference>
+        <reference anchor="RFC8253" target="https://www.rfc-editor.org/info/rfc8253" quoteTitle="true" derivedAnchor="RFC8253">
+          <front>
+            <title>PCEPS: Usage of TLS to Provide a Secure Transport for the Path Computation Element Communication Protocol (PCEP)</title>
+            <author fullname="D. Lopez" initials="D." surname="Lopez"/>
+            <author fullname="O. Gonzalez de Dios" initials="O." surname="Gonzalez de Dios"/>
+            <author fullname="Q. Wu" initials="Q." surname="Wu"/>
+            <author fullname="D. Dhody" initials="D." surname="Dhody"/>
+            <date month="October" year="2017"/>
+            <abstract>
+              <t indent="0">The Path Computation Element Communication Protocol (PCEP) defines the mechanisms for the communication between a Path Computation Client (PCC) and a Path Computation Element (PCE), or among PCEs. This document describes PCEPS -- the usage of Transport Layer Security (TLS) to provide a secure transport for PCEP. The additional security mechanisms are provided by the transport protocol supporting PCEP; therefore, they do not affect the flexibility and extensibility of PCEP.</t>
+              <t indent="0">This document updates RFC 5440 in regards to the PCEP initialization phase procedures.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8253"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8253"/>
+        </reference>
+        <reference anchor="RFC8281" target="https://www.rfc-editor.org/info/rfc8281" quoteTitle="true" derivedAnchor="RFC8281">
+          <front>
+            <title>Path Computation Element Communication Protocol (PCEP) Extensions for PCE-Initiated LSP Setup in a Stateful PCE Model</title>
+            <author fullname="E. Crabbe" initials="E." surname="Crabbe"/>
+            <author fullname="I. Minei" initials="I." surname="Minei"/>
+            <author fullname="S. Sivabalan" initials="S." surname="Sivabalan"/>
+            <author fullname="R. Varga" initials="R." surname="Varga"/>
+            <date month="December" year="2017"/>
+            <abstract>
+              <t indent="0">The Path Computation Element Communication Protocol (PCEP) provides mechanisms for Path Computation Elements (PCEs) to perform path computations in response to Path Computation Client (PCC) requests.</t>
+              <t indent="0">The extensions for stateful PCE provide active control of Multiprotocol Label Switching (MPLS) Traffic Engineering Label Switched Paths (TE LSPs) via PCEP, for a model where the PCC delegates control over one or more locally configured LSPs to the PCE. This document describes the creation and deletion of PCE-initiated LSPs under the stateful PCE model.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8281"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8281"/>
+        </reference>
+        <reference anchor="RFC8779" target="https://www.rfc-editor.org/info/rfc8779" quoteTitle="true" derivedAnchor="RFC8779">
+          <front>
+            <title>Path Computation Element Communication Protocol (PCEP) Extensions for GMPLS</title>
+            <author fullname="C. Margaria" initials="C." role="editor" surname="Margaria"/>
+            <author fullname="O. Gonzalez de Dios" initials="O." role="editor" surname="Gonzalez de Dios"/>
+            <author fullname="F. Zhang" initials="F." role="editor" surname="Zhang"/>
+            <date month="July" year="2020"/>
+            <abstract>
+              <t indent="0">A Path Computation Element (PCE) provides path computation functions for Multiprotocol Label Switching (MPLS) and Generalized MPLS (GMPLS) networks. Additional requirements for GMPLS are identified in RFC 7025.</t>
+              <t indent="0">This memo provides extensions to the Path Computation Element Communication Protocol (PCEP) for the support of the GMPLS control plane to address those requirements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8779"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8779"/>
+        </reference>
+        <reference anchor="RFC9357" target="https://www.rfc-editor.org/info/rfc9357" quoteTitle="true" derivedAnchor="RFC9357">
+          <front>
+            <title>Label Switched Path (LSP) Object Flag Extension for Stateful PCE</title>
+            <author fullname="Q. Xiong" initials="Q." surname="Xiong"/>
+            <date month="February" year="2023"/>
+            <abstract>
+              <t indent="0">RFC 8231 describes a set of extensions to the Path Computation Element Communication Protocol (PCEP) to enable stateful control of MPLS-TE and GMPLS Label Switched Paths (LSPs) via PCEP. One of the extensions is the LSP object, which includes a Flag field with a length of 12 bits. However, all bits of the Flag field have already been assigned.</t>
+              <t indent="0">This document defines a new LSP-EXTENDED-FLAG TLV for the LSP object for an extended Flag field.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9357"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9357"/>
+        </reference>
+      </references>
+      <references pn="section-11.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.ietf-pce-pcep-yang" target="https://datatracker.ietf.org/doc/html/draft-ietf-pce-pcep-yang-22" quoteTitle="true" derivedAnchor="PCE-PCEP-YANG">
+          <front>
+            <title>A YANG Data Model for Path Computation Element Communications Protocol (PCEP)</title>
+            <author initials="D." surname="Dhody" fullname="Dhruv Dhody" role="editor">
+              <organization showOnFrontPage="true">Huawei</organization>
+            </author>
+            <author initials="V. P." surname="Beeram" fullname="Vishnu Pavan Beeram">
+              <organization showOnFrontPage="true">Juniper Networks</organization>
+            </author>
+            <author initials="J." surname="Hardwick" fullname="Jonathan Hardwick">
+              <organization showOnFrontPage="true">Microsoft</organization>
+            </author>
+            <author initials="J." surname="Tantsura" fullname="Jeff Tantsura">
+              <organization showOnFrontPage="true">Nvidia</organization>
+            </author>
+            <date month="September" day="11" year="2023"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-pce-pcep-yang-22"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC3471" target="https://www.rfc-editor.org/info/rfc3471" quoteTitle="true" derivedAnchor="RFC3471">
+          <front>
+            <title>Generalized Multi-Protocol Label Switching (GMPLS) Signaling Functional Description</title>
+            <author fullname="L. Berger" initials="L." role="editor" surname="Berger"/>
+            <date month="January" year="2003"/>
+            <abstract>
+              <t indent="0">This document describes extensions to Multi-Protocol Label Switching (MPLS) signaling required to support Generalized MPLS. Generalized MPLS extends the MPLS control plane to encompass time-division (e.g., Synchronous Optical Network and Synchronous Digital Hierarchy, SONET/SDH), wavelength (optical lambdas) and spatial switching (e.g., incoming port or fiber to outgoing port or fiber). This document presents a functional description of the extensions. Protocol specific formats and mechanisms, and technology specific details are specified in separate documents. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3471"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3471"/>
+        </reference>
+        <reference anchor="RFC3473" target="https://www.rfc-editor.org/info/rfc3473" quoteTitle="true" derivedAnchor="RFC3473">
+          <front>
+            <title>Generalized Multi-Protocol Label Switching (GMPLS) Signaling Resource ReserVation Protocol-Traffic Engineering (RSVP-TE) Extensions</title>
+            <author fullname="L. Berger" initials="L." role="editor" surname="Berger"/>
+            <date month="January" year="2003"/>
+            <abstract>
+              <t indent="0">This document describes extensions to Multi-Protocol Label Switching (MPLS) Resource ReserVation Protocol - Traffic Engineering (RSVP-TE) signaling required to support Generalized MPLS. Generalized MPLS extends the MPLS control plane to encompass time-division (e.g., Synchronous Optical Network and Synchronous Digital Hierarchy, SONET/SDH), wavelength (optical lambdas) and spatial switching (e.g., incoming port or fiber to outgoing port or fiber). This document presents a RSVP-TE specific description of the extensions. A generic functional description can be found in separate documents. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3473"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3473"/>
+        </reference>
+        <reference anchor="RFC4655" target="https://www.rfc-editor.org/info/rfc4655" quoteTitle="true" derivedAnchor="RFC4655">
+          <front>
+            <title>A Path Computation Element (PCE)-Based Architecture</title>
+            <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+            <author fullname="J.-P. Vasseur" initials="J.-P." surname="Vasseur"/>
+            <author fullname="J. Ash" initials="J." surname="Ash"/>
+            <date month="August" year="2006"/>
+            <abstract>
+              <t indent="0">Constraint-based path computation is a fundamental building block for traffic engineering systems such as Multiprotocol Label Switching (MPLS) and Generalized Multiprotocol Label Switching (GMPLS) networks. Path computation in large, multi-domain, multi-region, or multi-layer networks is complex and may require special computational components and cooperation between the different network domains.</t>
+              <t indent="0">This document specifies the architecture for a Path Computation Element (PCE)-based model to address this problem space. This document does not attempt to provide a detailed description of all the architectural components, but rather it describes a set of building blocks for the PCE architecture from which solutions may be constructed. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4655"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4655"/>
+        </reference>
+        <reference anchor="RFC4657" target="https://www.rfc-editor.org/info/rfc4657" quoteTitle="true" derivedAnchor="RFC4657">
+          <front>
+            <title>Path Computation Element (PCE) Communication Protocol Generic Requirements</title>
+            <author fullname="J. Ash" initials="J." role="editor" surname="Ash"/>
+            <author fullname="J.L. Le Roux" initials="J.L." role="editor" surname="Le Roux"/>
+            <date month="September" year="2006"/>
+            <abstract>
+              <t indent="0">The PCE model is described in the "PCE Architecture" document and facilitates path computation requests from Path Computation Clients (PCCs) to Path Computation Elements (PCEs). This document specifies generic requirements for a communication protocol between PCCs and PCEs, and also between PCEs where cooperation between PCEs is desirable. Subsequent documents will specify application-specific requirements for the PCE communication protocol. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4657"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4657"/>
+        </reference>
+        <reference anchor="RFC4872" target="https://www.rfc-editor.org/info/rfc4872" quoteTitle="true" derivedAnchor="RFC4872">
+          <front>
+            <title>RSVP-TE Extensions in Support of End-to-End Generalized Multi-Protocol Label Switching (GMPLS) Recovery</title>
+            <author fullname="J.P. Lang" initials="J.P." role="editor" surname="Lang"/>
+            <author fullname="Y. Rekhter" initials="Y." role="editor" surname="Rekhter"/>
+            <author fullname="D. Papadimitriou" initials="D." role="editor" surname="Papadimitriou"/>
+            <date month="May" year="2007"/>
+            <abstract>
+              <t indent="0">This document describes protocol-specific procedures and extensions for Generalized Multi-Protocol Label Switching (GMPLS) Resource ReSerVation Protocol - Traffic Engineering (RSVP-TE) signaling to support end-to-end Label Switched Path (LSP) recovery that denotes protection and restoration. A generic functional description of GMPLS recovery can be found in a companion document, RFC 4426. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4872"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4872"/>
+        </reference>
+        <reference anchor="RFC4873" target="https://www.rfc-editor.org/info/rfc4873" quoteTitle="true" derivedAnchor="RFC4873">
+          <front>
+            <title>GMPLS Segment Recovery</title>
+            <author fullname="L. Berger" initials="L." surname="Berger"/>
+            <author fullname="I. Bryskin" initials="I." surname="Bryskin"/>
+            <author fullname="D. Papadimitriou" initials="D." surname="Papadimitriou"/>
+            <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+            <date month="May" year="2007"/>
+            <abstract>
+              <t indent="0">This document describes protocol specific procedures for GMPLS (Generalized Multi-Protocol Label Switching) RSVP-TE (Resource ReserVation Protocol - Traffic Engineering) signaling extensions to support label switched path (LSP) segment protection and restoration. These extensions are intended to complement and be consistent with the RSVP-TE Extensions for End-to-End GMPLS Recovery (RFC 4872). Implications and interactions with fast reroute are also addressed. This document also updates the handling of NOTIFY_REQUEST objects. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4873"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4873"/>
+        </reference>
+        <reference anchor="RFC6123" target="https://www.rfc-editor.org/info/rfc6123" quoteTitle="true" derivedAnchor="RFC6123">
+          <front>
+            <title>Inclusion of Manageability Sections in Path Computation Element (PCE) Working Group Drafts</title>
+            <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+            <date month="February" year="2011"/>
+            <abstract>
+              <t indent="0">It has often been the case that manageability considerations have been retrofitted to protocols after they have been specified, standardized, implemented, or deployed. This is sub-optimal. Similarly, new protocols or protocol extensions are frequently designed without due consideration of manageability requirements.</t>
+              <t indent="0">The Operations Area has developed "Guidelines for Considering Operations and Management of New Protocols and Protocol Extensions" (RFC 5706), and those guidelines have been adopted by the Path Computation Element (PCE) Working Group.</t>
+              <t indent="0">Previously, the PCE Working Group used the recommendations contained in this document to guide authors of Internet-Drafts on the contents of "Manageability Considerations" sections in their work. This document is retained for historic reference. This document defines a Historic Document for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6123"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6123"/>
+        </reference>
+        <reference anchor="RFC7025" target="https://www.rfc-editor.org/info/rfc7025" quoteTitle="true" derivedAnchor="RFC7025">
+          <front>
+            <title>Requirements for GMPLS Applications of PCE</title>
+            <author fullname="T. Otani" initials="T." surname="Otani"/>
+            <author fullname="K. Ogaki" initials="K." surname="Ogaki"/>
+            <author fullname="D. Caviglia" initials="D." surname="Caviglia"/>
+            <author fullname="F. Zhang" initials="F." surname="Zhang"/>
+            <author fullname="C. Margaria" initials="C." surname="Margaria"/>
+            <date month="September" year="2013"/>
+            <abstract>
+              <t indent="0">The initial effort of the PCE (Path Computation Element) WG focused mainly on MPLS. As a next step, this document describes functional requirements for GMPLS applications of PCE.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7025"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7025"/>
+        </reference>
+        <reference anchor="RFC7399" target="https://www.rfc-editor.org/info/rfc7399" quoteTitle="true" derivedAnchor="RFC7399">
+          <front>
+            <title>Unanswered Questions in the Path Computation Element Architecture</title>
+            <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+            <author fullname="D. King" initials="D." surname="King"/>
+            <date month="October" year="2014"/>
+            <abstract>
+              <t indent="0">The Path Computation Element (PCE) architecture is set out in RFC 4655. The architecture is extended for multi-layer networking with the introduction of the Virtual Network Topology Manager (VNTM) in RFC 5623 and generalized to Hierarchical PCE (H-PCE) in RFC 6805.</t>
+              <t indent="0">These three architectural views of PCE deliberately leave some key questions unanswered, especially with respect to the interactions between architectural components. This document draws out those questions and discusses them in an architectural context with reference to other architectural components, existing protocols, and recent IETF efforts.</t>
+              <t indent="0">This document does not update the architecture documents and does not define how protocols or components must be used. It does, however, suggest how the architectural components might be combined to provide advanced PCE function.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7399"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7399"/>
+        </reference>
+        <reference anchor="RFC8051" target="https://www.rfc-editor.org/info/rfc8051" quoteTitle="true" derivedAnchor="RFC8051">
+          <front>
+            <title>Applicability of a Stateful Path Computation Element (PCE)</title>
+            <author fullname="X. Zhang" initials="X." role="editor" surname="Zhang"/>
+            <author fullname="I. Minei" initials="I." role="editor" surname="Minei"/>
+            <date month="January" year="2017"/>
+            <abstract>
+              <t indent="0">A stateful Path Computation Element (PCE) maintains information about Label Switched Path (LSP) characteristics and resource usage within a network in order to provide traffic-engineering calculations for its associated Path Computation Clients (PCCs). This document describes general considerations for a stateful PCE deployment and examines its applicability and benefits, as well as its challenges and limitations, through a number of use cases. PCE Communication Protocol (PCEP) extensions required for stateful PCE usage are covered in separate documents.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8051"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8051"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8232" target="https://www.rfc-editor.org/info/rfc8232" quoteTitle="true" derivedAnchor="RFC8232">
+          <front>
+            <title>Optimizations of Label Switched Path State Synchronization Procedures for a Stateful PCE</title>
+            <author fullname="E. Crabbe" initials="E." surname="Crabbe"/>
+            <author fullname="I. Minei" initials="I." surname="Minei"/>
+            <author fullname="J. Medved" initials="J." surname="Medved"/>
+            <author fullname="R. Varga" initials="R." surname="Varga"/>
+            <author fullname="X. Zhang" initials="X." surname="Zhang"/>
+            <author fullname="D. Dhody" initials="D." surname="Dhody"/>
+            <date month="September" year="2017"/>
+            <abstract>
+              <t indent="0">A stateful Path Computation Element (PCE) has access to not only the information disseminated by the network's Interior Gateway Protocol (IGP) but also the set of active paths and their reserved resources for its computation. The additional Label Switched Path (LSP) state information allows the PCE to compute constrained paths while considering individual LSPs and their interactions. This requires a State Synchronization mechanism between the PCE and the network, the PCE and Path Computation Clients (PCCs), and cooperating PCEs. The basic mechanism for State Synchronization is part of the stateful PCE specification. This document presents motivations for optimizations to the base State Synchronization procedure and specifies the required Path Computation Element Communication Protocol (PCEP) extensions.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8232"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8232"/>
+        </reference>
+        <reference anchor="RFC8282" target="https://www.rfc-editor.org/info/rfc8282" quoteTitle="true" derivedAnchor="RFC8282">
+          <front>
+            <title>Extensions to the Path Computation Element Communication Protocol (PCEP) for Inter-Layer MPLS and GMPLS Traffic Engineering</title>
+            <author fullname="E. Oki" initials="E." surname="Oki"/>
+            <author fullname="T. Takeda" initials="T." surname="Takeda"/>
+            <author fullname="A. Farrel" initials="A." surname="Farrel"/>
+            <author fullname="F. Zhang" initials="F." surname="Zhang"/>
+            <date month="December" year="2017"/>
+            <abstract>
+              <t indent="0">The Path Computation Element (PCE) provides path computation functions in support of traffic engineering in Multiprotocol Label Switching (MPLS) and Generalized MPLS (GMPLS) networks.</t>
+              <t indent="0">MPLS and GMPLS networks may be constructed from layered service networks. It is advantageous for overall network efficiency to provide end-to-end traffic engineering across multiple network layers through a process called inter-layer traffic engineering. PCE is a candidate solution for such requirements.</t>
+              <t indent="0">The PCE Communication Protocol (PCEP) is designed as a communication protocol between Path Computation Clients (PCCs) and PCEs. This document presents PCEP extensions for inter-layer traffic engineering.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8282"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8282"/>
+        </reference>
+        <reference anchor="RFC8623" target="https://www.rfc-editor.org/info/rfc8623" quoteTitle="true" derivedAnchor="RFC8623">
+          <front>
+            <title>Stateful Path Computation Element (PCE) Protocol Extensions for Usage with Point-to-Multipoint TE Label Switched Paths (LSPs)</title>
+            <author fullname="U. Palle" initials="U." surname="Palle"/>
+            <author fullname="D. Dhody" initials="D." surname="Dhody"/>
+            <author fullname="Y. Tanaka" initials="Y." surname="Tanaka"/>
+            <author fullname="V. Beeram" initials="V." surname="Beeram"/>
+            <date month="June" year="2019"/>
+            <abstract>
+              <t indent="0">The Path Computation Element (PCE) has been identified as an appropriate technology for the determination of the paths of point- to-multipoint (P2MP) TE Label Switched Paths (LSPs). This document provides extensions required for the Path Computation Element Communication Protocol (PCEP) so as to enable the usage of a stateful PCE capability in supporting P2MP TE LSPs.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8623"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8623"/>
+        </reference>
+        <reference anchor="RFC8745" target="https://www.rfc-editor.org/info/rfc8745" quoteTitle="true" derivedAnchor="RFC8745">
+          <front>
+            <title>Path Computation Element Communication Protocol (PCEP) Extensions for Associating Working and Protection Label Switched Paths (LSPs) with Stateful PCE</title>
+            <author fullname="H. Ananthakrishnan" initials="H." surname="Ananthakrishnan"/>
+            <author fullname="S. Sivabalan" initials="S." surname="Sivabalan"/>
+            <author fullname="C. Barth" initials="C." surname="Barth"/>
+            <author fullname="I. Minei" initials="I." surname="Minei"/>
+            <author fullname="M. Negi" initials="M." surname="Negi"/>
+            <date month="March" year="2020"/>
+            <abstract>
+              <t indent="0">An active stateful Path Computation Element (PCE) is capable of computing as well as controlling via Path Computation Element Communication Protocol (PCEP) Multiprotocol Label Switching Traffic Engineering (MPLS-TE) Label Switched Paths (LSPs). Furthermore, it is also possible for an active stateful PCE to create, maintain, and delete LSPs. This document defines the PCEP extension to associate two or more LSPs to provide end-to-end path protection.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8745"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8745"/>
+        </reference>
+        <reference anchor="I-D.ietf-teas-yang-path-computation" target="https://datatracker.ietf.org/doc/html/draft-ietf-teas-yang-path-computation-21" quoteTitle="true" derivedAnchor="YANG-PATH-COMPUTATION">
+          <front>
+            <title>A YANG Data Model for requesting path computation</title>
+            <author initials="I." surname="Busi" fullname="Italo Busi" role="editor">
+              <organization showOnFrontPage="true">Huawei Technologies</organization>
+            </author>
+            <author initials="S." surname="Belotti" fullname="Sergio Belotti" role="editor">
+              <organization showOnFrontPage="true">Nokia</organization>
+            </author>
+            <author initials="O. G." surname="de Dios" fullname="Oscar Gonzalez de Dios">
+              <organization showOnFrontPage="true">Telefonica</organization>
+            </author>
+            <author initials="A." surname="Sharma" fullname="Anurag Sharma">
+              <organization showOnFrontPage="true">Google</organization>
+            </author>
+            <author initials="Y." surname="Shi" fullname="Yan Shi">
+              <organization showOnFrontPage="true">China Unicom</organization>
+            </author>
+            <date month="July" day="7" year="2023"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-teas-yang-path-computation-21"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-pcep-messages">PCEP Messages</name>
+      <t indent="0" pn="section-appendix.a-1">This section uses the Routing Backus-Naur Form (RBNF) <xref target="RFC5511" format="default" sectionFormat="of" derivedContent="RFC5511"/> to illustrate
+      the PCEP messages. The RBNF in this section is reproduced for informative purposes. It is also
+      expanded to show the GMPLS-specific objects. </t>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.1">
+        <name slugifiedName="name-the-pcrpt-message">The PCRpt Message</name>
+        <t indent="0" pn="section-appendix.a.1-1">According to <xref target="RFC8231" format="default" sectionFormat="of" derivedContent="RFC8231"/>, the PCRpt message is used to report the current
+        state of an LSP. This document extends the message in reporting the status of LSPs with GMPLS
+        characteristics. </t>
+        <t indent="0" pn="section-appendix.a.1-2">The format of the PCRpt message is as follows:</t>
+        <sourcecode type="rbnf" markers="false" pn="section-appendix.a.1-3">
+&lt;PCRpt Message&gt; ::= &lt;Common Header&gt;
+                    &lt;state-report-list&gt;
+</sourcecode>
+        <t indent="0" pn="section-appendix.a.1-4">Where:</t>
+        <sourcecode type="rbnf" markers="false" pn="section-appendix.a.1-5">
+&lt;state-report-list&gt; ::= &lt;state-report&gt;[&lt;state-report-list&gt;]
+&lt;state-report&gt; ::= [&lt;SRP&gt;]
+                   &lt;LSP&gt;
+                   [&lt;END-POINTS&gt;]
+                   &lt;path&gt;
+</sourcecode>
+        <t indent="0" pn="section-appendix.a.1-6">Where:</t>
+        <sourcecode type="rbnf" markers="false" pn="section-appendix.a.1-7">
+&lt;path&gt; ::= &lt;intended-path&gt;
+           [&lt;actual-attribute-list&gt;&lt;actual-path&gt;]
+           &lt;intended-attribute-list&gt;
+&lt;actual-attribute-list&gt; ::=[&lt;BANDWIDTH&gt;]
+                           [&lt;metric-list&gt;]
+</sourcecode>
+        <t indent="0" pn="section-appendix.a.1-8">Where:</t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-appendix.a.1-9">
+          <li pn="section-appendix.a.1-9.1">The END-POINTS object <bcp14>MUST</bcp14> be carried in a PCRpt message when the G flag is set in the
+          LSP-EXTENDED-FLAG TLV in the LSP object for a GMPLS LSP.</li>
+          <li pn="section-appendix.a.1-9.2">&lt;intended-path&gt; is represented by the ERO object defined
+          in <xref target="RFC5440" sectionFormat="of" section="7.9" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5440#section-7.9" derivedContent="RFC5440"/> and
+          augmented in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/> with ELC.</li>
+          <li pn="section-appendix.a.1-9.3">&lt;actual-attribute-list&gt; consists of the actual computed and  signaled values of the
+          &lt;BANDWIDTH&gt; and &lt;metric-lists&gt; objects defined in <xref target="RFC5440" format="default" sectionFormat="of" derivedContent="RFC5440"/>.</li>
+          <li pn="section-appendix.a.1-9.4">&lt;actual-path&gt; is represented by the RRO object defined in
+          <xref target="RFC5440" sectionFormat="of" section="7.10" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5440#section-7.10" derivedContent="RFC5440"/>.</li>
+          <li pn="section-appendix.a.1-9.5">&lt;intended-attribute-list&gt; is the attribute-list defined in
+          <xref target="RFC5440" sectionFormat="of" section="6.5" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5440#section-6.5" derivedContent="RFC5440"/> and
+          extended by many other documents that define PCEP extensions for
+          specific scenarios as shown below:</li>
+        </ul>
+        <sourcecode type="rbnf" markers="false" pn="section-appendix.a.1-10">
+&lt;attribute-list&gt; ::= [&lt;of-list&gt;]
+                     [&lt;LSPA&gt;]
+                     [&lt;BANDWIDTH&gt;]
+                     [&lt;metric-list&gt;]
+                     [&lt;IRO&gt;][&lt;XRO&gt;]
+                     [&lt;INTER-LAYER&gt;]
+                     [&lt;SWITCH-LAYER&gt;]
+                     [&lt;REQ-ADAP-CAP&gt;]
+                     [&lt;SERVER-INDICATION&gt;]
+</sourcecode>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.2">
+        <name slugifiedName="name-the-pcupd-message">The PCUpd Message</name>
+        <t indent="0" pn="section-appendix.a.2-1">The format of a PCUpd message is as follows:</t>
+        <sourcecode type="rbnf" markers="false" pn="section-appendix.a.2-2">
+&lt;PCUpd Message&gt; ::= &lt;Common Header&gt;
+                    &lt;update-request-list&gt;
+</sourcecode>
+        <t indent="0" pn="section-appendix.a.2-3">Where:</t>
+        <sourcecode type="rbnf" markers="false" pn="section-appendix.a.2-4">
+&lt;update-request-list&gt; ::= &lt;update-request&gt;[&lt;update-request-list&gt;]
+&lt;update-request&gt; ::= &lt;SRP&gt;
+                     &lt;LSP&gt;
+                     [&lt;END-POINTS&gt;]
+                     &lt;path&gt;
+</sourcecode>
+        <t indent="0" pn="section-appendix.a.2-5">Where:</t>
+        <sourcecode type="rbnf" markers="false" pn="section-appendix.a.2-6">
+&lt;path&gt; ::= &lt;intended-path&gt;&lt;intended-attribute-list&gt;
+</sourcecode>
+        <t indent="0" pn="section-appendix.a.2-7">Where:</t>
+        <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-appendix.a.2-8">
+          <li pn="section-appendix.a.2-8.1">The END-POINTS object <bcp14>MUST</bcp14> be carried in a PCUpd message for the GMPLS LSP.</li>
+          <li pn="section-appendix.a.2-8.2">&lt;intended-path&gt; is represented by the ERO object defined
+          in <xref target="RFC5440" sectionFormat="of" section="7.9" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5440#section-7.9" derivedContent="RFC5440"/>,
+          augmented in <xref target="RFC8779" format="default" sectionFormat="of" derivedContent="RFC8779"/> with ELC.</li>
+          <li pn="section-appendix.a.2-8.3">&lt;intended-attribute-list&gt; is the attribute-list defined in <xref target="RFC5440" format="default" sectionFormat="of" derivedContent="RFC5440"/>
+          and extended by many other documents that define PCEP extensions for specific scenarios
+          and as shown for PCRpt above.</li>
+        </ul>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a.3">
+        <name slugifiedName="name-the-pcinitiate-message">The PCInitiate Message</name>
+        <t indent="0" pn="section-appendix.a.3-1">According to <xref target="RFC8281" format="default" sectionFormat="of" derivedContent="RFC8281"/>, the PCInitiate message is used allow LSP Initiation. This
+        document extends the message in initiating LSPs with GMPLS characteristics.  The format of a PCInitiate
+        message is as follows:</t>
+        <sourcecode type="rbnf" markers="false" pn="section-appendix.a.3-2">
+&lt;PCInitiate Message&gt; ::= &lt;Common Header&gt;
+                         &lt;PCE-initiated-lsp-list&gt;
+</sourcecode>
+        <t indent="0" pn="section-appendix.a.3-3">Where:</t>
+        <sourcecode type="rbnf" markers="false" pn="section-appendix.a.3-4">
+&lt;Common Header&gt; is defined in &lt;xref target="RFC5440" /&gt;.
+&lt;PCE-initiated-lsp-list&gt; ::= &lt;PCE-initiated-lsp-request&gt;
+                             [&lt;PCE-initiated-lsp-list&gt;]
+&lt;PCE-initiated-lsp-request&gt; ::= (&lt;PCE-initiated-lsp-instantiation&gt;|
+                                 &lt;PCE-initiated-lsp-deletion&gt;)
+&lt;PCE-initiated-lsp-instantiation&gt; ::= &lt;SRP&gt;
+                                      &lt;LSP&gt;
+                                      [&lt;END-POINTS&gt;]
+                                      &lt;ERO&gt;
+                                      [&lt;attribute-list&gt;]
+&lt;PCE-initiated-lsp-deletion&gt; ::= &lt;SRP&gt;
+                                 &lt;LSP&gt;
+</sourcecode>
+        <t indent="0" pn="section-appendix.a.3-5">The format of the PCInitiate message is unchanged from <xref target="RFC8281" sectionFormat="of" section="5.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8281#section-5.1" derivedContent="RFC8281"/>. All fields are
+        similar to the PCRpt and the PCUpd messages. </t>
+      </section>
+    </section>
+    <section numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.b-1">We would like to thank <contact fullname="Adrian Farrel"/>, <contact fullname="Cyril Margaria"/>, <contact fullname="George Swallow"/>,
+      <contact fullname="Jan Medved"/>, <contact fullname="Sue Hares"/>, and
+      <contact fullname="John Scudder"/> for the useful comments and
+      discussions. </t>
+      <t indent="0" pn="section-appendix.b-2">Thanks to <contact fullname="Dhruv Dhody"/> for Shepherding this
+      document and providing useful comments.</t>
+    </section>
+    <section numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <contact fullname="Xian Zhang">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <email>zhang.xian@huawei.com</email>
+        </address>
+      </contact>
+      <contact fullname="Dhruv Dhody">
+        <organization showOnFrontPage="true">Huawei Technology</organization>
+        <address>
+          <postal>
+            <country>India</country>
+          </postal>
+          <email>dhruv.ietf@gmail.com</email>
+        </address>
+      </contact>
+      <contact fullname="Yi Lin">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <email>yi.lin@huawei.com</email>
+        </address>
+      </contact>
+      <contact fullname="Fatai Zhang">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <email>zhangfatai@huawei.com</email>
+        </address>
+      </contact>
+      <contact fullname="Ramon Casellas">
+        <organization showOnFrontPage="true">CTTC</organization>
+        <address>
+          <postal>
+            <street>Av. Carl Friedrich Gauss n7</street>
+            <city>Barcelona</city>
+            <region>Castelldefels</region>
+            <code>08860</code>
+            <country>Spain</country>
+          </postal>
+          <email>ramon.casellas@cttc.es</email>
+        </address>
+      </contact>
+      <contact fullname="Siva Sivabalan">
+        <organization showOnFrontPage="true">Cisco Systems</organization>
+        <address>
+          <email>msiva@cisco.com</email>
+        </address>
+      </contact>
+      <contact fullname="Clarence Filsfils">
+        <organization showOnFrontPage="true">Cisco Systems</organization>
+        <address>
+          <email>cfilsfil@cisco.com</email>
+        </address>
+      </contact>
+      <contact fullname="Robert Varga">
+        <organization showOnFrontPage="true">Pantheon Technologies</organization>
+        <address>
+          <email>nite@hq.sk</email>
+        </address>
+      </contact>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.d">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Young Lee" initials="Y." surname="Lee">
+        <organization showOnFrontPage="true">Samsung</organization>
+        <address>
+          <email>younglee.tx@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Haomian Zheng" initials="H." surname="Zheng">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <email>zhenghaomian@huawei.com</email>
+        </address>
+      </author>
+      <author fullname="Oscar Gonzalez de Dios" initials="O." surname="Gonzalez de Dios">
+        <organization showOnFrontPage="true">Telefonica</organization>
+        <address>
+          <email>oscar.gonzalezdedios@telefonica.com</email>
+        </address>
+      </author>
+      <author fullname="Victor Lopez" initials="V." surname="Lopez">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <email>victor.lopez@nokia.com</email>
+        </address>
+      </author>
+      <author fullname="Zafar Ali" initials="Z." surname="Ali">
+        <organization showOnFrontPage="true">Cisco</organization>
+        <address>
+          <email>zali@cisco.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

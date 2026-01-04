@@ -1,0 +1,1170 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-add-ddr-10" number="9462" submissionType="IETF" category="std" consensus="true" tocInclude="true" sortRefs="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2023-11-06T13:06:12" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-add-ddr-10" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9462" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="DDR">Discovery of Designated Resolvers</title>
+    <seriesInfo name="RFC" value="9462" stream="IETF"/>
+    <author initials="T." surname="Pauly" fullname="Tommy Pauly">
+      <organization showOnFrontPage="true">Apple Inc.</organization>
+      <address>
+        <postal>
+          <street>One Apple Park Way</street>
+          <city>Cupertino</city>
+          <region>California</region>
+          <code>95014</code>
+          <country>United States of America</country>
+        </postal>
+        <email>tpauly@apple.com</email>
+      </address>
+    </author>
+    <author initials="E." surname="Kinnear" fullname="Eric Kinnear">
+      <organization showOnFrontPage="true">Apple Inc.</organization>
+      <address>
+        <postal>
+          <street>One Apple Park Way</street>
+          <city>Cupertino</city>
+          <region>California</region>
+          <code>95014</code>
+          <country>United States of America</country>
+        </postal>
+        <email>ekinnear@apple.com</email>
+      </address>
+    </author>
+    <author initials="C. A." surname="Wood" fullname="Christopher A. Wood">
+      <organization showOnFrontPage="true">Cloudflare</organization>
+      <address>
+        <postal>
+          <street>101 Townsend St</street>
+          <city>San Francisco</city>
+          <region>California</region>
+          <code>94107</code>
+          <country>United States of America</country>
+        </postal>
+        <email>caw@heapingbits.net</email>
+      </address>
+    </author>
+    <author initials="P." surname="McManus" fullname="Patrick McManus">
+      <organization showOnFrontPage="true">Fastly</organization>
+      <address>
+        <email>mcmanus@ducksong.com</email>
+      </address>
+    </author>
+    <author initials="T." surname="Jensen" fullname="Tommy Jensen">
+      <organization showOnFrontPage="true">Microsoft</organization>
+      <address>
+        <email>tojens@microsoft.com</email>
+      </address>
+    </author>
+    <date month="11" year="2023"/>
+    <area>int</area>
+    <workgroup>add</workgroup>
+    <keyword>DNS</keyword>
+    <keyword>DoH</keyword>
+    <keyword>DoT</keyword>
+    <keyword>DoQ</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document defines Discovery of Designated Resolvers (DDR), a
+set of mechanisms for DNS clients to use DNS records to discover a resolver's encrypted
+DNS configuration. An Encrypted DNS Resolver discovered in this manner is referred
+to as a "Designated Resolver". These mechanisms can be used to move from unencrypted
+DNS to encrypted DNS when only the IP address of a resolver is known. These mechanisms are
+designed to be limited to cases where Unencrypted DNS Resolvers and their Designated
+Resolvers are operated by the same entity or cooperating entities. It can also be used
+to discover support for encrypted DNS protocols when the name of an Encrypted DNS Resolver is known.
+</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9462" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-specification-of-requiremen">Specification of Requirements</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dns-service-binding-records">DNS Service Binding Records</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-discovery-using-resolver-ip">Discovery Using Resolver IP Addresses</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-use-of-designated-resolvers">Use of Designated Resolvers</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2.1.2">
+                  <li pn="section-toc.1-1.4.2.1.2.1">
+                    <t indent="0" pn="section-toc.1-1.4.2.1.2.1.1"><xref derivedContent="4.1.1" format="counter" sectionFormat="of" target="section-4.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-use-of-designated-resolvers-">Use of Designated Resolvers across Network Changes</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-verified-discovery">Verified Discovery</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-opportunistic-discovery">Opportunistic Discovery</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-discovery-using-resolver-na">Discovery Using Resolver Names</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-deployment-considerations">Deployment Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-caching-forwarders">Caching Forwarders</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-certificate-management">Certificate Management</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.3">
+                <t indent="0" pn="section-toc.1-1.6.2.3.1"><xref derivedContent="6.3" format="counter" sectionFormat="of" target="section-6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-server-name-handling">Server Name Handling</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.4">
+                <t indent="0" pn="section-toc.1-1.6.2.4.1"><xref derivedContent="6.4" format="counter" sectionFormat="of" target="section-6.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-handling-non-ddr-queries-fo">Handling Non-DDR Queries for resolver.arpa</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.5">
+                <t indent="0" pn="section-toc.1-1.6.2.5.1"><xref derivedContent="6.5" format="counter" sectionFormat="of" target="section-6.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-interaction-with-network-de">Interaction with Network-Designated Resolvers</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-special-use-domain-name-res">Special-Use Domain Name "resolver.arpa"</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-domain-name-reservation-con">Domain Name Reservation Considerations</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="Appendix A" format="default" sectionFormat="of" target="section-appendix.a"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rationale-for-using-a-speci">Rationale for Using a Special-Use Domain Name</xref></t>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="Appendix B" format="default" sectionFormat="of" target="section-appendix.b"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-rationale-for-using-svcb-re">Rationale for Using SVCB Records</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">When DNS clients wish to use encrypted DNS protocols such as DNS over TLS (DoT)
+<xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/>, DNS over QUIC (DoQ) <xref target="RFC9250" format="default" sectionFormat="of" derivedContent="RFC9250"/>, or DNS over HTTPS (DoH) <xref target="RFC8484" format="default" sectionFormat="of" derivedContent="RFC8484"/>,
+they can require additional information beyond the IP address of the DNS server,
+such as the resolver's hostname, alternate IP addresses, non-standard ports, or
+URI Templates. However, common configuration mechanisms only provide the resolver's
+IP address during configuration. Such mechanisms include network provisioning protocols
+like DHCP <xref target="RFC2132" format="default" sectionFormat="of" derivedContent="RFC2132"/> <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/> and IPv6 Router Advertisement (RA) options <xref target="RFC8106" format="default" sectionFormat="of" derivedContent="RFC8106"/>,
+as well as manual configuration.
+</t>
+      <t indent="0" pn="section-1-2">This document defines two mechanisms for clients to discover Designated
+Resolvers that support these encrypted protocols using DNS server Service
+Binding (SVCB) records <xref target="RFC9460" format="default" sectionFormat="of" derivedContent="RFC9460"/>:</t>
+      <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-1-3"><li pn="section-1-3.1" derivedCounter="1.">When only an IP address of an Unencrypted DNS Resolver is known, the client
+queries a Special-Use Domain Name (SUDN) <xref target="RFC6761" format="default" sectionFormat="of" derivedContent="RFC6761"/> to discover DNS SVCB
+records associated with one or more Encrypted DNS Resolvers the Unencrypted DNS
+Resolver has designated for use when support for DNS encryption is
+requested (<xref target="bootstrapping" format="default" sectionFormat="of" derivedContent="Section 4"/>).</li>
+        <li pn="section-1-3.2" derivedCounter="2.">When the hostname of an Encrypted DNS Resolver is known, the client requests
+details by sending a query for a DNS SVCB record. This can be used to discover
+alternate encrypted DNS protocols supported by a known server, or to provide
+details if a resolver name is provisioned by a network (<xref target="encrypted" format="default" sectionFormat="of" derivedContent="Section 5"/>).</li>
+      </ol>
+      <t indent="0" pn="section-1-4">Both of these approaches allow clients to confirm that a discovered Encrypted DNS
+Resolver is designated by the originally provisioned resolver. "Designated" in
+this context means that the resolvers are operated by the same entity or
+cooperating entities; for example, the resolvers are accessible on the same
+IP address, or there is a certificate that contains the IP address for the
+original designating resolver.</t>
+      <section anchor="specification-of-requirements" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-specification-of-requiremen">Specification of Requirements</name>
+        <t indent="0" pn="section-1.1-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+       "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>",
+       "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>",
+       "<bcp14>SHOULD NOT</bcp14>",
+       "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+       "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+       are to be interpreted as described in BCP 14
+       <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only
+       when, they appear in all capitals, as shown here.</t>
+      </section>
+    </section>
+    <section anchor="terminology" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <t indent="0" pn="section-2-1">This document defines the following terms:</t>
+      <dl indent="3" newline="false" spacing="normal" pn="section-2-2">
+        <dt pn="section-2-2.1">DDR:</dt>
+        <dd pn="section-2-2.2">
+          <t indent="0" pn="section-2-2.2.1">Discovery of Designated Resolvers. "DDR" refers to the mechanisms defined
+in this document.</t>
+        </dd>
+        <dt pn="section-2-2.3">Designated Resolver:</dt>
+        <dd pn="section-2-2.4">
+          <t indent="0" pn="section-2-2.4.1">A resolver, presumably an Encrypted DNS Resolver, designated by another resolver
+for use in its own place. This designation can be verified with TLS certificates.</t>
+        </dd>
+        <dt pn="section-2-2.5">Encrypted DNS Resolver:</dt>
+        <dd pn="section-2-2.6">
+          <t indent="0" pn="section-2-2.6.1">A DNS resolver using any encrypted DNS transport. This includes current
+mechanisms such as DoH, DoT, and DoQ, as well as future mechanisms.</t>
+        </dd>
+        <dt pn="section-2-2.7">Unencrypted DNS Resolver:</dt>
+        <dd pn="section-2-2.8">
+          <t indent="0" pn="section-2-2.8.1">A DNS resolver using a transport without encryption, historically
+TCP or UDP port 53.</t>
+        </dd>
+      </dl>
+    </section>
+    <section anchor="dns-service-binding-records" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-dns-service-binding-records">DNS Service Binding Records</name>
+      <t indent="0" pn="section-3-1">DNS resolvers can advertise one or more Designated Resolvers that
+may offer support over encrypted channels and are controlled by the same
+entity.</t>
+      <t indent="0" pn="section-3-2">When a client discovers Designated Resolvers, it learns information such as
+the supported protocols and ports. This information is provided in ServiceMode
+SVCB records for DNS servers, although AliasMode SVCB records
+can be used to direct clients to the needed ServiceMode SVCB record per
+<xref target="RFC9460" format="default" sectionFormat="of" derivedContent="RFC9460"/>. The formatting of these records, including the
+DNS-unique parameters such as "dohpath", are defined by <xref target="RFC9461" format="default" sectionFormat="of" derivedContent="RFC9461"/>.</t>
+      <t indent="0" pn="section-3-3">The following is an example of a SVCB record describing a DoH server discovered
+by querying for <tt>_dns.example.net</tt>:</t>
+      <artwork align="left" pn="section-3-4">
+_dns.example.net.  7200  IN SVCB 1 example.net. (
+     alpn=h2 dohpath=/dns-query{?dns} )
+</artwork>
+      <t indent="0" pn="section-3-5">The following is an example of a SVCB record describing a DoT server discovered
+by querying for <tt>_dns.example.net</tt>:</t>
+      <artwork align="left" pn="section-3-6">
+_dns.example.net.  7200  IN SVCB 1 dot.example.net (
+     alpn=dot port=8530 )
+</artwork>
+      <t indent="0" pn="section-3-7">The following is an example of a SVCB record describing a DoQ server discovered
+by querying for <tt>_dns.example.net</tt>:</t>
+      <artwork align="left" pn="section-3-8">
+_dns.example.net.  7200  IN SVCB 1 doq.example.net (
+     alpn=doq port=8530 )
+</artwork>
+      <t indent="0" pn="section-3-9">If multiple Designated Resolvers are available, using one or more
+encrypted DNS protocols, the resolver deployment can indicate a preference using
+the priority fields in each SVCB record <xref target="RFC9460" format="default" sectionFormat="of" derivedContent="RFC9460"/>.</t>
+      <t indent="0" pn="section-3-10">If the client encounters a mandatory parameter in a SVCB record it does not
+understand, it <bcp14>MUST NOT</bcp14> use that record to discover a Designated Resolver, in accordance
+with <xref section="8" sectionFormat="of" target="RFC9460" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-8" derivedContent="RFC9460"/>. The
+client can still use other records in the same response if the client can understand
+all of their mandatory parameters. This allows future encrypted deployments to
+simultaneously support protocols even if a given client is not aware of all those
+protocols. For example, if the Unencrypted DNS Resolver returns three SVCB records -- one
+for DoH, one for DoT, and one for a yet-to-exist protocol -- a client that only supports
+DoH and DoT should be able to use those records while safely ignoring the third record.</t>
+      <t indent="0" pn="section-3-11">To avoid name lookup deadlock, clients that use Designated Resolvers need to ensure
+that a specific Encrypted DNS Resolver is not used for any queries that are needed to
+resolve the name of the resolver itself or to perform certificate revocation checks for
+the resolver, as described in <xref section="10" sectionFormat="of" target="RFC8484" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8484#section-10" derivedContent="RFC8484"/>. Designated Resolvers need to ensure that this deadlock is avoidable, as also described in <xref section="10" sectionFormat="of" target="RFC8484" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8484#section-10" derivedContent="RFC8484"/>.</t>
+      <t indent="0" pn="section-3-12">This document focuses on discovering DoH, DoT, and DoQ Designated Resolvers.
+Other protocols can also use the format defined by <xref target="RFC9461" format="default" sectionFormat="of" derivedContent="RFC9461"/>.
+However, if any such protocol does not involve some form of certificate
+validation, new validation mechanisms will need to be defined to support
+validating designation as defined in <xref target="verified" format="default" sectionFormat="of" derivedContent="Section 4.2"/>.</t>
+    </section>
+    <section anchor="bootstrapping" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-discovery-using-resolver-ip">Discovery Using Resolver IP Addresses</name>
+      <t indent="0" pn="section-4-1">When a DNS client is configured with an Unencrypted DNS Resolver IP address, it
+<bcp14>SHOULD</bcp14> query the resolver for SVCB records of a service with a scheme of "dns" and
+an authority of "resolver.arpa" before making other queries. This allows the client
+to switch to using encrypted DNS for all other queries, if possible. Specifically,
+the client issues a query for <tt>_dns.resolver.arpa.</tt> with the SVCB resource record type
+(64) <xref target="RFC9460" format="default" sectionFormat="of" derivedContent="RFC9460"/>.</t>
+      <t indent="0" pn="section-4-2">Responses to the SVCB query for the "resolver.arpa" SUDN describe Designated Resolvers.
+To ensure that different Designated Resolver configurations can be correctly
+distinguished and associated with A and AAAA records for the resolver, ServiceMode
+SVCB responses to these queries <bcp14>MUST NOT</bcp14> use the "." or "resolver.arpa" value for
+the TargetName. Similarly, clients <bcp14>MUST NOT</bcp14> perform A or AAAA queries for
+"resolver.arpa".</t>
+      <t indent="0" pn="section-4-3">The following is an example of a SVCB record describing a DoH server discovered
+by querying for <tt>_dns.resolver.arpa.</tt>:</t>
+      <artwork align="left" pn="section-4-4">
+_dns.resolver.arpa.  7200  IN SVCB 1 doh.example.net (
+     alpn=h2 dohpath=/dns-query{?dns} )
+</artwork>
+      <t indent="0" pn="section-4-5">The following is an example of a SVCB record describing a DoT server discovered
+by querying for <tt>_dns.resolver.arpa.</tt>:</t>
+      <artwork align="left" pn="section-4-6">
+_dns.resolver.arpa.  7200  IN SVCB 1 dot.example.net (
+     alpn=dot port=8530 )
+</artwork>
+      <t indent="0" pn="section-4-7">The following is an example of a SVCB record describing a DoQ server discovered
+by querying for <tt>_dns.resolver.arpa.</tt>:</t>
+      <artwork align="left" pn="section-4-8">
+_dns.resolver.arpa.  7200  IN SVCB 1 doq.example.net (
+     alpn=doq port=8530 )
+</artwork>
+      <t indent="0" pn="section-4-9">If the recursive resolver that receives this query has one or more Designated
+Resolvers, it will return the corresponding SVCB records. When responding
+to these special queries for "resolver.arpa", the recursive resolver
+<bcp14>SHOULD</bcp14> include the A and AAAA records for the name of the Designated Resolver
+in the Additional Answers section. This will save the DNS client an additional
+round trip to retrieve the address of the Designated Resolver; see <xref section="5" sectionFormat="of" target="RFC9460" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-5" derivedContent="RFC9460"/>.</t>
+      <t indent="0" pn="section-4-10">Designated Resolvers <bcp14>SHOULD</bcp14> be accessible using the IP address families that
+are supported by their associated Unencrypted DNS Resolvers. If an Unencrypted DNS Resolver
+is accessible using an IPv4 address, it ought to provide an A record for an
+IPv4 address of the Designated Resolver; similarly, if it is accessible using an
+IPv6 address, it ought to provide a AAAA record for an IPv6 address of the
+Designated Resolver. The Designated Resolver <bcp14>MAY</bcp14> support more address families
+than the Unencrypted DNS Resolver, but it <bcp14>SHOULD NOT</bcp14> support fewer. If this is
+not done, clients that only have connectivity over one address family might not
+be able to access the Designated Resolver.</t>
+      <t indent="0" pn="section-4-11">If the recursive resolver that receives this query has no Designated Resolvers,
+it <bcp14>SHOULD</bcp14> return NODATA for queries to the "resolver.arpa" zone, to provide
+a consistent and accurate signal to clients that it does not have a
+Designated Resolver.</t>
+      <section anchor="use-of-designated-resolvers" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-use-of-designated-resolvers">Use of Designated Resolvers</name>
+        <t indent="0" pn="section-4.1-1">When a client discovers Designated Resolvers from an Unencrypted DNS Resolver IP
+address, it can choose to use these Designated Resolvers either (1) automatically or (2) based on some other policy, heuristic, or user choice.</t>
+        <t indent="0" pn="section-4.1-2">This document defines two preferred methods for automatically using Designated
+Resolvers:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.1-3">
+          <li pn="section-4.1-3.1">Verified Discovery (<xref target="verified" format="default" sectionFormat="of" derivedContent="Section 4.2"/>), for when a TLS certificate can
+be used to validate the resolver's identity.</li>
+          <li pn="section-4.1-3.2">Opportunistic Discovery (<xref target="opportunistic" format="default" sectionFormat="of" derivedContent="Section 4.3"/>), for when a resolver's IP address
+is a private or local address.</li>
+        </ul>
+        <t indent="0" pn="section-4.1-4">A client <bcp14>MAY</bcp14> additionally use a discovered Designated Resolver without
+either of these methods, based on implementation-specific policy or user input.
+Details of such policy are out of scope for this document. Clients <bcp14>MUST NOT</bcp14>
+automatically use a Designated Resolver without some sort of validation,
+such as the two methods defined in this document or a future mechanism. Use
+without validation can allow an attacker to direct traffic to an Encrypted DNS
+Resolver that is unrelated to the original Unencrypted DNS Resolver, as
+described in <xref target="security" format="default" sectionFormat="of" derivedContent="Section 7"/>.</t>
+        <t indent="0" pn="section-4.1-5">A client <bcp14>MUST NOT</bcp14> reuse a designation discovered using the IP address of one
+Unencrypted DNS Resolver in place of any other Unencrypted DNS Resolver. Instead,
+the client needs to repeat the discovery process to discover the Designated Resolver
+of the other Unencrypted DNS Resolver. In other words, designations are
+per-resolver and <bcp14>MUST NOT</bcp14> be used to configure the client's universal DNS
+behavior. This ensures in all cases that queries are being sent to a party
+designated by the resolver originally being used.</t>
+        <section anchor="use-of-designated-resolvers-across-network-changes" numbered="true" removeInRFC="false" toc="include" pn="section-4.1.1">
+          <name slugifiedName="name-use-of-designated-resolvers-">Use of Designated Resolvers across Network Changes</name>
+          <t indent="0" pn="section-4.1.1-1">If a client is configured with the same Unencrypted DNS Resolver IP address on
+multiple different networks, a Designated Resolver that has been discovered on one
+network <bcp14>SHOULD NOT</bcp14> be reused on any of the other networks without repeating the
+discovery process for each network, since the same IP address may be used for
+different servers on the different networks.</t>
+        </section>
+      </section>
+      <section anchor="verified" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-verified-discovery">Verified Discovery</name>
+        <t indent="0" pn="section-4.2-1">Verified Discovery is a mechanism that allows the automatic use of a
+Designated Resolver that supports DNS encryption that performs a TLS handshake.</t>
+        <t indent="0" pn="section-4.2-2">In order to be considered a verified Designated Resolver, the TLS certificate
+presented by the Designated Resolver needs to pass the following checks made
+by the client:</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-4.2-3"><li pn="section-4.2-3.1" derivedCounter="1.">The client <bcp14>MUST</bcp14> verify the chain of certificates up to a trust anchor
+as described in <xref section="6" sectionFormat="of" target="RFC5280" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-6" derivedContent="RFC5280"/>. The client <bcp14>SHOULD</bcp14> use the default
+system or application trust anchors, unless otherwise configured.</li>
+          <li pn="section-4.2-3.2" derivedCounter="2.">The client <bcp14>MUST</bcp14> verify that the certificate contains the IP address of the
+designating Unencrypted DNS Resolver in an iPAddress entry of the subjectAltName
+extension as described in <xref section="4.2.1.6" sectionFormat="of" target="RFC5280" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5280#section-4.2.1.6" derivedContent="RFC5280"/>.</li>
+        </ol>
+        <t indent="0" pn="section-4.2-4">If these checks pass, the client <bcp14>SHOULD</bcp14> use the discovered Designated Resolver
+for any cases in which it would have otherwise used the Unencrypted DNS Resolver,
+so as to prefer encrypted DNS whenever possible.</t>
+        <t indent="0" pn="section-4.2-5">If these checks fail, the client <bcp14>MUST NOT</bcp14> automatically use the discovered
+Designated Resolver if this designation was only discovered via a
+<tt>_dns.resolver.arpa.</tt> query (if the designation was advertised directly
+by the network as described in <xref target="dnr-interaction" format="default" sectionFormat="of" derivedContent="Section 6.5"/>, the server can still
+be used). Additionally, the client <bcp14>SHOULD</bcp14> suppress any further
+queries for Designated Resolvers using this Unencrypted DNS Resolver for the
+length of time indicated by the SVCB record's Time to Live (TTL) in order
+to avoid excessive queries that will lead to further failed validations.
+The client <bcp14>MAY</bcp14> issue new queries if the SVCB record's TTL is excessively
+long (as determined by client policy) to minimize the length of time an
+intermittent attacker can prevent the use of encrypted DNS.</t>
+        <t indent="0" pn="section-4.2-6">If the Designated Resolver and the Unencrypted DNS Resolver share an IP
+address, clients <bcp14>MAY</bcp14> choose to opportunistically use the Designated Resolver even
+without this certificate check (<xref target="opportunistic" format="default" sectionFormat="of" derivedContent="Section 4.3"/>). If the IP address is not shared,
+opportunistic use allows for attackers to redirect queries to an unrelated Encrypted DNS
+Resolver, as described in <xref target="security" format="default" sectionFormat="of" derivedContent="Section 7"/>.</t>
+        <t indent="0" pn="section-4.2-7">Connections to a Designated Resolver can use a different IP address than
+the IP address of the Unencrypted DNS Resolver -- for example, if the process of
+resolving the SVCB service yields additional addresses. Even when a different
+IP address is used for the connection, the TLS certificate checks described
+in this section still apply for the original IP address of the Unencrypted
+DNS Resolver.</t>
+      </section>
+      <section anchor="opportunistic" numbered="true" removeInRFC="false" toc="include" pn="section-4.3">
+        <name slugifiedName="name-opportunistic-discovery">Opportunistic Discovery</name>
+        <t indent="0" pn="section-4.3-1">There are situations where Verified Discovery of encrypted DNS
+configuration over unencrypted DNS is not possible. For example, the identities of Unencrypted DNS
+Resolvers on private IP addresses <xref target="RFC1918" format="default" sectionFormat="of" derivedContent="RFC1918"/>, Unique Local Addresses (ULAs)
+<xref target="RFC4193" format="default" sectionFormat="of" derivedContent="RFC4193"/>, and Link-Local addresses <xref target="RFC3927" format="default" sectionFormat="of" derivedContent="RFC3927"/> <xref target="RFC4291" format="default" sectionFormat="of" derivedContent="RFC4291"/> cannot be safely confirmed using TLS certificates under most conditions.</t>
+        <t indent="0" pn="section-4.3-2">An opportunistic privacy profile is defined for DoT in <xref section="4.1" sectionFormat="of" target="RFC7858" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7858#section-4.1" derivedContent="RFC7858"/>
+as a mode in which clients do not validate the name of the resolver presented in
+the certificate. This opportunistic privacy profile similarly applies to
+DoQ <xref target="RFC9250" format="default" sectionFormat="of" derivedContent="RFC9250"/>. For this profile, <xref section="4.1" sectionFormat="of" target="RFC7858" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7858#section-4.1" derivedContent="RFC7858"/> explains that
+clients might or might not validate the resolver; however, even if clients choose
+to perform some certificate validation checks, they will not be able to validate
+the names presented in the SubjectAltName (SAN) field of the certificate for
+private and local IP addresses.</t>
+        <t indent="0" pn="section-4.3-3">A client <bcp14>MAY</bcp14> use information from the SVCB record for <tt>_dns.resolver.arpa.</tt> with
+this opportunistic privacy profile as long as the IP address of the Encrypted
+DNS Resolver does not differ from the IP address of the Unencrypted
+DNS Resolver. Clients <bcp14>SHOULD</bcp14> use this mode only for resolvers using private or
+local IP addresses, since resolvers that use other addresses are able to provision
+TLS certificates for their addresses.</t>
+      </section>
+    </section>
+    <section anchor="encrypted" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-discovery-using-resolver-na">Discovery Using Resolver Names</name>
+      <t indent="0" pn="section-5-1">A DNS client that already knows the name of an Encrypted DNS Resolver can use DDR
+to discover details about all supported encrypted DNS protocols. This situation
+can arise if a client has been configured to use a given Encrypted DNS Resolver, or
+if a network provisioning protocol (such as DHCP or IPv6 RAs)
+provides a name for an Encrypted DNS Resolver alongside the resolver IP address,
+such as by using Discovery of Network-designated Resolvers (DNR) <xref target="RFC9463" format="default" sectionFormat="of" derivedContent="RFC9463"/>.</t>
+      <t indent="0" pn="section-5-2">For these cases, the client simply sends a DNS SVCB query using the known name
+of the resolver. This query can be issued to the named Encrypted DNS Resolver itself
+or to any other resolver. Unlike the case of bootstrapping from an Unencrypted DNS
+Resolver (<xref target="bootstrapping" format="default" sectionFormat="of" derivedContent="Section 4"/>), these records <bcp14>SHOULD</bcp14> be available in the public
+DNS if the same domain name's A or AAAA records are available in the
+public DNS to allow using any resolver to discover another resolver's Designated
+Resolvers. When the name can only be resolved in private namespaces,
+these records <bcp14>SHOULD</bcp14> be available to the same audience as the A and AAAA records.</t>
+      <t indent="0" pn="section-5-3">For example, if the client already knows about a DoT server
+<tt>resolver.example.com</tt>, it can issue a SVCB query for
+<tt>_dns.resolver.example.com</tt> to discover if there are other encrypted DNS
+protocols available. In the following example, the SVCB answers indicate that
+<tt>resolver.example.com</tt> supports both DoH and DoT and that the DoH server
+indicates a higher priority than the DoT server.</t>
+      <artwork align="left" pn="section-5-4">
+_dns.resolver.example.com.  7200  IN SVCB 1 resolver.example.com. (
+     alpn=h2 dohpath=/dns-query{?dns} )
+_dns.resolver.example.com.  7200  IN SVCB 2 resolver.example.com. (
+     alpn=dot )
+</artwork>
+      <t indent="0" pn="section-5-5">Clients <bcp14>MUST</bcp14> validate that for any Encrypted DNS Resolver discovered using a
+known resolver name, the TLS certificate of the resolver contains the
+known name in a subjectAltName extension. In the example above,
+this means that both servers need to have certificates that cover
+the name <tt>resolver.example.com</tt>. Often, the various supported encrypted
+DNS protocols will be specified such that the SVCB TargetName matches the
+known name, as is true in the example above. However, even when the
+TargetName is different (for example, if the DoH server had a TargetName of
+<tt>doh.example.com</tt>), the clients still check for the original known resolver
+name in the certificate.</t>
+      <t indent="0" pn="section-5-6">Note that this resolver validation is not related to the DNS resolver that
+provided the SVCB answer.</t>
+      <t indent="0" pn="section-5-7">As another example, being able to discover a Designated Resolver for a known
+Encrypted DNS Resolver is useful when a client has a DoT configuration for
+<tt>foo.resolver.example.com</tt> but is on a network that blocks DoT traffic. The
+client can still send a query to any other accessible resolver (either the local
+network resolver or an accessible DoH server) to discover if there is a designated
+DoH server for <tt>foo.resolver.example.com</tt>.</t>
+    </section>
+    <section anchor="deployment-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-deployment-considerations">Deployment Considerations</name>
+      <t indent="0" pn="section-6-1">Resolver deployments that support DDR are advised to consider the following
+points.</t>
+      <section anchor="caching-forwarders" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-caching-forwarders">Caching Forwarders</name>
+        <t indent="0" pn="section-6.1-1">A DNS forwarder <bcp14>SHOULD NOT</bcp14> forward queries for "resolver.arpa" (or any subdomains)
+upstream. This prevents a client from receiving a SVCB record that will fail to
+authenticate because the forwarder's IP address is not in the SubjectAltName (SAN) field of the upstream resolver's Designated Resolver's TLS certificate. A DNS forwarder that already acts as a
+completely transparent forwarder <bcp14>MAY</bcp14> choose to forward these queries when the operator
+expects that this does not apply, because the operator either knows that the upstream
+resolver does have the forwarder's IP address in its TLS certificate's SAN field
+or expects clients to validate the connection via some future mechanism.</t>
+        <t indent="0" pn="section-6.1-2">Operators who choose to forward queries for "resolver.arpa" upstream should note
+that client behavior is never guaranteed and that the use of DDR by a resolver does not
+communicate a requirement for clients to use the SVCB record when it cannot be
+verified.</t>
+      </section>
+      <section anchor="certificate-management" numbered="true" removeInRFC="false" toc="include" pn="section-6.2">
+        <name slugifiedName="name-certificate-management">Certificate Management</name>
+        <t indent="0" pn="section-6.2-1">Resolver owners that support Verified Discovery will need to list valid
+referring IP addresses in their TLS certificates. This may pose challenges for
+resolvers with a large number of referring IP addresses.</t>
+      </section>
+      <section anchor="server-name-handling" numbered="true" removeInRFC="false" toc="include" pn="section-6.3">
+        <name slugifiedName="name-server-name-handling">Server Name Handling</name>
+        <t indent="0" pn="section-6.3-1">Clients <bcp14>MUST NOT</bcp14> use "resolver.arpa" as the server name in either (1) the TLS
+Server Name Indication (SNI) <xref target="RFC8446" format="default" sectionFormat="of" derivedContent="RFC8446"/> for DoT, DoQ, or DoH connections or (2) the URI host for DoH requests.</t>
+        <t indent="0" pn="section-6.3-2">When performing discovery using resolver IP addresses, clients <bcp14>MUST</bcp14>
+use the original IP address of the Unencrypted DNS Resolver as the URI
+host for DoH requests.</t>
+        <t indent="0" pn="section-6.3-3">Note that since IP addresses are not supported by default in the TLS SNI,
+resolvers that support discovery using IP addresses will need to be
+configured to present the appropriate TLS certificate when no SNI is present
+for DoT, DoQ, and DoH.</t>
+      </section>
+      <section anchor="handling-non-ddr-queries-for-resolverarpa" numbered="true" removeInRFC="false" toc="include" pn="section-6.4">
+        <name slugifiedName="name-handling-non-ddr-queries-fo">Handling Non-DDR Queries for resolver.arpa</name>
+        <t indent="0" pn="section-6.4-1">DNS resolvers that support DDR by responding to queries for <tt>_dns.resolver.arpa.</tt> <bcp14>MUST</bcp14> treat resolver.arpa as a locally served zone per <xref target="RFC6303" format="default" sectionFormat="of" derivedContent="RFC6303"/>.
+In practice, this means that resolvers <bcp14>SHOULD</bcp14> respond to queries of any type
+other than SVCB for <tt>_dns.resolver.arpa.</tt> with NODATA and queries of any
+type for any domain name under resolver.arpa with NODATA.</t>
+      </section>
+      <section anchor="dnr-interaction" numbered="true" removeInRFC="false" toc="include" pn="section-6.5">
+        <name slugifiedName="name-interaction-with-network-de">Interaction with Network-Designated Resolvers</name>
+        <t indent="0" pn="section-6.5-1">DNR <xref target="RFC9463" format="default" sectionFormat="of" derivedContent="RFC9463"/> allows
+a network to provide designation of resolvers directly through DHCP <xref target="RFC2132" format="default" sectionFormat="of" derivedContent="RFC2132"/>
+          <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/> and through IPv6 RA options <xref target="RFC8106" format="default" sectionFormat="of" derivedContent="RFC8106"/>. When such
+indications are present, clients can suppress queries for "resolver.arpa" to the
+unencrypted DNS server indicated by the network over DHCP or RAs, and the DNR
+indications <bcp14>SHOULD</bcp14> take precedence over those discovered using "resolver.arpa"
+for the same resolver if there is a conflict, since DNR is considered a more
+reliable source.</t>
+        <t indent="0" pn="section-6.5-2">The Designated Resolver information in DNR might not contain a full set of
+SvcParams needed to connect to an Encrypted DNS Resolver. In such a case, the client
+can use a SVCB query using a resolver name, as described in <xref target="encrypted" format="default" sectionFormat="of" derivedContent="Section 5"/>, to the
+Authentication Domain Name (ADN).</t>
+      </section>
+    </section>
+    <section anchor="security" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-7-1">Since clients can receive DNS SVCB answers over unencrypted DNS, on-path
+attackers can prevent successful discovery by dropping SVCB queries or answers
+and thus can prevent clients from switching to using encrypted DNS.
+Clients should be aware that it might not be possible to distinguish between
+resolvers that do not have any Designated Resolver and such an active attack.
+To limit the impact of discovery queries being dropped either maliciously or
+unintentionally, clients can re-send their SVCB queries periodically.</t>
+      <t indent="0" pn="section-7-2"><xref section="8.2" sectionFormat="of" target="RFC9461" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9461#section-8.2" derivedContent="RFC9461"/> describes another type of downgrade attack
+where an attacker can block connections to the encrypted DNS server. For DDR,
+clients need to validate a Designated Resolver using a connection to the
+server before trusting it, so attackers that can block these connections can
+prevent clients from switching to using encrypted DNS.</t>
+      <t indent="0" pn="section-7-3">Encrypted DNS Resolvers that allow discovery using DNS SVCB answers over unencrypted
+DNS <bcp14>MUST NOT</bcp14> provide differentiated behavior based solely on metadata in
+the SVCB record, such as the HTTP path or alternate port number, which
+are parameters that an attacker could modify. For example, if a
+DoH resolver provides a filtering service for one URI path and
+a non-filtered service for another URI path, an attacker could select
+which of these services is used by modifying the "dohpath" parameter.
+These attacks can be mitigated by providing separate resolver IP
+addresses or hostnames.</t>
+      <t indent="0" pn="section-7-4">While the IP address of the Unencrypted DNS Resolver is often provisioned over
+insecure mechanisms, it can also be provisioned securely, such as via manual
+configuration, on a VPN, or on a network with protections like RA-Guard
+<xref target="RFC6105" format="default" sectionFormat="of" derivedContent="RFC6105"/>. An attacker might try to direct encrypted DNS traffic to itself by
+causing the client to think that a discovered Designated Resolver uses
+a different IP address from the Unencrypted DNS Resolver. Such a Designated Resolver
+might have a valid certificate but might be operated by an attacker that is trying to
+observe or modify user queries without the knowledge of the client or network.</t>
+      <t indent="0" pn="section-7-5">If the IP address of a Designated Resolver differs from that of an
+Unencrypted DNS Resolver, clients applying Verified Discovery (<xref target="verified" format="default" sectionFormat="of" derivedContent="Section 4.2"/>) <bcp14>MUST</bcp14>
+validate that the IP address of the Unencrypted DNS Resolver is covered by the
+SubjectAltName (SAN) of the Designated Resolver's TLS certificate. If that
+validation fails, the client <bcp14>MUST NOT</bcp14> automatically use the discovered Designated
+Resolver.</t>
+      <t indent="0" pn="section-7-6">Clients using Opportunistic Discovery (<xref target="opportunistic" format="default" sectionFormat="of" derivedContent="Section 4.3"/>) <bcp14>MUST</bcp14> be limited to cases
+where the Unencrypted DNS Resolver and Designated Resolver have the same IP address,
+which <bcp14>SHOULD</bcp14> be a private or local IP address.
+Clients that do not follow Opportunistic Discovery (<xref target="opportunistic" format="default" sectionFormat="of" derivedContent="Section 4.3"/>) and instead
+try to connect without first checking for a designation run the possible risk of
+being intercepted by an attacker hosting an Encrypted DNS Resolver on an IP address of
+an Unencrypted DNS Resolver where the attacker has failed to gain control of the
+Unencrypted DNS Resolver.</t>
+      <t indent="0" pn="section-7-7">The constraints on the use of Designated Resolvers specified here apply
+specifically to the automatic discovery mechanisms defined in this document, which are
+referred to as Verified Discovery and Opportunistic Discovery. Clients
+<bcp14>MAY</bcp14> use some other mechanism to verify and use Designated Resolvers discovered
+using the DNS SVCB record. However, the use of such an alternate mechanism needs
+to take into account the attack scenarios detailed here.</t>
+    </section>
+    <section anchor="iana" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section anchor="special-use-domain-name-resolverarpa" numbered="true" removeInRFC="false" toc="include" pn="section-8.1">
+        <name slugifiedName="name-special-use-domain-name-res">Special-Use Domain Name "resolver.arpa"</name>
+        <t indent="0" pn="section-8.1-1">IANA has registered "resolver.arpa" in the "Special-Use
+Domain Names" registry established by <xref target="RFC6761" format="default" sectionFormat="of" derivedContent="RFC6761"/>.</t>
+        <t indent="0" pn="section-8.1-2">IANA has added an entry in the "Transport-Independent Locally-Served
+DNS Zone Registry" for 'resolver.arpa.' with the description "DNS Resolver
+Special-Use Domain" and listed this document as the reference.</t>
+      </section>
+      <section anchor="domain-name-reservation-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-8.2">
+        <name slugifiedName="name-domain-name-reservation-con">Domain Name Reservation Considerations</name>
+        <t indent="0" pn="section-8.2-1">In accordance with <xref section="5" sectionFormat="of" target="RFC6761" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6761#section-5" derivedContent="RFC6761"/>, the answers to the following
+questions are provided relative to this document:</t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-8.2-2">
+      <li pn="section-8.2-2.1" derivedCounter="1.">
+            <t indent="0" pn="section-8.2-2.1.1">Are human users expected to recognize these names as special and use them
+differently? In what way?</t>
+            <t indent="0" pn="section-8.2-2.1.2">No. This name is used automatically by DNS stub resolvers running on client devices on behalf of users, and users will never see this name directly.</t>
+          </li>
+          <li pn="section-8.2-2.2" derivedCounter="2.">
+            <t indent="0" pn="section-8.2-2.2.1">Are writers of application software expected to make their software
+recognize these names as special and treat them differently? In what way?</t>
+            <t indent="0" pn="section-8.2-2.2.2">No. There is no use case where a non-DNS application (covered by the next
+question) would need to use this name.</t>
+          </li>
+          <li pn="section-8.2-2.3" derivedCounter="3.">
+            <t indent="0" pn="section-8.2-2.3.1">Are writers of name resolution APIs and libraries expected to make their
+software recognize these names as special and treat them differently? If so, how?</t>
+            <t indent="0" pn="section-8.2-2.3.2">Yes.  DNS client implementors are expected to use this name when querying for
+a resolver's properties instead of records for the name itself. DNS servers
+are expected to respond to queries for this name with their own properties
+instead of checking the matching zone as it would for normal domain names.</t>
+          </li>
+          <li pn="section-8.2-2.4" derivedCounter="4.">
+            <t indent="0" pn="section-8.2-2.4.1">Are developers of caching domain name servers expected to make their
+implementations recognize these names as special and treat them differently?
+If so, how?</t>
+            <t indent="0" pn="section-8.2-2.4.2">Yes.  Caching domain name servers should not forward queries for this name, to
+avoid causing validation failures due to IP address mismatch.</t>
+          </li>
+          <li pn="section-8.2-2.5" derivedCounter="5.">
+            <t indent="0" pn="section-8.2-2.5.1">Are developers of authoritative domain name servers expected to make their
+implementations recognize these names as special and treat them differently?
+If so, how?</t>
+            <t indent="0" pn="section-8.2-2.5.2">No. DDR is designed for use by recursive resolvers. Theoretically, an authoritative
+server could choose to support this name if it wants to advertise support for
+encrypted DNS protocols over plaintext DNS, but that scenario is covered
+by other work in the IETF DNSOP Working Group.</t>
+          </li>
+          <li pn="section-8.2-2.6" derivedCounter="6.">
+            <t indent="0" pn="section-8.2-2.6.1">Does this reserved Special-Use Domain Name have any potential impact on
+DNS server operators? If they try to configure their authoritative DNS server
+as authoritative for this reserved name, will compliant name server software
+reject it as invalid? Do DNS server operators need to know about that and
+understand why? Even if the name server software doesn't prevent them from
+using this reserved name, are there other ways that it may not work as expected,
+of which the DNS server operator should be aware?</t>
+            <t indent="0" pn="section-8.2-2.6.2">This name is locally served, and any resolver that supports this name should
+never forward the query. DNS server operators should be aware that records for
+this name will be used by clients to modify the way they connect to their
+resolvers.</t>
+          </li>
+          <li pn="section-8.2-2.7" derivedCounter="7.">
+            <t indent="0" pn="section-8.2-2.7.1">How should DNS Registries/Registrars treat requests to register this reserved
+domain name? Should such requests be denied? Should such requests be allowed,
+but only to a specially designated entity?</t>
+            <t indent="0" pn="section-8.2-2.7.2">IANA holds the registration for this name. Non-IANA requests to register
+this name should always be denied by DNS Registries/Registrars.</t>
+          </li>
+        </ol>
+      </section>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.schinazi-httpbis-doh-preference-hints" to="DoH-HINTS"/>
+    <displayreference target="I-D.ietf-tls-esni" to="ECH"/>
+    <references pn="section-9">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-9.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC1918" target="https://www.rfc-editor.org/info/rfc1918" quoteTitle="true" derivedAnchor="RFC1918">
+          <front>
+            <title>Address Allocation for Private Internets</title>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <author fullname="B. Moskowitz" initials="B." surname="Moskowitz"/>
+            <author fullname="D. Karrenberg" initials="D." surname="Karrenberg"/>
+            <author fullname="G. J. de Groot" initials="G. J." surname="de Groot"/>
+            <author fullname="E. Lear" initials="E." surname="Lear"/>
+            <date month="February" year="1996"/>
+            <abstract>
+              <t indent="0">This document describes address allocation for private internets. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="5"/>
+          <seriesInfo name="RFC" value="1918"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1918"/>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC3927" target="https://www.rfc-editor.org/info/rfc3927" quoteTitle="true" derivedAnchor="RFC3927">
+          <front>
+            <title>Dynamic Configuration of IPv4 Link-Local Addresses</title>
+            <author fullname="S. Cheshire" initials="S." surname="Cheshire"/>
+            <author fullname="B. Aboba" initials="B." surname="Aboba"/>
+            <author fullname="E. Guttman" initials="E." surname="Guttman"/>
+            <date month="May" year="2005"/>
+            <abstract>
+              <t indent="0">To participate in wide-area IP networking, a host needs to be configured with IP addresses for its interfaces, either manually by the user or automatically from a source on the network such as a Dynamic Host Configuration Protocol (DHCP) server. Unfortunately, such address configuration information may not always be available. It is therefore beneficial for a host to be able to depend on a useful subset of IP networking functions even when no address configuration is available. This document describes how a host may automatically configure an interface with an IPv4 address within the 169.254/16 prefix that is valid for communication with other devices connected to the same physical (or logical) link.</t>
+              <t indent="0">IPv4 Link-Local addresses are not suitable for communication with devices not directly connected to the same physical (or logical) link, and are only used where stable, routable addresses are not available (such as on ad hoc or isolated networks). This document does not recommend that IPv4 Link-Local addresses and routable addresses be configured simultaneously on the same interface. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3927"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3927"/>
+        </reference>
+        <reference anchor="RFC4193" target="https://www.rfc-editor.org/info/rfc4193" quoteTitle="true" derivedAnchor="RFC4193">
+          <front>
+            <title>Unique Local IPv6 Unicast Addresses</title>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <author fullname="B. Haberman" initials="B." surname="Haberman"/>
+            <date month="October" year="2005"/>
+            <abstract>
+              <t indent="0">This document defines an IPv6 unicast address format that is globally unique and is intended for local communications, usually inside of a site. These addresses are not expected to be routable on the global Internet. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4193"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4193"/>
+        </reference>
+        <reference anchor="RFC4291" target="https://www.rfc-editor.org/info/rfc4291" quoteTitle="true" derivedAnchor="RFC4291">
+          <front>
+            <title>IP Version 6 Addressing Architecture</title>
+            <author fullname="R. Hinden" initials="R." surname="Hinden"/>
+            <author fullname="S. Deering" initials="S." surname="Deering"/>
+            <date month="February" year="2006"/>
+            <abstract>
+              <t indent="0">This specification defines the addressing architecture of the IP Version 6 (IPv6) protocol. The document includes the IPv6 addressing model, text representations of IPv6 addresses, definition of IPv6 unicast addresses, anycast addresses, and multicast addresses, and an IPv6 node's required addresses.</t>
+              <t indent="0">This document obsoletes RFC 3513, "IP Version 6 Addressing Architecture". [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4291"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4291"/>
+        </reference>
+        <reference anchor="RFC5280" target="https://www.rfc-editor.org/info/rfc5280" quoteTitle="true" derivedAnchor="RFC5280">
+          <front>
+            <title>Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile</title>
+            <author fullname="D. Cooper" initials="D." surname="Cooper"/>
+            <author fullname="S. Santesson" initials="S." surname="Santesson"/>
+            <author fullname="S. Farrell" initials="S." surname="Farrell"/>
+            <author fullname="S. Boeyen" initials="S." surname="Boeyen"/>
+            <author fullname="R. Housley" initials="R." surname="Housley"/>
+            <author fullname="W. Polk" initials="W." surname="Polk"/>
+            <date month="May" year="2008"/>
+            <abstract>
+              <t indent="0">This memo profiles the X.509 v3 certificate and X.509 v2 certificate revocation list (CRL) for use in the Internet. An overview of this approach and model is provided as an introduction. The X.509 v3 certificate format is described in detail, with additional information regarding the format and semantics of Internet name forms. Standard certificate extensions are described and two Internet-specific extensions are defined. A set of required certificate extensions is specified. The X.509 v2 CRL format is described in detail along with standard and Internet-specific extensions. An algorithm for X.509 certification path validation is described. An ASN.1 module and examples are provided in the appendices. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5280"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5280"/>
+        </reference>
+        <reference anchor="RFC6303" target="https://www.rfc-editor.org/info/rfc6303" quoteTitle="true" derivedAnchor="RFC6303">
+          <front>
+            <title>Locally Served DNS Zones</title>
+            <author fullname="M. Andrews" initials="M." surname="Andrews"/>
+            <date month="July" year="2011"/>
+            <abstract>
+              <t indent="0">Experience with the Domain Name System (DNS) has shown that there are a number of DNS zones that all iterative resolvers and recursive nameservers should automatically serve, unless configured otherwise. RFC 4193 specifies that this should occur for D.F.IP6.ARPA. This document extends the practice to cover the IN-ADDR.ARPA zones for RFC 1918 address space and other well-known zones with similar characteristics. This memo documents an Internet Best Current Practice.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="163"/>
+          <seriesInfo name="RFC" value="6303"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6303"/>
+        </reference>
+        <reference anchor="RFC6761" target="https://www.rfc-editor.org/info/rfc6761" quoteTitle="true" derivedAnchor="RFC6761">
+          <front>
+            <title>Special-Use Domain Names</title>
+            <author fullname="S. Cheshire" initials="S." surname="Cheshire"/>
+            <author fullname="M. Krochmal" initials="M." surname="Krochmal"/>
+            <date month="February" year="2013"/>
+            <abstract>
+              <t indent="0">This document describes what it means to say that a Domain Name (DNS name) is reserved for special use, when reserving such a name is appropriate, and the procedure for doing so. It establishes an IANA registry for such domain names, and seeds it with entries for some of the already established special domain names.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6761"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6761"/>
+        </reference>
+        <reference anchor="RFC7858" target="https://www.rfc-editor.org/info/rfc7858" quoteTitle="true" derivedAnchor="RFC7858">
+          <front>
+            <title>Specification for DNS over Transport Layer Security (TLS)</title>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <author fullname="L. Zhu" initials="L." surname="Zhu"/>
+            <author fullname="J. Heidemann" initials="J." surname="Heidemann"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This document describes the use of Transport Layer Security (TLS) to provide privacy for DNS. Encryption provided by TLS eliminates opportunities for eavesdropping and on-path tampering with DNS queries in the network, such as discussed in RFC 7626. In addition, this document specifies two usage profiles for DNS over TLS and provides advice on performance considerations to minimize overhead from using TCP and TLS with DNS.</t>
+              <t indent="0">This document focuses on securing stub-to-recursive traffic, as per the charter of the DPRIVE Working Group. It does not prevent future applications of the protocol to recursive-to-authoritative traffic.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7858"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7858"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8484" target="https://www.rfc-editor.org/info/rfc8484" quoteTitle="true" derivedAnchor="RFC8484">
+          <front>
+            <title>DNS Queries over HTTPS (DoH)</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="P. McManus" initials="P." surname="McManus"/>
+            <date month="October" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a protocol for sending DNS queries and getting DNS responses over HTTPS. Each DNS query-response pair is mapped into an HTTP exchange.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8484"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8484"/>
+        </reference>
+        <reference anchor="RFC9250" target="https://www.rfc-editor.org/info/rfc9250" quoteTitle="true" derivedAnchor="RFC9250">
+          <front>
+            <title>DNS over Dedicated QUIC Connections</title>
+            <author fullname="C. Huitema" initials="C." surname="Huitema"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <date month="May" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes the use of QUIC to provide transport confidentiality for DNS. The encryption provided by QUIC has similar properties to those provided by TLS, while QUIC transport eliminates the head-of-line blocking issues inherent with TCP and provides more efficient packet-loss recovery than UDP. DNS over QUIC (DoQ) has privacy properties similar to DNS over TLS (DoT) specified in RFC 7858, and latency characteristics similar to classic DNS over UDP. This specification describes the use of DoQ as a general-purpose transport for DNS and includes the use of DoQ for stub to recursive, recursive to authoritative, and zone transfer scenarios.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9250"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9250"/>
+        </reference>
+        <reference anchor="RFC9460" target="https://www.rfc-editor.org/info/rfc9460" quoteTitle="true" derivedAnchor="RFC9460">
+          <front>
+            <title>Service Binding and Parameter Specification via the DNS (SVCB and HTTPS Resource Records)</title>
+            <author initials="B" surname="Schwartz" fullname="Benjamin Schwartz">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="M" surname="Bishop" fullname="Mike Bishop">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="E" surname="Nygren" fullname="Erik Nygren">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date month="November" year="2023"/>
+          </front>
+          <seriesInfo name="RFC" value="9460"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9460"/>
+        </reference>
+        <reference anchor="RFC9461" target="https://www.rfc-editor.org/info/rfc9461" quoteTitle="true" derivedAnchor="RFC9461">
+          <front>
+            <title>Service Binding Mapping for DNS Servers</title>
+            <author initials="B." surname="Schwartz" fullname="Benjamin Schwartz">
+</author>
+            <date month="November" year="2023"/>
+          </front>
+          <seriesInfo name="RFC" value="9461"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9461"/>
+        </reference>
+        <reference anchor="RFC9463" target="https://www.rfc-editor.org/info/rfc9463" quoteTitle="true" derivedAnchor="RFC9463">
+          <front>
+            <title>DHCP and Router Advertisement Options for the Discovery of Network-designated Resolvers (DNR)</title>
+            <author initials="M." surname="Boucadair" fullname="Mohamed Boucadair" role="editor">
+</author>
+            <author initials="T." surname="Reddy.K" fullname="Tirumaleswar Reddy.K" role="editor">
+</author>
+            <author initials="D." surname="Wing" fullname="Dan Wing">
+</author>
+            <author initials="N." surname="Cook" fullname="Neil Cook">
+</author>
+            <author initials="T." surname="Jensen" fullname="Tommy Jensen">
+</author>
+            <date month="November" year="2023"/>
+          </front>
+          <seriesInfo name="RFC" value="9463"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9463"/>
+        </reference>
+      </references>
+      <references pn="section-9.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.schinazi-httpbis-doh-preference-hints" target="https://datatracker.ietf.org/doc/html/draft-schinazi-httpbis-doh-preference-hints-02" quoteTitle="true" derivedAnchor="DoH-HINTS">
+          <front>
+            <title>DoH Preference Hints for HTTP</title>
+            <author fullname="David Schinazi" initials="D." surname="Schinazi">
+              <organization showOnFrontPage="true">Google LLC</organization>
+            </author>
+            <author fullname="Nick Sullivan" initials="N." surname="Sullivan">
+              <organization showOnFrontPage="true">Cloudflare</organization>
+            </author>
+            <author fullname="Jesse Kipp" initials="J." surname="Kipp">
+              <organization showOnFrontPage="true">Cloudflare</organization>
+            </author>
+            <date day="13" month="July" year="2020"/>
+            <abstract>
+              <t indent="0">When using a publicly available DNS-over-HTTPS (DoH) server, some clients may suffer poor performance when the authoritative DNS server is located far from the DoH server. For example, a publicly available DoH server provided by a Content Delivery Network (CDN) should be able to resolve names hosted by that CDN with good performance but might take longer to resolve names provided by other CDNs, or might provide suboptimal results if that CDN is using DNS- based load balancing and returns different address records depending or where the DNS query originated from. This document attempts to lessen these issues by allowing the web server to indicate to the client which DoH server can best resolve its addresses. This document defines an HTTP header field that enables web host operators to inform user agents of the preferred DoH servers to use for subsequent DNS lookups for the host's domain. Discussion of this work is encouraged to happen on the ADD IETF mailing list add@ietf.org or on the GitHub repository which contains the draft: https://github.com/DavidSchinazi/draft-httpbis-doh- preference-hints.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-schinazi-httpbis-doh-preference-hints-02"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="I-D.ietf-tls-esni" target="https://datatracker.ietf.org/doc/html/draft-ietf-tls-esni-17" quoteTitle="true" derivedAnchor="ECH">
+          <front>
+            <title>TLS Encrypted Client Hello</title>
+            <author fullname="Eric Rescorla" initials="E." surname="Rescorla">
+              <organization showOnFrontPage="true">RTFM, Inc.</organization>
+            </author>
+            <author fullname="Kazuho Oku" initials="K." surname="Oku">
+              <organization showOnFrontPage="true">Fastly</organization>
+            </author>
+            <author fullname="Nick Sullivan" initials="N." surname="Sullivan">
+              <organization showOnFrontPage="true">Cloudflare</organization>
+            </author>
+            <author fullname="Christopher A. Wood" initials="C. A." surname="Wood">
+              <organization showOnFrontPage="true">Cloudflare</organization>
+            </author>
+            <date day="9" month="October" year="2023"/>
+            <abstract>
+              <t indent="0">This document describes a mechanism in Transport Layer Security (TLS) for encrypting a ClientHello message under a server public key. Discussion Venues This note is to be removed before publishing as an RFC. Source for this draft and an issue tracker can be found at https://github.com/tlswg/draft-ietf-tls-esni (https://github.com/tlswg/draft-ietf-tls-esni).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-tls-esni-17"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC2132" target="https://www.rfc-editor.org/info/rfc2132" quoteTitle="true" derivedAnchor="RFC2132">
+          <front>
+            <title>DHCP Options and BOOTP Vendor Extensions</title>
+            <author fullname="S. Alexander" initials="S." surname="Alexander"/>
+            <author fullname="R. Droms" initials="R." surname="Droms"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">This document specifies the current set of DHCP options. Future options will be specified in separate RFCs. The current list of valid options is also available in ftp://ftp.isi.edu/in-notes/iana/assignments. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2132"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2132"/>
+        </reference>
+        <reference anchor="RFC6105" target="https://www.rfc-editor.org/info/rfc6105" quoteTitle="true" derivedAnchor="RFC6105">
+          <front>
+            <title>IPv6 Router Advertisement Guard</title>
+            <author fullname="E. Levy-Abegnoli" initials="E." surname="Levy-Abegnoli"/>
+            <author fullname="G. Van de Velde" initials="G." surname="Van de Velde"/>
+            <author fullname="C. Popoviciu" initials="C." surname="Popoviciu"/>
+            <author fullname="J. Mohacsi" initials="J." surname="Mohacsi"/>
+            <date month="February" year="2011"/>
+            <abstract>
+              <t indent="0">Routed protocols are often susceptible to spoof attacks. The canonical solution for IPv6 is Secure Neighbor Discovery (SEND), a solution that is non-trivial to deploy. This document proposes a light-weight alternative and complement to SEND based on filtering in the layer-2 network fabric, using a variety of filtering criteria, including, for example, SEND status. This document is not an Internet Standards Track specification; it is published for informational purposes.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6105"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6105"/>
+        </reference>
+        <reference anchor="RFC8106" target="https://www.rfc-editor.org/info/rfc8106" quoteTitle="true" derivedAnchor="RFC8106">
+          <front>
+            <title>IPv6 Router Advertisement Options for DNS Configuration</title>
+            <author fullname="J. Jeong" initials="J." surname="Jeong"/>
+            <author fullname="S. Park" initials="S." surname="Park"/>
+            <author fullname="L. Beloeil" initials="L." surname="Beloeil"/>
+            <author fullname="S. Madanapalli" initials="S." surname="Madanapalli"/>
+            <date month="March" year="2017"/>
+            <abstract>
+              <t indent="0">This document specifies IPv6 Router Advertisement (RA) options (called "DNS RA options") to allow IPv6 routers to advertise a list of DNS Recursive Server Addresses and a DNS Search List to IPv6 hosts.</t>
+              <t indent="0">This document, which obsoletes RFC 6106, defines a higher default value of the lifetime of the DNS RA options to reduce the likelihood of expiry of the options on links with a relatively high rate of packet loss.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8106"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8106"/>
+        </reference>
+        <reference anchor="RFC8415" target="https://www.rfc-editor.org/info/rfc8415" quoteTitle="true" derivedAnchor="RFC8415">
+          <front>
+            <title>Dynamic Host Configuration Protocol for IPv6 (DHCPv6)</title>
+            <author fullname="T. Mrugalski" initials="T." surname="Mrugalski"/>
+            <author fullname="M. Siodelski" initials="M." surname="Siodelski"/>
+            <author fullname="B. Volz" initials="B." surname="Volz"/>
+            <author fullname="A. Yourtchenko" initials="A." surname="Yourtchenko"/>
+            <author fullname="M. Richardson" initials="M." surname="Richardson"/>
+            <author fullname="S. Jiang" initials="S." surname="Jiang"/>
+            <author fullname="T. Lemon" initials="T." surname="Lemon"/>
+            <author fullname="T. Winters" initials="T." surname="Winters"/>
+            <date month="November" year="2018"/>
+            <abstract>
+              <t indent="0">This document describes the Dynamic Host Configuration Protocol for IPv6 (DHCPv6): an extensible mechanism for configuring nodes with network configuration parameters, IP addresses, and prefixes. Parameters can be provided statelessly, or in combination with stateful assignment of one or more IPv6 addresses and/or IPv6 prefixes. DHCPv6 can operate either in place of or in addition to stateless address autoconfiguration (SLAAC).</t>
+              <t indent="0">This document updates the text from RFC 3315 (the original DHCPv6 specification) and incorporates prefix delegation (RFC 3633), stateless DHCPv6 (RFC 3736), an option to specify an upper bound for how long a client should wait before refreshing information (RFC 4242), a mechanism for throttling DHCPv6 clients when DHCPv6 service is not available (RFC 7083), and relay agent handling of unknown messages (RFC 7283). In addition, this document clarifies the interactions between models of operation (RFC 7550). As such, this document obsoletes RFC 3315, RFC 3633, RFC 3736, RFC 4242, RFC 7083, RFC 7283, and RFC 7550.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8415"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8415"/>
+        </reference>
+        <reference anchor="RFC8446" target="https://www.rfc-editor.org/info/rfc8446" quoteTitle="true" derivedAnchor="RFC8446">
+          <front>
+            <title>The Transport Layer Security (TLS) Protocol Version 1.3</title>
+            <author fullname="E. Rescorla" initials="E." surname="Rescorla"/>
+            <date month="August" year="2018"/>
+            <abstract>
+              <t indent="0">This document specifies version 1.3 of the Transport Layer Security (TLS) protocol. TLS allows client/server applications to communicate over the Internet in a way that is designed to prevent eavesdropping, tampering, and message forgery.</t>
+              <t indent="0">This document updates RFCs 5705 and 6066, and obsoletes RFCs 5077, 5246, and 6961. This document also specifies new requirements for TLS 1.2 implementations.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8446"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8446"/>
+        </reference>
+        <reference anchor="RFC8880" target="https://www.rfc-editor.org/info/rfc8880" quoteTitle="true" derivedAnchor="RFC8880">
+          <front>
+            <title>Special Use Domain Name 'ipv4only.arpa'</title>
+            <author fullname="S. Cheshire" initials="S." surname="Cheshire"/>
+            <author fullname="D. Schinazi" initials="D." surname="Schinazi"/>
+            <date month="August" year="2020"/>
+            <abstract>
+              <t indent="0">NAT64 (Network Address and Protocol Translation from IPv6 Clients to IPv4 Servers) allows client devices using IPv6 to communicate with servers that have only IPv4 connectivity.</t>
+              <t indent="0">The specification for how a client discovers its local network's NAT64 prefix (RFC 7050) defines the special name 'ipv4only.arpa' for this purpose. However, in its Domain Name Reservation Considerations section (Section 8.1), that specification (RFC 7050) indicates that the name actually has no particularly special properties that would require special handling.</t>
+              <t indent="0">Consequently, despite the well-articulated special purpose of the name, 'ipv4only.arpa' was not recorded in the Special-Use Domain Names registry as a name with special properties.</t>
+              <t indent="0">This document updates RFC 7050. It describes the special treatment required and formally declares the special properties of the name. It also adds similar declarations for the corresponding reverse mapping names.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8880"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8880"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="rationale-for-using-a-special-use-domain-name" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-rationale-for-using-a-speci">Rationale for Using a Special-Use Domain Name</name>
+      <t indent="0" pn="section-appendix.a-1">The "resolver.arpa" SUDN is similar to "ipv4only.arpa" in that the querying
+client is not interested in an answer from the authoritative "arpa" name
+servers. The intent of the SUDN is to allow clients to communicate with the
+Unencrypted DNS Resolver much like "ipv4only.arpa" allows for client-to-middlebox
+communication. For more context, see <xref target="RFC8880" format="default" sectionFormat="of" derivedContent="RFC8880"/> for the rationale behind "ipv4only.arpa".</t>
+    </section>
+    <section anchor="rationale" numbered="true" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-rationale-for-using-svcb-re">Rationale for Using SVCB Records</name>
+      <t indent="0" pn="section-appendix.b-1">These mechanisms use SVCB/HTTPS resource records <xref target="RFC9460" format="default" sectionFormat="of" derivedContent="RFC9460"/>
+to communicate that a given domain designates a particular Designated
+Resolver for clients to use in place of an Unencrypted DNS Resolver (using a SUDN)
+or another Encrypted DNS Resolver (using its domain name).</t>
+      <t indent="0" pn="section-appendix.b-2">There are various other proposals for how to provide similar functionality.
+There are several reasons that these mechanisms have chosen SVCB records:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-appendix.b-3">
+        <li pn="section-appendix.b-3.1">Discovering Encrypted DNS Resolvers using DNS records keeps client logic for DNS
+self-contained and allows a DNS resolver operator to define which resolver names
+and IP addresses are related to one another.</li>
+        <li pn="section-appendix.b-3.2">Using DNS records also does not rely on bootstrapping with higher-level
+application operations (such as those discussed in <xref target="I-D.schinazi-httpbis-doh-preference-hints" format="default" sectionFormat="of" derivedContent="DoH-HINTS"/>).</li>
+        <li pn="section-appendix.b-3.3">SVCB records are extensible and allow the definition of parameter keys, making them a superior mechanism for extensibility as compared to approaches such as
+overloading TXT records. The same keys can be used for discovering Designated
+Resolvers of different transport types as well as those advertised by
+Unencrypted DNS Resolvers or another Encrypted DNS Resolver.</li>
+        <li pn="section-appendix.b-3.4">Clients and servers that are interested in privacy of names will already need
+to support SVCB records in order to use the TLS Encrypted ClientHello
+<xref target="I-D.ietf-tls-esni" format="default" sectionFormat="of" derivedContent="ECH"/>. Without encrypting names in TLS, the value of encrypting
+DNS is reduced, so pairing the solutions provides the greatest benefit.</li>
+      </ul>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="T." surname="Pauly" fullname="Tommy Pauly">
+        <organization showOnFrontPage="true">Apple Inc.</organization>
+        <address>
+          <postal>
+            <street>One Apple Park Way</street>
+            <city>Cupertino</city>
+            <region>California</region>
+            <code>95014</code>
+            <country>United States of America</country>
+          </postal>
+          <email>tpauly@apple.com</email>
+        </address>
+      </author>
+      <author initials="E." surname="Kinnear" fullname="Eric Kinnear">
+        <organization showOnFrontPage="true">Apple Inc.</organization>
+        <address>
+          <postal>
+            <street>One Apple Park Way</street>
+            <city>Cupertino</city>
+            <region>California</region>
+            <code>95014</code>
+            <country>United States of America</country>
+          </postal>
+          <email>ekinnear@apple.com</email>
+        </address>
+      </author>
+      <author initials="C. A." surname="Wood" fullname="Christopher A. Wood">
+        <organization showOnFrontPage="true">Cloudflare</organization>
+        <address>
+          <postal>
+            <street>101 Townsend St</street>
+            <city>San Francisco</city>
+            <region>California</region>
+            <code>94107</code>
+            <country>United States of America</country>
+          </postal>
+          <email>caw@heapingbits.net</email>
+        </address>
+      </author>
+      <author initials="P." surname="McManus" fullname="Patrick McManus">
+        <organization showOnFrontPage="true">Fastly</organization>
+        <address>
+          <email>mcmanus@ducksong.com</email>
+        </address>
+      </author>
+      <author initials="T." surname="Jensen" fullname="Tommy Jensen">
+        <organization showOnFrontPage="true">Microsoft</organization>
+        <address>
+          <email>tojens@microsoft.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

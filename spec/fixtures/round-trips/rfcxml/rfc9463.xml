@@ -1,0 +1,1843 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" docName="draft-ietf-add-dnr-16" number="9463" submissionType="IETF" category="std" consensus="true" ipr="trust200902" tocInclude="true" tocDepth="4" symRefs="true" sortRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2023-11-06T13:16:37" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-add-dnr-16" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9463" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="DNR">DHCP and Router Advertisement Options for the Discovery of Network-designated Resolvers (DNR)</title>
+    <seriesInfo name="RFC" value="9463" stream="IETF"/>
+    <author fullname="Mohamed Boucadair" initials="M." role="editor" surname="Boucadair">
+      <organization showOnFrontPage="true">Orange</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Rennes</city>
+          <code>35000</code>
+          <country>France</country>
+        </postal>
+        <email>mohamed.boucadair@orange.com</email>
+      </address>
+    </author>
+    <author fullname="Tirumaleswar Reddy.K" initials="T." role="editor" surname="Reddy.K">
+      <organization showOnFrontPage="true">Nokia</organization>
+      <address>
+        <postal>
+          <street/>
+          <country>India</country>
+        </postal>
+        <email>kondtir@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Dan Wing" initials="D." surname="Wing">
+      <organization abbrev="Cloud Software Group" showOnFrontPage="true">Cloud Software Group Holdings, Inc.</organization>
+      <address>
+        <postal>
+          <street/>
+          <country>United States of America</country>
+        </postal>
+        <email>dwing-ietf@fuggles.com</email>
+      </address>
+    </author>
+    <author fullname="Neil Cook" initials="N." surname="Cook">
+      <organization showOnFrontPage="true">Open-Xchange</organization>
+      <address>
+        <postal>
+          <street/>
+          <country>United Kingdom</country>
+        </postal>
+        <email>neil.cook@noware.co.uk</email>
+      </address>
+    </author>
+    <author fullname="Tommy Jensen" initials="T." surname="Jensen">
+      <organization showOnFrontPage="true">Microsoft</organization>
+      <address>
+        <postal>
+          <street/>
+          <country>United States of America</country>
+        </postal>
+        <email>tojens@microsoft.com</email>
+      </address>
+    </author>
+    <date month="11" year="2023"/>
+    <area>int</area>
+    <workgroup>add</workgroup>
+    <keyword>DNS</keyword>
+    <keyword>service resolution</keyword>
+    <keyword>encryption</keyword>
+    <keyword>service discovery</keyword>
+    <keyword>service provider</keyword>
+    <keyword>network provider</keyword>
+    <keyword>automation</keyword>
+    <keyword>DoH</keyword>
+    <keyword>DoT</keyword>
+    <keyword>DoQ</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document specifies new DHCP and IPv6 Router Advertisement options
+      to discover encrypted DNS resolvers (e.g., DNS over HTTPS, DNS over TLS,
+      and DNS over QUIC). Particularly, it allows a host to learn an
+      Authentication Domain Name together with a list of IP addresses and a
+      set of service parameters to reach such encrypted DNS resolvers.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9463" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-overview">Overview</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-configuration-data-for-encr">Configuration Data for Encrypted DNS</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2.1.2">
+                  <li pn="section-toc.1-1.3.2.1.2.1">
+                    <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.2.1.2.1.1"><xref derivedContent="3.1.1" format="counter" sectionFormat="of" target="section-3.1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-adn-as-reference-identifier">ADN as Reference Identifier for DNS Authentication</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.2">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.2.1"><xref derivedContent="3.1.2" format="counter" sectionFormat="of" target="section-3.1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-avoiding-dependency-on-exte">Avoiding Dependency on External Resolvers</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.3">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.3.1"><xref derivedContent="3.1.3" format="counter" sectionFormat="of" target="section-3.1.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-single-vs-multiple-ip-addre">Single vs. Multiple IP Addresses</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.4">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.4.1"><xref derivedContent="3.1.4" format="counter" sectionFormat="of" target="section-3.1.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-why-not-separate-options-fo">Why Not Separate Options for the ADN and IP Addresses?</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.5">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.5.1"><xref derivedContent="3.1.5" format="counter" sectionFormat="of" target="section-3.1.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-service-parameters">Service Parameters</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.6">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.6.1"><xref derivedContent="3.1.6" format="counter" sectionFormat="of" target="section-3.1.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-adn-only-mode">ADN-Only Mode</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.7">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.7.1"><xref derivedContent="3.1.7" format="counter" sectionFormat="of" target="section-3.1.7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ordering-of-encrypted-dns-o">Ordering of Encrypted DNS Options</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.8">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.8.1"><xref derivedContent="3.1.8" format="counter" sectionFormat="of" target="section-3.1.8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dnr-validation-checks">DNR Validation Checks</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.3.2.1.2.9">
+                    <t indent="0" pn="section-toc.1-1.3.2.1.2.9.1"><xref derivedContent="3.1.9" format="counter" sectionFormat="of" target="section-3.1.9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dnr-information-using-other">DNR Information Using Other Provisioning Mechanisms</xref></t>
+                  </li>
+                </ul>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-handling-configuration-data">Handling Configuration Data Conflicts</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-validating-discovered-resol">Validating Discovered Resolvers</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.4">
+                <t indent="0" pn="section-toc.1-1.3.2.4.1"><xref derivedContent="3.4" format="counter" sectionFormat="of" target="section-3.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-multihoming-considerations">Multihoming Considerations</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv6-encrypted-dns-option">DHCPv6 Encrypted DNS Option</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-option-format">Option Format</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv6-client-behavior">DHCPv6 Client Behavior</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv4-encrypted-dns-option">DHCPv4 Encrypted DNS Option</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-option-format-2">Option Format</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv4-client-behavior">DHCPv4 Client Behavior</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipv6-ra-encrypted-dns-optio">IPv6 RA Encrypted DNS Option</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-option-format-3">Option Format</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ipv6-host-behavior">IPv6 Host Behavior</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-spoofing-attacks">Spoofing Attacks</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-deletion-attacks">Deletion Attacks</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.3">
+                <t indent="0" pn="section-toc.1-1.7.2.3.1"><xref derivedContent="7.3" format="counter" sectionFormat="of" target="section-7.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-passive-attacks">Passive Attacks</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.4">
+                <t indent="0" pn="section-toc.1-1.7.2.4.1"><xref derivedContent="7.4" format="counter" sectionFormat="of" target="section-7.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-wireless-security-authentic">Wireless Security - Authentication Attacks</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-privacy-considerations">Privacy Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv6-option">DHCPv6 Option</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dhcpv4-option">DHCPv4 Option</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.3">
+                <t indent="0" pn="section-toc.1-1.9.2.3.1"><xref derivedContent="9.3" format="counter" sectionFormat="of" target="section-9.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-neighbor-discovery-option">Neighbor Discovery Option</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.10.2">
+              <li pn="section-toc.1-1.10.2.1">
+                <t indent="0" pn="section-toc.1-1.10.2.1.1"><xref derivedContent="10.1" format="counter" sectionFormat="of" target="section-10.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.10.2.2">
+                <t indent="0" pn="section-toc.1-1.10.2.2.1"><xref derivedContent="10.2" format="counter" sectionFormat="of" target="section-10.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="intro" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">This document focuses on the discovery of encrypted DNS resolvers that are using protocols such as
+      DNS over HTTPS (DoH) <xref target="RFC8484" format="default" sectionFormat="of" derivedContent="RFC8484"/>, DNS over TLS (DoT) <xref target="RFC7858" format="default" sectionFormat="of" derivedContent="RFC7858"/>, or DNS over QUIC (DoQ) <xref target="RFC9250" format="default" sectionFormat="of" derivedContent="RFC9250"/> in
+      local networks.</t>
+      <t indent="0" pn="section-1-2">In particular, this document specifies how a local encrypted DNS
+      resolver can be discovered by connected hosts by means of DHCPv4 <xref target="RFC2132" format="default" sectionFormat="of" derivedContent="RFC2132"/>, DHCPv6 <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/>, and IPv6 Router
+      Advertisement (RA) options <xref target="RFC4861" format="default" sectionFormat="of" derivedContent="RFC4861"/>. These options are
+      designed to convey the following information: the DNS Authentication
+      Domain Name (ADN), a list of IP addresses, and a set of service
+      parameters. This procedure is called Discovery of Network-designated
+      Resolvers (DNR).</t>
+      <t indent="0" pn="section-1-3">The options defined in this document can be deployed in a variety of
+      deployments (e.g., local networks with Customer Premises Equipment
+      (CPEs) that may or may not be managed by an Internet Service Provider
+      (ISP), or local networks with or without DNS forwarders). Providing an inventory of such deployments is beyond the scope of this document.</t>
+      <t indent="0" pn="section-1-4">Resolver selection considerations are out of scope. Likewise,
+      policies (including any interactions with users) are out of scope.</t>
+    </section>
+    <section anchor="notation" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <t indent="0" pn="section-2-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+       "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>",
+       "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>",
+       "<bcp14>SHOULD NOT</bcp14>",
+       "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+       "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+       are to be interpreted as described in BCP 14
+       <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only
+       when, they appear in all capitals, as shown here.</t>
+      <t indent="0" pn="section-2-2">This document makes use of the terms defined in <xref target="RFC8499" format="default" sectionFormat="of" derivedContent="RFC8499"/>. The following additional terms are used: </t>
+      <dl newline="false" spacing="normal" indent="3" pn="section-2-3">
+        <dt pn="section-2-3.1">Authentication Domain Name (ADN):</dt>
+        <dd pn="section-2-3.2">Refers to a domain
+          name that is used by a DNS client to authenticate a DNS
+          resolver.</dd>
+        <dt pn="section-2-3.3">ADN-only mode:</dt>
+        <dd pn="section-2-3.4">Refers to a DNS discovery mode where
+          only the ADN of the DNS resolver is retrieved. See <xref target="adn-only" format="default" sectionFormat="of" derivedContent="Section 3.1.6"/>.</dd>
+        <dt pn="section-2-3.5">Do53:</dt>
+        <dd pn="section-2-3.6">Refers to unencrypted DNS.</dd>
+        <dt pn="section-2-3.7">DNR:</dt>
+        <dd pn="section-2-3.8">Refers to the procedure called Discovery of Network-designated
+          Resolvers.</dd>
+        <dt pn="section-2-3.9">Encrypted DNS:</dt>
+        <dd pn="section-2-3.10">Refers to a scheme where DNS exchanges
+          are transported over an encrypted channel. Examples include
+          DoT, DoH, and DoQ.</dd>
+        <dt pn="section-2-3.11">Encrypted DNS resolver:</dt>
+        <dd pn="section-2-3.12">Refers to a DNS resolver that
+          supports any encrypted DNS scheme.</dd>
+        <dt pn="section-2-3.13">Encrypted DNS options:</dt>
+        <dd pn="section-2-3.14">Refers to the options defined
+          in Sections <xref format="counter" target="DHCPv6" sectionFormat="of" derivedContent="4"/>, <xref format="counter" target="DHCP" sectionFormat="of" derivedContent="5"/>, and <xref format="counter" target="RA" sectionFormat="of" derivedContent="6"/>.</dd>
+        <dt pn="section-2-3.15">DHCP:</dt>
+        <dd pn="section-2-3.16">Refers to both DHCPv4 and DHCPv6.</dd>
+      </dl>
+    </section>
+    <section anchor="RI" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-overview">Overview</name>
+      <t indent="0" pn="section-3-1">This document describes how a DNS client can discover local encrypted
+      DNS resolvers using DHCP (Sections <xref format="counter" target="DHCPv6" sectionFormat="of" derivedContent="4"/> and <xref format="counter" target="DHCP" sectionFormat="of" derivedContent="5"/>) and
+      Neighbor Discovery protocol (<xref target="RA" format="default" sectionFormat="of" derivedContent="Section 6"/>) Encrypted DNS
+      options.</t>
+      <t indent="0" pn="section-3-2">These options configure an ADN, a list of IP
+      addresses, and a set of service parameters of the encrypted DNS
+      resolver. More information about the design of these options is provided
+      in the following subsections.</t>
+      <section anchor="rationale" numbered="true" removeInRFC="false" toc="include" pn="section-3.1">
+        <name slugifiedName="name-configuration-data-for-encr">Configuration Data for Encrypted DNS</name>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-3.1.1">
+          <name slugifiedName="name-adn-as-reference-identifier">ADN as Reference Identifier for DNS Authentication</name>
+          <t indent="0" pn="section-3.1.1-1">In order to allow for a PKIX-based authentication of the
+          encrypted DNS resolver to the DNS client, the Encrypted DNS options
+          are designed to always include an ADN. This
+          ADN is presented as a reference identifier for DNS authentication
+          purposes. This design accommodates the current best practices for
+          issuing certificates as per <xref section="1.7.2" target="RFC6125" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc6125#section-1.7.2" derivedContent="RFC6125"/>:</t>
+          <aside pn="section-3.1.1-2">
+            <t indent="0" pn="section-3.1.1-2.1">Some certification authorities issue server
+            certificates based on IP addresses, but preliminary evidence
+            indicates that such certificates are a very small percentage (less
+            than 1%) of issued certificates.</t>
+          </aside>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-3.1.2">
+          <name slugifiedName="name-avoiding-dependency-on-exte">Avoiding Dependency on External Resolvers</name>
+          <t indent="0" pn="section-3.1.2-1">To avoid adding a dependency on another server to resolve the
+          ADN, the Encrypted DNS options return the IP address(es) to locate
+          an encrypted DNS resolver. These encrypted DNS resolvers may be
+          hosted on the same IP address or distinct IP addresses. Such a decision is
+          deployment specific.</t>
+          <t indent="0" pn="section-3.1.2-2">In order to optimize the size of discovery messages when all DNS
+          resolvers terminate on the same IP address, early draft versions of this
+          document considered relying upon the discovery mechanisms specified
+          in <xref target="RFC2132" format="default" sectionFormat="of" derivedContent="RFC2132"/>, <xref target="RFC3646" format="default" sectionFormat="of" derivedContent="RFC3646"/>, and <xref target="RFC8106" format="default" sectionFormat="of" derivedContent="RFC8106"/> to retrieve a list of IP addresses to reach
+          their DNS resolvers. Nevertheless, this approach requires a client
+          that supports more than one encrypted DNS protocol (e.g., DoH and
+          DoT) to probe that list of IP addresses. To avoid such probing,
+          the options defined in Sections <xref format="counter" target="DHCPv6" sectionFormat="of" derivedContent="4"/>, <xref format="counter" target="DHCP" sectionFormat="of" derivedContent="5"/>, and
+          <xref format="counter" target="RA" sectionFormat="of" derivedContent="6"/> associate an encrypted DNS
+          protocol with an IP address. No probing is required in such a
+          design.</t>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-3.1.3">
+          <name slugifiedName="name-single-vs-multiple-ip-addre">Single vs. Multiple IP Addresses</name>
+          <t indent="0" pn="section-3.1.3-1">A list of IP addresses to reach an encrypted DNS resolver may be
+          returned in an Encrypted DNS option to accommodate current
+          deployments relying upon primary and backup resolvers. Also, DNR can
+          be used in contexts where other DNS redundancy schemes (e.g.,
+          anycast as discussed in <xref target="RFC4786" format="default" sectionFormat="of" derivedContent="RFC4786">BCP 126</xref>) are used.</t>
+          <t indent="0" pn="section-3.1.3-2">Whether one or more IP addresses are returned in an Encrypted DNS
+          option is deployment specific. For example, a router embedding a
+          recursive server or a forwarder has to include one single IP address
+          pointing to one of its LAN-facing interfaces. Typically, this IP
+          address can be a private IPv4 address, a Link-Local address, an IPv6
+          Unique Local Address (ULA), or a Global Unicast Address
+          (GUA).</t>
+          <t indent="0" pn="section-3.1.3-3">If multiple IP addresses are to be returned in an Encrypted DNS
+          option, these addresses are returned, ordered by preference, for use by the
+          client.</t>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-3.1.4">
+          <name slugifiedName="name-why-not-separate-options-fo">Why Not Separate Options for the ADN and IP Addresses?</name>
+          <t indent="0" pn="section-3.1.4-1">A single option is used to convey both the ADN and IP addresses.
+          Otherwise, a means to correlate an IP address conveyed in an option
+          with an ADN conveyed in another option will be required if, for
+          example, more than one ADN is supported by the network.</t>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-3.1.5">
+          <name slugifiedName="name-service-parameters">Service Parameters</name>
+          <t indent="0" pn="section-3.1.5-1">Because distinct encrypted DNS protocols (e.g., DoT, DoH, and
+          DoQ) may be provisioned by a network and some of these
+          protocols may make use of customized port numbers instead of default
+          port numbers, the Encrypted DNS options are designed to return a set of
+          service parameters. These parameters are encoded following the same
+          rules for encoding SvcParams using the wire format specified in <xref section="2.2" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.2" derivedContent="RFC9460"/>. This encoding approach may
+          increase the size of the options, but it has the merit of relying
+          upon an existing IANA registry and, thus, accommodating new
+          encrypted DNS protocols and service parameters that may be defined
+          in the future.</t>
+          <t indent="0" pn="section-3.1.5-2">The following service parameters <bcp14>MUST</bcp14> be supported by a DNR
+          implementation:</t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-3.1.5-3">
+            <dt pn="section-3.1.5-3.1">alpn:</dt>
+            <dd pn="section-3.1.5-3.2">Used to indicate the set of supported
+              protocols (<xref section="7.1" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-7.1" derivedContent="RFC9460"/>).</dd>
+            <dt pn="section-3.1.5-3.3">port:</dt>
+            <dd pn="section-3.1.5-3.4">Used to indicate the target port number for
+              the encrypted DNS connection (<xref section="7.2" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-7.2" derivedContent="RFC9460"/>).</dd>
+          </dl>
+          <t indent="0" pn="section-3.1.5-4">In addition, the following service parameter is <bcp14>RECOMMENDED</bcp14> to be
+          supported by a DNR implementation:</t>
+          <dl newline="false" spacing="normal" indent="3" pn="section-3.1.5-5">
+            <dt pn="section-3.1.5-5.1">dohpath:</dt>
+            <dd pn="section-3.1.5-5.2">Used to supply a relative DoH URI
+              Template (<xref section="5.1" target="RFC9461" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9461#section-5.1" derivedContent="RFC9461"/>).</dd>
+          </dl>
+        </section>
+        <section anchor="adn-only" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.6">
+          <name slugifiedName="name-adn-only-mode">ADN-Only Mode</name>
+          <t indent="0" pn="section-3.1.6-1">The provisioning mode in which an ADN, a list of IP addresses,
+          and a set of service parameters of the encrypted DNS resolver are
+          supplied to a host <bcp14>SHOULD</bcp14> be used because the Encrypted DNS options
+          are self-contained and do not require any additional DNS queries.
+          The reader may refer to <xref target="RFC7969" format="default" sectionFormat="of" derivedContent="RFC7969"/> for an overview of
+          advanced capabilities that are supported by DHCP servers to populate
+          configuration data (e.g., issue DNS queries).</t>
+          <t indent="0" pn="section-3.1.6-2">In contexts where putting additional complexity on requesting
+          hosts is acceptable, returning an ADN only can be considered. The
+          supplied ADN will be passed to a local resolution library (a DNS
+          client, typically), which will then issue Service Binding (SVCB)
+          queries <xref target="RFC9461" format="default" sectionFormat="of" derivedContent="RFC9461"/>. These SVCB queries
+          can be sent to the discovered encrypted DNS resolver itself or to
+          the network-designated Do53 resolver. Note that this mode may be
+          subject to active attacks, which can be mitigated by DNSSEC.</t>
+          <aside pn="section-3.1.6-3">
+            <t indent="0" pn="section-3.1.6-3.1">How an ADN is passed to a local resolution library
+            is implementation specific.</t>
+          </aside>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-3.1.7">
+          <name slugifiedName="name-ordering-of-encrypted-dns-o">Ordering of Encrypted DNS Options</name>
+          <t indent="0" pn="section-3.1.7-1">The DHCP options defined in Sections <xref format="counter" target="DHCPv6" sectionFormat="of" derivedContent="4"/> and <xref format="counter" target="DHCP" sectionFormat="of" derivedContent="5"/>
+          follow the option ordering guidelines in <xref section="17" target="RFC7227" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc7227#section-17" derivedContent="RFC7227"/>.</t>
+          <t indent="0" pn="section-3.1.7-2">Likewise, the RA option (<xref format="default" target="RA" sectionFormat="of" derivedContent="Section 6"/>)
+          adheres to the recommendations in <xref section="9" target="RFC4861" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc4861#section-9" derivedContent="RFC4861"/>.</t>
+        </section>
+        <section anchor="VC" numbered="true" removeInRFC="false" toc="include" pn="section-3.1.8">
+          <name slugifiedName="name-dnr-validation-checks">DNR Validation Checks</name>
+          <t indent="0" pn="section-3.1.8-1">On receipt of an Encrypted DNS option, the DHCP client (or IPv6
+          host) makes the following validation checks:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1.8-2">
+            <li pn="section-3.1.8-2.1">The ADN is present and encoded as per <xref section="10" target="RFC8415" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-10" derivedContent="RFC8415"/>.</li>
+            <li pn="section-3.1.8-2.2">
+              <t indent="0" pn="section-3.1.8-2.2.1">If additional data is supplied: </t>
+              <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1.8-2.2.2">
+                <li pn="section-3.1.8-2.2.2.1">The service parameters are encoded following the rules
+                  specified in <xref section="2.2" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.2" derivedContent="RFC9460"/>.</li>
+                <li pn="section-3.1.8-2.2.2.2">The option includes at least one valid IP address.</li>
+                <li pn="section-3.1.8-2.2.2.3">The service parameters do not include "ipv4hint" or
+                  "ipv6hint" parameters.</li>
+              </ul>
+            </li>
+          </ul>
+          <t indent="0" pn="section-3.1.8-3">If any of the checks fail, the receiver discards the received
+          Encrypted DNS option.</t>
+        </section>
+        <section numbered="true" removeInRFC="false" toc="include" pn="section-3.1.9">
+          <name slugifiedName="name-dnr-information-using-other">DNR Information Using Other Provisioning Mechanisms</name>
+          <t indent="0" pn="section-3.1.9-1">The provisioning mechanisms specified in this document may not be
+          available in specific networks (e.g., some cellular networks
+          exclusively use Protocol Configuration Options (PCOs) <xref target="TS.24008" format="default" sectionFormat="of" derivedContent="TS.24008"/>) or may not be suitable in some contexts (e.g., where
+          secure discovery is needed). Other mechanisms may be considered in
+          these contexts for the provisioning of encrypted DNS resolvers. It
+          is <bcp14>RECOMMENDED</bcp14> that at least the following DNR information be made
+          available to a requesting host:</t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3.1.9-2">
+            <li pn="section-3.1.9-2.1">A service priority whenever the discovery mechanism does not
+              rely on implicit ordering if multiple instances of the encrypted
+              DNS are used.</li>
+            <li pn="section-3.1.9-2.2">An ADN. This parameter is
+              mandatory.</li>
+            <li pn="section-3.1.9-2.3">A list of IP addresses to locate the encrypted DNS
+              resolver.</li>
+            <li pn="section-3.1.9-2.4">A set of service parameters.</li>
+          </ul>
+        </section>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-3.2">
+        <name slugifiedName="name-handling-configuration-data">Handling Configuration Data Conflicts</name>
+        <t indent="0" pn="section-3.2-1">If encrypted DNS resolvers are discovered by a host using both RA and
+        DHCP, the rules discussed in <xref section="5.3.1" target="RFC8106" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8106#section-5.3.1" derivedContent="RFC8106"/> <bcp14>MUST</bcp14> be followed.</t>
+        <t indent="0" pn="section-3.2-2">DHCP/RA options to discover encrypted DNS resolvers (including DoH
+        URI Templates) takes precedence over Discovery of Designated Resolvers
+        (DDR) <xref target="RFC9462" format="default" sectionFormat="of" derivedContent="RFC9462"/>, since DDR uses Do53 to an
+        external DNS resolver, which is susceptible to both internal and
+        external attacks whereas DHCP/RA is typically protected using the
+        mechanisms discussed in <xref target="spoof" format="default" sectionFormat="of" derivedContent="Section 7.1"/>.</t>
+        <t indent="0" pn="section-3.2-3">If a client learns both Do53 and encrypted DNS resolvers from the
+        same network, and absent explicit configuration otherwise, it is
+        <bcp14>RECOMMENDED</bcp14> that the client use the encrypted DNS resolvers for that
+        network. If the client cannot establish an authenticated and encrypted
+        connection with the encrypted DNS resolver, it may fall back to using
+        the Do53 resolver.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-3.3">
+        <name slugifiedName="name-validating-discovered-resol">Validating Discovered Resolvers</name>
+        <t indent="0" pn="section-3.3-1">This section describes a set of validation checks to confirm that
+        an encrypted DNS resolver matches what is provided using DNR (e.g.,
+        DHCP or RA). Such validation checks do not intend to validate the
+        security of the DNR provisioning mechanisms or the user's trust
+        relationship to the network.</t>
+        <t indent="0" pn="section-3.3-2">If the local DNS client supports one of the discovered encrypted
+        DNS protocols identified by Application-Layer Protocol Negotiation
+        (ALPN) protocol identifiers (or another service parameter that indicates
+        some other protocol disambiguation mechanism), the DNS client
+        establishes an encrypted DNS session following the service priority of
+        the discovered encrypted resolvers.</t>
+        <t indent="0" pn="section-3.3-3">The DNS client verifies the connection based on PKIX validation
+        <xref target="RFC5280" format="default" sectionFormat="of" derivedContent="RFC5280"/> of the DNS resolver certificate and uses the
+        validation techniques as described in <xref target="RFC6125" format="default" sectionFormat="of" derivedContent="RFC6125"/> to
+        compare the ADN conveyed in the Encrypted DNS
+        options to the certificate provided (see <xref section="8.1" target="RFC8310" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8310#section-8.1" derivedContent="RFC8310"/> for more details). The DNS client uses the default
+        system or application PKI trust anchors unless configured otherwise to
+        use explicit trust anchors. ALPN-related considerations can be found
+        in <xref section="7.1" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-7.1" derivedContent="RFC9460"/>.
+        Operational considerations related to checking the revocation status of the
+        certificate of an encrypted DNS resolver are discussed in
+        <xref target="RFC8484" sectionFormat="of" section="10" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8484#section-10" derivedContent="RFC8484"/>.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-3.4">
+        <name slugifiedName="name-multihoming-considerations">Multihoming Considerations</name>
+        <t indent="0" pn="section-3.4-1">Devices may be connected to multiple networks, each providing their
+        own DNS configuration using the discovery mechanisms specified in this
+        document. Nevertheless, discussing DNS selection of multi-interfaced devices is beyond the scope of this specification. Such
+        considerations fall under the generic issue of handling multiple
+        provisioning sources and should not be processed in each option
+        separately, as per the recommendation in <xref section="12" target="RFC7227" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc7227#section-12" derivedContent="RFC7227"/>.</t>
+        <t indent="0" pn="section-3.4-2">The reader may refer to <xref target="RFC6731" format="default" sectionFormat="of" derivedContent="RFC6731"/> for a discussion
+        of DNS selection issues and an example of DNS resolver selection for
+        multi-interfaced devices. Also, the reader may refer to <xref target="Local-DNS-Authority" format="default" sectionFormat="of" derivedContent="Local-DNS-Authority"/> for a discussion on
+        how DNR and Provisioning Domain (PvD) key "dnsZones" (<xref section="4.3" target="RFC8801" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8801#section-4.3" derivedContent="RFC8801"/>) can be used in "split DNS"
+        environments (<xref section="6" target="RFC8499" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8499#section-6" derivedContent="RFC8499"/>).</t>
+      </section>
+    </section>
+    <section anchor="DHCPv6" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-dhcpv6-encrypted-dns-option">DHCPv6 Encrypted DNS Option</name>
+      <section anchor="DHCPv6-ADN" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-option-format">Option Format</name>
+        <t indent="0" pn="section-4.1-1">The format of the DHCPv6 Encrypted DNS option is shown in <xref target="dhcpv6-format" format="default" sectionFormat="of" derivedContent="Figure 1"/>.</t>
+        <figure anchor="dhcpv6-format" align="left" suppress-title="false" pn="figure-1">
+          <name slugifiedName="name-dhcpv6-encrypted-dns-option-2">DHCPv6 Encrypted DNS Option</name>
+          <artwork align="center" pn="section-4.1-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       OPTION_V6_DNR           |         Option-length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+  
+|       Service Priority        |         ADN Length            |  
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+  
+~                   authentication-domain-name                  ~   
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+   
+|         Addr Length           |                               | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |  
+~                        ipv6-address(es)                       ~ 
+|                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+  
+|                               |                               | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               | 
+~                 Service Parameters (SvcParams)                ~ 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-4.1-3">The fields of the option shown in <xref target="dhcpv6-format" format="default" sectionFormat="of" derivedContent="Figure 1"/> are as follows:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-4.1-4">
+          <dt pn="section-4.1-4.1">Option-code:</dt>
+          <dd pn="section-4.1-4.2">OPTION_V6_DNR (144; see <xref target="iana6" format="default" sectionFormat="of" derivedContent="Section 9.1"/>).</dd>
+          <dt pn="section-4.1-4.3">Option-length:</dt>
+          <dd pn="section-4.1-4.4">Length of the enclosed data in
+            octets. The option length is ('ADN Length' + 4) when only an ADN
+            is included in the option.</dd>
+          <dt pn="section-4.1-4.5">Service Priority:</dt>
+          <dd pn="section-4.1-4.6">The priority of this OPTION_V6_DNR
+            instance compared to other instances. This 16-bit unsigned integer
+            is interpreted following the rules specified in <xref section="2.4.1" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.4.1" derivedContent="RFC9460"/>.</dd>
+          <dt pn="section-4.1-4.7">ADN Length:</dt>
+          <dd pn="section-4.1-4.8">Length of the authentication-domain-name
+            field in octets.</dd>
+          <dt pn="section-4.1-4.9">authentication-domain-name (variable length):</dt>
+          <dd pn="section-4.1-4.10">
+            <t indent="0" pn="section-4.1-4.10.1">A
+            Fully Qualified Domain Name (FQDN) of the encrypted DNS resolver. This
+            field is formatted as specified in <xref section="10" target="RFC8415" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-10" derivedContent="RFC8415"/>.</t>
+            <t indent="0" pn="section-4.1-4.10.2">An example of the
+            authentication-domain-name encoding is shown in <xref target="fqdn" format="default" sectionFormat="of" derivedContent="Figure 2"/>. This example conveys the FQDN
+            "doh1.example.com.", and the resulting ADN Length field is
+            18.</t>
+            <figure anchor="fqdn" align="left" suppress-title="false" pn="figure-2">
+              <name slugifiedName="name-an-example-of-the-dns-authe">An Example of the DNS authentication-domain-name Encoding</name>
+              <artwork align="center" pn="section-4.1-4.10.3.1">
++------+------+------+------+------+------+------+------+------+
+| 0x04 |   d  |   o  |   h  |  1   | 0x07 |   e  |   x  |   a  |
++------+------+------+------+------+------+------+------+------+
+|   m  |   p  |   l  |   e  | 0x03 |   c  |   o  |   m  | 0x00 |
++------+------+------+------+------+------+------+------+------+
+</artwork>
+            </figure>
+          </dd>
+          <dt pn="section-4.1-4.11">Addr Length:</dt>
+          <dd pn="section-4.1-4.12">Length of enclosed IPv6 addresses in
+            octets. When present, it <bcp14>MUST</bcp14> be a multiple of 16.</dd>
+          <dt pn="section-4.1-4.13">ipv6-address(es) (variable length):</dt>
+          <dd pn="section-4.1-4.14">
+            <t indent="0" pn="section-4.1-4.14.1">Indicates one or
+            more IPv6 addresses to reach the encrypted DNS resolver. An
+            address can be a Link-Local address, a ULA, or a GUA. The format of this field
+            is shown in <xref target="v6add" format="default" sectionFormat="of" derivedContent="Figure 3"/>.</t>
+            <figure anchor="v6add" align="left" suppress-title="false" pn="figure-3">
+              <name slugifiedName="name-format-of-the-ipv6-addresse">Format of the ipv6-address(es) Field</name>
+              <artwork align="center" pn="section-4.1-4.14.2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+|                         ipv6-address                          |
+|                                                               |
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                              ...                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+            </figure>
+          </dd>
+          <dt pn="section-4.1-4.15">Service Parameters (SvcParams) (variable length):</dt>
+          <dd pn="section-4.1-4.16">
+            <t indent="0" pn="section-4.1-4.16.1">Specifies
+            a set of service parameters that are encoded following the rules
+            in <xref section="2.2" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.2" derivedContent="RFC9460"/>.
+            Service parameters may include, for example, a list of ALPN
+            protocol identifiers or alternate port numbers. This field <bcp14>SHOULD</bcp14>
+            include at least the "alpn" SvcParam. The "alpn" SvcParam may not be
+            required in contexts such as a variant of DNS over the Constrained Application Protocol (CoAP) where
+            messages are encrypted using Object Security for Constrained
+            RESTful Environments (OSCORE) <xref target="RFC8613" format="default" sectionFormat="of" derivedContent="RFC8613"/>. The
+            service parameters <bcp14>MUST NOT</bcp14> include "ipv4hint" or "ipv6hint"
+            SvcParams, as they are superseded by the included IP addresses.
+            </t>
+            <t indent="0" pn="section-4.1-4.16.2">If no port service parameter is included,
+            this indicates that default port numbers should be used. As a
+            reminder, the default port number is 853 for DoT, 443 for DoH, and
+            853 for DoQ.</t>
+            <t indent="0" pn="section-4.1-4.16.3">The length of this field is
+            ('Option-length' - 6 - 'ADN Length' - 'Addr Length').</t>
+          </dd>
+        </dl>
+        <t indent="0" pn="section-4.1-5">Note that the "Addr Length", "ipv6-address(es)", and "Service
+        Parameters (SvcParams)" fields are not present if the ADN-only mode is
+        used (<xref target="adn-only" format="default" sectionFormat="of" derivedContent="Section 3.1.6"/>).</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-dhcpv6-client-behavior">DHCPv6 Client Behavior</name>
+        <t indent="0" pn="section-4.2-1">To discover an encrypted DNS resolver, the DHCPv6 client <bcp14>MUST</bcp14>
+        include OPTION_V6_DNR in an Option Request Option (ORO), per
+        Sections <xref target="RFC8415" section="18.2.1" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-18.2.1" derivedContent="RFC8415"/>, <xref target="RFC8415" section="18.2.2" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-18.2.2" derivedContent="RFC8415"/>, <xref target="RFC8415" section="18.2.4" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-18.2.4" derivedContent="RFC8415"/>, <xref target="RFC8415" section="18.2.5" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-18.2.5" derivedContent="RFC8415"/>, <xref target="RFC8415" section="18.2.6" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-18.2.6" derivedContent="RFC8415"/>, and <xref target="RFC8415" section="21.7" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-21.7" derivedContent="RFC8415"/> of <xref target="RFC8415" format="default" sectionFormat="of" derivedContent="RFC8415"/>.</t>
+        <t indent="0" pn="section-4.2-2">The DHCPv6 client <bcp14>MUST</bcp14> be prepared to receive multiple instances of
+        the OPTION_V6_DNR option; each option is to be treated as a separate
+        encrypted DNS resolver. These instances <bcp14>MUST</bcp14> be processed following
+        their service priority (i.e., a smaller service priority value indicates a
+        higher preference).</t>
+        <t indent="0" pn="section-4.2-3">The DHCPv6 client <bcp14>MUST</bcp14> silently discard any OPTION_V6_DNR that
+        fails to pass the validation steps defined in <xref target="VC" format="default" sectionFormat="of" derivedContent="Section 3.1.8"/>.</t>
+        <t indent="0" pn="section-4.2-4">The DHCPv6 client <bcp14>MUST</bcp14> silently discard multicast and host loopback
+        addresses conveyed in OPTION_V6_DNR.</t>
+      </section>
+    </section>
+    <section anchor="DHCP" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-dhcpv4-encrypted-dns-option">DHCPv4 Encrypted DNS Option</name>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-5.1">
+        <name slugifiedName="name-option-format-2">Option Format</name>
+        <t indent="0" pn="section-5.1-1">The format of the DHCPv4 Encrypted DNS option is illustrated in
+        <xref target="dhcpri_dns" format="default" sectionFormat="of" derivedContent="Figure 4"/>.</t>
+        <figure anchor="dhcpri_dns" align="left" suppress-title="false" pn="figure-4">
+          <name slugifiedName="name-dhcpv4-encrypted-dns-option-2">DHCPv4 Encrypted DNS Option</name>
+          <artwork align="center" pn="section-5.1-2.1">
+ 0                   1
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| OPTION_V4_DNR |     Length    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~      DNR Instance Data #1     ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+   ---
+.              ...              .    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ optional
+~      DNR Instance Data #n     ~    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+   ---
+</artwork>
+        </figure>
+        <t indent="0" pn="section-5.1-3">The fields of the option shown in <xref target="dhcpri_dns" format="default" sectionFormat="of" derivedContent="Figure 4"/> are
+        as follows:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-5.1-4">
+          <dt pn="section-5.1-4.1">Code:</dt>
+          <dd pn="section-5.1-4.2">OPTION_V4_DNR (162; see <xref target="iana4" format="default" sectionFormat="of" derivedContent="Section 9.2"/>).</dd>
+          <dt pn="section-5.1-4.3">Length:</dt>
+          <dd pn="section-5.1-4.4">Indicates the length of the enclosed data in
+            octets.</dd>
+          <dt pn="section-5.1-4.5">DNR Instance Data:</dt>
+          <dd pn="section-5.1-4.6">
+            <t indent="0" pn="section-5.1-4.6.1">Includes the configuration data
+            of an encrypted DNS resolver. The format of this field is shown in
+            <xref target="dhcpri_dns2" format="default" sectionFormat="of" derivedContent="Figure 5"/>. </t>
+            <figure anchor="dhcpri_dns2" align="left" suppress-title="false" pn="figure-5">
+              <name slugifiedName="name-dnr-instance-data-format">DNR Instance Data Format</name>
+              <artwork align="center" pn="section-5.1-4.6.2.1">
+ 0                   1
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|    DNR Instance Data Length   |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       Service Priority        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   ADN Length  |               |
++-+-+-+-+-+-+-+-+               |
+~  authentication-domain-name   ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|  Addr Length  |               | 
++-+-+-+-+-+-+-+-+               | 
+~        IPv4 Address(es)       ~ 
+|               +-+-+-+-+-+-+-+-+ 
+|               |               | 
++-+-+-+-+-+-+-+-+               | 
+~Service Parameters (SvcParams) ~ 
+|                               | 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+   
+</artwork>
+            </figure>
+            <t indent="0" pn="section-5.1-4.6.3">When several encrypted DNS
+            resolvers are to be included, the "DNR Instance Data" field is
+            repeated.</t>
+          </dd>
+        </dl>
+        <t indent="0" pn="section-5.1-5">The fields shown in <xref target="dhcpri_dns2" format="default" sectionFormat="of" derivedContent="Figure 5"/> are as
+        follows:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-5.1-6">
+          <dt pn="section-5.1-6.1">DNR Instance Data Length:</dt>
+          <dd pn="section-5.1-6.2">Length of all following
+            data in octets. This field is set to ('ADN Length' + 3) when only
+            an ADN is provided for a DNR instance.</dd>
+          <dt pn="section-5.1-6.3">Service Priority:</dt>
+          <dd pn="section-5.1-6.4">The priority of this instance
+            compared to other DNR instances. This 16-bit unsigned integer is
+            interpreted following the rules specified in <xref section="2.4.1" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.4.1" derivedContent="RFC9460"/>.</dd>
+          <dt pn="section-5.1-6.5">ADN Length:</dt>
+          <dd pn="section-5.1-6.6">Length of the authentication-domain-name field
+            in octets.</dd>
+          <dt pn="section-5.1-6.7">authentication-domain-name (variable length):</dt>
+          <dd pn="section-5.1-6.8">The
+            ADN of the encrypted DNS resolver. This
+            field is formatted as specified in <xref section="10" target="RFC8415" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-10" derivedContent="RFC8415"/>. An example is provided in <xref target="fqdn" format="default" sectionFormat="of" derivedContent="Figure 2"/>.</dd>
+          <dt pn="section-5.1-6.9">Addr Length:</dt>
+          <dd pn="section-5.1-6.10">Length of included IPv4 addresses in
+            octets. When present, it <bcp14>MUST</bcp14> be a multiple of 4.</dd>
+          <dt pn="section-5.1-6.11">IPv4 Address(es) (variable length):</dt>
+          <dd pn="section-5.1-6.12">
+            <t indent="0" pn="section-5.1-6.12.1">Indicates one or
+            more IPv4 addresses to reach the encrypted DNS resolver. Both
+            private and public IPv4 addresses can be included in this field.
+            The format of this field is shown in <xref target="v4" format="default" sectionFormat="of" derivedContent="Figure 6"/>. This
+            format assumes that an IPv4 address is encoded as
+            a1.a2.a3.a4.</t>
+            <figure anchor="v4" align="left" suppress-title="false" pn="figure-6">
+              <name slugifiedName="name-format-of-the-ipv4-addresse">Format of the IPv4 Address(es) Field</name>
+              <artwork align="center" pn="section-5.1-6.12.2.1">
+0     8     16    24    32    40    48
++-----+-----+-----+-----+-----+-----+--
+|  a1 |  a2 |  a3 |  a4 |  a1 |  a2 | ...
++-----+-----+-----+-----+-----+-----+--
+  IPv4 Address 1          IPv4 Address 2 ...
+</artwork>
+            </figure>
+          </dd>
+          <dt pn="section-5.1-6.13">Service Parameters (SvcParams) (variable length):</dt>
+          <dd pn="section-5.1-6.14">
+            <t indent="0" pn="section-5.1-6.14.1">Specifies
+            a set of service parameters that are encoded following the rules
+            in <xref section="2.2" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.2" derivedContent="RFC9460"/>.
+            Service parameters may include, for example, a list of ALPN
+            protocol identifiers or alternate port numbers. This field <bcp14>SHOULD</bcp14>
+            include at least the "alpn" SvcParam. The "alpn" SvcParam may not be
+            required in contexts such as a variant of DNS over CoAP where
+            messages are encrypted using OSCORE. The service parameters
+            <bcp14>MUST NOT</bcp14> include "ipv4hint" or "ipv6hint" SvcParams, as they are
+            superseded by the included IP addresses.</t>
+            <t indent="0" pn="section-5.1-6.14.2">If no port service parameter is included, this
+            indicates that default port numbers should be used. </t>
+            <t indent="0" pn="section-5.1-6.14.3">The length of this field is ('DNR Instance Data
+            Length' - 4 - 'ADN Length' - 'Addr Length').</t>
+          </dd>
+        </dl>
+        <t indent="0" pn="section-5.1-7">Note that the "Addr Length", "IPv4 Address(es)", and "Service
+        Parameters (SvcParams)" fields are not present if the ADN-only mode is
+        used (<xref target="adn-only" format="default" sectionFormat="of" derivedContent="Section 3.1.6"/>).</t>
+        <t indent="0" pn="section-5.1-8">OPTION_V4_DNR is a concatenation-requiring option. As such, the
+        mechanism specified in <xref target="RFC3396" format="default" sectionFormat="of" derivedContent="RFC3396"/> <bcp14>MUST</bcp14> be used if
+        OPTION_V4_DNR exceeds the maximum DHCPv4 option size of 255
+        octets.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-5.2">
+        <name slugifiedName="name-dhcpv4-client-behavior">DHCPv4 Client Behavior</name>
+        <t indent="0" pn="section-5.2-1">To discover an encrypted DNS resolver, the DHCPv4 client requests
+        the encrypted DNS resolver by including OPTION_V4_DNR in a Parameter
+        Request List option <xref target="RFC2132" format="default" sectionFormat="of" derivedContent="RFC2132"/>.</t>
+        <t indent="0" pn="section-5.2-2">The DHCPv4 client <bcp14>MUST</bcp14> be prepared to receive multiple "DNR Instance
+        Data" field entries in the OPTION_V4_DNR option; each instance is to be treated as a
+        separate encrypted DNS resolver. These instances <bcp14>MUST</bcp14> be processed
+        following their service priority (i.e., a smaller service priority value
+        indicates a higher preference).</t>
+        <t indent="0" pn="section-5.2-3">The DHCPv4 client <bcp14>MUST</bcp14> silently discard any OPTION_V4_DNR that
+        fails to pass the validation steps defined in <xref target="VC" format="default" sectionFormat="of" derivedContent="Section 3.1.8"/>.</t>
+        <t indent="0" pn="section-5.2-4">The DHCPv4 client <bcp14>MUST</bcp14> silently discard multicast and host loopback
+        addresses conveyed in OPTION_V4_DNR.</t>
+      </section>
+    </section>
+    <section anchor="RA" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-ipv6-ra-encrypted-dns-optio">IPv6 RA Encrypted DNS Option</name>
+      <section anchor="RA-ADN" numbered="true" removeInRFC="false" toc="include" pn="section-6.1">
+        <name slugifiedName="name-option-format-3">Option Format</name>
+        <t indent="0" pn="section-6.1-1">This section defines a new Neighbor Discovery option <xref target="RFC4861" format="default" sectionFormat="of" derivedContent="RFC4861"/>: the IPv6 RA Encrypted DNS option. This option is
+        useful in contexts similar to those discussed in <xref section="1.1" target="RFC8106" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8106#section-1.1" derivedContent="RFC8106"/>.</t>
+        <t indent="0" pn="section-6.1-2">The format of the IPv6 RA Encrypted DNS option is illustrated in
+        <xref target="ra_dns" format="default" sectionFormat="of" derivedContent="Figure 7"/>.</t>
+        <figure anchor="ra_dns" align="left" suppress-title="false" pn="figure-7">
+          <name slugifiedName="name-ra-encrypted-dns-option">RA Encrypted DNS Option</name>
+          <artwork align="center" pn="section-6.1-3.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Type      |     Length    |        Service Priority       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                           Lifetime                            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          ADN Length           |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
+~                   authentication-domain-name                  ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+  
+|         Addr Length           |                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               | 
+~                        ipv6-address(es)                       ~
+|                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+|                               |     SvcParams Length          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+~                 Service Parameters (SvcParams)                ~
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        </figure>
+        <t indent="0" pn="section-6.1-4">The fields of the option shown in <xref target="ra_dns" format="default" sectionFormat="of" derivedContent="Figure 7"/> are as
+        follows:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-6.1-5">
+          <dt pn="section-6.1-5.1">Type:</dt>
+          <dd pn="section-6.1-5.2">8-bit identifier of the Encrypted DNS option
+            as assigned by IANA (144; see <xref target="iana7" format="default" sectionFormat="of" derivedContent="Section 9.3"/>).</dd>
+          <dt pn="section-6.1-5.3">Length:</dt>
+          <dd pn="section-6.1-5.4">8-bit unsigned integer. The length of the
+            option (including the Type and Length fields) is in units of 8
+            octets.</dd>
+          <dt pn="section-6.1-5.5">Service Priority:</dt>
+          <dd pn="section-6.1-5.6">16-bit unsigned integer.  The priority of this Encrypted DNS option instance compared to other instances.  This field is interpreted following the rules specified
+            in <xref section="2.4.1" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.4.1" derivedContent="RFC9460"/>.</dd>
+          <dt pn="section-6.1-5.7">Lifetime:</dt>
+          <dd pn="section-6.1-5.8">
+            <t indent="0" pn="section-6.1-5.8.1">32-bit unsigned integer. This represents the maximum time
+            in seconds (relative to the time the packet is received) over
+            which the discovered ADN is valid. </t>
+            <t indent="0" pn="section-6.1-5.8.2">The value of Lifetime <bcp14>SHOULD</bcp14> by default be at
+            least 3 * MaxRtrAdvInterval, where MaxRtrAdvInterval is the
+            maximum RA interval as defined in <xref target="RFC4861" format="default" sectionFormat="of" derivedContent="RFC4861"/>.
+            </t>
+            <t indent="0" pn="section-6.1-5.8.3">A value of all one bits (0xffffffff)
+            represents infinity. </t>
+            <t indent="0" pn="section-6.1-5.8.4">A value of zero
+            means that this ADN <bcp14>MUST</bcp14> no longer be
+            used.</t>
+          </dd>
+          <dt pn="section-6.1-5.9">ADN Length:</dt>
+          <dd pn="section-6.1-5.10">16-bit unsigned integer. This field
+            indicates the length of the authentication-domain-name field in
+            octets.</dd>
+          <dt pn="section-6.1-5.11">authentication-domain-name (variable length):</dt>
+          <dd pn="section-6.1-5.12">The
+            ADN of the encrypted DNS resolver. This
+            field is formatted as specified in <xref section="10" target="RFC8415" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-10" derivedContent="RFC8415"/>.</dd>
+          <dt pn="section-6.1-5.13">Addr Length:</dt>
+          <dd pn="section-6.1-5.14">16-bit unsigned integer. This field
+            indicates the length of enclosed IPv6 addresses in octets. When
+            present, it <bcp14>MUST</bcp14> be a multiple of 16.</dd>
+          <dt pn="section-6.1-5.15">ipv6-address(es) (variable length):</dt>
+          <dd pn="section-6.1-5.16">
+            <t indent="0" pn="section-6.1-5.16.1">One or more IPv6
+            addresses of the encrypted DNS resolver. An address can be a
+            Link-Local address, a ULA, or a GUA. </t>
+            <t indent="0" pn="section-6.1-5.16.2">All of the
+            addresses share the same Lifetime value. As also discussed in <xref target="RFC8106" format="default" sectionFormat="of" derivedContent="RFC8106"/>, if it is desirable to have different Lifetime
+            values per IP address, multiple Encrypted DNS options may be
+            used.</t>
+            <t indent="0" pn="section-6.1-5.16.3">The format of this field is shown in
+            <xref target="v6add" format="default" sectionFormat="of" derivedContent="Figure 3"/>.</t>
+          </dd>
+          <dt pn="section-6.1-5.17">SvcParams Length:</dt>
+          <dd pn="section-6.1-5.18">16-bit unsigned integer. This
+            field indicates the length of the "Service Parameters (SvcParams)" field in
+            octets.</dd>
+          <dt pn="section-6.1-5.19">Service Parameters (SvcParams) (variable length):</dt>
+          <dd pn="section-6.1-5.20">
+            <t indent="0" pn="section-6.1-5.20.1">Specifies
+            a set of service parameters that are encoded following the rules
+            in <xref section="2.2" target="RFC9460" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9460#section-2.2" derivedContent="RFC9460"/>.
+            Service parameters may include, for example, a list of ALPN
+            protocol identifiers or alternate port numbers. This field <bcp14>SHOULD</bcp14>
+            include at least the "alpn" SvcParam. The "alpn" SvcParam may not be
+            required in contexts such as a variant of DNS over CoAP where
+            messages are encrypted using OSCORE. The service parameters
+            <bcp14>MUST NOT</bcp14> include "ipv4hint" or "ipv6hint" SvcParams, as they are
+            superseded by the included IP addresses.</t>
+            <t indent="0" pn="section-6.1-5.20.2">If no port service parameter is included, this
+            indicates that default port numbers should be used.</t>
+          </dd>
+        </dl>
+        <t indent="0" pn="section-6.1-6">Note that the "Addr Length", "ipv6-address(es)", and "Service
+        Parameters (SvcParams)" fields are not present if the ADN-only mode is
+        used (<xref target="adn-only" format="default" sectionFormat="of" derivedContent="Section 3.1.6"/>).</t>
+        <t indent="0" pn="section-6.1-7">The option <bcp14>MUST</bcp14> be padded with zeros so that the full enclosed data
+        is a multiple of 8 octets (<xref section="4.6" target="RFC4861" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc4861#section-4.6" derivedContent="RFC4861"/>).</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-6.2">
+        <name slugifiedName="name-ipv6-host-behavior">IPv6 Host Behavior</name>
+        <t indent="0" pn="section-6.2-1">The procedure for DNS configuration is the same as it is with any
+        other Neighbor Discovery option <xref target="RFC4861" format="default" sectionFormat="of" derivedContent="RFC4861"/>. In
+        addition, the host follows the same procedure as the procedure described in
+        <xref section="5.3.1" target="RFC8106" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8106#section-5.3.1" derivedContent="RFC8106"/> for processing received
+        Encrypted DNS options, with the formatting requirements listed in <xref target="RA-ADN" format="default" sectionFormat="of" derivedContent="Section 6.1"/> and the validation checks listed in <xref target="VC" format="default" sectionFormat="of" derivedContent="Section 3.1.8"/>
+        substituted for length and field validations.</t>
+        <t indent="0" pn="section-6.2-2">The host <bcp14>MUST</bcp14> be prepared to receive multiple Encrypted DNS options
+        in RAs. These instances <bcp14>MUST</bcp14> be processed following their service
+        priority (i.e., a smaller service priority value indicates a higher
+        preference).</t>
+        <t indent="0" pn="section-6.2-3">The host <bcp14>MUST</bcp14> silently discard multicast and host loopback
+        addresses conveyed in the Encrypted DNS options.</t>
+      </section>
+    </section>
+    <section anchor="Security" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <section anchor="spoof" numbered="true" removeInRFC="false" toc="include" pn="section-7.1">
+        <name slugifiedName="name-spoofing-attacks">Spoofing Attacks</name>
+        <t indent="0" pn="section-7.1-1">DHCP/RA messages are not encrypted or protected against
+        modification within the LAN. Unless spoofing attacks are mitigated as described below, the
+        content of DHCP and RA messages can be spoofed or modified by active
+        attackers, such as compromised devices within the local network. An
+        active attacker (<xref section="3.3" target="RFC3552" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc3552#section-3.3" derivedContent="RFC3552"/>) can spoof
+        the DHCP/RA response to provide the attacker's encrypted DNS resolver.
+        Note that such an attacker can launch other attacks as discussed in
+        <xref section="22" target="RFC8415" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-22" derivedContent="RFC8415"/>. The attacker can get a domain
+        name with a domain-validated public certificate from a Certificate Authority (CA) and host an
+        encrypted DNS resolver.</t>
+        <t indent="0" pn="section-7.1-2">Attacks of spoofed or modified DHCP responses and RA messages by
+        attackers within the local network may be mitigated by making use of
+        the following mechanisms:</t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-7.1-3">
+          <dt pn="section-7.1-3.1">DHCPv6-Shield <xref target="RFC7610" format="default" sectionFormat="of" derivedContent="RFC7610"/>:</dt>
+          <dd pn="section-7.1-3.2">The network access
+            node (e.g., a border router, a CPE, an Access Point (AP)) discards
+            DHCP response messages received from any local endpoint.</dd>
+          <dt pn="section-7.1-3.3">RA-Guard <xref target="RFC7113" format="default" sectionFormat="of" derivedContent="RFC7113"/>:</dt>
+          <dd pn="section-7.1-3.4">The network access node
+            discards RA messages received from any local endpoint.</dd>
+          <dt pn="section-7.1-3.5">Source Address Validation Improvement (SAVI) solution for DHCP
+            <xref target="RFC7513" format="default" sectionFormat="of" derivedContent="RFC7513"/>:</dt>
+          <dd pn="section-7.1-3.6">The network access node filters packets
+            with forged source IP addresses.</dd>
+        </dl>
+        <t indent="0" pn="section-7.1-4">The above mechanisms would ensure that the endpoint receives the
+        correct configuration information of the encrypted DNS resolvers
+        selected by the DHCP server (or RA sender), but these mechanisms cannot provide any
+        information about the DHCP server or the entity hosting the DHCP
+        server (or RA sender).</t>
+        <t indent="0" pn="section-7.1-5">Encrypted DNS sessions with rogue resolvers that spoof the IP
+        address of a DNS resolver will fail because the DNS client will fail
+        to authenticate that rogue resolver based upon PKIX authentication
+        <xref target="RFC6125" format="default" sectionFormat="of" derivedContent="RFC6125"/>, particularly the ADN
+        in the Encrypted DNS option. DNS clients that ignore authentication
+        failures and accept spoofed certificates will be subject to attacks
+        (e.g., attacks that redirect to malicious resolvers or intercept sensitive data).</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-7.2">
+        <name slugifiedName="name-deletion-attacks">Deletion Attacks</name>
+        <t indent="0" pn="section-7.2-1">If the DHCP responses or RAs are dropped by the attacker, the
+        client can fall back to using a preconfigured encrypted DNS resolver.
+        However, the use of policies to select resolvers is beyond the scope
+        of this document.</t>
+        <t indent="0" pn="section-7.2-2">Note that deletion attacks are not specific to DHCP/RA.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-7.3">
+        <name slugifiedName="name-passive-attacks">Passive Attacks</name>
+        <t indent="0" pn="section-7.3-1">A passive attacker (<xref section="3.2" target="RFC3552" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc3552#section-3.2" derivedContent="RFC3552"/>) can
+        determine that a host is using DHCP/RA to discover an encrypted DNS resolver
+        and can infer that the host is capable of using DoH/DoT/DoQ to encrypt DNS
+        messages. However, a passive attacker cannot spoof or modify DHCP/RA
+        messages.</t>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-7.4">
+        <name slugifiedName="name-wireless-security-authentic">Wireless Security - Authentication Attacks</name>
+        <t indent="0" pn="section-7.4-1">Wireless LANs (WLANs), frequently deployed in local networks (e.g.,
+        home networks), are vulnerable to various attacks (e.g., <xref target="Evil-Twin" format="default" sectionFormat="of" derivedContent="Evil-Twin"/>, <xref target="Krack" format="default" sectionFormat="of" derivedContent="Krack"/>, <xref target="Dragonblood" format="default" sectionFormat="of" derivedContent="Dragonblood"/>). Because of these attacks, only
+        cryptographically authenticated communications are trusted on WLANs.
+        This means that any information (e.g., regarding NTP servers, DNS resolvers, or
+        domain search lists) provided by such networks via DHCP, DHCPv6, or RA
+        is untrusted because DHCP and RA messages are not authenticated.</t>
+        <t indent="0" pn="section-7.4-2">If the pre-shared key (PSK) is the same for all clients that
+        connect to the same WLAN (e.g., Wi-Fi Protected Access Pre-Shared
+Key (WPA-PSK)), the shared key will be
+        available to all nodes, including attackers. As such, it is possible
+        to mount an active on-path attack. On-path attacks are possible within
+        local networks because this form of WLAN authentication lacks peer entity
+        authentication.</t>
+        <t indent="0" pn="section-7.4-3">This leads to the need for provisioning unique credentials for
+        different clients. Endpoints can be provisioned with unique
+        credentials (username and password, typically) provided by the local
+        network administrator to mutually authenticate to the local WLAN AP
+        (e.g., 802.1x Wireless User Authentication on OpenWrt <xref target="dot1x" format="default" sectionFormat="of" derivedContent="dot1x"/>, EAP-pwd <xref target="RFC8146" format="default" sectionFormat="of" derivedContent="RFC8146"/> ("EAP" stands for "Extensible Authentication Protocol")). Not all
+        endpoint devices (e.g., Internet of Things (IoT) devices) support 802.1x supplicants and
+        need an alternate mechanism to connect to the local network. To
+        address this limitation, unique PSKs can be created for
+        each such device and WPA-PSK is used (e.g., <xref target="IPSK" format="default" sectionFormat="of" derivedContent="IPSK"/>).</t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-privacy-considerations">Privacy Considerations</name>
+      <t indent="0" pn="section-8-1">Privacy considerations that are also specific to DNR provisioning
+      mechanisms are discussed in <xref section="23" target="RFC8415" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8415#section-23" derivedContent="RFC8415"/> and in
+      <xref target="RFC7824" format="default" sectionFormat="of" derivedContent="RFC7824"/>. Anonymity profiles for DHCP clients are
+      discussed in <xref target="RFC7844" format="default" sectionFormat="of" derivedContent="RFC7844"/>. The mechanisms defined in this
+      document can be used to infer that a DHCP client or IPv6 host supports
+      Encrypted DNS options, but these mechanisms do not explicitly reveal whether local DNS
+      clients are able to consume these options or infer their encryption
+      capabilities. Other than that, this document does not expose more
+      privacy information compared to Do53 discovery options.</t>
+      <t indent="0" pn="section-8-2">As discussed in <xref target="RFC9076" format="default" sectionFormat="of" derivedContent="RFC9076"/>, the use of encrypted DNS
+      does not reduce the data available in the DNS resolver. For example, the
+      reader may refer to <xref section="8" target="RFC8484" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8484#section-8" derivedContent="RFC8484"/> or <xref section="7" target="RFC9250" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc9250#section-7" derivedContent="RFC9250"/> for a discussion on specific privacy
+      considerations for encrypted DNS.</t>
+    </section>
+    <section anchor="IANA" numbered="true" removeInRFC="false" toc="include" pn="section-9">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section anchor="iana6" numbered="true" removeInRFC="false" toc="include" pn="section-9.1">
+        <name slugifiedName="name-dhcpv6-option">DHCPv6 Option</name>
+        <t indent="0" pn="section-9.1-1">IANA has assigned the following new DHCPv6 Option Code in
+        the "Option Codes" registry maintained at <xref target="DHCPV6" format="default" sectionFormat="of" derivedContent="DHCPV6"/>.</t>
+        <table anchor="dhcpv6t" align="center" pn="table-1">
+          <name slugifiedName="name-dhcpv6-encrypted-dns-option-3">DHCPv6 Encrypted DNS Option</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Value</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Client ORO</th>
+              <th align="left" colspan="1" rowspan="1">Singleton Option</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">144</td>
+              <td align="left" colspan="1" rowspan="1">OPTION_V6_DNR</td>
+              <td align="left" colspan="1" rowspan="1">Yes</td>
+              <td align="left" colspan="1" rowspan="1">No</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9463</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="iana4" numbered="true" removeInRFC="false" toc="include" pn="section-9.2">
+        <name slugifiedName="name-dhcpv4-option">DHCPv4 Option</name>
+        <t indent="0" pn="section-9.2-1">IANA has assigned the following new DHCP Option Code in
+        the "BOOTP Vendor Extensions and DHCP Options" registry maintained at <xref target="BOOTP" format="default" sectionFormat="of" derivedContent="BOOTP"/>.</t>
+        <table anchor="dhcpv4t" align="center" pn="table-2">
+          <name slugifiedName="name-dhcpv4-encrypted-dns-option-3">DHCPv4 Encrypted DNS Option</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Tag</th>
+              <th align="left" colspan="1" rowspan="1">Name</th>
+              <th align="left" colspan="1" rowspan="1">Data Length</th>
+              <th align="left" colspan="1" rowspan="1">Meaning</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">162</td>
+              <td align="left" colspan="1" rowspan="1">OPTION_V4_DNR</td>
+              <td align="left" colspan="1" rowspan="1">N</td>
+              <td align="left" colspan="1" rowspan="1">Encrypted DNS Server</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9463</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="iana7" numbered="true" removeInRFC="false" toc="include" pn="section-9.3">
+        <name slugifiedName="name-neighbor-discovery-option">Neighbor Discovery Option</name>
+        <t indent="0" pn="section-9.3-1">IANA has assigned the following new IPv6 Neighbor
+        Discovery Option type in the "IPv6 Neighbor Discovery Option Formats"
+        subregistry under the "Internet Control Message Protocol version 6
+        (ICMPv6) Parameters" registry maintained at <xref target="ND" format="default" sectionFormat="of" derivedContent="ND"/>.</t>
+        <table anchor="ndt" align="center" pn="table-3">
+          <name slugifiedName="name-neighbor-discovery-encrypte">Neighbor Discovery Encrypted DNS Option</name>
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Type</th>
+              <th align="left" colspan="1" rowspan="1">Description</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">144</td>
+              <td align="left" colspan="1" rowspan="1">Encrypted DNS Option</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9463</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.pusateri-dhc-dns-driu" to="DNS-TLS-DHCPv6-Opt"/>
+    <references pn="section-10">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-10.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC2132" target="https://www.rfc-editor.org/info/rfc2132" quoteTitle="true" derivedAnchor="RFC2132">
+          <front>
+            <title>DHCP Options and BOOTP Vendor Extensions</title>
+            <author fullname="S. Alexander" initials="S." surname="Alexander"/>
+            <author fullname="R. Droms" initials="R." surname="Droms"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">This document specifies the current set of DHCP options. Future options will be specified in separate RFCs. The current list of valid options is also available in ftp://ftp.isi.edu/in-notes/iana/assignments. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="2132"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2132"/>
+        </reference>
+        <reference anchor="RFC3396" target="https://www.rfc-editor.org/info/rfc3396" quoteTitle="true" derivedAnchor="RFC3396">
+          <front>
+            <title>Encoding Long Options in the Dynamic Host Configuration Protocol (DHCPv4)</title>
+            <author fullname="T. Lemon" initials="T." surname="Lemon"/>
+            <author fullname="S. Cheshire" initials="S." surname="Cheshire"/>
+            <date month="November" year="2002"/>
+          </front>
+          <seriesInfo name="RFC" value="3396"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3396"/>
+        </reference>
+        <reference anchor="RFC4861" target="https://www.rfc-editor.org/info/rfc4861" quoteTitle="true" derivedAnchor="RFC4861">
+          <front>
+            <title>Neighbor Discovery for IP version 6 (IPv6)</title>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <author fullname="E. Nordmark" initials="E." surname="Nordmark"/>
+            <author fullname="W. Simpson" initials="W." surname="Simpson"/>
+            <author fullname="H. Soliman" initials="H." surname="Soliman"/>
+            <date month="September" year="2007"/>
+            <abstract>
+              <t indent="0">This document specifies the Neighbor Discovery protocol for IP Version 6. IPv6 nodes on the same link use Neighbor Discovery to discover each other's presence, to determine each other's link-layer addresses, to find routers, and to maintain reachability information about the paths to active neighbors. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4861"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4861"/>
+        </reference>
+        <reference anchor="RFC8106" target="https://www.rfc-editor.org/info/rfc8106" quoteTitle="true" derivedAnchor="RFC8106">
+          <front>
+            <title>IPv6 Router Advertisement Options for DNS Configuration</title>
+            <author fullname="J. Jeong" initials="J." surname="Jeong"/>
+            <author fullname="S. Park" initials="S." surname="Park"/>
+            <author fullname="L. Beloeil" initials="L." surname="Beloeil"/>
+            <author fullname="S. Madanapalli" initials="S." surname="Madanapalli"/>
+            <date month="March" year="2017"/>
+            <abstract>
+              <t indent="0">This document specifies IPv6 Router Advertisement (RA) options (called "DNS RA options") to allow IPv6 routers to advertise a list of DNS Recursive Server Addresses and a DNS Search List to IPv6 hosts.</t>
+              <t indent="0">This document, which obsoletes RFC 6106, defines a higher default value of the lifetime of the DNS RA options to reduce the likelihood of expiry of the options on links with a relatively high rate of packet loss.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8106"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8106"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8415" target="https://www.rfc-editor.org/info/rfc8415" quoteTitle="true" derivedAnchor="RFC8415">
+          <front>
+            <title>Dynamic Host Configuration Protocol for IPv6 (DHCPv6)</title>
+            <author fullname="T. Mrugalski" initials="T." surname="Mrugalski"/>
+            <author fullname="M. Siodelski" initials="M." surname="Siodelski"/>
+            <author fullname="B. Volz" initials="B." surname="Volz"/>
+            <author fullname="A. Yourtchenko" initials="A." surname="Yourtchenko"/>
+            <author fullname="M. Richardson" initials="M." surname="Richardson"/>
+            <author fullname="S. Jiang" initials="S." surname="Jiang"/>
+            <author fullname="T. Lemon" initials="T." surname="Lemon"/>
+            <author fullname="T. Winters" initials="T." surname="Winters"/>
+            <date month="November" year="2018"/>
+            <abstract>
+              <t indent="0">This document describes the Dynamic Host Configuration Protocol for IPv6 (DHCPv6): an extensible mechanism for configuring nodes with network configuration parameters, IP addresses, and prefixes. Parameters can be provided statelessly, or in combination with stateful assignment of one or more IPv6 addresses and/or IPv6 prefixes. DHCPv6 can operate either in place of or in addition to stateless address autoconfiguration (SLAAC).</t>
+              <t indent="0">This document updates the text from RFC 3315 (the original DHCPv6 specification) and incorporates prefix delegation (RFC 3633), stateless DHCPv6 (RFC 3736), an option to specify an upper bound for how long a client should wait before refreshing information (RFC 4242), a mechanism for throttling DHCPv6 clients when DHCPv6 service is not available (RFC 7083), and relay agent handling of unknown messages (RFC 7283). In addition, this document clarifies the interactions between models of operation (RFC 7550). As such, this document obsoletes RFC 3315, RFC 3633, RFC 3736, RFC 4242, RFC 7083, RFC 7283, and RFC 7550.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8415"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8415"/>
+        </reference>
+        <reference anchor="RFC9460" target="https://www.rfc-editor.org/info/rfc9460" quoteTitle="true" derivedAnchor="RFC9460">
+          <front>
+            <title>Service Binding and Parameter Specification via the DNS (SVCB and HTTPS Resource Records)</title>
+            <author initials="B" surname="Schwartz" fullname="Benjamin Schwartz">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="M" surname="Bishop" fullname="Mike Bishop">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="E" surname="Nygren" fullname="Erik Nygren">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2023" month="November"/>
+          </front>
+          <seriesInfo name="RFC" value="9460"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9460"/>
+        </reference>
+        <reference anchor="RFC9461" target="https://www.rfc-editor.org/info/rfc9461" quoteTitle="true" derivedAnchor="RFC9461">
+          <front>
+            <title>Service Binding Mapping for DNS Servers</title>
+            <author initials="B." surname="Schwartz" fullname="Benjamin Schwartz">
+              <organization showOnFrontPage="true">Google LLC</organization>
+            </author>
+            <date month="November" year="2023"/>
+          </front>
+          <seriesInfo name="RFC" value="9461"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9461"/>
+        </reference>
+      </references>
+      <references pn="section-10.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="BOOTP" target="https://www.iana.org/assignments/bootp-dhcp-parameters/" quoteTitle="true" derivedAnchor="BOOTP">
+          <front>
+            <title>BOOTP Vendor Extensions and DHCP Options</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+            <date/>
+          </front>
+        </reference>
+        <reference anchor="DHCPV6" target="https://www.iana.org/assignments/dhcpv6-parameters/" quoteTitle="true" derivedAnchor="DHCPV6">
+          <front>
+            <title>Option Codes</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+            <date/>
+          </front>
+        </reference>
+        <reference anchor="I-D.pusateri-dhc-dns-driu" target="https://datatracker.ietf.org/doc/html/draft-pusateri-dhc-dns-driu-00" quoteTitle="true" derivedAnchor="DNS-TLS-DHCPv6-Opt">
+          <front>
+            <title>DHCPv6 Options for private DNS Discovery</title>
+            <author fullname="Tom Pusateri" initials="T." surname="Pusateri">
+              <organization showOnFrontPage="true">Unaffiliated</organization>
+            </author>
+            <author fullname="Willem Toorop" initials="W." surname="Toorop">
+              <organization showOnFrontPage="true">NLnet Labs</organization>
+            </author>
+            <date day="2" month="July" year="2018"/>
+            <abstract>
+              <t indent="0">This draft provides a series of DHCPv6 options for a DHCPv6 client to request from a DHCPv6 server to aid in configuring DNS servers that support private requests/responses.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-pusateri-dhc-dns-driu-00"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="dot1x" target="https://openwrt.org/docs/guide-user/network/wifi/wireless.security.8021x" quoteTitle="true" derivedAnchor="dot1x">
+          <front>
+            <title>Introduction to 802.1X</title>
+            <author>
+              <organization showOnFrontPage="true">OpenWrt</organization>
+            </author>
+            <date month="December" year="2021"/>
+          </front>
+        </reference>
+        <reference anchor="Dragonblood" target="https://ieeexplore.ieee.org/document/9152782" quoteTitle="true" derivedAnchor="Dragonblood">
+          <front>
+            <title>Dragonblood: Analyzing the Dragonfly Handshake of WPA3 and EAP-pwd</title>
+            <author fullname="Mathy Vanhoef" initials="M" surname="Vanhoef">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author fullname="Eyal Ronen" initials="E" surname="Ronen">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date month="May" year="2020"/>
+          </front>
+          <seriesInfo name="DOI" value="10.1109/SP40000.2020.00031"/>
+          <refcontent>2020 IEEE Symposium on Security and Privacy (SP), San Francisco, pp. 517-533</refcontent>
+        </reference>
+        <reference anchor="Evil-Twin" target="https://en.wikipedia.org/wiki/Evil_twin_(wireless_networks)" quoteTitle="true" derivedAnchor="Evil-Twin">
+          <front>
+            <title>Evil twin (wireless networks)</title>
+            <author>
+              <organization showOnFrontPage="true">Wikipedia</organization>
+            </author>
+            <date month="November" year="2022"/>
+          </front>
+        </reference>
+        <reference anchor="IPSK" target="https://www.cisco.com/c/en/us/td/docs/wireless/controller/technotes/8-5/b_Identity_PSK_Feature_Deployment_Guide.html" quoteTitle="true" derivedAnchor="IPSK">
+          <front>
+            <title>8.5 Identity PSK Feature Deployment Guide</title>
+            <author>
+              <organization showOnFrontPage="true">Cisco</organization>
+            </author>
+            <date month="December" year="2021"/>
+          </front>
+        </reference>
+        <reference anchor="Krack" target="https://dl.acm.org/doi/10.1145/3133956.3134027" quoteTitle="true" derivedAnchor="Krack">
+          <front>
+            <title>Key Reinstallation Attacks: Forcing Nonce Reuse in WPA2</title>
+            <author fullname="Mathy Vanhoef" initials="M." surname="Vanhoef">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author fullname="Frank Piessens" initials="F." surname="Piessens">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date month="October" year="2017"/>
+          </front>
+          <seriesInfo name="DOI" value="10.1145/3133956.3134027"/>
+          <refcontent>CCS '17: Proceedings of the 2017 ACM SIGSAC Conference on Computer and Communications Security, pp. 1313-1328</refcontent>
+        </reference>
+        <reference anchor="Local-DNS-Authority" quoteTitle="true" target="https://datatracker.ietf.org/doc/html/draft-ietf-add-split-horizon-authority-04" derivedAnchor="Local-DNS-Authority">
+          <front>
+            <title>Establishing Local DNS Authority in Validated Split-Horizon Environments</title>
+            <author fullname="Tirumaleswar Reddy" initials="T." surname="Reddy">
+    </author>
+            <author fullname="Dan Wing" initials="D." surname="Wing">
+    </author>
+            <author fullname="Kevin Smith" initials="K." surname="Smith">
+    </author>
+            <author fullname="Benjamin Schwartz" initials="B." surname="Schwartz">
+    </author>
+            <date day="8" month="March" year="2023"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-add-split-horizon-authority-04"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="ND" target="https://www.iana.org/assignments/icmpv6-parameters/" quoteTitle="true" derivedAnchor="ND">
+          <front>
+            <title>IPv6 Neighbor Discovery Option Formats</title>
+            <author>
+              <organization showOnFrontPage="true">IANA</organization>
+            </author>
+            <date/>
+          </front>
+        </reference>
+        <reference anchor="RFC3552" target="https://www.rfc-editor.org/info/rfc3552" quoteTitle="true" derivedAnchor="RFC3552">
+          <front>
+            <title>Guidelines for Writing RFC Text on Security Considerations</title>
+            <author fullname="E. Rescorla" initials="E." surname="Rescorla"/>
+            <author fullname="B. Korver" initials="B." surname="Korver"/>
+            <date month="July" year="2003"/>
+            <abstract>
+              <t indent="0">All RFCs are required to have a Security Considerations section. Historically, such sections have been relatively weak. This document provides guidelines to RFC authors on how to write a good Security Considerations section. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="72"/>
+          <seriesInfo name="RFC" value="3552"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3552"/>
+        </reference>
+        <reference anchor="RFC3646" target="https://www.rfc-editor.org/info/rfc3646" quoteTitle="true" derivedAnchor="RFC3646">
+          <front>
+            <title>DNS Configuration options for Dynamic Host Configuration Protocol for IPv6 (DHCPv6)</title>
+            <author fullname="R. Droms" initials="R." role="editor" surname="Droms"/>
+            <date month="December" year="2003"/>
+            <abstract>
+              <t indent="0">This document describes Dynamic Host Configuration Protocol for IPv6 (DHCPv6) options for passing a list of available DNS recursive name servers and a domain search list to a client.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3646"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3646"/>
+        </reference>
+        <reference anchor="RFC4786" target="https://www.rfc-editor.org/info/rfc4786" quoteTitle="true" derivedAnchor="RFC4786">
+          <front>
+            <title>Operation of Anycast Services</title>
+            <author fullname="J. Abley" initials="J." surname="Abley"/>
+            <author fullname="K. Lindqvist" initials="K." surname="Lindqvist"/>
+            <date month="December" year="2006"/>
+            <abstract>
+              <t indent="0">As the Internet has grown, and as systems and networked services within enterprises have become more pervasive, many services with high availability requirements have emerged. These requirements have increased the demands on the reliability of the infrastructure on which those services rely.</t>
+              <t indent="0">Various techniques have been employed to increase the availability of services deployed on the Internet. This document presents commentary and recommendations for distribution of services using anycast. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="126"/>
+          <seriesInfo name="RFC" value="4786"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4786"/>
+        </reference>
+        <reference anchor="RFC5280" target="https://www.rfc-editor.org/info/rfc5280" quoteTitle="true" derivedAnchor="RFC5280">
+          <front>
+            <title>Internet X.509 Public Key Infrastructure Certificate and Certificate Revocation List (CRL) Profile</title>
+            <author fullname="D. Cooper" initials="D." surname="Cooper"/>
+            <author fullname="S. Santesson" initials="S." surname="Santesson"/>
+            <author fullname="S. Farrell" initials="S." surname="Farrell"/>
+            <author fullname="S. Boeyen" initials="S." surname="Boeyen"/>
+            <author fullname="R. Housley" initials="R." surname="Housley"/>
+            <author fullname="W. Polk" initials="W." surname="Polk"/>
+            <date month="May" year="2008"/>
+            <abstract>
+              <t indent="0">This memo profiles the X.509 v3 certificate and X.509 v2 certificate revocation list (CRL) for use in the Internet. An overview of this approach and model is provided as an introduction. The X.509 v3 certificate format is described in detail, with additional information regarding the format and semantics of Internet name forms. Standard certificate extensions are described and two Internet-specific extensions are defined. A set of required certificate extensions is specified. The X.509 v2 CRL format is described in detail along with standard and Internet-specific extensions. An algorithm for X.509 certification path validation is described. An ASN.1 module and examples are provided in the appendices. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5280"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5280"/>
+        </reference>
+        <reference anchor="RFC6125" target="https://www.rfc-editor.org/info/rfc6125" quoteTitle="true" derivedAnchor="RFC6125">
+          <front>
+            <title>Representation and Verification of Domain-Based Application Service Identity within Internet Public Key Infrastructure Using X.509 (PKIX) Certificates in the Context of Transport Layer Security (TLS)</title>
+            <author fullname="P. Saint-Andre" initials="P." surname="Saint-Andre"/>
+            <author fullname="J. Hodges" initials="J." surname="Hodges"/>
+            <date month="March" year="2011"/>
+            <abstract>
+              <t indent="0">Many application technologies enable secure communication between two entities by means of Internet Public Key Infrastructure Using X.509 (PKIX) certificates in the context of Transport Layer Security (TLS). This document specifies procedures for representing and verifying the identity of application services in such interactions. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6125"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6125"/>
+        </reference>
+        <reference anchor="RFC6731" target="https://www.rfc-editor.org/info/rfc6731" quoteTitle="true" derivedAnchor="RFC6731">
+          <front>
+            <title>Improved Recursive DNS Server Selection for Multi-Interfaced Nodes</title>
+            <author fullname="T. Savolainen" initials="T." surname="Savolainen"/>
+            <author fullname="J. Kato" initials="J." surname="Kato"/>
+            <author fullname="T. Lemon" initials="T." surname="Lemon"/>
+            <date month="December" year="2012"/>
+            <abstract>
+              <t indent="0">A multi-interfaced node is connected to multiple networks, some of which might be utilizing private DNS namespaces. A node commonly receives recursive DNS server configuration information from all connected networks. Some of the recursive DNS servers might have information about namespaces other servers do not have. When a multi-interfaced node needs to utilize DNS, the node has to choose which of the recursive DNS servers to use. This document describes DHCPv4 and DHCPv6 options that can be used to configure nodes with information required to perform informed recursive DNS server selection decisions. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6731"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6731"/>
+        </reference>
+        <reference anchor="RFC7113" target="https://www.rfc-editor.org/info/rfc7113" quoteTitle="true" derivedAnchor="RFC7113">
+          <front>
+            <title>Implementation Advice for IPv6 Router Advertisement Guard (RA-Guard)</title>
+            <author fullname="F. Gont" initials="F." surname="Gont"/>
+            <date month="February" year="2014"/>
+            <abstract>
+              <t indent="0">The IPv6 Router Advertisement Guard (RA-Guard) mechanism is commonly employed to mitigate attack vectors based on forged ICMPv6 Router Advertisement messages. Many existing IPv6 deployments rely on RA-Guard as the first line of defense against the aforementioned attack vectors. However, some implementations of RA-Guard have been found to be prone to circumvention by employing IPv6 Extension Headers. This document describes the evasion techniques that affect the aforementioned implementations and formally updates RFC 6105, such that the aforementioned RA-Guard evasion vectors are eliminated.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7113"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7113"/>
+        </reference>
+        <reference anchor="RFC7227" target="https://www.rfc-editor.org/info/rfc7227" quoteTitle="true" derivedAnchor="RFC7227">
+          <front>
+            <title>Guidelines for Creating New DHCPv6 Options</title>
+            <author fullname="D. Hankins" initials="D." surname="Hankins"/>
+            <author fullname="T. Mrugalski" initials="T." surname="Mrugalski"/>
+            <author fullname="M. Siodelski" initials="M." surname="Siodelski"/>
+            <author fullname="S. Jiang" initials="S." surname="Jiang"/>
+            <author fullname="S. Krishnan" initials="S." surname="Krishnan"/>
+            <date month="May" year="2014"/>
+            <abstract>
+              <t indent="0">This document provides guidance to prospective DHCPv6 option developers to help them create option formats that are easily adoptable by existing DHCPv6 software. It also provides guidelines for expert reviewers to evaluate new registrations. This document updates RFC 3315.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="187"/>
+          <seriesInfo name="RFC" value="7227"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7227"/>
+        </reference>
+        <reference anchor="RFC7513" target="https://www.rfc-editor.org/info/rfc7513" quoteTitle="true" derivedAnchor="RFC7513">
+          <front>
+            <title>Source Address Validation Improvement (SAVI) Solution for DHCP</title>
+            <author fullname="J. Bi" initials="J." surname="Bi"/>
+            <author fullname="J. Wu" initials="J." surname="Wu"/>
+            <author fullname="G. Yao" initials="G." surname="Yao"/>
+            <author fullname="F. Baker" initials="F." surname="Baker"/>
+            <date month="May" year="2015"/>
+            <abstract>
+              <t indent="0">This document specifies the procedure for creating a binding between a DHCPv4/DHCPv6-assigned IP address and a binding anchor on a Source Address Validation Improvement (SAVI) device. The bindings set up by this procedure are used to filter packets with forged source IP addresses. This mechanism complements BCP 38 (RFC 2827) ingress filtering, providing finer-grained source IP address validation.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7513"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7513"/>
+        </reference>
+        <reference anchor="RFC7610" target="https://www.rfc-editor.org/info/rfc7610" quoteTitle="true" derivedAnchor="RFC7610">
+          <front>
+            <title>DHCPv6-Shield: Protecting against Rogue DHCPv6 Servers</title>
+            <author fullname="F. Gont" initials="F." surname="Gont"/>
+            <author fullname="W. Liu" initials="W." surname="Liu"/>
+            <author fullname="G. Van de Velde" initials="G." surname="Van de Velde"/>
+            <date month="August" year="2015"/>
+            <abstract>
+              <t indent="0">This document specifies a mechanism for protecting hosts connected to a switched network against rogue DHCPv6 servers. It is based on DHCPv6 packet filtering at the layer 2 device at which the packets are received. A similar mechanism has been widely deployed in IPv4 networks ('DHCP snooping'); hence, it is desirable that similar functionality be provided for IPv6 networks. This document specifies a Best Current Practice for the implementation of DHCPv6-Shield.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="199"/>
+          <seriesInfo name="RFC" value="7610"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7610"/>
+        </reference>
+        <reference anchor="RFC7824" target="https://www.rfc-editor.org/info/rfc7824" quoteTitle="true" derivedAnchor="RFC7824">
+          <front>
+            <title>Privacy Considerations for DHCPv6</title>
+            <author fullname="S. Krishnan" initials="S." surname="Krishnan"/>
+            <author fullname="T. Mrugalski" initials="T." surname="Mrugalski"/>
+            <author fullname="S. Jiang" initials="S." surname="Jiang"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">DHCPv6 is a protocol that is used to provide addressing and configuration information to IPv6 hosts. This document describes the privacy issues associated with the use of DHCPv6 by Internet users. It is intended to be an analysis of the present situation and does not propose any solutions.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7824"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7824"/>
+        </reference>
+        <reference anchor="RFC7844" target="https://www.rfc-editor.org/info/rfc7844" quoteTitle="true" derivedAnchor="RFC7844">
+          <front>
+            <title>Anonymity Profiles for DHCP Clients</title>
+            <author fullname="C. Huitema" initials="C." surname="Huitema"/>
+            <author fullname="T. Mrugalski" initials="T." surname="Mrugalski"/>
+            <author fullname="S. Krishnan" initials="S." surname="Krishnan"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">Some DHCP options carry unique identifiers. These identifiers can enable device tracking even if the device administrator takes care of randomizing other potential identifications like link-layer addresses or IPv6 addresses. The anonymity profiles are designed for clients that wish to remain anonymous to the visited network. The profiles provide guidelines on the composition of DHCP or DHCPv6 messages, designed to minimize disclosure of identifying information.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7844"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7844"/>
+        </reference>
+        <reference anchor="RFC7858" target="https://www.rfc-editor.org/info/rfc7858" quoteTitle="true" derivedAnchor="RFC7858">
+          <front>
+            <title>Specification for DNS over Transport Layer Security (TLS)</title>
+            <author fullname="Z. Hu" initials="Z." surname="Hu"/>
+            <author fullname="L. Zhu" initials="L." surname="Zhu"/>
+            <author fullname="J. Heidemann" initials="J." surname="Heidemann"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <author fullname="D. Wessels" initials="D." surname="Wessels"/>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <date month="May" year="2016"/>
+            <abstract>
+              <t indent="0">This document describes the use of Transport Layer Security (TLS) to provide privacy for DNS. Encryption provided by TLS eliminates opportunities for eavesdropping and on-path tampering with DNS queries in the network, such as discussed in RFC 7626. In addition, this document specifies two usage profiles for DNS over TLS and provides advice on performance considerations to minimize overhead from using TCP and TLS with DNS.</t>
+              <t indent="0">This document focuses on securing stub-to-recursive traffic, as per the charter of the DPRIVE Working Group. It does not prevent future applications of the protocol to recursive-to-authoritative traffic.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7858"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7858"/>
+        </reference>
+        <reference anchor="RFC7969" target="https://www.rfc-editor.org/info/rfc7969" quoteTitle="true" derivedAnchor="RFC7969">
+          <front>
+            <title>Customizing DHCP Configuration on the Basis of Network Topology</title>
+            <author fullname="T. Lemon" initials="T." surname="Lemon"/>
+            <author fullname="T. Mrugalski" initials="T." surname="Mrugalski"/>
+            <date month="October" year="2016"/>
+            <abstract>
+              <t indent="0">DHCP servers have evolved over the years to provide significant functionality beyond that described in the DHCP base specifications. One aspect of this functionality is support for context-specific configuration information. This memo describes some such features and explains their operation.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7969"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7969"/>
+        </reference>
+        <reference anchor="RFC8146" target="https://www.rfc-editor.org/info/rfc8146" quoteTitle="true" derivedAnchor="RFC8146">
+          <front>
+            <title>Adding Support for Salted Password Databases to EAP-pwd</title>
+            <author fullname="D. Harkins" initials="D." surname="Harkins"/>
+            <date month="April" year="2017"/>
+            <abstract>
+              <t indent="0">EAP-pwd is an Extensible Authentication Protocol (EAP) method that utilizes a shared password for authentication using a technique that is resistant to dictionary attacks. It includes support for raw keys and double hashing of a password in the style of Microsoft Challenge Handshake Authentication Protocol version 2 (MSCHAPv2), but it does not include support for salted passwords. There are many existing databases of salted passwords, and it is desirable to allow their use with EAP-pwd.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8146"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8146"/>
+        </reference>
+        <reference anchor="RFC8310" target="https://www.rfc-editor.org/info/rfc8310" quoteTitle="true" derivedAnchor="RFC8310">
+          <front>
+            <title>Usage Profiles for DNS over TLS and DNS over DTLS</title>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="D. Gillmor" initials="D." surname="Gillmor"/>
+            <author fullname="T. Reddy" initials="T." surname="Reddy"/>
+            <date month="March" year="2018"/>
+            <abstract>
+              <t indent="0">This document discusses usage profiles, based on one or more authentication mechanisms, which can be used for DNS over Transport Layer Security (TLS) or Datagram TLS (DTLS). These profiles can increase the privacy of DNS transactions compared to using only cleartext DNS. This document also specifies new authentication mechanisms -- it describes several ways that a DNS client can use an authentication domain name to authenticate a (D)TLS connection to a DNS server. Additionally, it defines (D)TLS protocol profiles for DNS clients and servers implementing DNS over (D)TLS. This document updates RFC 7858.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8310"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8310"/>
+        </reference>
+        <reference anchor="RFC8484" target="https://www.rfc-editor.org/info/rfc8484" quoteTitle="true" derivedAnchor="RFC8484">
+          <front>
+            <title>DNS Queries over HTTPS (DoH)</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="P. McManus" initials="P." surname="McManus"/>
+            <date month="October" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a protocol for sending DNS queries and getting DNS responses over HTTPS. Each DNS query-response pair is mapped into an HTTP exchange.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8484"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8484"/>
+        </reference>
+        <reference anchor="RFC8499" target="https://www.rfc-editor.org/info/rfc8499" quoteTitle="true" derivedAnchor="RFC8499">
+          <front>
+            <title>DNS Terminology</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="A. Sullivan" initials="A." surname="Sullivan"/>
+            <author fullname="K. Fujiwara" initials="K." surname="Fujiwara"/>
+            <date month="January" year="2019"/>
+            <abstract>
+              <t indent="0">The Domain Name System (DNS) is defined in literally dozens of different RFCs. The terminology used by implementers and developers of DNS protocols, and by operators of DNS systems, has sometimes changed in the decades since the DNS was first defined. This document gives current definitions for many of the terms used in the DNS in a single document.</t>
+              <t indent="0">This document obsoletes RFC 7719 and updates RFC 2308.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="219"/>
+          <seriesInfo name="RFC" value="8499"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8499"/>
+        </reference>
+        <reference anchor="RFC8613" target="https://www.rfc-editor.org/info/rfc8613" quoteTitle="true" derivedAnchor="RFC8613">
+          <front>
+            <title>Object Security for Constrained RESTful Environments (OSCORE)</title>
+            <author fullname="G. Selander" initials="G." surname="Selander"/>
+            <author fullname="J. Mattsson" initials="J." surname="Mattsson"/>
+            <author fullname="F. Palombini" initials="F." surname="Palombini"/>
+            <author fullname="L. Seitz" initials="L." surname="Seitz"/>
+            <date month="July" year="2019"/>
+            <abstract>
+              <t indent="0">This document defines Object Security for Constrained RESTful Environments (OSCORE), a method for application-layer protection of the Constrained Application Protocol (CoAP), using CBOR Object Signing and Encryption (COSE). OSCORE provides end-to-end protection between endpoints communicating using CoAP or CoAP-mappable HTTP. OSCORE is designed for constrained nodes and networks supporting a range of proxy operations, including translation between different transport protocols.</t>
+              <t indent="0">Although an optional functionality of CoAP, OSCORE alters CoAP options processing and IANA registration. Therefore, this document updates RFC 7252.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8613"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8613"/>
+        </reference>
+        <reference anchor="RFC8801" target="https://www.rfc-editor.org/info/rfc8801" quoteTitle="true" derivedAnchor="RFC8801">
+          <front>
+            <title>Discovering Provisioning Domain Names and Data</title>
+            <author fullname="P. Pfister" initials="P." surname="Pfister"/>
+            <author fullname="É. Vyncke" surname="É. Vyncke"/>
+            <author fullname="T. Pauly" initials="T." surname="Pauly"/>
+            <author fullname="D. Schinazi" initials="D." surname="Schinazi"/>
+            <author fullname="W. Shao" initials="W." surname="Shao"/>
+            <date month="July" year="2020"/>
+            <abstract>
+              <t indent="0">Provisioning Domains (PvDs) are defined as consistent sets of network configuration information. PvDs allows hosts to manage connections to multiple networks and interfaces simultaneously, such as when a home router provides connectivity through both a broadband and cellular network provider.</t>
+              <t indent="0">This document defines a mechanism for explicitly identifying PvDs through a Router Advertisement (RA) option. This RA option announces a PvD identifier, which hosts can compare to differentiate between PvDs. The option can directly carry some information about a PvD and can optionally point to PvD Additional Information that can be retrieved using HTTP over TLS.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8801"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8801"/>
+        </reference>
+        <reference anchor="RFC9076" target="https://www.rfc-editor.org/info/rfc9076" quoteTitle="true" derivedAnchor="RFC9076">
+          <front>
+            <title>DNS Privacy Considerations</title>
+            <author fullname="T. Wicinski" initials="T." role="editor" surname="Wicinski"/>
+            <date month="July" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes the privacy issues associated with the use of the DNS by Internet users. It provides general observations about typical current privacy practices. It is intended to be an analysis of the present situation and does not prescribe solutions. This document obsoletes RFC 7626.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9076"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9076"/>
+        </reference>
+        <reference anchor="RFC9250" target="https://www.rfc-editor.org/info/rfc9250" quoteTitle="true" derivedAnchor="RFC9250">
+          <front>
+            <title>DNS over Dedicated QUIC Connections</title>
+            <author fullname="C. Huitema" initials="C." surname="Huitema"/>
+            <author fullname="S. Dickinson" initials="S." surname="Dickinson"/>
+            <author fullname="A. Mankin" initials="A." surname="Mankin"/>
+            <date month="May" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes the use of QUIC to provide transport confidentiality for DNS. The encryption provided by QUIC has similar properties to those provided by TLS, while QUIC transport eliminates the head-of-line blocking issues inherent with TCP and provides more efficient packet-loss recovery than UDP. DNS over QUIC (DoQ) has privacy properties similar to DNS over TLS (DoT) specified in RFC 7858, and latency characteristics similar to classic DNS over UDP. This specification describes the use of DoQ as a general-purpose transport for DNS and includes the use of DoQ for stub to recursive, recursive to authoritative, and zone transfer scenarios.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9250"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9250"/>
+        </reference>
+        <reference anchor="RFC9462" target="https://www.rfc-editor.org/info/rfc9462" quoteTitle="true" derivedAnchor="RFC9462">
+          <front>
+            <title>Discovery of Designated Resolvers</title>
+            <author initials="T." surname="Pauly" fullname="Tommy Pauly">
+              <organization showOnFrontPage="true">Apple Inc.</organization>
+            </author>
+            <author initials="E." surname="Kinnear" fullname="Eric Kinnear">
+              <organization showOnFrontPage="true">Apple Inc.</organization>
+            </author>
+            <author initials="C. A." surname="Wood" fullname="Christopher A. Wood">
+              <organization showOnFrontPage="true">Cloudflare</organization>
+            </author>
+            <author initials="P." surname="McManus" fullname="Patrick McManus">
+              <organization showOnFrontPage="true">Fastly</organization>
+            </author>
+            <author initials="T." surname="Jensen" fullname="Tommy Jensen">
+              <organization showOnFrontPage="true">Microsoft</organization>
+            </author>
+            <date month="November" year="2023"/>
+          </front>
+          <seriesInfo name="RFC" value="9462"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9462"/>
+        </reference>
+        <reference anchor="TS.24008" target="https://www.3gpp.org/DynaReport/24008.htm" quoteTitle="true" derivedAnchor="TS.24008">
+          <front>
+            <title>Technical Specification Group Core Network and Terminals; Mobile radio interface Layer 3 specification; Core network protocols; Stage 3 (Release 18)</title>
+            <author>
+              <organization showOnFrontPage="true">3GPP</organization>
+            </author>
+            <date month="September" year="2023"/>
+          </front>
+          <refcontent>version 18.4.0</refcontent>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">Many thanks to <contact fullname="Christian Jacquenet"/> and <contact fullname="Michael Richardson"/> for their
+      reviews.</t>
+      <t indent="0" pn="section-appendix.a-2">Thanks to <contact fullname="Stephen Farrell"/>, <contact fullname="Martin Thomson"/>, <contact fullname="Vittorio Bertola"/>, <contact fullname="Stéphane Bortzmeyer"/>, <contact fullname="Ben Schwartz"/>, <contact fullname="Iain Sharp"/>, and <contact fullname="Chris Box"/> for their
+      comments.</t>
+      <t indent="0" pn="section-appendix.a-3">Thanks to <contact fullname="Mark Nottingham"/> for the feedback on HTTP redirection that
+      was discussed in previous draft versions of this specification.</t>
+      <t indent="0" pn="section-appendix.a-4">The use of DHCP as a candidate protocol to retrieve an ADN was
+      mentioned in <xref section="7.3.1" target="RFC8310" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8310#section-7.3.1" derivedContent="RFC8310"/> and in an
+      Internet-Draft authored by <contact fullname="Tom Pusateri"/> and <contact fullname="Willem Toorop"/> <xref target="I-D.pusateri-dhc-dns-driu" format="default" sectionFormat="of" derivedContent="DNS-TLS-DHCPv6-Opt"/>.</t>
+      <t indent="0" pn="section-appendix.a-5">Thanks to <contact fullname="Bernie Volz"/> for the review of the DHCP part.</t>
+      <t indent="0" pn="section-appendix.a-6"><contact fullname="Christian Amsüss"/> reported a case where the ALPN service parameter cannot
+      be used.</t>
+      <t indent="0" pn="section-appendix.a-7">Thanks to <contact fullname="Andrew Campling"/> for the Shepherd review and <contact fullname="Éric Vyncke"/> for
+      the AD review.</t>
+      <t indent="0" pn="section-appendix.a-8">Thanks to <contact fullname="Rich Salz"/> for the secdir reviews, <contact fullname="Joe Clarke"/> for the
+      opsdir review, <contact fullname="Robert Sparks"/> for the artart review, and <contact fullname="David Blacka"/>
+      for the dnsdir review.</t>
+      <t indent="0" pn="section-appendix.a-9">Thanks to <contact fullname="Lars Eggert"/>, <contact fullname="Roman Danyliw"/>, <contact fullname="Erik Kline"/>, <contact fullname="Martin Duke"/>, <contact fullname="Robert Wilton"/>, <contact fullname="Paul Wouters"/>, and <contact fullname="Zaheduzzaman Sarker"/> for the IESG review.</t>
+    </section>
+    <section numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <contact fullname="Nicolai Leymann">
+        <organization showOnFrontPage="true">Deutsche Telekom</organization>
+        <address>
+          <postal>
+            <country>Germany</country>
+          </postal>
+          <email>n.leymann@telekom.de</email>
+        </address>
+      </contact>
+      <contact fullname="Zhiwei Yan">
+        <organization showOnFrontPage="true">CNNIC</organization>
+        <address>
+          <postal>
+            <street>No.4 South 4th Street, Zhongguancun</street>
+            <city>Beijing</city>
+            <region/>
+            <code>100190</code>
+            <country>China</country>
+          </postal>
+          <email>yan@cnnic.cn</email>
+        </address>
+      </contact>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Mohamed Boucadair" initials="M." role="editor" surname="Boucadair">
+        <organization showOnFrontPage="true">Orange</organization>
+        <address>
+          <postal>
+            <street/>
+            <city>Rennes</city>
+            <code>35000</code>
+            <country>France</country>
+          </postal>
+          <email>mohamed.boucadair@orange.com</email>
+        </address>
+      </author>
+      <author fullname="Tirumaleswar Reddy.K" initials="T." role="editor" surname="Reddy.K">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <postal>
+            <street/>
+            <country>India</country>
+          </postal>
+          <email>kondtir@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Dan Wing" initials="D." surname="Wing">
+        <organization abbrev="Cloud Software Group" showOnFrontPage="true">Cloud Software Group Holdings, Inc.</organization>
+        <address>
+          <postal>
+            <street/>
+            <country>United States of America</country>
+          </postal>
+          <email>dwing-ietf@fuggles.com</email>
+        </address>
+      </author>
+      <author fullname="Neil Cook" initials="N." surname="Cook">
+        <organization showOnFrontPage="true">Open-Xchange</organization>
+        <address>
+          <postal>
+            <street/>
+            <country>United Kingdom</country>
+          </postal>
+          <email>neil.cook@noware.co.uk</email>
+        </address>
+      </author>
+      <author fullname="Tommy Jensen" initials="T." surname="Jensen">
+        <organization showOnFrontPage="true">Microsoft</organization>
+        <address>
+          <postal>
+            <street/>
+            <country>United States of America</country>
+          </postal>
+          <email>tojens@microsoft.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

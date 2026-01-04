@@ -1,0 +1,821 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-bess-pbb-evpn-isid-cmacflush-09" number="9541" ipr="trust200902" obsoletes="" updates="" xml:lang="en" symRefs="true" sortRefs="true" tocInclude="true" prepTime="2024-03-20T19:26:58" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-bess-pbb-evpn-isid-cmacflush-09" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9541" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="PBB-EVPN I-SID-Based C-MAC Flush">Flush Mechanism for Customer MAC Addresses Based on Service Instance Identifier (I-SID) in Provider Backbone Bridging EVPN (PBB-EVPN)</title>
+    <seriesInfo name="RFC" value="9541" stream="IETF"/>
+    <author fullname="Jorge Rabadan" initials="J." role="editor" surname="Rabadan">
+      <organization showOnFrontPage="true">Nokia</organization>
+      <address>
+        <postal>
+          <street>520 Almanor Avenue</street>
+          <city>Sunnyvale</city>
+          <region>CA</region>
+          <code>94085</code>
+          <country>United States of America</country>
+        </postal>
+        <email>jorge.rabadan@nokia.com</email>
+      </address>
+    </author>
+    <author fullname="Senthil Sathappan" initials="S." surname="Sathappan">
+      <organization showOnFrontPage="true">Nokia</organization>
+      <address>
+        <postal>
+          <street>520 Almanor Avenue</street>
+          <city>Sunnyvale</city>
+          <region>CA</region>
+          <code>94085</code>
+          <country>United States of America</country>
+        </postal>
+        <email>senthil.sathappan@nokia.com</email>
+      </address>
+    </author>
+    <author fullname="Kiran Nagaraj" initials="K." surname="Nagaraj">
+      <organization showOnFrontPage="true">Nokia</organization>
+      <address>
+        <postal>
+          <street>520 Almanor Avenue</street>
+          <city>Sunnyvale</city>
+          <region>CA</region>
+          <code>94085</code>
+          <country>United States of America</country>
+        </postal>
+        <email>kiran.nagaraj@nokia.com</email>
+      </address>
+    </author>
+    <author fullname="M. Miyake" initials="M." surname="Miyake">
+      <organization showOnFrontPage="true">Softbank</organization>
+      <address>
+        <email>masahiro.miyake@g.softbank.co.jp</email>
+      </address>
+    </author>
+    <author fullname="T. Matsuda" initials="T." surname="Matsuda">
+      <organization showOnFrontPage="true">Softbank</organization>
+      <address>
+        <email>taku.matsuda@g.softbank.co.jp</email>
+      </address>
+    </author>
+    <date month="03" year="2024"/>
+    <area>rtg</area>
+    <workgroup>bess</workgroup>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">Provider Backbone Bridging (PBB) can be combined with Ethernet Virtual Private Networks (EVPNs) to deploy
+      Ethernet Local Area Network (E-LAN) services in large Multiprotocol Label Switching (MPLS) networks. That combination
+      is what we refer to as "PBB-EVPN." Single-Active multihoming and per
+      Service Instance Identifier (I-SID) load-balancing can be provided to
+      access devices and aggregation networks. In order to speed up the
+      network convergence in case of failures on Single-Active multihomed
+      Ethernet Segments (ESs), PBB-EVPN defines a flush mechanism for Customer
+      MACs (C-MACs) called "C-MAC flush" that works for different Ethernet Segment
+      Backbone MAC (B-MAC) address allocation models. This document
+      complements those C-MAC flush procedures for cases in which no PBB-EVPN
+      ESs are defined (i.e., the attachment circuit is associated with a zero Ethernet
+      Segment Identifier (ESI)) and the C-MAC flush requires I-SID-level granularity.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9541" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-abbreviations">Abbreviations</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology-and-conventions">Terminology and Conventions</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-solution-requirements">Solution Requirements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-evpn-bgp-encoding-for-i-sid">EVPN BGP Encoding for I-SID-Based C-MAC Flush</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-solution-description">Solution Description</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-i-sid-based-c-mac-flush-act">I-SID-Based C-MAC Flush Activation Procedures</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-c-mac-flush-generation">C-MAC Flush Generation</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-c-mac-flush-process-upon-re">C-MAC Flush Process upon Receiving a C-MAC Flush Notification</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-conclusions">Conclusions</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="sect-1" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1"><xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> defines how Provider Backbone Bridging (PBB)
+      can be combined with Ethernet Virtual Private Networks (EVPNs) to deploy
+      E-LAN services in very large MPLS networks. <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> also
+      describes how Single-Active multihoming and per-I-SID load-balancing
+      can be provided to access devices and aggregation networks. When Access
+      Ethernet and/or MPLS networks exist, <xref target="I-D.ietf-bess-evpn-virtual-eth-segment" format="default" sectionFormat="of" derivedContent="EVPN-VIRTUAL-ES"/> describes how virtual
+      Ethernet Segments (ESs) can be associated with a group of Ethernet Virtual
+      Circuits (EVCs) or even pseudowires (PWs). In order to speed up the
+      network convergence in case of failures on Single-Active multihomed
+      ESs, <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> defines a Customer MAC flush
+      mechanism that works for different ES B-MAC address
+      allocation models.</t>
+      <t indent="0" pn="section-1-2">In some cases, the administrative entities that manage the access
+      devices or aggregation networks do not demand multihomed ESs from the PBB-EVPN provider, but simply demand multiple
+      single-homed ESs. Single-homed ESs use null ESIs, whereas multihomed ESs
+      use non-null ESIs. If using single-homed ESs, the PBB-EVPN
+      network is no longer aware of the redundancy offered by the access
+      administrative entity. <xref target="pbb-evpn-and-non-es-based-redundancy" format="default" sectionFormat="of" derivedContent="Figure 1"/> shows an example where
+      the PBB-EVPN network provides four different Attachment Circuits (ACs) for
+      I-SID1, with those ACs not being part of any ES or virtual ES. (Therefore, they are referred to as
+      null virtual Ethernet Segments.)</t>
+      <figure anchor="pbb-evpn-and-non-es-based-redundancy" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-pbb-evpn-and-non-es-based-r">PBB-EVPN and Non-ES-Based Redundancy</name>
+        <artwork name="" type="" align="left" alt="" pn="section-1-3.1">
+&lt;----G.8032----&gt;&lt;--PBB-EVPN Network-----&gt;&lt;----MPLS----&gt;
+     Access          MPLS                Access  
+      Ring                               Network
+I-SID1      ESI +------+         +------+
++----+      null| PE1  |---------| PE3  |
+|CE1 |----------|B-MAC1|         |B-MAC3| ESI null
++----+    active|      |         |      |----+ PW     
+  |             +------+         +------+     \active  
+  |               |                 |          \  +----+
+  |               |                 |           ==|CE3 |I-SID1
+  |               |                 |          /  +----+
+  |standby  ESI +------+         +------+     / PW   
++----+      null| PE2  |         | PE4  |----+ standby      
+|CE2 |----------|B-MAC2|         |B-MAC4| ESI null
++----+    active|      |---------|      |
+I-SID1          +------+         +------+ 
+</artwork>
+      </figure>
+      <t indent="0" pn="section-1-4">In the example in <xref target="pbb-evpn-and-non-es-based-redundancy" format="default" sectionFormat="of" derivedContent="Figure 1"/>, CE1, CE2, and CE3 are attached to the same service,
+      identified by I-SID1, in the PBB-EVPN PEs.  CE1 and CE2 are connected to
+      the PEs via "Ethernet ring protection switching" as specified in <xref target="G.8032" format="default" sectionFormat="of" derivedContent="G.8032"/>, and their
+      ACs to PE1 and PE2 are represented by a port and VLAN
+      identifier. CE3 is dual-homed to PE3 and PE4 through an active/standby
+      PW, and its AC to the PEs is represented by
+      a PW. Each of the four PEs uses a dedicated Backbone MAC address as a
+      source MAC address (B-MAC1, B-MAC2, B-MAC3, and B-MAC4, respectively)
+      when encapsulating customer frames in PBB packets and forwarding those
+      PBB packets to the remote PEs as per <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>. There are no multihomed ESs defined in
+      the PBB-EVPN network of the example; that is why the four ACs in <xref target="pbb-evpn-and-non-es-based-redundancy" format="default" sectionFormat="of" derivedContent="Figure 1"/> show the text "ESI null", which means the Ethernet
+      Segment Identifier on those ACs is zero. Since there are
+      no multihomed ESs defined, the PEs keep their ACs active
+      as long as the physical connectivity is established and the CEs are
+      responsible for managing the redundancy, avoiding loops, and providing
+      per-I-SID load-balancing to the PBB-EVPN network. Examples of CEs
+      managing their own redundancy are described in <xref target="G.8032" format="default" sectionFormat="of" derivedContent="G.8032"/>, or <xref target="RFC4762" format="default" sectionFormat="of" derivedContent="RFC4762"/> for
+      active/standby PWs.</t>
+      <t indent="0" pn="section-1-5">For instance, in normal conditions, CE2 will block its link to CE1
+      and CE3 will block its forwarding path to PE4. In this situation, a
+      failure in one of the redundant ACs will trigger the CEs
+      to start using their redundant paths; however, those failures will not
+      trigger any C-MAC flush procedures in the PEs that implement
+      <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>, since the PEs are not using the PBB-EVPN
+      multihoming procedures. For example:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-1-6">
+        <li pn="section-1-6.1">
+          <t indent="0" pn="section-1-6.1.1">If the active PW from CE3 (to PE3) fails and the failure is due
+          to the entire PE3 node failing, then the procedures in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> guarantee that all the remote
+          PEs flush all the C-MACs associated with B-MAC3 (the B-MAC of
+          PE3). In this case, CE3 detects the fault due to the PW going 
+          operationally down.</t>
+        </li>
+        <li pn="section-1-6.2">
+          <t indent="0" pn="section-1-6.2.1">However, if the active PW from CE3 (to PE3) fails (but PE3 is
+          still operationally up), following the procedures in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>, neither PE3 nor PE4 issue a
+          C-MAC flush message. Therefore, the remote PEs will continue
+          pointing at PE3's B-MAC to reach CE3's C-MACs, until the C-MACs age
+          out in the I-SID1 forwarding tables. In this case, PE3 may use any
+          of the existing PW notifications so that CE3 switches the active PW
+          to PE4.</t>
+        </li>
+        <li pn="section-1-6.3">
+          <t indent="0" pn="section-1-6.3.1">The same issue is exposed when the active PW from CE3 switches
+          over from PE3 to PE4 due to a manual operation on CE3; that is,
+          neither PE3 nor PE4 trigger any C-MAC flush notification and the
+          remote PEs continue sending the traffic to PE3 until the C-MACs age
+          out.</t>
+        </li>
+      </ul>
+      <t indent="0" pn="section-1-7"><xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> provides a C-MAC flush solution based
+      on a shared B-MAC update along with the MAC Mobility extended
+      community where the sequence number is incremented. However, the
+      procedure is only used along with multihomed ESs. Even if
+      that procedure could be used for null ESs, as in the
+      example of <xref target="pbb-evpn-and-non-es-based-redundancy" format="default" sectionFormat="of" derivedContent="Figure 1"/>, the Customer MAC flush procedure in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> would result in
+      unnecessary flushing of unaffected I-SIDs on the remote PEs, and
+      subsequent flooding of unknown unicast traffic in the network. For
+      instance, in the case that CE3 switches its active PW over to PE4, a potential
+      solution reusing the existing C-MAC flush notifications in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> is for PE3 to issue an update for the MAC/IP
+      Advertisement route of B-MAC3 with a higher sequence number. However,
+      this update would cause unnecessary Customer MAC flushing for all
+      the I-SIDs attached to PE3 (supposing multiple I-SIDs in PE3) rather than
+      for only I-SID1.</t>
+      <t indent="0" pn="section-1-8">This document describes an extension of the 
+      Customer MAC flush procedures in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>, so that in the failure example above, PE3
+      can trigger a Customer MAC flush notification that makes PE1, PE2, and
+      PE4 flush all the Customer MACs associated with PE3's B-MAC3 and (only)
+      I-SID1. In order to do so, this specification introduces the encoding of
+      the I-SID in the MAC/IP Advertisement routes advertised for the B-MACs.
+      The C-MAC flush procedure explained in this document is referred
+      to as "PBB-EVPN I-SID-based C-MAC flush" and can be used in PBB-EVPN
+      networks with null or non-null (virtual) ESs.</t>
+      <t indent="0" pn="section-1-9">This specification assumes that the reader is familiar with the
+      procedures in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>. </t>
+      <section anchor="sect-abbrev" numbered="true" toc="include" removeInRFC="false" pn="section-1.1">
+        <name slugifiedName="name-abbreviations">Abbreviations</name>
+        <dl indent="3" newline="false" spacing="normal" pn="section-1.1-1">
+          <dt pn="section-1.1-1.1">AC:</dt>
+          <dd pn="section-1.1-1.2">Attachment Circuit</dd>
+          <dt pn="section-1.1-1.3">B-MAC:</dt>
+          <dd pn="section-1.1-1.4">Backbone MAC</dd>
+          <dt pn="section-1.1-1.5">CE:</dt>
+          <dd pn="section-1.1-1.6">Customer Edge</dd>
+          <dt pn="section-1.1-1.7">C-MAC:</dt>
+          <dd pn="section-1.1-1.8">Customer MAC</dd>
+          <dt pn="section-1.1-1.9">ES:</dt>
+          <dd pn="section-1.1-1.10">Ethernet Segment</dd>
+          <dt pn="section-1.1-1.11">ESI:</dt>
+          <dd pn="section-1.1-1.12">Ethernet Segment Identifier</dd>
+          <dt pn="section-1.1-1.13">EVI:</dt>
+          <dd pn="section-1.1-1.14">EVPN Instance</dd>
+          <dt pn="section-1.1-1.15">EVPN:</dt>
+          <dd pn="section-1.1-1.16">Ethernet Virtual Private Network (as in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>)</dd>
+          <dt pn="section-1.1-1.17">I-SID:</dt>
+          <dd pn="section-1.1-1.18">Service Instance Identifier</dd>
+          <dt pn="section-1.1-1.19">MAC:</dt>
+          <dd pn="section-1.1-1.20">Media Access Control</dd>
+          <dt pn="section-1.1-1.21">MAC-VRF:</dt>
+          <dd pn="section-1.1-1.22">MAC Virtual Routing and Forwarding</dd>
+          <dt pn="section-1.1-1.23">PBB-EVPN:</dt>
+          <dd pn="section-1.1-1.24">Provider Backbone Bridging and EVPN (as in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>)</dd>
+          <dt pn="section-1.1-1.25">PE:</dt>
+          <dd pn="section-1.1-1.26">Provider Edge</dd>
+        </dl>
+      </section>
+      <section anchor="sect-term" numbered="true" removeInRFC="false" toc="include" pn="section-1.2">
+        <name slugifiedName="name-terminology-and-conventions">Terminology and Conventions</name>
+        <t indent="0" pn="section-1.2-1">Familiarity with the terminology in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> is expected.</t>
+        <dl indent="3" newline="false" spacing="normal" pn="section-1.2-2">
+          <dt pn="section-1.2-2.1">B-MAC/0 route:</dt>
+          <dd pn="section-1.2-2.2">This is an EVPN MAC/IP Advertisement route that uses a B-MAC
+          in the MAC address field and a zero Ethernet Tag ID.</dd>
+          <dt pn="section-1.2-2.3">B-MAC/I-SID route:</dt>
+          <dd pn="section-1.2-2.4">This is an EVPN MAC/IP Advertisement route that uses a
+          B-MAC in the MAC address field and an I-SID in the Ethernet Tag field.
+          It is used to notify remote PEs about the required C-MAC flush
+          procedure for the C-MACs associated with the advertised B-MAC and
+          I-SID.</dd>
+          <dt pn="section-1.2-2.5">G.8032:</dt>
+          <dd pn="section-1.2-2.6">Refers to Ethernet ring protection switching as described in <xref target="G.8032" format="default" sectionFormat="of" derivedContent="G.8032"/>.</dd>
+        </dl>
+        <t indent="0" pn="section-1.2-3">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>",
+    "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be
+    interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals, as
+    shown here.
+        </t>
+      </section>
+    </section>
+    <section anchor="sect-2" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-solution-requirements">Solution Requirements</name>
+      <t indent="0" pn="section-2-1">The following requirements are followed by the C-MAC flush solution
+      described in this document:</t>
+      <ol spacing="normal" type="a" indent="adaptive" start="1" pn="section-2-2"><li pn="section-2-2.1" derivedCounter="a.">
+          <t indent="0" pn="section-2-2.1.1">The solution <bcp14>MUST</bcp14> prevent packet-loss scenarios in case of
+          failures on null ES ACs (Attachment Circuits not associated with an ES;
+          that is, their corresponding ESI is zero) when the access
+          device or access network is responsible for the redundancy.</t>
+        </li>
+        <li pn="section-2-2.2" derivedCounter="b.">
+          <t indent="0" pn="section-2-2.2.1">This extension described in this document <bcp14>MUST</bcp14> work with
+          Single-Active non-null ESs and virtual ESs, irrespective of the PE
+          B-MAC address assignment (dedicated per-ES B-MAC or shared B-MAC, as
+          in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>).</t>
+        </li>
+        <li pn="section-2-2.3" derivedCounter="c.">
+          <t indent="0" pn="section-2-2.3.1">In case of failure on the egress PE, the solution <bcp14>MUST</bcp14> provide a
+          C-MAC flush notification at the B-MAC and I-SID granularity level.</t>
+        </li>
+        <li pn="section-2-2.4" derivedCounter="d.">
+          <t indent="0" pn="section-2-2.4.1">The solution <bcp14>MUST</bcp14> provide a reliable C-MAC flush notification in
+          PBB-EVPN networks that use Route Reflectors (RRs). MAC flushing
+          needs to be provided to all affected I-SIDs in spite of the BGP
+          flush notification messages being aggregated at the RR.</t>
+        </li>
+        <li pn="section-2-2.5" derivedCounter="e.">
+          <t indent="0" pn="section-2-2.5.1">The solution <bcp14>MUST</bcp14> coexist in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> networks
+          where there are PEs that do not support this specification.</t>
+        </li>
+        <li pn="section-2-2.6" derivedCounter="f.">
+          <t indent="0" pn="section-2-2.6.1">The solution <bcp14>SHOULD</bcp14> be enabled or disabled by an administrative
+          option on a per-PE and per-I-SID basis (as opposed to always being
+          enabled for all the I-SIDs).</t>
+        </li>
+      </ol>
+    </section>
+    <section anchor="sect-3" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-evpn-bgp-encoding-for-i-sid">EVPN BGP Encoding for I-SID-Based C-MAC Flush</name>
+      <t indent="0" pn="section-3-1">The solution does not use any new BGP attributes but reuses the MAC
+      Mobility extended community as an indication of C-MAC flush (as in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>) and encodes the I-SID in the
+      Ethernet Tag field of the EVPN MAC/IP advertisement route. As a
+      reference, <xref target="ure-cmac-flush-notification-encoding-bmac-isid-route" format="default" sectionFormat="of" derivedContent="Figure 2"/> shows the MAC Mobility extended community and the
+      EVPN MAC/IP advertisement route that are used as specified in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> and used in this document as a
+      C-MAC flush notification message.</t>
+      <figure anchor="ure-cmac-flush-notification-encoding-bmac-isid-route" align="left" suppress-title="false" pn="figure-2">
+        <name slugifiedName="name-c-mac-flush-notification-en">C-MAC Flush Notification Encoding: B-MAC/I-SID Route</name>
+        <artwork name="" type="" align="left" alt="" pn="section-3-2.1">
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| Type=0x06     | Sub-Type=0x03 |   Flags       |   Reserved=0  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Sequence Number                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+            +---------------------------------------+
+            |  Route Distinguisher                  |
+            +---------------------------------------+
+            |  ESI = 0                              |
+            +---------------------------------------+
+            |  Ethernet Tag ID = I-SID              |
+            +---------------------------------------+
+            |  MAC Address Length = 48              |
+            +---------------------------------------+
+            |  B-MAC Address                        |
+            +---------------------------------------+
+            |  IP Address Length = 0                |
+            +---------------------------------------+
+            |  MPLS Label1                          |
+            +---------------------------------------+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-3-3">Where:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3-4">
+        <li pn="section-3-4.1">
+          <t indent="0" pn="section-3-4.1.1">The route's route distinguisher and route targets are the ones
+          corresponding to its EVI. Alternatively to the EVI's Route Target (RT), the route
+          <bcp14>MAY</bcp14> be tagged with an RT auto-derived from the Ethernet Tag (I-SID)
+          instead. <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> describes how the EVPN MAC/IP
+          Advertisement routes can be advertised along with the EVI RT or an
+          RT that is derived from the I-SID.</t>
+        </li>
+        <li pn="section-3-4.2">
+          <t indent="0" pn="section-3-4.2.1">The Ethernet Tag encodes the I-SID. This indicates to the PE that it must flush the C-MACs for that encoded I-SID, upon reception of the route.</t>
+        </li>
+        <li pn="section-3-4.3">
+          <t indent="0" pn="section-3-4.3.1">The MAC address field encodes the B-MAC address. This indicates to the PE that it must flush the C-MACs associated with that encoded B-MAC, upon reception of the route.</t>
+        </li>
+        <li pn="section-3-4.4">
+          <t indent="0" pn="section-3-4.4.1">The MAC Mobility extended community is used as in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>, where an increment in the sequence number
+          between two updates for the same B-MAC/I-SID will be interpreted as
+          a C-MAC flush notification for the corresponding B-MAC and
+          I-SID.</t>
+        </li>
+      </ul>
+      <t indent="0" pn="section-3-5">All the other fields are set and used as defined in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>. This document will refer to this
+      route as the "B-MAC/I-SID route", as opposed to the EVPN MAC/IP
+      Advertisement route used in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>
+      that contains a specific B-MAC and the Ethernet Tag ID set to
+      zero. This document uses the term "B-MAC/0 route" to represent a B-MAC
+      route advertised with an Ethernet Tag ID = 0.</t>
+      <t indent="0" pn="section-3-6">Note that this B-MAC/I-SID route will be accepted and reflected by
+      any RR as specified in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>, since no new attributes or values are
+      used. A PE receiving the route will process the received B-MAC/I-SID
+      update only in the case of supporting the procedures described in this
+      document.</t>
+    </section>
+    <section anchor="sect-4" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-solution-description">Solution Description</name>
+      <t indent="0" pn="section-4-1"><xref target="pbb-evpn-and-non-es-based-redundancy" format="default" sectionFormat="of" derivedContent="Figure 1"/> will be used in
+      the description of the solution. CE1, CE2, and CE3 are connected to ACs
+      associated with I-SID1, where no (multihomed) ESs have been
+      enabled, and the ACs and PWs are in active or standby state as per <xref target="pbb-evpn-and-non-es-based-redundancy" format="default" sectionFormat="of" derivedContent="Figure 1"/>.</t>
+      <t indent="0" pn="section-4-2">Enabling or disabling I-SID-based C-MAC flush <bcp14>SHOULD</bcp14> be an
+      administrative choice on the system that <bcp14>MAY</bcp14> be configured per I-SID
+      (I-Component, Service Instance Component), as opposed to being
+      configured for all I-SIDs. When enabled on a PE:</t>
+      <ol spacing="normal" type="a" indent="adaptive" start="1" pn="section-4-3"><li pn="section-4-3.1" derivedCounter="a.">
+          <t indent="0" pn="section-4-3.1.1">The PE will be able to generate B-MAC/I-SID routes as C-MAC Flush
+          notifications for the remote PEs.</t>
+        </li>
+        <li pn="section-4-3.2" derivedCounter="b.">
+          <t indent="0" pn="section-4-3.2.1">The PE will be able to process B-MAC/I-SID routes received from
+          remote PEs.</t>
+        </li>
+      </ol>
+      <t indent="0" pn="section-4-4">The PE <bcp14>MUST</bcp14> follow the procedures in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> for
+      C-MAC flush. This specification provides some additional procedures when
+      I-SID-based C-MAC flush is enabled.</t>
+      <t indent="0" pn="section-4-5">This C-MAC flush specification is described in three sets of
+      procedures:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-6">
+        <li pn="section-4-6.1">
+          <t indent="0" pn="section-4-6.1.1">I-SID-based C-MAC flush activation</t>
+        </li>
+        <li pn="section-4-6.2">
+          <t indent="0" pn="section-4-6.2.1">C-MAC flush notification generation upon AC failures</t>
+        </li>
+        <li pn="section-4-6.3">
+          <t indent="0" pn="section-4-6.3.1">C-MAC flush process upon receiving a C-MAC flush notification</t>
+        </li>
+      </ul>
+      <section anchor="sect-4.1" numbered="true" toc="include" removeInRFC="false" pn="section-4.1">
+        <name slugifiedName="name-i-sid-based-c-mac-flush-act">I-SID-Based C-MAC Flush Activation Procedures</name>
+        <t indent="0" pn="section-4.1-1">The following behavior <bcp14>MUST</bcp14> be followed by the PBB-EVPN PEs
+        following this specification. <xref target="pbb-evpn-and-non-es-based-redundancy" format="default" sectionFormat="of" derivedContent="Figure 1"/> is used as a
+        reference.</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.1-2">
+          <li pn="section-4.1-2.1">
+            <t indent="0" pn="section-4.1-2.1.1">As in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>, each PE advertises a shared
+            B-MAC in a B-MAC/0 route (with B-MAC1, B-MAC2, B-MAC3, and B-MAC4
+            in the MAC address field, respectively). This is the B-MAC that
+            each PE will use as B-MAC SA (Source Address) when encapsulating
+            the frames received on any local single-homed AC. Each PE will
+            import the received B-MAC/0 routes from the remote PEs and will
+            install the B-MACs in its B-component (Backbone Component)
+            MAC-VRF. For instance, PE1 will advertise B-MAC1/0 and will
+            install B-MAC2, B-MAC3, and B-MAC4 in its MAC-VRF.</t>
+          </li>
+          <li pn="section-4.1-2.2">
+            <t indent="0" pn="section-4.1-2.2.1">Assuming I-SID-based C-MAC flush is activated for I-SID1, the
+            PEs will advertise the shared B-MAC with I-SID1 encoded in the
+            Ethernet Tag. That is, PE1 will advertise B-MAC1/1 and will
+            receive B-MAC2/1, B-MAC3/1, and B-MAC4/1. The receiving PEs
+            <bcp14>MUST</bcp14> use these B-MAC/I-SID routes only for
+            C-MAC flush procedures and they <bcp14>MUST NOT</bcp14> be used to
+            add/withdraw any B-MAC entry in the MAC-VRFs. As per <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>, only B-MAC/0 routes can be
+            used to add/withdraw B-MACs in the MAC-VRFs.</t>
+          </li>
+          <li pn="section-4.1-2.3">
+            <t indent="0" pn="section-4.1-2.3.1">The above procedure <bcp14>MAY</bcp14> also be used for dedicated B-MACs
+            (B-MACs allocated per ES).</t>
+          </li>
+        </ul>
+      </section>
+      <section anchor="sect-4.2" numbered="true" toc="include" removeInRFC="false" pn="section-4.2">
+        <name slugifiedName="name-c-mac-flush-generation">C-MAC Flush Generation</name>
+        <t indent="0" pn="section-4.2-1">If, for instance, there is a failure on PE1's AC, PE1 will generate
+        an update including B-MAC1/1 along with the MAC Mobility extended
+        community where the Sequence Number has been incremented. The
+        reception of the B-MAC1/1 with an increment in the sequence number
+        will trigger the C-MAC flush procedures on the receiving PEs.</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.2-2">
+          <li pn="section-4.2-2.1">
+            <t indent="0" pn="section-4.2-2.1.1">An AC going operationally down <bcp14>MUST</bcp14> generate a B-MAC/I-SID with
+            a higher Sequence Number. If the AC going down makes the entire
+            local I-SID go operationally down, the PE will withdraw the
+            B-MAC/I-SID route for the I-SID.</t>
+          </li>
+          <li pn="section-4.2-2.2">
+            <t indent="0" pn="section-4.2-2.2.1">An AC going operationally up <bcp14>SHOULD NOT</bcp14> generate any
+            B-MAC/I-SID update, unless it activates its corresponding I-SID,
+            in which case the PE will advertise the B-MAC/I-SID route.</t>
+          </li>
+          <li pn="section-4.2-2.3">
+            <t indent="0" pn="section-4.2-2.3.1">An AC receiving a G.8032 flush notification or a flush message
+            in any other protocol from the access network <bcp14>MAY</bcp14> propagate it to
+            the remote PEs by generating a B-MAC/I-SID route update with a 
+            higher Sequence Number.</t>
+          </li>
+        </ul>
+      </section>
+      <section anchor="sect-4.3" numbered="true" toc="include" removeInRFC="false" pn="section-4.3">
+        <name slugifiedName="name-c-mac-flush-process-upon-re">C-MAC Flush Process upon Receiving a C-MAC Flush Notification</name>
+        <t indent="0" pn="section-4.3-1">A PE receiving a C-MAC flush notification will follow these
+        procedures:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.3-2">
+          <li pn="section-4.3-2.1">
+            <t indent="0" pn="section-4.3-2.1.1">A received B-MAC/I-SID route (with a non-zero I-SID) <bcp14>MUST NOT</bcp14>
+            add/remove any B-MAC to/from the MAC-VRF.</t>
+          </li>
+          <li pn="section-4.3-2.2">
+            <t indent="0" pn="section-4.3-2.2.1">An update of a previously received B-MAC/I-SID route with an
+            increment Sequence Number <bcp14>MUST</bcp14> flush all the C-MACs associated with
+            that I-SID and B-MAC. C-MACs associated with the same I-SID but
+            different B-MAC <bcp14>MUST NOT</bcp14> be flushed.</t>
+          </li>
+          <li pn="section-4.3-2.3">
+            <t indent="0" pn="section-4.3-2.3.1">A received B-MAC/I-SID withdraw (with a non-zero I-SID) <bcp14>MUST</bcp14>
+            flush all the C-MACs associated with that B-MAC and I-SID.</t>
+          </li>
+        </ul>
+        <t indent="0" pn="section-4.3-3">Note that the C-MAC flush procedures described in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> for B-MAC/0 routes are still valid and a PE
+        receiving <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> C-MAC flush notification messages
+        <bcp14>MUST</bcp14> observe the behavior specified in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>.</t>
+      </section>
+    </section>
+    <section anchor="sect-5" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-conclusions">Conclusions</name>
+      <t indent="0" pn="section-5-1">The I-SID-based C-MAC flush solution described in this document has
+      the following benefits:</t>
+      <ol spacing="normal" type="a" indent="adaptive" start="1" pn="section-5-2"><li pn="section-5-2.1" derivedCounter="a.">
+          <t indent="0" pn="section-5-2.1.1">The solution solves packet-loss scenarios in case of failures on
+          null ES ACs, since the C-MAC flush procedures are independent of the
+          ES definition.</t>
+        </li>
+        <li pn="section-5-2.2" derivedCounter="b.">
+          <t indent="0" pn="section-5-2.2.1">This extension can also be used with Single-Active non-null ESs
+          and virtual ESs, irrespective of the PE B-MAC address assignment
+          (dedicated per-ES B-MAC or shared B-MAC).</t>
+        </li>
+        <li pn="section-5-2.3" derivedCounter="c.">
+          <t indent="0" pn="section-5-2.3.1">It provides a C-MAC flush notification at B-MAC and I-SID
+          granularity level, therefore flushing a minimum number of C-MACs and
+          reducing the amount of unknown unicast flooding in the network.</t>
+        </li>
+        <li pn="section-5-2.4" derivedCounter="d.">
+          <t indent="0" pn="section-5-2.4.1">It provides a reliable C-MAC flush notification in PBB-EVPN
+          networks that use RRs. RRs will propagate the C-MAC flush
+          notifications for all the affected I-SIDs, irrespective of the
+          order in which the notifications make it to the RR.</t>
+        </li>
+        <li pn="section-5-2.5" derivedCounter="e.">
+          <t indent="0" pn="section-5-2.5.1">The solution can coexist in a network with systems supporting or
+          not supporting this specification. Non-supporting systems ignore the
+          B-MAC/I-SID routes; however, they still follow the C-MAC flush
+          procedures in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/>.</t>
+        </li>
+      </ol>
+    </section>
+    <section anchor="sect-7" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-6-1">Security considerations described in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> apply
+      to this document.</t>
+      <t indent="0" pn="section-6-2">In addition, this document suggests additional procedures that can
+      be activated on a per I-SID basis and generate additional EVPN MAC/IP
+      Advertisement routes in the network. The format of these additional EVPN
+      MAC/IP Advertisement routes is backwards compatible with the procedures in <xref target="RFC7623" format="default" sectionFormat="of" derivedContent="RFC7623"/> and should not create any issues for
+      receiving PEs that do not follow this specification. However, the additional
+      routes may consume extra memory and processing resources on the
+      receiving PEs. Because of that, it is <bcp14>RECOMMENDED</bcp14> to activate this
+      feature only when necessary (when multihomed networks or devices are
+      attached to the PBB-EVPN PEs), and not by default in any PBB-EVPN
+      PE.</t>
+    </section>
+    <section anchor="sect-8" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-7-1">This document has no IANA actions.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-bess-evpn-virtual-eth-segment" to="EVPN-VIRTUAL-ES"/>
+    <references pn="section-8">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-8.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC7432" target="https://www.rfc-editor.org/info/rfc7432" quoteTitle="true" derivedAnchor="RFC7432">
+          <front>
+            <title>BGP MPLS-Based Ethernet VPN</title>
+            <author fullname="A. Sajassi" initials="A." role="editor" surname="Sajassi"/>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="N. Bitar" initials="N." surname="Bitar"/>
+            <author fullname="A. Isaac" initials="A." surname="Isaac"/>
+            <author fullname="J. Uttaro" initials="J." surname="Uttaro"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <date month="February" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes procedures for BGP MPLS-based Ethernet VPNs (EVPN). The procedures described here meet the requirements specified in RFC 7209 -- "Requirements for Ethernet VPN (EVPN)".</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7432"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7432"/>
+        </reference>
+        <reference anchor="RFC7623" target="https://www.rfc-editor.org/info/rfc7623" quoteTitle="true" derivedAnchor="RFC7623">
+          <front>
+            <title>Provider Backbone Bridging Combined with Ethernet VPN (PBB-EVPN)</title>
+            <author fullname="A. Sajassi" initials="A." role="editor" surname="Sajassi"/>
+            <author fullname="S. Salam" initials="S." surname="Salam"/>
+            <author fullname="N. Bitar" initials="N." surname="Bitar"/>
+            <author fullname="A. Isaac" initials="A." surname="Isaac"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <date month="September" year="2015"/>
+            <abstract>
+              <t indent="0">This document discusses how Ethernet Provider Backbone Bridging (PBB) can be combined with Ethernet VPN (EVPN) in order to reduce the number of BGP MAC Advertisement routes by aggregating Customer/Client MAC (C-MAC) addresses via Provider Backbone MAC (B-MAC) address, provide client MAC address mobility using C-MAC aggregation, confine the scope of C-MAC learning to only active flows, offer per-site policies, and avoid C-MAC address flushing on topology changes. The combined solution is referred to as PBB-EVPN.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7623"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7623"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+      </references>
+      <references pn="section-8.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.ietf-bess-evpn-virtual-eth-segment" target="https://datatracker.ietf.org/doc/html/draft-ietf-bess-evpn-virtual-eth-segment-15" quoteTitle="true" derivedAnchor="EVPN-VIRTUAL-ES">
+          <front>
+            <title>EVPN Virtual Ethernet Segment</title>
+            <author fullname="Ali Sajassi" initials="A." surname="Sajassi">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <author fullname="Patrice Brissette" initials="P." surname="Brissette">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <author fullname="Rick Schell" initials="R." surname="Schell">
+              <organization showOnFrontPage="true">Verizon</organization>
+            </author>
+            <author fullname="John Drake" initials="J." surname="Drake">
+              <organization showOnFrontPage="true">Juniper</organization>
+            </author>
+            <author fullname="Jorge Rabadan" initials="J." surname="Rabadan">
+              <organization showOnFrontPage="true">Nokia</organization>
+            </author>
+            <date day="28" month="February" year="2024"/>
+            <abstract>
+              <t indent="0">Etheret VPN (EVPN) and Provider Backbone EVPN (PBB-EVPN) introduce a family of solutions for Ethernet services over MPLS/IP network with many advanced features including multi-homing capabilities. These solutions introduce Single-Active and All-Active redundancy modes for an Ethernet Segment (ES), itself defined as a set of physical links between the multi-homed device/network and a set of PE devices that they are connected to. This document extends the Ethernet Segment concept so that an ES can be associated to a set of Ethernet Virtual Circuits (EVCs e.g., VLANs) or other objects such as MPLS Label Switch Paths (LSPs) or Pseudowires (PWs). Such an ES is referred to as Virtual Ethernet Segments (vES). This draft describes the requirements and the extensions needed to support vES in EVPN and PBB-EVPN.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-bess-evpn-virtual-eth-segment-15"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="G.8032" target="https://www.itu.int/rec/T-REC-G.8032-202003-I/en" quoteTitle="true" derivedAnchor="G.8032">
+          <front>
+            <title>Ethernet ring protection switching</title>
+            <author>
+              <organization showOnFrontPage="true">ITU-T</organization>
+            </author>
+            <date month="March" year="2020"/>
+          </front>
+          <seriesInfo name="ITU-T Recommendation" value="G.8032/Y.1344"/>
+        </reference>
+        <reference anchor="RFC4762" target="https://www.rfc-editor.org/info/rfc4762" quoteTitle="true" derivedAnchor="RFC4762">
+          <front>
+            <title>Virtual Private LAN Service (VPLS) Using Label Distribution Protocol (LDP) Signaling</title>
+            <author fullname="M. Lasserre" initials="M." role="editor" surname="Lasserre"/>
+            <author fullname="V. Kompella" initials="V." role="editor" surname="Kompella"/>
+            <date month="January" year="2007"/>
+            <abstract>
+              <t indent="0">This document describes a Virtual Private LAN Service (VPLS) solution using pseudowires, a service previously implemented over other tunneling technologies and known as Transparent LAN Services (TLS). A VPLS creates an emulated LAN segment for a given set of users; i.e., it creates a Layer 2 broadcast domain that is fully capable of learning and forwarding on Ethernet MAC addresses and that is closed to a given set of users. Multiple VPLS services can be supported from a single Provider Edge (PE) node.</t>
+              <t indent="0">This document describes the control plane functions of signaling pseudowire labels using Label Distribution Protocol (LDP), extending RFC 4447. It is agnostic to discovery protocols. The data plane functions of forwarding are also described, focusing in particular on the learning of MAC addresses. The encapsulation of VPLS packets is described by RFC 4448. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4762"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4762"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="sect-9" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">The authors want to thank <contact fullname="Vinod Prabhu"/>,
+      <contact fullname="Sriram Venkateswaran"/>, <contact fullname="Laxmi       Padakanti"/>, and <contact fullname="Ranganathan Boovaraghavan"/> for
+      their review and contributions.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Jorge Rabadan" initials="J." role="editor" surname="Rabadan">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <postal>
+            <street>520 Almanor Avenue</street>
+            <city>Sunnyvale</city>
+            <region>CA</region>
+            <code>94085</code>
+            <country>United States of America</country>
+          </postal>
+          <email>jorge.rabadan@nokia.com</email>
+        </address>
+      </author>
+      <author fullname="Senthil Sathappan" initials="S." surname="Sathappan">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <postal>
+            <street>520 Almanor Avenue</street>
+            <city>Sunnyvale</city>
+            <region>CA</region>
+            <code>94085</code>
+            <country>United States of America</country>
+          </postal>
+          <email>senthil.sathappan@nokia.com</email>
+        </address>
+      </author>
+      <author fullname="Kiran Nagaraj" initials="K." surname="Nagaraj">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <postal>
+            <street>520 Almanor Avenue</street>
+            <city>Sunnyvale</city>
+            <region>CA</region>
+            <code>94085</code>
+            <country>United States of America</country>
+          </postal>
+          <email>kiran.nagaraj@nokia.com</email>
+        </address>
+      </author>
+      <author fullname="M. Miyake" initials="M." surname="Miyake">
+        <organization showOnFrontPage="true">Softbank</organization>
+        <address>
+          <email>masahiro.miyake@g.softbank.co.jp</email>
+        </address>
+      </author>
+      <author fullname="T. Matsuda" initials="T." surname="Matsuda">
+        <organization showOnFrontPage="true">Softbank</organization>
+        <address>
+          <email>taku.matsuda@g.softbank.co.jp</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

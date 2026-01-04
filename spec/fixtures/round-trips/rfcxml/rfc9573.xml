@@ -1,0 +1,1183 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" docName="draft-ietf-bess-mvpn-evpn-aggregation-label-14" number="9573" ipr="pre5378Trust200902" submissionType="IETF" category="std" consensus="true" updates="6514, 7432, 7582" obsoletes="" xml:lang="en" tocInclude="true" tocDepth="2" symRefs="true" sortRefs="true" prepTime="2024-05-24T10:21:47" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-bess-mvpn-evpn-aggregation-label-14" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9573" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="MVPN/EVPN Aggregation Labels">MVPN/EVPN Tunnel Aggregation with Common Labels</title>
+    <seriesInfo name="RFC" value="9573" stream="IETF"/>
+    <author fullname="Zhaohui Zhang" initials="Z." surname="Zhang">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <email>zzhang@juniper.net</email>
+      </address>
+    </author>
+    <author fullname="Eric Rosen" initials="E." surname="Rosen">
+      <organization showOnFrontPage="true">Individual</organization>
+      <address>
+        <email>erosen52@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Wen Lin" initials="W." surname="Lin">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <email>wlin@juniper.net</email>
+      </address>
+    </author>
+    <author fullname="Zhenbin Li" initials="Z." surname="Li">
+      <organization showOnFrontPage="true">Huawei Technologies</organization>
+      <address>
+        <email>lizhenbin@huawei.com</email>
+      </address>
+    </author>
+    <author fullname="IJsbrand Wijnands" initials="IJ." surname="Wijnands">
+      <organization showOnFrontPage="true">Individual</organization>
+      <address>
+        <email>ice@braindump.be</email>
+      </address>
+    </author>
+    <date month="05" year="2024"/>
+    <area>rtg</area>
+    <workgroup>bess</workgroup>
+    <keyword>DCB</keyword>
+    <keyword>Tunnel Aggregation</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">
+         The Multicast VPN (MVPN) specifications allow a single Point-to-Multipoint (P2MP)
+         tunnel to carry traffic of multiple IP VPNs (referred to as VPNs in this document).
+		 The EVPN specifications
+         allow a single P2MP tunnel to carry traffic of multiple Broadcast
+         Domains (BDs).  These features require the ingress router of the P2MP
+         tunnel to allocate an upstream-assigned MPLS label for each VPN or for
+         each BD.  A packet sent on a P2MP tunnel then carries the label that is
+         mapped to its VPN or BD (in some cases, a distinct upstream-assigned
+         label is needed for each flow.) Since each ingress router allocates labels
+         independently, with no coordination among the ingress routers, the
+         egress routers may need to keep track of a large number of labels.  The
+         number of labels may need to be as large as, or larger than, the product
+         of the number of ingress routers times the number of VPNs or BDs.
+         However, the number of labels can be greatly reduced if the association
+         between a label and a VPN or BD is made by provisioning, so that all
+         ingress routers assign the same label to a particular VPN or BD.
+         New procedures are needed in order to take advantage of such
+         provisioned labels. These new procedures also apply to
+         Multipoint-to-Multipoint (MP2MP) tunnels.
+         This document updates RFCs 6514, 7432, and 7582 by
+         specifying the necessary procedures. 
+      </t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9573" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-3">
+            This document may contain material from IETF Documents or IETF
+            Contributions published or made publicly available before November
+            10, 2008. The person(s) controlling the copyright in some of this
+            material may not have granted the IETF Trust the right to allow
+            modifications of such material outside the IETF Standards Process.
+            Without obtaining an adequate license from the person(s)
+            controlling the copyright in such materials, this document may not
+            be modified outside the IETF Standards Process, and derivative
+            works of it may not be created outside the IETF Standards Process,
+            except to format it for publication as an RFC or to translate it
+            into languages other than English.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-problem-description">Problem Description</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-proposed-solutions">Proposed Solutions</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-mp2mp-tunnels">MP2MP Tunnels</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-segmented-tunnels">Segmented Tunnels</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-summary-of-label-allocation">Summary of Label Allocation Methods</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-specifications">Specifications</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-context-specific-label-spac">Context-Specific Label Space ID Extended Community</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-procedures">Procedures</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">
+     A Multicast VPN (MVPN) can use Point-to-Multipoint (P2MP) tunnels (set up by RSVP-TE, Multipoint LDP (mLDP), or PIM) to
+     transport customer multicast traffic across a service provider's
+     backbone network.  Often, a given P2MP tunnel carries the traffic of
+     only a single VPN.  However, there are procedures defined that allow a
+     single P2MP tunnel to carry traffic of multiple VPNs.  In this case,
+     the P2MP tunnel is called an "aggregate tunnel".  The Provider Edge (PE) router that is
+     the ingress node of an aggregate P2MP tunnel allocates an
+     "upstream-assigned MPLS label" <xref target="RFC5331" format="default" sectionFormat="of" derivedContent="RFC5331"/> for each VPN, and each packet
+     sent on the P2MP tunnel carries the upstream-assigned MPLS label that
+     the ingress PE has bound to the packet's VPN.
+      </t>
+      <t indent="0" pn="section-1-2">
+     Similarly, an EVPN can use P2MP tunnels (set up by RSVP-TE, mLDP, or PIM)
+     to transport Broadcast, Unknown Unicast, or Multicast (BUM) traffic across the provider network.
+     Often, a P2MP tunnel carries the traffic of only a single Broadcast Domain (BD).  However,
+     there are procedures defined that allow a single P2MP tunnel to be an
+     aggregate tunnel that carries traffic of multiple BDs. The procedures
+     are analogous to the MVPN procedures -- the PE router that is the
+     ingress node of an aggregate P2MP tunnel allocates an upstream-assigned
+     MPLS label for each BD, and each packet sent on the P2MP tunnel carries
+     the upstream-assigned MPLS label that the ingress PE has bound to the
+     packet's BD.
+      </t>
+      <t indent="0" pn="section-1-3">
+     An MVPN or EVPN can also use Bit Index Explicit Replication (BIER) <xref target="RFC8279" format="default" sectionFormat="of" derivedContent="RFC8279"/> to transmit VPN multicast
+     traffic <xref target="RFC8556" format="default" sectionFormat="of" derivedContent="RFC8556"/> or EVPN BUM traffic
+     <xref target="I-D.ietf-bier-evpn" format="default" sectionFormat="of" derivedContent="BIER-EVPN"/>.
+     Although BIER does not explicitly set up P2MP
+     tunnels, from the perspective of an MVPN/EVPN, the use of BIER transport
+     is very similar to the use of aggregate P2MP tunnels.  When BIER is
+     used, the PE transmitting a packet (the "Bit-Forwarding Ingress Router" (BFIR) <xref target="RFC8279" format="default" sectionFormat="of" derivedContent="RFC8279"/>) must
+     allocate an upstream-assigned MPLS label for each VPN or BD, and the
+     packets transmitted using BIER transport always carry the label that
+     identifies their VPN or BD. (See <xref target="RFC8556" format="default" sectionFormat="of" derivedContent="RFC8556"/> and <xref target="I-D.ietf-bier-evpn" format="default" sectionFormat="of" derivedContent="BIER-EVPN"/> for
+     details.)  In the remainder of this document, we will use the term
+     "aggregate tunnels" to include both P2MP tunnels and BIER transport.
+      </t>
+      <t indent="0" pn="section-1-4">
+     When an egress PE receives a packet from an aggregate tunnel, it must
+     look at the upstream-assigned label carried by the packet and must
+     interpret that label in the context of the ingress PE.  Essentially,
+     for each ingress PE, the egress PE has a context-specific label space
+     <xref target="RFC5331" format="default" sectionFormat="of" derivedContent="RFC5331"/> that matches the default label space from which
+     the ingress PE assigns the upstream-assigned labels.
+     When an egress PE looks up
+     the upstream-assigned label carried by a given packet, it looks it up
+     in the context-specific label space for the ingress PE of the packet.
+     How an egress PE identifies the ingress PE of a given packet depends on the
+     tunnel type.
+      </t>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.1-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+       "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>",
+       "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>",
+       "<bcp14>SHOULD NOT</bcp14>",
+       "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+       "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+       are to be interpreted as described in BCP 14
+       <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only
+       when, they appear in all capitals, as shown here.</t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.2">
+        <name slugifiedName="name-terminology">Terminology</name>
+        <t indent="0" pn="section-1.2-1">Familiarity with MVPN/EVPN protocols and procedures is assumed.
+       Some terms are listed below for convenience.
+        </t>
+        <dl spacing="normal" indent="3" newline="false" pn="section-1.2-2">
+          <dt pn="section-1.2-2.1">VPN:</dt>
+          <dd pn="section-1.2-2.2">Virtual Private Network. In this document, "VPN" specifically refers to an IP
+	  VPN <xref target="RFC4364" format="default" sectionFormat="of" derivedContent="RFC4364"/>.
+          </dd>
+          <dt pn="section-1.2-2.3">BUM <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>:</dt>
+          <dd pn="section-1.2-2.4">Broadcast, Unknown Unicast, or Multicast (traffic).</dd>
+          <dt pn="section-1.2-2.5">BD <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>:</dt>
+          <dd pn="section-1.2-2.6">Broadcast Domain.</dd>
+          <dt pn="section-1.2-2.7">EC <xref target="RFC4360" format="default" sectionFormat="of" derivedContent="RFC4360"/>:</dt>
+          <dd pn="section-1.2-2.8">Extended Community.
+          </dd>
+          <dt pn="section-1.2-2.9">PMSI <xref target="RFC6513" format="default" sectionFormat="of" derivedContent="RFC6513"/>:</dt>
+          <dd pn="section-1.2-2.10">Provider Multicast Service Interface. A pseudo-overlay interface
+	 for PEs to send certain overlay/customer multicast traffic via
+	 underlay/provider tunnels. It includes <br/>Inclusive/Selective PMSIs (I/S-PMSIs) (often referred
+	 to as x-PMSIs). A PMSI is instantiated by
+	 the underlay/provider tunnel.
+          </dd>
+          <dt pn="section-1.2-2.11">Inclusive PMSI (I-PMSI):</dt>
+          <dd pn="section-1.2-2.12">A PMSI that enables traffic to be sent to all PEs of a VPN/BD.
+	  The underlay/provider tunnel that instantiates the I-PMSI is
+	  referred to as an inclusive tunnel.
+          </dd>
+          <dt pn="section-1.2-2.13">Selective PMSI (S-PMSI):</dt>
+          <dd pn="section-1.2-2.14">A PMSI that enables traffic to be sent to a subset of PEs of a
+	  VPN/BD.  The underlay/provider tunnel that instantiates the
+	  S-PMSI is referred to as a selective tunnel.
+          </dd>
+          <dt pn="section-1.2-2.15">Aggregate Tunnel:</dt>
+          <dd pn="section-1.2-2.16">A tunnel that instantiates x-PMSIs of multiple MVPNs or EVPN
+	  BDs.
+          </dd>
+          <dt pn="section-1.2-2.17">IMET <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>:</dt>
+          <dd pn="section-1.2-2.18">Inclusive Multicast Ethernet Tag.  An EVPN-specific name
+	  for an I-PMSI Auto-Discovery (A-D) route.
+          </dd>
+          <dt pn="section-1.2-2.19">PTA <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>:</dt>
+          <dd pn="section-1.2-2.20">PMSI Tunnel Attribute. A BGP attribute that may be attached to
+	  a BGP-MVPN/EVPN x-PMSI A-D route.
+          </dd>
+          <dt pn="section-1.2-2.21">ASBR:</dt>
+          <dd pn="section-1.2-2.22">Autonomous System Border Router.</dd>
+          <dt pn="section-1.2-2.23">RBR:</dt>
+          <dd pn="section-1.2-2.24">Regional Border Router. A border router between segmentation
+	  regions that participates in segmentation procedures.
+          </dd>
+          <dt pn="section-1.2-2.25">(C-S,C-G):</dt>
+          <dd pn="section-1.2-2.26">A Customer/overlay &lt;S,G&gt; multicast flow.
+          </dd>
+          <dt pn="section-1.2-2.27">(C-*,C-G):</dt>
+          <dd pn="section-1.2-2.28">Customer/overlay &lt;*,G&gt; multicast flows.
+          </dd>
+          <dt pn="section-1.2-2.29">(C-*,C-*):</dt>
+          <dd pn="section-1.2-2.30">All Customer/overlay multicast flows.
+          </dd>
+          <dt pn="section-1.2-2.31">ES:</dt>
+          <dd pn="section-1.2-2.32">Ethernet Segment.</dd>
+          <dt pn="section-1.2-2.33">ESI <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>:</dt>
+          <dd pn="section-1.2-2.34">ES Identifier.
+          </dd>
+          <dt pn="section-1.2-2.35">ESI Label <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>:</dt>
+          <dd pn="section-1.2-2.36">A label that identifies an ES.
+          </dd>
+          <dt pn="section-1.2-2.37">SRGB <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>:</dt>
+          <dd pn="section-1.2-2.38">Segment Routing (SR) Global Block. The set of global segments in
+	  the SR domain.  In SR-MPLS <xref target="RFC8660" format="default" sectionFormat="of" derivedContent="RFC8660"/>, an SRGB is a local property of a node and
+	  identifies the set of local labels reserved for global segments.
+          </dd>
+          <dt pn="section-1.2-2.39">DCB:</dt>
+          <dd pn="section-1.2-2.40">Domain-wide Common Block. A common block of labels reserved on all nodes in a domain.
+          </dd>
+          <dt pn="section-1.2-2.41">Context-Specific Label Space <xref target="RFC5331" format="default" sectionFormat="of" derivedContent="RFC5331"/>:</dt>
+          <dd pn="section-1.2-2.42">A router may maintain additional label spaces besides its
+	  default label space.  When the label at the top of the stack is not
+	  from the default label space, there must be some context in the
+	  packet that identifies which one of those additional label spaces is
+	  to be used to look up the label; hence, those label spaces are
+	  referred to as context-specific label spaces.
+          </dd>
+          <dt pn="section-1.2-2.43">Upstream Assigned <xref target="RFC5331" format="default" sectionFormat="of" derivedContent="RFC5331"/>:</dt>
+          <dd pn="section-1.2-2.44"> When the label at the top of the label stack is not assigned by
+	  the router receiving the traffic from its default label space, the
+	  label is referred to as upstream assigned. Otherwise, it is
+	  downstream assigned. An upstream-assigned label must be looked up in
+	  a context-specific label space specific for the assigner.
+          </dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="problem" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-problem-description">Problem Description</name>
+      <t indent="0" pn="section-2-1">
+     Note that the upstream-assigned label procedures may require a very large number of labels.
+     Suppose that an MVPN or EVPN deployment has 1001 PEs, each hosting 1000
+     VPNs/BDs.  Each ingress PE has to assign 1000 labels, and each egress PE
+     has to be prepared to interpret 1000 labels from each of the ingress
+     PEs.  Since each ingress PE allocates labels from its own label
+     space and does not coordinate label assignments with others,
+     each egress PE must be prepared to interpret 1,000,000
+     upstream-assigned labels (across 1000 context-specific label spaces -- one for
+     each ingress PE). This is an evident scaling problem.
+      </t>
+      <t indent="0" pn="section-2-2">
+   So far, few if any MVPN/EVPN deployments use aggregate
+   tunnels, so this problem has not surfaced.  However, the use of aggregate
+   tunnels is likely to increase due to the following two factors:
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-2-3">
+        <li pn="section-2-3.1">In an EVPN, a single customer ("tenant") may have a large number of
+          BDs, and the use of aggregate RSVP-TE or mLDP P2MP tunnels may
+          become important, since each tunnel creates state at the
+          intermediate nodes.</li>
+        <li pn="section-2-3.2">The use of BIER as the transport for an MVPN/EVPN is becoming more and
+	  more attractive and feasible.</li>
+      </ul>
+      <t indent="0" pn="section-2-4">A similar problem also exists with EVPN ESI labels used for multihoming.
+       A PE attached to a multihomed ES advertises an ESI label in its Ethernet A-D per ES route.
+       The PE imposes the label
+       when it sends frames received from the ES to other PEs via a P2MP/BIER
+       tunnel. A receiving PE that is attached to the source ES will know from
+       the ESI label that the packet
+       originated on the source ES and thus will not transmit the packet on
+       its local Attachment Circuit to that ES. From the receiving
+       PE's point of view, the ESI label is (upstream) assigned from the source
+       PE's label space, so the receiving PE needs to maintain context-specific label
+       tables, one for each source PE, just like the VPN/BD label case
+       above. If there are 1001 PEs, each attached to 1000 ESs, this can
+       require each PE to understand 1,000,000 ESI labels. Notice that the
+       issue exists even when no P2MP tunnel aggregation (i.e., one tunnel used
+       for multiple BDs) is used.
+      </t>
+    </section>
+    <section anchor="solution" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-proposed-solutions">Proposed Solutions</name>
+      <t indent="0" pn="section-3-1">
+      The number of labels could be greatly reduced if a central entity
+      in the provider network
+     assigned a label to each VPN, BD, or ES and if all PEs used that same
+     label to represent a given VPN, BD, or ES.  Then, the number of
+     labels needed would just be the sum of the number of VPNs,
+     BDs, and/or ESs.
+      </t>
+      <t indent="0" pn="section-3-2">
+     One method of achieving this is to reserve a portion of the default label space
+     for assignment by a central entity.  We refer to this reserved
+     portion as the DCB of labels.  This is analogous to the concept of using identical SRGBs
+     on all nodes, as described in <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>.
+     A PE that is attached (via L3VPN Virtual Routing and Forwarding (VRF)
+     interfaces or EVPN Attachment Circuits) would know by provisioning which
+     label from the DCB corresponds to which of its locally attached VPNs,
+     BDs, or ESs.
+      </t>
+      <t indent="0" pn="section-3-3">For example, all PEs could reserve a DCB [1000~2000], and they would
+     all be provisioned so that label 1000 maps to VPN 0, label 1001 maps to VPN 1,
+     and so forth. Now, only 1000 labels instead of 1,000,000 labels
+     are needed for 1000 VPNs.
+      </t>
+      <t indent="0" pn="section-3-4">In this document, "domain" is defined loosely; it simply includes
+ all the routers that share the same DCB, and it only needs to
+ include all PEs of an MVPN/EVPN.
+      </t>
+      <t indent="0" pn="section-3-5">
+      The "domain" could also include all routers in the provider network,
+      making it not much different from a common SRGB across all the routers.
+      However, that is not necessary, as the labels used by PEs for the
+      purposes defined in
+   this document will only rise to the top of the label stack when traffic
+   arrives at the PEs. Therefore, it is better to not include internal P routers
+   in the "domain". That way, they do not have to set aside the same DCB used for
+   the purposes defined in this document.
+      </t>
+      <t indent="0" pn="section-3-6">
+     In some deployments, it may be impractical to allocate a DCB that is
+     large enough to contain labels for all the VPNs/BDs/ESs.  In this
+     case, it may be necessary to allocate those labels from one or a few
+     context-specific label spaces that are independent of each PE. For example, if it is too difficult
+     to have a DCB of 10,000 labels across all PEs for all the VPNs/BDs/ESs
+     that need to be supported, a separate context-specific label space can be
+     dedicated to those 10,000 labels.  Each separate context-specific label space is
+     identified in the forwarding plane by a label from the DCB (which does not
+     need to be large). Each PE is provisioned with the label-space-identifying DCB
+     label and the common VPN/BD/ES labels allocated from that context-specific label space.
+     When sending traffic, an ingress PE imposes all necessary service
+     labels (for the VPN/BD/ES) first, then imposes the label-space-identifying
+     DCB label. From the label-space-identifying DCB label, an egress PE can
+     determine the label space where the inner VPN/BD/ES label is looked up.
+      </t>
+      <t indent="0" pn="section-3-7">
+   The MVPN/EVPN signaling defined in <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/> and <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> assumes that
+   certain MPLS labels are allocated from a context-specific label space for a
+   particular ingress PE.  In this document, we augment the signaling
+   procedures so that it is possible to signal that a particular label is
+   from the DCB, rather than from a context-specific label space for an ingress PE.  We
+   also augment the signaling so that it is possible to indicate that a
+   particular label is from an identified context-specific label space that is
+   not for an ingress PE.
+      </t>
+      <t indent="0" pn="section-3-8">Notice that the VPN/BD/ES-identifying labels from the DCB or from
+       those few context-specific label spaces are very similar to Virtual eXtensible Local Area Network (VXLAN) Network Identifiers (VNIs) in VXLANs.
+       Allocating a label from the DCB or from a context-specific label space
+       and communicating the label to all PEs is not different from
+       allocating VNIs and is especially feasible with controllers.
+      </t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-3.1">
+        <name slugifiedName="name-mp2mp-tunnels">MP2MP Tunnels</name>
+        <t indent="0" pn="section-3.1-1">Multipoint-to-Multipoint (MP2MP) tunnels present the same problem (<xref target="problem" format="default" sectionFormat="of" derivedContent="Section 2"/>)
+      that can be solved the same way (<xref target="solution" format="default" sectionFormat="of" derivedContent="Section 3"/>), with
+      the following additional requirement.
+        </t>
+        <t indent="0" pn="section-3.1-2">
+    Per <xref target="RFC7582" format="default" sectionFormat="of" derivedContent="RFC7582"/> ("Multicast Virtual Private Network (MVPN): Using Bidirectional P-Tunnels"), when MP2MP
+    tunnels are used for an MVPN, the root of the MP2MP tunnel is required to
+    allocate and advertise "PE Distinguisher Labels" (<xref target="RFC6513" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6513#section-4" derivedContent="RFC6513"/>).  These labels are assigned
+    from the label space used by the root node for its upstream-assigned labels.    
+        </t>
+        <t indent="0" pn="section-3.1-3">
+    It is <bcp14>REQUIRED</bcp14> by this document that the PE Distinguisher
+    Labels allocated by a particular node come from the same label space
+    that the node uses to allocate its VPN-identifying labels.  
+        </t>
+      </section>
+      <section anchor="seg" numbered="true" toc="include" removeInRFC="false" pn="section-3.2">
+        <name slugifiedName="name-segmented-tunnels">Segmented Tunnels</name>
+        <t indent="0" pn="section-3.2-1">There are some additional issues to be considered when an MVPN or
+          EVPN is using "tunnel segmentation" (see <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>,
+          <xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/>, and Sections <xref target="RFC9572" sectionFormat="bare" section="5" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9572#section-5" derivedContent="RFC9572"/> and <xref target="RFC9572" sectionFormat="bare" section="6" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9572#section-6" derivedContent="RFC9572"/> of <xref target="RFC9572" format="default" sectionFormat="of" derivedContent="RFC9572"/>).
+        </t>
+        <section anchor="select" numbered="true" toc="exclude" removeInRFC="false" pn="section-3.2.1">
+          <name slugifiedName="name-selective-tunnels">Selective Tunnels</name>
+          <t indent="0" pn="section-3.2.1-1">For selective tunnels that instantiate S-PMSIs (see Sections
+            <xref target="RFC6513" sectionFormat="bare" section="2.1.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6513#section-2.1.1" derivedContent="RFC6513"/> and
+            <xref target="RFC6513" sectionFormat="bare" section="3.2.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc6513#section-3.2.1" derivedContent="RFC6513"/> of
+            <xref target="RFC6513" format="default" sectionFormat="of" derivedContent="RFC6513"/> and <xref target="RFC9572" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9572#section-4" derivedContent="RFC9572"/>), the procedures outlined above
+            work only if tunnel segmentation is not used.
+          </t>
+          <t indent="0" pn="section-3.2.1-2">
+     A selective tunnel carries one or more particular sets of flows to a
+     particular subset of the PEs that attach to a given VPN or BD. Each set
+     of flows is identified by an S-PMSI A-D route <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>.  The PTA of the S-PMSI route identifies the tunnel used to
+     carry the corresponding set of flows. Multiple S-PMSI routes can identify
+     the same tunnel.
+          </t>
+          <t indent="0" pn="section-3.2.1-3">
+     When tunnel segmentation is applied to an S-PMSI, certain nodes are
+     "segmentation points".  A segmentation point is a node at the boundary
+     between two segmentation regions.  Let's call these "region A" and
+     "region B".  A segmentation point is an egress node for one or more
+     selective tunnels in region A and an ingress node for one or more
+     selective tunnels in region B.  A given segmentation point must be able
+     to receive traffic on a selective tunnel from region A and label-switch
+the traffic to the proper selective tunnel in region B.
+          </t>
+          <t indent="0" pn="section-3.2.1-4">Suppose that one
+     selective tunnel (call it "T1") in region A is carrying two flows, Flow-1
+     and Flow-2, identified by S-PMSI routes Route-1 and Route-2, respectively.
+     However, it is possible that in region B, Flow-1 is not
+     carried by the same selective tunnel that carries Flow-2.  Let's
+     suppose that in region B, Flow-1 is carried by tunnel T2 and Flow-2 by
+     tunnel T3. Then, when the segmentation point receives traffic from T1,
+     it must be able to label-switch Flow-1 from T1 to T2, while also label-switching Flow-2 from T1 to T3.  This implies that Route-1 and Route-2
+     must signal different labels in the PTA. For comparison, when
+     segmentation is not used, they can all use the common per-VPN/BD DCB
+     label.
+          </t>
+          <t indent="0" pn="section-3.2.1-5">In this case, it is not practical to have a central entity
+       assign domain-wide unique labels to individual S-PMSI routes.
+       To address this problem, all PEs can be assigned their own
+       disjoint label blocks in those few context-specific label spaces; each PE will
+       independently allocate labels for a segmented S-PMSI from its own
+       assigned label block. For example,
+       PE1 allocates from label block [101~200], PE2 allocates from label block
+       [201~300], and so on.
+          </t>
+          <t indent="0" pn="section-3.2.1-6">Allocating from disjoint label blocks can be used for VPN/BD/ES labels
+       as well, though it does not address the original scaling issue, because
+       there would be 1,000,000 labels allocated from those few context-specific
+       label spaces in the original example, instead of just 1000
+       common labels.
+          </t>
+        </section>
+        <section numbered="true" toc="exclude" removeInRFC="false" pn="section-3.2.2">
+          <name slugifiedName="name-per-pe-region-tunnels">Per-PE/Region Tunnels</name>
+          <t indent="0" pn="section-3.2.2-1">Similarly, for segmented per-PE (MVPN (C-*,C-*) S-PMSI or EVPN
+            IMET) or per-AS/region (MVPN Inter-AS I-PMSI or EVPN per-region
+            I-PMSI) tunnels <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/> <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>
+            <xref target="RFC9572" format="default" sectionFormat="of" derivedContent="RFC9572"/>, labels need to be
+            allocated per PMSI route. In the case of a per-PE PMSI route, the labels
+            should be allocated from the label block allocated to the
+            advertising PE. In the case of a per-AS/region PMSI route, different
+            ASBRs/RBRs attached to the same source
+            AS/region will advertise the same PMSI route.  The same label
+            could be used when the same route is advertised by different
+            ASBRs/RBRs, though that requires coordination; a simpler way is
+            for each ASBR/RBR to allocate a label from the label block
+            allocated to itself (see <xref target="select" format="default" sectionFormat="of" derivedContent="Section 3.2.1"/>).
+          </t>
+          <t indent="0" pn="section-3.2.2-2">In the rest of this document, we call the label allocated for a particular
+       PMSI a "(per-)PMSI label", just like we have (per-)VPN/BD/ES labels. Notice
+       that using a per-PMSI label in the case of a per-PE PMSI still has the original
+       scaling issue associated with the upstream-assigned label, so per-region
+       PMSIs are preferred. Within each AS/region, per-PE PMSIs are still
+       used, though they do not go across borders and per-VPN/BD labels can still
+       be used.
+          </t>
+          <t indent="0" pn="section-3.2.2-3">Note that when a segmentation point re-advertises a PMSI route to the
+       next segment, it does not need to re-advertise a new label unless
+       the upstream or downstream segment uses ingress replication.
+          </t>
+        </section>
+        <section numbered="true" toc="exclude" removeInRFC="false" pn="section-3.2.3">
+          <name slugifiedName="name-alternative-to-per-pmsi-lab">Alternative to Per-PMSI Label Allocation</name>
+          <t indent="0" pn="section-3.2.3-1">Per-PMSI label allocation in the case of segmentation, whether for S-PMSIs
+       or per-PE/region I-PMSIs, is applied so that segmentation points are able
+       to label-switch traffic without having to do IP or Media Access Control (MAC) lookups in VRFs
+       (the segmentation points typically do not have those VRFs at all).
+       Alternatively, if the label scaling becomes a concern, the segmentation
+       points could use (C-S,C-G) lookups in VRFs for flows identified by
+       the S-PMSIs. This allows the S-PMSIs for the same VPN/BD to share
+       a VPN/BD-identifying label that leads to lookups in the VRFs.
+       That label needs to be different from the
+       label used in the per-PE/region I-PMSIs though, so that the segmentation
+       points can label-switch other traffic (not identified by those S-PMSIs).
+       However, this moves the scaling problem from the number of labels to
+       the number of (C-S/*,C-G) routes in VRFs on the segmentation points.
+          </t>
+        </section>
+      </section>
+      <section anchor="methods" numbered="true" toc="include" removeInRFC="false" pn="section-3.3">
+        <name slugifiedName="name-summary-of-label-allocation">Summary of Label Allocation Methods</name>
+        <t indent="0" pn="section-3.3-1">In summary, labels can be allocated and advertised in the following ways:
+        </t>
+        <ol spacing="normal" type="1" indent="adaptive" start="1" pn="section-3.3-2">
+	    <li anchor="dcb-assignment" pn="section-3.3-2.1" derivedCounter="1.">A central entity allocates
+	    per-VPN/BD/ES labels from the DCB.  PEs advertise the labels with
+	    an indication that they are from the DCB.
+            </li>
+          <li anchor="context-space" pn="section-3.3-2.2" derivedCounter="2.">A central entity allocates
+            per-VPN/BD/ES labels from a few common context-specific label
+            spaces and allocates labels from the DCB to identify those
+            context-specific label spaces. PEs advertise the VPN/BD labels
+            along with the context-identifying labels.
+            </li>
+          <li anchor="context-block" pn="section-3.3-2.3" derivedCounter="3.">A central entity assigns disjoint label
+            blocks from a few context-specific label spaces to each PE and
+            allocates labels from the DCB to identify those context-specific
+            label spaces. A PE independently allocates a label for a segmented
+            S-PMSI from its assigned label block and advertises the label
+            along with the context-identifying label.
+            </li>
+        </ol>
+        <t indent="0" pn="section-3.3-3">Option <xref target="dcb-assignment" format="counter" sectionFormat="of" derivedContent="1"/> is simplest,
+       but it requires that all the PEs set aside a common label block for the
+       DCB that is large enough for all the VPNs/BDs/ESs combined.
+       Option <xref target="context-block" format="counter" sectionFormat="of" derivedContent="3"/> is needed only
+       for segmented selective tunnels that are set up dynamically.
+       Multiple options could be used in any combination, depending on the
+       deployment situation.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-specifications">Specifications</name>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.1">
+        <name slugifiedName="name-context-specific-label-spac">Context-Specific Label Space ID Extended Community</name>
+        <t indent="0" pn="section-4.1-1">The Context-Specific Label Space ID Extended Community (EC) is a new Transitive Opaque EC with the following structure:
+        </t>
+        <artwork align="center" name="" type="" alt="" pn="section-4.1-2">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+| 0x03 or 0x43  |      8        |      ID-Type                  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         ID-Value                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+        <dl spacing="normal" indent="3" newline="false" pn="section-4.1-3">
+          <dt pn="section-4.1-3.1">ID-Type:</dt>
+          <dd pn="section-4.1-3.2">A 2-octet field that specifies the type of Label Space
+          ID.  In this document, the ID-Type is 0, indicating that the
+          ID-Value field is a label.</dd>
+          <dt pn="section-4.1-3.3">ID-Value:</dt>
+          <dd pn="section-4.1-3.4">A 4-octet field that specifies the value of the Label Space ID.
+       When it is a label (with ID-Type 0), the most significant 20-bit portion
+       is set to the label value.</dd>
+        </dl>
+        <t indent="0" pn="section-4.1-4">This document introduces a DCB-flag (Bit 47 as assigned by IANA) in the
+       "Additional PMSI Tunnel Attribute Flags" BGP Extended Community <xref target="RFC7902" format="default" sectionFormat="of" derivedContent="RFC7902"/>.
+        </t>
+        <t indent="0" pn="section-4.1-5">In the remainder of this document, when we say that a BGP-MVPN/EVPN A-D route
+       carries a DCB-flag or has a DCB-flag attached to it, we mean the following:
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.1-6">
+          <li pn="section-4.1-6.1">The route carries a PTA and its Flags field has
+         the Extension bit set, AND</li>
+          <li pn="section-4.1-6.2">The route carries an "Additional PMSI Tunnel Attribute Flags" EC
+         and its DCB-flag is set.</li>
+        </ul>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-4.2">
+        <name slugifiedName="name-procedures">Procedures</name>
+        <t indent="0" pn="section-4.2-1">The protocol and procedures specified in this section <bcp14>MAY</bcp14> be used
+       when BIER or P2MP/MP2MP tunnel aggregation
+       is used for an MVPN/EVPN or when BIER/P2MP/MP2MP tunnels are used with EVPN
+       multihoming. When these procedures are used, all PE routers and segmentation
+       points <bcp14>MUST</bcp14> support the procedures. How to ensure this behavior is outside the scope of this document.
+        </t>
+        <t indent="0" pn="section-4.2-2">Via methods outside the scope of this document, each VPN/BD/ES is assigned
+       a label from the DCB or one of those few context-specific label spaces, and every
+       PE that is part of the VPN/BD/ES is aware of the assignment. The ES label
+       and the BD label <bcp14>MUST</bcp14> be assigned from the same label space. If PE
+       Distinguisher Labels are used <xref target="RFC7582" format="default" sectionFormat="of" derivedContent="RFC7582"/>, they <bcp14>MUST</bcp14> be allocated
+       from the same label space as well.
+        </t>
+        <t indent="0" pn="section-4.2-3">In the case of tunnel segmentation, each PE is also assigned a disjoint
+       label block from one of those few context-specific label spaces, and it allocates
+       labels for its segmented PMSI routes from its assigned label block.
+        </t>
+        <t indent="0" pn="section-4.2-4">When a PE originates/re-advertises an x-PMSI/IMET route, the route <bcp14>MUST</bcp14>
+       carry a DCB-flag if and only if the label in its PTA is assigned
+       from the DCB.
+        </t>
+        <t indent="0" pn="section-4.2-5">If the VPN/BD/ES/PMSI label is assigned from one of those few context-specific label
+       spaces, a Context-Specific Label Space ID EC <bcp14>MUST</bcp14> be attached to the
+       route. The ID-Type in the EC is set to 0, and the ID-Value is set to 
+       a label allocated from the DCB and identifies the context-specific label space.
+       When an ingress PE sends traffic, it imposes the DCB label
+       that identifies the context-specific label space after it imposes the label
+       (that is advertised in the Label field of the PTA in the x-PMSI/IMET route)
+       for the VPN/BD and/or the label (that is advertised in the ESI Label EC)
+       for the ESI, and then imposes the encapsulation for the transport tunnel.
+        </t>
+        <t indent="0" pn="section-4.2-6">When a PE receives an x-PMSI/IMET route with the Context-Specific Label
+       Space ID EC, it <bcp14>MUST</bcp14> place an entry in its default MPLS forwarding table
+       to map the label in the EC to a corresponding context-specific
+       label table. That table is used for the next label lookup for incoming
+       data traffic with the label signaled in the EC.
+        </t>
+        <t indent="0" pn="section-4.2-7">Then, the receiving PE <bcp14>MUST</bcp14> place an entry for the label that is in the PTA or
+    ESI Label EC in
+       either the default MPLS forwarding table (if the route carries the
+       DCB-flag) or the context-specific label table (if the Context-Specific Label Space ID EC
+       is present) according to the x-PMSI/IMET route.
+        </t>
+        <t indent="0" pn="section-4.2-8">An x-PMSI/IMET route <bcp14>MUST NOT</bcp14> carry both the
+        DCB-flag and the Context-Specific Label Space ID EC.  A received route
+        with both the DCB-flag set and the Context-Specific Label Space ID EC attached
+        <bcp14>MUST</bcp14> be treated as withdrawn.  If neither the DCB-flag
+        nor the Context-Specific Label Space ID EC is attached, the label in
+        the PTA or ESI Label EC <bcp14>MUST</bcp14> be treated as the
+        upstream-assigned label from the label space of the source PE, and
+        procedures provided in <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/> and <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>
+          <bcp14>MUST</bcp14> be followed.
+        </t>
+        <t indent="0" pn="section-4.2-9">If a PE originates two x-PMSI/IMET routes with the same tunnel,
+    it <bcp14>MUST</bcp14> ensure that one of the following scenarios applies, so that the PE receiving the routes
+    can correctly interpret the label that follows the tunnel encapsulation
+    of data packets arriving via the tunnel:
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.2-10">
+          <li pn="section-4.2-10.1">They <bcp14>MUST</bcp14> all have the DCB-flag,</li>
+          <li pn="section-4.2-10.2">They <bcp14>MUST</bcp14> all carry the Context-Specific Label Space ID EC,</li>
+          <li pn="section-4.2-10.3">None of them have the DCB-flag, or</li>
+          <li pn="section-4.2-10.4">None of them carry the Context-Specific Label Space ID EC.</li>
+        </ul>
+        <t indent="0" pn="section-4.2-11">Otherwise, a receiving PE <bcp14>MUST</bcp14> treat the routes as if they were withdrawn.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-5-1">This document allows three methods (<xref target="methods" format="default" sectionFormat="of" derivedContent="Section 3.3"/>) of
+      label allocation for MVPN PEs <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/> or EVPN PEs <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> and
+      specifies corresponding signaling and procedures. The first method (Option <xref target="dcb-assignment" format="counter" sectionFormat="of" derivedContent="1"/>) is
+      the equivalent of using common SRGBs <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/> from the regular
+      per-platform label space. The second method (Option <xref target="context-space" format="counter" sectionFormat="of" derivedContent="2"/>) is the equivalent of using
+      common SRGBs from a third-party label space <xref target="RFC5331" format="default" sectionFormat="of" derivedContent="RFC5331"/>. The third
+      method (Option <xref target="context-block" format="counter" sectionFormat="of" derivedContent="3"/>) is a variation of the second in that the third-party label
+      space is divided into disjoint blocks for use by different PEs,
+      where each PE will use labels from its respective block to send traffic.
+      In all cases, a receiving PE is able to identify one of the few label
+      forwarding tables to forward incoming labeled traffic.
+      </t>
+      <t indent="0" pn="section-5-2"><xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>, <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>, <xref target="RFC8402" format="default" sectionFormat="of" derivedContent="RFC8402"/>, and <xref target="RFC5331" format="default" sectionFormat="of" derivedContent="RFC5331"/>
+      do not list any security concerns related to label allocation
+      methods, and this document does not introduce any new security concerns in this regard.
+      </t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-6-1">IANA has made the following assignments:
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6-2">
+        <li pn="section-6-2.1">
+          <t indent="0" pn="section-6-2.1.1">Bit 47 (DCB) in the "Additional PMSI Tunnel Attribute Flags" registry:</t>
+          <table align="left" anchor="bit-47-iana-table" pn="table-1">
+            <name/>
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Bit Flag</th>
+                <th align="left" colspan="1" rowspan="1">Name</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">47</td>
+                <td align="left" colspan="1" rowspan="1">DCB</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9573</td>
+              </tr>
+            </tbody>
+          </table>
+        </li>
+        <li pn="section-6-2.2">
+          <t indent="0" pn="section-6-2.2.1">Sub-type 0x08 for "Context-Specific Label Space ID Extended Community" in the "Transitive Opaque Extended Community Sub-Types" registry:
+          </t>
+          <table align="left" anchor="sub-type-iana-table" pn="table-2">
+            <name/>
+            <thead>
+              <tr>
+                <th align="left" colspan="1" rowspan="1">Sub-Type Value</th>
+                <th align="left" colspan="1" rowspan="1">Name</th>
+                <th align="left" colspan="1" rowspan="1">Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td align="left" colspan="1" rowspan="1">0x08</td>
+                <td align="left" colspan="1" rowspan="1">Context-Specific Label Space ID Extended Community</td>
+                <td align="left" colspan="1" rowspan="1">RFC 9573</td>
+              </tr>
+            </tbody>
+          </table>
+        </li>
+      </ul>
+      <t indent="0" pn="section-6-3">IANA has created the "Context-Specific Label Space ID Type"
+      registry within the "Border Gateway Protocol (BGP) Extended Communities"
+      group of registries. The registration procedure is First Come First Served <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/>.
+      The initial assignment is as follows:
+      </t>
+      <table align="left" anchor="context-iana-table" pn="table-3">
+        <name/>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Type Value</th>
+            <th align="left" colspan="1" rowspan="1">Name</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">0</td>
+            <td align="left" colspan="1" rowspan="1">MPLS Label</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9573</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">1-254</td>
+            <td align="left" colspan="1" rowspan="1">Unassigned</td>
+            <td align="left" colspan="1" rowspan="1"/>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">255</td>
+            <td align="left" colspan="1" rowspan="1">Reserved</td>
+            <td align="left" colspan="1" rowspan="1"/>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-bier-evpn" to="BIER-EVPN"/>
+    <references pn="section-7">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-7.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC4360" target="https://www.rfc-editor.org/info/rfc4360" quoteTitle="true" derivedAnchor="RFC4360">
+          <front>
+            <title>BGP Extended Communities Attribute</title>
+            <author fullname="S. Sangli" initials="S." surname="Sangli"/>
+            <author fullname="D. Tappan" initials="D." surname="Tappan"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <date month="February" year="2006"/>
+            <abstract>
+              <t indent="0">This document describes the "extended community" BGP-4 attribute. This attribute provides a mechanism for labeling information carried in BGP-4. These labels can be used to control the distribution of this information, or for other applications. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4360"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4360"/>
+        </reference>
+        <reference anchor="RFC6513" target="https://www.rfc-editor.org/info/rfc6513" quoteTitle="true" derivedAnchor="RFC6513">
+          <front>
+            <title>Multicast in MPLS/BGP IP VPNs</title>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <author fullname="R. Aggarwal" initials="R." role="editor" surname="Aggarwal"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">In order for IP multicast traffic within a BGP/MPLS IP VPN (Virtual Private Network) to travel from one VPN site to another, special protocols and procedures must be implemented by the VPN Service Provider. These protocols and procedures are specified in this document. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6513"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6513"/>
+        </reference>
+        <reference anchor="RFC6514" target="https://www.rfc-editor.org/info/rfc6514" quoteTitle="true" derivedAnchor="RFC6514">
+          <front>
+            <title>BGP Encodings and Procedures for Multicast in MPLS/BGP IP VPNs</title>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <author fullname="T. Morin" initials="T." surname="Morin"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">This document describes the BGP encodings and procedures for exchanging the information elements required by Multicast in MPLS/BGP IP VPNs, as specified in RFC 6513. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6514"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6514"/>
+        </reference>
+        <reference anchor="RFC7432" target="https://www.rfc-editor.org/info/rfc7432" quoteTitle="true" derivedAnchor="RFC7432">
+          <front>
+            <title>BGP MPLS-Based Ethernet VPN</title>
+            <author fullname="A. Sajassi" initials="A." role="editor" surname="Sajassi"/>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="N. Bitar" initials="N." surname="Bitar"/>
+            <author fullname="A. Isaac" initials="A." surname="Isaac"/>
+            <author fullname="J. Uttaro" initials="J." surname="Uttaro"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <date month="February" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes procedures for BGP MPLS-based Ethernet VPNs (EVPN). The procedures described here meet the requirements specified in RFC 7209 -- "Requirements for Ethernet VPN (EVPN)".</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7432"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7432"/>
+        </reference>
+        <reference anchor="RFC7524" target="https://www.rfc-editor.org/info/rfc7524" quoteTitle="true" derivedAnchor="RFC7524">
+          <front>
+            <title>Inter-Area Point-to-Multipoint (P2MP) Segmented Label Switched Paths (LSPs)</title>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="T. Morin" initials="T." surname="Morin"/>
+            <author fullname="I. Grosclaude" initials="I." surname="Grosclaude"/>
+            <author fullname="N. Leymann" initials="N." surname="Leymann"/>
+            <author fullname="S. Saad" initials="S." surname="Saad"/>
+            <date month="May" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes procedures for building inter-area point-to-multipoint (P2MP) segmented service label switched paths (LSPs) by partitioning such LSPs into intra-area segments and using BGP as the inter-area routing and Label Distribution Protocol (LDP). Within each IGP area, the intra-area segments are either carried over intra-area P2MP LSPs, using P2MP LSP hierarchy, or instantiated using ingress replication. The intra-area P2MP LSPs may be signaled using P2MP RSVP-TE or P2MP multipoint LDP (mLDP). If ingress replication is used within an IGP area, then (multipoint-to-point) LDP LSPs or (point-to-point) RSVP-TE LSPs may be used in the IGP area. The applications/services that use such inter-area service LSPs may be BGP Multicast VPN, Virtual Private LAN Service (VPLS) multicast, or global table multicast over MPLS.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7524"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7524"/>
+        </reference>
+        <reference anchor="RFC7582" target="https://www.rfc-editor.org/info/rfc7582" quoteTitle="true" derivedAnchor="RFC7582">
+          <front>
+            <title>Multicast Virtual Private Network (MVPN): Using Bidirectional P-Tunnels</title>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <author fullname="IJ. Wijnands" initials="IJ." surname="Wijnands"/>
+            <author fullname="Y. Cai" initials="Y." surname="Cai"/>
+            <author fullname="A. Boers" initials="A." surname="Boers"/>
+            <date month="July" year="2015"/>
+            <abstract>
+              <t indent="0">A set of prior RFCs specify procedures for supporting multicast in BGP/MPLS IP VPNs. These procedures allow customer multicast data to travel across a service provider's backbone network through a set of multicast tunnels. The tunnels are advertised in certain BGP multicast auto-discovery routes, by means of a BGP attribute known as the "Provider Multicast Service Interface (PMSI) Tunnel" attribute. Encodings have been defined that allow the PMSI Tunnel attribute to identify bidirectional (multipoint-to-multipoint) multicast distribution trees. However, the prior RFCs do not provide all the necessary procedures for using bidirectional tunnels to support multicast VPNs. This document updates RFCs 6513, 6514, and 6625 by specifying those procedures. In particular, it specifies the procedures for assigning customer multicast flows (unidirectional or bidirectional) to specific bidirectional tunnels in the provider backbone, for advertising such assignments, and for determining which flows have been assigned to which tunnels.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7582"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7582"/>
+        </reference>
+        <reference anchor="RFC7902" target="https://www.rfc-editor.org/info/rfc7902" quoteTitle="true" derivedAnchor="RFC7902">
+          <front>
+            <title>Registry and Extensions for P-Multicast Service Interface Tunnel Attribute Flags</title>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <author fullname="T. Morin" initials="T." surname="Morin"/>
+            <date month="June" year="2016"/>
+            <abstract>
+              <t indent="0">The BGP-based control procedures for Multicast Virtual Private Networks (MVPNs) make use of a BGP attribute known as the "P-Multicast Service Interface (PMSI) Tunnel" attribute. The attribute contains a one-octet "Flags" field. The purpose of this document is to establish an IANA registry for the assignment of the bits in this field. Since the "Flags" field contains only eight bits, this document also defines a new BGP Extended Community, "Additional PMSI Tunnel Attribute Flags", that can be used to carry additional flags for the "P-Multicast Service Interface (PMSI) Tunnel" attribute. This document updates RFC 6514.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7902"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7902"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+      </references>
+      <references pn="section-7.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.ietf-bier-evpn" quoteTitle="true" target="https://datatracker.ietf.org/doc/html/draft-ietf-bier-evpn-14" derivedAnchor="BIER-EVPN">
+          <front>
+            <title>EVPN BUM Using BIER</title>
+            <author fullname="Zhaohui Zhang" initials="Z." surname="Zhang">
+              <organization showOnFrontPage="true">Juniper Networks</organization>
+            </author>
+            <author fullname="Antoni Przygienda" initials="A." surname="Przygienda">
+              <organization showOnFrontPage="true">Juniper Networks</organization>
+            </author>
+            <author fullname="Ali Sajassi" initials="A." surname="Sajassi">
+              <organization showOnFrontPage="true">Cisco Systems</organization>
+            </author>
+            <author fullname="Jorge Rabadan" initials="J." surname="Rabadan">
+              <organization showOnFrontPage="true">Nokia</organization>
+            </author>
+            <date day="2" month="January" year="2024"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-bier-evpn-14"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC4364" target="https://www.rfc-editor.org/info/rfc4364" quoteTitle="true" derivedAnchor="RFC4364">
+          <front>
+            <title>BGP/MPLS IP Virtual Private Networks (VPNs)</title>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <date month="February" year="2006"/>
+            <abstract>
+              <t indent="0">This document describes a method by which a Service Provider may use an IP backbone to provide IP Virtual Private Networks (VPNs) for its customers. This method uses a "peer model", in which the customers' edge routers (CE routers) send their routes to the Service Provider's edge routers (PE routers); there is no "overlay" visible to the customer's routing algorithm, and CE routers at different sites do not peer with each other. Data packets are tunneled through the backbone, so that the core routers do not need to know the VPN routes. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4364"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4364"/>
+        </reference>
+        <reference anchor="RFC5331" target="https://www.rfc-editor.org/info/rfc5331" quoteTitle="true" derivedAnchor="RFC5331">
+          <front>
+            <title>MPLS Upstream Label Assignment and Context-Specific Label Space</title>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <date month="August" year="2008"/>
+            <abstract>
+              <t indent="0">RFC 3031 limits the MPLS architecture to downstream-assigned MPLS labels. This document introduces the notion of upstream-assigned MPLS labels. It describes the procedures for upstream MPLS label assignment and introduces the concept of a "Context-Specific Label Space". [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5331"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5331"/>
+        </reference>
+        <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+          <front>
+            <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+            <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="June" year="2017"/>
+            <abstract>
+              <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+              <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+              <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="26"/>
+          <seriesInfo name="RFC" value="8126"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+        </reference>
+        <reference anchor="RFC8279" target="https://www.rfc-editor.org/info/rfc8279" quoteTitle="true" derivedAnchor="RFC8279">
+          <front>
+            <title>Multicast Using Bit Index Explicit Replication (BIER)</title>
+            <author fullname="IJ. Wijnands" initials="IJ." role="editor" surname="Wijnands"/>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <author fullname="A. Dolganow" initials="A." surname="Dolganow"/>
+            <author fullname="T. Przygienda" initials="T." surname="Przygienda"/>
+            <author fullname="S. Aldrin" initials="S." surname="Aldrin"/>
+            <date month="November" year="2017"/>
+            <abstract>
+              <t indent="0">This document specifies a new architecture for the forwarding of multicast data packets. It provides optimal forwarding of multicast packets through a "multicast domain". However, it does not require a protocol for explicitly building multicast distribution trees, nor does it require intermediate nodes to maintain any per-flow state. This architecture is known as "Bit Index Explicit Replication" (BIER). When a multicast data packet enters the domain, the ingress router determines the set of egress routers to which the packet needs to be sent. The ingress router then encapsulates the packet in a BIER header. The BIER header contains a bit string in which each bit represents exactly one egress router in the domain; to forward the packet to a given set of egress routers, the bits corresponding to those routers are set in the BIER header. The procedures for forwarding a packet based on its BIER header are specified in this document. Elimination of the per-flow state and the explicit tree-building protocols results in a considerable simplification.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8279"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8279"/>
+        </reference>
+        <reference anchor="RFC8402" target="https://www.rfc-editor.org/info/rfc8402" quoteTitle="true" derivedAnchor="RFC8402">
+          <front>
+            <title>Segment Routing Architecture</title>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="S. Previdi" initials="S." role="editor" surname="Previdi"/>
+            <author fullname="L. Ginsberg" initials="L." surname="Ginsberg"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="S. Litkowski" initials="S." surname="Litkowski"/>
+            <author fullname="R. Shakir" initials="R." surname="Shakir"/>
+            <date month="July" year="2018"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) leverages the source routing paradigm. A node steers a packet through an ordered list of instructions, called "segments". A segment can represent any instruction, topological or service based. A segment can have a semantic local to an SR node or global within an SR domain. SR provides a mechanism that allows a flow to be restricted to a specific topological path, while maintaining per-flow state only at the ingress node(s) to the SR domain.</t>
+              <t indent="0">SR can be directly applied to the MPLS architecture with no change to the forwarding plane. A segment is encoded as an MPLS label. An ordered list of segments is encoded as a stack of labels. The segment to process is on the top of the stack. Upon completion of a segment, the related label is popped from the stack.</t>
+              <t indent="0">SR can be applied to the IPv6 architecture, with a new type of routing header. A segment is encoded as an IPv6 address. An ordered list of segments is encoded as an ordered list of IPv6 addresses in the routing header. The active segment is indicated by the Destination Address (DA) of the packet. The next active segment is indicated by a pointer in the new routing header.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8402"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8402"/>
+        </reference>
+        <reference anchor="RFC8556" target="https://www.rfc-editor.org/info/rfc8556" quoteTitle="true" derivedAnchor="RFC8556">
+          <front>
+            <title>Multicast VPN Using Bit Index Explicit Replication (BIER)</title>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <author fullname="M. Sivakumar" initials="M." surname="Sivakumar"/>
+            <author fullname="T. Przygienda" initials="T." surname="Przygienda"/>
+            <author fullname="S. Aldrin" initials="S." surname="Aldrin"/>
+            <author fullname="A. Dolganow" initials="A." surname="Dolganow"/>
+            <date month="April" year="2019"/>
+            <abstract>
+              <t indent="0">The Multicast Virtual Private Network (MVPN) specifications require the use of multicast tunnels ("P-tunnels") that traverse a service provider's backbone network. The P-tunnels are used for carrying multicast traffic across the backbone. A variety of P-tunnel types are supported. Bit Index Explicit Replication (BIER) is a new architecture that provides optimal multicast forwarding through a "multicast domain", without requiring intermediate routers to maintain any per-flow state or to engage in an explicit tree-building protocol. This document specifies the protocol and procedures that allow MVPN to use BIER as the method of carrying multicast traffic over a service provider's backbone network.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8556"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8556"/>
+        </reference>
+        <reference anchor="RFC8660" target="https://www.rfc-editor.org/info/rfc8660" quoteTitle="true" derivedAnchor="RFC8660">
+          <front>
+            <title>Segment Routing with the MPLS Data Plane</title>
+            <author fullname="A. Bashandy" initials="A." role="editor" surname="Bashandy"/>
+            <author fullname="C. Filsfils" initials="C." role="editor" surname="Filsfils"/>
+            <author fullname="S. Previdi" initials="S." surname="Previdi"/>
+            <author fullname="B. Decraene" initials="B." surname="Decraene"/>
+            <author fullname="S. Litkowski" initials="S." surname="Litkowski"/>
+            <author fullname="R. Shakir" initials="R." surname="Shakir"/>
+            <date month="December" year="2019"/>
+            <abstract>
+              <t indent="0">Segment Routing (SR) leverages the source-routing paradigm. A node steers a packet through a controlled set of instructions, called segments, by prepending the packet with an SR header. In the MPLS data plane, the SR header is instantiated through a label stack. This document specifies the forwarding behavior to allow instantiating SR over the MPLS data plane (SR-MPLS).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8660"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8660"/>
+        </reference>
+        <reference anchor="RFC9572" target="https://www.rfc-editor.org/info/rfc9572" quoteTitle="true" derivedAnchor="RFC9572">
+          <front>
+            <title>Updates to EVPN Broadcast, Unknown Unicast, or Multicast (BUM) Procedures</title>
+            <author initials="Z" surname="Zhang" fullname="Zhaohui Zhang">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="W" surname="Lin" fullname="Wen Lin">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="J" surname="Rabadan" fullname="Jorge Rabadan">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="K" surname="Patel" fullname="Keyur Patel">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="A" surname="Sajassi" fullname="Ali Sajassi">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2024" month="May"/>
+          </front>
+          <seriesInfo name="RFC" value="9572"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9572"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="Acknowledgements" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">The authors thank <contact fullname="Stephane Litkowski"/>, <contact fullname="Ali Sajassi"/>, and <contact fullname="Jingrong Xie"/>
+      for their reviews of, comments on, and suggestions for this document.
+      </t>
+    </section>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.b">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <t indent="0" pn="section-appendix.b-1">The following individual also contributed to this document:
+      </t>
+      <contact fullname="Selvakumar Sivaraj">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <email>ssivaraj@juniper.net</email>
+        </address>
+      </contact>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Zhaohui Zhang" initials="Z." surname="Zhang">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <email>zzhang@juniper.net</email>
+        </address>
+      </author>
+      <author fullname="Eric Rosen" initials="E." surname="Rosen">
+        <organization showOnFrontPage="true">Individual</organization>
+        <address>
+          <email>erosen52@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Wen Lin" initials="W." surname="Lin">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <email>wlin@juniper.net</email>
+        </address>
+      </author>
+      <author fullname="Zhenbin Li" initials="Z." surname="Li">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <email>lizhenbin@huawei.com</email>
+        </address>
+      </author>
+      <author fullname="IJsbrand Wijnands" initials="IJ." surname="Wijnands">
+        <organization showOnFrontPage="true">Individual</organization>
+        <address>
+          <email>ice@braindump.be</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

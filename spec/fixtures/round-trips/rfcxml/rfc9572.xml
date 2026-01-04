@@ -1,0 +1,1431 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" updates="7432" docName="draft-ietf-bess-evpn-bum-procedure-updates-14" number="9572" ipr="trust200902" obsoletes="" submissionType="IETF" category="std" consensus="true" xml:lang="en" tocInclude="true" tocDepth="3" symRefs="true" sortRefs="true" prepTime="2024-05-24T10:21:27" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-bess-evpn-bum-procedure-updates-14" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9572" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="EVPN BUM Procedures: Updates">Updates to EVPN Broadcast, Unknown Unicast, or Multicast (BUM) Procedures</title>
+    <seriesInfo name="RFC" value="9572" stream="IETF"/>
+    <author fullname="Zhaohui Zhang" initials="Z." surname="Zhang">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <email>zzhang@juniper.net</email>
+      </address>
+    </author>
+    <author fullname="Wen Lin" initials="W." surname="Lin">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <email>wlin@juniper.net</email>
+      </address>
+    </author>
+    <author fullname="Jorge Rabadan" initials="J." surname="Rabadan">
+      <organization showOnFrontPage="true">Nokia</organization>
+      <address>
+        <email>jorge.rabadan@nokia.com</email>
+      </address>
+    </author>
+    <author fullname="Keyur Patel" initials="K." surname="Patel">
+      <organization showOnFrontPage="true">Arrcus</organization>
+      <address>
+        <email>keyur@arrcus.com</email>
+      </address>
+    </author>
+    <author fullname="Ali Sajassi" initials="A." surname="Sajassi">
+      <organization showOnFrontPage="true">Cisco Systems</organization>
+      <address>
+        <email>sajassi@cisco.com</email>
+      </address>
+    </author>
+    <date month="05" year="2024"/>
+    <area>rtg</area>
+    <workgroup>BESS</workgroup>
+    <keyword>per-region I-PMSI</keyword>
+    <keyword>selective multicast forwarding</keyword>
+    <keyword>tunnel segmentation</keyword>
+    <keyword>inter-AS segmentation</keyword>
+    <keyword>inter-region segmentation</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document specifies updated procedures for handling
+         Broadcast, Unknown Unicast, or Multicast (BUM) traffic in
+         Ethernet VPNs (EVPNs), including selective multicast
+         and segmentation of provider tunnels. This document updates RFC 7432.
+      </t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9572" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+              <li pn="section-toc.1-1.1.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.2.1"><xref derivedContent="1.2" format="counter" sectionFormat="of" target="section-1.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-tunnel-segmentation">Tunnel Segmentation</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-reasons-for-tunnel-segmenta">Reasons for Tunnel Segmentation</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-additional-route-types-of-e">Additional Route Types of EVPN NLRI</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.3.2">
+              <li pn="section-toc.1-1.3.2.1">
+                <t indent="0" pn="section-toc.1-1.3.2.1.1"><xref derivedContent="3.1" format="counter" sectionFormat="of" target="section-3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-per-region-i-pmsi-a-d-route">Per-Region I-PMSI A-D Route</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.2">
+                <t indent="0" pn="section-toc.1-1.3.2.2.1"><xref derivedContent="3.2" format="counter" sectionFormat="of" target="section-3.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-s-pmsi-a-d-route">S-PMSI A-D Route</xref></t>
+              </li>
+              <li pn="section-toc.1-1.3.2.3">
+                <t indent="0" pn="section-toc.1-1.3.2.3.1"><xref derivedContent="3.3" format="counter" sectionFormat="of" target="section-3.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-leaf-a-d-route">Leaf A-D Route</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-selective-multicast">Selective Multicast</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-inter-as-segmentation">Inter-AS Segmentation</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-differences-from-section-72">Differences from Section 7.2.2 of RFC 7117 when Applied to EVPNs</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.2">
+                <t indent="0" pn="section-toc.1-1.5.2.2.1"><xref derivedContent="5.2" format="counter" sectionFormat="of" target="section-5.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-i-pmsi-leaf-tracking">I-PMSI Leaf Tracking</xref></t>
+              </li>
+              <li pn="section-toc.1-1.5.2.3">
+                <t indent="0" pn="section-toc.1-1.5.2.3.1"><xref derivedContent="5.3" format="counter" sectionFormat="of" target="section-5.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-backward-compatibility">Backward Compatibility</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2.3.2">
+                  <li pn="section-toc.1-1.5.2.3.2.1">
+                    <t indent="0" pn="section-toc.1-1.5.2.3.2.1.1"><xref derivedContent="5.3.1" format="counter" sectionFormat="of" target="section-5.3.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-designated-asbr-election">Designated ASBR Election</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-inter-region-segmentation">Inter-Region Segmentation</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-area-as-vs-region">Area/AS vs. Region</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-per-region-aggregation">Per-Region Aggregation</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.3">
+                <t indent="0" pn="section-toc.1-1.6.2.3.1"><xref derivedContent="6.3" format="counter" sectionFormat="of" target="section-6.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-use-of-s-nh-ec">Use of S-NH-EC</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.4">
+                <t indent="0" pn="section-toc.1-1.6.2.4.1"><xref derivedContent="6.4" format="counter" sectionFormat="of" target="section-6.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-ingress-pes-i-pmsi-leaf-tra">Ingress PE's I-PMSI Leaf Tracking</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-multihoming-support">Multihoming Support</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="10" format="counter" sectionFormat="of" target="section-10"/>. <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.10.2">
+              <li pn="section-toc.1-1.10.2.1">
+                <t indent="0" pn="section-toc.1-1.10.2.1.1"><xref derivedContent="10.1" format="counter" sectionFormat="of" target="section-10.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.10.2.2">
+                <t indent="0" pn="section-toc.1-1.10.2.2.1"><xref derivedContent="10.2" format="counter" sectionFormat="of" target="section-10.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.11">
+            <t indent="0" pn="section-toc.1-1.11.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.12">
+            <t indent="0" pn="section-toc.1-1.12.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-contributors">Contributors</xref></t>
+          </li>
+          <li pn="section-toc.1-1.13">
+            <t indent="0" pn="section-toc.1-1.13.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.c"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1"><xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> specifies procedures for multicast in the Virtual Private LAN
+       Service (VPLS multicast), using both inclusive tunnels and
+       selective tunnels with or without inter-AS segmentation, similar to the
+       Multicast VPN (MVPN) procedures specified in <xref target="RFC6513" format="default" sectionFormat="of" derivedContent="RFC6513"/> and <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>.
+       <xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/> specifies inter-area tunnel segmentation procedures for
+	   both VPLS multicast and MVPNs.
+      </t>
+      <t indent="0" pn="section-1-2"><xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> specifies BGP MPLS-based Ethernet VPN (EVPN) procedures,
+       including those handling Broadcast, Unknown Unicast, or Multicast
+       (BUM) traffic. <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> refers to <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> for details but leaves a few feature gaps related to selective tunnel and tunnel segmentation (<xref target="motivation" format="default" sectionFormat="of" derivedContent="Section 2.1"/>).
+      </t>
+      <t indent="0" pn="section-1-3">This document aims to fill in those gaps by covering the use of selective
+       and segmented tunnels in EVPNs. 
+       In the same way that <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> refers to <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> for details, this document only specifies differences from relevant procedures provided in <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> and <xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/>, rather than repeating the text from those documents.
+       Note that these differences are applicable to EVPNs only
+       and are not updates to <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> or <xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/>.
+      </t>
+      <t indent="0" pn="section-1-4">MVPN, VPLS, and EVPN technologies all need to discover other Provider Edges (PEs) in the
+       same L3/L2 VPN and announce the inclusive tunnels. MVPN technology introduced
+       the Inclusive P-Multicast Service Interface (I-PMSI) concept and uses I-PMSI Auto-Discovery (A-D) routes for that purpose.
+       EVPN technology uses Inclusive Multicast Ethernet Tag (IMET) A-D routes,
+       but VPLS technology just adds a PMSI Tunnel Attribute (PTA) to an existing
+       VPLS A-D route for that purpose. For selective tunnels, they all
+       do use the same term: Selective PMSI (S-PMSI) A-D routes.
+      </t>
+      <t indent="0" pn="section-1-5">This document often refers to the I-PMSI concept, which is
+       the same for all three technologies. For consistency and convenience,
+       an EVPN's IMET A-D route and a VPLS's VPLS A-D route carrying a PTA for BUM traffic
+       purposes may each be referred to as an I-PMSI A-D route, depending on the
+       context.
+      </t>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.1">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-1.1-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+       "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>",
+       "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>",
+       "<bcp14>SHOULD NOT</bcp14>",
+       "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+       "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+       are to be interpreted as described in BCP 14
+       <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only
+       when, they appear in all capitals, as shown here.</t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-1.2">
+        <name slugifiedName="name-terminology">Terminology</name>
+        <t indent="0" pn="section-1.2-1">It is assumed that the reader is familiar with concepts and terminologies related to MVPN technology <xref target="RFC6513" format="default" sectionFormat="of" derivedContent="RFC6513"/> <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>, VPLS multicast <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/>, and EVPN technology <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>. For convenience, the following terms are briefly
+       explained.
+        </t>
+        <dl spacing="normal" indent="3" newline="false" pn="section-1.2-2">
+          <dt pn="section-1.2-2.1">AS:</dt>
+          <dd pn="section-1.2-2.2">Autonomous System</dd>
+          <dt pn="section-1.2-2.3">PMSI <xref target="RFC6513" format="default" sectionFormat="of" derivedContent="RFC6513"/>:</dt>
+          <dd pn="section-1.2-2.4">P-Multicast Service Interface. A conceptual interface for a PE
+          to send customer multicast traffic to all or some PEs in the same
+          VPN.</dd>
+          <dt pn="section-1.2-2.5">I-PMSI:</dt>
+          <dd pn="section-1.2-2.6">Inclusive PMSI. Enables traffic to be sent to all PEs in the same VPN.</dd>
+          <dt pn="section-1.2-2.7">S-PMSI:</dt>
+          <dd pn="section-1.2-2.8">Selective PMSI. Enables traffic to be sent to some of the PEs in the same VPN.</dd>
+          <dt pn="section-1.2-2.9">I/S-PMSI A-D Route:</dt>
+          <dd pn="section-1.2-2.10">Auto-Discovery route used to announce the tunnels that instantiate an I/S-PMSI.</dd>
+          <dt pn="section-1.2-2.11">Leaf Auto-Discovery (A-D) Route <xref target="RFC6513" format="default" sectionFormat="of" derivedContent="RFC6513"/>:</dt>
+          <dd pn="section-1.2-2.12">For explicit leaf-tracking purposes.
+       Triggered by I/S-PMSI A-D routes and targeted at the triggering
+	   route's (re-)advertiser. Its Network Layer
+   Reachability Information (NLRI) embeds the entire NLRI of the triggering PMSI A-D route.</dd>
+          <dt pn="section-1.2-2.13">IMET A-D Route <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>:</dt>
+          <dd pn="section-1.2-2.14">Inclusive Multicast Ethernet Tag A-D route.
+          The EVPN equivalent of an MVPN Intra-AS I-PMSI A-D route
+		  used to announce the tunnels that instantiate an I-PMSI.</dd>
+          <dt pn="section-1.2-2.15">SMET A-D Route <xref target="RFC9251" format="default" sectionFormat="of" derivedContent="RFC9251"/>:</dt>
+          <dd pn="section-1.2-2.16">Selective Multicast Ethernet Tag A-D route. The EVPN
+          equivalent of an MVPN Leaf A-D route, but unsolicited and untargeted.</dd>
+          <dt pn="section-1.2-2.17">PMSI Tunnel Attribute (PTA):</dt>
+          <dd pn="section-1.2-2.18">An optional transitive BGP attribute
+          that may be attached to PMSI/Leaf A-D routes to provide
+          information for a PMSI tunnel.</dd>
+          <dt pn="section-1.2-2.19">IBGP:</dt>
+          <dd pn="section-1.2-2.20">Internal BGP (BGP connection between internal peers).</dd>
+          <dt pn="section-1.2-2.21">EBGP:</dt>
+          <dd pn="section-1.2-2.22">External BGP (BGP connection between external peers).</dd>
+          <dt pn="section-1.2-2.23">RT:</dt>
+          <dd pn="section-1.2-2.24">Route Target. Controls route importation and propagation.</dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="segmentation" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-tunnel-segmentation">Tunnel Segmentation</name>
+      <t indent="0" pn="section-2-1">MVPN provider tunnels and EVPN/VPLS BUM provider tunnels, which are
+       referred to as MVPN/EVPN/VPLS provider tunnels in this document for
+       simplicity, can be segmented for technical or administrative reasons,
+       which are summarized in <xref target="motivation" format="default" sectionFormat="of" derivedContent="Section 2.1"/> of this document.
+       <xref target="RFC6513" format="default" sectionFormat="of" derivedContent="RFC6513"/> and <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/> cover MVPN inter-AS segmentation,
+       <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> covers
+       VPLS multicast inter-AS segmentation, and <xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/> (seamless MPLS
+       multicast) covers inter-area segmentation for both MVPNs and VPLSs.
+      </t>
+      <t indent="0" pn="section-2-2">With tunnel segmentation, different segments of an end-to-end tunnel
+	may have different encapsulation overheads. However, the largest overhead
+	of the tunnel caused by an encapsulation method on a particular segment
+	is not different from the case of a non-segmented tunnel with that
+	encapsulation method. This is similar to the case of a network
+	with different link types.
+      </t>
+      <t indent="0" pn="section-2-3">There is a difference between MVPN and VPLS multicast inter-AS
+       segmentation (the VPLS approach is briefly described in <xref target="interaschanges" format="default" sectionFormat="of" derivedContent="Section 5.1"/>). For simplicity, EVPNs will use the same procedures as those for
+       MVPNs. All ASBRs can re-advertise
+       their choice of the best route. Each can become the root of its
+       intra-AS segment and inject traffic it receives from its upstream,
+       while each downstream PE/ASBR will only pick one of the upstream ASBRs
+       as its upstream. This is also the behavior even for VPLS in the case of
+       inter-area segmentation.
+      </t>
+      <t indent="0" pn="section-2-4">For inter-area segmentation, <xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/> requires the use of the Inter-Area
+       Point-to-Multipoint (P2MP) Segmented Next-Hop Extended Community (S-NH-EC) and the setting
+       of the Leaf Information Required (L) flag in the PTA in certain situations.
+       In the EVPN case, the requirements around the S-NH-EC and the L flag in the PTA
+       differ from <xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/> to make the segmentation procedures transparent to
+       ingress and egress PEs.
+      </t>
+      <t indent="0" pn="section-2-5"><xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/> assumes that segmentation happens at area borders.
+       However, it could be at "regional" borders, where a region could be a
+       sub-area, or even an entire AS plus its external links
+       (<xref target="region" format="default" sectionFormat="of" derivedContent="Section 6.1"/>); this would
+       allow for more flexible deployment scenarios (e.g., for single-area
+       provider networks). This document extends the inter-area segmentation concept
+       to inter-region segmentation for EVPNs.
+      </t>
+      <section anchor="motivation" numbered="true" toc="include" removeInRFC="false" pn="section-2.1">
+        <name slugifiedName="name-reasons-for-tunnel-segmenta">Reasons for Tunnel Segmentation</name>
+        <t indent="0" pn="section-2.1-1">Tunnel segmentation may be required and/or desired for
+       administrative and/or technical reasons.
+        </t>
+        <t indent="0" pn="section-2.1-2">For example, an MVPN/VPLS/EVPN may span multiple providers,
+       and the end-to-end provider
+       tunnels have to be segmented at and stitched by the ASBRs.
+       Different providers may use different tunnel technologies (e.g.,
+       provider A uses ingress replication <xref target="RFC7988" format="default" sectionFormat="of" derivedContent="RFC7988"/>, provider B uses RSVP-TE
+       P2MP <xref target="RFC4875" format="default" sectionFormat="of" derivedContent="RFC4875"/>, and provider C uses Multipoint LDP (mLDP) <xref target="RFC6388" format="default" sectionFormat="of" derivedContent="RFC6388"/>). Even if they use
+       the same tunnel technology (e.g., RSVP-TE
+       P2MP), it may be impractical to set up the tunnels across provider
+       boundaries.
+        </t>
+        <t indent="0" pn="section-2.1-3">The same situations may apply between the ASes and/or areas of a
+       single provider. For example, the backbone area may use RSVP-TE
+       P2MP tunnels while non-backbone areas may use mLDP tunnels.
+        </t>
+        <t indent="0" pn="section-2.1-4">Segmentation can also be used to divide an AS/area into smaller regions,
+       so that control plane state and/or forwarding plane state/burden can be
+       limited to that of individual regions. For example, instead of
+       ingress-replicating to 100 PEs in the entire AS, with inter-area segmentation
+       <xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/>, a PE only needs to replicate to local PEs and Area Border Routers (ABRs).
+       The ABRs will further replicate to their downstream PEs and ABRs.
+       This not only reduces the forwarding plane burden, but also reduces
+       the leaf-tracking burden in the control plane.
+        </t>
+        <t indent="0" pn="section-2.1-5">In the case of tunnel aggregation, smaller regions provide the benefit of
+       making it easier to find congruence among the segments of
+       different constituent (service) tunnels and the resulting aggregation
+       (base) tunnel in a region. This leads to better bandwidth efficiency,
+       because the more congruent they are, the fewer leaves of the base
+       tunnel need to discard traffic when a service tunnel's segment 
+       does not need to receive the traffic (yet it is receiving the traffic
+       due to aggregation).
+        </t>
+        <t indent="0" pn="section-2.1-6">Another advantage of the smaller region is smaller Bit Index
+       Explicit Replication (BIER) subdomains <xref target="RFC8279" format="default" sectionFormat="of" derivedContent="RFC8279"/>.
+       With BIER, packets carry a BitString,
+       in which the bits correspond to edge routers that need to receive
+       traffic. Smaller subdomains means that smaller BitStrings can be used
+       without having to send multiple copies of the same packet.
+        </t>
+      </section>
+    </section>
+    <section anchor="routes" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-additional-route-types-of-e">Additional Route Types of EVPN NLRI</name>
+      <t indent="0" pn="section-3-1"><xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> defines the format of EVPN NLRI as follows:
+      </t>
+      <artwork name="" type="" align="left" alt="" pn="section-3-2">
+                 +-----------------------------------+
+                 |    Route Type (1 octet)           |
+                 +-----------------------------------+
+                 |     Length (1 octet)              |
+                 +-----------------------------------+
+                 | Route Type specific (variable)    |
+                 +-----------------------------------+
+</artwork>
+      <t indent="0" pn="section-3-3">
+        So far, eight route types have been defined in <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>,
+        <xref target="RFC9136" format="default" sectionFormat="of" derivedContent="RFC9136"/>, and
+        <xref target="RFC9251" format="default" sectionFormat="of" derivedContent="RFC9251"/>:
+      </t>
+      <table anchor="tab-0" align="center" pn="table-1">
+        <name slugifiedName="name-pre-existing-route-types">Pre-existing Route Types</name>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">1</td>
+            <td align="left" colspan="1" rowspan="1">Ethernet Auto-discovery</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">2</td>
+            <td align="left" colspan="1" rowspan="1">MAC/IP Advertisement</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">3</td>
+            <td align="left" colspan="1" rowspan="1">Inclusive Multicast Ethernet Tag</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">4</td>
+            <td align="left" colspan="1" rowspan="1">Ethernet Segment</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">5</td>
+            <td align="left" colspan="1" rowspan="1">IP Prefix</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">6</td>
+            <td align="left" colspan="1" rowspan="1">Selective Multicast Ethernet Tag Route</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">7</td>
+            <td align="left" colspan="1" rowspan="1">Multicast Membership Report Synch Route</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">8</td>
+            <td align="left" colspan="1" rowspan="1">Multicast Leave Synch Route</td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-3-5">
+        This document defines three additional route types:
+      </t>
+      <table anchor="tab-0a" align="center" pn="table-2">
+        <name slugifiedName="name-new-route-types">New Route Types</name>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">9</td>
+            <td align="left" colspan="1" rowspan="1">Per-Region I-PMSI A-D route</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">10</td>
+            <td align="left" colspan="1" rowspan="1">S-PMSI A-D route</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">11</td>
+            <td align="left" colspan="1" rowspan="1">Leaf A-D route</td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-3-7">
+        The "Route Type specific" field of the Type 9 and Type 10 EVPN NLRIs
+        starts with a Type 1 RD (Route Distinguisher), whose Administrator sub-field <bcp14>MUST</bcp14> match
+        that of the RD in all current EVPN routes that are not Leaf A-D routes
+        (<xref target="leaf" format="default" sectionFormat="of" derivedContent="Section 3.3"/>), i.e., non-Leaf A-D routes
+        from the same advertising router for a given EVPN instance (EVI).
+      </t>
+      <section anchor="per-region" numbered="true" toc="include" removeInRFC="false" pn="section-3.1">
+        <name slugifiedName="name-per-region-i-pmsi-a-d-route">Per-Region I-PMSI A-D Route</name>
+        <t indent="0" pn="section-3.1-1">The per-region I-PMSI A-D route has the following format. Its usage is
+       discussed in <xref target="aggregation" format="default" sectionFormat="of" derivedContent="Section 6.2"/>.
+        </t>
+        <artwork name="" type="" align="left" alt="" pn="section-3.1-2">
+                +-----------------------------------+
+                |       RD (8 octets)               |
+                +-----------------------------------+
+                |  Ethernet Tag ID (4 octets)       |
+                +-----------------------------------+
+                |  Region ID (8 octets)             |
+                +-----------------------------------+
+</artwork>
+        <t indent="0" pn="section-3.1-3">
+        The Region ID identifies the region and is encoded in the same way that an
+        EC is encoded, as detailed in
+        <xref target="aggregation" format="default" sectionFormat="of" derivedContent="Section 6.2"/>.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-3.2">
+        <name slugifiedName="name-s-pmsi-a-d-route">S-PMSI A-D Route</name>
+        <t indent="0" pn="section-3.2-1">The S-PMSI A-D route has the following format:
+        </t>
+        <artwork name="" type="" align="left" alt="" pn="section-3.2-2">
+                +-----------------------------------+
+                |       RD (8 octets)               |
+                +-----------------------------------+
+                |  Ethernet Tag ID (4 octets)       |
+                +-----------------------------------+
+                | Multicast Source Length (1 octet) |
+                +-----------------------------------+
+                |  Multicast Source (variable)      |
+                +-----------------------------------+
+                |  Multicast Group Length (1 octet) |
+                +-----------------------------------+
+                |  Multicast Group (variable)       |
+                +-----------------------------------+
+                |Originator's Addr Length (1 octet) |
+                +-----------------------------------+
+                |Originator's Addr (4 or 16 octets) |
+                +-----------------------------------+
+</artwork>
+        <t indent="0" pn="section-3.2-3">
+        Other than the addition of the Ethernet Tag ID and Originator's Addr
+        Length fields, it is identical
+        to the S-PMSI A-D route as defined in <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/>. The procedures specified
+        in <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> also apply (including wildcard functionality),
+        except that the granularity level is per Ethernet Tag.
+        </t>
+      </section>
+      <section anchor="leaf" numbered="true" toc="include" removeInRFC="false" pn="section-3.3">
+        <name slugifiedName="name-leaf-a-d-route">Leaf A-D Route</name>
+        <t indent="0" pn="section-3.3-1">The Route Type specific field of a Leaf A-D route consists of
+       the following:
+        </t>
+        <artwork name="" type="" align="left" alt="" pn="section-3.3-2">
+                +-----------------------------------+
+                |      Route Key (variable)         |
+                +-----------------------------------+
+                |Originator's Addr Length (1 octet) |
+                +-----------------------------------+
+                |Originator's Addr (4 or 16 octets) |
+                +-----------------------------------+
+</artwork>
+        <t indent="0" pn="section-3.3-3">
+        A Leaf A-D route is originated in response to a PMSI route,
+        which could be an IMET A-D route, a per-region
+        I-PMSI A-D route, an S-PMSI A-D route, or some other types of
+        routes that may be defined in the future that trigger Leaf A-D
+        routes. The Route Key is the NLRI of the
+        route for which this Leaf A-D route is generated.
+        </t>
+        <t indent="0" pn="section-3.3-4">The general procedures for Leaf A-D routes were first specified in
+       <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/> for MVPNs. The principles therein apply to VPLSs and EVPNs as well.
+       <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> provides details regarding VPLS multicast, and this document points
+       out some specifics for EVPNs, e.g., in <xref target="inter-as" format="default" sectionFormat="of" derivedContent="Section 5"/>.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-selective-multicast">Selective Multicast</name>
+      <t indent="0" pn="section-4-1"><xref target="RFC9251" format="default" sectionFormat="of" derivedContent="RFC9251"/> specifies
+       procedures for EVPN selective forwarding of IP multicast traffic using SMET
+       routes. It assumes that selective forwarding is always used with ingress replication
+       for all flows (though the same signaling can also be used for an
+	   ingress PE to learn the set of egress PEs for selective
+	   forwarding with BIER).
+	   A Network Virtualization Edge (NVE) proxies the IGMP/MLD state ("MLD" stands for "Multicast Listener Discovery") that it learns on its
+       Attachment Circuits (ACs) to (C-S,C-G) or (C-*,C-G) SMET routes that are advertised to other NVEs,
+       and a receiving NVE converts the SMET routes back to IGMP/MLD messages
+       and sends them out of its ACs. The receiving NVE also uses the SMET
+       routes to identify which NVEs need to receive traffic for a particular
+       (C-S,C-G) or (C-*,C-G) to achieve selective forwarding using ingress replication or
+       BIER.
+      </t>
+      <t indent="0" pn="section-4-2">With the above procedures, selective forwarding is done for all flows,
+       and the SMET routes are advertised for all flows.
+       It is possible that an operator may not want to track all those
+       (C-S, C-G) or (C-*,C-G) states on the NVEs, and the multicast traffic
+       pattern allows inclusive forwarding for most flows while selective
+       forwarding is needed only for a few high-rate flows. For that reason,
+       or for tunnel types other than ingress replication or BIER, S-PMSI/Leaf A-D procedures
+       defined for selective multicast for VPLS in <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> are used. Other
+       than the fact that different route types and formats are specified with an EVPN SAFI
+       for S-PMSI A-D and Leaf A-D routes (<xref target="routes" format="default" sectionFormat="of" derivedContent="Section 3"/>), all
+       procedures specified in <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> with respect to selective multicast apply to
+       EVPNs as well, including wildcard procedures. In a nutshell, a source
+       NVE advertises S-PMSI A-D routes to announce the tunnels used for
+       certain flows, and receiving NVEs either join the announced PIM/mLDP
+       tunnel or respond with Leaf A-D routes if the L
+       flag is set in the S-PMSI A-D route's PTA (so that the source NVE can
+       include them as tunnel leaves).
+      </t>
+      <t indent="0" pn="section-4-3">An optimization to the procedures provided in <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> may be applied.  Even if
+   a source NVE sets the L flag to request Leaf A-D routes, an egress
+   NVE <bcp14>MAY</bcp14> omit the Leaf A-D route if it has already advertised a
+   corresponding SMET route, and the source NVE <bcp14>MUST</bcp14> use that in lieu of
+   the Leaf A-D route.
+      </t>
+      <t indent="0" pn="section-4-4">The optional optimizations specified for MVPNs in
+       <xref target="RFC8534" format="default" sectionFormat="of" derivedContent="RFC8534"/> are also applicable
+       to EVPNs when the procedures for S-PMSI/Leaf A-D routes are used for EVPN
+       selective multicast forwarding.
+      </t>
+    </section>
+    <section anchor="inter-as" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-inter-as-segmentation">Inter-AS Segmentation</name>
+      <section anchor="interaschanges" numbered="true" toc="include" removeInRFC="false" pn="section-5.1">
+        <name slugifiedName="name-differences-from-section-72">Differences from Section 7.2.2 of RFC 7117 when Applied to EVPNs</name>
+        <t indent="0" pn="section-5.1-1">The first paragraph of <xref target="RFC7117" sectionFormat="of" section="7.2.2.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7117#section-7.2.2.2" derivedContent="RFC7117"/> says:
+        </t>
+        <blockquote pn="section-5.1-2">
+   ... The best route procedures ensure that if multiple
+   ASBRs, in an AS, receive the same Inter-AS A-D route from their EBGP
+   neighbors, only one of these ASBRs propagates this route in Internal
+   BGP (IBGP).  This ASBR becomes the root of the intra-AS segment of
+   the inter-AS tree and ensures that this is the only ASBR that accepts
+   traffic into this AS from the inter-AS tree.
+</blockquote>
+        <t indent="0" pn="section-5.1-3">
+       The above VPLS behavior requires complicated VPLS-specific procedures
+       for the ASBRs to reach agreement. For EVPNs, a different approach
+       is used; the above text from <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> is not applicable to EVPNs.
+        </t>
+        <t indent="0" pn="section-5.1-4">With the different approach for EVPNs/MVPNs, each ASBR will re-advertise
+       its received Inter-AS A-D route to its IBGP peers and becomes the root
+       of an intra-AS segment of the inter-AS tree. The intra-AS segment
+       rooted at one ASBR is disjoint from another intra-AS segment rooted
+       at another ASBR. This is the same as the procedures for S-PMSI routes
+       in <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/> itself.
+        </t>
+        <t indent="0" pn="section-5.1-5">The following bullet in <xref target="RFC7117" sectionFormat="of" section="7.2.2.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7117#section-7.2.2.2" derivedContent="RFC7117"/> does not apply
+	to EVPNs.
+        </t>
+        <blockquote pn="section-5.1-6">
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-5.1-6.1">
+            <li pn="section-5.1-6.1.1">If the ASBR uses ingress replication to instantiate the intra-AS
+       segment of the inter-AS tunnel, the re-advertised route <bcp14>MUST NOT</bcp14>
+       carry the PMSI Tunnel attribute.</li>
+          </ul>
+        </blockquote>
+        <t indent="0" pn="section-5.1-7">The following bullet in <xref target="RFC7117" sectionFormat="of" section="7.2.2.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7117#section-7.2.2.2" derivedContent="RFC7117"/>:
+        </t>
+        <blockquote pn="section-5.1-8">
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-5.1-8.1">
+            <li pn="section-5.1-8.1.1">
+       If the ASBR uses a P-multicast tree to instantiate the intra-AS
+       segment of the inter-AS tunnel, the PMSI Tunnel attribute <bcp14>MUST</bcp14>
+       contain the identity of the tree that is used to instantiate the
+       segment (note that the ASBR could create the identity of the tree
+       prior to the actual instantiation of the segment).  If, in order
+       to instantiate the segment, the ASBR needs to know the leaves of
+       the tree, then the ASBR obtains this information from the A-D
+       routes received from other PEs/ASBRs in the ASBR's own AS.</li>
+          </ul>
+        </blockquote>
+        <t indent="0" pn="section-5.1-9">is changed to the following when applied to EVPNs:
+        </t>
+        <blockquote pn="section-5.1-10">
+          <ul bare="false" empty="false" indent="3" spacing="normal" pn="section-5.1-10.1">
+            <li pn="section-5.1-10.1.1">
+      The PTA <bcp14>MUST</bcp14> specify the tunnel for the segment.
+      If and only if, in order to establish the tunnel, the ASBR needs to
+      know the leaves of the tree, then the ASBR <bcp14>MUST</bcp14> set the L flag to
+      1 in the PTA to trigger Leaf A-D routes from egress PEs and
+      downstream ASBRs. It <bcp14>MUST</bcp14> be (auto-)configured with an import RT,
+      which controls acceptance of Leaf A-D routes by the ASBR.</li>
+          </ul>
+        </blockquote>
+        <t indent="0" pn="section-5.1-11">Accordingly, the following paragraph in <xref target="RFC7117" sectionFormat="of" section="7.2.2.4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7117#section-7.2.2.4" derivedContent="RFC7117"/>:
+        </t>
+        <blockquote pn="section-5.1-12">
+   If the received Inter-AS A-D route carries the PMSI Tunnel attribute
+   with the Tunnel Identifier set to RSVP-TE P2MP LSP, then the ASBR
+   that originated the route <bcp14>MUST</bcp14> establish an RSVP-TE P2MP LSP with the
+   local PE/ASBR as a leaf.  This LSP <bcp14>MAY</bcp14> have been established before
+   the local PE/ASBR receives the route, or it <bcp14>MAY</bcp14> be established after
+   the local PE receives the route.
+</blockquote>
+        <t indent="0" pn="section-5.1-13">
+        is changed to the following when applied to EVPNs:
+        </t>
+        <blockquote pn="section-5.1-14">
+ If the received Inter-AS A-D route has the L flag set in its PTA,
+ then a receiving PE <bcp14>MUST</bcp14> originate a corresponding Leaf A-D route.
+ A receiving ASBR <bcp14>MUST</bcp14> originate a corresponding Leaf A-D
+ route if and only if one of the following conditions is met:
+ (1) it received and imported one or more corresponding Leaf A-D
+ routes from its downstream IBGP or EBGP peers or (2) it has
+ non-null downstream forwarding state for the PIM/mLDP tunnel that
+ instantiates its downstream intra-AS segment. The targeted ASBR for the Leaf A-D
+ route, which (re-)advertised the Inter-AS A-D route, <bcp14>MUST</bcp14> establish a tunnel to the
+ leaves discovered by the Leaf A-D routes.
+</blockquote>
+      </section>
+      <section anchor="leaf-tracking" numbered="true" toc="include" removeInRFC="false" pn="section-5.2">
+        <name slugifiedName="name-i-pmsi-leaf-tracking">I-PMSI Leaf Tracking</name>
+        <t indent="0" pn="section-5.2-1">An ingress PE does not set the L flag in its IMET A-D route's PTA,
+       even with Ingress Replication tunnels or RSVP-TE P2MP tunnels.
+       It does not rely on the Leaf A-D routes to discover leaves in
+       its AS, and <xref target="RFC7432" sectionFormat="of" section="11.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc7432#section-11.2" derivedContent="RFC7432"/> explicitly states that the L
+       flag must be set to 0.
+        </t>
+        <t indent="0" pn="section-5.2-2">An implementation of <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/> might have used the Originating
+       Router's IP Address field of the IMET A-D
+       routes to determine the leaves or might have used the Next Hop field
+       instead. Within the same AS, both will lead to the same result.
+        </t>
+        <t indent="0" pn="section-5.2-3">With segmentation, an ingress PE <bcp14>MUST</bcp14> determine the leaves
+       in its AS from the BGP next hops in all its received IMET A-D
+       routes, so it does not have to set the L flag to request Leaf A-D
+       routes. PEs within the same AS will all have different next hops
+       in their IMET A-D routes (and hence will all be considered as leaves),
+       and PEs from other ASes will have the next hop in their IMET A-D
+       routes set to addresses of ASBRs in this local AS; hence, only those
+       ASBRs will be considered as leaves (as proxies for those PEs in other
+       ASes). Note that in the case of ingress replication, when an ASBR
+       re-advertises IMET A-D routes to IBGP peers, it <bcp14>MUST</bcp14> advertise the
+       same label for all those routes for the same Ethernet Tag ID and the same
+       EVI. Otherwise, duplicated copies will be sent by the ingress PE
+	   and received by egress PEs in other regions. For the same reason,
+	   when an ingress PE builds its flooding list, if multiple routes
+	   have the same (nexthop, label) tuple, they <bcp14>MUST</bcp14> only be
+	   added as a single branch in the flooding list.
+        </t>
+      </section>
+      <section anchor="compatibility" numbered="true" toc="include" removeInRFC="false" pn="section-5.3">
+        <name slugifiedName="name-backward-compatibility">Backward Compatibility</name>
+        <t indent="0" pn="section-5.3-1">The above procedures assume that all PEs are upgraded to support
+       the segmentation procedures:
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.3-2">
+          <li pn="section-5.3-2.1">An ingress PE uses the Next Hop and not the Originating
+             Router's IP Address to determine leaves for the I-PMSI tunnel.
+          </li>
+          <li pn="section-5.3-2.2">An egress PE sends Leaf A-D routes in response to I-PMSI routes,
+             if the PTA has the L flag set by the re-advertising ASBR.
+          </li>
+          <li pn="section-5.3-2.3">In the case of ingress replication, when an ingress PE builds
+   its flooding list, multiple I-PMSI routes may have the same (nexthop, label)
+   tuple, and only a single branch for those routes will be added in the flooding
+   list.
+          </li>
+        </ul>
+        <t indent="0" pn="section-5.3-3">If a deployment has legacy PEs that do not support the above,
+       then a legacy ingress PE would include all PEs (including those
+       in remote ASes) as leaves of the inclusive tunnel and try to send
+       traffic to them directly (no segmentation), which is either undesirable
+       or impossible; a legacy egress PE would not send Leaf A-D routes
+       so the ASBRs would not know to send external traffic to them.
+        </t>
+        <t indent="0" pn="section-5.3-4">If this backward-compatibility problem needs to be addressed, the
+	following procedure <bcp14>MUST</bcp14> be used (see <xref target="aggregation" format="default" sectionFormat="of" derivedContent="Section 6.2"/>
+	for per-PE/AS/region I-PMSI A-D routes):
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5.3-5">
+          <li pn="section-5.3-5.1">An upgraded PE indicates in its per-PE I-PMSI A-D
+             route that it supports the new procedures. This is done
+             by setting a flag bit in the EVPN Multicast Flags Extended
+             Community.
+          </li>
+          <li pn="section-5.3-5.2">All per-PE I-PMSI A-D routes are restricted to the local AS
+             and not propagated to external peers.
+          </li>
+          <li pn="section-5.3-5.3">The ASBRs in an AS originate per-region I-PMSI A-D routes
+             and advertise them to their external peers to specify tunnels
+             used to carry traffic from the local AS to other ASes.
+             Depending on the types of tunnels being used, the L flag
+             in the PTA may be set, in which case the downstream ASBRs
+             and upgraded PEs will send Leaf A-D routes to pull traffic
+             from their upstream ASBRs. In a particular downstream AS,
+             one of the ASBRs is elected, based on the per-region
+             I-PMSI A-D routes for a particular source AS,
+             to send traffic from that source AS to legacy PEs in the
+             downstream AS.
+             The traffic arrives at the elected ASBR on the tunnel
+             announced in the best per-region I-PMSI A-D route for the source
+             AS, as selected by the ASBR from all the routes that it received
+             over EBGP or IBGP sessions. The election procedure is described in
+             <xref target="election" format="default" sectionFormat="of" derivedContent="Section 5.3.1"/>.
+          </li>
+          <li pn="section-5.3-5.4">In an ingress/upstream AS, if and only if an ASBR has active downstream
+             receivers (PEs and ASBRs), which are learned either explicitly
+             via Leaf A-D routes or implicitly via PIM Join or mLDP label
+             mapping, the ASBR originates a per-PE I-PMSI A-D route (i.e., a
+             regular IMET route) into the local
+             AS and stitches incoming per-PE I-PMSI tunnels into its
+             per-region I-PMSI tunnel. Via this process, it gets traffic from
+             local PEs and sends the traffic to other ASes via the tunnel announced in
+             its per-region I-PMSI A-D route.
+          </li>
+        </ul>
+        <t indent="0" pn="section-5.3-6">Note that even if there are no backward-compatibility issues, the use of
+       per-region I-PMSI A-D routes provides the benefit of keeping all per-PE I-PMSI A-D routes
+       in their local ASes, greatly reducing the flooding of the routes and
+       their corresponding Leaf A-D routes (when needed) and reducing the number of
+       inter-AS tunnels.
+        </t>
+        <section anchor="election" numbered="true" toc="include" removeInRFC="false" pn="section-5.3.1">
+          <name slugifiedName="name-designated-asbr-election">Designated ASBR Election</name>
+          <t indent="0" pn="section-5.3.1-1">When an ASBR re-advertises a per-region I-PMSI A-D route into an AS
+       in which a designated ASBR needs to be used to forward traffic
+       to the legacy PEs in the AS, it <bcp14>MUST</bcp14> include a Designated Forwarder (DF) Election EC.
+       The EC and its use are specified in <xref target="RFC8584" format="default" sectionFormat="of" derivedContent="RFC8584"/>.
+       The AC-DF bit in the DF Election EC <bcp14>MUST</bcp14> be cleared.
+       If it is known that no legacy PEs exist in the AS, the ASBR <bcp14>MUST NOT</bcp14>
+       include the EC and <bcp14>MUST</bcp14> remove the DF Election EC if one is carried in
+       the per-region I-PMSI A-D routes that it receives. Note that this is done
+       for each set of per-region I-PMSI A-D routes with the same NLRI.
+          </t>
+          <t indent="0" pn="section-5.3.1-2">Based on the procedures specified in 
+       <xref target="RFC8584" format="default" sectionFormat="of" derivedContent="RFC8584"/>, an election
+       algorithm is determined according to the DF Election ECs carried in
+       the set of per-region I-PMSI routes of the same NLRI re-advertised into the AS.
+       The algorithm is then applied to a candidate list, which is the set of
+       ASBRs that re-advertised the per-region I-PMSI routes of the same NLRI
+       carrying the DF Election EC.
+          </t>
+        </section>
+      </section>
+    </section>
+    <section anchor="inter-region" numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-inter-region-segmentation">Inter-Region Segmentation</name>
+      <section anchor="region" numbered="true" toc="include" removeInRFC="false" pn="section-6.1">
+        <name slugifiedName="name-area-as-vs-region">Area/AS vs. Region</name>
+        <t indent="0" pn="section-6.1-1"><xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/> addresses MVPN/VPLS inter-area segmentation and does not explicitly cover
+       EVPNs. However, if "area" is replaced by "region" and "ABR" is replaced
+       by "RBR" (Regional Border Router), then everything still works and
+       can be applied to EVPNs as well.
+        </t>
+        <t indent="0" pn="section-6.1-2">A region can be a sub-area, or it can be an entire AS, including its
+       external links. Instead of automatically defining a region based on
+       IGP areas, a region would be defined as a BGP peer group. In fact,
+       even with a region definition based on an IGP area, a BGP peer group
+       listing the PEs and ABRs in an area is still needed.
+        </t>
+        <t indent="0" pn="section-6.1-3">Consider the following example diagram for inter-AS segmentation:
+        </t>
+        <artwork name="" type="" align="left" alt="" pn="section-6.1-4">
+          ---------           ------             ---------
+         /         \         /      \           /         \
+        /           \       /        \         /           \
+       | PE1 o    ASBR1 -- ASBR2    ASBR3 -- ASBR4    o PE2 |
+        \           /       \        /         \           /
+         \         /         \      /           \         /
+          ---------           ------             ---------
+          AS 100              AS 200              AS 300
+       |-----------|--------|---------|--------|------------|
+          segment1  segment2 segment3  segment4  segment5
+</artwork>
+        <t indent="0" pn="section-6.1-5">
+       The inter-AS segmentation procedures specified so far (<xref target="RFC6513" format="default" sectionFormat="of" derivedContent="RFC6513"/>, <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>,
+       <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/>, and <xref target="inter-as" format="default" sectionFormat="of" derivedContent="Section 5"/> of this document) require all
+       ASBRs to be involved, and ingress replication is used between two ASBRs
+       in different ASes.
+        </t>
+        <t indent="0" pn="section-6.1-6">
+       In the above diagram, it's possible that ASBR1/4 does not support
+       segmentation, and the provider tunnels in AS 100/300 can actually
+       extend across the external link. In this case, the inter-region
+       segmentation procedures can be used instead -- a region is the
+       entire AS100 plus the ASBR1-ASBR2 link or the entire AS300 plus the
+       ASBR3-ASBR4 link.
+       ASBR2/3 would be the RBRs, and ASBR1/4 will just be a transit core
+       router with respect to provider tunnels.
+        </t>
+        <t indent="0" pn="section-6.1-7">As illustrated in the diagram below, ASBR2/3 will establish a multihop
+       EBGP session, either with a Route Reflector (RR) or directly with PEs in the neighboring
+       AS. I/S-PMSI A-D routes from ingress PEs will not be processed by
+       ASBR1/4. When ASBR2 re-advertises the routes into AS 200, it changes
+       the next hop to its own address and changes its PTA to specify the tunnel
+       type/identification in its own AS. When ASBR3 re-advertises
+       I/S-PMSI A-D routes into the neighboring AS 300, it changes the
+       next hop to its own address and changes its PTA to specify the tunnel
+       type/identification in the neighboring region. Now, the segment is
+       rooted at ASBR3 and extends across the external link to PEs.
+        </t>
+        <artwork name="" type="" align="left" alt="" pn="section-6.1-8">
+          ---------           ------             ---------
+         /   RR....\.mh-ebpg /      \    mh-ebgp/....RR   \
+        /    :      \    `. /        \ .'      /      :    \
+       | PE1 o    ASBR1 -- ASBR2    ASBR3 -- ASBR4    o PE2 |
+        \           /       \        /         \           /
+         \         /         \      /           \         /
+          ---------           ------             ---------
+          AS 100              AS 200              AS 300
+       |-------------------|----------|---------------------|
+          segment 1          segment 2         segment 3
+</artwork>
+      </section>
+      <section anchor="aggregation" numbered="true" toc="include" removeInRFC="false" pn="section-6.2">
+        <name slugifiedName="name-per-region-aggregation">Per-Region Aggregation</name>
+        <t indent="0" pn="section-6.2-1">Notice that every I/S-PMSI route from each PE will be propagated
+       throughout all the ASes or regions. They may also trigger corresponding
+       Leaf A-D routes, depending on the types of tunnels used in each region.
+       This may result in too many routes and corresponding tunnels. To address
+       this concern, the I-PMSI routes from all PEs in an AS/region can be
+       aggregated into a single I-PMSI route originated from the RBRs,
+       and traffic from all those individual I-PMSI tunnels
+       will be switched into the single I-PMSI tunnel. This is like the
+       MVPN Inter-AS I-PMSI route originated by ASBRs.
+        </t>
+        <t indent="0" pn="section-6.2-2">The MVPN Inter-AS I-PMSI A-D route can be better called a "per-AS I-PMSI
+       A-D route", to be compared against the (per-PE) Intra-AS I-PMSI A-D routes
+       originated by each PE. In this document, we will call it a "per-region
+       I-PMSI A-D route" in cases where we want to apply aggregation at the regional
+       level. The per-PE I-PMSI routes will not be propagated to other
+       regions. If multiple RBRs are connected to a region, then each
+       will advertise such a route, with the same Region ID and Ethernet Tag ID (<xref target="per-region" format="default" sectionFormat="of" derivedContent="Section 3.1"/>). Similar to the per-PE I-PMSI A-D
+       routes, RBRs/PEs in a downstream region will each select the best route
+       from all those re-advertised by the upstream RBRs and hence will only
+       receive traffic injected by one of them.
+        </t>
+        <t indent="0" pn="section-6.2-3">MVPNs do not aggregate S-PMSI routes from all PEs in an AS like they
+       do for I-PMSI routes, because the number of PEs that will advertise
+       S-PMSI routes for the same (S,G) or (*,G) is small. This is also the
+       case for EVPNs, i.e., there are no per-region S-PMSI routes.
+        </t>
+        <t indent="0" pn="section-6.2-4">Notice that per-region I-PMSI routes can also be used to address
+       backward-compatibility issues, as discussed in
+       <xref target="compatibility" format="default" sectionFormat="of" derivedContent="Section 5.3"/>.
+        </t>
+        <t indent="0" pn="section-6.2-5">The Region ID in the per-region I-PMSI route's NLRI is encoded like an
+       EC. For example, the
+       Region ID can encode an AS number or area ID in the following EC format:
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-6.2-6">
+          <li pn="section-6.2-6.1">For a two-octet AS number, a Transitive Two-Octet AS-specific
+             EC of sub-type 0x09 (Source AS), with the Global Administrator
+             sub-field set to the AS number and the Local Administrator
+             sub-field set to 0.
+          </li>
+          <li pn="section-6.2-6.2">For a four-octet AS number, a Transitive Four-Octet AS-specific
+             EC of sub-type 0x09 (Source AS), with the Global Administrator
+             sub-field set to the AS number and the Local Administrator
+             sub-field set to 0.
+          </li>
+          <li pn="section-6.2-6.3">For an area ID, a Transitive IPv4-Address-specific EC of any
+             sub-type, with the Global Administrator
+             sub-field set to the area ID and the Local Administrator
+             sub-field set to 0.
+          </li>
+        </ul>
+        <t indent="0" pn="section-6.2-7">
+       The use of other EC encodings <bcp14>MAY</bcp14> be allowed as long as they uniquely
+       identify the region and the RBRs for the same region use the
+       same Region ID.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-6.3">
+        <name slugifiedName="name-use-of-s-nh-ec">Use of S-NH-EC</name>
+        <t indent="0" pn="section-6.3-1"><xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/> specifies the use of the S-NH-EC because it does not allow ABRs
+       to change the BGP next hop when they re-advertise I/S-PMSI A-D routes
+       to downstream areas. That behavior is only to be consistent with the MVPN
+       Inter-AS I-PMSI A-D routes, whose next hop must not be changed
+       when they're re-advertised by the segmenting ABRs for reasons specific
+       to MVPNs. For EVPNs,
+       it is perfectly fine to change the next hop when RBRs re-advertise
+       the I/S-PMSI A-D routes, instead of relying on the S-NH-EC. As a result,
+       this document specifies that RBRs change the BGP next hop when they
+       re-advertise I/S-PMSI A-D routes and do not use the S-NH-EC. This provides
+       the advantage that neither ingress PEs nor egress PEs need to
+       understand/use the S-NH-EC, and a consistent procedure (based on BGP next
+       hops) is used for both inter-AS and inter-region segmentation.
+        </t>
+        <t indent="0" pn="section-6.3-2">
+	If a downstream PE/RBR needs to originate Leaf A-D routes, it constructs
+       an IP-based Route Target Extended Community by
+      placing the IP address carried in the Next Hop of the received
+      I/S-PMSI A-D route in the Global Administrator field of the extended
+      community, with the Local Administrator field of this extended community
+      set to 0, and also setting the Extended Communities attribute of the
+      Leaf A-D route to that extended community. 
+        </t>
+        <t indent="0" pn="section-6.3-3">Similar to <xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/>, the upstream RBR <bcp14>MUST</bcp14> (auto-)configure
+	an RT with the Global Administrator field set to the Next Hop in
+	the re-advertised I/S-PMSI A-D route and with the Local Administrator
+	field set to 0. Using this technique, the mechanisms specified in <xref target="RFC4684" format="default" sectionFormat="of" derivedContent="RFC4684"/>
+	for constrained BGP route
+   distribution can be used along with this specification to ensure that
+   only the needed PE/ABR will have to process a particular Leaf A-D route.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-6.4">
+        <name slugifiedName="name-ingress-pes-i-pmsi-leaf-tra">Ingress PE's I-PMSI Leaf Tracking</name>
+        <t indent="0" pn="section-6.4-1"><xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/> specifies that when an ingress PE/ASBR (re-)advertises a
+       VPLS I-PMSI A-D route, it sets the L flag to 1 in the route's PTA.
+       Similar to the inter-AS case, this is actually not really needed
+       for EVPNs. To be consistent with the inter-AS case, the ingress PE
+       does not set the L flag in its originated I-PMSI A-D routes,
+       and it determines the leaves based on the BGP next hops in its received
+       I-PMSI A-D routes, as specified in <xref target="leaf-tracking" format="default" sectionFormat="of" derivedContent="Section 5.2"/>.
+        </t>
+        <t indent="0" pn="section-6.4-2">The same backward-compatibility issue exists, and the same solution
+       as that for the inter-AS case applies, as specified in <xref target="compatibility" format="default" sectionFormat="of" derivedContent="Section 5.3"/>.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-multihoming-support">Multihoming Support</name>
+      <t indent="0" pn="section-7-1">To support multihoming with segmentation, Ethernet Segment Identifier (ESI) labels <bcp14>SHOULD</bcp14> be
+	allocated from a "Domain-wide Common Block" (DCB)
+	<xref target="RFC9573" format="default" sectionFormat="of" derivedContent="RFC9573"/> for all
+	tunnel types, including Ingress Replication tunnels <xref target="RFC7988" format="default" sectionFormat="of" derivedContent="RFC7988"/>.
+	Via means outside the scope of this document, PEs know that ESI labels
+	are from a DCB, and existing multihoming procedures will then work "as is"
+	(whether a multihomed Ethernet Segment spans segmentation
+	regions or not).
+      </t>
+      <t indent="0" pn="section-7-2">Not using DCB-allocated ESI labels is outside the scope of this
+	document.
+      </t>
+    </section>
+    <section anchor="IANA" numbered="true" toc="include" removeInRFC="false" pn="section-8">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-8-1">IANA has assigned the following new EVPN route types in
+	  the "EVPN Route Types" registry:
+      </t>
+      <table anchor="tab-1" align="center" pn="table-3">
+        <name slugifiedName="name-new-route-types-2">New Route Types</name>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Value</th>
+            <th align="left" colspan="1" rowspan="1">Description</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">9</td>
+            <td align="left" colspan="1" rowspan="1">Per-Region I-PMSI A-D route</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9572</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">10</td>
+            <td align="left" colspan="1" rowspan="1">S-PMSI A-D route</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9572</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">11</td>
+            <td align="left" colspan="1" rowspan="1">Leaf A-D route</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9572</td>
+          </tr>
+        </tbody>
+      </table>
+      <t indent="0" pn="section-8-3">IANA has assigned one flag bit from the
+         "Multicast Flags Extended Community" registry created by
+         <xref target="RFC9251" format="default" sectionFormat="of" derivedContent="RFC9251"/>:
+      </t>
+      <table anchor="tab-2" align="center" pn="table-4">
+        <name slugifiedName="name-new-multicast-flag">New Multicast Flag</name>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Bit</th>
+            <th align="left" colspan="1" rowspan="1">Name</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+            <th align="left" colspan="1" rowspan="1">Change Controller</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">8</td>
+            <td align="left" colspan="1" rowspan="1">Segmentation Support</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9572</td>
+            <td align="left" colspan="1" rowspan="1">IETF</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section anchor="Security" numbered="true" toc="include" removeInRFC="false" pn="section-9">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-9-1">
+	  The procedures specified in this document for selective forwarding via S-PMSI/Leaf A-D routes
+	  are based on the same procedures as those used for MVPNs <xref target="RFC6513" format="default" sectionFormat="of" derivedContent="RFC6513"/> <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>
+	  and VPLS multicast <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/>. The procedures for tunnel segmentation as specified
+	  in this document are based on similar procedures used for MVPN inter-AS tunnel segmentation <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/> and inter-area tunnel segmentation <xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/>, as well as procedures
+	  for VPLS multicast inter-AS tunnel segmentation <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/>.
+    When applied to EVPNs, they do not introduce new security concerns
+    beyond those discussed in <xref target="RFC6513" format="default" sectionFormat="of" derivedContent="RFC6513"/>, <xref target="RFC6514" format="default" sectionFormat="of" derivedContent="RFC6514"/>, <xref target="RFC7117" format="default" sectionFormat="of" derivedContent="RFC7117"/>,
+    and <xref target="RFC7524" format="default" sectionFormat="of" derivedContent="RFC7524"/>. They also do not introduce new security concerns
+    compared to <xref target="RFC7432" format="default" sectionFormat="of" derivedContent="RFC7432"/>.
+      </t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-10">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-10.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC6513" target="https://www.rfc-editor.org/info/rfc6513" quoteTitle="true" derivedAnchor="RFC6513">
+          <front>
+            <title>Multicast in MPLS/BGP IP VPNs</title>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <author fullname="R. Aggarwal" initials="R." role="editor" surname="Aggarwal"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">In order for IP multicast traffic within a BGP/MPLS IP VPN (Virtual Private Network) to travel from one VPN site to another, special protocols and procedures must be implemented by the VPN Service Provider. These protocols and procedures are specified in this document. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6513"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6513"/>
+        </reference>
+        <reference anchor="RFC6514" target="https://www.rfc-editor.org/info/rfc6514" quoteTitle="true" derivedAnchor="RFC6514">
+          <front>
+            <title>BGP Encodings and Procedures for Multicast in MPLS/BGP IP VPNs</title>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <author fullname="T. Morin" initials="T." surname="Morin"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <date month="February" year="2012"/>
+            <abstract>
+              <t indent="0">This document describes the BGP encodings and procedures for exchanging the information elements required by Multicast in MPLS/BGP IP VPNs, as specified in RFC 6513. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6514"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6514"/>
+        </reference>
+        <reference anchor="RFC7117" target="https://www.rfc-editor.org/info/rfc7117" quoteTitle="true" derivedAnchor="RFC7117">
+          <front>
+            <title>Multicast in Virtual Private LAN Service (VPLS)</title>
+            <author fullname="R. Aggarwal" initials="R." role="editor" surname="Aggarwal"/>
+            <author fullname="Y. Kamite" initials="Y." surname="Kamite"/>
+            <author fullname="L. Fang" initials="L." surname="Fang"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <author fullname="C. Kodeboniya" initials="C." surname="Kodeboniya"/>
+            <date month="February" year="2014"/>
+            <abstract>
+              <t indent="0">RFCs 4761 and 4762 describe a solution for Virtual Private LAN Service (VPLS) multicast that relies on the use of point-to-point or multipoint-to-point unicast Label Switched Paths (LSPs) for carrying multicast traffic. This solution has certain limitations for certain VPLS multicast traffic profiles. For example, it may result in highly non-optimal bandwidth utilization when a large amount of multicast traffic is to be transported.</t>
+              <t indent="0">This document describes solutions for overcoming a subset of the limitations of the existing VPLS multicast solution. It describes procedures for VPLS multicast that utilize multicast trees in the service provider (SP) network. The solution described in this document allows sharing of one such multicast tree among multiple VPLS instances. Furthermore, the solution described in this document allows a single multicast tree in the SP network to carry traffic belonging only to a specified set of one or more IP multicast streams from one or more VPLS instances.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7117"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7117"/>
+        </reference>
+        <reference anchor="RFC7432" target="https://www.rfc-editor.org/info/rfc7432" quoteTitle="true" derivedAnchor="RFC7432">
+          <front>
+            <title>BGP MPLS-Based Ethernet VPN</title>
+            <author fullname="A. Sajassi" initials="A." role="editor" surname="Sajassi"/>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="N. Bitar" initials="N." surname="Bitar"/>
+            <author fullname="A. Isaac" initials="A." surname="Isaac"/>
+            <author fullname="J. Uttaro" initials="J." surname="Uttaro"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <date month="February" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes procedures for BGP MPLS-based Ethernet VPNs (EVPN). The procedures described here meet the requirements specified in RFC 7209 -- "Requirements for Ethernet VPN (EVPN)".</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7432"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7432"/>
+        </reference>
+        <reference anchor="RFC7524" target="https://www.rfc-editor.org/info/rfc7524" quoteTitle="true" derivedAnchor="RFC7524">
+          <front>
+            <title>Inter-Area Point-to-Multipoint (P2MP) Segmented Label Switched Paths (LSPs)</title>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <author fullname="E. Rosen" initials="E." surname="Rosen"/>
+            <author fullname="R. Aggarwal" initials="R." surname="Aggarwal"/>
+            <author fullname="T. Morin" initials="T." surname="Morin"/>
+            <author fullname="I. Grosclaude" initials="I." surname="Grosclaude"/>
+            <author fullname="N. Leymann" initials="N." surname="Leymann"/>
+            <author fullname="S. Saad" initials="S." surname="Saad"/>
+            <date month="May" year="2015"/>
+            <abstract>
+              <t indent="0">This document describes procedures for building inter-area point-to-multipoint (P2MP) segmented service label switched paths (LSPs) by partitioning such LSPs into intra-area segments and using BGP as the inter-area routing and Label Distribution Protocol (LDP). Within each IGP area, the intra-area segments are either carried over intra-area P2MP LSPs, using P2MP LSP hierarchy, or instantiated using ingress replication. The intra-area P2MP LSPs may be signaled using P2MP RSVP-TE or P2MP multipoint LDP (mLDP). If ingress replication is used within an IGP area, then (multipoint-to-point) LDP LSPs or (point-to-point) RSVP-TE LSPs may be used in the IGP area. The applications/services that use such inter-area service LSPs may be BGP Multicast VPN, Virtual Private LAN Service (VPLS) multicast, or global table multicast over MPLS.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7524"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7524"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8534" target="https://www.rfc-editor.org/info/rfc8534" quoteTitle="true" derivedAnchor="RFC8534">
+          <front>
+            <title>Explicit Tracking with Wildcard Routes in Multicast VPN</title>
+            <author fullname="A. Dolganow" initials="A." surname="Dolganow"/>
+            <author fullname="J. Kotalwar" initials="J." surname="Kotalwar"/>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <author fullname="Z. Zhang" initials="Z." surname="Zhang"/>
+            <date month="February" year="2019"/>
+            <abstract>
+              <t indent="0">The base Multicast VPN (MVPN) specifications (RFCs 6513 and 6514) provide procedures to allow a multicast ingress node to invoke "explicit tracking" for a multicast flow or set of flows, thus learning the egress nodes for that flow or set of flows. However, the specifications are not completely clear about how the explicit tracking procedures work in certain scenarios. This document provides the necessary clarifications. It also specifies a new, optimized explicit-tracking procedure. This new procedure allows an ingress node, by sending a single message, to request explicit tracking of each of a set of flows, where the set of flows is specified using a wildcard mechanism. This document updates RFCs 6514, 6625, 7524, 7582, and 7900.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8534"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8534"/>
+        </reference>
+        <reference anchor="RFC8584" target="https://www.rfc-editor.org/info/rfc8584" quoteTitle="true" derivedAnchor="RFC8584">
+          <front>
+            <title>Framework for Ethernet VPN Designated Forwarder Election Extensibility</title>
+            <author fullname="J. Rabadan" initials="J." role="editor" surname="Rabadan"/>
+            <author fullname="S. Mohanty" initials="S." role="editor" surname="Mohanty"/>
+            <author fullname="A. Sajassi" initials="A." surname="Sajassi"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <author fullname="K. Nagaraj" initials="K." surname="Nagaraj"/>
+            <author fullname="S. Sathappan" initials="S." surname="Sathappan"/>
+            <date month="April" year="2019"/>
+            <abstract>
+              <t indent="0">An alternative to the default Designated Forwarder (DF) selection algorithm in Ethernet VPNs (EVPNs) is defined. The DF is the Provider Edge (PE) router responsible for sending Broadcast, Unknown Unicast, and Multicast (BUM) traffic to a multihomed Customer Edge (CE) device on a given VLAN on a particular Ethernet Segment (ES). In addition, the ability to influence the DF election result for a VLAN based on the state of the associated Attachment Circuit (AC) is specified. This document clarifies the DF election Finite State Machine in EVPN services. Therefore, it updates the EVPN specification (RFC 7432).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8584"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8584"/>
+        </reference>
+        <reference anchor="RFC9251" target="https://www.rfc-editor.org/info/rfc9251" quoteTitle="true" derivedAnchor="RFC9251">
+          <front>
+            <title>Internet Group Management Protocol (IGMP) and Multicast Listener Discovery (MLD) Proxies for Ethernet VPN (EVPN)</title>
+            <author fullname="A. Sajassi" initials="A." surname="Sajassi"/>
+            <author fullname="S. Thoria" initials="S." surname="Thoria"/>
+            <author fullname="M. Mishra" initials="M." surname="Mishra"/>
+            <author fullname="K. Patel" initials="K." surname="Patel"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <author fullname="W. Lin" initials="W." surname="Lin"/>
+            <date month="June" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes how to support endpoints running the Internet Group Management Protocol (IGMP) or Multicast Listener Discovery (MLD) efficiently for the multicast services over an Ethernet VPN (EVPN) network by incorporating IGMP/MLD Proxy procedures on EVPN Provider Edges (PEs).</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9251"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9251"/>
+        </reference>
+        <reference anchor="RFC9573" target="https://www.rfc-editor.org/info/rfc9573" quoteTitle="true" derivedAnchor="RFC9573">
+          <front>
+            <title>MVPN/EVPN Tunnel Aggregation with Common Labels</title>
+            <author initials="Z" surname="Zhang" fullname="Zhaohui Zhang">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="E" surname="Rosen" fullname="Eric Rosen">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="W" surname="Lin" fullname="Wen Lin">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="Z" surname="Li" fullname="Zhenbin Li">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <author initials="IJ" surname="Wijnands" fullname="IJsbrand Wijnands">
+              <organization showOnFrontPage="true"/>
+            </author>
+            <date year="2024" month="May"/>
+          </front>
+          <seriesInfo name="RFC" value="9573"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9573"/>
+        </reference>
+      </references>
+      <references pn="section-10.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC4684" target="https://www.rfc-editor.org/info/rfc4684" quoteTitle="true" derivedAnchor="RFC4684">
+          <front>
+            <title>Constrained Route Distribution for Border Gateway Protocol/MultiProtocol Label Switching (BGP/MPLS) Internet Protocol (IP) Virtual Private Networks (VPNs)</title>
+            <author fullname="P. Marques" initials="P." surname="Marques"/>
+            <author fullname="R. Bonica" initials="R." surname="Bonica"/>
+            <author fullname="L. Fang" initials="L." surname="Fang"/>
+            <author fullname="L. Martini" initials="L." surname="Martini"/>
+            <author fullname="R. Raszuk" initials="R." surname="Raszuk"/>
+            <author fullname="K. Patel" initials="K." surname="Patel"/>
+            <author fullname="J. Guichard" initials="J." surname="Guichard"/>
+            <date month="November" year="2006"/>
+            <abstract>
+              <t indent="0">This document defines Multi-Protocol BGP (MP-BGP) procedures that allow BGP speakers to exchange Route Target reachability information. This information can be used to build a route distribution graph in order to limit the propagation of Virtual Private Network (VPN) Network Layer Reachability Information (NLRI) between different autonomous systems or distinct clusters of the same autonomous system. This document updates RFC 4364. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4684"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4684"/>
+        </reference>
+        <reference anchor="RFC4875" target="https://www.rfc-editor.org/info/rfc4875" quoteTitle="true" derivedAnchor="RFC4875">
+          <front>
+            <title>Extensions to Resource Reservation Protocol - Traffic Engineering (RSVP-TE) for Point-to-Multipoint TE Label Switched Paths (LSPs)</title>
+            <author fullname="R. Aggarwal" initials="R." role="editor" surname="Aggarwal"/>
+            <author fullname="D. Papadimitriou" initials="D." role="editor" surname="Papadimitriou"/>
+            <author fullname="S. Yasukawa" initials="S." role="editor" surname="Yasukawa"/>
+            <date month="May" year="2007"/>
+            <abstract>
+              <t indent="0">This document describes extensions to Resource Reservation Protocol - Traffic Engineering (RSVP-TE) for the set up of Traffic Engineered (TE) point-to-multipoint (P2MP) Label Switched Paths (LSPs) in Multi- Protocol Label Switching (MPLS) and Generalized MPLS (GMPLS) networks. The solution relies on RSVP-TE without requiring a multicast routing protocol in the Service Provider core. Protocol elements and procedures for this solution are described.</t>
+              <t indent="0">There can be various applications for P2MP TE LSPs such as IP multicast. Specification of how such applications will use a P2MP TE LSP is outside the scope of this document. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4875"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4875"/>
+        </reference>
+        <reference anchor="RFC6388" target="https://www.rfc-editor.org/info/rfc6388" quoteTitle="true" derivedAnchor="RFC6388">
+          <front>
+            <title>Label Distribution Protocol Extensions for Point-to-Multipoint and Multipoint-to-Multipoint Label Switched Paths</title>
+            <author fullname="IJ. Wijnands" initials="IJ." role="editor" surname="Wijnands"/>
+            <author fullname="I. Minei" initials="I." role="editor" surname="Minei"/>
+            <author fullname="K. Kompella" initials="K." surname="Kompella"/>
+            <author fullname="B. Thomas" initials="B." surname="Thomas"/>
+            <date month="November" year="2011"/>
+            <abstract>
+              <t indent="0">This document describes extensions to the Label Distribution Protocol (LDP) for the setup of point-to-multipoint (P2MP) and multipoint-to-multipoint (MP2MP) Label Switched Paths (LSPs) in MPLS networks. These extensions are also referred to as multipoint LDP. Multipoint LDP constructs the P2MP or MP2MP LSPs without interacting with or relying upon any other multicast tree construction protocol. Protocol elements and procedures for this solution are described for building such LSPs in a receiver-initiated manner. There can be various applications for multipoint LSPs, for example IP multicast or support for multicast in BGP/MPLS Layer 3 Virtual Private Networks (L3VPNs). Specification of how such applications can use an LDP signaled multipoint LSP is outside the scope of this document. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6388"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6388"/>
+        </reference>
+        <reference anchor="RFC7988" target="https://www.rfc-editor.org/info/rfc7988" quoteTitle="true" derivedAnchor="RFC7988">
+          <front>
+            <title>Ingress Replication Tunnels in Multicast VPN</title>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <author fullname="K. Subramanian" initials="K." surname="Subramanian"/>
+            <author fullname="Z. Zhang" initials="Z." surname="Zhang"/>
+            <date month="October" year="2016"/>
+            <abstract>
+              <t indent="0">RFCs 6513, 6514, and other RFCs describe procedures by which a Service Provider may offer Multicast VPN (MVPN) service to its customers. These procedures create point-to-multipoint (P2MP) or multipoint-to-multipoint (MP2MP) trees across the Service Provider's backbone. One type of P2MP tree that may be used is known as an "Ingress Replication (IR) tunnel". In an IR tunnel, a parent node need not be directly connected to its child nodes. When a parent node has to send a multicast data packet to its n child nodes, it does not use Layer 2 multicast, IP multicast, or MPLS multicast to do so. Rather, it makes n individual copies, and then unicasts each copy, through an IP or MPLS unicast tunnel, to exactly one child node. While the prior MVPN specifications allow the use of IR tunnels, those specifications are not always very clear or explicit about how the MVPN protocol elements and procedures are applied to IR tunnels. This document updates RFCs 6513 and 6514 by adding additional details that are specific to the use of IR tunnels.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7988"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7988"/>
+        </reference>
+        <reference anchor="RFC8279" target="https://www.rfc-editor.org/info/rfc8279" quoteTitle="true" derivedAnchor="RFC8279">
+          <front>
+            <title>Multicast Using Bit Index Explicit Replication (BIER)</title>
+            <author fullname="IJ. Wijnands" initials="IJ." role="editor" surname="Wijnands"/>
+            <author fullname="E. Rosen" initials="E." role="editor" surname="Rosen"/>
+            <author fullname="A. Dolganow" initials="A." surname="Dolganow"/>
+            <author fullname="T. Przygienda" initials="T." surname="Przygienda"/>
+            <author fullname="S. Aldrin" initials="S." surname="Aldrin"/>
+            <date month="November" year="2017"/>
+            <abstract>
+              <t indent="0">This document specifies a new architecture for the forwarding of multicast data packets. It provides optimal forwarding of multicast packets through a "multicast domain". However, it does not require a protocol for explicitly building multicast distribution trees, nor does it require intermediate nodes to maintain any per-flow state. This architecture is known as "Bit Index Explicit Replication" (BIER). When a multicast data packet enters the domain, the ingress router determines the set of egress routers to which the packet needs to be sent. The ingress router then encapsulates the packet in a BIER header. The BIER header contains a bit string in which each bit represents exactly one egress router in the domain; to forward the packet to a given set of egress routers, the bits corresponding to those routers are set in the BIER header. The procedures for forwarding a packet based on its BIER header are specified in this document. Elimination of the per-flow state and the explicit tree-building protocols results in a considerable simplification.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8279"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8279"/>
+        </reference>
+        <reference anchor="RFC9136" target="https://www.rfc-editor.org/info/rfc9136" quoteTitle="true" derivedAnchor="RFC9136">
+          <front>
+            <title>IP Prefix Advertisement in Ethernet VPN (EVPN)</title>
+            <author fullname="J. Rabadan" initials="J." role="editor" surname="Rabadan"/>
+            <author fullname="W. Henderickx" initials="W." surname="Henderickx"/>
+            <author fullname="J. Drake" initials="J." surname="Drake"/>
+            <author fullname="W. Lin" initials="W." surname="Lin"/>
+            <author fullname="A. Sajassi" initials="A." surname="Sajassi"/>
+            <date month="October" year="2021"/>
+            <abstract>
+              <t indent="0">The BGP MPLS-based Ethernet VPN (EVPN) (RFC 7432) mechanism provides a flexible control plane that allows intra-subnet connectivity in an MPLS and/or Network Virtualization Overlay (NVO) (RFC 7365) network. In some networks, there is also a need for dynamic and efficient inter-subnet connectivity across Tenant Systems and end devices that can be physical or virtual and do not necessarily participate in dynamic routing protocols. This document defines a new EVPN route type for the advertisement of IP prefixes and explains some use-case examples where this new route type is used.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9136"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9136"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="Acknowledgements" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">The authors thank <contact fullname="Eric Rosen"/>, <contact fullname="John Drake"/>, and <contact fullname="Ron Bonica"/> for their
+         comments and suggestions.
+      </t>
+    </section>
+    <section numbered="false" toc="include" removeInRFC="false" pn="section-appendix.b">
+      <name slugifiedName="name-contributors">Contributors</name>
+      <t indent="0" pn="section-appendix.b-1">The following people also contributed to this document through their earlier
+       work in EVPN selective multicast.
+      </t>
+      <contact fullname="Junlin Zhang">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <postal>
+            <street>Huawei Bld., No. 156 Beiqing Rd.</street>
+            <city>Beijing</city>
+            <code>100095</code>
+            <country>China</country>
+          </postal>
+          <email>jackey.zhang@huawei.com</email>
+        </address>
+      </contact>
+      <contact fullname="Zhenbin Li">
+        <organization showOnFrontPage="true">Huawei Technologies</organization>
+        <address>
+          <postal>
+            <street>Huawei Bld., No. 156 Beiqing Rd.</street>
+            <city>Beijing</city>
+            <code>100095</code>
+            <country>China</country>
+          </postal>
+          <email>lizhenbin@huawei.com</email>
+        </address>
+      </contact>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.c">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Zhaohui Zhang" initials="Z." surname="Zhang">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <email>zzhang@juniper.net</email>
+        </address>
+      </author>
+      <author fullname="Wen Lin" initials="W." surname="Lin">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <email>wlin@juniper.net</email>
+        </address>
+      </author>
+      <author fullname="Jorge Rabadan" initials="J." surname="Rabadan">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <email>jorge.rabadan@nokia.com</email>
+        </address>
+      </author>
+      <author fullname="Keyur Patel" initials="K." surname="Patel">
+        <organization showOnFrontPage="true">Arrcus</organization>
+        <address>
+          <email>keyur@arrcus.com</email>
+        </address>
+      </author>
+      <author fullname="Ali Sajassi" initials="A." surname="Sajassi">
+        <organization showOnFrontPage="true">Cisco Systems</organization>
+        <address>
+          <email>sajassi@cisco.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

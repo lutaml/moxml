@@ -1,0 +1,119 @@
+     <metanorma xmlns="http://riboseinc.com/isoxml" flavor="iso">
+      <bibdata>
+      <title>ISO Title</title>
+      <docidentifier type="ISO">ISO 1</docidentifier>
+    </bibdata>
+    <metanorma-extension>
+      <attachment name="_test_sectionsplit_attachments/LICENSE.TXT">data:application/octet-stream;base64,QlNEIDItQ2xhdXNlIExpY2V
+uc2UKCkNvcHlyaWdodCAoYykgMjAxOCwgUmlib3NlCkFsbCByaWdodHMgcmV
+zZXJ2ZWQuCgpSZWRpc3RyaWJ1dGlvbiBhbmQgdXNlIGluIHNvdXJjZSBhbmQ
+gYmluYXJ5IGZvcm1zLCB3aXRoIG9yIHdpdGhvdXQKbW9kaWZpY2F0aW9uLCB
+hcmUgcGVybWl0dGVkIHByb3ZpZGVkIHRoYXQgdGhlIGZvbGxvd2luZyBjb25
+kaXRpb25zIGFyZSBtZXQ6CgoqIFJlZGlzdHJpYnV0aW9ucyBvZiBzb3VyY2U
+gY29kZSBtdXN0IHJldGFpbiB0aGUgYWJvdmUgY29weXJpZ2h0IG5vdGljZSw
+gdGhpcwogIGxpc3Qgb2YgY29uZGl0aW9ucyBhbmQgdGhlIGZvbGxvd2luZyB
+kaXNjbGFpbWVyLgoKKiBSZWRpc3RyaWJ1dGlvbnMgaW4gYmluYXJ5IGZvcm0
+gbXVzdCByZXByb2R1Y2UgdGhlIGFib3ZlIGNvcHlyaWdodCBub3RpY2UsCiA
+gdGhpcyBsaXN0IG9mIGNvbmRpdGlvbnMgYW5kIHRoZSBmb2xsb3dpbmcgZGl
+zY2xhaW1lciBpbiB0aGUgZG9jdW1lbnRhdGlvbgogIGFuZC9vciBvdGhlciB
+tYXRlcmlhbHMgcHJvdmlkZWQgd2l0aCB0aGUgZGlzdHJpYnV0aW9uLgoKVEh
+JUyBTT0ZUV0FSRSBJUyBQUk9WSURFRCBCWSBUSEUgQ09QWVJJR0hUIEhPTER
+FUlMgQU5EIENPTlRSSUJVVE9SUyAiQVMgSVMiCkFORCBBTlkgRVhQUkVTUyB
+PUiBJTVBMSUVEIFdBUlJBTlRJRVMsIElOQ0xVRElORywgQlVUIE5PVCBMSU1
+JVEVEIFRPLCBUSEUKSU1QTElFRCBXQVJSQU5USUVTIE9GIE1FUkNIQU5UQUJ
+JTElUWSBBTkQgRklUTkVTUyBGT1IgQSBQQVJUSUNVTEFSIFBVUlBPU0UgQVJ
+FCkRJU0NMQUlNRUQuIElOIE5PIEVWRU5UIFNIQUxMIFRIRSBDT1BZUklHSFQ
+gSE9MREVSIE9SIENPTlRSSUJVVE9SUyBCRSBMSUFCTEUKRk9SIEFOWSBESVJ
+FQ1QsIElORElSRUNULCBJTkNJREVOVEFMLCBTUEVDSUFMLCBFWEVNUExBUlk
+sIE9SIENPTlNFUVVFTlRJQUwKREFNQUdFUyAoSU5DTFVESU5HLCBCVVQgTk9
+UIExJTUlURUQgVE8sIFBST0NVUkVNRU5UIE9GIFNVQlNUSVRVVEUgR09PRFM
+gT1IKU0VSVklDRVM7IExPU1MgT0YgVVNFLCBEQVRBLCBPUiBQUk9GSVRTOyB
+PUiBCVVNJTkVTUyBJTlRFUlJVUFRJT04pIEhPV0VWRVIKQ0FVU0VEIEFORCB
+PTiBBTlkgVEhFT1JZIE9GIExJQUJJTElUWSwgV0hFVEhFUiBJTiBDT05UUkF
+DVCwgU1RSSUNUIExJQUJJTElUWSwKT1IgVE9SVCAoSU5DTFVESU5HIE5FR0x
+JR0VOQ0UgT1IgT1RIRVJXSVNFKSBBUklTSU5HIElOIEFOWSBXQVkgT1VUIE9
+GIFRIRSBVU0UKT0YgVEhJUyBTT0ZUV0FSRSwgRVZFTiBJRiBBRFZJU0VEIE9
+GIFRIRSBQT1NTSUJJTElUWSBPRiBTVUNIIERBTUFHRS4K
+</attachment>
+    </metanorma-extension>
+      <preface>
+      <abstract id="A" displayorder='1'><title>abstract</title></abstract>
+      <introduction id="B" displayorder='2'><title>introduction</title></introduction>
+      </preface>
+      <sections>
+        <p id="middletitle" displayorder="3">Title</p>
+        <note id="middlenote" displayorder="4">Title</p>
+       <clause id="M" inline-header="false" obligation="normative" displayorder='6'>
+         <title>Clause 4</title>
+         <clause id="N" inline-header="false" obligation="normative">
+         <title>Introduction</title>
+         <p><xref target="A">HE</xref></p>
+         <note id="N1"><p><eref bibitemid="R1" citeas="R1">SHE</xref></p></note>
+         <note id="N2"><p><eref bibitemid="R1" citeas="R1"><image src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"/></xref></p></note>
+         <note id="N3">
+           <p id="_3cfcdeb7-bba1-0265-29d1-cc6b3c1e1810"><eref type="inline" bibitemid="License_A" citeas="[LICENSE.TXT]">License A</eref></p>
+         </note>
+         <svgmap>
+           <figure>
+           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1_000000000" x="0px" y="0px" viewBox="0 0 595.28 841.89" style="enable-background:new 0 0 595.28 841.89;" xml:space="preserve">
+             <image style="overflow:visible;" width="1" height="1" xlink:href='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'/>
+             <a href="#A">A</a>
+             <a href="#B">B</a>
+           </svg>
+           <target href="B"><eref bibitemid="R1" citeas="R1"/></target>
+         </figure>
+         </svgmap>
+         <figure>
+           <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1_000000000" x="0px" y="0px" viewBox="0 0 595.28 841.89" style="enable-background:new 0 0 595.28 841.89;" xml:space="preserve">
+           <image style="overflow:visible;" width="1" height="1" xlink:href='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'/>
+           <a href="#P">P</a>
+         </svg>
+         </figure>
+       </clause>
+       <clause id="O" inline-header="true" obligation="normative">
+         <title>Clause 4.2</title>
+       </clause></clause>
+       <admonition id="L" type="caution"><p>admonition</p></admonition>
+       </sections>
+       <annex id="P" inline-header="false" obligation="normative" displayorder='7'>
+         <title><strong>Annex</strong><br/>(informative)</title>
+         <clause id="Q" inline-header="false" obligation="normative">
+         <title>Annex A.1</title>
+         <clause id="Q1" inline-header="false" obligation="normative">
+         <title>Annex A.1a</title>
+         </clause>
+         <references id="Q2" normative="false">
+        <title>Annex Bibliography</title>
+        </references>
+       </clause>
+       </annex>
+       <annex id="P1" inline-header="false" obligation="normative" displayorder='8'>
+         <title>Annex 2</title>
+       </annex>
+        <bibliography><references id="R" obligation="informative" normative="true" displayorder='5'>
+         <title>Normative References</title>
+         <bibitem id="R1"><docidentifier>R1</docidentifier><title>Hello</title></bibitem>
+       </references><clause id="S" obligation="informative" displayorder='9'>
+         <title>Bibliography</title>
+         <references id="T" obligation="informative" normative="false">
+           <title>Bibliography Subsection</title>
+
+
+
+<bibitem id="License_A" hidden="true">
+  <formattedref format="application/x-isodoc+xml">attachment description</formattedref>
+  <uri type="attachment">_test_sectionsplit_attachments/LICENSE.TXT</uri>
+  <uri type="citation">_test_sectionsplit_attachments/LICENSE.TXT</uri>
+  <docidentifier type="metanorma">[LICENSE.TXT]</docidentifier>
+</bibitem> 
+ 
+
+
+
+
+       </references>
+     </clause>
+     </bibliography>
+     <indexsect displayorder="10"><title>Index</title></indexsect>
+      </metanorma>
+

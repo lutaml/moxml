@@ -1,0 +1,827 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" category="info" docName="draft-ietf-detnet-pof-11" number="9550" ipr="trust200902" submissionType="IETF" consensus="true" obsoletes="" updates="" xml:lang="en" tocInclude="true" symRefs="true" sortRefs="true" prepTime="2024-03-20T20:18:38" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-detnet-pof-11" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9550" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="DetNet POF">Deterministic Networking (DetNet): Packet Ordering Function</title>
+    <seriesInfo name="RFC" value="9550" stream="IETF"/>
+    <author role="editor" fullname="Balazs Varga" initials="B." surname="Varga">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <street>Magyar Tudosok krt. 11.</street>
+          <city>Budapest</city>
+          <country>Hungary</country>
+          <code>1117</code>
+        </postal>
+        <email>balazs.a.varga@ericsson.com</email>
+      </address>
+    </author>
+    <author fullname="Janos Farkas" initials="J." surname="Farkas">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <street>Magyar Tudosok krt. 11.</street>
+          <city>Budapest</city>
+          <country>Hungary</country>
+          <code>1117</code>
+        </postal>
+        <email>janos.farkas@ericsson.com</email>
+      </address>
+    </author>
+    <author fullname="Stephan Kehrer" initials="S." surname="Kehrer">
+      <organization abbrev="Belden" showOnFrontPage="true">Belden Electronics GmbH</organization>
+      <address>
+        <postal>
+          <street>Stuttgarter Strasse 45-51.</street>
+          <city>Neckartenzlingen</city>
+          <country>Germany</country>
+          <code>72654</code>
+        </postal>
+        <email>Stephan.Kehrer@belden.com</email>
+      </address>
+    </author>
+    <author fullname="Tobias Heer" initials="T." surname="Heer">
+      <organization abbrev="Belden" showOnFrontPage="true">Belden Electronics GmbH</organization>
+      <address>
+        <postal>
+          <street>Stuttgarter Strasse 45-51.</street>
+          <city>Neckartenzlingen</city>
+          <country>Germany</country>
+          <code>72654</code>
+        </postal>
+        <email>Tobias.Heer@belden.com</email>
+      </address>
+    </author>
+    <date month="03" year="2024"/>
+    <area>RTG</area>
+    <workgroup>DetNet</workgroup>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">
+     The replication and elimination functions of the Deterministic Networking
+     (DetNet) architecture can result in out-of-order packets, which is not
+     acceptable for some time-sensitive applications. The Packet Ordering
+     Function (POF) algorithms described in this document enable restoration
+     of the correct packet order when the replication and elimination
+     functions are used in DetNet networks.  The POF only provides ordering within
+     the latency bound of a DetNet flow; it does not provide any additional
+     reliability.
+      </t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This document is not an Internet Standards Track specification; it is
+            published for informational purposes.  
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by the
+            Internet Engineering Steering Group (IESG).  Not all documents
+            approved by the IESG are candidates for any level of Internet
+            Standard; see Section 2 of RFC 7841. 
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9550" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terminology">Terminology</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-terms-used-in-this-document">Terms Used in This Document</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-abbreviations">Abbreviations</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-for-pof-implem">Requirements for POF Implementations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-pof-algorithms">POF Algorithms</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-prerequisites-and-assumptio">Prerequisites and Assumptions</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-pof-building-blocks">POF Building Blocks</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.3">
+                <t indent="0" pn="section-toc.1-1.4.2.3.1"><xref derivedContent="4.3" format="counter" sectionFormat="of" target="section-4.3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-basic-pof-algorithm">The Basic POF Algorithm</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.4">
+                <t indent="0" pn="section-toc.1-1.4.2.4.1"><xref derivedContent="4.4" format="counter" sectionFormat="of" target="section-4.4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-advanced-pof-algorithm">The Advanced POF Algorithm</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.5">
+                <t indent="0" pn="section-toc.1-1.4.2.5.1"><xref derivedContent="4.5" format="counter" sectionFormat="of" target="section-4.5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-further-enhancements-of-the">Further Enhancements of the POF Algorithms</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.6">
+                <t indent="0" pn="section-toc.1-1.4.2.6.1"><xref derivedContent="4.6" format="counter" sectionFormat="of" target="section-4.6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-selecting-and-using-the-pof">Selecting and Using the POF Algorithms</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-control-and-management-plan">Control and Management Plane Parameters for POF</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="sec_intro" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">
+     <xref target="RFC8655" format="default" sectionFormat="of" derivedContent="RFC8655"/> defines the Packet Replication
+     Function (PRF) and Packet Elimination Function (PEF) in DetNet for
+     achieving extremely low packet loss. The PRF and PEF provide service
+     protection for DetNet flows. This service protection method relies on
+     copies of the same packet sent over multiple maximally disjoint paths and
+     uses sequencing information to eliminate duplicates. A possible
+     implementation of the PRF and PEF is described in <xref target="IEEE8021CB" format="default" sectionFormat="of" derivedContent="IEEE8021CB"/>, and the related YANG model is
+     defined in <xref target="IEEEP8021CBcv" format="default" sectionFormat="of" derivedContent="IEEEP8021CBcv"/>.
+      </t>
+      <t indent="0" pn="section-1-2">
+     In general, use of per-packet replication and elimination functions can
+     result in out-of-order delivery of packets, which is not acceptable for
+     some deterministic applications. Correcting packet order is not a trivial
+     task; therefore, details of a Packet Ordering Function (POF) are
+     specified in this document. <xref target="RFC8655" format="default" sectionFormat="of" derivedContent="RFC8655"/>
+     defines the external observable result of a POF (i.e., that
+     packets are reordered) but does not specify any implementation details.
+      </t>
+      <t indent="0" pn="section-1-3">
+     So far in packet networks, out-of-order delivery situations have been handled 
+	 at higher OSI layers at the endpoints/hosts (e.g., in the TCP stack when 
+	 packets are sent to the application layer) and not within a network in nodes 
+	 acting at the Layer 2 or Layer 3 OSI layers. 
+      </t>
+      <t indent="0" pn="section-1-4">
+     <xref target="PREOF-scene" format="default" sectionFormat="of" derivedContent="Figure 1"/> shows a DetNet flow on which Packet 
+	 Replication, Elimination, and Ordering Functions (PREOF)  
+	 are applied during forwarding from source to destination. 
+      </t>
+      <figure anchor="PREOF-scene" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-preof-scenario-in-a-detnet-">PREOF Scenario in a DetNet Network</name>
+        <artwork align="center" name="" type="" alt="" pn="section-1-5.1">
+                                    +------------+
+             +-----------E1----+    |            |
++----+       |            |    +---R3---+        |          +----+
+|src |------R1        +---+             |        E3----O1---+ dst|
++----+       |        |                 E2-------+          +----+
+             +-------R2                 |
+                      +-----------------+
+
+R: replication point (PRF)
+E: elimination point (PEF)
+O: ordering function (POF)
+</artwork>
+      </figure>
+      <t indent="0" pn="section-1-6">
+    In general, the use of PREOF requires sequencing information
+    to be included in the packets of a DetNet compound flow.  This can be
+    done by adding a sequence number as part of DetNet encapsulation 
+    <xref target="RFC8655" format="default" sectionFormat="of" derivedContent="RFC8655"/>. Sequencing information is typically added once, 
+	at or close to the source.
+      </t>
+      <t indent="0" pn="section-1-7">
+     It is important to note that different applications can react differently to out-of-order 
+	 delivery. A single out-of-order packet (e.g., packet order #1, #3, #2, 
+	 #4, #5) is interpreted by some application as a single error, but 
+	 other applications treat it as three errors in a row.
+	 For example, in industrial scenarios,
+	 three errors in a row is a typical error threshold and can cause the 
+	 application to stop (e.g., go to a fail-safe state).
+      </t>
+      <t indent="0" pn="section-1-8">
+     The POF ensures in-order delivery for packets within
+	 the latency bound of the DetNet flow. The POF does not correct
+	 errors in the packet flow (e.g., duplicate packets or packets that are too late).
+      </t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-terminology">Terminology</name>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-2.1">
+        <name slugifiedName="name-terms-used-in-this-document">Terms Used in This Document</name>
+        <t indent="0" pn="section-2.1-1">
+   This document uses the terminology established in the DetNet architecture
+   <xref target="RFC8655" format="default" sectionFormat="of" derivedContent="RFC8655"/>; the reader is assumed
+   to be familiar with that document and its terminology.
+        </t>
+      </section>
+      <section numbered="true" toc="include" removeInRFC="false" pn="section-2.2">
+        <name slugifiedName="name-abbreviations">Abbreviations</name>
+        <t indent="0" pn="section-2.2-1">
+   The following abbreviations are used in this document:
+        </t>
+        <dl newline="false" spacing="normal" indent="9" pn="section-2.2-2">
+          <dt pn="section-2.2-2.1">DetNet</dt>
+          <dd pn="section-2.2-2.2">Deterministic Networking</dd>
+          <dt pn="section-2.2-2.3">PEF</dt>
+          <dd pn="section-2.2-2.4">Packet Elimination Function</dd>
+          <dt pn="section-2.2-2.5">POF</dt>
+          <dd pn="section-2.2-2.6">Packet Ordering Function</dd>
+          <dt pn="section-2.2-2.7">PREOF</dt>
+          <dd pn="section-2.2-2.8">Packet Replication, Elimination, and Ordering Functions</dd>
+          <dt pn="section-2.2-2.9">PRF</dt>
+          <dd pn="section-2.2-2.10">Packet Replication Function</dd>
+        </dl>
+      </section>
+    </section>
+    <section anchor="req-on-pof" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-requirements-for-pof-implem">Requirements for POF Implementations</name>
+      <t indent="0" pn="section-3-1">
+     The requirements for POF implementations are: 
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3-2">
+        <li pn="section-3-2.1">
+          <t indent="0" pn="section-3-2.1.1">To solve the out-of-order delivery problem of the replication 
+		 and elimination functions of DetNet networks. </t>
+        </li>
+        <li pn="section-3-2.2">
+          <t indent="0" pn="section-3-2.2.1">To consider the delay bound requirement of a DetNet flow. </t>
+        </li>
+        <li pn="section-3-2.3">
+          <t indent="0" pn="section-3-2.3.1">To be simple and to require only a minimum set of states,
+          configuration parameters, and resources per DetNet flow in network
+          nodes.
+          </t>
+        </li>
+        <li pn="section-3-2.4">
+          <t indent="0" pn="section-3-2.4.1">To add minimal or no delay to the forwarding process 
+		 of packets. </t>
+        </li>
+        <li pn="section-3-2.5">
+          <t indent="0" pn="section-3-2.5.1">To not require synchronization between PREOF nodes. </t>
+        </li>
+      </ul>
+      <t indent="0" pn="section-3-3">
+     Some aspects are explicitly out of scope for a POF: 
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3-4">
+        <li pn="section-3-4.1">
+          <t indent="0" pn="section-3-4.1.1">To eliminate the delay variation caused by the packet ordering.
+          Dealing with delay variation is a DetNet forwarding sub-layer
+          target, and it can be achieved, for example, by placing a de-jitter
+          buffer or flow regulator (e.g., shaping) function after the POF.</t>
+        </li>
+      </ul>
+    </section>
+    <section anchor="pof-alg" numbered="true" toc="include" removeInRFC="false" pn="section-4">
+      <name slugifiedName="name-pof-algorithms">POF Algorithms</name>
+      <section anchor="preof-relations" numbered="true" toc="include" removeInRFC="false" pn="section-4.1">
+        <name slugifiedName="name-prerequisites-and-assumptio">Prerequisites and Assumptions</name>
+        <t indent="0" pn="section-4.1-1">
+        The POF algorithms discussed in this document make some assumptions and
+        trade-offs regarding the characteristics of the sequence of received
+        packets. In particular, the algorithms assume that a 
+        PEF is performed on the incoming packets
+        before they are handed to the POF. Hence, the sequence
+        of incoming packets can be out-of-order or incomplete but cannot 
+		contain duplicate packets. However, the PREOF run
+        independently without any state exchange required between the
+        PEF and the POF or the PRF and the POF. Error cases in which 
+		duplicate packets are presented to the POF can lead to out-of-order delivery of duplicate packets and to increased delays.
+        </t>
+        <t indent="0" pn="section-4.1-2">
+        The algorithms further require that the delay difference between two
+        replicated packets that arrive at the PEF before the POF is bounded and
+        known. Error cases that violate this condition (e.g., a packet that
+        arrives later than this bound) will result in out-of-order packets.
+        </t>
+        <t indent="0" pn="section-4.1-3">
+        The algorithms also make some trade-offs. For simplicity, it is designed
+        to allow for some out-of-order packets directly after
+        initialization. If this is not acceptable, 
+		<xref target="enh-pof" format="default" sectionFormat="of" derivedContent="Section 4.5"/> provides an alternative initialization scheme
+        that prevents out-of-order packets in the initialization phase.
+        </t>
+      </section>
+      <section anchor="pof-blocks" numbered="true" toc="include" removeInRFC="false" pn="section-4.2">
+        <name slugifiedName="name-pof-building-blocks">POF Building Blocks</name>
+        <t indent="0" pn="section-4.2-1">
+     The method described in this document provides a POF for DetNet networks. The 
+	 configuration parameters of the POF can be derived when engineering the 
+	 DetNet flow through the network.
+        </t>
+        <t indent="0" pn="section-4.2-2">
+     The POF method is provided via the following: 
+        </t>
+        <dl newline="false" spacing="normal" indent="3" pn="section-4.2-3">
+          <dt pn="section-4.2-3.1">Delay calculator:</dt>
+          <dd pn="section-4.2-3.2">Calculates buffering time for out-of-order packets.
+		 Buffering time considers (i) the delay 
+		 difference of paths used for forwarding the replicated packets 
+		 and (ii) the bounded delay requirement of the given DetNet flow. 
+          </dd>
+          <dt pn="section-4.2-3.3">Conditional delay buffer:</dt>
+          <dd pn="section-4.2-3.4">Used for buffering the out-of-order packets of a 
+		 DetNet flow for a given time. </dd>
+        </dl>
+        <t indent="0" pn="section-4.2-4">
+     Note: The conditional delay buffer of the POF increases the burstiness of the 
+	 traffic as it only adds delay for some of the packets. 
+        </t>
+        <t indent="0" pn="section-4.2-5">
+     <xref target="POF-blocks" format="default" sectionFormat="of" derivedContent="Figure 2"/> shows the building blocks of a 
+	 possible POF implementation. 
+        </t>
+        <figure anchor="POF-blocks" align="left" suppress-title="false" pn="figure-2">
+          <name slugifiedName="name-pof-building-blocks-2">POF Building Blocks</name>
+          <artwork align="center" name="" type="" alt="" pn="section-4.2-6.1">
+               +------------+        +--------------+
+               | Delay calc |        | Conditional  |
+            +--| for packet &gt;---&gt;&gt;---| Delay Buffer &gt;--+
+            |  +------------+        +--------------+  |  
+            |                                          |        
+     +------^--------+                                 |
+-&gt;&gt;--| POF selector  &gt;---------------------------------+--&gt;&gt;----  
+     | (Flow ident.) |
+     +---------------+
+
+-&gt;&gt;- packet flow
+</artwork>
+        </figure>
+      </section>
+      <section anchor="basic-pof" numbered="true" toc="include" removeInRFC="false" pn="section-4.3">
+        <name slugifiedName="name-the-basic-pof-algorithm">The Basic POF Algorithm</name>
+        <t indent="0" pn="section-4.3-1">
+     The basic POF algorithm delays all out-of-order packets until all 
+	 previous packets arrive or a given time ("POFMaxDelay") elapses. The 
+	 basic POF algorithm works as follows:
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.3-2">
+          <li pn="section-4.3-2.1">
+            <t indent="0" pn="section-4.3-2.1.1">The sequence number of the last forwarded packet ("POFLastSent") is 
+		 stored for each DetNet flow. </t>
+          </li>
+          <li pn="section-4.3-2.2">
+            <t indent="0" pn="section-4.3-2.2.1">The sequence number (seq_num) of a received packet is compared to 
+		 that of the last forwarded one ("POFLastSent"). </t>
+          </li>
+          <li pn="section-4.3-2.3">
+            <t indent="0" pn="section-4.3-2.3.1">If (seq_num &lt;= POFLastSent + 1)
+            </t>
+            <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.3-2.3.2">
+              <li pn="section-4.3-2.3.2.1">
+                <t indent="0" pn="section-4.3-2.3.2.1.1"> Then the packet is forwarded without buffering, and "POFLastSent"
+				is updated (POFLastSent = seq_num). </t>
+              </li>
+              <li pn="section-4.3-2.3.2.2">
+                <t indent="0" pn="section-4.3-2.3.2.2.1"> Else, the received packet is buffered. </t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-4.3-2.4">
+            <t indent="0" pn="section-4.3-2.4.1">A buffered packet is forwarded from the buffer when its seq_num 
+		 becomes equal to "POFLastSent + 1" OR a predefined time ("POFMaxDelay") 
+		 elapses.</t>
+          </li>
+          <li pn="section-4.3-2.5">
+            <t indent="0" pn="section-4.3-2.5.1">When a packet is forwarded from the buffer, "POFLastSent" is 
+		 updated with its seq_num (POFLastSent = seq_num). </t>
+          </li>
+        </ul>
+        <t indent="0" pn="section-4.3-3">Notes:</t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.3-4">
+          <li pn="section-4.3-4.1">The difference between sequence numbers in consecutive packets is bounded 
+	 due to the history window of the elimination function before the POF. 
+	 Therefore, "&lt;="  can be evaluated despite the circular 
+	 sequence number space. A possible implementation of the PEF and 
+	 the impact of the history window are described in <xref target="IEEE8021CB" format="default" sectionFormat="of" derivedContent="IEEE8021CB"/>. 
+        </li>
+          <li pn="section-4.3-4.2">The basic POF algorithm can be extended to cope with multiple failure scenarios 
+	 (i.e., simultaneous packet loss and out-of-order packets) when the expiration 
+	 of the timer for a packet with sequence number N triggers the release of some 
+	 packets with a sequence number smaller than N.
+        </li>
+        </ul>
+        <t indent="0" pn="section-4.3-5">
+     The state used by the basic POF algorithm (i.e., "POFLastSent") needs 
+	 initialization and maintenance. This works as follows:
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.3-6">
+          <li pn="section-4.3-6.1">
+            <t indent="0" pn="section-4.3-6.1.1">The next received packet is forwarded and the "POFLastSent"
+		 updated when the POF is reset OR no packet is received 
+		 for a predefined time ("POFTakeAnyTime"). </t>
+          </li>
+          <li pn="section-4.3-6.2">
+            <t indent="0" pn="section-4.3-6.2.1">The reset of the POF erases all packets from the time-based 
+		 buffer used by the POF. </t>
+          </li>
+        </ul>
+        <t indent="0" pn="section-4.3-7">
+     The basic POF algorithm has two parameters to engineer:
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.3-8">
+          <li pn="section-4.3-8.1">
+            <t indent="0" pn="section-4.3-8.1.1">"POFMaxDelay", which cannot be smaller than the delay 
+		 difference of the paths used by the flow. </t>
+          </li>
+          <li pn="section-4.3-8.2">
+            <t indent="0" pn="section-4.3-8.2.1">"POFTakeAnyTime", which is calculated based on several factors,
+            for example, the settings of the elimination function(s) relating
+            to RECOVERY_TIMEOUT before the POF, the flow characteristics
+            (e.g., inter-packet time), and the delay difference of the paths
+            used by the flow.  </t>
+          </li>
+        </ul>
+        <t indent="0" pn="section-4.3-9">
+     Design of these parameters is out of scope for this document.
+        </t>
+        <t indent="0" pn="section-4.3-10">
+     Note: Multiple network failures can impact the POF
+	 (e.g., complete outage of all redundant paths).
+        </t>
+        <t indent="0" pn="section-4.3-11">
+     The basic POF algorithm increases the delay of packets with maximum 
+	 "POFMaxDelay" time. In-order packets are not delayed. This basic 
+	 POF method can be applied in all network scenarios where the remaining 
+	 delay budget of a flow at the POF point is larger than "POFMaxDelay" 
+	 time.
+        </t>
+        <t indent="0" pn="section-4.3-12">
+     <xref target="delay-budget" format="default" sectionFormat="of" derivedContent="Figure 3"/> shows the delay budget
+     situation at the POF point.
+        </t>
+        <figure anchor="delay-budget" align="left" suppress-title="false" pn="figure-3">
+          <name slugifiedName="name-delay-budget-situation-at-t">Delay Budget Situation at the POF Point</name>
+          <artwork align="center" name="" type="" alt="" pn="section-4.3-13.1">
+                          Path delay
+                          difference
+                        /-------------/
+&lt;- path with min delay -&gt;             /-- remaining delay budget --/
+
+|-----------------------|-------------|----------------------------|
+0                       t1            t2                           T
+
+&lt;-------- path with max delay --------&gt;
+  
+/-------------------- delay budget at POF point -------------------/
+</artwork>
+        </figure>
+      </section>
+      <section anchor="adv-pof" numbered="true" toc="include" removeInRFC="false" pn="section-4.4">
+        <name slugifiedName="name-the-advanced-pof-algorithm">The Advanced POF Algorithm</name>
+        <t indent="0" pn="section-4.4-1">
+     In network scenarios where the remaining delay budget of a flow at the 
+	 POF point is smaller than "POFMaxDelay" time, the basic method needs 
+	 extensions. 
+        </t>
+        <t indent="0" pn="section-4.4-2">
+     The issue is that packets on the longest path cannot be buffered in order 
+	 to keep the delay budget of the flow. It must be noted that such a packet 
+	 (i.e., forwarded over the longest path) needs no buffering as it is the 
+	 last chance to deliver a packet with a given sequence number. This is 
+	 because all replicas already arrived via a shorter path(s).
+        </t>
+        <t indent="0" pn="section-4.4-3">
+The advanced POF algorithm requires extensions of the basic POF algorithm:
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.4-4">
+          <li pn="section-4.4-4.1">
+            <t indent="0" pn="section-4.4-4.1.1">to identify the received packet's path at the POF location and </t>
+          </li>
+          <li pn="section-4.4-4.2">
+            <t indent="0" pn="section-4.4-4.2.1">to make the value of "POFMaxDelay" for buffered packets path 
+		 dependent ("POFMaxDelay_i", where "i" notes the path the packet 
+		 has used). </t>
+          </li>
+        </ul>
+        <t indent="0" pn="section-4.4-5">
+  The advanced POF algorithm identifies the path of a given packet and uses this
+  information to select the predefined time ("POFMaxDelay_i") to apply for the
+  buffered packet.  So, in the advanced POF algorithm, "POFMaxDelay" is an
+  array that contains the predefined and path-specific buffering time for each
+  redundant path of a flow. Values in the "POFMaxDelay" array are engineered
+  to fulfill the delay budget requirement.
+        </t>
+        <t indent="0" pn="section-4.4-6">
+     Design of these parameters is out of scope for this document.
+        </t>
+        <t indent="0" pn="section-4.4-7">
+     Note: For the advanced POF algorithm, the path-dependent delays
+	 might result in multiple packets triggering the "maximum delay 
+	 reached" at exactly the same time. The transmission order of 
+	 these packets should be done in their seq_num order.
+        </t>
+        <t indent="0" pn="section-4.4-8">
+     The method for identifying the packet's path at the POF location 
+     depends on the network scenario.
+  It can be implemented via
+  various techniques, for example, using ingress interface information,
+  encoding the path in the packet itself (e.g., replication functions
+  set a different FlowID per member flow at their egress and such 
+  a FlowID is used to identify the path of a packet at the POF), or
+  other means.  
+     Methods for identifying the packet's path are out of scope 
+	 for this document.
+        </t>
+        <t indent="0" pn="section-4.4-9">
+     Note: When using the advanced POF algorithm, it might be 
+	 advantageous to combine PEF and POF locations in the DetNet network, as 
+	 this can simplify the method used for identifying the packet's path 
+	 at the POF location.
+        </t>
+      </section>
+      <section anchor="enh-pof" numbered="true" toc="include" removeInRFC="false" pn="section-4.5">
+        <name slugifiedName="name-further-enhancements-of-the">Further Enhancements of the POF Algorithms</name>
+        <t indent="0" pn="section-4.5-1">
+     POF algorithms can be further enhanced by distinguishing the case of 
+	 initialization from normal operation at the price of more states and 
+	 more sophisticated implementation. Such enhancements could, for example,
+	 react better after some failure scenarios (e.g., complete outage of all 
+	 paths of a DetNet flow) and can be dependent on the PEF implementation.
+        </t>
+        <t indent="0" pn="section-4.5-2">
+  The challenge for POF initialization is that it is not known whether the
+  first received packet is in-order or out-of-order (for example, after a
+  reset).
+
+  The original initialization (see <xref target="basic-pof" format="default" sectionFormat="of" derivedContent="Section 4.3"/>) considers the 
+	 first packet as in-order, so out-of-order packet(s) during 
+	 "POFMaxTime"/"POFMaxTime_path_i" time -- after the first packet is
+	 received -- cannot be corrected.
+
+	 The motivation behind such an initialization 
+	 is simplicity of POF implementation.
+        </t>
+        <t indent="0" pn="section-4.5-3">
+     A possible enhancement of POF initialization works as follows:
+        </t>
+        <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4.5-4">
+          <li pn="section-4.5-4.1">
+            <t indent="0" pn="section-4.5-4.1.1">After a reset, all received packets are buffered with their 
+		 predefined timer ("POFMaxTime"/"POFMaxTime_path_i"). </t>
+          </li>
+          <li pn="section-4.5-4.2">
+            <t indent="0" pn="section-4.5-4.2.1">No basic or advanced POF rules are applied until the first timer 
+		 expires. </t>
+          </li>
+          <li pn="section-4.5-4.3">
+            <t indent="0" pn="section-4.5-4.3.1">When the first timer expires, the packet with lowest seq_num in the
+		 buffer is selected and forwarded, and "POFLastSent" is set with its 
+		 seq_num.</t>
+          </li>
+          <li pn="section-4.5-4.4">
+            <t indent="0" pn="section-4.5-4.4.1">The basic or advanced POF rules are applied for the packet(s) in the 
+		 buffer and the subsequently received packets.</t>
+          </li>
+        </ul>
+      </section>
+      <section anchor="select-pof" numbered="true" toc="include" removeInRFC="false" pn="section-4.6">
+        <name slugifiedName="name-selecting-and-using-the-pof">Selecting and Using the POF Algorithms</name>
+        <t indent="0" pn="section-4.6-1">
+     The selection of the POF algorithm depends on the network scenario and 
+	 the remaining delay budget of a flow. Using the POF algorithms and calculating their
+	 parameters require proper design. Knowing the path delay difference is 
+	 essential for the POF algorithms described here. Failure scenarios 
+	 breaking the design assumptions can impact the result of the POF (e.g., 
+	 packet received out of the expected worst-case delay window 
+	 -- calculated based on the path delay difference -- can result in unwanted 
+	 out-of-order delivery).
+        </t>
+        <t indent="0" pn="section-4.6-2">
+     In DetNet scenarios, there is always an elimination function before the
+     POF (therefore, duplicates are not considered by the POF). Implementing
+     them together in the same node allows the POF to consider PEF events/states
+     during the reordering. For example, under normal circumstances, the
+     difference between sequence numbers in consecutive packets is bounded due
+     to the history window of the PEF.  However, in some scenarios (e.g., reset of
+     sequence number), the difference can be much larger than the size of the
+     history window.
+        </t>
+      </section>
+    </section>
+    <section anchor="ctrl-mngmnt-pof" numbered="true" toc="include" removeInRFC="false" pn="section-5">
+      <name slugifiedName="name-control-and-management-plan">Control and Management Plane Parameters for POF</name>
+      <t indent="0" pn="section-5-1">POF algorithms require the following parameters to be set:
+      </t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-2">
+        <li pn="section-5-2.1">
+          <t indent="0" pn="section-5-2.1.1">Basic POF
+          </t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-2.1.2">
+            <li pn="section-5-2.1.2.1">
+              <t indent="0" pn="section-5-2.1.2.1.1">"POFMaxDelay" </t>
+            </li>
+            <li pn="section-5-2.1.2.2">
+              <t indent="0" pn="section-5-2.1.2.2.1">"POFTakeAnyTime" </t>
+            </li>
+          </ul>
+        </li>
+        <li pn="section-5-2.2">
+          <t indent="0" pn="section-5-2.2.1">Advanced POF 
+          </t>
+          <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-2.2.2">
+            <li pn="section-5-2.2.2.1">
+              <t indent="0" pn="section-5-2.2.2.1.1">"POFMaxDelay_i" for each possible path i </t>
+            </li>
+            <li pn="section-5-2.2.2.2">
+              <t indent="0" pn="section-5-2.2.2.2.1">"POFTakeAnyTime" </t>
+            </li>
+            <li pn="section-5-2.2.2.3">
+              <t indent="0" pn="section-5-2.2.2.3.1">Configuration(s) related to network path identification</t>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <t indent="0" pn="section-5-3">
+     Note: In a proper design, "POFTakeAnyTime" is always larger than "POFMaxDelay".
+      </t>
+    </section>
+    <section numbered="true" toc="include" removeInRFC="false" pn="section-6">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-6-1">
+     PREOF-related security considerations (including POF) are described in
+     <xref target="RFC9055" sectionFormat="of" section="3.3" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9055#section-3.3" derivedContent="RFC9055"/>. There are no
+     additional POF-related security considerations originating from this
+     document.
+      </t>
+    </section>
+    <section anchor="iana" numbered="true" toc="include" removeInRFC="false" pn="section-7">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-7-1">This document has no IANA actions.
+      </t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-8">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-8.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC8655" target="https://www.rfc-editor.org/info/rfc8655" quoteTitle="true" derivedAnchor="RFC8655">
+          <front>
+            <title>Deterministic Networking Architecture</title>
+            <author fullname="N. Finn" initials="N." surname="Finn"/>
+            <author fullname="P. Thubert" initials="P." surname="Thubert"/>
+            <author fullname="B. Varga" initials="B." surname="Varga"/>
+            <author fullname="J. Farkas" initials="J." surname="Farkas"/>
+            <date month="October" year="2019"/>
+            <abstract>
+              <t indent="0">This document provides the overall architecture for Deterministic Networking (DetNet), which provides a capability to carry specified unicast or multicast data flows for real-time applications with extremely low data loss rates and bounded latency within a network domain. Techniques used include 1) reserving data-plane resources for individual (or aggregated) DetNet flows in some or all of the intermediate nodes along the path of the flow, 2) providing explicit routes for DetNet flows that do not immediately change with the network topology, and 3) distributing data from DetNet flow packets over time and/or space to ensure delivery of each packet's data in spite of the loss of a path. DetNet operates at the IP layer and delivers service over lower-layer technologies such as MPLS and Time- Sensitive Networking (TSN) as defined by IEEE 802.1.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8655"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8655"/>
+        </reference>
+        <reference anchor="RFC9055" target="https://www.rfc-editor.org/info/rfc9055" quoteTitle="true" derivedAnchor="RFC9055">
+          <front>
+            <title>Deterministic Networking (DetNet) Security Considerations</title>
+            <author fullname="E. Grossman" initials="E." role="editor" surname="Grossman"/>
+            <author fullname="T. Mizrahi" initials="T." surname="Mizrahi"/>
+            <author fullname="A. Hacker" initials="A." surname="Hacker"/>
+            <date month="June" year="2021"/>
+            <abstract>
+              <t indent="0">A DetNet (deterministic network) provides specific performance guarantees to its data flows, such as extremely low data loss rates and bounded latency (including bounded latency variation, i.e., "jitter"). As a result, securing a DetNet requires that in addition to the best practice security measures taken for any mission-critical network, additional security measures may be needed to secure the intended operation of these novel service properties.</t>
+              <t indent="0">This document addresses DetNet-specific security considerations from the perspectives of both the DetNet system-level designer and component designer. System considerations include a taxonomy of relevant threats and attacks, and associations of threats versus use cases and service properties. Component-level considerations include ingress filtering and packet arrival-time violation detection.</t>
+              <t indent="0">This document also addresses security considerations specific to the IP and MPLS data plane technologies, thereby complementing the Security Considerations sections of those documents.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9055"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9055"/>
+        </reference>
+      </references>
+      <references pn="section-8.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="IEEE8021CB" target="https://standards.ieee.org/standard/802_1CB-2017.html" quoteTitle="true" derivedAnchor="IEEE8021CB">
+          <front>
+            <title>IEEE Standard for Local and metropolitan area networks -- Frame Replication and Elimination for Reliability</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date month="October" year="2017"/>
+          </front>
+          <seriesInfo name="IEEE Std" value="802.1CB-2017"/>
+          <seriesInfo name="DOI" value="10.1109/IEEESTD.2017.8091139"/>
+        </reference>
+        <reference anchor="IEEEP8021CBcv" target="https://standards.ieee.org/ieee/802.1CBcv/7285/" quoteTitle="true" derivedAnchor="IEEEP8021CBcv">
+          <front>
+            <title>IEEE Standard for Local and metropolitan area networks -- Frame Replication and Elimination for Reliability - Amendment 1: Information Model, YANG Data Model, and Management Information Base Module</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date month="February" year="2022"/>
+          </front>
+          <seriesInfo name="IEEE Std" value="802.1CBcv-2001"/>
+          <seriesInfo name="DOI" value="10.1109/IEEESTD.2022.9715061"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="acks" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">
+   Authors extend their appreciation to <contact fullname="Gyorgy Miklos"/>,
+   <contact fullname="Ehsan Mohammadpour"/>, <contact fullname="Ludovic    Thomas"/>, <contact fullname="Greg Mirsky"/>, <contact fullname="Jeong-dong    Ryoo"/>, <contact fullname="Fan Yang"/>, <contact fullname="Toerless    Eckert"/>, <contact fullname="Norman Finn"/>, and <contact fullname="Ethan    Grossman"/> for their insightful comments and productive discussion that
+   helped to improve the document.
+      </t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author role="editor" fullname="Balazs Varga" initials="B." surname="Varga">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <street>Magyar Tudosok krt. 11.</street>
+            <city>Budapest</city>
+            <country>Hungary</country>
+            <code>1117</code>
+          </postal>
+          <email>balazs.a.varga@ericsson.com</email>
+        </address>
+      </author>
+      <author fullname="Janos Farkas" initials="J." surname="Farkas">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <street>Magyar Tudosok krt. 11.</street>
+            <city>Budapest</city>
+            <country>Hungary</country>
+            <code>1117</code>
+          </postal>
+          <email>janos.farkas@ericsson.com</email>
+        </address>
+      </author>
+      <author fullname="Stephan Kehrer" initials="S." surname="Kehrer">
+        <organization abbrev="Belden" showOnFrontPage="true">Belden Electronics GmbH</organization>
+        <address>
+          <postal>
+            <street>Stuttgarter Strasse 45-51.</street>
+            <city>Neckartenzlingen</city>
+            <country>Germany</country>
+            <code>72654</code>
+          </postal>
+          <email>Stephan.Kehrer@belden.com</email>
+        </address>
+      </author>
+      <author fullname="Tobias Heer" initials="T." surname="Heer">
+        <organization abbrev="Belden" showOnFrontPage="true">Belden Electronics GmbH</organization>
+        <address>
+          <postal>
+            <street>Stuttgarter Strasse 45-51.</street>
+            <city>Neckartenzlingen</city>
+            <country>Germany</country>
+            <code>72654</code>
+          </postal>
+          <email>Tobias.Heer@belden.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

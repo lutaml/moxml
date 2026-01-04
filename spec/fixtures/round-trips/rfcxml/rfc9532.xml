@@ -1,0 +1,448 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-httpbis-alias-proxy-status-07" submissionType="IETF" number="9532" updates="" obsoletes="" xml:lang="en" category="std" consensus="true" tocInclude="true" sortRefs="true" symRefs="true" prepTime="2024-01-31T13:52:55" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-httpbis-alias-proxy-status-07" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9532" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Next-Hop Aliases Proxy-Status Parameter">HTTP Proxy-Status Parameter for Next-Hop Aliases</title>
+    <seriesInfo name="RFC" value="9532" stream="IETF"/>
+    <author initials="T." surname="Pauly" fullname="Tommy Pauly">
+      <organization showOnFrontPage="true">Apple, Inc.</organization>
+      <address>
+        <email>tpauly@apple.com</email>
+      </address>
+    </author>
+    <date month="01" year="2024"/>
+    <area>Applications and Real-Time</area>
+    <workgroup>httpbis</workgroup>
+    <keyword>proxy status</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document defines the <tt>next-hop-aliases</tt> HTTP
+    Proxy-Status Parameter. This parameter carries the list of aliases and
+    canonical names an intermediary received during DNS resolution as part of
+    establishing a connection to the next hop.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9532" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.1.2">
+              <li pn="section-toc.1-1.1.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.2.1.1"><xref derivedContent="1.1" format="counter" sectionFormat="of" target="section-1.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements">Requirements</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-next-hop-aliases-parameter">next-hop-aliases Parameter</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-encoding-special-characters">Encoding Special Characters</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-implementation-consideratio">Implementation Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.6.2">
+              <li pn="section-toc.1-1.6.2.1">
+                <t indent="0" pn="section-toc.1-1.6.2.1.1"><xref derivedContent="6.1" format="counter" sectionFormat="of" target="section-6.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.6.2.2">
+                <t indent="0" pn="section-toc.1-1.6.2.2.1"><xref derivedContent="6.2" format="counter" sectionFormat="of" target="section-6.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-address">Author's Address</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">The Proxy-Status HTTP response field <xref target="RFC9209" format="default" sectionFormat="of" derivedContent="PROXY-STATUS"/> allows intermediaries to convey
+information about how they handled the request in HTTP responses sent to clients.
+It defines a set of parameters that provide information, such as the name of the next
+hop.</t>
+      <t indent="0" pn="section-1-2"><xref target="RFC9209" format="default" sectionFormat="of" derivedContent="PROXY-STATUS"/> defines a <tt>next-hop</tt> parameter, which can contain a hostname,
+IP address, or alias of the next hop. This parameter can contain only one such item,
+so it cannot be used to communicate a chain of aliases encountered during DNS resolution
+when connecting to the next hop.</t>
+      <t indent="0" pn="section-1-3">Knowing the full chain of names that were used during DNS resolution via CNAME records
+<xref target="RFC1034" format="default" sectionFormat="of" derivedContent="DNS"/> is particularly useful for clients of forward proxies, in which the
+client is requesting to connect to a specific target hostname using the CONNECT method
+<xref target="RFC9110" format="default" sectionFormat="of" derivedContent="HTTP"/> or UDP proxying <xref target="RFC9298" format="default" sectionFormat="of" derivedContent="CONNECT-UDP"/>. CNAME records can be used to
+"cloak" hosts that perform tracking or malicious activity behind more innocuous hostnames,
+and clients such as web browsers use the chain of DNS names to influence behavior like cookie
+usage policies <xref target="RFC6265" format="default" sectionFormat="of" derivedContent="COOKIES"/> or the blocking of malicious hosts.</t>
+      <t indent="0" pn="section-1-4">This document allows clients to receive the CNAME chain of DNS names for the next hop
+by including the list of names in a new <tt>next-hop-aliases</tt> Proxy-Status parameter.</t>
+      <section anchor="requirements" numbered="true" removeInRFC="false" toc="include" pn="section-1.1">
+        <name slugifiedName="name-requirements">Requirements</name>
+        <t indent="0" pn="section-1.1-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>", "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>", "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are to be interpreted as
+    described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> 
+    when, and only when, they appear in all capitals, as shown here.
+        </t>
+      </section>
+    </section>
+    <section anchor="parameter" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-next-hop-aliases-parameter">next-hop-aliases Parameter</name>
+      <t indent="0" pn="section-2-1">The value of the <tt>next-hop-aliases</tt> parameter is a String <xref target="RFC8941" format="default" sectionFormat="of" derivedContent="STRUCTURED-FIELDS"/> that contains
+one or more DNS names in a comma-separated list. The items in the list include all alias names and
+canonical names received in CNAME records <xref target="RFC1034" format="default" sectionFormat="of" derivedContent="DNS"/> during the course of resolving the next hop's hostname using DNS and <bcp14>MAY</bcp14> include the original requested hostname itself. The names ought to appear in the order in which they were received in DNS, for the sake of consistency. If there are multiple CNAME records in the chain, the first name in the <tt>next-hop-aliases</tt> list would
+be the value in the CNAME record for the original hostname, and the final name in the
+      <tt>next-hop-aliases</tt> list would be the name that ultimately resolved to one or more addresses.</t>
+      <t indent="0" pn="section-2-2">The list of DNS names in <tt>next-hop-aliases</tt> parameter uses a comma (",") as a separator between names.
+Note that if a comma is included in a name itself, the comma must be encoded as described in
+<xref target="encoding" format="default" sectionFormat="of" derivedContent="Section 2.1"/>.</t>
+      <t indent="0" pn="section-2-3">For example, consider a proxy "proxy.example.net" that receives the following records when
+      performing DNS resolution for the next hop "host.example.com":</t>
+      <sourcecode type="" markers="false" pn="section-2-4">
+host.example.com.           CNAME   tracker.example.com.
+tracker.example.com.        CNAME   service1.example.com.
+service1.example.com.       AAAA    2001:db8::1
+</sourcecode>
+      <t indent="0" pn="section-2-5">The proxy could include the following proxy status in its response:</t>
+      <sourcecode type="http-message" markers="false" pn="section-2-6">
+Proxy-Status: proxy.example.net; next-hop="2001:db8::1";
+    next-hop-aliases="tracker.example.com,service1.example.com"
+</sourcecode>
+      <t indent="0" pn="section-2-7">This indicates that "proxy.example.net", which used the IP address "2001:db8::1" as the next hop
+for this request, encountered the names "tracker.example.com" and "service1.example.com"
+in the DNS resolution chain. Note that while this example includes both the <tt>next-hop</tt> and
+<tt>next-hop-aliases</tt> parameters, <tt>next-hop-aliases</tt> can be included without including <tt>next-hop</tt>.</t>
+      <t indent="0" pn="section-2-8">The proxy can also include the name of the next hop as the first item in the list. This is
+particularly useful for reverse proxies when clients would not otherwise know the name of the
+next hop, and the <tt>next-hop</tt> header is used to convey an IP address.</t>
+      <t indent="0" pn="section-2-9">For example, consider a proxy "reverseproxy.example.net" that receives the following records
+when performing DNS resolution for the next hop "host.example.com":</t>
+      <sourcecode type="" markers="false" pn="section-2-10">
+host2.example.com.          CNAME   service2.example.com.
+service2.example.com.       AAAA    2001:db8::2
+</sourcecode>
+      <t indent="0" pn="section-2-11">The proxy could include the following proxy status in its response:</t>
+      <sourcecode type="http-message" markers="false" pn="section-2-12">
+Proxy-Status: reverseproxy.example.net; next-hop="2001:db8::2";
+    next-hop-aliases="host2.example.com,service2.example.com"
+</sourcecode>
+      <t indent="0" pn="section-2-13">The <tt>next-hop-aliases</tt> parameter only applies when DNS was used to resolve the next hop's name, and it
+does not apply in all situations. Clients can use the information in this parameter to determine how to use the connection established through the proxy, but they need to gracefully handle situations in which this parameter is not present.</t>
+      <t indent="0" pn="section-2-14">The proxy <bcp14>MAY</bcp14> send the empty string ("") as the value of <tt>next-hop-aliases</tt> parameter to indicate that
+no CNAME records were encountered when resolving the next hop's name.</t>
+      <section anchor="encoding" numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-encoding-special-characters">Encoding Special Characters</name>
+        <t indent="0" pn="section-2.1-1">DNS names commonly contain just alphanumeric characters and hyphens ("-"), although they
+are allowed to contain any character (<xref section="3.1" sectionFormat="comma" target="RFC1035" format="default" derivedLink="https://rfc-editor.org/rfc/rfc1035#section-3.1" derivedContent="RFC1035"/>), including a comma. To
+prevent commas or other special characters in names leading to incorrect parsing,
+any characters that appear in names in this list that do not belong to the set of URI
+unreserved characters (<xref section="2.3" sectionFormat="comma" target="RFC3986" format="default" derivedLink="https://rfc-editor.org/rfc/rfc3986#section-2.3" derivedContent="RFC3986"/>) <bcp14>MUST</bcp14> be percent-encoded as
+defined in <xref section="2.1" sectionFormat="comma" target="RFC3986" format="default" derivedLink="https://rfc-editor.org/rfc/rfc3986#section-2.1" derivedContent="RFC3986"/>.</t>
+        <t indent="0" pn="section-2.1-2">For example, consider the DNS name "comma,name.example.com". This name would be encoded
+within a <tt>next-hop-aliases</tt> parameter as follows:</t>
+        <sourcecode type="http-message" markers="false" pn="section-2.1-3">
+Proxy-Status: proxy.example.net; next-hop="2001:db8::1";
+    next-hop-aliases="comma%2Cname.example.com,service1.example.com"
+</sourcecode>
+        <t indent="0" pn="section-2.1-4">It is also possible for a DNS name to include a period character (".") within a label instead of as a label separator. In this case, the period character <bcp14>MUST</bcp14> first be escaped
+as "\.". Since the "\" character itself will be percent-encoded, the name
+"dot\.label.example.com" would be encoded within a <tt>next-hop-aliases</tt> parameter as follows:</t>
+        <sourcecode type="http-message" markers="false" pn="section-2.1-5">
+Proxy-Status: proxy.example.net; next-hop="2001:db8::1";
+    next-hop-aliases="dot%5C.label.example.com,service1.example.com"
+</sourcecode>
+        <t indent="0" pn="section-2.1-6">Upon parsing this name, "dot%5C.label" <bcp14>MUST</bcp14> be treated as a single label.</t>
+        <t indent="0" pn="section-2.1-7">Similarly, the "\" character in a label <bcp14>MUST</bcp14> be escaped as "\\" and then percent-encoded. Other uses of "\" <bcp14>MUST NOT</bcp14> appear in the label after percent-decoding. For example, if there is a DNS name "backslash\name.example.com", it would first be escaped as "backslash\\name.example.com" and then percent-encoded as follows:</t>
+        <sourcecode type="http-message" markers="false" pn="section-2.1-8">
+Proxy-Status: proxy.example.net; next-hop="2001:db8::1";
+    next-hop-aliases="backslash%5C%5Cname.example.com,s1.example.com"
+</sourcecode>
+      </section>
+    </section>
+    <section anchor="implementation-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-implementation-consideratio">Implementation Considerations</name>
+      <t indent="0" pn="section-3-1">In order to include the <tt>next-hop-aliases</tt> parameter, a proxy needs to have access to the chain
+of alias names and canonical names received in CNAME records.</t>
+      <t indent="0" pn="section-3-2">Implementations ought to note that the full chain of names might not be available in common DNS
+resolution APIs, such as <tt>getaddrinfo</tt> <xref target="POSIX" format="default" sectionFormat="of" derivedContent="POSIX"/>. <tt>getaddrinfo</tt> does have an option for <tt>AI_CANONNAME</tt>
+(<xref section="6.1" sectionFormat="comma" target="RFC3493" format="default" derivedLink="https://rfc-editor.org/rfc/rfc3493#section-6.1" derivedContent="RFC3493"/>), but this will only return the last name in the chain
+(the canonical name), not the alias names.</t>
+      <t indent="0" pn="section-3-3">An implementation <bcp14>MAY</bcp14> include incomplete information in the <tt>next-hop-aliases</tt> parameter to accommodate cases where it is unable to include the full chain, such as only including the canonical name if the implementation can only use <tt>getaddrinfo</tt> as described above.</t>
+    </section>
+    <section anchor="sec-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-4-1">The <tt>next-hop-aliases</tt> parameter does not include any DNSSEC information or imply that DNSSEC was used.
+The information included in the parameter can only be trusted to be valid insofar as the client
+trusts the proxy to provide accurate information. This information is intended to be used as
+a hint and <bcp14>SHOULD NOT</bcp14> be used for making security decisions about the identity of a resource accessed
+through the proxy.</t>
+      <t indent="0" pn="section-4-2">Inspecting CNAME chains can be used to detect cloaking of trackers or malicious hosts. However, the
+CNAME records could be omitted by a recursive or authoritative resolver that is trying to hide this form of cloaking.
+In particular, recursive or authoritative resolvers can omit these records for both clients directly performing DNS name
+resolution and proxies performing DNS name resolution on behalf of a client. A malicious proxy could
+also choose to not report these CNAME chains in order to hide the cloaking. In general, clients can
+trust information included (or not included) in the <tt>next-hop-aliases</tt> parameter to the degree
+that the proxy and any resolvers used by the proxy are trusted.</t>
+    </section>
+    <section anchor="iana-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-5-1">This document registers the <tt>next-hop-aliases</tt> parameter
+in the "HTTP Proxy-Status Parameters" registry <eref target="https://www.iana.org/assignments/http-proxy-status" brackets="angle"/> as shown in <xref target="table_1" format="default" sectionFormat="of" derivedContent="Table 1"/>.</t>
+      <table anchor="table_1" align="center" pn="table-1">
+        <name slugifiedName="name-http-proxy-status-parameter">HTTP Proxy-Status Parameters Registry</name>
+        <thead>
+          <tr>
+            <th align="left" colspan="1" rowspan="1">Name</th>
+            <th align="left" colspan="1" rowspan="1">Description</th>
+            <th align="left" colspan="1" rowspan="1">Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="left" colspan="1" rowspan="1">next‑hop‑aliases</td>
+            <td align="left" colspan="1" rowspan="1">A string containing one or more DNS aliases or canonical names used to establish a proxied connection to the next hop.</td>
+            <td align="left" colspan="1" rowspan="1">RFC 9532</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="RFC9209" to="PROXY-STATUS"/>
+    <displayreference target="RFC1034" to="DNS"/>
+    <displayreference target="RFC9110" to="HTTP"/>
+    <displayreference target="RFC9298" to="CONNECT-UDP"/>
+    <displayreference target="RFC8941" to="STRUCTURED-FIELDS"/>
+    <displayreference target="RFC6265" to="COOKIES"/>
+    <references pn="section-6">
+      <name slugifiedName="name-references">References</name>
+      <references anchor="sec-normative-references" pn="section-6.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC9298" target="https://www.rfc-editor.org/info/rfc9298" quoteTitle="true" derivedAnchor="CONNECT-UDP">
+          <front>
+            <title>Proxying UDP in HTTP</title>
+            <author fullname="D. Schinazi" initials="D." surname="Schinazi"/>
+            <date month="August" year="2022"/>
+            <abstract>
+              <t indent="0">This document describes how to proxy UDP in HTTP, similar to how the HTTP CONNECT method allows proxying TCP in HTTP. More specifically, this document defines a protocol that allows an HTTP client to create a tunnel for UDP communications through an HTTP server that acts as a proxy.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9298"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9298"/>
+        </reference>
+        <reference anchor="RFC1034" target="https://www.rfc-editor.org/info/rfc1034" quoteTitle="true" derivedAnchor="DNS">
+          <front>
+            <title>Domain names - concepts and facilities</title>
+            <author fullname="P. Mockapetris" initials="P." surname="Mockapetris"/>
+            <date month="November" year="1987"/>
+            <abstract>
+              <t indent="0">This RFC is the revised basic definition of The Domain Name System. It obsoletes RFC-882. This memo describes the domain style names and their used for host address look up and electronic mail forwarding. It discusses the clients and servers in the domain name system and the protocol used between them.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="13"/>
+          <seriesInfo name="RFC" value="1034"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1034"/>
+        </reference>
+        <reference anchor="RFC9110" target="https://www.rfc-editor.org/info/rfc9110" quoteTitle="true" derivedAnchor="HTTP">
+          <front>
+            <title>HTTP Semantics</title>
+            <author fullname="R. Fielding" initials="R." role="editor" surname="Fielding"/>
+            <author fullname="M. Nottingham" initials="M." role="editor" surname="Nottingham"/>
+            <author fullname="J. Reschke" initials="J." role="editor" surname="Reschke"/>
+            <date month="June" year="2022"/>
+            <abstract>
+              <t indent="0">The Hypertext Transfer Protocol (HTTP) is a stateless application-level protocol for distributed, collaborative, hypertext information systems. This document describes the overall architecture of HTTP, establishes common terminology, and defines aspects of the protocol that are shared by all versions. In this definition are core protocol elements, extensibility mechanisms, and the "http" and "https" Uniform Resource Identifier (URI) schemes.</t>
+              <t indent="0">This document updates RFC 3864 and obsoletes RFCs 2818, 7231, 7232, 7233, 7235, 7538, 7615, 7694, and portions of 7230.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="97"/>
+          <seriesInfo name="RFC" value="9110"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9110"/>
+        </reference>
+        <reference anchor="RFC9209" target="https://www.rfc-editor.org/info/rfc9209" quoteTitle="true" derivedAnchor="PROXY-STATUS">
+          <front>
+            <title>The Proxy-Status HTTP Response Header Field</title>
+            <author fullname="M. Nottingham" initials="M." surname="Nottingham"/>
+            <author fullname="P. Sikora" initials="P." surname="Sikora"/>
+            <date month="June" year="2022"/>
+            <abstract>
+              <t indent="0">This document defines the Proxy-Status HTTP response field to convey the details of an intermediary's response handling, including generated errors.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9209"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9209"/>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC3986" target="https://www.rfc-editor.org/info/rfc3986" quoteTitle="true" derivedAnchor="RFC3986">
+          <front>
+            <title>Uniform Resource Identifier (URI): Generic Syntax</title>
+            <author fullname="T. Berners-Lee" initials="T." surname="Berners-Lee"/>
+            <author fullname="R. Fielding" initials="R." surname="Fielding"/>
+            <author fullname="L. Masinter" initials="L." surname="Masinter"/>
+            <date month="January" year="2005"/>
+            <abstract>
+              <t indent="0">A Uniform Resource Identifier (URI) is a compact sequence of characters that identifies an abstract or physical resource. This specification defines the generic URI syntax and a process for resolving URI references that might be in relative form, along with guidelines and security considerations for the use of URIs on the Internet. The URI syntax defines a grammar that is a superset of all valid URIs, allowing an implementation to parse the common components of a URI reference without knowing the scheme-specific requirements of every possible identifier. This specification does not define a generative grammar for URIs; that task is performed by the individual specifications of each URI scheme. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="66"/>
+          <seriesInfo name="RFC" value="3986"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3986"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8941" target="https://www.rfc-editor.org/info/rfc8941" quoteTitle="true" derivedAnchor="STRUCTURED-FIELDS">
+          <front>
+            <title>Structured Field Values for HTTP</title>
+            <author fullname="M. Nottingham" initials="M." surname="Nottingham"/>
+            <author fullname="P-H. Kamp" surname="P-H. Kamp"/>
+            <date month="February" year="2021"/>
+            <abstract>
+              <t indent="0">This document describes a set of data types and associated algorithms that are intended to make it easier and safer to define and handle HTTP header and trailer fields, known as "Structured Fields", "Structured Headers", or "Structured Trailers". It is intended for use by specifications of new HTTP fields that wish to use a common syntax that is more restrictive than traditional HTTP field values.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8941"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8941"/>
+        </reference>
+      </references>
+      <references anchor="sec-informative-references" pn="section-6.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC6265" target="https://www.rfc-editor.org/info/rfc6265" quoteTitle="true" derivedAnchor="COOKIES">
+          <front>
+            <title>HTTP State Management Mechanism</title>
+            <author fullname="A. Barth" initials="A." surname="Barth"/>
+            <date month="April" year="2011"/>
+            <abstract>
+              <t indent="0">This document defines the HTTP Cookie and Set-Cookie header fields. These header fields can be used by HTTP servers to store state (called cookies) at HTTP user agents, letting the servers maintain a stateful session over the mostly stateless HTTP protocol. Although cookies have many historical infelicities that degrade their security and privacy, the Cookie and Set-Cookie header fields are widely used on the Internet. This document obsoletes RFC 2965. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="6265"/>
+          <seriesInfo name="DOI" value="10.17487/RFC6265"/>
+        </reference>
+        <reference anchor="POSIX" target="https://ieeexplore.ieee.org/document/8277153" quoteTitle="true" derivedAnchor="POSIX">
+          <front>
+            <title>IEEE Standard for Information Technology--Portable Operating System Interface (POSIX(TM)) Base Specifications, Issue 7</title>
+            <author>
+              <organization showOnFrontPage="true">IEEE</organization>
+            </author>
+            <date year="2018" month="January"/>
+          </front>
+          <seriesInfo name="IEEE Std" value="1003.1-2017"/>
+          <seriesInfo name="DOI" value="10.1109/IEEESTD.2018.8277153"/>
+        </reference>
+        <reference anchor="RFC1035" target="https://www.rfc-editor.org/info/rfc1035" quoteTitle="true" derivedAnchor="RFC1035">
+          <front>
+            <title>Domain names - implementation and specification</title>
+            <author fullname="P. Mockapetris" initials="P." surname="Mockapetris"/>
+            <date month="November" year="1987"/>
+            <abstract>
+              <t indent="0">This RFC is the revised specification of the protocol and format used in the implementation of the Domain Name System. It obsoletes RFC-883. This memo documents the details of the domain name client - server communication.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="13"/>
+          <seriesInfo name="RFC" value="1035"/>
+          <seriesInfo name="DOI" value="10.17487/RFC1035"/>
+        </reference>
+        <reference anchor="RFC3493" target="https://www.rfc-editor.org/info/rfc3493" quoteTitle="true" derivedAnchor="RFC3493">
+          <front>
+            <title>Basic Socket Interface Extensions for IPv6</title>
+            <author fullname="R. Gilligan" initials="R." surname="Gilligan"/>
+            <author fullname="S. Thomson" initials="S." surname="Thomson"/>
+            <author fullname="J. Bound" initials="J." surname="Bound"/>
+            <author fullname="J. McCann" initials="J." surname="McCann"/>
+            <author fullname="W. Stevens" initials="W." surname="Stevens"/>
+            <date month="February" year="2003"/>
+            <abstract>
+              <t indent="0">The de facto standard Application Program Interface (API) for TCP/IP applications is the "sockets" interface. Although this API was developed for Unix in the early 1980s it has also been implemented on a wide variety of non-Unix systems. TCP/IP applications written using the sockets API have in the past enjoyed a high degree of portability and we would like the same portability with IPv6 applications. But changes are required to the sockets API to support IPv6 and this memo describes these changes. These include a new socket address structure to carry IPv6 addresses, new address conversion functions, and some new socket options. These extensions are designed to provide access to the basic IPv6 features required by TCP and UDP applications, including multicasting, while introducing a minimum of change into the system and providing complete compatibility for existing IPv4 applications. Additional extensions for advanced IPv6 features (raw sockets and access to the IPv6 extension headers) are defined in another document. This memo provides information for the Internet community.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="3493"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3493"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-authors-address">Author's Address</name>
+      <author initials="T." surname="Pauly" fullname="Tommy Pauly">
+        <organization showOnFrontPage="true">Apple, Inc.</organization>
+        <address>
+          <email>tpauly@apple.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

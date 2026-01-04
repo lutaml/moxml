@@ -1,0 +1,723 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-ohai-svcb-config-07" number="9540" submissionType="IETF" category="std" consensus="true" tocInclude="true" sortRefs="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2024-02-21T18:21:35" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-ohai-svcb-config-07" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9540" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Oblivious Services in SVCB">Discovery of Oblivious Services via Service Binding Records</title>
+    <seriesInfo name="RFC" value="9540" stream="IETF"/>
+    <author initials="T." surname="Pauly" fullname="Tommy Pauly">
+      <organization showOnFrontPage="true">Apple Inc.</organization>
+      <address>
+        <email>tpauly@apple.com</email>
+      </address>
+    </author>
+    <author initials="T." surname="Reddy.K" fullname="Tirumaleswar Reddy.K">
+      <organization showOnFrontPage="true">Nokia</organization>
+      <address>
+        <email>kondtir@gmail.com</email>
+      </address>
+    </author>
+    <date month="02" year="2024"/>
+    <area>sec</area>
+    <workgroup>ohai</workgroup>
+    <keyword>DNS</keyword>
+    <keyword>Oblivious HTTP</keyword>
+    <keyword>SVCB</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document defines a parameter that can be included in Service Binding (SVCB) and HTTPS
+DNS resource records to denote that a service is accessible using Oblivious
+HTTP, by offering an Oblivious Gateway Resource through which to access the
+target. This document also defines a mechanism for learning the key configuration
+of the discovered Oblivious Gateway Resource.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9540" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-conventions-and-definitions">Conventions and Definitions</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-applicability">Applicability</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-the-ohttp-svcparamkey">The "ohttp" SvcParamKey</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-use-in-https-service-rrs">Use in HTTPS Service RRs</xref></t>
+              </li>
+              <li pn="section-toc.1-1.4.2.2">
+                <t indent="0" pn="section-toc.1-1.4.2.2.1"><xref derivedContent="4.2" format="counter" sectionFormat="of" target="section-4.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-use-in-dns-server-svcb-rrs">Use in DNS Server SVCB RRs</xref></t>
+                <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2.2.2">
+                  <li pn="section-toc.1-1.4.2.2.2.1">
+                    <t indent="0" pn="section-toc.1-1.4.2.2.2.1.1"><xref derivedContent="4.2.1" format="counter" sectionFormat="of" target="section-4.2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-use-with-ddr">Use with DDR</xref></t>
+                  </li>
+                  <li pn="section-toc.1-1.4.2.2.2.2">
+                    <t indent="0" pn="section-toc.1-1.4.2.2.2.2.1"><xref derivedContent="4.2.2" format="counter" sectionFormat="of" target="section-4.2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-use-with-dnr">Use with DNR</xref></t>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-gateway-location">Gateway Location</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-key-configuration-fetching">Key Configuration Fetching</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-and-privacy-consid">Security and Privacy Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-key-targeting-attacks">Key Targeting Attacks</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-dohpath-targeting-attacks">dohpath Targeting Attacks</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-svcb-service-parameter">SVCB Service Parameter</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-well-known-uri">Well-Known URI</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="9" format="counter" sectionFormat="of" target="section-9"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.9.2">
+              <li pn="section-toc.1-1.9.2.1">
+                <t indent="0" pn="section-toc.1-1.9.2.1.1"><xref derivedContent="9.1" format="counter" sectionFormat="of" target="section-9.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.9.2.2">
+                <t indent="0" pn="section-toc.1-1.9.2.2.1"><xref derivedContent="9.2" format="counter" sectionFormat="of" target="section-9.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">Oblivious HTTP <xref target="RFC9458" format="default" sectionFormat="of" derivedContent="OHTTP"/> allows clients to encrypt
+messages exchanged with an Oblivious Target Resource (target). The messages
+are encapsulated in encrypted messages to an Oblivious Gateway Resource
+(gateway), which offers Oblivious HTTP access to the target. The gateway is
+accessed via an Oblivious Relay Resource (relay), which proxies the encapsulated
+messages to hide the identity of the client. Overall, this architecture is
+designed in such a way that the relay cannot inspect the contents of messages,
+and the gateway and target cannot learn the client's identity from a single
+transaction.</t>
+      <t indent="0" pn="section-1-2">Since Oblivious HTTP deployments typically involve very specific coordination
+between clients, relays, and gateways, the key configuration is often shared
+in a bespoke fashion. However, some deployments involve clients
+discovering targets and their associated gateways more dynamically.
+For example, a network might operate a DNS resolver that provides more optimized
+or more relevant DNS answers and is accessible using Oblivious HTTP, and might
+want to advertise support for Oblivious HTTP via mechanisms like Discovery of
+Designated Resolvers <xref target="RFC9462" format="default" sectionFormat="of" derivedContent="DDR"/> and
+Discovery of Network-designated Resolvers <xref target="RFC9463" format="default" sectionFormat="of" derivedContent="DNR"/>.
+Clients can access these gateways through trusted relays.</t>
+      <t indent="0" pn="section-1-3">This document defines a way to use DNS resource records (RRs) to advertise that an HTTP
+service supports Oblivious HTTP. This advertisement is a parameter that can be included in
+Service Binding (SVCB) and HTTPS DNS RRs <xref target="RFC9460" format="default" sectionFormat="of" derivedContent="SVCB"/> (<xref target="svc-param" format="default" sectionFormat="of" derivedContent="Section 4"/>).
+The presence of this parameter indicates that a service can act as a target and
+has a gateway that can provide access to the target.</t>
+      <t indent="0" pn="section-1-4">The client learns the URI to use for the gateway using a well-known
+URI suffix <xref target="RFC8615" format="default" sectionFormat="of" derivedContent="WELLKNOWN"/>, "ohttp-gateway", which is accessed on
+the target (<xref target="gateway-location" format="default" sectionFormat="of" derivedContent="Section 5"/>). This means that for deployments that
+support this kind of discovery, the Gateway and Target Resources need to
+be located on the same host.</t>
+      <t indent="0" pn="section-1-5">This document also defines a way to fetch a gateway's key
+configuration from the gateway (<xref target="config-fetch" format="default" sectionFormat="of" derivedContent="Section 6"/>).</t>
+      <t indent="0" pn="section-1-6">This mechanism does not aid in the discovery of relays;
+relay configuration is out of scope for this document. Models in which
+this discovery mechanism is applicable are described in <xref target="applicability" format="default" sectionFormat="of" derivedContent="Section 3"/>.</t>
+    </section>
+    <section anchor="conventions-and-definitions" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-conventions-and-definitions">Conventions and Definitions</name>
+      <t indent="0" pn="section-2-1">The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+       "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>",
+       "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>",
+       "<bcp14>SHOULD NOT</bcp14>",
+       "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+       "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document
+       are to be interpreted as described in BCP 14
+       <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/> <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only
+       when, they appear in all capitals, as shown here.</t>
+    </section>
+    <section anchor="applicability" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-applicability">Applicability</name>
+      <t indent="0" pn="section-3-1">There are multiple models in which the discovery mechanism defined
+in this document can be used. These include:</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-3-2">
+        <li pn="section-3-2.1">
+          <t indent="0" pn="section-3-2.1.1">Upgrading regular (non-proxied) HTTP to Oblivious HTTP. In this model,
+the client intends to communicate with a specific target service and
+prefers to use Oblivious HTTP if it is available. The target service
+has a gateway that it offers to allow access using Oblivious
+HTTP. Once the client learns about the gateway, it "upgrades"
+its requests from non-proxied HTTP to Oblivious HTTP to access
+the target service.</t>
+        </li>
+        <li pn="section-3-2.2">
+          <t indent="0" pn="section-3-2.2.1">Discovering alternative Oblivious HTTP services. In this model,
+the client has a default target service that it uses. For
+example, this may be a public DNS resolver that is accessible over
+Oblivious HTTP. The client is willing to use alternative
+target services if they are discovered, which may provide more
+optimized or more relevant responses.</t>
+        </li>
+      </ul>
+      <t indent="0" pn="section-3-3">In both of these deployment models, the client is configured with
+a relay that it trusts for Oblivious HTTP transactions. This
+relay needs to provide either (1) generic access to gateways or
+(2) a service to clients to allow them to check which gateways
+are accessible.</t>
+    </section>
+    <section anchor="svc-param" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-the-ohttp-svcparamkey">The "ohttp" SvcParamKey</name>
+      <t indent="0" pn="section-4-1">The "ohttp" SvcParamKey is used to indicate that a
+service described in a SVCB RR can be accessed as a target
+using an associated gateway. The service that is queried by the client hosts
+one or more Target Resources.</t>
+      <t indent="0" pn="section-4-2">In order to access the service's Target Resources using Oblivious HTTP, the client
+needs to send encapsulated messages to the Gateway Resource and the gateway's
+key configuration (both of which can be retrieved using the method described in
+<xref target="config-fetch" format="default" sectionFormat="of" derivedContent="Section 6"/>).</t>
+      <t indent="0" pn="section-4-3">Both the presentation and wire-format values for the "ohttp" parameter
+<bcp14>MUST</bcp14> be empty.</t>
+      <t indent="0" pn="section-4-4">Services can include the "ohttp" parameter in the mandatory parameter
+list if the service is only accessible using Oblivious HTTP. Marking
+the "ohttp" parameter as mandatory will cause clients that do not
+understand the parameter to ignore that SVCB RR.
+Including the "ohttp" parameter without marking it mandatory advertises
+a service that is optionally available using Oblivious HTTP. Note also
+that multiple SVCB RRs can be provided to indicate separate
+configurations.</t>
+      <t indent="0" pn="section-4-5">The media type to use for encapsulated requests made to a target service
+depends on the scheme of the SVCB RR. This document defines the
+interpretation for the "https" scheme <xref target="RFC9460" format="default" sectionFormat="of" derivedContent="SVCB"/> and the "dns" scheme <xref target="RFC9461" format="default" sectionFormat="of" derivedContent="DNS-SVCB"/>. Other schemes that want to use this parameter <bcp14>MUST</bcp14> define the
+interpretation and meaning of the configuration.</t>
+      <section anchor="use-in-https-service-rrs" numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-use-in-https-service-rrs">Use in HTTPS Service RRs</name>
+        <t indent="0" pn="section-4.1-1">For the "https" scheme, which uses the HTTPS RR type instead of SVCB,
+the presence of the "ohttp" parameter means that the target
+being described is an Oblivious HTTP service that is accessible using
+the default "message/bhttp" media type <xref target="RFC9458" format="default" sectionFormat="of" derivedContent="OHTTP"/>
+          <xref target="RFC9292" format="default" sectionFormat="of" derivedContent="BINARY-HTTP"/>.</t>
+        <t indent="0" pn="section-4.1-2">For example, an HTTPS service RR for svc.example.com that supports
+Oblivious HTTP could look like this:</t>
+        <artwork align="left" pn="section-4.1-3">
+svc.example.com. 7200  IN HTTPS 1 . ( alpn=h2 ohttp )
+</artwork>
+        <t indent="0" pn="section-4.1-4">A similar RR for a service that only supports Oblivious HTTP
+could look like this:</t>
+        <artwork align="left" pn="section-4.1-5">
+svc.example.com. 7200  IN HTTPS 1 . ( mandatory=ohttp ohttp )
+</artwork>
+      </section>
+      <section anchor="use-in-dns-server-svcb-rrs" numbered="true" removeInRFC="false" toc="include" pn="section-4.2">
+        <name slugifiedName="name-use-in-dns-server-svcb-rrs">Use in DNS Server SVCB RRs</name>
+        <t indent="0" pn="section-4.2-1">For the "dns" scheme, as defined in <xref target="RFC9461" format="default" sectionFormat="of" derivedContent="DNS-SVCB"/>, the presence of
+the "ohttp" parameter means that the DNS server being
+described has a DNS-over-HTTPS (DoH) service <xref target="RFC8484" format="default" sectionFormat="of" derivedContent="DOH"/> that can
+be accessed using Oblivious HTTP. Requests to the resolver are sent to
+the gateway using binary HTTP with the default "message/bhttp"
+media type <xref target="RFC9292" format="default" sectionFormat="of" derivedContent="BINARY-HTTP"/>, containing inner requests that use the
+"application/dns-message" media type <xref target="RFC8484" format="default" sectionFormat="of" derivedContent="DOH"/>.</t>
+        <t indent="0" pn="section-4.2-2">If the "ohttp" parameter is included in a DNS server SVCB RR,
+the "alpn" parameter <bcp14>MUST</bcp14> include at least one HTTP value (such as "h2" or
+"h3").</t>
+        <t indent="0" pn="section-4.2-3">In order for DoH-capable recursive resolvers to function as Oblivious HTTP targets, their
+associated gateways need to be accessible via a client-trusted relay.
+DoH recursive resolvers used with the discovery mechanisms described
+in this section can be either publicly accessible or specific to a
+network. In general, only publicly accessible DoH recursive resolvers will work
+as Oblivious HTTP targets, unless there is a coordinated deployment
+with a relay to access the network-specific DoH recursive resolvers.</t>
+        <section anchor="ddr" numbered="true" removeInRFC="false" toc="include" pn="section-4.2.1">
+          <name slugifiedName="name-use-with-ddr">Use with DDR</name>
+          <t indent="0" pn="section-4.2.1-1">Clients can discover that a DoH recursive resolver supports Oblivious HTTP using
+DDR, by either querying _dns.resolver.arpa to a locally configured
+resolver or querying using the name of a resolver <xref target="RFC9462" format="default" sectionFormat="of" derivedContent="DDR"/>.</t>
+          <t indent="0" pn="section-4.2.1-2">For example, a DoH service advertised over DDR can be annotated
+as supporting resolution via Oblivious HTTP using the following RR:</t>
+          <artwork align="left" pn="section-4.2.1-3">
+_dns.resolver.arpa  7200  IN SVCB 1 doh.example.net (
+     alpn=h2 dohpath=/dns-query{?dns} ohttp )
+</artwork>
+          <t indent="0" pn="section-4.2.1-4">Clients still need to perform verification of oblivious DoH servers --
+specifically, the TLS certificate checks described in <xref section="4.2" sectionFormat="of" target="RFC9462" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9462#section-4.2" derivedContent="DDR"/>.
+Since the Gateway and Target Resources for discovered oblivious services
+need to be on the same host, this means that the client needs to verify
+that the certificate presented by the gateway passes the required checks.
+These checks can be performed when looking up the configuration on the gateway
+as described in <xref target="config-fetch" format="default" sectionFormat="of" derivedContent="Section 6"/> and can be done either directly
+or via the relay or another proxy to avoid exposing client IP addresses.</t>
+          <t indent="0" pn="section-4.2.1-5">Opportunistic Discovery <xref target="RFC9462" format="default" sectionFormat="of" derivedContent="DDR"/>, where only the IP address is validated,
+<bcp14>SHOULD NOT</bcp14> be used in general with Oblivious HTTP, since this mode
+primarily exists to support resolvers that use private or local IP
+addresses, which will usually not be accessible when using a
+relay. If a configuration occurs where the resolver is accessible but
+cannot use certificate-based validation, the client <bcp14>MUST</bcp14> ensure
+that the relay only accesses the gateway and target using
+the unencrypted resolver's original IP address.</t>
+          <t indent="0" pn="section-4.2.1-6">For the case of DoH recursive resolvers, clients also need to ensure that they are not
+being targeted with unique DoH paths that would reveal their identity. See
+<xref target="security" format="default" sectionFormat="of" derivedContent="Section 7"/> for more discussion.</t>
+        </section>
+        <section anchor="dnr" numbered="true" removeInRFC="false" toc="include" pn="section-4.2.2">
+          <name slugifiedName="name-use-with-dnr">Use with DNR</name>
+          <t indent="0" pn="section-4.2.2-1">The SvcParamKey defined in this document also can be used with Discovery
+of Network-designated Resolvers <xref target="RFC9463" format="default" sectionFormat="of" derivedContent="DNR"/>. In this
+case, the oblivious configuration and path parameters can be included
+in DHCP and Router Advertisement messages.</t>
+          <t indent="0" pn="section-4.2.2-2">While DNR does not require the same kind of verification as DDR, clients
+that learn about DoH recursive resolvers still need to ensure that they are not being
+targeted with unique DoH paths that would reveal their identity. See <xref target="security" format="default" sectionFormat="of" derivedContent="Section 7"/>
+for more discussion.</t>
+        </section>
+      </section>
+    </section>
+    <section anchor="gateway-location" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-gateway-location">Gateway Location</name>
+      <t indent="0" pn="section-5-1">Once a client has discovered that a service supports Oblivious HTTP
+via the "ohttp" parameter in a SVCB or HTTPS RR, it needs to be
+able to send requests via a relay to the correct gateway location.</t>
+      <t indent="0" pn="section-5-2">This document defines a well-known resource <xref target="RFC8615" format="default" sectionFormat="of" derivedContent="WELLKNOWN"/>,
+"/.well-known/ohttp-gateway", which is an Oblivious Gateway Resource
+available on the same host as the Target Resource.</t>
+      <t indent="0" pn="section-5-3">Some servers might not want to operate the gateway on a well-known URI.
+In such cases, these servers can use 3xx (Redirection) responses
+(<xref section="15.4" sectionFormat="of" target="RFC9110" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9110#section-15.4" derivedContent="HTTP"/>) to direct clients and relays to the correct
+location of the gateway. Such redirects would apply to both (1) requests
+made to fetch key configurations (as defined in <xref target="config-fetch" format="default" sectionFormat="of" derivedContent="Section 6"/>) and
+(2) encapsulated requests made via a relay.</t>
+      <t indent="0" pn="section-5-4">If a client receives a redirect when fetching the key configuration from the
+well-known Gateway Resource, it <bcp14>MUST NOT</bcp14> communicate the redirected
+gateway URI to the relay as the location of the gateway to use.
+Doing so would allow the gateway to target clients by encoding
+unique or client-identifying values in the redirected URI. Instead,
+relays being used with dynamically discovered gateways <bcp14>MUST</bcp14> use the
+well-known Gateway Resource and follow any redirects independently of
+redirects that clients received. The relay can remember such redirects
+across oblivious requests for all clients in order to avoid added latency.</t>
+    </section>
+    <section anchor="config-fetch" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-key-configuration-fetching">Key Configuration Fetching</name>
+      <t indent="0" pn="section-6-1">Clients also need to know the key configuration of a gateway before encapsulating
+and sending requests to the relay.</t>
+      <t indent="0" pn="section-6-2">If a client fetches the key configuration directly from the gateway, it
+will expose identifiers like a client IP address to the gateway. The
+privacy and security implications of fetching the key configuration are
+discussed more in <xref target="security" format="default" sectionFormat="of" derivedContent="Section 7"/>. Clients can use an HTTP proxy to
+hide their IP addresses when fetching key configurations. Clients can
+also perform consistency checks to validate that they are not receiving
+unique key configurations, as discussed in <xref target="consistency" format="default" sectionFormat="of" derivedContent="Section 7.1"/>.</t>
+      <t indent="0" pn="section-6-3">In order to fetch the key configuration of a gateway discovered
+in the manner described in <xref target="gateway-location" format="default" sectionFormat="of" derivedContent="Section 5"/>, the client issues a GET request
+(either through a proxy or directly) to the URI of the gateway specifying
+the "application/ohttp-keys" media type <xref target="RFC9458" format="default" sectionFormat="of" derivedContent="OHTTP"/> in the Accept header.</t>
+      <t indent="0" pn="section-6-4">For example, if the client knows an Oblivious Gateway URI,
+https://svc.example.com/.well-known/ohttp-gateway, it could fetch the
+key configuration with the following request:</t>
+      <artwork align="left" pn="section-6-5">
+GET /.well-known/ohttp-gateway HTTP/1.1
+Host: svc.example.com
+Accept: application/ohttp-keys
+</artwork>
+      <t indent="0" pn="section-6-6">Gateways that coordinate with targets that advertise Oblivious HTTP
+support <bcp14>SHOULD</bcp14> support GET requests for their key configuration in this
+manner, unless there is another out-of-band configuration model that is
+usable by clients. Gateways respond with their key configuration in the
+response body, with a content type of "application/ohttp-keys".</t>
+    </section>
+    <section anchor="security" numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-security-and-privacy-consid">Security and Privacy Considerations</name>
+      <t indent="0" pn="section-7-1">Attackers on a network can remove SVCB information from cleartext DNS
+answers that are not protected by DNSSEC <xref target="RFC4033" format="default" sectionFormat="of" derivedContent="DNSSEC"/>. This
+can effectively downgrade clients. However, since SVCB indications
+for Oblivious HTTP support are just hints, a client can mitigate this by
+always checking for a gateway configuration (<xref target="config-fetch" format="default" sectionFormat="of" derivedContent="Section 6"/>)
+on the well-known gateway location (<xref target="gateway-location" format="default" sectionFormat="of" derivedContent="Section 5"/>).
+Using encrypted DNS along with DNSSEC can also provide such a mitigation.</t>
+      <t indent="0" pn="section-7-2">When clients fetch a gateway's configuration (<xref target="config-fetch" format="default" sectionFormat="of" derivedContent="Section 6"/>),
+they can expose their identity in the form of an IP address if they do not
+connect via a proxy or some other IP-hiding mechanism. In some circumstances,
+this might not be a privacy concern, since revealing that a particular
+client IP address is preparing to use an Oblivious HTTP service can be
+expected. However, if a client is otherwise trying to hide its IP
+address or location (and not merely decouple its specific requests from its
+IP address), or if revealing its IP address facilitates key targeting attacks
+(if a gateway service uses IP addresses to associate specific configurations
+with specific clients), a proxy or similar mechanism can be used to fetch
+the gateway's configuration.</t>
+      <t indent="0" pn="section-7-3">When discovering designated oblivious DoH recursive resolvers using this mechanism,
+clients need to ensure that the designation is trusted in lieu of
+being able to directly check the contents of the gateway server's TLS
+certificate. See <xref target="ddr" format="default" sectionFormat="of" derivedContent="Section 4.2.1"/> for more discussion, as well as Section <xref target="RFC9461" section="8" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc9461#section-8" derivedContent="DNS-SVCB">"Security Considerations"</xref> of <xref target="RFC9461" format="default" sectionFormat="of" derivedContent="DNS-SVCB"/>.</t>
+      <section anchor="consistency" numbered="true" removeInRFC="false" toc="include" pn="section-7.1">
+        <name slugifiedName="name-key-targeting-attacks">Key Targeting Attacks</name>
+        <t indent="0" pn="section-7.1-1">As discussed in <xref target="RFC9458" format="default" sectionFormat="of" derivedContent="OHTTP"/>, client requests using Oblivious HTTP
+can only be linked by recognizing the key configuration. In order to
+prevent unwanted linkability and tracking, clients using any key
+configuration discovery mechanism need to be concerned with attacks
+that target a specific user or population with a unique key configuration.</t>
+        <t indent="0" pn="section-7.1-2">There are several approaches clients can use to mitigate key targeting
+attacks. <xref target="I-D.ietf-privacypass-key-consistency" format="default" sectionFormat="of" derivedContent="CONSISTENCY"/> provides an overview
+of the options for ensuring that the key configurations are consistent between
+different clients. Clients <bcp14>SHOULD</bcp14> employ some technique to mitigate key
+targeting attacks, such as the option of confirming the key with a shared
+proxy as described in <xref target="I-D.ietf-privacypass-key-consistency" format="default" sectionFormat="of" derivedContent="CONSISTENCY"/>. If a client detects that a gateway
+is using per-client targeted key configuration, the client can stop using
+the gateway and, potentially, report the targeting attack so that other
+clients can avoid using this gateway in the future.</t>
+      </section>
+      <section anchor="dohpath-targeting-attacks" numbered="true" removeInRFC="false" toc="include" pn="section-7.2">
+        <name slugifiedName="name-dohpath-targeting-attacks">dohpath Targeting Attacks</name>
+        <t indent="0" pn="section-7.2-1">For oblivious DoH servers, an attacker could use unique <tt>"dohpath"</tt> values
+to target or identify specific clients. This attack is very similar to
+the generic OHTTP key targeting attack described above.</t>
+        <t indent="0" pn="section-7.2-2">A client can avoid these targeting attacks by only allowing a single
+<tt>"dohpath"</tt> value, such as the commonly used "/dns-query{?dns}" or
+another pre-known value. If the client allows arbitrary <tt>"dohpath"</tt>
+values, it <bcp14>SHOULD</bcp14> mitigate targeting attacks with a consistency check,
+such as using one of the mechanisms described in <xref target="I-D.ietf-privacypass-key-consistency" format="default" sectionFormat="of" derivedContent="CONSISTENCY"/> to validate the
+<tt>"dohpath"</tt> value with another source. Clients might choose to only
+employ a consistency check on a percentage of discovery events,
+depending on the capacity of consistency check options and their
+deployment threat model.</t>
+      </section>
+    </section>
+    <section anchor="iana" numbered="true" removeInRFC="false" toc="include" pn="section-8">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <section anchor="svcb-service-parameter" numbered="true" removeInRFC="false" toc="include" pn="section-8.1">
+        <name slugifiedName="name-svcb-service-parameter">SVCB Service Parameter</name>
+        <t indent="0" pn="section-8.1-1">This document adds the following entry to the "Service Parameter Keys (SvcParamKeys)" registry <xref target="RFC9460" format="default" sectionFormat="of" derivedContent="SVCB"/>. This parameter is defined in <xref target="svc-param" format="default" sectionFormat="of" derivedContent="Section 4"/>.</t>
+        <table align="center" pn="table-1">
+          <thead>
+            <tr>
+              <th align="left" colspan="1" rowspan="1">Number</th>
+              <th align="left" colspan="1" rowspan="1">Name</th>
+              <th align="left" colspan="1" rowspan="1">Meaning</th>
+              <th align="left" colspan="1" rowspan="1"> Change Controller</th>
+              <th align="left" colspan="1" rowspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left" colspan="1" rowspan="1">8</td>
+              <td align="left" colspan="1" rowspan="1">ohttp</td>
+              <td align="left" colspan="1" rowspan="1">Denotes that a service operates an Oblivious HTTP target</td>
+              <td align="left" colspan="1" rowspan="1">IETF</td>
+              <td align="left" colspan="1" rowspan="1">RFC 9540, <xref target="svc-param" format="default" sectionFormat="of" derivedContent="Section 4"/></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <section anchor="well-known-uri" numbered="true" removeInRFC="false" toc="include" pn="section-8.2">
+        <name slugifiedName="name-well-known-uri">Well-Known URI</name>
+        <t indent="0" pn="section-8.2-1">IANA has added one entry in the "Well-Known URIs" registry <xref target="RFC8615" format="default" sectionFormat="of" derivedContent="WELLKNOWN"/>.</t>
+        <dl newline="false" indent="3" spacing="normal" pn="section-8.2-2">
+          <dt pn="section-8.2-2.1">URI Suffix:</dt>
+          <dd pn="section-8.2-2.2">ohttp-gateway</dd>
+          <dt pn="section-8.2-2.3">Change Controller:</dt>
+          <dd pn="section-8.2-2.4">IETF</dd>
+          <dt pn="section-8.2-2.5">Reference:</dt>
+          <dd pn="section-8.2-2.6">RFC 9540</dd>
+          <dt pn="section-8.2-2.7">Status:</dt>
+          <dd pn="section-8.2-2.8">permanent</dd>
+          <dt pn="section-8.2-2.9">Related Information:</dt>
+          <dd pn="section-8.2-2.10">N/A</dd>
+        </dl>
+      </section>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="RFC9458" to="OHTTP"/>
+    <displayreference target="RFC9462" to="DDR"/>
+    <displayreference target="RFC9463" to="DNR"/>
+    <displayreference target="RFC9460" to="SVCB"/>
+    <displayreference target="RFC8615" to="WELLKNOWN"/>
+    <displayreference target="RFC9461" to="DNS-SVCB"/>
+    <displayreference target="RFC9292" to="BINARY-HTTP"/>
+    <displayreference target="RFC8484" to="DOH"/>
+    <displayreference target="RFC9110" to="HTTP"/>
+    <displayreference target="RFC4033" to="DNSSEC"/>
+    <displayreference target="I-D.ietf-privacypass-key-consistency" to="CONSISTENCY"/>
+    <references pn="section-9">
+      <name slugifiedName="name-references">References</name>
+      <references anchor="sec-normative-references" pn="section-9.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC9292" target="https://www.rfc-editor.org/info/rfc9292" quoteTitle="true" derivedAnchor="BINARY-HTTP">
+          <front>
+            <title>Binary Representation of HTTP Messages</title>
+            <author fullname="M. Thomson" initials="M." surname="Thomson"/>
+            <author fullname="C. A. Wood" initials="C. A." surname="Wood"/>
+            <date month="August" year="2022"/>
+            <abstract>
+              <t indent="0">This document defines a binary format for representing HTTP messages.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9292"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9292"/>
+        </reference>
+        <reference anchor="RFC9462" target="https://www.rfc-editor.org/info/rfc9462" quoteTitle="true" derivedAnchor="DDR">
+          <front>
+            <title>Discovery of Designated Resolvers</title>
+            <author fullname="T. Pauly" initials="T." surname="Pauly"/>
+            <author fullname="E. Kinnear" initials="E." surname="Kinnear"/>
+            <author fullname="C. A. Wood" initials="C. A." surname="Wood"/>
+            <author fullname="P. McManus" initials="P." surname="McManus"/>
+            <author fullname="T. Jensen" initials="T." surname="Jensen"/>
+            <date month="November" year="2023"/>
+            <abstract>
+              <t indent="0">This document defines Discovery of Designated Resolvers (DDR), a set of mechanisms for DNS clients to use DNS records to discover a resolver's encrypted DNS configuration. An Encrypted DNS Resolver discovered in this manner is referred to as a "Designated Resolver". These mechanisms can be used to move from unencrypted DNS to encrypted DNS when only the IP address of a resolver is known. These mechanisms are designed to be limited to cases where Unencrypted DNS Resolvers and their Designated Resolvers are operated by the same entity or cooperating entities. It can also be used to discover support for encrypted DNS protocols when the name of an Encrypted DNS Resolver is known.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9462"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9462"/>
+        </reference>
+        <reference anchor="RFC9463" target="https://www.rfc-editor.org/info/rfc9463" quoteTitle="true" derivedAnchor="DNR">
+          <front>
+            <title>DHCP and Router Advertisement Options for the Discovery of Network-designated Resolvers (DNR)</title>
+            <author fullname="M. Boucadair" initials="M." role="editor" surname="Boucadair"/>
+            <author fullname="T. Reddy.K" initials="T." role="editor" surname="Reddy.K"/>
+            <author fullname="D. Wing" initials="D." surname="Wing"/>
+            <author fullname="N. Cook" initials="N." surname="Cook"/>
+            <author fullname="T. Jensen" initials="T." surname="Jensen"/>
+            <date month="November" year="2023"/>
+            <abstract>
+              <t indent="0">This document specifies new DHCP and IPv6 Router Advertisement options to discover encrypted DNS resolvers (e.g., DNS over HTTPS, DNS over TLS, and DNS over QUIC). Particularly, it allows a host to learn an Authentication Domain Name together with a list of IP addresses and a set of service parameters to reach such encrypted DNS resolvers.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9463"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9463"/>
+        </reference>
+        <reference anchor="RFC9461" target="https://www.rfc-editor.org/info/rfc9461" quoteTitle="true" derivedAnchor="DNS-SVCB">
+          <front>
+            <title>Service Binding Mapping for DNS Servers</title>
+            <author fullname="B. Schwartz" initials="B." surname="Schwartz"/>
+            <date month="November" year="2023"/>
+            <abstract>
+              <t indent="0">The SVCB DNS resource record type expresses a bound collection of endpoint metadata, for use when establishing a connection to a named service. DNS itself can be such a service, when the server is identified by a domain name. This document provides the SVCB mapping for named DNS servers, allowing them to indicate support for encrypted transport protocols.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9461"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9461"/>
+        </reference>
+        <reference anchor="RFC8484" target="https://www.rfc-editor.org/info/rfc8484" quoteTitle="true" derivedAnchor="DOH">
+          <front>
+            <title>DNS Queries over HTTPS (DoH)</title>
+            <author fullname="P. Hoffman" initials="P." surname="Hoffman"/>
+            <author fullname="P. McManus" initials="P." surname="McManus"/>
+            <date month="October" year="2018"/>
+            <abstract>
+              <t indent="0">This document defines a protocol for sending DNS queries and getting DNS responses over HTTPS. Each DNS query-response pair is mapped into an HTTP exchange.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8484"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8484"/>
+        </reference>
+        <reference anchor="RFC9110" target="https://www.rfc-editor.org/info/rfc9110" quoteTitle="true" derivedAnchor="HTTP">
+          <front>
+            <title>HTTP Semantics</title>
+            <author fullname="R. Fielding" initials="R." role="editor" surname="Fielding"/>
+            <author fullname="M. Nottingham" initials="M." role="editor" surname="Nottingham"/>
+            <author fullname="J. Reschke" initials="J." role="editor" surname="Reschke"/>
+            <date month="June" year="2022"/>
+            <abstract>
+              <t indent="0">The Hypertext Transfer Protocol (HTTP) is a stateless application-level protocol for distributed, collaborative, hypertext information systems. This document describes the overall architecture of HTTP, establishes common terminology, and defines aspects of the protocol that are shared by all versions. In this definition are core protocol elements, extensibility mechanisms, and the "http" and "https" Uniform Resource Identifier (URI) schemes.</t>
+              <t indent="0">This document updates RFC 3864 and obsoletes RFCs 2818, 7231, 7232, 7233, 7235, 7538, 7615, 7694, and portions of 7230.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="STD" value="97"/>
+          <seriesInfo name="RFC" value="9110"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9110"/>
+        </reference>
+        <reference anchor="RFC9458" target="https://www.rfc-editor.org/info/rfc9458" quoteTitle="true" derivedAnchor="OHTTP">
+          <front>
+            <title>Oblivious HTTP</title>
+            <author fullname="M. Thomson" initials="M." surname="Thomson"/>
+            <author fullname="C. A. Wood" initials="C. A." surname="Wood"/>
+            <date month="January" year="2024"/>
+            <abstract>
+              <t indent="0">This document describes Oblivious HTTP, a protocol for forwarding encrypted HTTP messages. Oblivious HTTP allows a client to make multiple requests to an origin server without that server being able to link those requests to the client or to identify the requests as having come from the same client, while placing only limited trust in the nodes used to forward the messages.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9458"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9458"/>
+        </reference>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC9460" target="https://www.rfc-editor.org/info/rfc9460" quoteTitle="true" derivedAnchor="SVCB">
+          <front>
+            <title>Service Binding and Parameter Specification via the DNS (SVCB and HTTPS Resource Records)</title>
+            <author fullname="B. Schwartz" initials="B." surname="Schwartz"/>
+            <author fullname="M. Bishop" initials="M." surname="Bishop"/>
+            <author fullname="E. Nygren" initials="E." surname="Nygren"/>
+            <date month="November" year="2023"/>
+            <abstract>
+              <t indent="0">This document specifies the "SVCB" ("Service Binding") and "HTTPS" DNS resource record (RR) types to facilitate the lookup of information needed to make connections to network services, such as for HTTP origins. SVCB records allow a service to be provided from multiple alternative endpoints, each with associated parameters (such as transport protocol configuration), and are extensible to support future uses (such as keys for encrypting the TLS ClientHello). They also enable aliasing of apex domains, which is not possible with CNAME. The HTTPS RR is a variation of SVCB for use with HTTP (see RFC 9110, "HTTP Semantics"). By providing more information to the client before it attempts to establish a connection, these records offer potential benefits to both performance and privacy.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="9460"/>
+          <seriesInfo name="DOI" value="10.17487/RFC9460"/>
+        </reference>
+        <reference anchor="RFC8615" target="https://www.rfc-editor.org/info/rfc8615" quoteTitle="true" derivedAnchor="WELLKNOWN">
+          <front>
+            <title>Well-Known Uniform Resource Identifiers (URIs)</title>
+            <author fullname="M. Nottingham" initials="M." surname="Nottingham"/>
+            <date month="May" year="2019"/>
+            <abstract>
+              <t indent="0">This memo defines a path prefix for "well-known locations", "/.well-known/", in selected Uniform Resource Identifier (URI) schemes.</t>
+              <t indent="0">In doing so, it obsoletes RFC 5785 and updates the URI schemes defined in RFC 7230 to reserve that space. It also updates RFC 7595 to track URI schemes that support well-known URIs in their registry.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8615"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8615"/>
+        </reference>
+      </references>
+      <references anchor="sec-informative-references" pn="section-9.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.ietf-privacypass-key-consistency" target="https://datatracker.ietf.org/doc/html/draft-ietf-privacypass-key-consistency-01" quoteTitle="true" derivedAnchor="CONSISTENCY">
+          <front>
+            <title>Key Consistency and Discovery</title>
+            <author initials="A." surname="Davidson" fullname="Alex Davidson">
+              <organization showOnFrontPage="true">Brave Software</organization>
+            </author>
+            <author initials="M." surname="Finkel" fullname="Matthew Finkel">
+              <organization showOnFrontPage="true">The Tor Project</organization>
+            </author>
+            <author initials="M." surname="Thomson" fullname="Martin Thomson">
+              <organization showOnFrontPage="true">Mozilla</organization>
+            </author>
+            <author initials="C. A." surname="Wood" fullname="Christopher A. Wood">
+              <organization showOnFrontPage="true">Cloudflare</organization>
+            </author>
+            <date month="July" day="10" year="2023"/>
+            <abstract>
+              <t indent="0">   This document describes the consistency requirements of protocols
+   such as Privacy Pass, Oblivious DoH, and Oblivious HTTP for user
+   privacy.  It presents definitions for consistency and then surveys
+   mechanisms for providing consistency in varying threat models.  In
+   concludes with discussion of open problems in this area.
+
+              </t>
+            </abstract>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-privacypass-key-consistency-01"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC4033" target="https://www.rfc-editor.org/info/rfc4033" quoteTitle="true" derivedAnchor="DNSSEC">
+          <front>
+            <title>DNS Security Introduction and Requirements</title>
+            <author fullname="R. Arends" initials="R." surname="Arends"/>
+            <author fullname="R. Austein" initials="R." surname="Austein"/>
+            <author fullname="M. Larson" initials="M." surname="Larson"/>
+            <author fullname="D. Massey" initials="D." surname="Massey"/>
+            <author fullname="S. Rose" initials="S." surname="Rose"/>
+            <date month="March" year="2005"/>
+            <abstract>
+              <t indent="0">The Domain Name System Security Extensions (DNSSEC) add data origin authentication and data integrity to the Domain Name System. This document introduces these extensions and describes their capabilities and limitations. This document also discusses the services that the DNS security extensions do and do not provide. Last, this document describes the interrelationships between the documents that collectively describe DNSSEC. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="4033"/>
+          <seriesInfo name="DOI" value="10.17487/RFC4033"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="T." surname="Pauly" fullname="Tommy Pauly">
+        <organization showOnFrontPage="true">Apple Inc.</organization>
+        <address>
+          <email>tpauly@apple.com</email>
+        </address>
+      </author>
+      <author initials="T." surname="Reddy.K" fullname="Tirumaleswar Reddy.K">
+        <organization showOnFrontPage="true">Nokia</organization>
+        <address>
+          <email>kondtir@gmail.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

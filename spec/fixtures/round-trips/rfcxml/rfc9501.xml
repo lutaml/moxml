@@ -1,0 +1,342 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" ipr="trust200902" docName="draft-ietf-shmoo-remote-fee-09" number="9501" submissionType="IETF" category="bcp" consensus="true" tocInclude="true" sortRefs="true" symRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2023-12-15T12:22:24" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-shmoo-remote-fee-09" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9501" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="Open Participation Principle">Open Participation Principle regarding Remote Registration Fee</title>
+    <seriesInfo name="RFC" value="9501" stream="IETF"/>
+    <seriesInfo name="BCP" value="239" stream="IETF"/>
+    <author initials="M." surname="Kühlewind" fullname="Mirja Kühlewind">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <email>mirja.kuehlewind@ericsson.com</email>
+      </address>
+    </author>
+    <author initials="J." surname="Reed" fullname="Jon Reed">
+      <organization showOnFrontPage="true">Akamai Technologies</organization>
+      <address>
+        <email>jreed@akamai.com</email>
+      </address>
+    </author>
+    <author initials="R." surname="Salz" fullname="Rich Salz">
+      <organization showOnFrontPage="true">Akamai Technologies</organization>
+      <address>
+        <email>rsalz@akamai.com</email>
+      </address>
+    </author>
+    <date month="12" year="2023"/>
+    <area>gen</area>
+    <workgroup>shmoo</workgroup>
+    <keyword>no-cost</keyword>
+    <keyword>meetings</keyword>
+    <keyword>remote participation fee</keyword>
+    <keyword>remote</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">This document outlines a principle for open participation that extends the open process
+principle defined in RFC 3935 by stating that there must be a free option for online
+participation to IETF meetings and, if possible, related IETF-hosted events.</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This memo documents an Internet Best Current Practice.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further information
+            on BCPs is available in Section 2 of RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9501" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-principle-of-open-participa">Principle of Open Participation</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-financial-impact">Financial Impact</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-considerations-on-use-and-m">Considerations on Use and Misuse of a Free Participation Option</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.7.2">
+              <li pn="section-toc.1-1.7.2.1">
+                <t indent="0" pn="section-toc.1-1.7.2.1.1"><xref derivedContent="7.1" format="counter" sectionFormat="of" target="section-7.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.7.2.2">
+                <t indent="0" pn="section-toc.1-1.7.2.2.1"><xref derivedContent="7.2" format="counter" sectionFormat="of" target="section-7.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgments">Acknowledgments</xref></t>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">Remote participation for IETF in-person meetings has evolved over time from email-only to live chat and audio streaming, and, from there, to a fully online meeting system that is tightly integrated with the in-room session and enables interactive audio and video participation.
+Remote participation has historically been free for remote attendees.</t>
+      <t indent="0" pn="section-1-2">Given this more full-blown participation option, the IETF has started to see an increase in the number of remote participants. This increase can be explained by the ease with which
+new participants can join a meeting or only attend selected parts of the meeting agenda, and also by a decrease in the perceived need to attend every meeting in person. Financial
+considerations may also be a factor.
+In order to better understand
+these trends, the IETF started to require registration for remote participation, still without any registration fee applied.</t>
+      <t indent="0" pn="section-1-3">With the move to fully online meetings in 2020 and 2021, however, there was no distinction between remote and on-site participants for those meetings.
+Because IETF meeting costs and other costs still needed to be covered, a meeting fee was charged for remote participants, replacing the free participation that was previously available for all remote attendees.</t>
+      <t indent="0" pn="section-1-4">The introduction of a fee for remote participation raised concerns about the potential impact on both those who
+regularly attend IETF meetings remotely and those who are considering 
+attending an IETF meeting for the first time. In both cases, even a small
+registration fee can be a barrier to participation.</t>
+    </section>
+    <section anchor="principle-of-open-participation" numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-principle-of-open-participa">Principle of Open Participation</name>
+      <t indent="0" pn="section-2-1">This document outlines the principle of open participation that the IETF Administration LLC (IETF LLC)
+is expected to incorporate into decisions about the registration fee structure for remote participation.</t>
+      <t indent="0" pn="section-2-2">The principle is simple: there must be an option for free
+remote participation in any IETF meeting, regardless of whether the meeting has a physical presence.
+Related events collocated with an IETF meeting are part of the IETF's open process <xref target="RFC3935" format="default" sectionFormat="of" derivedContent="RFC3935"/> and
+are encouraged to follow this principle as well, if they offer remote participation at all.</t>
+      <t indent="0" pn="section-2-3">This principle aims to support the openness principle of the IETF as defined in <xref target="RFC3935" format="default" sectionFormat="of" derivedContent="RFC3935"/>:</t>
+      <blockquote pn="section-2-4">
+        <t indent="0" pn="section-2-4.1">Open process - any interested person can participate in the work,
+   know what is being decided, and make his or her voice heard on the
+   issue.  Part of this principle is our commitment to making our
+   documents, our WG mailing lists, our attendance lists, and our
+   meeting minutes publicly available on the Internet.</t>
+      </blockquote>
+      <t indent="0" pn="section-2-5">
+   While <xref target="RFC3935" format="default" sectionFormat="of" derivedContent="RFC3935"/> explicitly notes that this principle requires
+   our documents and materials to be open and accessible over the Internet, 
+   it was primarily written with email interactions in mind when talking about participation. This document extends this principle to explicitly cover remote
+participation at meetings. Particularly in this context, openness should be seen as open and free.</t>
+      <t indent="0" pn="section-2-6">
+   This document does not stipulate that all IETF meetings or related
+   IETF events must have a remote participation option, because there
+   could be technical or other reasons why that might not be
+   possible.  However, if remote participation 
+   is provided, there should always be a free option to make the process
+   as open as possible.  At a minimum, working group sessions, BoFs, and 
+   the administrative plenary are expected to provide a remote
+   participation option.  
+</t>
+      <t indent="0" pn="section-2-7">
+   Note that this document does not specify the
+   implementation details of the free option and leaves this to the LLC. At the time of publication, an approach to request a fee waiver was implemented.
+      </t>
+      <t indent="0" pn="section-2-8">Moreover, in order to fully remove barriers to participation, any free
+registration option must offer the same degree of interactivity and
+functionality available to paid remote participants. Specifically, it must not
+be possible to identify participants that used the free option. However,
+of course this does not mean that all services must be provided for free to
+participants using the free registration option, but only those services
+that are provided as part of the regular registration. Offering additional
+services to a subset or all participants at an additional charge is still possible,
+e.g., if special needs are required. However, to promote inclusivity,
+whether those services can also be offered without
+charge for those who are in need and cannot afford the fee should be considered.</t>
+      <t indent="0" pn="section-2-9">The free option
+must be clearly and prominently listed on the meeting website and
+registration page.  If the free option requires additional
+registration steps, such as applying for a fee waiver, those
+requirements should be clearly documented. In particular, to avoid any
+potential negative implications on inclusivity, any personal
+information that is collected with respect to the use of the free
+remote participation option must be kept confidential.</t>
+    </section>
+    <section anchor="financial-impact" numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-financial-impact">Financial Impact</name>
+      <t indent="0" pn="section-3-1">Fully online meetings as well as remote participation incur expenses, as do other services that the IETF provides.
+This includes items such as mailing lists, document access via the datatracker or other
+online platforms, as well as support for videoconferencing (e.g., Meetecho).
+Meeting fees are a way to distribute these and other operating costs of the IETF among participants,
+even though they do not fully offset the costs of either holding the meeting or operating the IETF.
+As such, the intention of this document and the principle stated herein is not to make remote participation
+free for everyone, but to always offer a free remote option that enables remote participation without
+any barriers other than the application for free registration when the registration fee
+is a barrier to participation.
+This principle applies to remote participation only, thereby providing one free option for participation.
+In-person participation is not in scope for this document as the cost considerations 
+are broader than just the registration fee.</t>
+      <t indent="0" pn="section-3-2">Changes to the IETF's fee structure or overall funding model are not in scope for this document. As defined in <xref target="RFC8711" format="default" sectionFormat="of" derivedContent="RFC8711"/>,
+it is the IETF LLC's responsibility to manage the IETF's finances and budget and
+as such "[t]he IETF LLC is expected to act responsibly so as to minimize risks
+to IETF participants and to the future of the IETF as a whole, such as financial
+risks." Further, it is the responsibility of the IETF LLC Board  "to act
+consistently with the documented consensus of the IETF community" <xref target="RFC8711" format="default" sectionFormat="of" derivedContent="RFC8711"/>,
+taking into account agreed principles like the one described in this document.</t>
+      <t indent="0" pn="section-3-3">
+   If unlimited free remote participation is determined to adversely
+   affect financial sustainability of the IETF, e.g., if the number of
+   paying participants or the cost of free participation emerges as a
+   significant factor, the LLC is expected to implement additional
+   measures to manage these costs.  This document does not and cannot
+   restrict the LLC in its financial responsibility and therefore does
+   not impose any limitation on the use of appropriate measures. If the
+   LLC decides to implement additional measures, they should share
+   their decision and rationale with the community and consider whether community 
+   consultation as specified in <xref target="RFC8711" section="4.4" format="default" sectionFormat="of" derivedLink="https://rfc-editor.org/rfc/rfc8711#section-4.4" derivedContent="RFC8711"/> is needed "to obtain
+   consensus-based community input on key issues". Further, they should describe the implemented process in sufficient detail for
+participants to make an informed decision about use of the free option.</t>
+      <t indent="0" pn="section-3-4">As discussed in the next section, assessment of eligibility is difficult. Consequently, any limit
+on the number of available free registrations, which likely requires an assessment of eligibility,
+can cause unfairness and negatively impact openness, which should be considered seriously in any LLC decision.
+   As such, this document
+   defines the principle of free participation but leaves implementation details to the LLC. Specifically, it does not provide
+guidance on appropriate measures against misuse, as any measures need to
+be adapted to the specific problem in a specific situation in order to minimize both the
+financial risk and its impact on openness and inclusivity.</t>
+    </section>
+    <section anchor="considerations-on-use-and-misuse-of-a-free-participation-option" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-considerations-on-use-and-m">Considerations on Use and Misuse of a Free Participation Option</name>
+      <t indent="0" pn="section-4-1">This document does not provide specific requirements on when it is appropriate
+for an IETF community member to use or not use the free option to remotely attend a meeting. The purpose of
+the free option is to enable everybody who is interested in participation to join meetings without the meeting
+fee imposing a financial barrier. These cases cannot be limited to a certain group, like students or "self-funded"
+participants, nor to any other specific restrictions like the number of meetings previously attended or previous level of involvement.
+The purpose is simply to maximize participation without barriers in order to make the standards process as open as possible.</t>
+      <t indent="0" pn="section-4-2">It is expected that participants who have financial support to use the paid regular registration option
+will do so. Paying a registration fee is a way for their sponsor to support the sustainability of the IETF. 
+For example, a higher late payment charge can be used to maximize this financial support. 
+However, this document does not comment on the actual payment structure 
+of the IETF meeting fee other than requiring a free remote option. The fee payment structure is set by the IETF LLC such that
+the viability of the IETF and the ability of IETF participants to work productively within the IETF can be ensured.</t>
+      <t indent="0" pn="section-4-3">The LLC is responsible for ensuring the financial stability of the IETF; therefore, they should monitor
+trends in the use of the free participation option that could endanger the viability of the IETF and, if necessary, manage the associated costs.
+Aggregated data on the number and percentage of free registrations used should be published,
+as this will permit analysis of the use and change in use over time of the free registration option without
+revealing personal information.</t>
+      <t indent="0" pn="section-4-4">As the principle defined in this document aims to promote openness and thereby enhance participation,
+an increase in use of free registrations is a success, because it is likely a sign of increased interest and not necessarily a
+sign of misuse. The increase should not be linked to the number of paid registrations.
+In particular, the number of paid registrations may decrease
+for various reasons other than misuse,
+such as restrictions on travel to physical meetings due to cost savings or environmental reasons, general cost
+savings and lesser focus on standardization work, or simply loss of business interest. Such trends
+can impact the sustainability of the IETF due to its
+dependency on meeting fees to cross-finance other costs, independent of use of the free registrations.</t>
+    </section>
+    <section anchor="security-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-5-1">This document introduces no new concerns for the security of Internet
+protocols.</t>
+    </section>
+    <section anchor="iana-considerations" numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-6-1">This document has no IANA actions.</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-7">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-7.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC3935" target="https://www.rfc-editor.org/info/rfc3935" quoteTitle="true" derivedAnchor="RFC3935">
+          <front>
+            <title>A Mission Statement for the IETF</title>
+            <author fullname="H. Alvestrand" initials="H." surname="Alvestrand"/>
+            <date month="October" year="2004"/>
+            <abstract>
+              <t indent="0">This memo gives a mission statement for the IETF, tries to define the terms used in the statement sufficiently to make the mission statement understandable and useful, argues why the IETF needs a mission statement, and tries to capture some of the debate that led to this point. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="95"/>
+          <seriesInfo name="RFC" value="3935"/>
+          <seriesInfo name="DOI" value="10.17487/RFC3935"/>
+        </reference>
+      </references>
+      <references pn="section-7.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="RFC8711" target="https://www.rfc-editor.org/info/rfc8711" quoteTitle="true" derivedAnchor="RFC8711">
+          <front>
+            <title>Structure of the IETF Administrative Support Activity, Version 2.0</title>
+            <author fullname="B. Haberman" initials="B." surname="Haberman"/>
+            <author fullname="J. Hall" initials="J." surname="Hall"/>
+            <author fullname="J. Livingood" initials="J." surname="Livingood"/>
+            <date month="February" year="2020"/>
+            <abstract>
+              <t indent="0">The IETF Administrative Support Activity (IASA) was originally established in 2005. In the years since then, the needs of the IETF evolved in ways that required changes to its administrative structure. The purpose of this RFC is to document and describe the IETF Administrative Support Activity, version 2.0 (IASA 2.0). It defines the roles and responsibilities of the IETF Administration LLC Board (IETF LLC Board), the IETF Executive Director, and the Internet Society in the fiscal and administrative support of the IETF standards process. It also defines the membership and selection rules for the IETF LLC Board.</t>
+              <t indent="0">This document obsoletes RFC 4071, RFC 4333, and RFC 7691.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="101"/>
+          <seriesInfo name="RFC" value="8711"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8711"/>
+        </reference>
+      </references>
+    </references>
+    <section anchor="acknowledgments" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgments">Acknowledgments</name>
+      <t indent="0" pn="section-appendix.a-1">Thanks to everybody involved in the SHMOO Working Group discussion,
+especially Brian Carpenter, Jason Livingood, Lars Eggert, and Charles Eckel for
+proposing concrete improvements and their in-depth reviews.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author initials="M." surname="Kühlewind" fullname="Mirja Kühlewind">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <email>mirja.kuehlewind@ericsson.com</email>
+        </address>
+      </author>
+      <author initials="J." surname="Reed" fullname="Jon Reed">
+        <organization showOnFrontPage="true">Akamai Technologies</organization>
+        <address>
+          <email>jreed@akamai.com</email>
+        </address>
+      </author>
+      <author initials="R." surname="Salz" fullname="Rich Salz">
+        <organization showOnFrontPage="true">Akamai Technologies</organization>
+        <address>
+          <email>rsalz@akamai.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

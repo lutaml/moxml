@@ -1,0 +1,757 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-nvo3-bfd-geneve-13" number="9521" ipr="trust200902" tocInclude="true" symRefs="true" sortRefs="true" updates="" obsoletes="" xml:lang="en" prepTime="2024-01-16T12:42:31" indexInclude="true" scripts="Common,Latin" tocDepth="3">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-nvo3-bfd-geneve-13" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9521" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="BFD for Geneve">Bidirectional Forwarding Detection (BFD) for Generic Network Virtualization Encapsulation (Geneve)</title>
+    <seriesInfo name="RFC" value="9521" stream="IETF"/>
+    <author fullname="Xiao Min" initials="X" surname="Min">
+      <organization showOnFrontPage="true">ZTE Corp.</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Nanjing</city>
+          <region/>
+          <code/>
+          <country>China</country>
+        </postal>
+        <phone>+86 18061680168</phone>
+        <email>xiao.min2@zte.com.cn</email>
+      </address>
+    </author>
+    <author fullname="Greg Mirsky" initials="G" surname="Mirsky">
+      <organization showOnFrontPage="true">Ericsson</organization>
+      <address>
+        <postal>
+          <street/>
+          <city/>
+          <region/>
+          <code/>
+          <country>United States of America</country>
+        </postal>
+        <phone/>
+        <email>gregimirsky@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Santosh Pallagatti" initials="S" surname="Pallagatti">
+      <organization showOnFrontPage="true">VMware</organization>
+      <address>
+        <postal>
+          <street/>
+          <city/>
+          <region/>
+          <code/>
+          <country>India</country>
+        </postal>
+        <phone/>
+        <email>santosh.pallagatti@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Jeff Tantsura" initials="J" surname="Tantsura">
+      <organization showOnFrontPage="true">Nvidia</organization>
+      <address>
+        <postal>
+          <street/>
+          <city/>
+          <region/>
+          <code/>
+          <country>United States of America</country>
+        </postal>
+        <phone/>
+        <email>jefftant.ietf@gmail.com</email>
+      </address>
+    </author>
+    <author fullname="Sam Aldrin" initials="S" surname="Aldrin">
+      <organization showOnFrontPage="true">Google</organization>
+      <address>
+        <postal>
+          <street/>
+          <city/>
+          <region/>
+          <code/>
+          <country>United States of America</country>
+        </postal>
+        <phone/>
+        <email>aldrin.ietf@gmail.com</email>
+      </address>
+    </author>
+    <date month="01" year="2024"/>
+    <area>rtg</area>
+    <workgroup>nvo3</workgroup>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1"> This document describes the use of the Bidirectional Forwarding Detection (BFD) protocol in point-to-point 
+  Generic Network Virtualization Encapsulation (Geneve) unicast tunnels used to make up an overlay network. </t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9521" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-conventions-used-in-this-do">Conventions Used in This Document</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.2.2">
+              <li pn="section-toc.1-1.2.2.1">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.1.1"><xref derivedContent="2.1" format="counter" sectionFormat="of" target="section-2.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-abbreviations">Abbreviations</xref></t>
+              </li>
+              <li pn="section-toc.1-1.2.2.2">
+                <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.2.2.1"><xref derivedContent="2.2" format="counter" sectionFormat="of" target="section-2.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-requirements-language">Requirements Language</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-bfd-packet-transmission-ove">BFD Packet Transmission over a Geneve Tunnel</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-bfd-encapsulation-with-the-">BFD Encapsulation with the Inner Ethernet/IP/UDP Header</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.4.2">
+              <li pn="section-toc.1-1.4.2.1">
+                <t indent="0" pn="section-toc.1-1.4.2.1.1"><xref derivedContent="4.1" format="counter" sectionFormat="of" target="section-4.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-demultiplexing-a-bfd-packet">Demultiplexing a BFD Packet When the Payload Is Ethernet</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="5" format="counter" sectionFormat="of" target="section-5"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-bfd-encapsulation-with-the-i">BFD Encapsulation with the Inner IP/UDP Header</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.5.2">
+              <li pn="section-toc.1-1.5.2.1">
+                <t indent="0" pn="section-toc.1-1.5.2.1.1"><xref derivedContent="5.1" format="counter" sectionFormat="of" target="section-5.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-demultiplexing-a-bfd-packet-">Demultiplexing a BFD Packet When the Payload Is IP</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="6" format="counter" sectionFormat="of" target="section-6"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.7">
+            <t indent="0" pn="section-toc.1-1.7.1"><xref derivedContent="7" format="counter" sectionFormat="of" target="section-7"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.8">
+            <t indent="0" pn="section-toc.1-1.8.1"><xref derivedContent="8" format="counter" sectionFormat="of" target="section-8"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-references">References</xref></t>
+            <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1.8.2">
+              <li pn="section-toc.1-1.8.2.1">
+                <t indent="0" pn="section-toc.1-1.8.2.1.1"><xref derivedContent="8.1" format="counter" sectionFormat="of" target="section-8.1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+              </li>
+              <li pn="section-toc.1-1.8.2.2">
+                <t indent="0" pn="section-toc.1-1.8.2.2.1"><xref derivedContent="8.2" format="counter" sectionFormat="of" target="section-8.2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-informative-references">Informative References</xref></t>
+              </li>
+            </ul>
+          </li>
+          <li pn="section-toc.1-1.9">
+            <t indent="0" pn="section-toc.1-1.9.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.10">
+            <t indent="0" pn="section-toc.1-1.10.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-addresses">Authors' Addresses</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">"Geneve: Generic Network Virtualization Encapsulation" <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/> provides an encapsulation scheme 
+  that allows building an overlay network of tunnels by decoupling the address space of the attached virtual hosts from 
+  that of the network. </t>
+      <t indent="0" pn="section-1-2"> This document describes the use of the Bidirectional Forwarding Detection (BFD) protocol <xref target="RFC5880" format="default" sectionFormat="of" derivedContent="RFC5880"/>
+  to enable monitoring the continuity of the path between two Geneve tunnel endpoints, which may be a Network 
+  Virtualization Edge (NVE) or another device acting as a Geneve tunnel endpoint. Specifically, the asynchronous mode of BFD, 
+  as defined in <xref target="RFC5880" format="default" sectionFormat="of" derivedContent="RFC5880"/>, is used to monitor a point-to-point (P2P) Geneve tunnel. The support for the BFD Echo function is outside 
+  the scope of this document. For simplicity, an NVE is used to represent the Geneve tunnel endpoint. 
+  A Tenant System (TS) is used to represent the physical or virtual device attached to a Geneve tunnel endpoint from the 
+  outside. A Virtual Access Point (VAP) is the NVE side of the interface between the NVE and the TS, and a VAP is a 
+  logical network port (virtual or physical) into a specific virtual network. For detailed definitions and descriptions 
+  of NVE, TS, and VAP, please refer to <xref target="RFC7365" format="default" sectionFormat="of" derivedContent="RFC7365"/> and <xref target="RFC8014" format="default" sectionFormat="of" derivedContent="RFC8014"/>. </t>
+      <t indent="0" pn="section-1-3"> The use cases and the deployment of BFD for Geneve are mostly
+    consistent with what's described in Sections <xref target="RFC8971" section="1" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8971#section-1" derivedContent="RFC8971"/> and <xref target="RFC8971" section="3" sectionFormat="bare" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8971#section-3" derivedContent="RFC8971"/> of <xref target="RFC8971" format="default" sectionFormat="of" derivedContent="RFC8971"/>.  One exception is the
+    usage of the Management Virtual Network Identifier (VNI), which is described in <xref target="I-D.ietf-nvo3-geneve-oam" format="default" sectionFormat="of" derivedContent="GENEVE-OAM"/> and is outside the scope of this
+    document. </t>
+      <t indent="0" pn="section-1-4"> As specified in <xref target="RFC8926" sectionFormat="of" section="4.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8926#section-4.2" derivedContent="RFC8926"/>, Geneve <bcp14>MUST</bcp14> be used with
+      congestion controlled traffic or within a Traffic-Managed Controlled
+      Environment (TMCE) to avoid congestion; that requirement also applies to BFD
+      traffic.  Specifically, considering the complexity and immaturity of
+      the BFD congestion control mechanism, BFD for Geneve <bcp14>MUST</bcp14>
+      be used within a TMCE unless BFD is really congestion controlled. As an
+      alternative to a real congestion control, an operator of a TMCE
+      deploying BFD for Geneve is required to provision the rates at which BFD
+      is transmitted to avoid congestion and false failure detection. </t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-2">
+      <name slugifiedName="name-conventions-used-in-this-do">Conventions Used in This Document</name>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-2.1">
+        <name slugifiedName="name-abbreviations">Abbreviations</name>
+        <dl newline="false" spacing="normal" indent="3" pn="section-2.1-1">
+          <dt pn="section-2.1-1.1">BFD:</dt>
+          <dd pn="section-2.1-1.2">Bidirectional Forwarding Detection</dd>
+          <dt pn="section-2.1-1.3">FCS:</dt>
+          <dd pn="section-2.1-1.4">Frame Check Sequence</dd>
+          <dt pn="section-2.1-1.5">Geneve:</dt>
+          <dd pn="section-2.1-1.6">Generic Network Virtualization Encapsulation</dd>
+          <dt pn="section-2.1-1.7">NVE:</dt>
+          <dd pn="section-2.1-1.8">Network Virtualization Edge</dd>
+          <dt pn="section-2.1-1.9">TMCE:</dt>
+          <dd pn="section-2.1-1.10">Traffic-Managed Controlled Environment</dd>
+          <dt pn="section-2.1-1.11">TS:</dt>
+          <dd pn="section-2.1-1.12">Tenant System</dd>
+          <dt pn="section-2.1-1.13">VAP:</dt>
+          <dd pn="section-2.1-1.14">Virtual Access Point</dd>
+          <dt pn="section-2.1-1.15">VNI:</dt>
+          <dd pn="section-2.1-1.16">Virtual Network Identifier</dd>
+          <dt pn="section-2.1-1.17">VXLAN:</dt>
+          <dd pn="section-2.1-1.18">Virtual eXtensible Local Area Network</dd>
+        </dl>
+      </section>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-2.2">
+        <name slugifiedName="name-requirements-language">Requirements Language</name>
+        <t indent="0" pn="section-2.2-1">
+    The key words "<bcp14>MUST</bcp14>", "<bcp14>MUST NOT</bcp14>",
+    "<bcp14>REQUIRED</bcp14>", "<bcp14>SHALL</bcp14>", "<bcp14>SHALL NOT</bcp14>", "<bcp14>SHOULD</bcp14>", "<bcp14>SHOULD NOT</bcp14>",
+    "<bcp14>RECOMMENDED</bcp14>", "<bcp14>NOT RECOMMENDED</bcp14>",
+    "<bcp14>MAY</bcp14>", and "<bcp14>OPTIONAL</bcp14>" in this document are
+    to be interpreted as described in BCP 14 <xref target="RFC2119" format="default" sectionFormat="of" derivedContent="RFC2119"/>
+          <xref target="RFC8174" format="default" sectionFormat="of" derivedContent="RFC8174"/> when, and only when, they appear in all capitals,
+    as shown here.
+        </t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-3">
+      <name slugifiedName="name-bfd-packet-transmission-ove">BFD Packet Transmission over a Geneve Tunnel</name>
+      <t indent="0" pn="section-3-1"> Since the Geneve data packet payload may be either an Ethernet frame
+      or an IP packet, this document defines two formats of BFD packet
+      encapsulation in Geneve. The BFD session is originated and terminated at
+      the VAP of an NVE. The selection of the BFD packet encapsulation is
+      based on how the VAP encapsulates the data packets. If the payload is
+      IP, then BFD over IP is carried in the payload. If the payload is
+      Ethernet, then BFD over IP over Ethernet is carried in the payload. This occurs in
+      the same manner as BFD over IP in the IP payload case, regardless of
+      what the Ethernet payload might normally carry.</t>
+    </section>
+    <section anchor="ethernet-ip-encaps-section" numbered="true" removeInRFC="false" toc="include" pn="section-4">
+      <name slugifiedName="name-bfd-encapsulation-with-the-">BFD Encapsulation with the Inner Ethernet/IP/UDP Header</name>
+      <t indent="0" pn="section-4-1"> If the VAP that originates the BFD packets is used to encapsulate
+      Ethernet data frames, then the BFD packets are encapsulated in Geneve as
+      described below. The Geneve packet formats over IPv4 and IPv6 are
+      defined in Sections <xref target="RFC8926" sectionFormat="bare" section="3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8926#section-3.1" derivedContent="RFC8926"/>
+      and <xref target="RFC8926" sectionFormat="bare" section="3.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8926#section-3.2" derivedContent="RFC8926"/> of <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/>, respectively. The outer IP/UDP and Geneve headers are
+      encoded by the sender as defined in <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/>. Note that
+      the outer IP header and the inner IP header may not be of the same
+      address family. In other words, an outer IPv6 header accompanied by an
+      inner IPv4 header and an outer IPv4 header accompanied by an inner IPv6
+      header are both possible. </t>
+      <figure anchor="Figure_1" align="left" suppress-title="false" pn="figure-1">
+        <name slugifiedName="name-geneve-encapsulation-of-a-b">Geneve Encapsulation of a BFD Control Packet with the Inner Ethernet/IP/UDP Header</name>
+        <artwork align="left" pn="section-4-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                      Outer Ethernet Header                    ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                        Outer IPvX Header                      ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                        Outer UDP Header                       ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                          Geneve Header                        ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                      Inner Ethernet Header                    ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                        Inner IPvX Header                      ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                         Inner UDP Header                      ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                        BFD Control Packet                     ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Outer Ethernet FCS                     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-4-3"> The BFD packet <bcp14>MUST</bcp14> be carried inside the inner Ethernet frame of the Geneve packet.
+	      The inner Ethernet frame carrying the BFD Control packet has the following format:
+      </t>
+      <dl newline="true" spacing="normal" indent="3" pn="section-4-4">
+        <dt pn="section-4-4.1">Inner Ethernet Header:</dt>
+        <dd pn="section-4-4.2">
+          <dl newline="false" spacing="normal" indent="3" pn="section-4-4.2.1">
+            <dt pn="section-4-4.2.1.1">Destination MAC:</dt>
+            <dd pn="section-4-4.2.1.2">Media Access Control (MAC) address of a VAP of the terminating NVE.</dd>
+            <dt pn="section-4-4.2.1.3">Source MAC:</dt>
+            <dd pn="section-4-4.2.1.4">MAC address of a VAP of the originating NVE.</dd>
+          </dl>
+        </dd>
+      </dl>
+      <dl newline="true" spacing="normal" indent="3" pn="section-4-5">
+        <dt pn="section-4-5.1">IP Header:</dt>
+        <dd pn="section-4-5.2">
+          <dl newline="false" spacing="normal" indent="3" pn="section-4-5.2.1">
+            <dt pn="section-4-5.2.1.1">Source IP:</dt>
+            <dd pn="section-4-5.2.1.2">IP address of a VAP of the originating
+            NVE. If the VAP of the originating NVE has no IP address, then the
+            IP address 0.0.0.0 for IPv4 or ::/128 for IPv6 <bcp14>MUST</bcp14>
+            be used.</dd>
+            <dt pn="section-4-5.2.1.3">Destination IP:</dt>
+            <dd pn="section-4-5.2.1.4">IP address of a VAP of the terminating
+            NVE. If the VAP of the terminating NVE has no IP address, then the
+            IP address 127.0.0.1 for IPv4 or ::1/128 for IPv6
+            <bcp14>MUST</bcp14> be used.</dd>
+            <dt pn="section-4-5.2.1.5">TTL or Hop Limit:</dt>
+            <dd pn="section-4-5.2.1.6">The TTL for IPv4 or Hop Limit for IPv6 <bcp14>MUST</bcp14> be set to 255 in
+            accordance with <xref target="RFC5881" format="default" sectionFormat="of" derivedContent="RFC5881"/>, which specifies the
+            IPv4/IPv6 single-hop BFD.</dd>
+          </dl>
+          <t indent="0" pn="section-4-5.2.2">The fields of the UDP header and the BFD Control packet are
+        encoded as specified in <xref target="RFC5881" format="default" sectionFormat="of" derivedContent="RFC5881"/>.</t>
+        </dd>
+      </dl>
+      <t indent="0" pn="section-4-6"> When the BFD packets are encapsulated in Geneve in this way, the
+	Geneve header defined in <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/> follows the value
+	set below.</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-4-7">
+        <li pn="section-4-7.1">The Opt Len field <bcp14>MUST</bcp14> be set as consistent with the Geneve specification (<xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/>) depending on whether 
+	 or not Geneve options are present in the frame. The use of Geneve options with BFD is beyond the scope of this document.</li>
+        <li pn="section-4-7.2">The O bit <bcp14>MUST</bcp14> be set to 1, which indicates this packet contains a control message.</li>
+        <li pn="section-4-7.3">The C bit <bcp14>MUST</bcp14> be set to 0, which indicates there isn't any critical option.</li>
+        <li pn="section-4-7.4">The Protocol Type field <bcp14>MUST</bcp14> be set to 0x6558 (Ethernet frame).</li>
+        <li pn="section-4-7.5">The Virtual Network Identifier (VNI) field <bcp14>MUST</bcp14> be set to the VNI number that the originating VAP is mapped to.</li>
+      </ul>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-4.1">
+        <name slugifiedName="name-demultiplexing-a-bfd-packet">Demultiplexing a BFD Packet When the Payload Is Ethernet</name>
+        <t indent="0" pn="section-4.1-1"> Once a packet is received, the NVE validates the packet as
+        described in <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/>. When the payload is Ethernet,
+        the Protocol Type field equals 0x6558. The destination MAC address of
+        the inner Ethernet frame matches the MAC address of a VAP, which is
+        mapped to the same VNI as the received VNI. Then, the destination IP,
+        the UDP destination port, and the TTL or Hop Limit of the inner IP
+        packet <bcp14>MUST</bcp14> be validated to determine whether 
+        the received packet can be processed by BFD (i.e., the three field
+        values of the inner IP packet <bcp14>MUST</bcp14> be in compliance
+        with what's defined in <xref target="ethernet-ip-encaps-section" format="default" sectionFormat="of" derivedContent="Section 4"/> of
+        this document, as well as <xref target="RFC5881" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5881#section-4" derivedContent="RFC5881"/>). If the validation fails, the received packet
+        <bcp14>MUST NOT</bcp14> be processed by BFD.</t>
+        <t indent="0" pn="section-4.1-2"> In BFD over Geneve, a BFD session is originated and terminated at
+        a VAP. Usually one NVE owns multiple VAPs. Since multiple BFD sessions
+        may be running between two NVEs, there needs to be a mechanism for
+        demultiplexing received BFD packets to the proper
+        session. Furthermore, due to the fact that <xref target="RFC8014" format="default" sectionFormat="of" derivedContent="RFC8014"/>
+        allows for N-to-1 mapping between VAPs and VNIs at one NVE, multiple BFD
+        sessions between two NVEs for the same VNI are allowed. Also, note that
+        a BFD session can only be established between two VAPs that are mapped
+        to the same VNI and that use the same way to encapsulate data packets. </t>
+        <t indent="0" pn="section-4.1-3"> If the BFD packet is received with the value of the Your Discriminator field set to 0, then the BFD session <bcp14>SHOULD</bcp14> be identified using 
+	the VNI number and the inner Ethernet/IP header. The inner Ethernet/IP header stands for the source MAC, the source IP, 
+	the destination MAC, and the destination IP. An implementation <bcp14>MAY</bcp14> use the inner UDP port source number to aid in 
+	demultiplexing incoming BFD Control packets. If it fails to identify the BFD session, the incoming BFD Control packets 
+	<bcp14>MUST</bcp14> be dropped, and an exception event indicating the failure should be reported to the management.</t>
+        <t indent="0" pn="section-4.1-4"> If the BFD packet is received with a non-zero Your Discriminator,
+        then the BFD session <bcp14>MUST</bcp14> be demultiplexed only with
+        the Your Discriminator as the key. </t>
+      </section>
+    </section>
+    <section anchor="ip-encaps-section" numbered="true" removeInRFC="false" toc="include" pn="section-5">
+      <name slugifiedName="name-bfd-encapsulation-with-the-i">BFD Encapsulation with the Inner IP/UDP Header</name>
+      <t indent="0" pn="section-5-1"> If the VAP that originates the BFD packets is used to encapsulate IP
+      data packets, then the BFD packets are encapsulated in Geneve as
+      described below. The Geneve packet formats over IPv4 and IPv6 are
+      defined in Sections <xref target="RFC8926" sectionFormat="bare" section="3.1" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8926#section-3.1" derivedContent="RFC8926"/> and <xref target="RFC8926" sectionFormat="bare" section="3.2" format="default" derivedLink="https://rfc-editor.org/rfc/rfc8926#section-3.2" derivedContent="RFC8926"/> of <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/>,
+      respectively. The outer IP/UDP and Geneve headers are encoded by the
+      sender as defined in <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/>. Note that the outer IP
+      header and the inner IP header may not be of the same address family. In
+      other words, an outer IPv6 header accompanied by an inner IPv4 header
+      and an outer IPv4 header accompanied by an inner IPv6 header are both
+      possible. </t>
+      <figure anchor="Figure_2" align="left" suppress-title="false" pn="figure-2">
+        <name slugifiedName="name-geneve-encapsulation-of-a-bf">Geneve Encapsulation of a BFD Control Packet with the Inner IP/UDP Header</name>
+        <artwork align="left" pn="section-5-2.1">
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                         Ethernet Header                       ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                        Outer IPvX Header                      ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                        Outer UDP Header                       ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                          Geneve Header                        ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                        Inner IPvX Header                      ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                         Inner UDP Header                      ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                                                               |
+~                        BFD Control Packet                     ~
+|                                                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                               FCS                             |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</artwork>
+      </figure>
+      <t indent="0" pn="section-5-3"> The BFD packet <bcp14>MUST</bcp14> be carried inside the inner IP packet of the Geneve packet.
+     The inner IP packet carrying the BFD Control packet has the following format:
+      </t>
+      <dl newline="true" spacing="normal" indent="3" pn="section-5-4">
+        <dt pn="section-5-4.1">Inner IP Header:</dt>
+        <dd pn="section-5-4.2">
+          <dl spacing="normal" newline="false" indent="3" pn="section-5-4.2.1">
+            <dt pn="section-5-4.2.1.1">Source IP:</dt>
+            <dd pn="section-5-4.2.1.2">IP address of a VAP of the originating NVE.</dd>
+            <dt pn="section-5-4.2.1.3">Destination IP:</dt>
+            <dd pn="section-5-4.2.1.4">IP address of a VAP of the terminating NVE.</dd>
+            <dt pn="section-5-4.2.1.5">TTL or Hop Limit:</dt>
+            <dd pn="section-5-4.2.1.6">The TTL for IPv4 or Hop Limit for IPv6 <bcp14>MUST</bcp14> be set to 255 in accordance with <xref target="RFC5881" format="default" sectionFormat="of" derivedContent="RFC5881"/>, which specifies the IPv4/IPv6 single-hop BFD.</dd>
+          </dl>
+          <t indent="0" pn="section-5-4.2.2"> The fields of the UDP header and the BFD Control packet are encoded as specified in <xref target="RFC5881" format="default" sectionFormat="of" derivedContent="RFC5881"/>.</t>
+        </dd>
+      </dl>
+      <t indent="0" pn="section-5-5"> When the BFD packets are encapsulated in Geneve in this way, the Geneve header defined in <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/> 
+	 follows the value set below.</t>
+      <ul spacing="normal" bare="false" empty="false" indent="3" pn="section-5-6">
+        <li pn="section-5-6.1">The Opt Len field <bcp14>MUST</bcp14> be set as consistent with the Geneve specification (<xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/>) depending on whether 
+	 or not Geneve options are present in the frame. The use of Geneve options with BFD is beyond the scope of this document.</li>
+        <li pn="section-5-6.2">The O bit <bcp14>MUST</bcp14> be set to 1, which indicates this packet contains a control message.</li>
+        <li pn="section-5-6.3">The C bit <bcp14>MUST</bcp14> be set to 0, which indicates there isn't any critical option.</li>
+        <li pn="section-5-6.4">The Protocol Type field <bcp14>MUST</bcp14> be set to 0x0800 (IPv4) or 0x86DD (IPv6), depending on the address family 
+	 of the inner IP packet.</li>
+        <li pn="section-5-6.5">The Virtual Network Identifier (VNI) field <bcp14>MUST</bcp14> be set to the VNI number that the originating VAP is mapped to.</li>
+      </ul>
+      <section numbered="true" removeInRFC="false" toc="include" pn="section-5.1">
+        <name slugifiedName="name-demultiplexing-a-bfd-packet-">Demultiplexing a BFD Packet When the Payload Is IP</name>
+        <t indent="0" pn="section-5.1-1"> Once a packet is received, the NVE validates the packet as
+        described in <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/>. When the payload is IP, the
+        Protocol Type field equals 0x0800 or 0x86DD. The destination IP
+        address of the inner IP packet matches the IP address of a VAP, which
+        is mapped to the same VNI as the received VNI. Then, the UDP
+        destination port and the TTL or Hop Limit of the inner IP packet
+        <bcp14>MUST</bcp14> be validated to determine whether or not the received
+        packet can be processed by BFD (i.e., the two field values of the
+        inner IP packet <bcp14>MUST</bcp14> be in compliance with what's
+        defined in <xref sectionFormat="of" target="ip-encaps-section" format="default" derivedContent="Section 5"/> of
+        this document as well as <xref target="RFC5881" sectionFormat="of" section="4" format="default" derivedLink="https://rfc-editor.org/rfc/rfc5881#section-4" derivedContent="RFC5881"/>). If the validation fails, the received packet
+        <bcp14>MUST NOT</bcp14> be processed by BFD.</t>
+        <t indent="0" pn="section-5.1-2"> If the BFD packet is received with the value of the Your Discriminator field set to 0, then the BFD session <bcp14>SHOULD</bcp14> be identified using the VNI 
+	number and the inner IP header. The inner IP header stands for the source IP and the destination IP. An implementation <bcp14>MAY</bcp14> 
+	use the inner UDP port source number to aid in demultiplexing incoming BFD Control packets. If it fails to identify the BFD session, 
+	the incoming BFD Control packets <bcp14>MUST</bcp14> be dropped, and an exception event indicating the failure should be reported to the management.</t>
+        <t indent="0" pn="section-5.1-3"> If the BFD packet is received with a non-zero Your Discriminator, then the BFD session <bcp14>MUST</bcp14> be demultiplexed 
+    only with the Your Discriminator as the key. </t>
+      </section>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-6">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-6-1"> Security issues discussed in <xref target="RFC8926" format="default" sectionFormat="of" derivedContent="RFC8926"/> and <xref target="RFC5880" format="default" sectionFormat="of" derivedContent="RFC5880"/> apply to this document. Particularly, 
+  the BFD is an application that is run at the two Geneve tunnel endpoints. The IP underlay network and/or the Geneve option 
+  can provide security between the peers, which are subject to the issue of overload described below. The BFD introduces no 
+  security vulnerabilities when run in this manner. Considering Geneve does not have any inherent security mechanisms, BFD 
+  authentication as specified in <xref target="RFC5880" format="default" sectionFormat="of" derivedContent="RFC5880"/> is <bcp14>RECOMMENDED</bcp14> to be utilized.</t>
+      <t indent="0" pn="section-6-2">
+This document supports establishing multiple BFD sessions between the
+same pair of NVEs.  For each BFD session over a pair of VAPs residing
+in the same pair of NVEs, there <bcp14>SHOULD</bcp14> be a mechanism to control the
+maximum number of such sessions that can be active at the same time.
+ Particularly, assuming an example that each NVE of the pair
+      of NVEs has N VAPs using Ethernet as the payload, then there could be N
+      squared BFD sessions running between the pair of NVEs. Considering N
+      could be a high number, the N squared BFD sessions could result in
+      overload of the NVE. In this case, it's recommended that N BFD sessions
+      covering all N VAPs are run for the pair of NVEs. Generally speaking,
+      the number of BFD sessions is supposed to be enough as long as all VAPs
+      of the pair of NVEs are covered.</t>
+    </section>
+    <section numbered="true" removeInRFC="false" toc="include" pn="section-7">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-7-1">This document has no IANA actions.</t>
+    </section>
+  </middle>
+  <back>
+    <displayreference target="I-D.ietf-nvo3-geneve-oam" to="GENEVE-OAM"/>
+    <references pn="section-8">
+      <name slugifiedName="name-references">References</name>
+      <references pn="section-8.1">
+        <name slugifiedName="name-normative-references">Normative References</name>
+        <reference anchor="RFC2119" target="https://www.rfc-editor.org/info/rfc2119" quoteTitle="true" derivedAnchor="RFC2119">
+          <front>
+            <title>Key words for use in RFCs to Indicate Requirement Levels</title>
+            <author fullname="S. Bradner" initials="S." surname="Bradner"/>
+            <date month="March" year="1997"/>
+            <abstract>
+              <t indent="0">In many standards track documents several words are used to signify the requirements in the specification. These words are often capitalized. This document defines these words as they should be interpreted in IETF documents. This document specifies an Internet Best Current Practices for the Internet Community, and requests discussion and suggestions for improvements.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="2119"/>
+          <seriesInfo name="DOI" value="10.17487/RFC2119"/>
+        </reference>
+        <reference anchor="RFC5880" target="https://www.rfc-editor.org/info/rfc5880" quoteTitle="true" derivedAnchor="RFC5880">
+          <front>
+            <title>Bidirectional Forwarding Detection (BFD)</title>
+            <author fullname="D. Katz" initials="D." surname="Katz"/>
+            <author fullname="D. Ward" initials="D." surname="Ward"/>
+            <date month="June" year="2010"/>
+            <abstract>
+              <t indent="0">This document describes a protocol intended to detect faults in the bidirectional path between two forwarding engines, including interfaces, data link(s), and to the extent possible the forwarding engines themselves, with potentially very low latency. It operates independently of media, data protocols, and routing protocols. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5880"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5880"/>
+        </reference>
+        <reference anchor="RFC5881" target="https://www.rfc-editor.org/info/rfc5881" quoteTitle="true" derivedAnchor="RFC5881">
+          <front>
+            <title>Bidirectional Forwarding Detection (BFD) for IPv4 and IPv6 (Single Hop)</title>
+            <author fullname="D. Katz" initials="D." surname="Katz"/>
+            <author fullname="D. Ward" initials="D." surname="Ward"/>
+            <date month="June" year="2010"/>
+            <abstract>
+              <t indent="0">This document describes the use of the Bidirectional Forwarding Detection (BFD) protocol over IPv4 and IPv6 for single IP hops. [STANDARDS-TRACK]</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="5881"/>
+          <seriesInfo name="DOI" value="10.17487/RFC5881"/>
+        </reference>
+        <reference anchor="RFC8174" target="https://www.rfc-editor.org/info/rfc8174" quoteTitle="true" derivedAnchor="RFC8174">
+          <front>
+            <title>Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words</title>
+            <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+            <date month="May" year="2017"/>
+            <abstract>
+              <t indent="0">RFC 2119 specifies common key words that may be used in protocol specifications. This document aims to reduce the ambiguity by clarifying that only UPPERCASE usage of the key words have the defined special meanings.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="BCP" value="14"/>
+          <seriesInfo name="RFC" value="8174"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8174"/>
+        </reference>
+        <reference anchor="RFC8926" target="https://www.rfc-editor.org/info/rfc8926" quoteTitle="true" derivedAnchor="RFC8926">
+          <front>
+            <title>Geneve: Generic Network Virtualization Encapsulation</title>
+            <author fullname="J. Gross" initials="J." role="editor" surname="Gross"/>
+            <author fullname="I. Ganga" initials="I." role="editor" surname="Ganga"/>
+            <author fullname="T. Sridhar" initials="T." role="editor" surname="Sridhar"/>
+            <date month="November" year="2020"/>
+            <abstract>
+              <t indent="0">Network virtualization involves the cooperation of devices with a wide variety of capabilities such as software and hardware tunnel endpoints, transit fabrics, and centralized control clusters. As a result of their role in tying together different elements of the system, the requirements on tunnels are influenced by all of these components. Therefore, flexibility is the most important aspect of a tunneling protocol if it is to keep pace with the evolution of technology. This document describes Geneve, an encapsulation protocol designed to recognize and accommodate these changing capabilities and needs.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8926"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8926"/>
+        </reference>
+      </references>
+      <references pn="section-8.2">
+        <name slugifiedName="name-informative-references">Informative References</name>
+        <reference anchor="I-D.ietf-nvo3-geneve-oam" target="https://datatracker.ietf.org/doc/html/draft-ietf-nvo3-geneve-oam-09" quoteTitle="true" derivedAnchor="GENEVE-OAM">
+          <front>
+            <title>OAM for use in GENEVE</title>
+            <author initials="G." surname="Mirsky" fullname="Greg Mirsky">
+              <organization showOnFrontPage="true">Ericsson</organization>
+            </author>
+            <author initials="S." surname="Boutros" fullname="Sami Boutros">
+              <organization showOnFrontPage="true">Ciena</organization>
+            </author>
+            <author initials="D." surname="Black" fullname="David L. Black">
+              <organization showOnFrontPage="true">Dell EMC</organization>
+            </author>
+            <author initials="S." surname="Pallagatti" fullname="Santosh Pallagatti">
+              <organization showOnFrontPage="true">VMware</organization>
+            </author>
+            <date month="December" day="6" year="2023"/>
+          </front>
+          <seriesInfo name="Internet-Draft" value="draft-ietf-nvo3-geneve-oam-09"/>
+          <refcontent>Work in Progress</refcontent>
+        </reference>
+        <reference anchor="RFC7365" target="https://www.rfc-editor.org/info/rfc7365" quoteTitle="true" derivedAnchor="RFC7365">
+          <front>
+            <title>Framework for Data Center (DC) Network Virtualization</title>
+            <author fullname="M. Lasserre" initials="M." surname="Lasserre"/>
+            <author fullname="F. Balus" initials="F." surname="Balus"/>
+            <author fullname="T. Morin" initials="T." surname="Morin"/>
+            <author fullname="N. Bitar" initials="N." surname="Bitar"/>
+            <author fullname="Y. Rekhter" initials="Y." surname="Rekhter"/>
+            <date month="October" year="2014"/>
+            <abstract>
+              <t indent="0">This document provides a framework for Data Center (DC) Network Virtualization over Layer 3 (NVO3) and defines a reference model along with logical components required to design a solution.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="7365"/>
+          <seriesInfo name="DOI" value="10.17487/RFC7365"/>
+        </reference>
+        <reference anchor="RFC8014" target="https://www.rfc-editor.org/info/rfc8014" quoteTitle="true" derivedAnchor="RFC8014">
+          <front>
+            <title>An Architecture for Data-Center Network Virtualization over Layer 3 (NVO3)</title>
+            <author fullname="D. Black" initials="D." surname="Black"/>
+            <author fullname="J. Hudson" initials="J." surname="Hudson"/>
+            <author fullname="L. Kreeger" initials="L." surname="Kreeger"/>
+            <author fullname="M. Lasserre" initials="M." surname="Lasserre"/>
+            <author fullname="T. Narten" initials="T." surname="Narten"/>
+            <date month="December" year="2016"/>
+            <abstract>
+              <t indent="0">This document presents a high-level overview architecture for building data-center Network Virtualization over Layer 3 (NVO3) networks. The architecture is given at a high level, showing the major components of an overall system. An important goal is to divide the space into individual smaller components that can be implemented independently with clear inter-component interfaces and interactions. It should be possible to build and implement individual components in isolation and have them interoperate with other independently implemented components. That way, implementers have flexibility in implementing individual components and can optimize and innovate within their respective components without requiring changes to other components.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8014"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8014"/>
+        </reference>
+        <reference anchor="RFC8971" target="https://www.rfc-editor.org/info/rfc8971" quoteTitle="true" derivedAnchor="RFC8971">
+          <front>
+            <title>Bidirectional Forwarding Detection (BFD) for Virtual eXtensible Local Area Network (VXLAN)</title>
+            <author fullname="S. Pallagatti" initials="S." role="editor" surname="Pallagatti"/>
+            <author fullname="G. Mirsky" initials="G." role="editor" surname="Mirsky"/>
+            <author fullname="S. Paragiri" initials="S." surname="Paragiri"/>
+            <author fullname="V. Govindan" initials="V." surname="Govindan"/>
+            <author fullname="M. Mudigonda" initials="M." surname="Mudigonda"/>
+            <date month="December" year="2020"/>
+            <abstract>
+              <t indent="0">This document describes the use of the Bidirectional Forwarding Detection (BFD) protocol in point-to-point Virtual eXtensible Local Area Network (VXLAN) tunnels used to form an overlay network.</t>
+            </abstract>
+          </front>
+          <seriesInfo name="RFC" value="8971"/>
+          <seriesInfo name="DOI" value="10.17487/RFC8971"/>
+        </reference>
+      </references>
+    </references>
+    <section numbered="false" removeInRFC="false" toc="include" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1"> The authors would like to acknowledge <contact fullname="Reshad       Rahman"/>, <contact fullname="Jeffrey Haas"/>, and <contact fullname="Matthew       Bocci"/> for their guidance on this work.</t>
+      <t indent="0" pn="section-appendix.a-2"> The authors would like to acknowledge <contact fullname="David Black"/>
+      for his explanation on the mapping relation between VAPs and VNIs.</t>
+      <t indent="0" pn="section-appendix.a-3"> The authors would like to acknowledge <contact fullname="Stewart       Bryant"/>, <contact fullname="Anoop Ghanwani"/>, <contact fullname="Jeffrey       Haas"/>, <contact fullname="Reshad Rahman"/>, <contact fullname="Matthew       Bocci"/>, <contact fullname="Andrew Alston"/>, <contact fullname="Magnus       Westerlund"/>, <contact fullname="Paul Kyzivat"/>, <contact fullname="Sheng       Jiang"/>, <contact fullname="Carl Wallace"/>, <contact fullname="Roman       Danyliw"/>, <contact fullname="John Scudder"/>, <contact fullname="Donald       Eastlake 3rd"/>, <contact fullname="Éric Vyncke"/>,
+      <contact fullname="Zaheduzzaman Sarker"/>, and <contact fullname="Lars Eggert"/> for
+      their thorough review and very helpful comments.</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-addresses">Authors' Addresses</name>
+      <author fullname="Xiao Min" initials="X" surname="Min">
+        <organization showOnFrontPage="true">ZTE Corp.</organization>
+        <address>
+          <postal>
+            <street/>
+            <city>Nanjing</city>
+            <region/>
+            <code/>
+            <country>China</country>
+          </postal>
+          <phone>+86 18061680168</phone>
+          <email>xiao.min2@zte.com.cn</email>
+        </address>
+      </author>
+      <author fullname="Greg Mirsky" initials="G" surname="Mirsky">
+        <organization showOnFrontPage="true">Ericsson</organization>
+        <address>
+          <postal>
+            <street/>
+            <city/>
+            <region/>
+            <code/>
+            <country>United States of America</country>
+          </postal>
+          <phone/>
+          <email>gregimirsky@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Santosh Pallagatti" initials="S" surname="Pallagatti">
+        <organization showOnFrontPage="true">VMware</organization>
+        <address>
+          <postal>
+            <street/>
+            <city/>
+            <region/>
+            <code/>
+            <country>India</country>
+          </postal>
+          <phone/>
+          <email>santosh.pallagatti@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Jeff Tantsura" initials="J" surname="Tantsura">
+        <organization showOnFrontPage="true">Nvidia</organization>
+        <address>
+          <postal>
+            <street/>
+            <city/>
+            <region/>
+            <code/>
+            <country>United States of America</country>
+          </postal>
+          <phone/>
+          <email>jefftant.ietf@gmail.com</email>
+        </address>
+      </author>
+      <author fullname="Sam Aldrin" initials="S" surname="Aldrin">
+        <organization showOnFrontPage="true">Google</organization>
+        <address>
+          <postal>
+            <street/>
+            <city/>
+            <region/>
+            <code/>
+            <country>United States of America</country>
+          </postal>
+          <phone/>
+          <email>aldrin.ietf@gmail.com</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>

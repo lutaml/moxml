@@ -1,0 +1,207 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" version="3" submissionType="IETF" category="std" consensus="true" docName="draft-ietf-grow-bmp-registries-change-04" number="9515" ipr="trust200902" updates="7854" obsoletes="" xml:lang="en" tocInclude="true" tocDepth="4" symRefs="true" sortRefs="true" prepTime="2023-12-08T13:05:54" indexInclude="true" scripts="Common,Latin">
+  <link href="https://datatracker.ietf.org/doc/draft-ietf-grow-bmp-registries-change-04" rel="prev"/>
+  <link href="https://dx.doi.org/10.17487/rfc9515" rel="alternate"/>
+  <link href="urn:issn:2070-1721" rel="alternate"/>
+  <front>
+    <title abbrev="BMP TLV Registration Procedures">Revision to Registration Procedures for Multiple BMP Registries</title>
+    <seriesInfo name="RFC" value="9515" stream="IETF"/>
+    <author fullname="John Scudder" initials="J." surname="Scudder">
+      <organization showOnFrontPage="true">Juniper Networks</organization>
+      <address>
+        <postal>
+          <street>1194 N. Mathilda Ave</street>
+          <city>Sunnyvale</city>
+          <region>CA</region>
+          <code>94089</code>
+          <country>United States of America</country>
+        </postal>
+        <email>jgs@juniper.net</email>
+      </address>
+    </author>
+    <date month="12" year="2023"/>
+    <area>ops</area>
+    <workgroup>grow</workgroup>
+    <keyword>IDR</keyword>
+    <abstract pn="section-abstract">
+      <t indent="0" pn="section-abstract-1">
+	This document updates RFC 7854, "BGP Monitoring Protocol (BMP)", by
+	changing the registration procedures for several registries.
+	Specifically, any BMP registry with a range of 32768-65530 designated
+	"Specification Required" has that range redesignated as "First Come
+	First Served".
+</t>
+    </abstract>
+    <boilerplate>
+      <section anchor="status-of-memo" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.1">
+        <name slugifiedName="name-status-of-this-memo">Status of This Memo</name>
+        <t indent="0" pn="section-boilerplate.1-1">
+            This is an Internet Standards Track document.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-2">
+            This document is a product of the Internet Engineering Task Force
+            (IETF).  It represents the consensus of the IETF community.  It has
+            received public review and has been approved for publication by
+            the Internet Engineering Steering Group (IESG).  Further
+            information on Internet Standards is available in Section 2 of 
+            RFC 7841.
+        </t>
+        <t indent="0" pn="section-boilerplate.1-3">
+            Information about the current status of this document, any
+            errata, and how to provide feedback on it may be obtained at
+            <eref target="https://www.rfc-editor.org/info/rfc9515" brackets="none"/>.
+        </t>
+      </section>
+      <section anchor="copyright" numbered="false" removeInRFC="false" toc="exclude" pn="section-boilerplate.2">
+        <name slugifiedName="name-copyright-notice">Copyright Notice</name>
+        <t indent="0" pn="section-boilerplate.2-1">
+            Copyright (c) 2023 IETF Trust and the persons identified as the
+            document authors. All rights reserved.
+        </t>
+        <t indent="0" pn="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<eref target="https://trustee.ietf.org/license-info" brackets="none"/>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.
+        </t>
+      </section>
+    </boilerplate>
+    <toc>
+      <section anchor="toc" numbered="false" removeInRFC="false" toc="exclude" pn="section-toc.1">
+        <name slugifiedName="name-table-of-contents">Table of Contents</name>
+        <ul bare="true" empty="true" indent="2" spacing="compact" pn="section-toc.1-1">
+          <li pn="section-toc.1-1.1">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.1.1"><xref derivedContent="1" format="counter" sectionFormat="of" target="section-1"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-introduction">Introduction</xref></t>
+          </li>
+          <li pn="section-toc.1-1.2">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.2.1"><xref derivedContent="2" format="counter" sectionFormat="of" target="section-2"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-iana-considerations">IANA Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.3">
+            <t indent="0" keepWithNext="true" pn="section-toc.1-1.3.1"><xref derivedContent="3" format="counter" sectionFormat="of" target="section-3"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-security-considerations">Security Considerations</xref></t>
+          </li>
+          <li pn="section-toc.1-1.4">
+            <t indent="0" pn="section-toc.1-1.4.1"><xref derivedContent="4" format="counter" sectionFormat="of" target="section-4"/>.  <xref derivedContent="" format="title" sectionFormat="of" target="name-normative-references">Normative References</xref></t>
+          </li>
+          <li pn="section-toc.1-1.5">
+            <t indent="0" pn="section-toc.1-1.5.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.a"/><xref derivedContent="" format="title" sectionFormat="of" target="name-acknowledgements">Acknowledgements</xref></t>
+          </li>
+          <li pn="section-toc.1-1.6">
+            <t indent="0" pn="section-toc.1-1.6.1"><xref derivedContent="" format="none" sectionFormat="of" target="section-appendix.b"/><xref derivedContent="" format="title" sectionFormat="of" target="name-authors-address">Author's Address</xref></t>
+          </li>
+        </ul>
+      </section>
+    </toc>
+  </front>
+  <middle>
+    <section anchor="introduction" numbered="true" toc="include" removeInRFC="false" pn="section-1">
+      <name slugifiedName="name-introduction">Introduction</name>
+      <t indent="0" pn="section-1-1">
+	<xref target="RFC7854" format="default" sectionFormat="of" derivedContent="RFC7854"/> creates a number of IANA registries that
+	include a range of 32768-65530 designated "Specification Required".
+	Each such registry also has a large range designated "Standards
+	Action". Subsequent experience has shown two things. First, there is
+	less difference between these two policies in practice than there is in
+	theory (consider that <xref target="RFC8126" format="default" sectionFormat="of" derivedContent="RFC8126"/> explains that for
+	Specification Required, "Publication of an RFC is an ideal means of
+	achieving this requirement"). Second, it's desirable to have a very low
+	bar to registration, to avoid the risk of conflicts introduced by use
+	of unregistered code points (so-called "code point squatting"). 
+</t>
+      <t indent="0" pn="section-1-2">
+	Accordingly, this document revises the registration procedures, as given
+	in <xref target="IANA" format="default" sectionFormat="of" derivedContent="Section 2"/>.
+</t>
+    </section>
+    <section anchor="IANA" numbered="true" toc="include" removeInRFC="false" pn="section-2">
+      <name slugifiedName="name-iana-considerations">IANA Considerations</name>
+      <t indent="0" pn="section-2-1">
+	IANA has revised the following registries within the BMP
+	group:
+</t>
+      <ul spacing="compact" bare="false" empty="false" indent="3" pn="section-2-2">
+        <li pn="section-2-2.1">BMP Statistics Types</li>
+        <li pn="section-2-2.2">BMP Initiation and Peer Up Information TLVs</li>
+        <li pn="section-2-2.3">BMP Termination Message TLVs</li>
+        <li pn="section-2-2.4">BMP Termination Message Reason Codes</li>
+        <li pn="section-2-2.5">BMP Route Mirroring TLVs</li>
+        <li pn="section-2-2.6">BMP Route Mirroring Information Codes</li>
+      </ul>
+      <t indent="0" pn="section-2-3">
+	For each of these registries, the ranges 32768-65530 whose registration
+	procedures were "Specification Required" are revised to have the 
+	registration procedures "First Come First Served".
+</t>
+    </section>
+    <section anchor="Security" numbered="true" toc="include" removeInRFC="false" pn="section-3">
+      <name slugifiedName="name-security-considerations">Security Considerations</name>
+      <t indent="0" pn="section-3-1">
+	This revision to registration procedures does not change the
+	underlying security issues inherent in <xref target="RFC7854" format="default" sectionFormat="of" derivedContent="RFC7854"/>.
+</t>
+    </section>
+  </middle>
+  <back>
+    <references pn="section-4">
+      <name slugifiedName="name-normative-references">Normative References</name>
+      <reference anchor="RFC7854" target="https://www.rfc-editor.org/info/rfc7854" quoteTitle="true" derivedAnchor="RFC7854">
+        <front>
+          <title>BGP Monitoring Protocol (BMP)</title>
+          <author fullname="J. Scudder" initials="J." role="editor" surname="Scudder"/>
+          <author fullname="R. Fernando" initials="R." surname="Fernando"/>
+          <author fullname="S. Stuart" initials="S." surname="Stuart"/>
+          <date month="June" year="2016"/>
+          <abstract>
+            <t indent="0">This document defines the BGP Monitoring Protocol (BMP), which can be used to monitor BGP sessions. BMP is intended to provide a convenient interface for obtaining route views. Prior to the introduction of BMP, screen scraping was the most commonly used approach to obtaining such views. The design goals are to keep BMP simple, useful, easily implemented, and minimally service affecting. BMP is not suitable for use as a routing protocol.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="RFC" value="7854"/>
+        <seriesInfo name="DOI" value="10.17487/RFC7854"/>
+      </reference>
+      <reference anchor="RFC8126" target="https://www.rfc-editor.org/info/rfc8126" quoteTitle="true" derivedAnchor="RFC8126">
+        <front>
+          <title>Guidelines for Writing an IANA Considerations Section in RFCs</title>
+          <author fullname="M. Cotton" initials="M." surname="Cotton"/>
+          <author fullname="B. Leiba" initials="B." surname="Leiba"/>
+          <author fullname="T. Narten" initials="T." surname="Narten"/>
+          <date month="June" year="2017"/>
+          <abstract>
+            <t indent="0">Many protocols make use of points of extensibility that use constants to identify various protocol parameters. To ensure that the values in these fields do not have conflicting uses and to promote interoperability, their allocations are often coordinated by a central record keeper. For IETF protocols, that role is filled by the Internet Assigned Numbers Authority (IANA).</t>
+            <t indent="0">To make assignments in a given registry prudently, guidance describing the conditions under which new values should be assigned, as well as when and how modifications to existing values can be made, is needed. This document defines a framework for the documentation of these guidelines by specification authors, in order to assure that the provided guidance for the IANA Considerations is clear and addresses the various issues that are likely in the operation of a registry.</t>
+            <t indent="0">This is the third edition of this document; it obsoletes RFC 5226.</t>
+          </abstract>
+        </front>
+        <seriesInfo name="BCP" value="26"/>
+        <seriesInfo name="RFC" value="8126"/>
+        <seriesInfo name="DOI" value="10.17487/RFC8126"/>
+      </reference>
+    </references>
+    <section anchor="Acknowledgements" numbered="false" toc="include" removeInRFC="false" pn="section-appendix.a">
+      <name slugifiedName="name-acknowledgements">Acknowledgements</name>
+      <t indent="0" pn="section-appendix.a-1">
+	Thanks to <contact fullname="Jeff Haas"/> for review and encouragement, and to <contact fullname="Tom Petch"/>
+	for review.
+</t>
+    </section>
+    <section anchor="authors-addresses" numbered="false" removeInRFC="false" toc="include" pn="section-appendix.b">
+      <name slugifiedName="name-authors-address">Author's Address</name>
+      <author fullname="John Scudder" initials="J." surname="Scudder">
+        <organization showOnFrontPage="true">Juniper Networks</organization>
+        <address>
+          <postal>
+            <street>1194 N. Mathilda Ave</street>
+            <city>Sunnyvale</city>
+            <region>CA</region>
+            <code>94089</code>
+            <country>United States of America</country>
+          </postal>
+          <email>jgs@juniper.net</email>
+        </address>
+      </author>
+    </section>
+  </back>
+</rfc>
