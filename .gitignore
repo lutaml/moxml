@@ -43,6 +43,7 @@ libxml_*.txt
 # Ruby version managers
 .ruby-version.lock
 .rvmrc
+.ruby-version
 
 # Artifacts from static site generators
 /_site
