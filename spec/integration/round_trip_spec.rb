@@ -66,11 +66,11 @@ RSpec.describe "Round-trip XML Testing" do
     
     {
       name: element.name,
-      attributes: element.attributes.to_h,
+      attributes: element.attributes.map { |attr| [attr.name, attr.value] }.to_h,
       text: element.text&.strip,
       namespace: element.namespace&.href,
       children_count: element.children.size,
-      xpath: element.xpath
+      xpath: element.xpath("//*")
     }
   end
 
