@@ -416,7 +416,11 @@ module Moxml
                                     node.xml_declaration ? true : false
                                   end
 
-            if should_include_decl && !node.xml_declaration
+            # Fix: Check if declaration already exists in children
+            # This prevents duplicate declarations when document already has one
+            has_existing_declaration = node.children.any? { |child| child.is_a?(::Oga::XML::XmlDeclaration) }
+
+            if should_include_decl && !node.xml_declaration && !has_existing_declaration
               # Need to add declaration - create default one
               output = +""
               output << '<?xml version="1.0" encoding="UTF-8"?>'
@@ -450,7 +454,27 @@ module Moxml
           end
 
           # Default: use XmlGenerator
-          ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
+            # But first check if we need to handle declaration specially
+            if node.is_a?(::Oga::XML::Document) && node.xml_declaration
+              # Document has declaration - use custom handling to avoid duplicates
+              output = +""
+              
+              # Serialize children, but skip XmlDeclaration if it would cause duplication
+              node.children.each do |child|
+                if child.is_a?(::Oga::XML::XmlDeclaration)
+                  # Check if this would cause duplication by seeing if we already have one in output
+                  if output.include?('<?xml')
+                    next # Skip duplicate declaration
+                  end
+                end
+                output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
+              end
+              
+              return output
+            else
+              # Normal case - use XmlGenerator directly
+              ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
+            end
         end
       end
     end
