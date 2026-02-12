@@ -11,15 +11,11 @@ module Moxml
     class Rexml < Base
       class << self
         def parse(xml, options = {})
-          # Extract encoding from XML declaration if present
-          encoding = extract_encoding_from_xml(xml)
-          
+          # Apply the working solution: force_encoding then encode to UTF-8
+          processed_xml = xml.force_encoding("UTF-8").encode("UTF-8")
+
           native_doc = begin
-            if encoding
-              ::REXML::Document.new(xml, encoding: encoding)
-            else
-              ::REXML::Document.new(xml)
-            end
+            ::REXML::Document.new(processed_xml)
           rescue ::REXML::ParseException => e
             if options[:strict]
               raise Moxml::ParseError.new(
@@ -37,7 +33,7 @@ module Moxml
         def extract_encoding_from_xml(xml)
           # Match XML declaration pattern: <?xml version="..." encoding="..."?>
           match = xml.match(/<\?xml[^>]*encoding\s*=\s*["']([^"']+)["']/i)
-          return match ? match[1] : nil
+          return match ? match[1] : 'UTF-8'
         end
 
         # SAX parsing implementation for REXML
@@ -372,10 +368,24 @@ module Moxml
           when ::REXML::Text, ::REXML::CData
             node.value.to_s
           when ::REXML::Element
-            # Get all text nodes, filter out duplicates, and join
-            text_nodes = node.texts.uniq(&:object_id)
-            text_nodes.map(&:value).join
+            # Extract text recursively from all children to match other adapters
+            extract_text_recursively(node)
           end
+        end
+
+        def extract_text_recursively(element)
+          return "" unless element
+          
+          text = ""
+          element.children.each do |child|
+            case child
+            when ::REXML::Text
+              text += child.value
+            when ::REXML::Element
+              text += extract_text_recursively(child)
+            end
+          end
+          text.strip
         end
 
         def inner_text(node)
