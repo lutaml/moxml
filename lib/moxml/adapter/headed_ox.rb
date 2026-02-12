@@ -66,7 +66,7 @@ module Moxml
             ctx = Context.new(:headed_ox)
 
             # Wrap the native node - don't rebuild the whole document
-            node = Node.wrap(node, ctx)
+            node = Moxml::Node.wrap(node, ctx)
           end
 
           # Parse XPath expression to AST

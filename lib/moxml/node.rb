@@ -25,7 +25,7 @@ module Moxml
     end
 
     def parent
-      Node.wrap(adapter.parent(@native), context)
+      Moxml::Node.wrap(adapter.parent(@native), context)
     end
 
     def children
@@ -36,11 +36,11 @@ module Moxml
     end
 
     def next_sibling
-      Node.wrap(adapter.next_sibling(@native), context)
+      Moxml::Node.wrap(adapter.next_sibling(@native), context)
     end
 
     def previous_sibling
-      Node.wrap(adapter.previous_sibling(@native), context)
+      Moxml::Node.wrap(adapter.previous_sibling(@native), context)
     end
 
     def add_child(node)
@@ -87,7 +87,7 @@ module Moxml
     end
 
     def at_xpath(expression, namespaces = {})
-      Node.wrap(adapter.at_xpath(@native, expression, namespaces), context)
+      Moxml::Node.wrap(adapter.at_xpath(@native, expression, namespaces), context)
     end
 
     # Convenience find methods (aliases for xpath methods)
@@ -170,9 +170,9 @@ module Moxml
       end
     end
 
-    # Clone the node (deep copy)
+    # Clone node (deep copy)
     def clone
-      Node.wrap(adapter.dup(@native), context)
+      Moxml::Node.wrap(adapter.dup(@native), context)
     end
     alias dup clone
 
