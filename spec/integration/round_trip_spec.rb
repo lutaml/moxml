@@ -3,10 +3,10 @@
 require_relative "shared_examples/round_trip_testing"
 
 RSpec.describe "Round-trip XML Testing" do
-  let(:adapter_names) { Moxml::Adapter::AVALIABLE_ADAPTERS.first(2) }
+  let(:adapter_names) { [Moxml::Adapter::AVALIABLE_ADAPTERS[0], Moxml::Adapter::AVALIABLE_ADAPTERS[1], Moxml::Adapter::AVALIABLE_ADAPTERS[2]] }
 
   def self.adapter_names
-    Moxml::Adapter::AVALIABLE_ADAPTERS.first(2)
+    [Moxml::Adapter::AVALIABLE_ADAPTERS[0], Moxml::Adapter::AVALIABLE_ADAPTERS[1], Moxml::Adapter::AVALIABLE_ADAPTERS[2]]
   end
 
   def self.fixture_files
@@ -109,7 +109,7 @@ RSpec.describe "Round-trip XML Testing" do
     {
       name: element.name,
       attributes: element.attributes.map { |attr| [attr.name, attr.value] }.to_h,
-      text: element.text&.strip,
+      text: element.text.to_s.strip,
       namespace: element.namespace&.href,
       children_count: element.children.size,
       xpath: element.xpath("//*")

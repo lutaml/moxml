@@ -11,8 +11,15 @@ module Moxml
     class Rexml < Base
       class << self
         def parse(xml, options = {})
+          # Extract encoding from XML declaration if present
+          encoding = extract_encoding_from_xml(xml)
+          
           native_doc = begin
-            ::REXML::Document.new(xml)
+            if encoding
+              ::REXML::Document.new(xml, encoding: encoding)
+            else
+              ::REXML::Document.new(xml)
+            end
           rescue ::REXML::ParseException => e
             if options[:strict]
               raise Moxml::ParseError.new(
@@ -25,6 +32,12 @@ module Moxml
           end
 
           DocumentBuilder.new(Context.new(:rexml)).build(native_doc)
+        end
+
+        def extract_encoding_from_xml(xml)
+          # Match XML declaration pattern: <?xml version="..." encoding="..."?>
+          match = xml.match(/<\?xml[^>]*encoding\s*=\s*["']([^"']+)["']/i)
+          return match ? match[1] : nil
         end
 
         # SAX parsing implementation for REXML
