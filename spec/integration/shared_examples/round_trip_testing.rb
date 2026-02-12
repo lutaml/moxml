@@ -101,10 +101,12 @@ RSpec.shared_examples "cross adapter round trip testing" do |fixture_path, sourc
     source_context = Moxml.new(source_adapter)
     second_pass = source_context.parse(first_pass.to_xml)
     
-    # Normalize both for comparison
-    original_normalized = normalize_xml(source_doc.to_xml)
-    final_normalized = normalize_xml(second_pass.to_xml)
-    expect(original_normalized).to eq(final_normalized)
+    # Use semantic comparison instead of string equality
+    original_xml = source_doc.to_xml
+    final_xml = second_pass.to_xml
+    
+    expect(semantically_equivalent?(original_xml, final_xml)).to be(true),
+      "XML content should be semantically equivalent after double round-trip"
     
     # The structure should be equivalent (allowing for adapter differences)
     expect(second_pass.root.name).to eq(source_doc.root.name)
