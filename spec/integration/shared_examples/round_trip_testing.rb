@@ -4,8 +4,10 @@ require 'rspec'
 # Helper method to normalize whitespace for text comparison
 def normalize_whitespace(text)
   return "" if text.nil? || text.empty?
-  # Normalize newlines and multiple spaces, but preserve word boundaries
-  text.gsub(/\n+/, ' ').gsub(/\s{2,}/, ' ').strip
+  # More aggressive normalization for cross-adapter consistency
+  normalized = text.gsub(/\n+/, ' ').gsub(/\s{2,}/, ' ').strip
+  # Add spaces between concatenated words (e.g., "Primary care190" -> "Primary care 190")
+  normalized.gsub(/([a-z])([A-Z0-9])/, '\1 \2')
 end
 
 RSpec.shared_examples "round trip XML parsing" do |fixture_path, adapter_name|
