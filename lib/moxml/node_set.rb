@@ -14,25 +14,29 @@ module Moxml
     def each
       return to_enum(:each) unless block_given?
 
-      nodes.each { |node| yield Node.wrap(node, context) }
+      nodes.each { |node| yield Moxml::Node.wrap(node, context) }
       self
     end
 
     def [](index)
       case index
       when Integer
-        Node.wrap(nodes[index], context)
+        Moxml::Node.wrap(nodes[index], context)
       when Range
         NodeSet.new(nodes[index], context)
       end
     end
 
-    def first
-      Node.wrap(nodes.first, context)
+    def first(n = nil)
+      if n.nil?
+        Moxml::Node.wrap(nodes.first, context)
+      else
+        nodes.first(n).map { |node| Moxml::Node.wrap(node, context) }
+      end
     end
 
     def last
-      Node.wrap(nodes.last, context)
+      Moxml::Node.wrap(nodes.last, context)
     end
 
     def empty?
@@ -81,7 +85,7 @@ module Moxml
       self.class == other.class &&
         length == other.length &&
         nodes.each_with_index.all? do |node, index|
-          Node.wrap(node, context) == other[index]
+          Moxml::Node.wrap(node, context) == other[index]
         end
     end
 

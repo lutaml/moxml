@@ -109,7 +109,7 @@ module Moxml
 
     def at_xpath(expression, namespaces = nil)
       if (native_node = adapter.at_xpath(@native, expression, namespaces))
-        Node.wrap(native_node, context)
+        Moxml::Node.wrap(native_node, context)
       end
     end
 
