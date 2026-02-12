@@ -30,11 +30,53 @@ RSpec.describe "Round-trip XML Testing" do
 
   def normalize_xml(xml)
     # Normalize XML for comparison by removing whitespace differences
-    xml.gsub(/>\s+</, "><")
-       .gsub(/\s+/, " ")
-       .gsub(" >", ">")
-       .gsub("?> <", "?>\n<")
+    xml.gsub(/>\s+</, '><')           # Remove whitespace between tags
+       .gsub("?>\s+", "?>")          # Clean XML declaration
+       .gsub(/\s+>/, '>')            # Remove trailing spaces
        .strip
+  end
+
+  def semantically_equivalent?(xml1, xml2)
+    # Simple semantic comparison focusing on content equivalence
+    begin
+      doc1 = Nokogiri::XML(xml1)
+      doc2 = Nokogiri::XML(xml2)
+      
+      # Basic structure check
+      return false unless doc1.root && doc2.root
+      return false unless doc1.root.name == doc2.root.name
+      
+      # Attribute count check
+      return false unless doc1.root.attributes.length == doc2.root.attributes.length
+      
+      # Element count check
+      return false unless doc1.xpath("//*").length == doc2.xpath("//*").length
+      
+      # Text content check (normalized)
+      text1 = doc1.xpath("//text()").map(&:text).join(" ").gsub(/\s+/, " ").strip
+      text2 = doc2.xpath("//text()").map(&:text).join(" ").gsub(/\s+/, " ").strip
+      return false unless text1 == text2
+      
+      # Generic element structure check
+      elements1 = doc1.xpath("//*")
+      elements2 = doc2.xpath("//*")
+      
+      # Compare element names and their attributes
+      elements1.each_with_index do |elem1, i|
+        elem2 = elements2[i]
+        return false unless elem1.name == elem2.name
+        
+        # Compare attribute names and values
+        attrs1 = elem1.attributes.sort.map { |name, attr| [name, attr.value] }
+        attrs2 = elem2.attributes.sort.map { |name, attr| [name, attr.value] }
+        return false unless attrs1 == attrs2
+      end
+      
+      true
+    rescue => e
+      # If parsing fails, fall back to string comparison
+      normalize_xml(xml1) == normalize_xml(xml2)
+    end
   end
 
   def extract_elements_for_testing(doc)
