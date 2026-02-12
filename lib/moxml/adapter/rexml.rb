@@ -380,9 +380,16 @@ module Moxml
           element.children.each do |child|
             case child
             when ::REXML::Text
+              # Preserve original spacing from text nodes exactly
               text += child.value
             when ::REXML::Element
-              text += extract_text_recursively(child)
+              # Add single space between elements only if needed
+              child_text = extract_text_recursively(child)
+              if !child_text.empty? && !text.empty? && !text.end_with?(' ')
+                text += " " + child_text
+              else
+                text += child_text
+              end
             end
           end
           text.strip
