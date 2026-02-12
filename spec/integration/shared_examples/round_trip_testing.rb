@@ -4,9 +4,8 @@ RSpec.shared_examples "round trip XML parsing" do |fixture_path, adapter_name|
   let(:fixture_content) { File.read(fixture_path) }
   let(:fixture_name) { File.basename(fixture_path, ".xml") }
   let(:parsed_doc) do
-    Moxml.with_config(adapter_name) do
-      Moxml.new.parse(fixture_content)
-    end
+    context = Moxml.new(adapter_name)
+    context.parse(fixture_content)
   end
 
   it "successfully parses the XML document" do
@@ -53,7 +52,8 @@ RSpec.shared_examples "round trip XML parsing" do |fixture_path, adapter_name|
     expect(serialized).not_to be_empty
     
     # Test that we can parse the serialized version
-    reparsed = Moxml.with_config(adapter_name) { Moxml.new.parse(serialized) }
+    context = Moxml.new(adapter_name)
+    reparsed = context.parse(serialized)
     expect(reparsed.root.name).to eq(parsed_doc.root.name)
   end
 end
@@ -62,9 +62,8 @@ RSpec.shared_examples "cross adapter round trip testing" do |fixture_path, sourc
   let(:fixture_content) { File.read(fixture_path) }
   let(:original_normalized) { normalize_xml(fixture_content) }
   let(:source_doc) do
-    Moxml.with_config(source_adapter) do
-      Moxml.new.parse(fixture_content)
-    end
+    context = Moxml.new(source_adapter)
+    context.parse(fixture_content)
   end
 
   it "maintains XML structure and content" do
@@ -72,9 +71,8 @@ RSpec.shared_examples "cross adapter round trip testing" do |fixture_path, sourc
     source_xml = source_doc.to_xml
     
     # Re-parse with target adapter
-    target_doc = Moxml.with_config(target_adapter) do
-      Moxml.new.parse(source_xml)
-    end
+    target_context = Moxml.new(target_adapter)
+    target_doc = target_context.parse(source_xml)
     
     # Basic structure checks
     expect(target_doc.root.name).to eq(source_doc.root.name)
@@ -97,13 +95,11 @@ RSpec.shared_examples "cross adapter round trip testing" do |fixture_path, sourc
 
   it "produces equivalent XML after double round-trip" do
     # Source -> Target -> Source
-    first_pass = Moxml.with_config(target_adapter) do
-      Moxml.new.parse(source_doc.to_xml)
-    end
+    target_context = Moxml.new(target_adapter)
+    first_pass = target_context.parse(source_doc.to_xml)
     
-    second_pass = Moxml.with_config(source_adapter) do
-      Moxml.new.parse(first_pass.to_xml)
-    end
+    source_context = Moxml.new(source_adapter)
+    second_pass = source_context.parse(first_pass.to_xml)
     
     # Normalize both for comparison
     original_normalized = normalize_xml(source_doc.to_xml)
@@ -123,7 +119,8 @@ RSpec.shared_examples "namespace handling validation" do |fixture_path, adapter_
   let(:fixture_content) { File.read(fixture_path) }
   
   it "handles namespaces correctly across adapters" do
-    doc = Moxml.with_config(adapter_name) { Moxml.new.parse(fixture_content) }
+    context = Moxml.new(adapter_name)
+    doc = context.parse(fixture_content)
     
     # Check namespace handling
     if doc.root.namespace

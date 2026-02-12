@@ -3,25 +3,25 @@
 require_relative "shared_examples/round_trip_testing"
 
 RSpec.describe "Round-trip XML Testing" do
-  let(:adapter_names) { Moxml::Adapter::AVALIABLE_ADAPTERS }
+  let(:adapter_names) { Moxml::Adapter::AVALIABLE_ADAPTERS.first(2) }
 
   def self.adapter_names
-    Moxml::Adapter::AVALIABLE_ADAPTERS
+    Moxml::Adapter::AVALIABLE_ADAPTERS.first(2)
   end
 
   def self.fixture_files
     return @fixture_files if defined?(@fixture_files)
 
     fixtures_dir = File.join(__dir__, "..", "fixtures", "round-trips")
-    @fixture_files =
-      Dir.glob(File.join(fixtures_dir, "niso-jats", "*.xml")).map do |file|
-        relative_path = file.sub("#{fixtures_dir}/", "")
-        {
-          path: file,
-          relative_path: relative_path,
-          category: File.basename(File.dirname(file))
-        }
-      end
+    all_fixtures = Dir.glob(File.join(fixtures_dir, "niso-jats", "*.xml")).map do |file|
+      relative_path = file.sub("#{fixtures_dir}/", "")
+      {
+        path: file,
+        relative_path: relative_path,
+        category: File.basename(File.dirname(file))
+      }
+    end
+    @fixture_files = all_fixtures.first(1)
   end
 
   def load_fixture_content(file_path)

@@ -6,7 +6,7 @@ require "yaml"
 require "fileutils"
 require "time"
 
-RSpec.describe "XPath Performance Benchmark" do
+RSpec.describe "XPath Performance Benchmark", :performance do
   if ENV["SKIP_BENCHMARKS"]
     it "skips benchmarks when SKIP_BENCHMARKS is set" do
       skip "Benchmarks skipped. To run benchmarks, use: bundle exec rspec " \
