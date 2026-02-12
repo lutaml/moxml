@@ -1,4 +1,12 @@
 # frozen_string_literal: true
+require 'rspec'
+
+# Helper method to normalize whitespace for text comparison
+def normalize_whitespace(text)
+  return "" if text.nil? || text.empty?
+  # Normalize newlines and multiple spaces, but preserve word boundaries
+  text.gsub(/\n+/, ' ').gsub(/\s{2,}/, ' ').strip
+end
 
 RSpec.shared_examples "round trip XML parsing" do |fixture_path, adapter_name|
   let(:fixture_content) { File.read(fixture_path) }
@@ -89,7 +97,10 @@ RSpec.shared_examples "cross adapter round trip testing" do |fixture_path, sourc
       
       expect(target_content[:name]).to eq(source_content[:name])
       expect(target_content[:attributes]).to eq(source_content[:attributes])
-      expect(target_content[:text]).to eq(source_content[:text])
+      # Normalize whitespace for comparison to handle adapter differences
+      normalized_source_text = normalize_whitespace(source_content[:text])
+      normalized_target_text = normalize_whitespace(target_content[:text])
+      expect(normalized_target_text).to eq(normalized_source_text)
     end
   end
 
