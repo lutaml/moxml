@@ -8,7 +8,6 @@ gemspec
 # Provides iteration per second benchmarking for Ruby
 gem "benchmark-ips"
 gem "get_process_mem"
-gem "libxml-ruby", "~> 5.0"
 gem "nokogiri", "~> 1.18"
 gem "oga", "~> 3.4"
 gem "openssl"
@@ -25,3 +24,9 @@ gem "tempfile"
 
 # Needed by get_process_mem on Windows
 gem "sys-proctable" if Gem.win_platform?
+
+if Gem.win_platform?
+  gem "libxml-ruby", "5.0.4"
+else
+  gem "libxml-ruby"
+end

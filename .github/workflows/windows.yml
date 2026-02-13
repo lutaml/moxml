@@ -1,0 +1,209 @@
+name: windows
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-windows-scripts:
+    name: Test Windows Setup Scripts
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['3.2']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: false
+
+    - name: Verify MSYS2 Installation
+      shell: pwsh
+      run: |
+        if (Test-Path "C:\msys64") {
+          Write-Host "✓ MSYS2 found at C:\msys64"
+        } else {
+          Write-Host "✗ MSYS2 not found"
+          exit 1
+        }
+
+    - name: Install libxml2 via MSYS2
+      shell: cmd
+      run: |
+        # C:\msys64\usr\bin\pacman.exe -S --needed --noconfirm mingw-w64-x86_64-libxml2 mingw-w64-x86_64-libiconv mingw-w64-x86_64-zlib
+
+        C:\msys64\usr\bin\pacman.exe -S --needed --noconfirm mingw-w64-ucrt-x86_64-libxml2 mingw-w64-ucrt-x86_64-libiconv mingw-w64-ucrt-x86_64-zlib
+
+    - name: Set Environment Variables
+      shell: pwsh
+      run: |
+        $rubyPlatform = ruby -e "puts RUBY_PLATFORM"
+        Write-Host "Ruby platform: $rubyPlatform"
+
+        # $envPath = "C:\msys64\mingw64"
+        $envPath = "C:\msys64\ucrt64"
+
+        echo "ICONV_INCLUDE=$envPath\include" >> $env:GITHUB_ENV
+        echo "WINDOWS_XML2_INCLUDE=$envPath\include\libxml2" >> $env:GITHUB_ENV
+        echo "WINDOWS_XML2_LIB=$envPath\lib" >> $env:GITHUB_ENV
+        echo "MSYS2_PATH=$envPath" >> $env:GITHUB_ENV
+
+        # Set PATH to include MSYS2 bin directory for DLL resolution
+        $rubyBin = ruby -e "puts RbConfig::CONFIG['bindir']"
+        Write-Host "Ruby bin directory: $rubyBin"
+        Write-Host "PATH environment variable: $env:Path"
+        $env:Path += ";$envPath;$envPath\lib;$envPath\include;$envPath\include\libxml2;$rubyBin"
+        echo "PATH=$env:Path" >> $env:GITHUB_ENV
+        Write-Host "PATH environment variable: $env:Path"
+
+        Write-Host "Environment variables set:"
+        Write-Host "  ICONV_INCLUDE=$envPath\include"
+        Write-Host "  WINDOWS_XML2_INCLUDE=$envPath\include\libxml2"
+        Write-Host "  WINDOWS_XML2_LIB=$envPath\lib"
+        Write-Host "  PATH=$env:Path"
+
+    - name: Install libxml-ruby
+      shell: pwsh
+      run: |
+        Write-Host "ICONV_INCLUDE=$env:ICONV_INCLUDE"
+        Write-Host "WINDOWS_XML2_INCLUDE=$env:WINDOWS_XML2_INCLUDE"
+        Write-Host "WINDOWS_XML2_LIB=$env:WINDOWS_XML2_LIB"
+        Write-Host "MSYS2_PATH=$env:MSYS2_PATH"
+
+        Write-Host "Files in $env:ICONV_INCLUDE are"
+        dir -Path $env:ICONV_INCLUDE | ForEach-Object {
+          Write-Host $_.Name
+        }
+
+        Write-Host "Files in $env:WINDOWS_XML2_INCLUDE are"
+        dir -Path $env:WINDOWS_XML2_INCLUDE | ForEach-Object {
+          Write-Host $_.Name
+        }
+
+        Write-Host "Files in $env:WINDOWS_XML2_LIB are"
+        dir -Path $env:WINDOWS_XML2_LIB | ForEach-Object {
+          Write-Host $_.Name
+        }
+
+        Write-Host "Files in $env:MSYS2_PATH are"
+        dir -Path $env:MSYS2_PATH | ForEach-Object {
+          Write-Host $_.Name
+        }
+
+        $rubyPlatform = ruby -e "puts RUBY_PLATFORM"
+        Write-Host "Installing libxml-ruby for $rubyPlatform..."
+
+        gem install libxml-ruby --version 5.0.3 -- --with-xml2-include=$env:WINDOWS_XML2_INCLUDE --with-xml2-lib=$env:WINDOWS_XML2_LIB --with-xml2-dir=$env:MSYS2_PATH  --with-iconv-include=$env:ICONV_INCLUDE
+
+        if ($LASTEXITCODE -eq 0) {
+          Write-Host "✓ libxml-ruby installed successfully"
+        } else {
+          Write-Host "✗ Failed to install libxml-ruby"
+          exit 1
+        }
+
+    - name: Copy Required DLLs
+      shell: pwsh
+      run: |
+        $msys2Path = $env:MSYS2_PATH
+        $rubyBin = ruby -e "puts RbConfig::CONFIG['bindir']"
+
+        $libxmlrubyfilepath = gem which libxml-ruby
+        $libxmlrubyfolder = Split-Path -Path $libxmlrubyfilepath -Parent
+        Write-Host "Folder of libxml-ruby is $libxmlrubyfolder"
+
+        $sourcedir = "$msys2Path\bin"
+        Write-Host "Files in $sourcedir are:"
+        dir -Path $sourcedir -File | ForEach-Object {
+          Write-Host $_.Name
+        }
+
+        Write-Host "Copying DLLs from $msys2Path\bin to $rubyBin..."
+        $dlls = @("libxml2-16.dll", "libiconv-2.dll", "zlib1.dll")
+        foreach ($dll in $dlls) {
+          $source = "$msys2Path\bin\$dll"
+          $dest = "$rubyBin\$dll"
+          $dest2 = "$libxmlrubyfolder\$dll"
+
+          if (Test-Path $source) {
+            Copy-Item $source $dest -Force
+            Copy-Item $source $dest2 -Force
+            Write-Host "✓ Copied $dll"
+          } else {
+            Write-Host "✗ $dll not found at $source"
+          }
+        }
+
+        Write-Host "Files in $libxmlrubyfolder\${{ matrix.ruby }} are"
+        dir -Path "$libxmlrubyfolder\${{ matrix.ruby }}" | ForEach-Object {
+          Write-Host $_.Name
+        }
+        Write-Host "Copying SO from $libxmlrubyfolder\${{ matrix.ruby }} to $rubyBin..."
+        $source = "$libxmlrubyfolder\${{ matrix.ruby }}\libxml_ruby.so"
+        $dest = "$rubyBin\libxml_ruby.so"
+
+        if (Test-Path $source) {
+          Copy-Item $source $dest -Force
+          Copy-Item $source "$libxmlrubyfolder\libxml_ruby.so" -Force
+          Write-Host "✓ Copied libxml_ruby.so"
+        } else {
+          Write-Host "✗ libxml_ruby.so not found at $source"
+        }
+
+    - name: Test libxml-ruby Installation
+      shell: pwsh
+      run: |
+        Write-Host "Inspec PATH environment variable: $env:Path"
+
+        ruby -e @"
+        require 'libxml'
+        puts "libxml-ruby version: #{LibXML::XML::VERSION}"
+        puts "libxml2 version: #{LibXML::XML::LIBXML_VERSION}"
+
+        # Test basic parsing
+        doc = LibXML::XML::Document.string('<root><child attr="value"/></root>')
+        puts "Root element: #{doc.root.name}"
+        puts "Child element: #{doc.root.child.name}"
+        puts "Attribute value: #{doc.root.child['attr']}"
+        puts ""
+        puts "✓ libxml-ruby is working correctly!"
+        "@
+
+    - name: Test Moxml with LibXML Adapter
+      shell: pwsh
+      run: |
+        bundle install
+
+        ruby -e @"
+        require 'moxml'
+
+        # Configure to use LibXML adapter
+        Moxml.configure do |config|
+          config.adapter = :libxml
+        end
+
+        # Create a document
+        doc = Moxml.new.create_document
+        root = doc.create_element('root')
+        doc.add_child(root)
+
+        child = doc.create_element('child')
+        child['attr'] = 'value'
+        child.text = 'Hello from Windows!'
+        root.add_child(child)
+
+        puts "Document created with LibXML adapter:"
+        puts doc.to_xml(indent: 2)
+        puts ""
+        puts "✓ Moxml with LibXML adapter is working on Windows!"
+        "@
+
+        bundle exec rake
