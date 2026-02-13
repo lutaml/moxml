@@ -26,7 +26,7 @@ gem "benchmark-ips"
 gem "sys-proctable" if Gem.win_platform?
 
 if Gem.win_platform?
-  gem "libxml-ruby", "5.0.4"
+  gem "libxml-ruby", "5.0.4", platforms: :ruby
 else
   gem "libxml-ruby"
 end

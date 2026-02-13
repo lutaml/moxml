@@ -19,7 +19,17 @@ jobs:
         mkdir -p .bundle 2>&1 || true
         echo "---" > .bundle/config 2>&1 || true
         echo 'BUNDLE_BUILD__LIBXML___RUBY: "--with-xml2-dir=C:/vcpkg/installed/x64-windows --with-xml2-include=C:/vcpkg/installed/x64-windows/include/libxml2 --with-xml2-lib=C:/vcpkg/installed/x64-windows/lib"' >> .bundle/config 2>&1 || true
+        echo 'BUNDLE_FORCE_RUBY_PLATFORM: "true"' >> .bundle/config 2>&1 || true
+      # Force cache miss on Windows by removing cached libxml-ruby gem
+      # The cache contains gems built without vcpkg libraries linked properly
+      # Using PowerShell-compatible syntax since Windows uses PowerShell by default
       after-setup-ruby: |
-        bundle exec ruby debug.rb 2>&1 || true
+        if ($env:RUNNER_OS -eq "Windows" -and (Test-Path "vendor/bundle")) {
+          Write-Host "Removing cached libxml-ruby to force rebuild with vcpkg libraries"
+          Remove-Item -Recurse -Force "vendor/bundle/ruby/*/gems/libxml-ruby-*" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "vendor/bundle/ruby/*/extensions/*/libxml-ruby-*" -ErrorAction SilentlyContinue
+          Remove-Item -Recurse -Force "vendor/bundle/ruby/*/specifications/libxml-ruby-*" -ErrorAction SilentlyContinue
+          bundle install --jobs 4
+        }
     secrets:
       pat_token: ${{ secrets.GITHUB_TOKEN }}

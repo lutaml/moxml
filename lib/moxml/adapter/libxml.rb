@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 require_relative "base"
+
+# On Windows CI, vcpkg installs libxml2 DLLs that need to be in PATH
+if Gem.win_platform? && File.directory?("C:/vcpkg/installed/x64-windows/bin")
+  ENV["PATH"] = "C:/vcpkg/installed/x64-windows/bin#{File::PATH_SEPARATOR}#{ENV.fetch('PATH', nil)}"
+end
+
 require "libxml"
 require_relative "customized_libxml/node"
 require_relative "customized_libxml/element"
