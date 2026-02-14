@@ -383,9 +383,9 @@ module Moxml
               # Preserve original spacing from text nodes exactly
               text += child.value
             when ::REXML::Element
-              # Add single space between elements only if needed
+              # Add space between elements to match other adapters' behavior
               child_text = extract_text_recursively(child)
-              if !child_text.empty? && !text.empty? && !text.end_with?(' ')
+              if !child_text.empty? && !text.empty?
                 text += " " + child_text
               else
                 text += child_text
