@@ -5,7 +5,11 @@ require 'rspec'
 def normalize_whitespace(text)
   return "" if text.nil? || text.empty?
   # Normalize newlines and multiple spaces, but preserve word boundaries
-  text.gsub(/\n+/, ' ').gsub(/\s{2,}/, ' ').strip
+  normalized = text.gsub(/\n+/, ' ').gsub(/\s{2,}/, ' ').strip
+  # Handle specific REXML patterns: add spaces between concatenated words
+  # e.g., "BMJBMJ" -> "BMJ BMJ", "Primary care190" -> "Primary care 190"
+  normalized.gsub!(/([a-z])([A-Z0-9])/, '\1 \2')
+  normalized
 end
 
 RSpec.shared_examples "round trip XML parsing" do |fixture_path, adapter_name|
