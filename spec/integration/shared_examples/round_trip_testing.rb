@@ -60,7 +60,13 @@ def extract_elements_for_testing(doc)
   elements[:root] = doc.root
   
   # Extract all elements with attributes (universal approach)
-  elements_with_attrs = doc.xpath("//*[@*]")
+  begin
+    elements_with_attrs = doc.xpath("//*[@*]")
+  rescue Moxml::XPathError
+    # Fallback for adapters that don't support @* syntax (like Ox)
+    all_elements = doc.xpath("//*")
+    elements_with_attrs = all_elements.select { |elem| elem.respond_to?(:attributes) && elem.attributes.any? }
+  end
   if elements_with_attrs.any?
     elements[:elements_with_attributes] = elements_with_attrs.first(5)
     elements[:total_elements_with_attributes] = elements_with_attrs.length
@@ -82,13 +88,29 @@ def extract_elements_for_testing(doc)
   # Extract first few elements of each type for testing
   # Prioritize elements with attributes to ensure consistency across adapters
   unique_element_names.each do |element_name|
-    # First try to find elements with attributes
-    with_attrs = doc.xpath("//#{element_name}[@*]")
-    # Then find elements without attributes
-    without_attrs = doc.xpath("//#{element_name}[not(@*)]")
+    # First try to find elements with attributes (handle Ox adapter limitations)
+    begin
+      with_attrs = doc.xpath("//#{element_name}[@*]")
+    rescue Moxml::XPathError
+      # Fallback for adapters that don't support @* syntax (like Ox)
+      # Find all elements and filter manually
+      all_elements = doc.xpath("//#{element_name}")
+      with_attrs = all_elements.select { |elem| elem.respond_to?(:attributes) && elem.attributes.any? }
+    end
+    
+    # Then find elements without attributes (handle Ox adapter limitations)
+    begin
+      without_attrs = doc.xpath("//#{element_name}[not(@*)]")
+    rescue Moxml::XPathError
+      # Fallback for adapters that don't support not(@*) syntax (like Ox)
+      all_elements = doc.xpath("//#{element_name}")
+      without_attrs = all_elements.select { |elem| !elem.respond_to?(:attributes) || elem.attributes.empty? }
+    end
     
     # Combine: elements with attributes first, then without attributes
-    all_found = with_attrs + without_attrs
+    # Ensure we don't duplicate elements that might appear in both arrays
+    # Convert both to proper arrays before combining to avoid NodeSet issues
+    all_found = (with_attrs.to_a + without_attrs.to_a).uniq
     elements["#{element_name}_elements".to_sym] = all_found.first(3) if all_found.any?
   end
   
