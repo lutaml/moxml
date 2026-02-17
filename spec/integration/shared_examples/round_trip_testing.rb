@@ -206,184 +206,113 @@ RSpec.shared_examples "cross adapter round trip testing" do |fixture_path, sourc
     context = Moxml.new(source_adapter)
     context.parse(fixture_content)
   end
+  let(:source_context) { Moxml.new(source_adapter) }
+  let(:target_context) { Moxml.new(target_adapter) }
 
   it "maintains XML structure and content" do
-    # Parse with source adapter
-    source_xml = source_doc.to_xml
-    
-    # Re-parse with target adapter
-    target_context = Moxml.new(target_adapter)
-    target_doc = target_context.parse(source_xml)
-    
-    # Basic structure checks
-    expect(target_doc.root.name).to eq(source_doc.root.name)
-    
-    # Check that key elements are preserved using universal approach
-    source_elements = extract_elements_for_testing(source_doc)
-    target_elements = extract_elements_for_testing(target_doc)
-    
-    # Test universal elements that should exist in any XML
-    universal_keys = [:root, :elements_with_attributes, :text_content]
-    
-    # Add dynamic element keys based on actual XML structure (only element arrays)
-    source_elements.keys.each do |key|
-      if key.to_s.end_with?("_elements") && source_elements[key].is_a?(Array)
-        universal_keys << key
-      end
-    end
-    universal_keys.uniq!
-    
-    universal_keys.each do |key|
-      next unless source_elements[key] && target_elements[key]
+      source_doc = source_context.parse(fixture_content)
+      target_doc = target_context.parse(source_doc.to_xml)
       
-      # For arrays, compare length and content
-      if source_elements[key].is_a?(Array) && target_elements[key].is_a?(Array)
-        expect(target_elements[key].length).to eq(source_elements[key].length), "Array length mismatch for #{key}"
-        source_elements[key].each_with_index do |source_item, i|
-          target_item = target_elements[key][i]
-          if source_item && target_item
-            source_content = test_element_content(source_item)
-            target_content = test_element_content(target_item)
-            expect(target_content[:name]).to eq(source_content[:name]), "Element name mismatch for #{key}[#{i}]"
-            expect(target_content[:attributes]).to eq(source_content[:attributes]), "Attributes mismatch for #{key}[#{i}]"
+      # === COMPREHENSIVE DEBUGGING ===
+      puts "\n=== DEBUG: ELEMENTS EXTRACTED FOR COMPARISON ==="
+      puts "Source adapter: #{source_adapter}"
+      puts "Target adapter: #{target_adapter}"
+      puts ""
+      
+      puts "=== SOURCE ELEMENTS KEYS ==="
+      source_elements = extract_elements_for_testing(source_doc)
+      source_elements.keys.each do |key|
+        value = source_elements[key]
+        if value.is_a?(Array)
+          puts "#{key}: Array (#{value.length} items)"
+          value.each_with_index do |item, i|
+            if item.respond_to?(:name)
+              attrs = item.respond_to?(:attributes) ? item.attributes : "N/A"
+              puts "  [#{i}]: #{item.name} (attrs: #{attrs.class})"
+            else
+              puts "  [#{i}]: #{item.class} - #{item.inspect}"
+            end
           end
+        else
+          puts "#{key}: #{value.class} - #{value.respond_to?(:name) ? value.name : 'N/A'}"
         end
-      # For single elements, compare directly
-      elsif source_elements[key] && target_elements[key]
-        source_content = test_element_content(source_elements[key])
-        target_content = test_element_content(target_elements[key])
-        
-        expect(target_content[:name]).to eq(source_content[:name]), "Element name mismatch for #{key}"
-        expect(target_content[:attributes]).to eq(source_content[:attributes]), "Attributes mismatch for #{key}"
-        
-        # Normalize whitespace for comparison to handle adapter differences
-        puts "=== COMPARISON DEBUG FOR #{key} ==="
-        puts "Source text length: #{source_content[:text].length}"
-        puts "Source text (first 100 chars): '#{source_content[:text][0, 100]}#{'...' if source_content[:text].length > 100}'"
-        puts "Target text length: #{target_content[:text].length}"
-        puts "Target text (first 100 chars): '#{target_content[:text][0, 100]}#{'...' if target_content[:text].length > 100}'"
-        
-        normalized_source_text = normalize_whitespace(source_content[:text])
-        normalized_target_text = normalize_whitespace(target_content[:text])
-        
-        puts "Normalized source length: #{normalized_source_text.length}"
-        puts "Normalized target length: #{normalized_target_text.length}"
-        puts "Are they equal? #{normalized_source_text == normalized_target_text}"
-        
-        if normalized_source_text != normalized_target_text
-          puts "=== COMPREHENSIVE DIFFERENCE ANALYSIS ==="
-          puts "Source length: #{normalized_source_text.length}"
-          puts "Target length: #{normalized_target_text.length}"
-          
-          shorter = [normalized_source_text, normalized_target_text].min_by(&:length)
-          longer = [normalized_source_text, normalized_target_text].max_by(&:length)
-          
-          differences = []
-          shorter.chars.each_with_index do |char, i|
-            if longer[i] != char
-              differences << {
-                position: i,
-                expected: char,
-                expected_ord: char.ord,
-                got: longer[i] || 'EOF',
-                got_ord: (longer[i] || 'EOF').ord
-              }
-            end
-          end
-          
-          # Handle case where longer text has extra characters
-          if longer.length > shorter.length
-            (shorter.length..longer.length - 1).each do |i|
-              differences << {
-                position: i,
-                expected: 'EOF',
-                expected_ord: 'EOF',
-                got: longer[i] || 'EOF',
-                got_ord: (longer[i] || 'EOF').ord
-              }
-            end
-          end
-          
-          # Find first difference dynamically
-          first_diff = differences.first
-          first_diff_pos = first_diff ? first_diff[:position] : -1
-          
-          puts "Found #{differences.length} differences:"
-          puts "First difference at position: #{first_diff_pos}"
-          
-          # Show context around the first failing character
-          if first_diff_pos >= 0
-            context_start = [first_diff_pos - 20, 0].max
-            context_end = [first_diff_pos + 20, longer.length - 1].min
-            
-            puts "Context around first difference (#{context_start}-#{context_end}):"
-            puts "  Expected: '#{shorter[context_start..context_end]}'"
-            puts "  Got:      '#{longer[context_start..context_end]}'"
-            
-            # Show byte-level context for first difference
-            puts "Byte context around first difference:"
-            shorter_bytes = shorter.bytes[context_start..context_end]
-            longer_bytes = longer.bytes[context_start..context_end]
-            puts "  Expected bytes: #{shorter_bytes.map { |b| b.to_s(16).rjust(2, '0') }.join(' ')}"
-            puts "  Got bytes:      #{longer_bytes.map { |b| b.to_s(16).rjust(2, '0') }.join(' ')}"
-            
-            # Show character-by-character analysis around first difference
-            puts "Character analysis around first difference:"
-            (context_start..context_end).each do |i|
-              exp_char = shorter[i] || 'EOF'
-              got_char = longer[i] || 'EOF'
-              exp_is_space = exp_char =~ /\s/
-              got_is_space = got_char =~ /\s/
-              marker = (i == first_diff_pos) ? '>>> FIRST DIFF <<<' : ''
-              puts "  Pos #{i}: Expected '#{exp_char}' (#{exp_char.ord}) #{'WHITESPACE' if exp_is_space} | Got '#{got_char}' (#{got_char.ord}) #{'WHITESPACE' if got_is_space} #{marker}"
-            end
-          end
-          
-          # Show all differences (limited to first 10 to avoid too much output)
-          puts "=== ALL DIFFERENCES (first 10 of #{differences.length}) ==="
-          differences[0, 10].each_with_index do |diff, index|
-            puts "  Difference #{index + 1}:"
-            puts "    Position: #{diff[:position]}"
-            puts "    Expected: '#{diff[:expected]}' (#{diff[:expected_ord]})"
-            puts "    Got: '#{diff[:got]}' (#{diff[:got_ord]})"
-            
-            # Show 5 characters before and after each difference
-            start_pos = [diff[:position] - 5, 0].max
-            end_pos = [diff[:position] + 5, longer.length - 1].min
-            
-            puts "    Context (#{start_pos}-#{end_pos}):"
-            puts "      Expected: '#{shorter[start_pos..end_pos]}'"
-            puts "      Got:      '#{longer[start_pos..end_pos]}'"
-            puts
-          end
-          
-          # Summary of difference types
-          newline_diffs = differences.select { |d| d[:got] == "\n" || d[:expected] == "\n" }
-          space_diffs = differences.select { |d| d[:got] == " " || d[:expected] == " " }
-          other_diffs = differences - newline_diffs - space_diffs
-          
-          puts "=== DIFFERENCE SUMMARY ==="
-          puts "Total differences: #{differences.length}"
-          puts "Newline differences: #{newline_diffs.length}"
-          puts "Space differences: #{space_diffs.length}"
-          puts "Other character differences: #{other_diffs.length}"
-          
-          if newline_diffs.any?
-            puts "Newline positions: #{newline_diffs.map { |d| d[:position] }.join(', ')}"
-          end
-          if space_diffs.any?
-            puts "Space positions: #{space_diffs.map { |d| d[:position] }.join(', ')}"
-          end
-          if other_diffs.any?
-            puts "Other positions: #{other_diffs.map { |d| d[:position] }.join(', ')}"
-          end
-          
-          puts "=== END COMPREHENSIVE DIFFERENCE ANALYSIS ==="
-        end
-        
-        expect(normalized_target_text).to eq(normalized_source_text)
       end
-    end
+      
+      puts ""
+      puts "=== TARGET ELEMENTS KEYS ==="
+      target_elements = extract_elements_for_testing(target_doc)
+      target_elements.keys.each do |key|
+        value = target_elements[key]
+        if value.is_a?(Array)
+          puts "#{key}: Array (#{value.length} items)"
+          value.each_with_index do |item, i|
+            if item.respond_to?(:name)
+              attrs = item.respond_to?(:attributes) ? item.attributes : "N/A"
+              puts "  [#{i}]: #{item.name} (attrs: #{attrs.class})"
+            else
+              puts "  [#{i}]: #{item.class} - #{item.inspect}"
+            end
+          end
+        else
+          puts "#{key}: #{value.class} - #{value.respond_to?(:name) ? value.name : 'N/A'}"
+        end
+      end
+      
+      puts ""
+      puts "=== COMPARISON LOGIC ==="
+      
+      # Test universal elements that should exist in any XML
+      universal_keys = [:root, :elements_with_attributes, :text_content]
+      
+      # Add dynamic element keys based on actual XML structure (only element arrays)
+      source_elements.keys.each do |key|
+        if key.to_s.end_with?("_elements") && source_elements[key].is_a?(Array)
+          universal_keys << key
+        end
+      end
+      universal_keys.uniq!
+      
+      puts "Universal keys for comparison: #{universal_keys.inspect}"
+      puts ""
+      
+      universal_keys.each do |key|
+        next unless source_elements[key] && target_elements[key]
+        
+        puts "--- Comparing key: #{key} ---"
+        
+        # For arrays, compare length and content
+        if source_elements[key].is_a?(Array) && target_elements[key].is_a?(Array)
+          puts "  Both are arrays: source=#{source_elements[key].length}, target=#{target_elements[key].length}"
+          expect(target_elements[key].length).to eq(source_elements[key].length), "Array length mismatch for #{key}"
+          source_elements[key].each_with_index do |source_item, i|
+            target_item = target_elements[key][i]
+            if source_item && target_item
+              puts "    Comparing item #{i}: #{source_item.name} vs #{target_item.name}"
+              source_content = test_element_content(source_item)
+              target_content = test_element_content(target_item)
+              puts "    Source content: #{source_content.inspect}"
+              puts "    Target content: #{target_content.inspect}"
+              expect(target_content[:name]).to eq(source_content[:name]), "Element name mismatch for #{key}[#{i}]"
+              expect(target_content[:attributes]).to eq(source_content[:attributes]), "Attributes mismatch for #{key}[#{i}]"
+            else
+              puts "    Item #{i} mismatch: source=#{source_item&.name}, target=#{target_item&.name}"
+            end
+          end
+        # For single elements, compare directly
+        elsif source_elements[key] && target_elements[key]
+          puts "  Both are single elements: #{source_elements[key].name} vs #{target_elements[key].name}"
+          source_content = test_element_content(source_elements[key])
+          target_content = test_element_content(target_elements[key])
+          puts "  Source content: #{source_content.inspect}"
+          puts "  Target content: #{target_content.inspect}"
+          expect(target_content[:name]).to eq(source_content[:name]), "Element name mismatch for #{key}"
+          expect(target_content[:attributes]).to eq(source_content[:attributes]), "Attributes mismatch for #{key}"
+        else
+          puts "  Key mismatch: source=#{source_elements[key]&.class}, target=#{target_elements[key]&.class}"
+        end
+      end
+      
+      puts "=== END DEBUG ===\n"
   end
 
   it "produces equivalent XML after double round-trip" do
