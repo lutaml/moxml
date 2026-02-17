@@ -144,8 +144,141 @@ RSpec.describe "REXML Adapter Isolated Test" do
       # This should FAIL to demonstrate the round-trip issue
       # Other adapters produce: "BMJBMJ0959-8138BMJj324i7342pg88011950738version-of-recordPrimary19010218219355357"
       # REXML currently produces: "BMJ BMJ 0959-8138 BMJ j 324 i7342 pg880 11950738 version-of-record Primary 190 102 18219355357" (with spaces)
-      # For round-trip compatibility, REXML should produce the concatenated version
+      # For round-trip compatibility, REXML should produce concatenated version
       expect(text).to eq("BMJBMJ0959-8138BMJj324i7342pg88011950738version-of-recordPrimary19010218219355357")
+    end
+
+    it "demonstrates specific round-trip failure patterns - BMJ.v" do
+      xml = <<~XML
+        <root>
+          <journal>BMJ</journal>
+          <volume>v</volume>
+          <number>324</number>
+        </root>
+      XML
+      
+      doc = rexml_context.parse(xml.dup)
+      text = doc.root.text
+      
+      puts "REXML output for BMJ.v: '#{text}'"
+      # Based on actual adapter behavior: both nokogiri and rexml produce "BMJv324"
+      # The test expectation was wrong - should expect "BMJv324" not "BMJ.v324"
+      expect(text).to eq("BMJv324")
+    end
+
+    it "demonstrates specific round-trip failure patterns - i7342.pg" do
+      xml = <<~XML
+        <root>
+          <issue>i7342</issue>
+          <page>pg880</page>
+        </root>
+      XML
+      
+      doc = rexml_context.parse(xml.dup)
+      text = doc.root.text
+      
+      puts "REXML output for i7342.pg: '#{text}'"
+      # Based on actual adapter behavior: both nokogiri and rexml produce "i7342pg880"
+      # The test expectation was wrong - should expect "i7342pg880" not "i7342.pg880"
+      expect(text).to eq("i7342pg880")
+    end
+
+    it "demonstrates specific round-trip failure patterns - 190102" do
+      xml = <<~XML
+        <root>
+          <year>190</year>
+          <page>102</page>
+        </root>
+      XML
+      
+      doc = rexml_context.parse(xml.dup)
+      text = doc.root.text
+      
+      puts "REXML output for 190102: '#{text}'"
+      # Based on round-trip failure: expected "190102" but got "190 102"
+      expect(text).to eq("190102")
+    end
+
+    it "demonstrates round-trip failure pattern - bmj BMJ" do
+      xml = <<~XML
+        <root>
+          <journal>bmj</journal>
+          <journal>BMJ</journal>
+        </root>
+      XML
+      
+      doc = rexml_context.parse(xml.dup)
+      text = doc.root.text
+      
+      puts "REXML output for bmj BMJ: '#{text}'"
+      # Based on round-trip failure: expected "bmjBMJ" but got "bmj BMJ"
+      expect(text).to eq("bmjBMJ")
+    end
+
+    it "demonstrates round-trip failure pattern - 8138 BMJ" do
+      xml = <<~XML
+        <root>
+          <issn>8138</issn>
+          <publisher>BMJ</publisher>
+        </root>
+      XML
+      
+      doc = rexml_context.parse(xml.dup)
+      text = doc.root.text
+      
+      puts "REXML output for 8138 BMJ: '#{text}'"
+      # Based on round-trip failure: expected "8138BMJ" but got "8138 BMJ"
+      expect(text).to eq("8138BMJ")
+    end
+
+    it "demonstrates round-trip failure pattern - BMJ.v 324" do
+      xml = <<~XML
+        <root>
+          <journal>BMJ</journal>
+          <volume>v</volume>
+          <number>324</number>
+        </root>
+      XML
+      
+      doc = rexml_context.parse(xml.dup)
+      text = doc.root.text
+      
+      puts "REXML output for BMJ.v 324: '#{text}'"
+      # Based on actual adapter behavior: both nokogiri and rexml produce "BMJv324"
+      # The test expectation was wrong - should expect "BMJv324" not "BMJ.v324"
+      expect(text).to eq("BMJv324")
+    end
+
+    it "demonstrates round-trip failure pattern - 7342 880" do
+      xml = <<~XML
+        <root>
+          <issue>7342</issue>
+          <page>880</page>
+        </root>
+      XML
+      
+      doc = rexml_context.parse(xml.dup)
+      text = doc.root.text
+      
+      puts "REXML output for 7342 880: '#{text}'"
+      # Based on round-trip failure: expected "7342880" but got "7342 880"
+      expect(text).to eq("7342880")
+    end
+
+    it "demonstrates round-trip failure pattern - version-of-record Primary" do
+      xml = <<~XML
+        <root>
+          <article-type>version-of-record</article-type>
+          <section>Primary</section>
+        </root>
+      XML
+      
+      doc = rexml_context.parse(xml.dup)
+      text = doc.root.text
+      
+      puts "REXML output for version-of-record Primary: '#{text}'"
+      # Based on round-trip failure: expected "version-of-recordPrimary" but got "version-of-record Primary"
+      expect(text).to eq("version-of-recordPrimary")
     end
   end
 end
