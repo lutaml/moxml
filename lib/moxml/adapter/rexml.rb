@@ -380,19 +380,17 @@ module Moxml
           element.children.each do |child|
             case child
             when ::REXML::Text
-              # Preserve original spacing from text nodes exactly
+              # Preserve original spacing from text nodes exactly including newlines and all whitespace
               text += child.value
             when ::REXML::Element
-              # Add space between elements to match other adapters' behavior
+              # Extract text recursively from child element
               child_text = extract_text_recursively(child)
-              if !child_text.empty? && !text.empty?
-                text += " " + child_text
-              else
-                text += child_text
-              end
+              # Concatenate directly like other adapters - NO SPACE INSERTION
+              text += child_text
             end
           end
-          text.strip
+          # Don't strip - preserve original spacing including newlines
+          text
         end
 
         def inner_text(node)
