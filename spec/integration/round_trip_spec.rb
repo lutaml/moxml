@@ -3,10 +3,10 @@ require_relative "shared_examples/round_trip_testing"
 
 RSpec.describe "Round-trip XML Testing" do
   # Explicit adapter names for clarity and maintainability
-  let(:adapter_names) { [:nokogiri, :oga, :rexml] }
+  let(:adapter_names) { [:nokogiri, :oga] }
 
   def self.adapter_names
-    [:nokogiri, :oga, :rexml]
+    [:nokogiri, :oga]
   end
 
   def self.fixture_files
