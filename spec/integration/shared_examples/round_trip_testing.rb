@@ -80,12 +80,45 @@ def extract_elements_for_testing(doc)
   elements[:total_elements] = all_elements.length
   
   # Extract first few elements of each type for testing
+  # Prioritize elements with attributes to ensure consistency across adapters
   unique_element_names.each do |element_name|
-    found = doc.xpath("//#{element_name}")
-    elements["#{element_name}_elements".to_sym] = found.first(3) if found.any?
+    # First try to find elements with attributes
+    with_attrs = doc.xpath("//#{element_name}[@*]")
+    # Then find elements without attributes
+    without_attrs = doc.xpath("//#{element_name}[not(@*)]")
+    
+    # Combine: elements with attributes first, then without attributes
+    all_found = with_attrs + without_attrs
+    elements["#{element_name}_elements".to_sym] = all_found.first(3) if all_found.any?
   end
   
   elements
+end
+
+# Universal attribute conversion method for all adapters
+def universal_attributes(element)
+  return {} unless element&.respond_to?(:attributes)
+  
+  attrs = element.attributes
+  
+  # Handle different attribute formats across adapters
+  if attrs.respond_to?(:map)
+    # Nokogiri, Oga: array of Moxml::Attribute objects
+    attrs.map { |attr| [attr.name, attr.value] }.to_h
+  elsif attrs.respond_to?(:to_h)
+    # Hash-like objects
+    attrs.to_h
+  elsif attrs.is_a?(Hash)
+    # Direct hash
+    attrs
+  else
+    # Ultimate fallback - try to convert to hash
+    begin
+      attrs.to_h
+    rescue
+      {}
+    end
+  end
 end
 
 def test_element_content(element)
@@ -93,7 +126,7 @@ def test_element_content(element)
   
   {
     name: element.name,
-    attributes: element.attributes.map { |attr| [attr.name, attr.value] }.to_h,
+    attributes: universal_attributes(element),
     text: element.text.to_s.strip,
     namespace: element.namespace&.href,
     children_count: element.children.size,
