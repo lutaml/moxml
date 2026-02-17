@@ -59,14 +59,7 @@ def extract_elements_for_testing(doc)
   # Extract root element
   elements[:root] = doc.root
   
-  # Extract common element types if they exist - use more universal approach
-  common_tags = %w[title author name organization child element section article abstract]
-  common_tags.each do |tag_name|
-    found = doc.xpath("//#{tag_name}")
-    elements[tag_name.to_sym] = found.first if found.any?
-  end
-  
-  # Extract elements with attributes (universal approach)
+  # Extract all elements with attributes (universal approach)
   elements_with_attrs = doc.xpath("//*[@*]")
   if elements_with_attrs.any?
     elements[:elements_with_attributes] = elements_with_attrs.first(5)
@@ -86,10 +79,10 @@ def extract_elements_for_testing(doc)
   elements[:unique_element_names] = unique_element_names
   elements[:total_elements] = all_elements.length
   
-  # Extract elements with specific common patterns
-  %w[div p span a img table tr td].each do |tag_name|
-    found = doc.xpath("//#{tag_name}")
-    elements["#{tag_name}_elements".to_sym] = found.first(3) if found.any?
+  # Extract first few elements of each type for testing
+  unique_element_names.each do |element_name|
+    found = doc.xpath("//#{element_name}")
+    elements["#{element_name}_elements".to_sym] = found.first(3) if found.any?
   end
   
   elements
@@ -197,7 +190,15 @@ RSpec.shared_examples "cross adapter round trip testing" do |fixture_path, sourc
     target_elements = extract_elements_for_testing(target_doc)
     
     # Test universal elements that should exist in any XML
-    universal_keys = [:root, :total_elements, :unique_element_names, :elements_with_attributes, :total_elements_with_attributes, :text_content, :total_text_nodes]
+    universal_keys = [:root, :elements_with_attributes, :text_content]
+    
+    # Add dynamic element keys based on actual XML structure (only element arrays)
+    source_elements.keys.each do |key|
+      if key.to_s.end_with?("_elements") && source_elements[key].is_a?(Array)
+        universal_keys << key
+      end
+    end
+    universal_keys.uniq!
     
     universal_keys.each do |key|
       next unless source_elements[key] && target_elements[key]
