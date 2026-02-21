@@ -27,13 +27,15 @@ bundle exec rake spec:consistency
 
 # Run specific consistency test
 bundle exec rspec spec/consistency/adapter_parity_spec.rb
+bundle exec rspec spec/consistency/round_trip_spec.rb
 ```
 
 ## Directory Structure
 
 ```
 consistency/
-└── adapter_parity_spec.rb    # Ensures all adapters produce equivalent results
+├── adapter_parity_spec.rb    # Ensures all adapters produce equivalent results
+└── round_trip_spec.rb        # Cross-adapter round-trip XML testing
 ```
 
 ## Writing Consistency Tests
