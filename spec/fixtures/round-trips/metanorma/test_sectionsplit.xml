@@ -42,14 +42,14 @@ GIFRIRSBQT1NTSUJJTElUWSBPRiBTVUNIIERBTUFHRS4K
       </preface>
       <sections>
         <p id="middletitle" displayorder="3">Title</p>
-        <note id="middlenote" displayorder="4">Title</p>
+        <note id="middlenote" displayorder="4">Title</note>
        <clause id="M" inline-header="false" obligation="normative" displayorder='6'>
          <title>Clause 4</title>
          <clause id="N" inline-header="false" obligation="normative">
          <title>Introduction</title>
          <p><xref target="A">HE</xref></p>
-         <note id="N1"><p><eref bibitemid="R1" citeas="R1">SHE</xref></p></note>
-         <note id="N2"><p><eref bibitemid="R1" citeas="R1"><image src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"/></xref></p></note>
+         <note id="N1"><p><eref bibitemid="R1" citeas="R1">SHE</eref></p></note>
+         <note id="N2"><p><eref bibitemid="R1" citeas="R1"><image src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"/></eref></p></note>
          <note id="N3">
            <p id="_3cfcdeb7-bba1-0265-29d1-cc6b3c1e1810"><eref type="inline" bibitemid="License_A" citeas="[LICENSE.TXT]">License A</eref></p>
          </note>
