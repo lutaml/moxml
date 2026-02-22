@@ -50,46 +50,48 @@ def semantically_equivalent?(xml1, xml2)
     true
   rescue => e
     # If parsing fails, fall back to string comparison
+    puts "Warning: Semantic comparison failed: #{e.message}" if ENV['DEBUG']
     normalize_xml(xml1) == normalize_xml(xml2)
+  end
+end
+
+def traverse_with_consistent_order(element, elements_array)
+  # CRITICAL: Only add elements, not text nodes or other node types
+  if element.respond_to?(:name) && element.name && !element.name.empty?
+    elements_array << element
+  end
+  
+  if element.respond_to?(:children)
+    # ENHANCED: More robust child selection and sorting
+    children = element.children.select do |child|
+      # Only process element nodes with valid names
+      child.respond_to?(:name) && 
+      child.name && 
+      !child.name.empty? &&
+      child.name != 'text' &&
+      child.name != 'comment'
+    end
+    
+    # CRITICAL: Enhanced sorting with multiple criteria for stability
+    sorted_children = children.sort_by do |child|
+      create_consistent_sort_key(child)
+    end
+    
+    sorted_children.each do |child|
+      traverse_with_consistent_order(child, elements_array)
+    end
   end
 end
 
 def manual_traversal_for_elements(doc)
   elements = []
   
-  def traverse_with_consistent_order(element, elements_array)
-    # CRITICAL: Only add elements, not text nodes or other node types
-    if element.respond_to?(:name) && element.name && !element.name.empty?
-      elements_array << element
-    end
-    
-    if element.respond_to?(:children)
-      # ENHANCED: More robust child selection and sorting
-      children = element.children.select do |child|
-        # Only process element nodes with valid names
-        child.respond_to?(:name) && 
-        child.name && 
-        !child.name.empty? &&
-        child.name != 'text' &&
-        child.name != 'comment'
-      end
-      
-      # CRITICAL: Enhanced sorting with multiple criteria for stability
-      sorted_children = children.sort_by do |child|
-        create_consistent_sort_key(child)
-      end
-      
-      sorted_children.each do |child|
-        traverse_with_consistent_order(child, elements_array)
-      end
-    end
-  end
-  
   # ENHANCED: Add error handling for robustness
   begin
     traverse_with_consistent_order(doc.root, elements)
   rescue => e
     # Fallback: try basic traversal if enhanced fails
+    puts "Warning: Enhanced traversal failed: #{e.message}" if ENV['DEBUG']
     elements.clear
     basic_traversal(doc.root, elements)
   end
@@ -121,21 +123,6 @@ def normalize_attribute_value(name, value)
     normalize_class_attribute(value)
   when 'id'
     normalize_id_attribute(value)
-  else
-    value.to_s.strip
-  end
-end
-
-# Type attribute normalization (rice standard specific)
-def normalize_type_attribute(value)
-  # More comprehensive type normalization
-  case value.to_s.downcase.strip
-  when 'instance', 'obsoletes', 'obsolete'
-    'instance'  # Standardize all variants
-  when 'informative', 'informative-normative'
-    'informative'
-  when 'normative'
-    'normative'
   else
     value.to_s.strip
   end
@@ -338,7 +325,9 @@ RSpec.describe "Round-trip XML Testing" do
     return @fixture_files if defined?(@fixture_files)
 
     fixtures_dir = File.join(__dir__, "..", "fixtures", "round-trips")
-    all_fixtures = Dir.glob(File.join(fixtures_dir, "metanorma", "*.xml")).map do |file|
+    
+    # Get ALL fixtures from all subdirectories
+    all_fixtures = Dir.glob(File.join(fixtures_dir, "**", "*.xml")).map do |file|
       relative_path = file.sub("#{fixtures_dir}/", "")
       {
         path: file,
@@ -346,17 +335,8 @@ RSpec.describe "Round-trip XML Testing" do
         category: File.basename(File.dirname(file))
       }
     end
-    # Select all fixtures under 50KB for testing
-    fixtures_with_sizes = all_fixtures.map do |fixture|
-      size = File.size(fixture[:path])
-      {
-        **fixture,
-        size: size
-      }
-    end
-    # Filter fixtures under 50KB (50 * 1024 = 51200 bytes)
-    under_50kb_fixtures = fixtures_with_sizes.select { |f| f[:size] < 51200 }
-    @fixture_files = under_50kb_fixtures.map { |f| f.except(:size) }
+    
+    @fixture_files = all_fixtures
   end
 
   def load_fixture_content(file_path)
