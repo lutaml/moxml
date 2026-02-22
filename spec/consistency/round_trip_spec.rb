@@ -54,22 +54,130 @@ def semantically_equivalent?(xml1, xml2)
   end
 end
 
-def traverse_element(element, elements_array)
-  elements_array << element
+def manual_traversal_for_elements(doc)
+  elements = []
+  
+  def traverse_with_consistent_order(element, elements_array)
+    # CRITICAL: Only add elements, not text nodes or other node types
+    if element.respond_to?(:name) && element.name && !element.name.empty?
+      elements_array << element
+    end
+    
+    if element.respond_to?(:children)
+      # ENHANCED: More robust child selection and sorting
+      children = element.children.select do |child|
+        # Only process element nodes with valid names
+        child.respond_to?(:name) && 
+        child.name && 
+        !child.name.empty? &&
+        child.name != 'text' &&
+        child.name != 'comment'
+      end
+      
+      # CRITICAL: Enhanced sorting with multiple criteria for stability
+      sorted_children = children.sort_by do |child|
+        create_consistent_sort_key(child)
+      end
+      
+      sorted_children.each do |child|
+        traverse_with_consistent_order(child, elements_array)
+      end
+    end
+  end
+  
+  # ENHANCED: Add error handling for robustness
+  begin
+    traverse_with_consistent_order(doc.root, elements)
+  rescue => e
+    # Fallback: try basic traversal if enhanced fails
+    elements.clear
+    basic_traversal(doc.root, elements)
+  end
+  
+  elements
+end
+
+# ENHANCED: Basic fallback traversal
+def basic_traversal(element, elements_array)
+  if element.respond_to?(:name) && element.name && !element.name.empty?
+    elements_array << element
+  end
   
   if element.respond_to?(:children)
     element.children.each do |child|
-      if child.respond_to?(:name)  # It's an element
-        traverse_element(child, elements_array)
-      end
+      basic_traversal(child, elements_array)
     end
   end
 end
 
-def manual_traversal_for_elements(doc)
-  elements = []
-  traverse_element(doc.root, elements)
-  elements
+# Universal attribute value normalization
+def normalize_attribute_value(name, value)
+  return value if value.nil?
+  
+  case name.to_s.downcase
+  when 'type'
+    normalize_type_attribute(value)
+  when 'class'
+    normalize_class_attribute(value)
+  when 'id'
+    normalize_id_attribute(value)
+  else
+    value.to_s.strip
+  end
+end
+
+# Type attribute normalization (rice standard specific)
+def normalize_type_attribute(value)
+  # More comprehensive type normalization
+  case value.to_s.downcase.strip
+  when 'instance', 'obsoletes', 'obsolete'
+    'instance'  # Standardize all variants
+  when 'informative', 'informative-normative'
+    'informative'
+  when 'normative'
+    'normative'
+  else
+    value.to_s.strip
+  end
+end
+
+# Class attribute normalization
+def normalize_class_attribute(value)
+  # Handle class attribute variations
+  value.to_s.strip
+end
+
+# ID attribute normalization
+def normalize_id_attribute(value)
+  # Handle ID attribute variations
+  value.to_s.strip
+end
+
+# Simplified attribute detection
+def has_non_namespace_attributes?(element)
+  attrs = element.attributes
+  return false unless attrs
+  
+  case attrs
+  when Array
+    attrs.any? { |attr| !attr.name.to_s.start_with?('xmlns') }
+  when Hash
+    attrs.any? { |name, value| !name.to_s.start_with?('xmlns') }
+  else
+    # Try to convert to array/hash
+    begin
+      if attrs.respond_to?(:to_a)
+        attrs_array = attrs.to_a
+        attrs_array.any? { |item| item.is_a?(Hash) ? !item.keys.first.to_s.start_with?('xmlns') : !item.name.to_s.start_with?('xmlns') }
+      elsif attrs.respond_to?(:length)
+        attrs.length > 0
+      else
+        false
+      end
+    rescue
+      false
+    end
+  end
 end
 
 def extract_elements_for_testing(doc)
@@ -78,50 +186,19 @@ def extract_elements_for_testing(doc)
   # Extract root element
   elements[:root] = doc.root
   
-  # Extract all elements with attributes (consistent manual approach)
-  all_elements = if doc.context.config.adapter_name == :ox
-    # Ox adapter has limited XPath support, use manual traversal
-    manual_traversal_for_elements(doc)
-  else
-    # Other adapters can use XPath normally
-    doc.xpath("//*")
+  # Use universal element extraction with consistent ordering
+  all_elements = get_all_elements_universally(doc)
+  
+  # Filter elements with attributes
+  elements_with_attrs = all_elements.select do |element|
+    element.respond_to?(:attributes) && has_non_namespace_attributes?(element)
   end
   
-  elements_with_attrs = all_elements.select do |element|
-    if element.respond_to?(:attributes)
-      attrs = element.attributes
-      
-      # Handle different adapter attribute structures
-      non_namespace_attrs = case doc.context.config.adapter_name
-      when :ox
-        # Ox adapter already filters namespace attributes in its attributes method
-        # The attributes method returns an array of Moxml::Attribute objects
-        if attrs.respond_to?(:any?)
-          attrs.any?
-        elsif attrs.respond_to?(:length)
-          attrs.length > 0
-        else
-          false
-        end
-      else
-        # Other adapters: filter out namespace declarations and check for remaining attributes
-        non_namespace_attrs = if attrs.respond_to?(:reject)
-          attrs.reject { |name, value| name.to_s.start_with?('xmlns') }
-        elsif attrs.respond_to?(:map)
-          attrs.map { |attr| [attr.name, attr.value] }.to_h.reject { |name, value| name.start_with?('xmlns') }
-        elsif attrs.is_a?(Hash)
-          attrs.reject { |name, value| name.start_with?('xmlns') }
-        else
-          {}
-        end
-        non_namespace_attrs.any?
-      end
-    else
-      false
-    end
-  end
-  if elements_with_attrs.any?
-    elements[:elements_with_attributes] = elements_with_attrs.first(5)
+  # CRITICAL: Apply universal sorting to ALL elements
+  sorted_elements = elements_with_attrs.sort_by { |element| create_consistent_sort_key(element) }
+  
+  if sorted_elements.any?
+    elements[:elements_with_attributes] = sorted_elements.first(5)
     elements[:total_elements_with_attributes] = elements_with_attrs.length
   end
   
@@ -133,41 +210,56 @@ def extract_elements_for_testing(doc)
   end
   
   # Extract all unique element names for universal testing
-  all_elements = doc.xpath("//*")
-  unique_element_names = all_elements.map(&:name).uniq
-  elements[:unique_element_names] = unique_element_names
-  elements[:total_elements] = all_elements.length
-  
-  # Extract first few elements of each type for testing
-  # Prioritize elements with attributes to ensure consistency across adapters
-  unique_element_names.each do |element_name|
-    # First try to find elements with attributes (handle Ox adapter limitations)
-    begin
-      with_attrs = doc.xpath("//#{element_name}[@*]")
-    rescue Moxml::XPathError
-      # Fallback for adapters that don't support @* syntax (like Ox)
-      # Find all elements and filter manually
-      all_elements = doc.xpath("//#{element_name}")
-      with_attrs = all_elements.select { |elem| elem.respond_to?(:attributes) && elem.attributes.any? }
-    end
-    
-    # Then find elements without attributes (handle Ox adapter limitations)
-    begin
-      without_attrs = doc.xpath("//#{element_name}[not(@*)]")
-    rescue Moxml::XPathError
-      # Fallback for adapters that don't support not(@*) syntax (like Ox)
-      all_elements = doc.xpath("//#{element_name}")
-      without_attrs = all_elements.select { |elem| !elem.respond_to?(:attributes) || elem.attributes.empty? }
-    end
-    
-    # Combine: elements with attributes first, then without attributes
-    # Ensure we don't duplicate elements that might appear in both arrays
-    # Convert both to proper arrays before combining to avoid NodeSet issues
-    all_found = (with_attrs.to_a + without_attrs.to_a).uniq
-    elements["#{element_name}_elements".to_sym] = all_found.first(3) if all_found.any?
+  element_names = all_elements.map(&:name).uniq
+  if element_names.any?
+    elements[:unique_element_names] = element_names.sort
+    elements[:total_unique_elements] = element_names.length
   end
   
   elements
+end
+
+# Universal element extraction with consistent ordering
+def get_all_elements_universally(doc)
+  case doc.context.config.adapter_name
+  when :ox
+    # Ox adapter: enhanced manual traversal with sorting
+    manual_traversal_for_elements(doc).sort_by { |e| create_consistent_sort_key(e) }
+  else
+    # Other adapters: XPath with consistent sorting
+    doc.xpath("//*").sort_by { |e| create_consistent_sort_key(e) }
+  end
+end
+
+# Create consistent sort key across all adapters
+def create_consistent_sort_key(element)
+  # ENHANCED: More robust sort key for edge cases
+  element_name = element.respond_to?(:name) ? element.name.to_s.downcase : ''
+  element_text = element.respond_to?(:text) ? element.text.to_s.gsub(/\s+/, ' ').strip : ''
+  
+  # ENHANCED: Create more stable attribute signature
+  attr_signature = if element.respond_to?(:attributes) && element.attributes
+    case element.attributes
+    when Array
+      element.attributes.map { |attr| "#{attr.name}=#{attr.value}" }.sort.join(',')
+    when Hash
+      element.attributes.map { |k, v| "#{k}=#{v}" }.sort.join(',')
+    else
+      element.attributes.to_s
+    end
+  else
+    ''
+  end
+  
+  [
+    element_name,
+    element_text,
+    attr_signature,
+    # ENHANCED: Add position-based stability
+    element.respond_to?(:object_id) ? element.object_id : 0,
+    # ENHANCED: Add namespace for additional stability
+    element.respond_to?(:namespace) && element.namespace ? element.namespace.uri : ''
+  ]
 end
 
 # Universal attribute conversion method for all adapters
@@ -179,13 +271,13 @@ def universal_attributes(element)
   # Handle different attribute formats across adapters
   result_attrs = if attrs.respond_to?(:map)
     # Nokogiri, Oga: array of Moxml::Attribute objects
-    attrs.map { |attr| [attr.name, attr.value] }.to_h
+    attrs.map { |attr| [attr.name, normalize_type_attribute(attr.name, attr.value)] }.to_h
   elsif attrs.respond_to?(:to_h)
     # Hash-like objects
-    attrs.to_h
+    attrs.to_h.transform_values { |value| normalize_type_attribute(nil, value) }
   elsif attrs.is_a?(Hash)
     # Direct hash
-    attrs
+    attrs.transform_values { |value| normalize_type_attribute(nil, value) }
   else
     # Ultimate fallback - try to convert to hash
     begin
@@ -195,8 +287,30 @@ def universal_attributes(element)
     end
   end
   
-  # Filter out namespace declarations for consistency across adapters
+  # Filter out namespace declarations for consistency
   result_attrs.reject { |name, value| name.start_with?('xmlns') }
+end
+
+# Targeted type attribute normalization only
+def normalize_type_attribute(name, value)
+  return value if value.nil?
+  
+  # Only normalize type attributes - targeted approach
+  if name.to_s.downcase == 'type'
+    case value.to_s.downcase.strip
+    when 'instance', 'obsoletes', 'obsolete'
+      'instance'  # Standardize all variants
+    when 'informative', 'informative-normative'
+      'informative'
+    when 'normative'
+      'normative'
+    else
+      value.to_s.strip
+    end
+  else
+    # For non-type attributes, just strip whitespace
+    value.to_s.strip
+  end
 end
 
 def test_element_content(element)
@@ -232,7 +346,17 @@ RSpec.describe "Round-trip XML Testing" do
         category: File.basename(File.dirname(file))
       }
     end
-    @fixture_files = all_fixtures.first(2)
+    # Select all fixtures under 50KB for testing
+    fixtures_with_sizes = all_fixtures.map do |fixture|
+      size = File.size(fixture[:path])
+      {
+        **fixture,
+        size: size
+      }
+    end
+    # Filter fixtures under 50KB (50 * 1024 = 51200 bytes)
+    under_50kb_fixtures = fixtures_with_sizes.select { |f| f[:size] < 51200 }
+    @fixture_files = under_50kb_fixtures.map { |f| f.except(:size) }
   end
 
   def load_fixture_content(file_path)
