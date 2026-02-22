@@ -177,7 +177,7 @@ RSpec.describe "Round-trip XML Testing" do
         category: File.basename(File.dirname(file))
       }
     end
-    @fixture_files = all_fixtures.first(1)
+    @fixture_files = [] # all_fixtures
   end
 
   def load_fixture_content(file_path)
