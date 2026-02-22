@@ -54,19 +54,71 @@ def semantically_equivalent?(xml1, xml2)
   end
 end
 
+def traverse_element(element, elements_array)
+  elements_array << element
+  
+  if element.respond_to?(:children)
+    element.children.each do |child|
+      if child.respond_to?(:name)  # It's an element
+        traverse_element(child, elements_array)
+      end
+    end
+  end
+end
+
+def manual_traversal_for_elements(doc)
+  elements = []
+  traverse_element(doc.root, elements)
+  elements
+end
+
 def extract_elements_for_testing(doc)
   elements = {}
   
   # Extract root element
   elements[:root] = doc.root
   
-  # Extract all elements with attributes (universal approach)
-  begin
-    elements_with_attrs = doc.xpath("//*[@*]")
-  rescue Moxml::XPathError
-    # Fallback for adapters that don't support @* syntax (like Ox)
-    all_elements = doc.xpath("//*")
-    elements_with_attrs = all_elements.select { |elem| elem.respond_to?(:attributes) && elem.attributes.any? }
+  # Extract all elements with attributes (consistent manual approach)
+  all_elements = if doc.context.config.adapter_name == :ox
+    # Ox adapter has limited XPath support, use manual traversal
+    manual_traversal_for_elements(doc)
+  else
+    # Other adapters can use XPath normally
+    doc.xpath("//*")
+  end
+  
+  elements_with_attrs = all_elements.select do |element|
+    if element.respond_to?(:attributes)
+      attrs = element.attributes
+      
+      # Handle different adapter attribute structures
+      non_namespace_attrs = case doc.context.config.adapter_name
+      when :ox
+        # Ox adapter already filters namespace attributes in its attributes method
+        # The attributes method returns an array of Moxml::Attribute objects
+        if attrs.respond_to?(:any?)
+          attrs.any?
+        elsif attrs.respond_to?(:length)
+          attrs.length > 0
+        else
+          false
+        end
+      else
+        # Other adapters: filter out namespace declarations and check for remaining attributes
+        non_namespace_attrs = if attrs.respond_to?(:reject)
+          attrs.reject { |name, value| name.to_s.start_with?('xmlns') }
+        elsif attrs.respond_to?(:map)
+          attrs.map { |attr| [attr.name, attr.value] }.to_h.reject { |name, value| name.start_with?('xmlns') }
+        elsif attrs.is_a?(Hash)
+          attrs.reject { |name, value| name.start_with?('xmlns') }
+        else
+          {}
+        end
+        non_namespace_attrs.any?
+      end
+    else
+      false
+    end
   end
   if elements_with_attrs.any?
     elements[:elements_with_attributes] = elements_with_attrs.first(5)
@@ -125,7 +177,7 @@ def universal_attributes(element)
   attrs = element.attributes
   
   # Handle different attribute formats across adapters
-  if attrs.respond_to?(:map)
+  result_attrs = if attrs.respond_to?(:map)
     # Nokogiri, Oga: array of Moxml::Attribute objects
     attrs.map { |attr| [attr.name, attr.value] }.to_h
   elsif attrs.respond_to?(:to_h)
@@ -142,6 +194,9 @@ def universal_attributes(element)
       {}
     end
   end
+  
+  # Filter out namespace declarations for consistency across adapters
+  result_attrs.reject { |name, value| name.start_with?('xmlns') }
 end
 
 def test_element_content(element)
@@ -151,7 +206,7 @@ def test_element_content(element)
     name: element.name,
     attributes: universal_attributes(element),
     text: element.text.to_s.strip,
-    namespace: element.namespace&.href,
+    namespace: element.namespace&.uri,
     children_count: element.children.size,
     xpath: element.xpath("//*")
   }
@@ -177,7 +232,7 @@ RSpec.describe "Round-trip XML Testing" do
         category: File.basename(File.dirname(file))
       }
     end
-    @fixture_files = all_fixtures.first(1)
+    @fixture_files = all_fixtures.first(2)
   end
 
   def load_fixture_content(file_path)
@@ -227,6 +282,7 @@ RSpec.describe "Round-trip XML Testing" do
                         if source_item && target_item
                           source_content = test_element_content(source_item)
                           target_content = test_element_content(target_item)
+                          
                           expect(target_content[:name]).to eq(source_content[:name]), "Element name mismatch for #{key}[#{i}]"
                           expect(target_content[:attributes]).to eq(source_content[:attributes]), "Attributes mismatch for #{key}[#{i}]"
                         end
