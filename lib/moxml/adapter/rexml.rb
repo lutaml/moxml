@@ -11,8 +11,12 @@ module Moxml
     class Rexml < Base
       class << self
         def parse(xml, options = {})
-          # Apply the working solution: force_encoding then encode to UTF-8
-          processed_xml = xml.force_encoding("UTF-8").encode("UTF-8")
+          # Handle frozen strings by creating a mutable copy
+          processed_xml = if xml.frozen?
+            xml.dup.force_encoding("UTF-8").encode("UTF-8")
+          else
+            xml.force_encoding("UTF-8").encode("UTF-8")
+          end
 
           native_doc = begin
             ::REXML::Document.new(processed_xml)
