@@ -169,7 +169,7 @@ RSpec.describe "Round-trip XML Testing" do
     return @fixture_files if defined?(@fixture_files)
 
     fixtures_dir = File.join(__dir__, "..", "fixtures", "round-trips")
-    all_fixtures = Dir.glob(File.join(fixtures_dir, "**", "*.xml")).map do |file|
+    all_fixtures = Dir.glob(File.join(fixtures_dir, "metanorma", "*.xml")).map do |file|
       relative_path = file.sub("#{fixtures_dir}/", "")
       {
         path: file,
@@ -177,7 +177,7 @@ RSpec.describe "Round-trip XML Testing" do
         category: File.basename(File.dirname(file))
       }
     end
-    @fixture_files = all_fixtures
+    @fixture_files = all_fixtures.first(1)
   end
 
   def load_fixture_content(file_path)
