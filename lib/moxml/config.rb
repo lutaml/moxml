@@ -5,6 +5,13 @@ module Moxml
     VALID_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
     DEFAULT_ADAPTER = VALID_ADAPTERS.first
 
+    # Entity loading modes:
+    # - :required - Must load entities, raise error if unavailable (default)
+    # - :optional - Try to load, continue silently if unavailable
+    # - :disabled - Don't load entities, use empty registry
+    # - :custom - Use custom entity provider via entity_provider callback
+    VALID_ENTITY_LOAD_MODES = %i[required optional disabled custom].freeze
+
     class << self
       attr_writer :default_adapter
 
@@ -21,7 +28,11 @@ module Moxml
     attr_accessor :strict_parsing,
                   :default_encoding,
                   :entity_encoding,
-                  :default_indent
+                  :default_indent,
+                  :restore_entities,
+                  :preload_entity_sets,
+                  :entity_load_mode,
+                  :entity_provider
 
     def initialize(adapter_name = nil, strict_parsing = nil,
                    default_encoding = nil)
@@ -31,6 +42,10 @@ module Moxml
       # reserved for future use
       @default_indent = 2
       @entity_encoding = :basic
+      @restore_entities = false
+      @preload_entity_sets = []
+      @entity_load_mode = :required
+      @entity_provider = nil
     end
 
     def adapter=(name)
@@ -56,6 +71,26 @@ module Moxml
 
     def adapter
       @adapter ||= Adapter.load(@adapter_name)
+    end
+
+    def entity_load_mode=(mode)
+      unless VALID_ENTITY_LOAD_MODES.include?(mode)
+        raise ArgumentError, "Invalid entity_load_mode: #{mode}. Must be one of: #{VALID_ENTITY_LOAD_MODES.join(', ')}"
+      end
+      @entity_load_mode = mode
+    end
+
+    # Backward compatibility: convert old boolean to new symbol
+    def load_external_entities=(value)
+      @entity_load_mode = case value
+                          when true then :required
+                          when false then :disabled
+                          else value
+                          end
+    end
+
+    def load_external_entities
+      @entity_load_mode == :required
     end
   end
 end

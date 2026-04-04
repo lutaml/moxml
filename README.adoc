@@ -592,7 +592,81 @@ book.add_child(doc.create_comment('Book details'))
 title = doc.create_element('title')
 title.text = 'Ruby Programming'
 book.add_child(title)
+
+# Add entity reference (for declared entities)
+book.add_child(doc.create_entity_reference('mdash'))
 ----
+
+=== Entity References
+
+Moxml supports `EntityReference` nodes for preserving entity syntax in XML documents. This enables round-trip preservation of entity references like `&nbsp;`, `&copy;`, and custom entities defined in the DOCTYPE.
+
+[source,ruby]
+----
+# Create entity reference programmatically
+ref = doc.create_entity_reference('nbsp')
+element.add_child(ref)
+
+# Or using the builder pattern
+doc = Moxml::Builder.new(Moxml.new).build do
+  element 'text' do
+    entity_reference 'ndash'
+    entity_reference 'copy'
+  end
+end
+----
+
+**Parsing and Round-Trip:**
+
+When parsing XML with declared entities, Moxml preserves entity references:
+
+[source,ruby]
+----
+# Parse document with custom entity
+xml = <<-XML
+<!DOCTYPE root [<!ENTITY nbsp " "> ]>
+<root>hello&nbsp;world</root>
+XML
+
+doc = Moxml.new(:nokogiri).parse(xml)
+doc.to_xml  # => preserves &nbsp; entity reference
+----
+
+**Adapter Notes:**
+
+- *Nokogiri*: Preserves custom declared entities as `EntityReference` nodes
+- *Ox, Oga*: These adapters resolve entities during parsing and do not expose entity reference nodes. Use Nokogiri or LibXML for entity preservation.
+
+**Entity Loading Configuration:**
+
+Moxml provides configurable entity loading with four modes to balance between functionality, performance, and security:
+
+[source,ruby]
+----
+# Default: Load all W3C entities (HTML + MathML + ISO entity sets)
+# Raises error if entity data is unavailable
+context = Moxml.new
+
+# Optional: Load entities if available, silently skip if not
+context = Moxml.new do |config|
+  config.entity_load_mode = :optional
+end
+
+# Disabled: No entity loading (fastest, for controlled XML sources)
+context = Moxml.new do |config|
+  config.entity_load_mode = :disabled
+end
+
+# Custom: Load entities from your own source
+context = Moxml.new do |config|
+  config.entity_load_mode = :custom
+  config.entity_provider = -> { MyEntitySource.all_entities }
+end
+----
+
+The entity data comes from the W3C XML Core WG Character Entities specification (HTMLMathML set), bundled locally in `data/w3c_entities.json` for offline capability. Set the `MOXML_ENTITY_DEFINITIONS_PATH` environment variable to use a custom entity data source.
+
+For backward compatibility, `config.load_external_entities = false` maps to `:disabled` mode, and `config.load_external_entities = true` maps to `:required` mode.
 
 === Fluent interface API
 

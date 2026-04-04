@@ -32,6 +32,10 @@ All node types in Moxml support the `#identifier` method, which returns the prim
 | `nil` (no identifier)
 | `nil`
 
+| EntityReference
+| The entity name
+| `"nbsp"`, `"copy"`
+
 | Declaration
 | `nil` (no identifier)
 | `nil`
@@ -137,3 +141,34 @@ doctype.identifier   # => "html"
 * `identifier` - Returns the primary identifier (same as `name`)
 
 All Doctype accessor methods are fully implemented across all 6 adapters.
+
+=== EntityReference nodes
+
+EntityReference nodes represent XML entity references like `&nbsp;`, `&copy;`, or custom entities declared in the DOCTYPE.
+
+[source,ruby]
+----
+# Create programmatically
+ref = doc.create_entity_reference('nbsp')
+element.add_child(ref)
+
+# Or via builder
+doc = Moxml::Builder.new(Moxml.new).build do
+  element 'text' do
+    entity_reference 'ndash'
+  end
+end
+----
+
+*Available methods:*
+
+* `name` - Returns the entity name (e.g., `"nbsp"`, `"copy"`)
+* `identifier` - Returns the primary identifier (same as `name`)
+* `text` - Returns empty string (`""`) since entity has no text content
+* `content` - Returns empty string (entity content is in the name)
+* `to_xml` - Returns the entity syntax (e.g., `"&nbsp;"`)
+
+*Adapter notes:*
+
+* *Nokogiri*: Preserves custom declared entities as `EntityReference` nodes
+* *Ox, Oga*: These adapters resolve entities during parsing and do not expose entity reference nodes. Use Nokogiri or LibXML for entity preservation.

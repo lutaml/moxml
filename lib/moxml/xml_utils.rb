@@ -79,5 +79,13 @@ module Moxml
       else value.to_s
       end
     end
+
+    def validate_entity_reference_name(name)
+      # Entity names follow the same pattern as element names
+      # They must start with a letter or underscore, followed by letters, digits, hyphens, underscores, periods, or colons
+      return if name.is_a?(String) && name.match?(/^[a-zA-Z_][\w\-.:]*$/)
+
+      raise ValidationError, "Invalid entity reference name: #{name}"
+    end
   end
 end

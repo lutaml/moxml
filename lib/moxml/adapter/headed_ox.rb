@@ -26,7 +26,7 @@ module Moxml
     class HeadedOx < Ox
       class << self
         # Override parse to use HeadedOx context instead of Ox context
-        def parse(xml, _options = {})
+        def parse(xml, _options = {}, _context = nil)
           native_doc = begin
             result = ::Ox.parse(xml)
 
@@ -45,8 +45,9 @@ module Moxml
             )
           end
 
-          # Use :headed_ox context instead of :ox
-          DocumentBuilder.new(Context.new(:headed_ox)).build(native_doc)
+          # Use provided context if available, otherwise create new one
+          ctx = _context || Context.new(:headed_ox)
+          DocumentBuilder.new(ctx).build(native_doc)
         end
 
         # Execute XPath query using Moxml's XPath engine

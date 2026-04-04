@@ -9,6 +9,7 @@ require_relative "processing_instruction"
 require_relative "declaration"
 require_relative "namespace"
 require_relative "doctype"
+require_relative "entity_reference"
 
 module Moxml
   class Document < Node
@@ -66,6 +67,10 @@ module Moxml
                            standalone = nil)
       decl = adapter.create_declaration(version, encoding, standalone)
       Declaration.new(decl, context)
+    end
+
+    def create_entity_reference(name)
+      EntityReference.new(adapter.create_entity_reference(name), context)
     end
 
     def add_child(node)

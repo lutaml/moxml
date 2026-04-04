@@ -104,12 +104,21 @@ module Moxml
           create_native_namespace(element, prefix, uri)
         end
 
+        def create_entity_reference(name)
+          validate_entity_reference_name(name)
+          create_native_entity_reference(name)
+        end
+
         def set_attribute_name(attribute, name)
           attribute.name = name
         end
 
         def set_attribute_value(attribute, value)
           attribute.value = value
+        end
+
+        def entity_reference_name(node)
+          node.name
         end
 
         def duplicate_node(node)
@@ -190,6 +199,14 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "create_native_namespace not implemented",
             feature: "create_native_namespace",
+            adapter: name,
+          )
+        end
+
+        def create_native_entity_reference(_name)
+          raise Moxml::NotImplementedError.new(
+            "create_native_entity_reference not implemented",
+            feature: "create_native_entity_reference",
             adapter: name,
           )
         end

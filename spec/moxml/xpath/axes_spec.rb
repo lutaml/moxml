@@ -36,13 +36,12 @@ RSpec.describe "XPath Axes" do
         compiler.respond_to?(:"on_axis_#{axis}", true)
       end
 
-      puts "\nImplemented Axes: #{implemented.size}/13"
-      implemented.each { |a| puts "  ✓ #{a}" }
+      implemented.each { |a| }
 
       missing = axes - implemented
       if missing.any?
-        puts "\nMissing Axes: #{missing.size}/13"
-        missing.each { |a| puts "  ✗ #{a}" }
+
+        missing.each { |a| }
       end
 
       # Expect at least 6 axes (3 original + 3 new critical axes)

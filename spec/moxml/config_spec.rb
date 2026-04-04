@@ -12,6 +12,52 @@ RSpec.describe Moxml::Config do
       expect(config.default_indent).to eq(2)
       expect(config.entity_encoding).to eq(:basic)
     end
+
+    it "sets default entity_load_mode to :required" do
+      expect(config.entity_load_mode).to eq(:required)
+    end
+  end
+
+  describe "#entity_load_mode=" do
+    it "accepts valid modes" do
+      %i[required optional disabled custom].each do |mode|
+        config.entity_load_mode = mode
+        expect(config.entity_load_mode).to eq(mode)
+      end
+    end
+
+    it "raises error for invalid mode" do
+      expect { config.entity_load_mode = :invalid }.to raise_error(ArgumentError)
+    end
+  end
+
+  describe "#load_external_entities=" do
+    it "maps true to :required" do
+      config.load_external_entities = true
+      expect(config.entity_load_mode).to eq(:required)
+    end
+
+    it "maps false to :disabled" do
+      config.load_external_entities = false
+      expect(config.entity_load_mode).to eq(:disabled)
+    end
+
+    it "accepts symbol values" do
+      config.load_external_entities = :optional
+      expect(config.entity_load_mode).to eq(:optional)
+    end
+  end
+
+  describe "#load_external_entities" do
+    it "returns true when mode is :required" do
+      config.entity_load_mode = :required
+      expect(config.load_external_entities).to be true
+    end
+
+    it "returns false when mode is not :required" do
+      config.entity_load_mode = :disabled
+      expect(config.load_external_entities).to be false
+    end
   end
 
   describe "#adapter=" do
