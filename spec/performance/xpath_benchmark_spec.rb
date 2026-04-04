@@ -59,14 +59,7 @@ RSpec.describe "XPath Performance Benchmark", :performance do
 
     describe "XPath query performance" do
       it "benchmarks XPath operations across all adapters" do
-        puts "\n#{'=' * 80}"
-        puts "XPath Performance Benchmark - All Adapters"
-        puts "=" * 80
-
-        xpath_patterns.each do |pattern_name, xpath|
-          puts "\nPattern: #{pattern_name}"
-          puts "-" * 80
-
+        xpath_patterns.each_value do |xpath|
           Benchmark.ips do |x|
             x.config(time: 5, warmup: 2)
 
@@ -83,20 +76,10 @@ RSpec.describe "XPath Performance Benchmark", :performance do
 
             x.compare!
           end
-
-          puts "\n"
         end
-
-        puts "=" * 80
-        puts "Benchmark complete"
-        puts "=" * 80
       end
 
       it "generates detailed performance comparison table" do
-        puts "\n#{'=' * 80}"
-        puts "Detailed XPath Performance Comparison"
-        puts "=" * 80
-
         results_table = {}
 
         xpath_patterns.each do |pattern_name, xpath|
@@ -121,28 +104,17 @@ RSpec.describe "XPath Performance Benchmark", :performance do
           end
         end
 
-        puts "\nResults (operations per second):"
-        puts "-" * 80
-
         adapters.each do |adapter|
-          puts "\n#{adapter.to_s.capitalize}:"
           xpath_patterns.each_key do |pattern_name|
             ops = results_table[pattern_name][adapter]
             if ops
-              puts "  #{pattern_name}: #{ops.round(2)} ops/sec"
-            else
-              puts "  #{pattern_name}: Not supported"
+
             end
           end
         end
 
-        puts "\n#{'=' * 80}"
-        puts "Relative Performance (fastest = 1.0x baseline):"
-        puts "-" * 80
-
         relative_results = {}
         xpath_patterns.each_key do |pattern_name|
-          puts "\n#{pattern_name}:"
           valid_results = results_table[pattern_name].compact
           next if valid_results.empty?
 
@@ -152,11 +124,10 @@ RSpec.describe "XPath Performance Benchmark", :performance do
             if ops
               relative = ops / fastest
               relative_results[pattern_name][adapter] = relative
-              puts "  #{adapter}: #{relative.round(3)}x " \
-                   "(#{ops.round(2)} ops/sec)"
+
             else
               relative_results[pattern_name][adapter] = nil
-              puts "  #{adapter}: Not supported"
+
             end
           end
         end
@@ -187,12 +158,6 @@ RSpec.describe "XPath Performance Benchmark", :performance do
         }
 
         File.write(output_file, YAML.dump(yaml_data))
-
-        puts "\n#{'=' * 80}"
-        puts "Results saved to: #{output_file}"
-        puts "=" * 80
-        puts "Test complete - see output above for results"
-        puts "=" * 80
       end
     end
 
@@ -221,18 +186,9 @@ RSpec.describe "XPath Performance Benchmark", :performance do
       end
 
       it "benchmarks namespace-aware XPath" do
-        puts "\n#{'=' * 80}"
-        puts "Namespace-Aware XPath Performance"
-        puts "=" * 80
-        puts "\nNote: REXML and Ox do not support namespace-aware XPath"
-        puts "-" * 80
-
         namespace_capable_adapters = %i[nokogiri libxml oga]
 
-        namespace_patterns.each do |pattern_name, (xpath, namespaces)|
-          puts "\nPattern: #{pattern_name}"
-          puts "-" * 80
-
+        namespace_patterns.each_value do |(xpath, namespaces)|
           Benchmark.ips do |x|
             x.config(time: 5, warmup: 2)
 
@@ -248,11 +204,7 @@ RSpec.describe "XPath Performance Benchmark", :performance do
 
             x.compare!
           end
-
-          puts "\n"
         end
-
-        puts "=" * 80
       end
     end
   end

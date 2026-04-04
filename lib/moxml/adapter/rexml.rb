@@ -10,13 +10,13 @@ module Moxml
   module Adapter
     class Rexml < Base
       class << self
-        def parse(xml, options = {})
+        def parse(xml, options = {}, _context = nil)
           # Handle frozen strings by creating a mutable copy
           processed_xml = if xml.frozen?
-            xml.dup.force_encoding("UTF-8").encode("UTF-8")
-          else
-            xml.force_encoding("UTF-8").encode("UTF-8")
-          end
+                            xml.dup.force_encoding("UTF-8").encode("UTF-8")
+                          else
+                            xml.force_encoding("UTF-8").encode("UTF-8")
+                          end
 
           native_doc = begin
             ::REXML::Document.new(processed_xml)
@@ -31,13 +31,14 @@ module Moxml
             create_document
           end
 
-          DocumentBuilder.new(Context.new(:rexml)).build(native_doc)
+          ctx = _context || Context.new(:rexml)
+          DocumentBuilder.new(ctx).build(native_doc)
         end
 
         def extract_encoding_from_xml(xml)
           # Match XML declaration pattern: <?xml version="..." encoding="..."?>
           match = xml.match(/<\?xml[^>]*encoding\s*=\s*["']([^"']+)["']/i)
-          return match ? match[1] : 'UTF-8'
+          match ? match[1] : "UTF-8"
         end
 
         # SAX parsing implementation for REXML
@@ -379,7 +380,7 @@ module Moxml
 
         def extract_text_recursively(element)
           return "" unless element
-          
+
           text = ""
           element.children.each do |child|
             case child
@@ -400,7 +401,7 @@ module Moxml
         def inner_text(node)
           # Get direct text children only, filter duplicates
           text_children = node.children
-            .select { _1.is_a?(::REXML::Text) }
+            .grep(::REXML::Text)
             .uniq(&:object_id)
           text_children.map(&:value).join
         end

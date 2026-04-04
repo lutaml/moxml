@@ -8,6 +8,10 @@ module Moxml
       @config = Config.new(adapter)
     end
 
+    def entity_registry
+      @entity_registry ||= build_entity_registry
+    end
+
     def create_document(native_doc = nil)
       Document.new(config.adapter.create_document(native_doc), self)
     end
@@ -23,9 +27,9 @@ module Moxml
                    end
       has_declaration = xml_string.strip.start_with?("<?xml")
 
-      # Parse with adapter (without declaration info - adapters don't need it)
+      # Parse with adapter, passing self (context) so adapter can use our config
       parsed_options = default_options.merge(options)
-      doc = config.adapter.parse(xml_string, parsed_options)
+      doc = config.adapter.parse(xml_string, parsed_options, self)
 
       # Set declaration flag on Document wrapper (proper OOP)
       doc.has_xml_declaration = has_declaration if doc.is_a?(Document)
@@ -72,6 +76,21 @@ module Moxml
     end
 
     private
+
+    def build_entity_registry
+      registry = EntityRegistry.new(
+        mode: config.entity_load_mode,
+        entity_provider: config.entity_provider
+      )
+      config.preload_entity_sets.each do |set_name|
+        case set_name
+        when :html5 then registry.load_html5
+        when :mathml then registry.load_mathml
+        when :iso then registry.load_iso
+        end
+      end
+      registry
+    end
 
     def default_options
       {

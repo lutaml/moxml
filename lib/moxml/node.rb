@@ -9,7 +9,7 @@ module Moxml
 
     TYPES = %i[
       element text cdata comment processing_instruction document
-      declaration doctype namespace attribute unknown
+      declaration doctype namespace attribute unknown entity_reference
     ].freeze
 
     attr_reader :native, :context
@@ -87,7 +87,8 @@ module Moxml
     end
 
     def at_xpath(expression, namespaces = {})
-      Moxml::Node.wrap(adapter.at_xpath(@native, expression, namespaces), context)
+      Moxml::Node.wrap(adapter.at_xpath(@native, expression, namespaces),
+                       context)
     end
 
     # Convenience find methods (aliases for xpath methods)
@@ -120,7 +121,7 @@ module Moxml
       if respond_to?(:content)
         content
       elsif respond_to?(:children)
-        children.select { |c| c.is_a?(Text) }.map(&:content).join
+        children.grep(Text).map(&:content).join
       else
         ""
       end
@@ -211,6 +212,7 @@ module Moxml
               when :declaration then Declaration
               when :doctype then Doctype
               when :attribute then Attribute
+              when :entity_reference then EntityReference
               else self
               end
 

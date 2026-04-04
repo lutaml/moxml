@@ -11,7 +11,7 @@ module Moxml
           doc.root = element
         end
 
-        def parse(xml, options = {})
+        def parse(xml, options = {}, _context = nil)
           native_doc = begin
             if options[:fragment]
               ::Nokogiri::XML::DocumentFragment.parse(xml) do |config|
@@ -29,7 +29,9 @@ module Moxml
                                                    column: e.column)
           end
 
-          DocumentBuilder.new(Context.new(:nokogiri)).build(native_doc)
+          # Use provided context if available, otherwise create new one
+          ctx = _context || Context.new(:nokogiri)
+          DocumentBuilder.new(ctx).build(native_doc)
         end
 
         # SAX parsing implementation for Nokogiri
@@ -104,6 +106,14 @@ module Moxml
           )
         end
 
+        def create_native_entity_reference(name)
+          ::Nokogiri::XML::EntityReference.new(create_document, name)
+        end
+
+        def entity_reference_name(node)
+          node.name
+        end
+
         def declaration_attribute(declaration, attr_name)
           return nil unless declaration.content
 
@@ -150,6 +160,7 @@ module Moxml
           when ::Nokogiri::XML::ProcessingInstruction then :processing_instruction
           when ::Nokogiri::XML::Document, ::Nokogiri::XML::DocumentFragment then :document
           when ::Nokogiri::XML::DTD then :doctype
+          when ::Nokogiri::XML::EntityReference then :entity_reference
           else :unknown
           end
         end

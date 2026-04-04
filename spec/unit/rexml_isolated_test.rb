@@ -1,6 +1,7 @@
 # frozen_string_literal: true
-require 'rspec'
-require 'moxml'
+
+require "rspec"
+require "moxml"
 
 RSpec.describe "REXML Adapter Isolated Test" do
   let(:rexml_context) { Moxml.new(:rexml) }
@@ -10,10 +11,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
       xml = <<~XML
         <root>Hello World</root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
+
       expect(text).to eq("Hello World")
     end
 
@@ -24,11 +25,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <journal>BMJ</journal>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for BMJBMJ: '#{text}'"
+
       # This should FAIL to demonstrate the round-trip issue
       # Other adapters produce: "BMJBMJ"
       # REXML currently produces: "BMJ BMJ" (with space)
@@ -44,11 +44,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <author>j</author>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for mixed case: '#{text}'"
+
       # This should FAIL to demonstrate the round-trip issue
       # Other adapters produce: "0959-8138BMJj"
       # REXML currently produces: "0959-8138 BMJ j" (with spaces)
@@ -65,11 +64,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <id>11950738</id>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for digits: '#{text}'"
+
       # This should FAIL to demonstrate the round-trip issue
       # Other adapters produce: "324i7342pg88011950738"
       # REXML currently produces: "324 i7342 pg880 11950738" (with spaces)
@@ -84,11 +82,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <title>Primary</title>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for word boundaries: '#{text}'"
+
       # This should FAIL to demonstrate the round-trip issue
       # Other adapters produce: "version-of-recordPrimary"
       # REXML currently produces: "version-of-record Primary" (with space)
@@ -105,11 +102,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <id>18219355357</id>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for complex mixed: '#{text}'"
+
       # This should FAIL to demonstrate the round-trip issue
       # Other adapters produce: "Primary19010218219355357"
       # REXML currently produces: "Primary 190 102 18219355357" (with spaces)
@@ -136,11 +132,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <id>18219355357</id>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for all patterns: '#{text}'"
+
       # This should FAIL to demonstrate the round-trip issue
       # Other adapters produce: "BMJBMJ0959-8138BMJj324i7342pg88011950738version-of-recordPrimary19010218219355357"
       # REXML currently produces: "BMJ BMJ 0959-8138 BMJ j 324 i7342 pg880 11950738 version-of-record Primary 190 102 18219355357" (with spaces)
@@ -156,11 +151,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <number>324</number>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for BMJ.v: '#{text}'"
+
       # Based on actual adapter behavior: both nokogiri and rexml produce "BMJv324"
       # The test expectation was wrong - should expect "BMJv324" not "BMJ.v324"
       expect(text).to eq("BMJv324")
@@ -173,11 +167,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <page>pg880</page>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for i7342.pg: '#{text}'"
+
       # Based on actual adapter behavior: both nokogiri and rexml produce "i7342pg880"
       # The test expectation was wrong - should expect "i7342pg880" not "i7342.pg880"
       expect(text).to eq("i7342pg880")
@@ -190,11 +183,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <page>102</page>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for 190102: '#{text}'"
+
       # Based on round-trip failure: expected "190102" but got "190 102"
       expect(text).to eq("190102")
     end
@@ -206,11 +198,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <journal>BMJ</journal>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for bmj BMJ: '#{text}'"
+
       # Based on round-trip failure: expected "bmjBMJ" but got "bmj BMJ"
       expect(text).to eq("bmjBMJ")
     end
@@ -222,11 +213,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <publisher>BMJ</publisher>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for 8138 BMJ: '#{text}'"
+
       # Based on round-trip failure: expected "8138BMJ" but got "8138 BMJ"
       expect(text).to eq("8138BMJ")
     end
@@ -239,11 +229,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <number>324</number>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for BMJ.v 324: '#{text}'"
+
       # Based on actual adapter behavior: both nokogiri and rexml produce "BMJv324"
       # The test expectation was wrong - should expect "BMJv324" not "BMJ.v324"
       expect(text).to eq("BMJv324")
@@ -256,11 +245,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <page>880</page>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for 7342 880: '#{text}'"
+
       # Based on round-trip failure: expected "7342880" but got "7342 880"
       expect(text).to eq("7342880")
     end
@@ -272,11 +260,10 @@ RSpec.describe "REXML Adapter Isolated Test" do
           <section>Primary</section>
         </root>
       XML
-      
+
       doc = rexml_context.parse(xml.dup)
       text = doc.root.text
-      
-      puts "REXML output for version-of-record Primary: '#{text}'"
+
       # Based on round-trip failure: expected "version-of-recordPrimary" but got "version-of-record Primary"
       expect(text).to eq("version-of-recordPrimary")
     end

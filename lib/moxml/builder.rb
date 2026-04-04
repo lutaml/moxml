@@ -60,6 +60,10 @@ module Moxml
       @current.add_child(@document.create_comment(content))
     end
 
+    def entity_reference(name)
+      @current.add_child(@document.create_entity_reference(name))
+    end
+
     def processing_instruction(target, content)
       @current.add_child(
         @document.create_processing_instruction(target, content),

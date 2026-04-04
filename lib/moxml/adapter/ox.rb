@@ -17,7 +17,7 @@ module Moxml
           replace_children(doc, [element])
         end
 
-        def parse(xml, _options = {})
+        def parse(xml, _options = {}, _context = nil)
           native_doc = begin
             result = ::Ox.parse(xml)
 
@@ -36,7 +36,8 @@ module Moxml
             )
           end
 
-          DocumentBuilder.new(Context.new(:ox)).build(native_doc)
+          ctx = _context || Context.new(:ox)
+          DocumentBuilder.new(ctx).build(native_doc)
         end
 
         # SAX parsing implementation for Ox
@@ -452,7 +453,7 @@ module Moxml
         def inner_text(node)
           return "" unless node.respond_to?(:nodes)
 
-          node.nodes.select { _1.is_a?(String) }.join
+          node.nodes.grep(String).join
         end
 
         def set_text_content(node, content)

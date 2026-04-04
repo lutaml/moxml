@@ -179,9 +179,7 @@ if __FILE__ == $0
 
   # Count categories
   all_categories = articles.flat_map(&:categories)
-  category_counts = all_categories.each_with_object(Hash.new(0)) do |cat, counts|
-    counts[cat] += 1
-  end
+  category_counts = all_categories.tally
   puts "Categories: #{category_counts.map do |cat, count|
     "#{cat} (#{count})"
   end.join(', ')}"

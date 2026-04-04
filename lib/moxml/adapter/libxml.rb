@@ -48,7 +48,7 @@ module Moxml
           doc.root = element
         end
 
-        def parse(xml, options = {})
+        def parse(xml, options = {}, _context = nil)
           # LibXML doesn't preserve DOCTYPE during parsing, so we need to extract it manually
           xml_string = if xml.is_a?(String)
                          xml
@@ -94,7 +94,8 @@ module Moxml
             native_doc.instance_variable_set(:@moxml_doctype, doctype_wrapper)
           end
 
-          DocumentBuilder.new(Context.new(:libxml)).build(native_doc)
+          ctx = _context || Context.new(:libxml)
+          DocumentBuilder.new(ctx).build(native_doc)
         end
 
         # SAX parsing implementation for LibXML
