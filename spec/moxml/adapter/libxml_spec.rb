@@ -3,11 +3,7 @@
 begin
   require "libxml"
 rescue LoadError
-  RSpec.describe Moxml::Adapter::Libxml do
-    it "skips when libxml gem is not available" do
-      skip "libxml gem not available"
-    end
-  end
+  # LibXML gem not available - skip all specs in this file
   return
 end
 
