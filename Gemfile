@@ -6,12 +6,13 @@ source "https://rubygems.org"
 gemspec
 
 # Provides iteration per second benchmarking for Ruby
+gem "benchmark"
 gem "benchmark-ips"
 gem "get_process_mem"
 gem "libxml-ruby", "~> 5.0"
 gem "nokogiri", "~> 1.18"
 gem "oga", "~> 3.4"
-gem "openssl"
+gem "openssl", "~> 3.0"
 gem "ox", "~> 2.14"
 gem "rake"
 gem "rexml"
