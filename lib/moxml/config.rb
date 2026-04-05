@@ -75,8 +75,10 @@ module Moxml
 
     def entity_load_mode=(mode)
       unless VALID_ENTITY_LOAD_MODES.include?(mode)
-        raise ArgumentError, "Invalid entity_load_mode: #{mode}. Must be one of: #{VALID_ENTITY_LOAD_MODES.join(', ')}"
+        raise ArgumentError,
+              "Invalid entity_load_mode: #{mode}. Must be one of: #{VALID_ENTITY_LOAD_MODES.join(', ')}"
       end
+
       @entity_load_mode = mode
     end
 

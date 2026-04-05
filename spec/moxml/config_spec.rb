@@ -27,7 +27,9 @@ RSpec.describe Moxml::Config do
     end
 
     it "raises error for invalid mode" do
-      expect { config.entity_load_mode = :invalid }.to raise_error(ArgumentError)
+      expect do
+        config.entity_load_mode = :invalid
+      end.to raise_error(ArgumentError)
     end
   end
 

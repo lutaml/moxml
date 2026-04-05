@@ -38,9 +38,9 @@ RSpec.describe Moxml::EntityRegistry do
 
     it "raises error if entity data unavailable" do
       allow(described_class).to receive(:entity_data).and_return(nil)
-      expect {
+      expect do
         described_class.new(mode: :required)
-      }.to raise_error(Moxml::EntityRegistry::EntityDataError)
+      end.to raise_error(Moxml::EntityRegistry::EntityDataError)
     end
   end
 
@@ -61,16 +61,17 @@ RSpec.describe Moxml::EntityRegistry do
 
     it "does not raise when entity data unavailable" do
       allow(described_class).to receive(:entity_data).and_return(nil)
-      expect {
+      expect do
         described_class.new(mode: :optional)
-      }.not_to raise_error
+      end.not_to raise_error
     end
   end
 
   describe "#initialize with :custom mode" do
     it "loads custom entities from provider" do
       custom_provider = -> { { "custom" => 12345, "special" => 67890 } }
-      registry = described_class.new(mode: :custom, entity_provider: custom_provider)
+      registry = described_class.new(mode: :custom,
+                                     entity_provider: custom_provider)
       expect(registry.by_name.keys).to contain_exactly("custom", "special")
       expect(registry.declared?("custom")).to be true
       expect(registry.codepoint_for_name("custom")).to eq(12345)
@@ -82,7 +83,7 @@ RSpec.describe Moxml::EntityRegistry do
     end
 
     it "works with provider returning nil" do
-      registry = described_class.new(mode: :custom, entity_provider: -> { nil })
+      registry = described_class.new(mode: :custom, entity_provider: -> {})
       expect(registry.by_name.keys).to be_empty
     end
   end
@@ -144,7 +145,9 @@ RSpec.describe Moxml::EntityRegistry do
     it "allows multiple names for same codepoint" do
       registry = described_class.new(mode: :disabled)
       registry.register({ "entity_a" => 12345, "entity_b" => 12345 })
-      expect(registry.names_for_codepoint(12345)).to contain_exactly("entity_a", "entity_b")
+      expect(registry.names_for_codepoint(12345)).to contain_exactly(
+        "entity_a", "entity_b"
+      )
     end
   end
 

@@ -85,7 +85,10 @@ module Moxml
           end
         end
 
-        raise EntityDataError, "Entity data not found. Set MOXML_ENTITY_DEFINITIONS_PATH or ensure data/#{ENTITY_DATA_FILE} exists." unless data
+        unless data
+          raise EntityDataError,
+                "Entity data not found. Set MOXML_ENTITY_DEFINITIONS_PATH or ensure data/#{ENTITY_DATA_FILE} exists."
+        end
 
         JSON.parse(data)["characters"]
       rescue StandardError => e
@@ -208,7 +211,10 @@ module Moxml
     def load_from_entity_data
       data = self.class.entity_data
 
-      raise EntityDataError, "Entity data is not available. Set entity_load_mode to :optional or :disabled to skip entity loading." if data.nil?
+      if data.nil?
+        raise EntityDataError,
+              "Entity data is not available. Set entity_load_mode to :optional or :disabled to skip entity loading."
+      end
 
       data.each do |name, char|
         codepoint = parse_codepoint(char)

@@ -920,6 +920,107 @@ limitations. Use these adapters when you need full XPath and namespace support.
 
 
 
+== Round-trip XML Testing
+
+Moxml includes comprehensive round-trip testing to verify that XML documents remain
+semantically equivalent when parsed and serialized across different adapters.
+
+=== Purpose
+
+Round-trip testing ensures:
+
+* **Cross-adapter compatibility** - XML parsed with one adapter (e.g., Nokogiri) can be
+  serialized and re-parsed with another adapter (e.g., Oga) while preserving content
+* **Structural fidelity** - Element names, attributes, and document structure are maintained
+* **Content preservation** - Text content and entity references survive multiple parse/serialize cycles
+* **Double round-trip verification** - Source → Target → Source sequences produce semantically
+  equivalent output
+
+=== Test Fixtures
+
+Round-trip tests use real-world XML documents organized into collections:
+
+**rfcxml** - IETF RFC documents in XML format. These provide complex, standards-compliant
+XML with mixed content, namespaces, and attributes. The collection includes:
+
+* Large documents (500KB-2.4MB) for stress testing
+* Rich metadata and cross-references
+* Various XML schema patterns
+
+**metanorma** - Metanorma document processing XML. These test:
+
+* Document structure preservation
+* Nested elements and complex hierarchies
+* Standard XML vocabularies
+
+**niso-jats** - NISO Journal Article Tag Suite XML. These provide:
+
+* Scholarly publishing XML schemas
+* Rich bibliographic metadata
+* Mixed content models
+
+=== Running Round-trip Tests
+
+[source,bash]
+----
+# Run round-trip tests (default: 10 fixtures)
+bundle exec rake spec:roundtrip
+
+# Run all fixtures (may be slow)
+MOXML_ROUNDTRIP_MAX_FIXTURES=all bundle exec rake spec:roundtrip
+
+# Run with a specific number of fixtures
+MOXML_ROUNDTRIP_MAX_FIXTURES=50 bundle exec rake spec:roundtrip
+----
+
+The default fixture limit (10) ensures CI runs complete quickly while still
+providing meaningful coverage. The full suite (920+ fixtures) can be used
+for comprehensive local validation.
+
+=== Test Mechanics
+
+For each fixture, tests run across all adapter pairs (4 adapters = 12 combinations):
+
+1. Parse with source adapter
+2. Serialize to XML string
+3. Parse serialized output with target adapter
+4. Compare semantic equivalence (element names, attributes, text content)
+
+A "double round-trip" test additionally verifies: Source → Target → Source → Target
+produces consistent results.
+
+=== Why Semantic Equivalence?
+
+While a pure round-trip test with raw XML comparison would be ideal, different XML adapters
+have fundamentally different philosophies for handling:
+
+* **Element ordering** - Some preserve document order, others sort alphabetically
+* **Whitespace handling** - Some normalize spaces, others preserve exactly
+* **Attribute representation** - Different data structures for the same attributes
+* **Text extraction** - Varying approaches to concatenating text content
+
+Instead of raw comparison, Moxml implements semantic equivalence testing that focuses on
+meaningful XML structure and content:
+
+[source,ruby]
+----
+# Element name must match
+expect(target_element.name).to eq(source_element.name)
+
+# Attributes must be semantically equivalent
+expect(target_attributes).to eq(source_attributes)
+
+# Text content must be preserved (whitespace-normalized)
+expect(normalized_text(target)).to eq(normalized_text(source))
+
+# Document structure (element count) must match
+expect(doc.xpath("//*").size).to eq(original.xpath("//*").size)
+----
+
+This approach tolerates adapter-specific serialization differences while ensuring
+the actual XML content remains intact.
+
+
 == Development and testing
 
 For complete information on development setup, testing strategies, benchmarking,
