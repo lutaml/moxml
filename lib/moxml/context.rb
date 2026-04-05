@@ -80,7 +80,7 @@ module Moxml
     def build_entity_registry
       registry = EntityRegistry.new(
         mode: config.entity_load_mode,
-        entity_provider: config.entity_provider
+        entity_provider: config.entity_provider,
       )
       config.preload_entity_sets.each do |set_name|
         case set_name
