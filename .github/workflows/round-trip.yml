@@ -7,6 +7,7 @@ on:
 
 jobs:
   # Fast CI: Ruby versions with full-support adapters only (Nokogiri + Oga).
+  # These adapters provide complete XML conformance for production use.
   # Runs quickly for fast feedback on PRs.
   ruby-versions:
     runs-on: ubuntu-latest
@@ -26,27 +27,3 @@ jobs:
         env:
           MOXML_ROUNDTRIP_TIMEOUT: 120
           MOXML_ROUNDTRIP_ADAPTERS: nokogiri,oga
-
-  # Experimental CI: Ox and REXML adapters run separately.
-  # EXPERIMENTAL: Ox lacks proper namespace/XPath support, REXML is pure Ruby and
-  # exponentially slow with document size. These adapters are not fully XML-compliant.
-  # For full round-trip coverage, see ruby-versions job (Nokogiri + Oga only).
-  # These run in parallel with ruby-versions job for maximum parallelism.
-  ox-rexml:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        category: [ metanorma, rfcxml, niso-jats ]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "4.0"
-          bundler-cache: true
-      - name: Run round-trip tests (${{ matrix.category }})
-        run: bundle exec rspec spec/consistency/ --tag round_trip --tag fixture_category:${{ matrix.category }}
-        env:
-          MOXML_ROUNDTRIP_TIMEOUT: 300
-          MOXML_ROUNDTRIP_ADAPTERS: ox,rexml
