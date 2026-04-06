@@ -2,6 +2,8 @@
 
 module Moxml
   class Builder
+    attr_reader :document
+
     def initialize(context)
       @context = context
       @current = @document = context.create_document

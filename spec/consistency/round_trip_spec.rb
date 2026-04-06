@@ -349,12 +349,20 @@ KNOWN_ELEMENT_ORDERING_ISSUES = Set.new([
 ])
 
 RSpec.describe "Round-trip XML Testing", :round_trip do
-  # Explicit adapter names for clarity and maintainability
-  let(:adapter_names) { %i[nokogiri oga rexml ox] }
+  # Explicit adapter names for clarity and maintainability.
+  # Can be limited via MOXML_ROUNDTRIP_ADAPTERS env var (comma-separated).
+  # Default: all adapters. Use "nokogiri,oga" for fast CI checks.
+  ALL_ADAPTERS = %i[nokogiri oga rexml ox].freeze
 
   def self.adapter_names
-    %i[nokogiri oga rexml ox]
+    @adapter_names ||= if ENV["MOXML_ROUNDTRIP_ADAPTERS"]
+                        ENV["MOXML_ROUNDTRIP_ADAPTERS"].split(",").map(&:strip).map(&:to_sym)
+                      else
+                        ALL_ADAPTERS
+                      end
   end
+
+  let(:adapter_names) { self.class.adapter_names }
 
   def self.fixture_files
     return @fixture_files if defined?(@fixture_files)

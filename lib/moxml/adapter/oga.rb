@@ -75,7 +75,8 @@ module Moxml
 
         def create_native_doctype(name, external_id, system_id)
           ::Oga::XML::Doctype.new(
-            name: name, public_id: external_id, system_id: system_id, type: "PUBLIC",
+            name: name, public_id: external_id, system_id: system_id,
+            type: external_id ? "PUBLIC" : "SYSTEM"
           )
         end
 
