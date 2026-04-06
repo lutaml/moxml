@@ -31,6 +31,7 @@ jobs:
         env:
           MOXML_ROUNDTRIP_TIMEOUT: 300
           MOXML_ROUNDTRIP_ADAPTERS: nokogiri,rexml
+          MOXML_ROUNDTRIP_REXML_MAX_SIZE: 50000
 
   nokogiri-ox:
     runs-on: ubuntu-latest
