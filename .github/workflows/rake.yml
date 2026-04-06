@@ -1,23 +1,26 @@
 name: rake
 
-permissions:
-  contents: write
-
 on:
   push:
     branches: [ main ]
     tags: [ v* ]
   pull_request:
 
+# NOTE: Consistency tests (round-trip) are handled by round-trip.yml and
+# round-trip-slow.yml workflows. This workflow runs all other tests.
+
 jobs:
   rake:
-    uses: metanorma/ci/.github/workflows/generic-rake.yml@main
-    with:
-      before-setup-ruby: |
-        vcpkg install libxml2:x64-windows 2>&1 || true
-        vcpkg integrate install 2>&1 || true
-        mkdir -p .bundle 2>&1 || true
-        echo "---" > .bundle/config 2>&1 || true
-        echo 'BUNDLE_BUILD__LIBXML___RUBY: "--with-xml2-dir=C:/vcpkg/installed/x64-windows --with-xml2-include=C:/vcpkg/installed/x64-windows/include/libxml2 --with-xml2-lib=C:/vcpkg/installed/x64-windows/lib"' >> .bundle/config 2>&1 || true
-    secrets:
-      pat_token: ${{ secrets.GITHUB_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - name: Install dependencies
+        run: bundle install
+      - name: Run fast tests (unit + adapter + integration)
+        run: bundle exec rake spec:fast
+      - name: Run rubocop
+        run: bundle exec rubocop
