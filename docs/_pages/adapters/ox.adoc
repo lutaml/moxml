@@ -48,7 +48,22 @@ doc.xpath("//book").find { |book| book["id"] == "123" }
 IMPORTANT: For complete XPath 1.0 specification with zero limitations today, use
 Nokogiri or Oga adapters.
 
+==== Element Ordering in Round-Trip Tests
 
+The Ox adapter produces elements in a different order than other adapters for certain
+fixtures with complex nested structures. In round-trip tests, this causes the
+`elements_with_attributes` array length comparison to fail, even though the semantic
+equivalence check (double round-trip) passes.
+
+Known affected fixtures:
+
+* `niso-jats/element_citation.xml`
+* `niso-jats/pnas_sample.xml`
+* `metanorma/collection1nested.xml`
+
+This is a known limitation tracked in the round-trip test suite via
+`KNOWN_ELEMENT_ORDERING_ISSUES`. The `elements_with_attributes` comparison is
+automatically skipped for these Ox adapter pairs.
 
 See also:
 

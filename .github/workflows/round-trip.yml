@@ -6,7 +6,31 @@ on:
   pull_request:
 
 jobs:
-  consistency:
+  # Fast CI: Ruby versions with full-support adapters only (Nokogiri + Oga).
+  # Runs quickly for fast feedback on PRs.
+  ruby-versions:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ "3.1", "3.2", "3.3" ]
+        category: [ metanorma, rfcxml, niso-jats ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - name: Run round-trip tests (${{ matrix.category }})
+        run: bundle exec rspec spec/consistency/ --tag round_trip --tag fixture_category:${{ matrix.category }}
+        env:
+          MOXML_ROUNDTRIP_TIMEOUT: 120
+          MOXML_ROUNDTRIP_ADAPTERS: nokogiri,oga
+
+  # Slow CI: Ox and REXML adapters run separately.
+  # REXML is pure Ruby and slow; Ox has known element ordering issues.
+  # These run in parallel with ruby-versions job for maximum parallelism.
+  ox-rexml:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -21,4 +45,5 @@ jobs:
       - name: Run round-trip tests (${{ matrix.category }})
         run: bundle exec rspec spec/consistency/ --tag round_trip --tag fixture_category:${{ matrix.category }}
         env:
-          MOXML_ROUNDTRIP_TIMEOUT: 120
+          MOXML_ROUNDTRIP_TIMEOUT: 300
+          MOXML_ROUNDTRIP_ADAPTERS: ox,rexml

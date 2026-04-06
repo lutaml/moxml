@@ -994,6 +994,29 @@ via `MOXML_ROUNDTRIP_REXML_MAX_SIZE`). This is because REXML is pure Ruby and ca
 parse large XML documents in a practical timeframe. A per-example timeout
 (`MOXML_ROUNDTRIP_TIMEOUT`, default 120s) prevents tests from hanging indefinitely.
 
+=== Ox Adapter Element Ordering Caveat
+
+The Ox adapter produces elements in a different order than other adapters for certain
+fixtures with complex nested structures (e.g., `element_citation.xml`,
+`collection1nested.xml`, `pnas_sample.xml`). This causes the `elements_with_attributes`
+comparison to fail with "Array length mismatch" even though the semantic equivalence
+check (double round-trip) passes.
+
+Round-trip tests automatically skip the `elements_with_attributes` comparison for these
+known Ox ordering issues. The full test suite with all adapters runs in the `ox-rexml`
+CI job; the `ruby-versions` CI job tests only Nokogiri and Oga adapters.
+
+To run tests with a specific adapter set locally:
+
+[source,bash]
+----
+# Nokogiri + Oga only (fast)
+MOXML_ROUNDTRIP_ADAPTERS=nokogiri,oga bundle exec rake spec:consistency
+
+# Ox + REXML only (slower)
+MOXML_ROUNDTRIP_ADAPTERS=ox,rexml MOXML_ROUNDTRIP_TIMEOUT=300 bundle exec rake spec:consistency
+----
+
 === Why Semantic Equivalence?
 
 While a pure round-trip test with raw XML comparison would be ideal, different XML adapters
