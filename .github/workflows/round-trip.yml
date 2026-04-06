@@ -1,0 +1,24 @@
+name: round-trip
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  consistency:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        category: [ metanorma, rfcxml, niso-jats ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - name: Run round-trip tests (${{ matrix.category }})
+        run: bundle exec rspec spec/consistency/ --tag round_trip --tag fixture_category:${{ matrix.category }}
+        env:
+          MOXML_ROUNDTRIP_TIMEOUT: 120

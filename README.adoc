@@ -963,19 +963,19 @@ XML with mixed content, namespaces, and attributes. The collection includes:
 
 [source,bash]
 ----
-# Run round-trip tests (default: 10 fixtures)
-bundle exec rake spec:roundtrip
+# Run all round-trip tests
+bundle exec rake spec:consistency
 
-# Run all fixtures (may be slow)
-MOXML_ROUNDTRIP_MAX_FIXTURES=all bundle exec rake spec:roundtrip
+# Exclude REXML for larger fixtures (faster, REXML is pure Ruby)
+MOXML_ROUNDTRIP_REXML_MAX_SIZE=0 bundle exec rake spec:consistency
 
-# Run with a specific number of fixtures
-MOXML_ROUNDTRIP_MAX_FIXTURES=50 bundle exec rake spec:roundtrip
+# Adjust the per-example timeout (default: 120 seconds)
+MOXML_ROUNDTRIP_TIMEOUT=300 bundle exec rake spec:consistency
 ----
 
-The default fixture limit (10) ensures CI runs complete quickly while still
-providing meaningful coverage. The full suite (920+ fixtures) can be used
-for comprehensive local validation.
+REXML is a pure Ruby XML parser and becomes very slow on large documents (500KB+).
+By default, REXML adapter pairs are skipped for fixtures exceeding 500KB. All other
+adapters (Nokogiri, Oga, Ox) are tested against every fixture.
 
 === Test Mechanics
 
@@ -988,6 +988,11 @@ For each fixture, tests run across all adapter pairs (4 adapters = 12 combinatio
 
 A "double round-trip" test additionally verifies: Source → Target → Source → Target
 produces consistent results.
+
+NOTE: REXML is excluded from adapter pairs for fixtures larger than 500KB (configurable
+via `MOXML_ROUNDTRIP_REXML_MAX_SIZE`). This is because REXML is pure Ruby and cannot
+parse large XML documents in a practical timeframe. A per-example timeout
+(`MOXML_ROUNDTRIP_TIMEOUT`, default 120s) prevents tests from hanging indefinitely.
 
 === Why Semantic Equivalence?
 
