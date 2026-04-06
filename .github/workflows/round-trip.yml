@@ -9,9 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  # Fast CI: Ruby versions with full-support adapters only (Nokogiri + Oga).
+  # Fast: Ruby versions with full-support adapters (Nokogiri + Oga).
   # These adapters provide complete XML conformance for production use.
-  # Runs quickly for fast feedback on PRs.
   ruby-versions:
     runs-on: ubuntu-latest
     strategy:
@@ -30,3 +29,46 @@ jobs:
         env:
           MOXML_ROUNDTRIP_TIMEOUT: 120
           MOXML_ROUNDTRIP_ADAPTERS: nokogiri,oga
+
+  # Experimental: Ox adapter with Nokogiri (Ox lacks full XPath/namespace support).
+  nokogiri-ox:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ "3.3", "4.0" ]
+        category: [ metanorma, rfcxml, niso-jats ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - name: Run Nokogiri × Ox round-trip tests (${{ matrix.category }})
+        run: bundle exec rspec spec/consistency/ --tag round_trip --tag fixture_category:${{ matrix.category }}
+        env:
+          MOXML_ROUNDTRIP_TIMEOUT: 300
+          MOXML_ROUNDTRIP_ADAPTERS: nokogiri,ox
+
+  # Experimental: REXML adapter with Nokogiri (REXML is pure Ruby, exponentially slow).
+  # Skips fixtures over 50KB due to O(n²) complexity.
+  nokogiri-rexml:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: [ "3.3", "4.0" ]
+        category: [ metanorma, rfcxml, niso-jats ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - name: Run Nokogiri × REXML round-trip tests (${{ matrix.category }})
+        run: bundle exec rspec spec/consistency/ --tag round_trip --tag fixture_category:${{ matrix.category }}
+        env:
+          MOXML_ROUNDTRIP_TIMEOUT: 300
+          MOXML_ROUNDTRIP_ADAPTERS: nokogiri,rexml
+          MOXML_ROUNDTRIP_REXML_MAX_SIZE: 50000
