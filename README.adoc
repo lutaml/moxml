@@ -1003,8 +1003,16 @@ comparison to fail with "Array length mismatch" even though the semantic equival
 check (double round-trip) passes.
 
 Round-trip tests automatically skip the `elements_with_attributes` comparison for these
-known Ox ordering issues. The full test suite with all adapters runs in the `ox-rexml`
-CI job; the `ruby-versions` CI job tests only Nokogiri and Oga adapters.
+known Ox ordering issues. The `ruby-versions` CI job tests only Nokogiri and Oga adapters;
+the `ox-rexml` CI job tests Ox and REXML but is marked as **experimental** since these
+adapters lack full XML feature support:
+
+* **Ox**: Lacks proper namespace support, XPath with predicates, and uses a custom
+  `locate()` method instead of standard XPath
+* **REXML**: Pure Ruby, exponential time complexity with document size, impractical for
+  documents over ~500KB
+
+For production use, prefer Nokogiri or Oga which provide complete XML conformance.
 
 To run tests with a specific adapter set locally:
 

@@ -50,6 +50,21 @@ Nokogiri or Oga adapters.
 
 ==== Element Ordering in Round-Trip Tests
 
+[IMPORTANT]
+.Round-trip tests for Ox are experimental
+--
+Ox round-trip tests (`ox-rexml` CI job) are **experimental** because Ox lacks full XML
+conformance:
+
+* **Namespace support**: Ox does not properly handle namespaced elements in XPath queries
+* **XPath limitations**: Uses `locate()` instead of standard XPath; no attribute value
+  predicates, no logical operators, no position predicates
+* **Element ordering**: Ox produces elements in a different order than Nokogiri/Oga for
+  certain complex fixtures
+
+For production use with complex XML, prefer Nokogiri or Oga adapters.
+--
+
 The Ox adapter produces elements in a different order than other adapters for certain
 fixtures with complex nested structures. In round-trip tests, this causes the
 `elements_with_attributes` array length comparison to fail, even though the semantic

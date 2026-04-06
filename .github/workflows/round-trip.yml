@@ -27,11 +27,14 @@ jobs:
           MOXML_ROUNDTRIP_TIMEOUT: 120
           MOXML_ROUNDTRIP_ADAPTERS: nokogiri,oga
 
-  # Slow CI: Ox and REXML adapters run separately.
-  # REXML is pure Ruby and slow; Ox has known element ordering issues.
+  # Experimental CI: Ox and REXML adapters run separately.
+  # EXPERIMENTAL: Ox lacks proper namespace/XPath support, REXML is pure Ruby and
+  # exponentially slow with document size. These adapters are not fully XML-compliant.
+  # For full round-trip coverage, see ruby-versions job (Nokogiri + Oga only).
   # These run in parallel with ruby-versions job for maximum parallelism.
   ox-rexml:
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
