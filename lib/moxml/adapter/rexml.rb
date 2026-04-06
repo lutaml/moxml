@@ -37,7 +37,8 @@ module Moxml
 
         def extract_encoding_from_xml(xml)
           # Match XML declaration pattern: <?xml version="..." encoding="..."?>
-          match = xml.match(/<\?xml[^>]*encoding\s*=\s*["']([^"']+)["']/i)
+          # Use atomic group (?>) to prevent polynomial backtracking ReDoS
+          match = xml.match(/<\?xml(?>[^>]*)\bencoding\s*=\s*["']([^"']+)["']/i)
           match ? match[1] : "UTF-8"
         end
 
