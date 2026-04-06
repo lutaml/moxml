@@ -30,6 +30,17 @@ namespace :spec do
     t.pattern = "spec/consistency/**/*_spec.rb"
   end
 
+  namespace :consistency do
+    desc "Run round-trip tests for a specific fixture category (CATEGORIES=metanorma,rfcxml,niso-jats)"
+    task :by_category do
+      categories = ENV.fetch("CATEGORIES", "").split(",").map(&:strip)
+      abort "Usage: CATEGORIES=metanorma,rfcxml rake spec:consistency:by_category" if categories.empty?
+
+      include_filters = categories.map { |c| "--tag fixture_category:#{c}" }.join(" ")
+      sh "bundle exec rspec spec/consistency/ --tag round_trip #{include_filters}"
+    end
+  end
+
   desc "Run example tests"
   RSpec::Core::RakeTask.new(:examples) do |t|
     t.pattern = "spec/examples/**/*_spec.rb"
