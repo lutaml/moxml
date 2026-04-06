@@ -5,13 +5,14 @@ on:
     branches: [ main ]
   pull_request:
 
-# EXPERIMENTAL: These tests cover Ox and REXML adapters which lack full XML conformance.
-# Ox: Lacks proper namespace support and standard XPath (uses custom locate() method).
-# REXML: Pure Ruby, exponentially slow with document size, impractical for large files.
-# See round-trip.yml for the main CI which tests Nokogiri + Oga (fully XML-compliant).
+# EXPERIMENTAL: These tests cover REXML and Ox adapters with Nokogiri as the
+# reference adapter. Ox lacks proper namespace support and standard XPath (uses
+# custom locate() method). REXML is pure Ruby and exponentially slow with
+# document size. See round-trip.yml for the main CI which tests only
+# Nokogiri + Oga (fully XML-compliant).
 
 jobs:
-  ox:
+  nokogiri-rexml:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -24,13 +25,13 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-      - name: Run Ox round-trip tests (${{ matrix.category }})
+      - name: Run Nokogiri × REXML round-trip tests (${{ matrix.category }})
         run: bundle exec rspec spec/consistency/ --tag round_trip --tag fixture_category:${{ matrix.category }}
         env:
           MOXML_ROUNDTRIP_TIMEOUT: 300
-          MOXML_ROUNDTRIP_ADAPTERS: ox
+          MOXML_ROUNDTRIP_ADAPTERS: nokogiri,rexml
 
-  rexml:
+  nokogiri-ox:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -43,8 +44,8 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-      - name: Run REXML round-trip tests (${{ matrix.category }})
+      - name: Run Nokogiri × Ox round-trip tests (${{ matrix.category }})
         run: bundle exec rspec spec/consistency/ --tag round_trip --tag fixture_category:${{ matrix.category }}
         env:
           MOXML_ROUNDTRIP_TIMEOUT: 300
-          MOXML_ROUNDTRIP_ADAPTERS: rexml
+          MOXML_ROUNDTRIP_ADAPTERS: nokogiri,ox
