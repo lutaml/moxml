@@ -53,7 +53,7 @@ Nokogiri or Oga adapters.
 [IMPORTANT]
 .Round-trip tests for Ox are experimental
 --
-Ox round-trip tests (`ox-rexml` CI job) are **experimental** because Ox lacks full XML
+Ox round-trip tests (`nokogiri-ox` CI job) are **experimental** because Ox lacks full XML
 conformance:
 
 * **Namespace support**: Ox does not properly handle namespaced elements in XPath queries

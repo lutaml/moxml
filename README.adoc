@@ -1004,8 +1004,8 @@ check (double round-trip) passes.
 
 Round-trip tests automatically skip the `elements_with_attributes` comparison for these
 known Ox ordering issues. The `ruby-versions` CI job tests only Nokogiri and Oga adapters;
-the `ox-rexml` CI job tests Ox and REXML but is marked as **experimental** since these
-adapters lack full XML feature support:
+the `nokogiri-ox` and `nokogiri-rexml` CI jobs test Ox and REXML respectively but are
+marked as **experimental** since these adapters lack full XML feature support:
 
 * **Ox**: Lacks proper namespace support, XPath with predicates, and uses a custom
   `locate()` method instead of standard XPath
@@ -1018,11 +1018,14 @@ To run tests with a specific adapter set locally:
 
 [source,bash]
 ----
-# Nokogiri + Oga only (fast)
-MOXML_ROUNDTRIP_ADAPTERS=nokogiri,oga bundle exec rake spec:consistency
+# Nokogiri + Oga only (fast, full test suite)
+MOXML_ROUNDTRIP_ADAPTERS=nokogiri,oga bundle exec rspec spec/consistency/ --tag round_trip
 
-# Ox + REXML only (slower)
-MOXML_ROUNDTRIP_ADAPTERS=ox,rexml MOXML_ROUNDTRIP_TIMEOUT=300 bundle exec rake spec:consistency
+# Nokogiri × Ox only (experimental)
+MOXML_ROUNDTRIP_ADAPTERS=nokogiri,ox MOXML_ROUNDTRIP_TIMEOUT=300 bundle exec rspec spec/consistency/ --tag round_trip
+
+# Nokogiri × REXML only (experimental, small fixtures due to exponential complexity)
+MOXML_ROUNDTRIP_ADAPTERS=nokogiri,rexml MOXML_ROUNDTRIP_TIMEOUT=300 MOXML_ROUNDTRIP_REXML_MAX_SIZE=50000 bundle exec rspec spec/consistency/ --tag round_trip
 ----
 
 === Why Semantic Equivalence?
