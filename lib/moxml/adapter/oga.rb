@@ -494,8 +494,8 @@ module Moxml
         def preprocess_named_entities(xml)
           return xml unless xml.is_a?(String)
 
-          # Match valid named entity references: &name;
-          xml.gsub(/&([a-zA-Z][a-zA-Z0-9]*);/) do
+          # Match entity references with length constraint (min 2, max 31 chars per W3C registry)
+          xml.gsub(/&([a-zA-Z][a-zA-Z0-9]{1,30});/) do
             name = Regexp.last_match(1)
 
             # Keep standard XML entities as-is (they're implicitly declared per XML spec)
