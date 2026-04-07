@@ -18,8 +18,12 @@ module Moxml
         end
 
         def parse(xml, options = {}, _context = nil)
+          # Pre-process XML to convert named entities to numeric character references.
+          # Oga drops named entity references like &nbsp; but preserves &#160;
+          processed_xml = preprocess_named_entities(xml)
+
           native_doc = begin
-            ::Oga.parse_xml(xml, strict: options[:strict])
+            ::Oga.parse_xml(processed_xml, strict: options[:strict])
           rescue LL::ParserError => e
             raise Moxml::ParseError.new(
               e.message,
@@ -475,6 +479,36 @@ module Moxml
           else
             # Normal case - use XmlGenerator directly
             ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
+          end
+        end
+
+        private
+
+        # Pre-process XML to convert named entities to numeric character references.
+        # Oga drops named entity references like &nbsp; but preserves &#160;.
+        # By converting known named entities to numeric form, we ensure Oga handles
+        # them correctly.
+        #
+        # @param xml [String, #to_s] The XML string to process
+        # @return [String] The XML with known named entities converted to numeric form
+        def preprocess_named_entities(xml)
+          return xml unless xml.is_a?(String)
+
+          # Match valid named entity references: &name;
+          xml.gsub(/&([a-zA-Z][a-zA-Z0-9]*);/) do
+            name = Regexp.last_match(1)
+
+            # Keep standard XML entities as-is (they're implicitly declared per XML spec)
+            if %w[amp lt gt quot apos].include?(name)
+              next Regexp.last_match(0) # Return original to keep it
+            end
+
+            # Check if it's a known entity in the registry
+            codepoint = Moxml::EntityRegistry.default.codepoint_for_name(name)
+            if codepoint
+              "&##{codepoint};"
+            end
+            # Unknown entities: implicitly return nil to keep original
           end
         end
       end
