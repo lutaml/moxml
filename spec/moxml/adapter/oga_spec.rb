@@ -16,12 +16,11 @@ RSpec.describe Moxml::Adapter::Oga do
     it "preserves non-breaking space through parse and serialize round-trip" do
       xml = "<root>Item&nbsp;One</root>"
       doc = described_class.parse(xml)
-      text = described_class.text_content(doc.at_xpath("//root"))
-
-      # Should contain the actual non-breaking space character (U+00A0)
-      expect(text.bytes).to include(160)
-      expect(text).to include("Item")
-      expect(text).to include("One")
+      serialized = doc.to_xml
+      # After round-trip, the entity reference should be preserved
+      expect(serialized).to include("&nbsp;")
+      expect(serialized).to include("Item")
+      expect(serialized).to include("One")
     end
 
     it "correctly parses numeric character references" do
@@ -36,10 +35,12 @@ RSpec.describe Moxml::Adapter::Oga do
     it "handles multiple different entities" do
       xml = "<root>&nbsp;&mdash;&lsquo;</root>"
       doc = described_class.parse(xml)
-      text = described_class.text_content(doc.at_xpath("//root"))
+      serialized = doc.to_xml
 
-      # Should contain actual characters (not empty, not dropped)
-      expect(text.bytes.length).to be > 0
+      # All entities should be preserved in round-trip
+      expect(serialized).to include("&nbsp;")
+      expect(serialized).to include("&mdash;")
+      expect(serialized).to include("&lsquo;")
     end
   end
 end

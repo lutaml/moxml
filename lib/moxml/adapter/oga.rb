@@ -408,6 +408,21 @@ module Moxml
         end
 
         def serialize(node, options = {})
+          output = serialize_without_entity_processing(node, options)
+          # Post-process: convert entity markers back to entity references
+          output.gsub(/\x01([a-zA-Z][a-zA-Z0-9]{1,30});/, '&\1;')
+        end
+
+        # Marker character for entity preservation through Oga's parser.
+        # U+0001 is preserved literally by Oga through parse/serialize cycle.
+        ENTITY_MARKER = "\x01"
+
+        # Regular expression for entity marker post-processing
+        ENTITY_MARKER_REGEX = /\x01([a-zA-Z][a-zA-Z0-9]{1,30});/
+
+        private
+
+        def serialize_without_entity_processing(node, options = {})
           # Oga's XmlGenerator doesn't support options directly
           # We need to handle declaration options ourselves for Document nodes
           if node.is_a?(::Oga::XML::Document)
@@ -482,15 +497,13 @@ module Moxml
           end
         end
 
-        private
-
-        # Pre-process XML to convert named entities to numeric character references.
-        # Oga drops named entity references like &nbsp; but preserves &#160;.
-        # By converting known named entities to numeric form, we ensure Oga handles
-        # them correctly.
+        # Pre-process XML to convert named entities to marker format.
+        # Oga drops named entity references like &nbsp; but preserves control chars.
+        # By converting known named entities to marker form (\x01name;), we can
+        # reconstruct them during serialization.
         #
         # @param xml [String, #to_s] The XML string to process
-        # @return [String] The XML with known named entities converted to numeric form
+        # @return [String] The XML with known named entities converted to marker form
         def preprocess_named_entities(xml)
           return xml unless xml.is_a?(String)
 
@@ -506,7 +519,8 @@ module Moxml
             # Check if it's a known entity in the registry
             codepoint = Moxml::EntityRegistry.default.codepoint_for_name(name)
             if codepoint
-              "&##{codepoint};"
+              # Replace with marker for later reconstruction
+              "#{ENTITY_MARKER}#{name};"
             end
             # Unknown entities: implicitly return nil to keep original
           end
