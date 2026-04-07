@@ -494,8 +494,9 @@ module Moxml
         def preprocess_named_entities(xml)
           return xml unless xml.is_a?(String)
 
-          # Match valid named entity references: &name;
-          xml.gsub(/&([a-zA-Z][a-zA-Z0-9]*);/) do
+          registry = Moxml::EntityRegistry.default
+
+          xml.gsub(/&([a-zA-Z][a-zA-Z0-9]{1,30});/) do
             name = Regexp.last_match(1)
 
             # Keep standard XML entities as-is (they're implicitly declared per XML spec)
@@ -503,12 +504,11 @@ module Moxml
               next Regexp.last_match(0) # Return original to keep it
             end
 
-            # Check if it's a known entity in the registry
-            codepoint = Moxml::EntityRegistry.default.codepoint_for_name(name)
+            # Convert known entity to numeric reference for Oga
+            codepoint = registry.codepoint_for_name(name)
             if codepoint
               "&##{codepoint};"
             end
-            # Unknown entities: implicitly return nil to keep original
           end
         end
       end
