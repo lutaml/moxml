@@ -9,6 +9,9 @@ module Moxml
   module Adapter
     class Oga < Base
       class << self
+        # Standard XML entities handled natively by parsers
+        STANDARD_XML_ENTITIES = %w[amp lt gt quot apos].freeze
+
         def set_root(doc, element)
           # Clear existing root element if any - Oga's NodeSet needs special handling
           # We need to manually remove elements since NodeSet doesn't support clear or delete_if
@@ -66,7 +69,7 @@ module Moxml
         end
 
         def create_native_text(content)
-          ::Oga::XML::Text.new(text: content)
+          ::Oga::XML::Text.new(text: encode_entity_markers(content))
         end
 
         def create_native_cdata(content)
@@ -309,24 +312,25 @@ module Moxml
         end
 
         def text_content(node)
-          node.text
+          restore_entity_markers(node.text)
         end
 
         def inner_text(node)
-          if node.respond_to?(:inner_text)
-            node.inner_text
-          else
-            # Oga::XML::Text node for example
-            node.text
-          end
+          text = if node.respond_to?(:inner_text)
+                   node.inner_text
+                 else
+                   # Oga::XML::Text node for example
+                   node.text
+                 end
+          restore_entity_markers(text)
         end
 
         def set_text_content(node, content)
+          encoded = encode_entity_markers(content)
           if node.respond_to?(:inner_text=)
-            node.inner_text = content
+            node.inner_text = encoded
           else
-            # Oga::XML::Text node for example
-            node.text = content
+            node.text = encoded
           end
         end
 
@@ -410,17 +414,40 @@ module Moxml
         def serialize(node, options = {})
           output = serialize_without_entity_processing(node, options)
           # Post-process: convert entity markers back to entity references
-          output.gsub(/\x01([a-zA-Z][a-zA-Z0-9]{1,30});/, '&\1;')
+          output.gsub(ENTITY_MARKER_REGEX, '&\1;')
         end
+
+        # Shared entity name pattern (W3C: 2-31 chars, starts with alpha)
+        ENTITY_PATTERN = "([a-zA-Z][a-zA-Z0-9]{1,30})"
 
         # Marker character for entity preservation through Oga's parser.
         # U+0001 is preserved literally by Oga through parse/serialize cycle.
         ENTITY_MARKER = "\x01"
 
         # Regular expression for entity marker post-processing
-        ENTITY_MARKER_REGEX = /\x01([a-zA-Z][a-zA-Z0-9]{1,30});/
+        ENTITY_MARKER_REGEX = /#{ENTITY_MARKER}#{ENTITY_PATTERN};/
+
+        # Simple entity-only regex with no nested quantifiers
+        ENTITY_REF_REGEX = /&#{ENTITY_PATTERN};/
 
         private
+
+        # Convert &entity; back to \x01entity; for Oga text storage.
+        # Used when setting text content programmatically (not from parsing).
+        def encode_entity_markers(text)
+          return text unless text&.include?("&")
+
+          text.gsub(ENTITY_REF_REGEX) do |match|
+            STANDARD_XML_ENTITIES.include?(::Regexp.last_match(1)) ? match : "#{ENTITY_MARKER}#{::Regexp.last_match(1)};"
+          end
+        end
+
+        # Convert \x01entity; back to &entity; for text accessors.
+        def restore_entity_markers(text)
+          return text unless text
+
+          text.gsub(ENTITY_MARKER_REGEX, '&\1;')
+        end
 
         def serialize_without_entity_processing(node, options = {})
           # Oga's XmlGenerator doesn't support options directly
@@ -507,22 +534,17 @@ module Moxml
         def preprocess_named_entities(xml)
           return xml unless xml.is_a?(String)
 
-          # Match entity references with length constraint (min 2, max 31 chars per W3C registry)
-          xml.gsub(/&([a-zA-Z][a-zA-Z0-9]{1,30});/) do
+          xml.gsub(ENTITY_REF_REGEX) do
             name = Regexp.last_match(1)
 
-            # Keep standard XML entities as-is (they're implicitly declared per XML spec)
-            if %w[amp lt gt quot apos].include?(name)
-              next Regexp.last_match(0) # Return original to keep it
-            end
+            next Regexp.last_match(0) if STANDARD_XML_ENTITIES.include?(name)
 
-            # Check if it's a known entity in the registry
             codepoint = Moxml::EntityRegistry.default.codepoint_for_name(name)
             if codepoint
-              # Replace with marker for later reconstruction
               "#{ENTITY_MARKER}#{name};"
+            else
+              Regexp.last_match(0)
             end
-            # Unknown entities: implicitly return nil to keep original
           end
         end
       end
