@@ -21,8 +21,8 @@ module Moxml
         end
 
         def parse(xml, options = {}, _context = nil)
-          # Pre-process XML to convert named entities to numeric character references.
-          # Oga drops named entity references like &nbsp; but preserves &#160;
+          # Pre-process XML to convert named entities to marker form (\x01name;).
+          # Oga drops named entity references like &nbsp; during parsing.
           processed_xml = preprocess_named_entities(xml)
 
           native_doc = begin
@@ -233,7 +233,7 @@ module Moxml
           attr = ::Oga::XML::Attribute.new(
             name: name.to_s,
             namespace_name: namespace_name,
-            value: value.to_s,
+            value: encode_entity_markers(value.to_s),
           )
           element.add_attribute(attr)
         end
@@ -243,7 +243,7 @@ module Moxml
         end
 
         def get_attribute_value(element, name)
-          element[name.to_s]
+          restore_entity_markers(element[name.to_s])
         end
 
         def remove_attribute(element, name)
@@ -437,8 +437,17 @@ module Moxml
         def encode_entity_markers(text)
           return text unless text&.include?("&")
 
-          text.gsub(ENTITY_REF_REGEX) do |match|
-            STANDARD_XML_ENTITIES.include?(::Regexp.last_match(1)) ? match : "#{ENTITY_MARKER}#{::Regexp.last_match(1)};"
+          text.gsub(ENTITY_REF_REGEX) do
+            name = ::Regexp.last_match(1)
+
+            next ::Regexp.last_match(0) if STANDARD_XML_ENTITIES.include?(name)
+
+            codepoint = Moxml::EntityRegistry.default.codepoint_for_name(name)
+            if codepoint
+              "#{ENTITY_MARKER}#{name};"
+            else
+              ::Regexp.last_match(0)
+            end
           end
         end
 
