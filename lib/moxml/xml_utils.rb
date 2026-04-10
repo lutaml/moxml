@@ -58,12 +58,15 @@ module Moxml
     end
 
     def validate_uri(uri)
-      # XML namespace URIs are more permissive than RFC-compliant URIs.
-      # Accept any non-empty string or empty string (for xmlns="" blank namespace).
-      # Only reject strings with characters that are invalid in XML attribute values.
+      # Namespace names must be valid URI-references per RFC 3986
+      # (W3C Namespaces in XML, https://www.w3.org/TR/xml-names/).
+      # Empty strings are allowed for default namespace undeclaration (xmlns="").
       return if uri.empty?
-      return unless uri.match?(/[\x00-\x08\x0B\x0C\x0E-\x1F]/)
 
+      # Use split instead of parse to avoid scheme-specific validation
+      # that rejects valid opaque URIs like "mailto:bar".
+      URI::RFC3986_PARSER.split(uri)
+    rescue URI::InvalidURIError
       raise ValidationError, "Invalid URI: #{uri}"
     end
 

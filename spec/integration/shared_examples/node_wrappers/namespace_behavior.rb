@@ -24,10 +24,22 @@ RSpec.shared_examples "Moxml::Namespace" do
         expect(ns.uri).to eq("http://example.org")
       end
 
-      it "validates URI" do
+      it "validates URI per RFC 3986" do
         expect do
           element.add_namespace("xs", "invalid uri")
-        end.to raise_error(Moxml::NamespaceError, "Invalid URI: invalid uri")
+        end.to raise_error(Moxml::NamespaceError, /Invalid URI/)
+      end
+
+      it "accepts valid relative URI-references" do
+        expect do
+          element.add_namespace("xs", "my-custom-ns")
+        end.not_to raise_error
+      end
+
+      it "rejects empty URI for prefixed namespace declarations" do
+        expect do
+          element.add_namespace("xs", "")
+        end.to raise_error(Moxml::NamespaceError, /empty URI/)
       end
     end
 
