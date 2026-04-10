@@ -58,9 +58,11 @@ module Moxml
     end
 
     def validate_uri(uri)
-      if uri.empty? || uri.match?(/\A#{::URI::DEFAULT_PARSER.make_regexp}\z/)
-        return
-      end
+      # XML namespace URIs are more permissive than RFC-compliant URIs.
+      # Accept any non-empty string or empty string (for xmlns="" blank namespace).
+      # Only reject strings with characters that are invalid in XML attribute values.
+      return if uri.empty?
+      return unless uri.match?(/[\x00-\x08\x0B\x0C\x0E-\x1F]/)
 
       raise ValidationError, "Invalid URI: #{uri}"
     end
