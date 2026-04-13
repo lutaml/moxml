@@ -10,7 +10,7 @@ module Moxml
     # - :optional - Try to load, continue silently if unavailable
     # - :disabled - Don't load entities, use empty registry
     # - :custom - Use custom entity provider via entity_provider callback
-    VALID_ENTITY_LOAD_MODES = %i[required optional disabled custom].freeze
+    ENTITY_LOAD_MODES = %i[required optional disabled custom].freeze
 
     class << self
       attr_writer :default_adapter
@@ -24,7 +24,7 @@ module Moxml
       end
     end
 
-    VALID_NAMESPACE_URI_MODES = %i[strict lenient].freeze
+    NAMESPACE_URI_MODES = %i[strict lenient].freeze
 
     attr_reader :adapter_name
     attr_accessor :strict_parsing,
@@ -78,9 +78,9 @@ module Moxml
     end
 
     def entity_load_mode=(mode)
-      unless VALID_ENTITY_LOAD_MODES.include?(mode)
+      unless ENTITY_LOAD_MODES.include?(mode)
         raise ArgumentError,
-              "Invalid entity_load_mode: #{mode}. Must be one of: #{VALID_ENTITY_LOAD_MODES.join(', ')}"
+              "Invalid entity_load_mode: #{mode}. Must be one of: #{ENTITY_LOAD_MODES.join(', ')}"
       end
 
       @entity_load_mode = mode
@@ -88,9 +88,9 @@ module Moxml
 
     def namespace_uri_mode=(mode)
       mode = mode.to_sym
-      unless VALID_NAMESPACE_URI_MODES.include?(mode)
+      unless NAMESPACE_URI_MODES.include?(mode)
         raise ArgumentError,
-              "Invalid namespace_uri_mode: #{mode}. Must be one of: #{VALID_NAMESPACE_URI_MODES.join(', ')}"
+              "Invalid namespace_uri_mode: #{mode}. Must be one of: #{NAMESPACE_URI_MODES.join(', ')}"
       end
 
       @namespace_uri_mode = mode

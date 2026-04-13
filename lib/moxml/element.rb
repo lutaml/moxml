@@ -75,18 +75,8 @@ module Moxml
     end
 
     def add_namespace(prefix, uri)
-      # W3C Namespaces in XML: prefixed namespace declarations must not have empty URIs.
-      # Only xmlns="" (default namespace undeclaration) is allowed.
-      if prefix && uri.to_s.empty?
-        raise Moxml::NamespaceError.new(
-          "Prefixed namespace declaration cannot have an empty URI",
-          prefix: prefix,
-          uri: uri,
-          element: self,
-        )
-      end
-      validate_uri(uri, mode: context.config.namespace_uri_mode)
-      adapter.create_native_namespace(@native, prefix, uri)
+      adapter.create_namespace(@native, prefix, uri,
+                               namespace_uri_mode: context.config.namespace_uri_mode)
       self
     rescue ValidationError => e
       # Re-raise as NamespaceError, provide attributes for error context
