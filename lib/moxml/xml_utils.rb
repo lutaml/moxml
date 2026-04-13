@@ -57,12 +57,22 @@ module Moxml
             "Invalid XML processing instruction target: #{target}"
     end
 
-    def validate_uri(uri)
-      # Namespace names must be valid URI-references per RFC 3986
-      # (W3C Namespaces in XML, https://www.w3.org/TR/xml-names/).
+    def validate_uri(uri, mode: :strict)
       # Empty strings are allowed for default namespace undeclaration (xmlns="").
       return if uri.empty?
 
+      # In lenient mode, accept any string as a namespace URI.
+      # Only reject strings containing XML-invalid characters (control characters).
+      if mode == :lenient
+        if uri.match?(/[\x00-\x08\x0B\x0C\x0E-\x1F]/)
+          raise ValidationError, "Invalid URI: #{uri}"
+        end
+
+        return
+      end
+
+      # Namespace names must be valid URI-references per RFC 3986
+      # (W3C Namespaces in XML, https://www.w3.org/TR/xml-names/).
       # Use split instead of parse to avoid scheme-specific validation
       # that rejects valid opaque URIs like "mailto:bar".
       URI::RFC3986_PARSER.split(uri)

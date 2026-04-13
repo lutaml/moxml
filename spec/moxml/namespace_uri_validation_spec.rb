@@ -91,4 +91,50 @@ RSpec.describe "Namespace URI validation" do
       end.to raise_error(Moxml::NamespaceError, /empty URI/)
     end
   end
+
+  describe "lenient namespace_uri_mode" do
+    let(:context) do
+      Moxml.new do |config|
+        config.namespace_uri_mode = :lenient
+      end
+    end
+
+    context "with non-URI strings" do
+      [
+        "invalid uri",
+        "has space",
+        "two  spaces",
+        "my custom namespace",
+        "not-a-uri but still valid in lenient mode",
+      ].each do |uri|
+        it "accepts #{uri.inspect}" do
+          expect { element.add_namespace("ns", uri) }.not_to raise_error
+        end
+      end
+    end
+
+    context "with control characters" do
+      [
+        "invalid\x00uri",
+        "bad\x01char",
+        "control\x1Fchar",
+      ].each do |uri|
+        it "still rejects #{uri.inspect}" do
+          expect do
+            element.add_namespace("ns", uri)
+          end.to raise_error(Moxml::NamespaceError)
+        end
+      end
+    end
+
+    it "still rejects empty URI for prefixed namespace declarations" do
+      expect do
+        element.add_namespace("xs", "")
+      end.to raise_error(Moxml::NamespaceError, /empty URI/)
+    end
+
+    it "still accepts valid URIs" do
+      expect { element.add_namespace("ns", "http://example.com") }.not_to raise_error
+    end
+  end
 end

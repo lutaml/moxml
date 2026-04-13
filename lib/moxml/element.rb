@@ -85,7 +85,7 @@ module Moxml
           element: self,
         )
       end
-      validate_uri(uri)
+      validate_uri(uri, mode: context.config.namespace_uri_mode)
       adapter.create_native_namespace(@native, prefix, uri)
       self
     rescue ValidationError => e
@@ -112,7 +112,8 @@ module Moxml
       if ns_or_hash.is_a?(Hash)
         adapter.set_namespace(
           @native,
-          adapter.create_namespace(@native, *ns_or_hash.to_a.first),
+          adapter.create_namespace(@native, *ns_or_hash.to_a.first,
+                                   namespace_uri_mode: context.config.namespace_uri_mode),
         )
       else
         adapter.set_namespace(@native, ns_or_hash&.native)

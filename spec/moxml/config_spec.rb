@@ -16,6 +16,10 @@ RSpec.describe Moxml::Config do
     it "sets default entity_load_mode to :required" do
       expect(config.entity_load_mode).to eq(:required)
     end
+
+    it "sets default namespace_uri_mode to :strict" do
+      expect(config.namespace_uri_mode).to eq(:strict)
+    end
   end
 
   describe "#entity_load_mode=" do
@@ -59,6 +63,29 @@ RSpec.describe Moxml::Config do
     it "returns false when mode is not :required" do
       config.entity_load_mode = :disabled
       expect(config.load_external_entities).to be false
+    end
+  end
+
+  describe "#namespace_uri_mode=" do
+    it "accepts :strict" do
+      config.namespace_uri_mode = :strict
+      expect(config.namespace_uri_mode).to eq(:strict)
+    end
+
+    it "accepts :lenient" do
+      config.namespace_uri_mode = :lenient
+      expect(config.namespace_uri_mode).to eq(:lenient)
+    end
+
+    it "accepts string values" do
+      config.namespace_uri_mode = "lenient"
+      expect(config.namespace_uri_mode).to eq(:lenient)
+    end
+
+    it "raises error for invalid mode" do
+      expect do
+        config.namespace_uri_mode = :invalid
+      end.to raise_error(ArgumentError, /Invalid namespace_uri_mode/)
     end
   end
 

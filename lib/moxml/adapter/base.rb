@@ -98,7 +98,7 @@ module Moxml
           create_native_declaration(version, encoding, standalone)
         end
 
-        def create_namespace(element, prefix, uri)
+        def create_namespace(element, prefix, uri, namespace_uri_mode: :strict)
           if prefix && uri.to_s.empty?
             raise NamespaceError.new(
               "Prefixed namespace declaration cannot have an empty URI",
@@ -107,7 +107,7 @@ module Moxml
             )
           end
           validate_prefix(prefix) if prefix
-          validate_uri(uri)
+          validate_uri(uri, mode: namespace_uri_mode)
           create_native_namespace(element, prefix, uri)
         end
 
