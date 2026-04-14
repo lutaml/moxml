@@ -276,6 +276,27 @@ puts all_children.length  # => 2
 * link:../pages/adapters/rexml[REXML] - ⚠️ No namespace XPath
 * link:../pages/adapters/ox[Ox] - ⚠️ Basic only, no XPath
 
+=== Namespace URI validation
+
+By default, Moxml validates namespace URIs against
+https://www.rfc-editor.org/rfc/rfc3986[RFC 3986] (strict mode). To accept
+non-standard namespace identifiers, use lenient mode:
+
+[source,ruby]
+----
+# Strict mode (default) — validates URIs per RFC 3986
+context = Moxml.new do |config|
+  config.namespace_uri_mode = :strict
+end
+
+# Lenient mode — accepts any string as namespace URI
+context = Moxml.new do |config|
+  config.namespace_uri_mode = :lenient
+end
+----
+
+See link:../pages/configuration[Configuration] for details.
+
 === Troubleshooting
 
 **Namespace XPath not working:**

@@ -121,7 +121,7 @@ RSpec.shared_examples "README Examples" do
       expect do
         doc = context.parse("<root/>")
         root = doc.root
-        root.add_namespace("n", "wrong.url")
+        root.add_namespace("n", "invalid uri")
       end.to raise_error(Moxml::NamespaceError)
 
       expect do

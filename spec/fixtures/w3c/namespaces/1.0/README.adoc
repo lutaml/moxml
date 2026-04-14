@@ -1,0 +1,42 @@
+= W3C XML Namespaces 1.0 Test Suite
+
+== Source
+
+These test fixtures are extracted from the W3C XML Test Suite
+(https://www.w3.org/XML/Test/), specifically from the `xmlts20130923` archive:
+
+* Path in archive: `xmlconf/eduni/namespaces/1.0/`
+* Test catalog: `rmt-ns10.xml` (Richard Tobin's XML Namespaces 1.0 test suite,
+  14 Feb 2003)
+
+The test suite validates XML namespace processing conformance as defined in
+https://www.w3.org/TR/xml-names/[Namespaces in XML 1.0].
+
+== Test types
+
+The W3C test suite classifies tests into the following categories:
+
+valid:: Documents that must be accepted without errors.
+
+error:: Namespace constraint violations that processors MAY report. These are
+advisory -- a conforming processor is not required to reject them.
+
+not-wf:: Namespace well-formedness violations that must be rejected by a
+conforming processor.
+
+invalid:: Validity errors. Non-validating parsers (which Moxml wraps) should
+accept these documents.
+
+== License
+
+The W3C XML Test Suite is provided under the
+https://www.w3.org/Consortium/Legal/2008/04-testsuite-license[W3C Test Suite License].
+See link:LICENSE.md[] for the full license text.
+
+The test files in this directory SHALL NOT be modified.
+
+== See also
+
+* https://www.w3.org/XML/Test/[W3C XML Test Suite]
+* https://www.w3.org/TR/xml-names/[Namespaces in XML 1.0 (W3C Recommendation)]
+* https://www.rfc-editor.org/rfc/rfc3986[RFC 3986 -- Uniform Resource Identifier (URI): Generic Syntax]
