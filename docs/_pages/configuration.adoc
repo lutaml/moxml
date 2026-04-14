@@ -97,6 +97,49 @@ context.config.default_encoding = 'UTF-16'
 
 **Default:** `"UTF-8"`
 
+==== Namespace URI validation mode
+
+Control how strictly namespace URIs are validated:
+
+[source,ruby]
+----
+# Strict mode (default) — validates namespace URIs against RFC 3986
+context.config.namespace_uri_mode = :strict
+doc = context.parse(xml)  # Raises ValidationError for invalid URIs
+
+# Lenient mode — accepts any string as a namespace URI
+context.config.namespace_uri_mode = :lenient
+doc = context.parse(xml)  # Accepts non-standard namespace URIs
+----
+
+**Default:** `:strict`
+
+**Modes:**
+
+`:strict`:: Validates namespace URIs against the
+https://www.rfc-editor.org/rfc/rfc3986[RFC 3986] URI-reference specification, as
+required by https://www.w3.org/TR/xml-names/[Namespaces in XML]. Invalid URIs
+raise a `Moxml::ValidationError`. This is the recommended mode for
+standards-compliant XML processing.
+
+`:lenient`:: Accepts any string as a namespace URI, only rejecting strings
+containing XML-invalid control characters (`0x00`-`0x08`, `0x0B`, `0x0C`,
+`0x0E`-`0x1F`). Use this mode when processing XML documents that use
+non-standard namespace identifiers such as URNs or other non-URI strings.
+
+**Example:**
+
+[source,ruby]
+----
+# Process documents with non-standard namespace URIs
+context = Moxml.new do |config|
+  config.namespace_uri_mode = :lenient
+end
+
+xml = '<root xmlns:ex="not a valid URI but accepted in lenient mode"/>'
+doc = context.parse(xml)  # Parses successfully
+----
+
 === Context switching
 
 Use different configurations for different tasks:
