@@ -16,7 +16,7 @@ module Moxml
         def on_element(element, output)
           name = element.expanded_name
 
-          attrs = ""
+          attrs = []
           element.attributes.each do |attr|
             attrs << " "
             on_attribute(attr, attrs)
@@ -28,7 +28,7 @@ module Moxml
                           ">"
                         end
 
-          output << "<#{name}#{attrs}#{closing_tag}"
+          output << "<#{name}#{attrs.join}#{closing_tag}"
         end
 
         def on_namespace_definition(ns, output)

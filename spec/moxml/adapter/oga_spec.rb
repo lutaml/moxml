@@ -12,6 +12,22 @@ RSpec.describe Moxml::Adapter::Oga do
 
   it_behaves_like "xml adapter"
 
+  describe "serialization" do
+    it "does not duplicate XML declarations when declaration nodes repeat" do
+      context = Moxml::Context.new(:oga)
+      doc = context.create_document
+
+      doc.add_child(doc.create_declaration("1.0", "UTF-8"))
+      doc.add_child(doc.create_declaration("1.0", "UTF-8"))
+      doc.add_child(doc.create_element("root"))
+
+      serialized = doc.to_xml
+
+      expect(serialized.scan("<?xml").size).to eq(1)
+      expect(serialized).to include("<root></root>")
+    end
+  end
+
   describe "entity handling" do
     it "preserves non-breaking space through parse and serialize round-trip" do
       xml = "<root>Item&nbsp;One</root>"
