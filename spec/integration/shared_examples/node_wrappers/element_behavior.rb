@@ -129,6 +129,20 @@ RSpec.shared_examples "Moxml::Element" do
         expect(outer_p.inner_text).to eq("")
         expect(inner_p.text).to include("Some text inside paragraph")
       end
+
+      it "excludes comment content from inner_text" do
+        element.add_child(doc.create_comment("comment text"))
+        element.add_child("actual text")
+        expect(element.inner_text).to eq("actual text")
+      end
+
+      it "excludes comments mixed with text and elements from inner_text" do
+        element.add_child("before ")
+        element.add_child(doc.create_comment("a comment"))
+        element.add_child(doc.create_element("child"))
+        element.add_child("after")
+        expect(element.inner_text).to eq("before after")
+      end
     end
   end
 end

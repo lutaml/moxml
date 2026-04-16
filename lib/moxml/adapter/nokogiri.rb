@@ -288,7 +288,9 @@ module Moxml
         end
 
         def inner_text(node)
-          text_children = node.children - node.element_children
+          text_children = node.children.reject do |c|
+            c.element? || c.comment?
+          end
           text_children.map(&:content).join
         end
 
