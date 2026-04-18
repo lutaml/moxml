@@ -4,18 +4,7 @@
 # A better way is to run it through Moxml wrappers
 RSpec.shared_examples "xml adapter" do
   let(:xml) do
-    <<~XML
-      <?xml version="1.0"?>
-      <root xmlns="http://example.org" xmlns:x="http://example.org/x">
-        <child id="1">Text</child>
-        <child id="2"/>
-        <x:special>
-          <![CDATA[Some <special> text]]>
-          <!-- A comment -->
-          <?pi target?>
-        </x:special>
-      </root>
-    XML
+    '<?xml version="1.0"?><root xmlns="http://example.org" xmlns:x="http://example.org/x"><child id="1">Text</child><child id="2"/><x:special><![CDATA[Some <special> text]]><!-- A comment --><?pi target?></x:special></root>'
   end
 
   describe ".parse" do

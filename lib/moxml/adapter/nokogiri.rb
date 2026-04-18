@@ -31,7 +31,7 @@ module Moxml
 
           # Use provided context if available, otherwise create new one
           ctx = _context || Context.new(:nokogiri)
-          DocumentBuilder.new(ctx).build(native_doc)
+          Document.new(native_doc, ctx)
         end
 
         # SAX parsing implementation for Nokogiri

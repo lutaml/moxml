@@ -42,6 +42,7 @@ module Moxml
 
     def []=(name, value)
       adapter.set_attribute(@native, name, normalize_xml_value(value))
+      @attributes_cache = nil
     end
 
     def [](name)
@@ -64,19 +65,21 @@ module Moxml
     end
 
     def attributes
-      adapter.attributes(@native).map do |attr|
+      @attributes_cache ||= adapter.attributes(@native).map do |attr|
         Attribute.new(attr, context)
       end
     end
 
     def remove_attribute(name)
       adapter.remove_attribute(@native, name)
+      @attributes_cache = nil
       self
     end
 
     def add_namespace(prefix, uri)
       adapter.create_namespace(@native, prefix, uri,
                                namespace_uri_mode: context.config.namespace_uri_mode)
+      @namespaces_cache = nil
       self
     rescue ValidationError => e
       # Re-raise as NamespaceError, provide attributes for error context
@@ -108,10 +111,11 @@ module Moxml
       else
         adapter.set_namespace(@native, ns_or_hash&.native)
       end
+      @namespaces_cache = nil
     end
 
     def namespaces
-      adapter.namespace_definitions(@native).map do |ns|
+      @namespaces_cache ||= adapter.namespace_definitions(@native).map do |ns|
         Namespace.new(ns, context)
       end
     end
@@ -136,6 +140,7 @@ module Moxml
 
     def text=(content)
       adapter.set_text_content(@native, normalize_xml_value(content))
+      invalidate_children_cache!
     end
 
     def inner_text
@@ -149,6 +154,7 @@ module Moxml
     def inner_xml=(xml)
       doc = context.parse("<root>#{xml}</root>")
       adapter.replace_children(@native, doc.root.children.map(&:native))
+      invalidate_children_cache!
     end
 
     # Fluent interface methods

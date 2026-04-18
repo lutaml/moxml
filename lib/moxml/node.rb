@@ -16,8 +16,8 @@ module Moxml
 
     def initialize(native, context)
       @context = context
-      # @native = adapter.patch_node(native)
       @native = native
+      @parent_node = nil
     end
 
     def document
@@ -29,9 +29,10 @@ module Moxml
     end
 
     def children
-      NodeSet.new(
+      @children ||= NodeSet.new(
         adapter.children(@native).map { adapter.patch_node(_1, @native) },
         context,
+        self,
       )
     end
 
@@ -46,29 +47,37 @@ module Moxml
     def add_child(node)
       node = prepare_node(node)
       adapter.add_child(@native, node.native)
+      node.instance_variable_set(:@parent_node, self)
+      invalidate_children_cache!
       self
     end
 
     def add_previous_sibling(node)
       node = prepare_node(node)
       adapter.add_previous_sibling(@native, node.native)
+      invalidate_parent_children_cache!
       self
     end
 
     def add_next_sibling(node)
       node = prepare_node(node)
       adapter.add_next_sibling(@native, node.native)
+      invalidate_parent_children_cache!
       self
     end
 
     def remove
+      invalidate_parent_children_cache!
       adapter.remove(@native)
+      invalidate_children_cache!
       self
     end
 
     def replace(node)
       node = prepare_node(node)
+      invalidate_parent_children_cache!
       adapter.replace(@native, node.native)
+      invalidate_children_cache!
       self
     end
 
@@ -227,6 +236,18 @@ module Moxml
 
     def self.adapter(context)
       context.config.adapter
+    end
+
+    # Invalidate cached children. Called by mutation methods
+    # and by Element attribute/namespace caches.
+    def invalidate_children_cache!
+      @children = nil
+    end
+
+    # Invalidate parent's cached children when this node
+    # is removed/replaced from its parent's child list.
+    def invalidate_parent_children_cache!
+      @parent_node&.invalidate_children_cache!
     end
 
     private
