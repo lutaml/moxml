@@ -17,39 +17,39 @@ module AllocationHelper
   # Per-adapter allocation thresholds.
   # Format: { operation => { adapter => max_allocations } }
   #
-  # Thresholds are calibrated at ~2x measured baseline (2026-04-18).
-  # HeadedOx thresholds are intentionally high because it still uses
-  # DocumentBuilder (eager parse). Tighten after migrating to lazy parse.
+  # Thresholds calibrated at ~2x measured baseline (2026-04-18).
+  # All lazy-parse adapters (nokogiri, ox, headed_ox) share similar profiles.
+  # OGA is pure Ruby so naturally allocates more.
   THRESHOLDS = {
     # Parse a 100-element document (no subsequent access).
-    # Measured: nokogiri=299, ox=1003, headed_ox=176472, oga=8732
+    # Measured: nokogiri=299, ox=1003, headed_ox=1001, oga=8732
     parse_100: {
       nokogiri: 600,
       ox: 2500,
-      headed_ox: 200_000,
+      headed_ox: 2500,
       oga: 18_000,
     },
     # Parse a 50-element document.
-    # Measured: nokogiri=148, ox=501, headed_ox=45750, oga=4365
+    # Measured: nokogiri=148, ox=501, headed_ox=501, oga=4365
     parse_50: {
       nokogiri: 300,
       ox: 1200,
-      headed_ox: 100_000,
+      headed_ox: 1200,
       oga: 9000,
     },
     # Access root.name after parse (lazy wrapping overhead).
-    # Measured: nokogiri=317, ox=1013, headed_ox=176457, oga=8673
+    # Measured: nokogiri=317, ox=1013, headed_ox=1009, oga=8673
     parse_and_root: {
       nokogiri: 700,
       ox: 2500,
-      headed_ox: 200_000,
+      headed_ox: 2500,
       oga: 18_000,
     },
     # First access to children (NodeSet construction).
     first_children_access: {
       nokogiri: 200,
       ox: 200,
-      headed_ox: 300,
+      headed_ox: 200,
       oga: 300,
     },
     # Second access to children (should be ~0 — cached).
@@ -77,21 +77,20 @@ module AllocationHelper
       oga: 10,
     },
     # Parse + serialize round-trip (50 elements).
-    # Measured: nokogiri=222, ox=893, headed_ox=91376, oga=9523
+    # Measured: nokogiri=222, ox=893, headed_ox=882, oga=9523
     round_trip: {
       nokogiri: 500,
       ox: 2000,
-      headed_ox: 200_000,
+      headed_ox: 2000,
       oga: 20_000,
     },
     # Ratio of allocations for 200-element vs 100-element parse.
     # Must be <= max (linear growth). Quadratic would be > 4x.
-    # Measured: nokogiri=2.01, ox=2.0, headed_ox=3.93, oga=1.99
-    # HeadedOx is nearly quadratic — track until lazy parse migration.
+    # Measured: nokogiri=2.01, ox=2.0, headed_ox=2.0, oga=1.99
     scalability_ratio: {
       nokogiri: 2.5,
       ox: 2.5,
-      headed_ox: 5.0,
+      headed_ox: 2.5,
       oga: 2.5,
     },
   }.freeze
