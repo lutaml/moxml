@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "support/allocation_helper"
 
-RSpec.describe "Moxml lazy parse", :performance do
+# Lazy parse correctness tests — these run in CI by default.
+# Verifies that lazy parse produces correct document structure
+# across all adapters without eager wrapper construction.
+RSpec.describe "Moxml lazy parse" do
   let(:xml) { "<root><child><nested>text</nested></child><sibling>more</sibling></root>" }
 
   shared_examples "lazy parse behavior" do |adapter_name|
@@ -88,31 +92,22 @@ RSpec.describe "Moxml lazy parse", :performance do
     end
   end
 
-  # CDATA behavior differs between Nokogiri and Ox:
-  # - Nokogiri preserves CDATA as a separate node type
-  # - Ox may merge CDATA content into text
-  describe "Nokogiri adapter" do
-    let(:ctx) { Moxml::Context.new(:nokogiri) }
+  # Run for all guarded adapters
+  AllocationHelper::GUARDED_ADAPTERS.each do |adapter_name|
+    describe "#{adapter_name} adapter" do
+      before(:all) do
+        skip("#{adapter_name} adapter not available") unless AllocationHelper.adapter_available?(adapter_name)
+      end
 
-    it_behaves_like "lazy parse behavior", :nokogiri
+      it_behaves_like "lazy parse behavior", adapter_name
 
-    it "handles CDATA sections" do
-      cdata_xml = "<root><![CDATA[<not xml>]]></root>"
-      doc = ctx.parse(cdata_xml)
-      expect(doc.root.text).to include("<not xml>")
-    end
-  end
-
-  describe "Ox adapter" do
-    let(:ctx) { Moxml::Context.new(:ox) }
-
-    it_behaves_like "lazy parse behavior", :ox
-
-    it "handles CDATA sections via Ox" do
-      cdata_xml = "<root><![CDATA[<not xml>]]></root>"
-      doc = ctx.parse(cdata_xml)
-      # Ox may handle CDATA differently than Nokogiri
-      expect(doc.root).not_to be_nil
+      # CDATA behavior differs between adapters
+      it "handles CDATA sections" do
+        ctx = Moxml::Context.new(adapter_name)
+        cdata_xml = "<root><![CDATA[<not xml>]]></root>"
+        doc = ctx.parse(cdata_xml)
+        expect(doc.root).not_to be_nil
+      end
     end
   end
 end

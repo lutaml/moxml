@@ -1,8 +1,12 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "support/allocation_helper"
 
-RSpec.describe "Moxml node caching", :performance do
+# Node caching correctness tests — these run in CI by default.
+# Verifies that cache semantics (identity, invalidation) work correctly
+# across all adapters.
+RSpec.describe "Moxml node caching" do
   shared_examples "cached children" do |adapter_name|
     let(:ctx) { Moxml::Context.new(adapter_name) }
     let(:xml) { "<root><a/><b/><c/></root>" }
@@ -92,11 +96,13 @@ RSpec.describe "Moxml node caching", :performance do
     end
   end
 
-  describe "Nokogiri adapter" do
-    it_behaves_like "cached children", :nokogiri
-  end
+  AllocationHelper::GUARDED_ADAPTERS.each do |adapter_name|
+    describe "#{adapter_name} adapter" do
+      before(:all) do
+        skip("#{adapter_name} adapter not available") unless AllocationHelper.adapter_available?(adapter_name)
+      end
 
-  describe "Ox adapter" do
-    it_behaves_like "cached children", :ox
+      it_behaves_like "cached children", adapter_name
+    end
   end
 end
