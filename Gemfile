@@ -22,6 +22,7 @@ gem "rubocop-performance"
 gem "rubocop-rake"
 gem "rubocop-rspec"
 gem "simplecov", require: false
+gem "stackprof"
 gem "tempfile"
 
 # Needed by get_process_mem on Windows

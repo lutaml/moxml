@@ -1,31 +1,17 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "support/allocation_helper"
 
+# Detailed allocation benchmarks — only run with RUN_PERFORMANCE=1.
+# These measure exact allocation counts and compare across adapters.
 RSpec.describe "Moxml allocation benchmarks", :performance do
-  # Helper: count object allocations during a block using GC stats
-  def count_allocations
-    GC.start
-    GC.disable
-    before = ObjectSpace.count_objects[:TOTAL]
-    result = yield
-    after = ObjectSpace.count_objects[:TOTAL]
-    GC.enable
-    after - before
-  end
-
-  # Generate a test XML document with N elements
-  def generate_xml(element_count)
-    inner = element_count.times.map { |i| "<elem#{i % 10}>text#{i}</elem#{i % 10}>" }.join
-    "<root>#{inner}</root>"
-  end
-
   shared_examples "reduced allocations" do |adapter_name|
     let(:ctx) { Moxml::Context.new(adapter_name) }
 
     it "parse allocates fewer objects than a 100-element baseline" do
       xml = generate_xml(100)
-      allocs = count_allocations { ctx.parse(xml) }
+      allocs = AllocationHelper.count_allocations { ctx.parse(xml) }
       # Before lazy parse: ~18,000 allocations for 100 elements via DocumentBuilder
       # After lazy parse: should be dramatically less (document wrapper + root only)
       expect(allocs).to be < 5000,
@@ -34,7 +20,7 @@ RSpec.describe "Moxml allocation benchmarks", :performance do
 
     it "parse + root access is allocation-efficient" do
       xml = generate_xml(50)
-      allocs = count_allocations do
+      allocs = AllocationHelper.count_allocations do
         doc = ctx.parse(xml)
         doc.root.name
       end
@@ -47,8 +33,8 @@ RSpec.describe "Moxml allocation benchmarks", :performance do
       doc = ctx.parse(xml)
       root = doc.root
 
-      allocs1 = count_allocations { root.children.to_a }
-      allocs2 = count_allocations { root.children.to_a }
+      allocs1 = AllocationHelper.count_allocations { root.children.to_a }
+      allocs2 = AllocationHelper.count_allocations { root.children.to_a }
 
       # Second call should allocate fewer objects because children are cached
       expect(allocs2).to be <= allocs1,
@@ -60,8 +46,8 @@ RSpec.describe "Moxml allocation benchmarks", :performance do
       doc = ctx.parse(xml)
       root = doc.root
 
-      allocs1 = count_allocations { root.attributes }
-      allocs2 = count_allocations { root.attributes }
+      allocs1 = AllocationHelper.count_allocations { root.attributes }
+      allocs2 = AllocationHelper.count_allocations { root.attributes }
 
       expect(allocs2).to be <= allocs1,
         "Second attributes call (#{allocs2}) should allocate <= first (#{allocs1})"
@@ -72,8 +58,8 @@ RSpec.describe "Moxml allocation benchmarks", :performance do
       doc = ctx.parse(xml)
       root = doc.root
 
-      allocs1 = count_allocations { root.namespaces }
-      allocs2 = count_allocations { root.namespaces }
+      allocs1 = AllocationHelper.count_allocations { root.namespaces }
+      allocs2 = AllocationHelper.count_allocations { root.namespaces }
 
       expect(allocs2).to be <= allocs1,
         "Second namespaces call (#{allocs2}) should allocate <= first (#{allocs1})"
@@ -84,19 +70,21 @@ RSpec.describe "Moxml allocation benchmarks", :performance do
       doc = ctx.parse(xml)
       root = doc.root
 
-      allocs1 = count_allocations { root.children.each { |_c| } }
-      allocs2 = count_allocations { root.children.each { |_c| } }
+      allocs1 = AllocationHelper.count_allocations { root.children.each { |_c| } }
+      allocs2 = AllocationHelper.count_allocations { root.children.each { |_c| } }
 
       expect(allocs2).to be <= allocs1,
         "Second NodeSet iteration (#{allocs2}) should allocate <= first (#{allocs1})"
     end
   end
 
-  describe "Nokogiri adapter" do
-    it_behaves_like "reduced allocations", :nokogiri
-  end
+  AllocationHelper::GUARDED_ADAPTERS.each do |adapter_name|
+    describe "#{adapter_name} adapter" do
+      before(:all) do
+        skip("#{adapter_name} adapter not available") unless AllocationHelper.adapter_available?(adapter_name)
+      end
 
-  describe "Ox adapter" do
-    it_behaves_like "reduced allocations", :ox
+      it_behaves_like "reduced allocations", adapter_name
+    end
   end
 end

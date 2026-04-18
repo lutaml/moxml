@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "support/allocation_helper"
 
-RSpec.describe "Moxml NodeSet wrap caching", :performance do
+# NodeSet wrap caching correctness tests — these run in CI by default.
+# Verifies that NodeSet per-index wrap caching works correctly across adapters.
+RSpec.describe "Moxml NodeSet wrap caching" do
   shared_examples "cached NodeSet wraps" do |adapter_name|
     let(:ctx) { Moxml::Context.new(adapter_name) }
     let(:xml) { "<root><a/><b/><c/></root>" }
@@ -75,11 +78,13 @@ RSpec.describe "Moxml NodeSet wrap caching", :performance do
     end
   end
 
-  describe "Nokogiri adapter" do
-    it_behaves_like "cached NodeSet wraps", :nokogiri
-  end
+  AllocationHelper::GUARDED_ADAPTERS.each do |adapter_name|
+    describe "#{adapter_name} adapter" do
+      before(:all) do
+        skip("#{adapter_name} adapter not available") unless AllocationHelper.adapter_available?(adapter_name)
+      end
 
-  describe "Ox adapter" do
-    it_behaves_like "cached NodeSet wraps", :ox
+      it_behaves_like "cached NodeSet wraps", adapter_name
+    end
   end
 end
