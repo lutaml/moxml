@@ -37,7 +37,7 @@ module Moxml
           end
 
           ctx = _context || Context.new(:ox)
-          DocumentBuilder.new(ctx).build(native_doc)
+          Document.new(native_doc, ctx)
         end
 
         # SAX parsing implementation for Ox
@@ -238,7 +238,11 @@ module Moxml
         def children(node)
           return [] unless node.respond_to?(:nodes)
 
-          node.nodes || []
+          result = node.nodes || []
+          # Ox doesn't set parent references during parsing.
+          # Set them here so parent/sibling navigation works.
+          result.each { |child| child.parent = node if child.respond_to?(:parent=) }
+          result
         end
 
         def parent(node)

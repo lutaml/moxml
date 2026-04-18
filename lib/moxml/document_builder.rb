@@ -135,10 +135,7 @@ module Moxml
     end
 
     def visit_children(node)
-      node_children = children(node).dup
-      node_children.each do |child|
-        visit_node(child)
-      end
+      children(node).each { |child| visit_node(child) }
     end
 
     def node_type(node)

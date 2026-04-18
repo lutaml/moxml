@@ -26,11 +26,13 @@ module Moxml
 
     def root=(element)
       adapter.set_root(@native, element.native)
+      element.instance_variable_set(:@parent_node, self)
+      invalidate_children_cache!
     end
 
     def root
       root_element = adapter.root(@native)
-      root_element ? Element.wrap(root_element, context) : nil
+      root_element ? Element.new(root_element, context) : nil
     end
 
     def create_element(name)
@@ -91,6 +93,8 @@ module Moxml
       else
         adapter.add_child(@native, node.native)
       end
+      node.instance_variable_set(:@parent_node, self)
+      invalidate_children_cache!
       self
     end
 
