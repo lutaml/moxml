@@ -25,7 +25,10 @@ module Moxml
     #
     class HeadedOx < Ox
       class << self
-        # Override parse to use HeadedOx context instead of Ox context
+        # Override parse to use lazy wrapping like the Ox adapter.
+        # Previously used DocumentBuilder (eager tree construction causing
+        # ~176K allocations per 100-element parse). Lazy parse defers wrapper
+        # creation until nodes are accessed, matching Ox adapter behavior.
         def parse(xml, _options = {}, _context = nil)
           native_doc = begin
             result = ::Ox.parse(xml)
@@ -47,7 +50,7 @@ module Moxml
 
           # Use provided context if available, otherwise create new one
           ctx = _context || Context.new(:headed_ox)
-          DocumentBuilder.new(ctx).build(native_doc)
+          Document.new(native_doc, ctx)
         end
 
         # Execute XPath query using Moxml's XPath engine
