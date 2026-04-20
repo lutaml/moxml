@@ -157,12 +157,9 @@ module Moxml
         def children(node)
           return [] unless node.respond_to?(:children)
 
-          # Get all children and filter out empty text nodes between elements
-          result = node.children.reject do |child|
-            child.is_a?(::REXML::Text) &&
-              child.to_s.strip.empty? &&
-              !(child.next_sibling.nil? && child.previous_sibling.nil?)
-          end
+          # Get all children preserving whitespace-only text nodes
+          # for mixed content support
+          result = node.children
 
           # Ensure uniqueness by object_id to prevent duplicates
           result.uniq(&:object_id)

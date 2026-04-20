@@ -180,11 +180,7 @@ module Moxml
 
           return all_children unless node.respond_to?(:children)
 
-          all_children + node.children.reject do |child|
-            child.is_a?(::Oga::XML::Text) &&
-              child.text.strip.empty? &&
-              !(child.previous.nil? && child.next.nil?)
-          end
+          all_children + node.children
         end
 
         def parent(node)

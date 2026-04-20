@@ -174,10 +174,7 @@ module Moxml
         end
 
         def children(node)
-          node.children.reject do |child|
-            child.text? && child.content.strip.empty? &&
-              !(child.previous_sibling.nil? && child.next_sibling.nil?)
-          end
+          node.children
         end
 
         def replace_children(node, new_children)
