@@ -34,19 +34,19 @@ module Moxml
     end
 
     def create_element(name)
-      Element.new(adapter.create_element(name), context)
+      Element.new(adapter.create_element(name, owner_doc: @native), context)
     end
 
     def create_text(content)
-      Text.new(adapter.create_text(content), context)
+      Text.new(adapter.create_text(content, owner_doc: @native), context)
     end
 
     def create_cdata(content)
-      Cdata.new(adapter.create_cdata(content), context)
+      Cdata.new(adapter.create_cdata(content, owner_doc: @native), context)
     end
 
     def create_comment(content)
-      Comment.new(adapter.create_comment(content), context)
+      Comment.new(adapter.create_comment(content, owner_doc: @native), context)
     end
 
     def create_doctype(name, external_id, system_id)

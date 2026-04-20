@@ -61,23 +61,23 @@ module Moxml
           )
         end
 
-        def create_element(name)
+        def create_element(name, owner_doc: nil)
           validate_element_name(name)
-          create_native_element(name)
+          create_native_element(name, owner_doc)
         end
 
-        def create_text(content)
+        def create_text(content, owner_doc: nil)
           # Ox freezes the content, so we need to dup it
-          create_native_text(normalize_xml_value(content).dup)
+          create_native_text(normalize_xml_value(content).dup, owner_doc)
         end
 
-        def create_cdata(content)
-          create_native_cdata(normalize_xml_value(content))
+        def create_cdata(content, owner_doc: nil)
+          create_native_cdata(normalize_xml_value(content), owner_doc)
         end
 
-        def create_comment(content)
+        def create_comment(content, owner_doc: nil)
           validate_comment_content(content)
-          create_native_comment(normalize_xml_value(content))
+          create_native_comment(normalize_xml_value(content), owner_doc)
         end
 
         def create_doctype(name, external_id, system_id)
@@ -146,7 +146,7 @@ module Moxml
 
         protected
 
-        def create_native_element(_name)
+        def create_native_element(_name, _owner_doc = nil)
           raise Moxml::NotImplementedError.new(
             "create_native_element not implemented",
             feature: "create_native_element",
@@ -154,7 +154,7 @@ module Moxml
           )
         end
 
-        def create_native_text(_content)
+        def create_native_text(_content, _owner_doc = nil)
           raise Moxml::NotImplementedError.new(
             "create_native_text not implemented",
             feature: "create_native_text",
@@ -162,7 +162,7 @@ module Moxml
           )
         end
 
-        def create_native_cdata(_content)
+        def create_native_cdata(_content, _owner_doc = nil)
           raise Moxml::NotImplementedError.new(
             "create_native_cdata not implemented",
             feature: "create_native_cdata",
@@ -170,7 +170,7 @@ module Moxml
           )
         end
 
-        def create_native_comment(_content)
+        def create_native_comment(_content, _owner_doc = nil)
           raise Moxml::NotImplementedError.new(
             "create_native_comment not implemented",
             feature: "create_native_comment",
@@ -214,6 +214,14 @@ module Moxml
           raise Moxml::NotImplementedError.new(
             "create_native_entity_reference not implemented",
             feature: "create_native_entity_reference",
+            adapter: name,
+          )
+        end
+
+        def in_scope_namespaces(_element)
+          raise Moxml::NotImplementedError.new(
+            "in_scope_namespaces not implemented",
+            feature: "in_scope_namespaces",
             adapter: name,
           )
         end
