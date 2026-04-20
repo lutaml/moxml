@@ -126,21 +126,21 @@ module Moxml
           ::LibXML::XML::Document.new
         end
 
-        def create_native_element(name)
+        def create_native_element(name, _owner_doc = nil)
           ::LibXML::XML::Node.new(name.to_s)
         end
 
-        def create_native_text(content)
+        def create_native_text(content, _owner_doc = nil)
           native = ::LibXML::XML::Node.new_text(content.to_s)
           CustomizedLibxml::Text.new(native)
         end
 
-        def create_native_cdata(content)
+        def create_native_cdata(content, _owner_doc = nil)
           native = ::LibXML::XML::Node.new_cdata(content.to_s)
           CustomizedLibxml::Cdata.new(native)
         end
 
-        def create_native_comment(content)
+        def create_native_comment(content, _owner_doc = nil)
           native = ::LibXML::XML::Node.new_comment(content.to_s)
           CustomizedLibxml::Comment.new(native)
         end

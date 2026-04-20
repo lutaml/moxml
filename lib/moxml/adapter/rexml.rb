@@ -69,19 +69,19 @@ module Moxml
           ::REXML::Document.new
         end
 
-        def create_native_element(name)
+        def create_native_element(name, _owner_doc = nil)
           ::REXML::Element.new(name.to_s)
         end
 
-        def create_native_text(content)
+        def create_native_text(content, _owner_doc = nil)
           ::REXML::Text.new(content.to_s, true, nil)
         end
 
-        def create_native_cdata(content)
+        def create_native_cdata(content, _owner_doc = nil)
           ::REXML::CData.new(content.to_s)
         end
 
-        def create_native_comment(content)
+        def create_native_comment(content, _owner_doc = nil)
           ::REXML::Comment.new(content.to_s)
         end
 

@@ -117,6 +117,14 @@ module Moxml
     end
     alias namespace_definitions namespaces
 
+    # Returns all namespaces in scope for this element,
+    # including those inherited from ancestor elements.
+    def in_scope_namespaces
+      adapter.in_scope_namespaces(@native).map do |ns|
+        Namespace.new(ns, context)
+      end
+    end
+
     # Returns the namespace URI of this element (alias for namespace_uri)
     def namespace_name
       namespace_uri

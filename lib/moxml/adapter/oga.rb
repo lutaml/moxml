@@ -64,19 +64,19 @@ module Moxml
           ::Oga::XML::Document.new
         end
 
-        def create_native_element(name)
+        def create_native_element(name, _owner_doc = nil)
           ::Oga::XML::Element.new(name: name)
         end
 
-        def create_native_text(content)
+        def create_native_text(content, _owner_doc = nil)
           ::Oga::XML::Text.new(text: encode_entity_markers(content))
         end
 
-        def create_native_cdata(content)
+        def create_native_cdata(content, _owner_doc = nil)
           ::Oga::XML::Cdata.new(text: content)
         end
 
-        def create_native_comment(content)
+        def create_native_comment(content, _owner_doc = nil)
           ::Oga::XML::Comment.new(text: content)
         end
 
@@ -376,16 +376,26 @@ module Moxml
         end
 
         # Doctype accessor methods
+        # Note: Oga stores SYSTEM identifier in public_id for SYSTEM doctypes.
+        # See: Oga::XML::Doctype puts SYSTEM dtd in public_id, system_id is nil.
         def doctype_name(native)
           native.name
         end
 
         def doctype_external_id(native)
-          native.public_id
+          if native.type == "SYSTEM"
+            nil
+          else
+            native.public_id
+          end
         end
 
         def doctype_system_id(native)
-          native.system_id
+          if native.type == "SYSTEM"
+            native.public_id
+          else
+            native.system_id
+          end
         end
 
         def xpath(node, expression, namespaces = nil)
@@ -479,7 +489,7 @@ module Moxml
 
             if should_include_decl && !node.xml_declaration && !has_existing_declaration
               # Need to add declaration - create default one
-              output = +""
+              output = []
               output << '<?xml version="1.0" encoding="UTF-8"?>'
               output << "\n"
 
@@ -491,10 +501,10 @@ module Moxml
                 output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
               end
 
-              return output
+              return output.join
             elsif !should_include_decl
               # Skip xml_declaration
-              output = +""
+              output = []
 
               # Serialize doctype if present
               output << node.doctype.to_xml << "\n" if node.doctype
@@ -506,7 +516,7 @@ module Moxml
                 output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
               end
 
-              return output
+              return output.join
             end
           end
 
@@ -514,19 +524,20 @@ module Moxml
           # But first check if we need to handle declaration specially
           if node.is_a?(::Oga::XML::Document) && node.xml_declaration
             # Document has declaration - use custom handling to avoid duplicates
-            output = +""
+            output = []
+            xml_declaration_serialized = false
 
             # Serialize children, but skip XmlDeclaration if it would cause duplication
             node.children.each do |child|
-              # Check if this would cause duplication by seeing if we already have one in output
-              if child.is_a?(::Oga::XML::XmlDeclaration) && output.include?("<?xml")
-                next # Skip duplicate declaration
-              end
+              xml_declaration = child.is_a?(::Oga::XML::XmlDeclaration)
+              next if xml_declaration && xml_declaration_serialized
+
+              xml_declaration_serialized = true if xml_declaration
 
               output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
             end
 
-            output
+            output.join
           else
             # Normal case - use XmlGenerator directly
             ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
