@@ -67,21 +67,21 @@ module Moxml
           ::Ox::Document.new(**attrs)
         end
 
-        def create_native_element(name)
+        def create_native_element(name, _owner_doc = nil)
           element = ::Ox::Element.new(name)
           element.instance_variable_set(:@attributes, {})
           element
         end
 
-        def create_native_text(content)
+        def create_native_text(content, _owner_doc = nil)
           content
         end
 
-        def create_native_cdata(content)
+        def create_native_cdata(content, _owner_doc = nil)
           ::Ox::CData.new(content)
         end
 
-        def create_native_comment(content)
+        def create_native_comment(content, _owner_doc = nil)
           ::Ox::Comment.new(content)
         end
 

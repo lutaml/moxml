@@ -64,19 +64,19 @@ module Moxml
           ::Oga::XML::Document.new
         end
 
-        def create_native_element(name)
+        def create_native_element(name, _owner_doc = nil)
           ::Oga::XML::Element.new(name: name)
         end
 
-        def create_native_text(content)
+        def create_native_text(content, _owner_doc = nil)
           ::Oga::XML::Text.new(text: encode_entity_markers(content))
         end
 
-        def create_native_cdata(content)
+        def create_native_cdata(content, _owner_doc = nil)
           ::Oga::XML::Cdata.new(text: content)
         end
 
-        def create_native_comment(content)
+        def create_native_comment(content, _owner_doc = nil)
           ::Oga::XML::Comment.new(text: content)
         end
 

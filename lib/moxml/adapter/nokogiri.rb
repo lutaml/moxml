@@ -70,20 +70,20 @@ module Moxml
           )
         end
 
-        def create_native_element(name)
-          ::Nokogiri::XML::Element.new(name, create_document)
+        def create_native_element(name, owner_doc = nil)
+          ::Nokogiri::XML::Element.new(name, owner_doc || create_document)
         end
 
-        def create_native_text(content)
-          ::Nokogiri::XML::Text.new(content, create_document)
+        def create_native_text(content, owner_doc = nil)
+          ::Nokogiri::XML::Text.new(content, owner_doc || create_document)
         end
 
-        def create_native_cdata(content)
-          ::Nokogiri::XML::CDATA.new(create_document, content)
+        def create_native_cdata(content, owner_doc = nil)
+          ::Nokogiri::XML::CDATA.new(owner_doc || create_document, content)
         end
 
-        def create_native_comment(content)
-          ::Nokogiri::XML::Comment.new(create_document, content)
+        def create_native_comment(content, owner_doc = nil)
+          ::Nokogiri::XML::Comment.new(owner_doc || create_document, content)
         end
 
         def create_native_doctype(name, external_id, system_id)
@@ -332,6 +332,10 @@ module Moxml
 
         def namespace_definitions(node)
           node.namespace_definitions
+        end
+
+        def in_scope_namespaces(element)
+          element.namespace_scopes
         end
 
         # Doctype accessor methods
