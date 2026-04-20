@@ -479,7 +479,7 @@ module Moxml
 
             if should_include_decl && !node.xml_declaration && !has_existing_declaration
               # Need to add declaration - create default one
-              output = +""
+              output = []
               output << '<?xml version="1.0" encoding="UTF-8"?>'
               output << "\n"
 
@@ -491,10 +491,10 @@ module Moxml
                 output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
               end
 
-              return output
+              return output.join
             elsif !should_include_decl
               # Skip xml_declaration
-              output = +""
+              output = []
 
               # Serialize doctype if present
               output << node.doctype.to_xml << "\n" if node.doctype
@@ -506,7 +506,7 @@ module Moxml
                 output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
               end
 
-              return output
+              return output.join
             end
           end
 
@@ -514,19 +514,20 @@ module Moxml
           # But first check if we need to handle declaration specially
           if node.is_a?(::Oga::XML::Document) && node.xml_declaration
             # Document has declaration - use custom handling to avoid duplicates
-            output = +""
+            output = []
+            xml_declaration_serialized = false
 
             # Serialize children, but skip XmlDeclaration if it would cause duplication
             node.children.each do |child|
-              # Check if this would cause duplication by seeing if we already have one in output
-              if child.is_a?(::Oga::XML::XmlDeclaration) && output.include?("<?xml")
-                next # Skip duplicate declaration
-              end
+              xml_declaration = child.is_a?(::Oga::XML::XmlDeclaration)
+              next if xml_declaration && xml_declaration_serialized
+
+              xml_declaration_serialized = true if xml_declaration
 
               output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
             end
 
-            output
+            output.join
           else
             # Normal case - use XmlGenerator directly
             ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
