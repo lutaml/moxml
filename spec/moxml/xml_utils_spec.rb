@@ -46,4 +46,36 @@ RSpec.describe Moxml::XmlUtils do
                          "Invalid XML element name: 123invalid")
     end
   end
+
+  describe "#validate_prefix" do
+    it "accepts valid NCName prefixes" do
+      expect { utils.validate_prefix("xs") }.not_to raise_error
+      expect { utils.validate_prefix("my-ns") }.not_to raise_error
+      expect { utils.validate_prefix("a1") }.not_to raise_error
+    end
+
+    it "accepts prefixes containing dots (valid NCName NameChar)" do
+      expect { utils.validate_prefix("abc_1.0") }.not_to raise_error
+      expect { utils.validate_prefix("xmlns_1.0") }.not_to raise_error
+      expect { utils.validate_prefix("v2.0.1") }.not_to raise_error
+    end
+
+    it "rejects prefixes starting with a digit" do
+      expect do
+        utils.validate_prefix("1abc")
+      end.to raise_error(Moxml::ValidationError, /Invalid namespace prefix/)
+    end
+
+    it "rejects prefixes containing colons" do
+      expect do
+        utils.validate_prefix("a:b")
+      end.to raise_error(Moxml::ValidationError, /Invalid namespace prefix/)
+    end
+
+    it "rejects empty prefixes" do
+      expect do
+        utils.validate_prefix("")
+      end.to raise_error(Moxml::ValidationError, /Invalid namespace prefix/)
+    end
+  end
 end
