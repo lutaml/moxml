@@ -174,6 +174,7 @@ module Moxml
       name = primary_name_for_codepoint(codepoint)
       return false unless name
       return true if standard_entity?(codepoint)
+
       config.restore_entities
     end
 
@@ -182,10 +183,10 @@ module Moxml
     # @return [Set<Integer>]
     def restorable_codepoints
       @restorable_codepoints ||= if @by_name.empty?
-                                    STANDARD_CODEPOINTS
-                                  else
-                                    Set.new(@by_name.values).freeze
-                                  end
+                                   STANDARD_CODEPOINTS
+                                 else
+                                   Set.new(@by_name.values).freeze
+                                 end
     end
 
     # Register additional entities

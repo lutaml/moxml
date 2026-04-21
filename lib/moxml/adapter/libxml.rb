@@ -46,7 +46,7 @@ module Moxml
           # LibXML doesn't preserve DOCTYPE during parsing, so we need to extract it manually
           xml_string = if xml.is_a?(String)
                          xml
-                       elsif xml.respond_to?(:read)
+                       elsif xml.is_a?(IO) || xml.is_a?(StringIO)
                          xml.read
                        else
                          xml.to_s
@@ -61,7 +61,7 @@ module Moxml
             parser.parse
           rescue ::LibXML::XML::Error => e
             if options[:strict]
-              line = e.respond_to?(:line) ? e.line : nil
+              line = e.line
               raise Moxml::ParseError.new(
                 e.message,
                 line: line,
@@ -110,8 +110,12 @@ module Moxml
           # Parse
           parser.parse
         rescue ::LibXML::XML::Error => e
-          line = e.respond_to?(:line) ? e.line : nil
-          column = e.respond_to?(:column) ? e.column : nil
+          line = e.line
+          column = begin
+            e.column
+          rescue StandardError
+            nil
+          end
           error = Moxml::ParseError.new(e.message, line: line, column: column)
           handler.on_error(error)
         end
@@ -180,7 +184,7 @@ module Moxml
           return :doctype if node.is_a?(DoctypeWrapper)
 
           # Unwrap if needed
-          native_node = node.respond_to?(:native) ? node.native : node
+          native_node = unpatch_node(node)
 
           case native_node.node_type
           when ::LibXML::XML::Node::DOCUMENT_NODE
@@ -269,21 +273,9 @@ module Moxml
             result = []
 
             # Include DOCTYPE if present
-            # First check if we stored it as instance variable (from parse)
             if native_node.instance_variable_defined?(:@moxml_doctype)
               doctype_wrapper = native_node.instance_variable_get(:@moxml_doctype)
               result << doctype_wrapper if doctype_wrapper
-            elsif native_node.respond_to?(:dtd) && native_node.dtd
-              # Otherwise check dtd property directly
-              dtd = native_node.dtd
-              # Wrap in DoctypeWrapper for consistency
-              doctype_wrapper = DoctypeWrapper.new(
-                native_node,
-                dtd.name,
-                dtd.external_id,
-                dtd.system_id,
-              )
-              result << doctype_wrapper
             end
 
             return result unless native_node.root
@@ -358,7 +350,7 @@ module Moxml
         def attributes(element)
           native_elem = unpatch_node(element)
           return [] unless native_elem
-          unless native_elem.respond_to?(:element?) && native_elem.element?
+          unless native_elem.is_a?(::LibXML::XML::Node) && native_elem.element?
             return []
           end
           return [] unless native_elem.attributes?
@@ -376,7 +368,7 @@ module Moxml
 
         def attribute_namespace(attr)
           return nil unless attr
-          return nil unless attr.respond_to?(:ns)
+          return nil unless attr.is_a?(::LibXML::XML::Attr)
 
           attr.ns
         end
@@ -518,8 +510,8 @@ module Moxml
           # For LibXML: if parent has a DEFAULT namespace (nil/empty prefix) and child is an element without a namespace,
           # explicitly set the child's namespace to match the parent's for XPath compatibility
           # NOTE: Prefixed namespaces are NOT inherited, only default namespaces
-          if native_elem.respond_to?(:namespaces) && native_elem.namespaces&.namespace &&
-              native_child.respond_to?(:namespaces) && native_child.element? &&
+          if native_elem.is_a?(::LibXML::XML::Node) && native_elem.namespaces&.namespace &&
+              native_child.is_a?(::LibXML::XML::Node) && native_child.element? &&
               (!native_child.namespaces.namespace || native_child.namespaces.namespace.href.to_s.empty?)
 
             parent_ns = native_elem.namespaces.namespace
@@ -583,7 +575,7 @@ module Moxml
           # Special handling for document-level processing instructions
           # When adding a PI as sibling to root element, store it on document
           if sibling.is_a?(CustomizedLibxml::ProcessingInstruction) &&
-              native_node.respond_to?(:doc) && native_node.doc
+              native_node.is_a?(::LibXML::XML::Node) && native_node.doc
             doc = native_node.doc
             pis = doc.instance_variable_get(:@moxml_pis) || []
             pis << sibling
@@ -641,7 +633,7 @@ module Moxml
           next_sibling = native_node.next
 
           # Import if needed for cross-document operations
-          parent_doc = parent.respond_to?(:doc) ? parent.doc : nil
+          parent_doc = parent.is_a?(::LibXML::XML::Node) ? parent.doc : nil
 
           # Use import_and_add to properly handle document adoption
           import_and_add(parent_doc, parent, native_new)
@@ -668,7 +660,7 @@ module Moxml
           native_elem.each_child(&:remove!)
 
           # Get the element's document for importing
-          doc = native_elem.respond_to?(:doc) ? native_elem.doc : nil
+          doc = native_elem.is_a?(::LibXML::XML::Node) ? native_elem.doc : nil
 
           children.each do |c|
             native_c = unpatch_node(c)
@@ -801,7 +793,7 @@ module Moxml
         def namespace_definitions(node)
           native_node = unpatch_node(node)
           return [] unless native_node
-          return [] unless native_node.respond_to?(:namespaces)
+          return [] unless native_node.is_a?(::LibXML::XML::Node)
 
           native_node.namespaces.map do |ns|
             ns
@@ -854,15 +846,8 @@ module Moxml
 
         def serialize(node, options = {})
           # FIRST: Check if node is any kind of wrapper with custom to_xml
-          if node.respond_to?(:to_xml)
-            # Declaration wrapper
-            return node.to_xml if node.is_a?(CustomizedLibxml::Declaration)
-
-            # Other wrappers - check they're not native LibXML nodes
-            unless node.is_a?(::LibXML::XML::Node) ||
-                node.is_a?(::LibXML::XML::Document)
-              return node.to_xml
-            end
+          if node.is_a?(CustomizedLibxml::Node) || node.is_a?(DoctypeWrapper)
+            return node.to_xml
           end
 
           native_node = unpatch_node(node)
@@ -1052,7 +1037,7 @@ module Moxml
           return nil unless node
 
           # Unwrap if wrapped
-          native_node = node.respond_to?(:native) ? node.native : node
+          native_node = unpatch_node(node)
 
           # LibXML is strict about document ownership
           # Create brand new NATIVE nodes that are document-independent
@@ -1076,7 +1061,7 @@ module Moxml
             # new_node.line = node.line
 
             # Copy and set namespace definitions FIRST
-            if native_node.respond_to?(:namespaces)
+            if native_node.is_a?(::LibXML::XML::Node)
               # First, copy all namespace definitions
               native_node.namespaces.each do |ns|
                 ::LibXML::XML::Namespace.new(
@@ -1163,7 +1148,7 @@ module Moxml
 
         def unpatch_node(node)
           # Unwrap to get native LibXML node
-          node.respond_to?(:native) ? node.native : node
+          node.is_a?(CustomizedLibxml::Node) ? node.native : node
         end
 
         def prepare_for_new_document(node, target_doc)
@@ -1181,7 +1166,7 @@ module Moxml
           output = "<#{elem.name}"
 
           # Add namespace definitions (only on this element, not ancestors)
-          if elem.respond_to?(:namespaces)
+          if elem.is_a?(::LibXML::XML::Node)
             seen_ns = {}
             elem.namespaces.each do |ns|
               prefix = ns.prefix
@@ -1225,9 +1210,7 @@ module Moxml
 
           # Append any EntityReference wrappers stored on this element
           entity_refs = elem.instance_variable_get(:@moxml_entity_refs)
-          if entity_refs
-            entity_refs.each { |ref| output << ref.to_xml }
-          end
+          entity_refs&.each { |ref| output << ref.to_xml }
 
           output << "</#{elem.name}>"
 
@@ -1236,12 +1219,12 @@ module Moxml
 
         def serialize_node(node)
           # Check if node is a wrapper with to_xml method
-          if node.respond_to?(:to_xml) &&
-              (node.is_a?(CustomizedLibxml::ProcessingInstruction) ||
-               node.is_a?(CustomizedLibxml::Comment) ||
-               node.is_a?(CustomizedLibxml::Cdata) ||
-               node.is_a?(CustomizedLibxml::Text) ||
-               node.is_a?(CustomizedLibxml::EntityReference))
+          case node
+          when CustomizedLibxml::ProcessingInstruction,
+               CustomizedLibxml::Comment,
+               CustomizedLibxml::Cdata,
+               CustomizedLibxml::Text,
+               CustomizedLibxml::EntityReference
             return node.to_xml
           end
 
@@ -1296,7 +1279,7 @@ module Moxml
             raise unless e.message.include?("different documents")
 
             # Get the target document - either from parameter or element
-            target_doc = doc || (element.respond_to?(:doc) ? element.doc : nil)
+            target_doc = doc || (element.is_a?(::LibXML::XML::Node) ? element.doc : nil)
 
             if target_doc
               # Use deep import to ensure all descendants are included
@@ -1356,11 +1339,11 @@ module Moxml
           # Include namespace definitions:
           # - On root element (include_ns = true), output ALL namespace definitions
           # - On child elements, output namespace definitions that override parent namespaces
-          if elem.respond_to?(:namespaces) && elem.namespaces.respond_to?(:definitions)
+          if elem.is_a?(::LibXML::XML::Node) && elem.namespaces.respond_to?(:definitions)
             # Get parent's namespace definitions to detect overrides
-            parent_ns_defs = if !include_ns && elem.respond_to?(:parent) && elem.parent && !elem.parent.is_a?(::LibXML::XML::Document)
+            parent_ns_defs = if !include_ns && elem.parent && !elem.parent.is_a?(::LibXML::XML::Document)
                                parent_namespaces = {}
-                               if elem.parent.respond_to?(:namespaces)
+                               if elem.parent.is_a?(::LibXML::XML::Node)
                                  elem.parent.namespaces.each do |ns|
                                    parent_namespaces[ns.prefix] = ns.href
                                  end
@@ -1417,8 +1400,7 @@ module Moxml
 
               # Wrap the child and serialize
               wrapped_child = patch_node(child)
-              output << if wrapped_child.respond_to?(:to_xml) &&
-                  !wrapped_child.is_a?(::LibXML::XML::Node)
+              output << if wrapped_child.is_a?(CustomizedLibxml::Node) && !wrapped_child.is_a?(CustomizedLibxml::Element)
                           # Use wrapper's to_xml for proper serialization
                           wrapped_child.to_xml
                         elsif child.element?
@@ -1448,7 +1430,7 @@ module Moxml
                  else
                    # Walk up to root first
                    current = node
-                   current = current.parent while current.respond_to?(:parent) && current.parent && !current.parent.is_a?(::LibXML::XML::Document)
+                   current = current.parent while current.is_a?(::LibXML::XML::Node) && current.parent && !current.parent.is_a?(::LibXML::XML::Document)
                    current
                  end
 
@@ -1462,7 +1444,7 @@ module Moxml
 
         def collect_ns_from_subtree(node, ns_defs)
           # Collect namespaces defined on this node
-          if node.respond_to?(:namespaces)
+          if node.is_a?(::LibXML::XML::Node)
             node.namespaces.each do |ns|
               prefix = ns.prefix
               uri = ns.href
@@ -1480,7 +1462,7 @@ module Moxml
 
           # Also check if this element has an active namespace (inherited or own)
           # This catches cases where elements inherit namespaces from parents
-          if node.respond_to?(:namespaces) && node.namespaces.respond_to?(:namespace)
+          if node.is_a?(::LibXML::XML::Node) && node.namespaces.respond_to?(:namespace)
             active_ns = node.namespaces.namespace
             if active_ns
               prefix = active_ns.prefix
@@ -1496,7 +1478,7 @@ module Moxml
           end
 
           # Recursively collect from children
-          return unless node.respond_to?(:children?) && node.children?
+          return unless node.is_a?(::LibXML::XML::Node) && node.children?
 
           node.each_child do |child|
             collect_ns_from_subtree(child, ns_defs) if child.element?
@@ -1520,12 +1502,12 @@ module Moxml
           # Search element and ancestors for namespace with given prefix
           current = element
           while current
-            if current.respond_to?(:namespaces)
+            if current.is_a?(::LibXML::XML::Node)
               current.namespaces.each do |ns|
                 return ns if ns.prefix == prefix
               end
             end
-            current = current.respond_to?(:parent) ? current.parent : nil
+            current = current.is_a?(::LibXML::XML::Node) ? current.parent : nil
           end
           nil
         end
