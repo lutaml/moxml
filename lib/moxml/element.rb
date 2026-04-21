@@ -66,7 +66,9 @@ module Moxml
 
     def attributes
       @attributes_cache ||= adapter.attributes(@native).map do |attr|
-        Attribute.new(attr, context)
+        a = Attribute.new(attr, context)
+        a.instance_variable_set(:@parent_node, self)
+        a
       end
     end
 

@@ -95,6 +95,9 @@ RSpec.shared_examples "Moxml Edge Cases" do
       if context.config.adapter_name == :libxml
         skip "LibXML cannot query empty default namespace with XPath (documented limitation)"
       end
+      if context.config.adapter_name == :nokogiri
+        skip "Nokogiri XPath does not support querying empty namespace with xmlns prefix mapping"
+      end
       xml = <<~XML
         <root xmlns="http://default1.org">
           <child xmlns="http://default2.org">

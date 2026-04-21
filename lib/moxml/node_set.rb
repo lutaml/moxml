@@ -26,9 +26,10 @@ module Moxml
     def [](index)
       case index
       when Integer
-        return nil unless index >= 0 && index < @nodes.size
+        actual = index < 0 ? @nodes.size + index : index
+        return nil unless actual >= 0 && actual < @nodes.size
 
-        @wrapped[index] ||= wrap_with_parent(@nodes[index])
+        @wrapped[actual] ||= wrap_with_parent(@nodes[actual])
       when Range
         self.class.new(@nodes[index], @context)
       end

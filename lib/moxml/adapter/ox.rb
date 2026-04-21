@@ -17,16 +17,19 @@ module Moxml
           replace_children(doc, [element])
         end
 
-        def parse(xml, _options = {}, _context = nil)
+        def parse(xml, options = {}, _context = nil)
           native_doc = begin
             result = ::Ox.parse(xml)
 
             # result can be either Document or Element
             if result.is_a?(::Ox::Document)
+              assign_parents(result)
+              validate_single_root(result) if options[:strict]
               result
             else
               doc = ::Ox::Document.new
               doc << result
+              assign_parents(doc)
               doc
             end
           rescue ::Ox::ParseError => e
@@ -437,6 +440,25 @@ module Moxml
             node << child
           end
           node
+        end
+
+        def assign_parents(node, parent = nil)
+          node.parent = parent if node.respond_to?(:parent=) && parent
+          return unless node.respond_to?(:nodes)
+
+          node.nodes&.each do |child|
+            assign_parents(child, node)
+          end
+        end
+
+        def validate_single_root(document)
+          elements = document.nodes&.select { |n| n.is_a?(::Ox::Element) } || []
+          return unless elements.size > 1
+
+          raise Moxml::ParseError.new(
+            "Multiple root elements found",
+            source: nil,
+          )
         end
 
         def text_content(node)

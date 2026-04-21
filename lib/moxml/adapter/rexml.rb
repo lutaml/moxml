@@ -149,9 +149,11 @@ module Moxml
         end
 
         def duplicate_node(node)
-          # Make a complete duplicate of the node
-          # https://stackoverflow.com/questions/23878384/why-the-original-element-got-changed-when-i-modify-the-copy-created-by-dup-meth
-          Marshal.load(Marshal.dump(node))
+          if node.respond_to?(:deep_clone)
+            node.deep_clone
+          else
+            Marshal.load(Marshal.dump(node))
+          end
         end
 
         def children(node)
