@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "json"
+require "set"
 
 module Moxml
   # EntityRegistry maintains a knowledge base of XML entity definitions.
@@ -25,6 +26,9 @@ module Moxml
   class EntityRegistry
     # W3C entity data file name
     ENTITY_DATA_FILE = "w3c_entities.json"
+
+    # Standard XML predefined entities (XML spec §4.6)
+    STANDARD_CODEPOINTS = Set[0x26, 0x3C, 0x3E, 0x22, 0x27].freeze
 
     class << self
       # Get the raw entity data from the bundled JSON source
@@ -151,6 +155,37 @@ module Moxml
     # @return [String, nil] primary entity name or nil
     def primary_name_for_codepoint(codepoint)
       @by_codepoint[codepoint]&.first
+    end
+
+    # Check if a codepoint is one of the 5 standard XML predefined entities
+    # @param codepoint [Integer] Unicode codepoint
+    # @return [Boolean]
+    def standard_entity?(codepoint)
+      STANDARD_CODEPOINTS.include?(codepoint)
+    end
+
+    # Determine if an entity reference should be restored for a codepoint.
+    # Standard XML entities are always restored (required by XML spec).
+    # Non-standard entities are only restored when restore_entities is enabled.
+    # @param codepoint [Integer] Unicode codepoint
+    # @param config [Moxml::Config] configuration object
+    # @return [Boolean]
+    def should_restore?(codepoint, config:)
+      name = primary_name_for_codepoint(codepoint)
+      return false unless name
+      return true if standard_entity?(codepoint)
+      config.restore_entities
+    end
+
+    # Returns the set of codepoints that could potentially be restored as entities.
+    # Used by DocumentBuilder for O(1) fast-path checks.
+    # @return [Set<Integer>]
+    def restorable_codepoints
+      @restorable_codepoints ||= if @by_name.empty?
+                                    STANDARD_CODEPOINTS
+                                  else
+                                    Set.new(@by_name.values).freeze
+                                  end
     end
 
     # Register additional entities

@@ -2,13 +2,7 @@
 
 require_relative "base"
 require "libxml"
-require_relative "customized_libxml/node"
-require_relative "customized_libxml/element"
-require_relative "customized_libxml/text"
-require_relative "customized_libxml/comment"
-require_relative "customized_libxml/cdata"
-require_relative "customized_libxml/processing_instruction"
-require_relative "customized_libxml/declaration"
+require_relative "customized_libxml"
 
 module Moxml
   module Adapter
@@ -135,6 +129,14 @@ module Moxml
           CustomizedLibxml::Text.new(native)
         end
 
+        def create_native_entity_reference(name)
+          CustomizedLibxml::EntityReference.new(name)
+        end
+
+        def entity_reference_name(node)
+          node.name if node.is_a?(CustomizedLibxml::EntityReference)
+        end
+
         def create_native_cdata(content, _owner_doc = nil)
           native = ::LibXML::XML::Node.new_cdata(content.to_s)
           CustomizedLibxml::Cdata.new(native)
@@ -174,6 +176,7 @@ module Moxml
           if node.is_a?(CustomizedLibxml::ProcessingInstruction)
             return :processing_instruction
           end
+          return :entity_reference if node.is_a?(CustomizedLibxml::EntityReference)
           return :doctype if node.is_a?(DoctypeWrapper)
 
           # Unwrap if needed
@@ -298,6 +301,11 @@ module Moxml
 
             result << patch_node(child)
           end
+
+          # Include any EntityReference wrappers stored alongside native children
+          entity_refs = native_node.instance_variable_get(:@moxml_entity_refs)
+          result.concat(entity_refs) if entity_refs
+
           result
         end
 
@@ -498,6 +506,15 @@ module Moxml
           native_elem = unpatch_node(element)
           native_child = unpatch_node(child)
 
+          # EntityReference wrappers can't go in LibXML's native tree.
+          # Store alongside native children via instance variable.
+          if child.is_a?(CustomizedLibxml::EntityReference)
+            refs = native_elem.instance_variable_get(:@moxml_entity_refs) || []
+            refs << child
+            native_elem.instance_variable_set(:@moxml_entity_refs, refs)
+            return
+          end
+
           # For LibXML: if parent has a DEFAULT namespace (nil/empty prefix) and child is an element without a namespace,
           # explicitly set the child's namespace to match the parent's for XPath compatibility
           # NOTE: Prefixed namespaces are NOT inherited, only default namespaces
@@ -662,6 +679,8 @@ module Moxml
         end
 
         def text_content(node)
+          return "" if node.is_a?(CustomizedLibxml::EntityReference)
+
           native_node = unpatch_node(node)
           return nil unless native_node
 
@@ -1203,6 +1222,13 @@ module Moxml
               output << serialize_node(child)
             end
           end
+
+          # Append any EntityReference wrappers stored on this element
+          entity_refs = elem.instance_variable_get(:@moxml_entity_refs)
+          if entity_refs
+            entity_refs.each { |ref| output << ref.to_xml }
+          end
+
           output << "</#{elem.name}>"
 
           output
@@ -1214,7 +1240,8 @@ module Moxml
               (node.is_a?(CustomizedLibxml::ProcessingInstruction) ||
                node.is_a?(CustomizedLibxml::Comment) ||
                node.is_a?(CustomizedLibxml::Cdata) ||
-               node.is_a?(CustomizedLibxml::Text))
+               node.is_a?(CustomizedLibxml::Text) ||
+               node.is_a?(CustomizedLibxml::EntityReference))
             return node.to_xml
           end
 

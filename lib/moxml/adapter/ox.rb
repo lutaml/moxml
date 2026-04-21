@@ -3,9 +3,7 @@
 require_relative "base"
 require "ox"
 require "stringio"
-require_relative "customized_ox/text"
-require_relative "customized_ox/attribute"
-require_relative "customized_ox/namespace"
+require_relative "customized_ox"
 
 # insert :parent methods to all Ox classes inherit the Node class
 Ox::Node.attr_accessor :parent
@@ -78,6 +76,14 @@ module Moxml
 
         def create_native_text(content, _owner_doc = nil)
           content
+        end
+
+        def create_native_entity_reference(name)
+          ::Moxml::Adapter::CustomizedOx::EntityReference.new(name)
+        end
+
+        def entity_reference_name(node)
+          node.name if node.is_a?(::Moxml::Adapter::CustomizedOx::EntityReference)
         end
 
         def create_native_cdata(content, _owner_doc = nil)
@@ -179,6 +185,7 @@ module Moxml
           when ::Ox::Instruct then :processing_instruction
           when ::Ox::Element then :element
           when ::Ox::DocType then :doctype
+          when ::Moxml::Adapter::CustomizedOx::EntityReference then :entity_reference
           when ::Moxml::Adapter::CustomizedOx::Namespace then :banespace
           when ::Moxml::Adapter::CustomizedOx::Attribute then :attribute
           else :unknown
@@ -234,6 +241,7 @@ module Moxml
                                                                node.value]
           # when ::Moxml::Adapter::CustomizedOx::Attribute then { node.name => node.value }
           when ::Moxml::Adapter::CustomizedOx::Text then node.value
+          when ::Moxml::Adapter::CustomizedOx::EntityReference then node
           else node
           end
         end
@@ -377,6 +385,15 @@ module Moxml
           child.parent = element if child.respond_to?(:parent)
           element.nodes ||= []
           element.nodes << child
+
+          # Mark document if EntityReference is added (avoids tree scan in serialize)
+          if child.is_a?(::Moxml::Adapter::CustomizedOx::EntityReference)
+            root = element
+            while root.respond_to?(:parent) && root.parent
+              root = root.parent
+            end
+            root.instance_variable_set(:@moxml_entity_refs, true) if root
+          end
         end
 
         def add_previous_sibling(node, sibling)
@@ -467,6 +484,7 @@ module Moxml
           case node
           when String then node.to_s
           when ::Moxml::Adapter::CustomizedOx::Text then node.value
+          when ::Moxml::Adapter::CustomizedOx::EntityReference then ""
           else
             return "" unless node.respond_to?(:nodes)
 
@@ -601,18 +619,30 @@ module Moxml
         end
 
         def serialize(node, options = {})
+          # Fast path: skip EntityReference scan for documents (most common case)
+          if node.is_a?(::Ox::Document) &&
+              !(node.instance_variable_get(:@moxml_entity_refs))
+            return serialize_standard(node, options)
+          end
+
+          if tree_has_entity_references?(node)
+            serialize_custom(node, options)
+          else
+            serialize_standard(node, options)
+          end
+        end
+
+        private
+
+        def serialize_standard(node, options = {})
           output = ""
           if node.is_a?(::Ox::Document)
-            # Check if we should include declaration
-            # Priority: explicit option > document attributes
             should_include_decl = if options.key?(:no_declaration)
                                     !options[:no_declaration]
                                   else
-                                    # Check if document has declaration attributes
                                     node[:version] || node[:encoding] || node[:standalone]
                                   end
 
-            # Only add declaration if should_include_decl is true
             if should_include_decl
               version = node[:version] || "1.0"
               encoding = options[:encoding] || node[:encoding]
@@ -624,8 +654,7 @@ module Moxml
           end
 
           ox_options = {
-            indent: -1, # options[:indent] || -1, # indent is a beast
-            # with_xml: true,
+            indent: -1,
             with_instructions: true,
             encoding: options[:encoding],
             no_empty: options[:expand_empty],
@@ -633,7 +662,98 @@ module Moxml
           output + ::Ox.dump(node, ox_options)
         end
 
-        private
+        def tree_has_entity_references?(node)
+          case node
+          when ::Moxml::Adapter::CustomizedOx::EntityReference
+            true
+          when ::Ox::Element
+            node.nodes&.any? { |child| tree_has_entity_references?(child) } || false
+          when ::Ox::Document
+            node.nodes&.any? { |child| tree_has_entity_references?(child) } || false
+          else
+            false
+          end
+        end
+
+        def serialize_custom(node, options = {})
+          output = +""
+          if node.is_a?(::Ox::Document)
+            should_include_decl = if options.key?(:no_declaration)
+                                    !options[:no_declaration]
+                                  else
+                                    node[:version] || node[:encoding] || node[:standalone]
+                                  end
+            if should_include_decl
+              version = node[:version] || "1.0"
+              encoding = options[:encoding] || node[:encoding]
+              standalone = node[:standalone]
+              output << "<?xml version=\"#{version}\""
+              output << " encoding=\"#{encoding}\"" if encoding
+              output << " standalone=\"#{standalone}\"" if standalone
+              output << "?>"
+            end
+            (node.nodes || []).each do |child|
+              output << serialize_node_custom(child)
+            end
+          else
+            output << serialize_node_custom(node)
+          end
+          output
+        end
+
+        def serialize_node_custom(node)
+          case node
+          when ::Ox::Element then serialize_element_custom(node)
+          when String then escape_xml_text(node)
+          when ::Moxml::Adapter::CustomizedOx::Text then escape_xml_text(node.value)
+          when ::Moxml::Adapter::CustomizedOx::EntityReference then "&#{node.name};"
+          when ::Ox::CData then "<![CDATA[#{node.value}]]>"
+          when ::Ox::Comment then "<!--#{node.value}-->"
+          when ::Ox::Instruct then "<?#{node.target} #{node.value || ''}?>"
+          when ::Ox::DocType then "<!DOCTYPE #{node.value}>"
+          else ""
+          end
+        end
+
+        def serialize_element_custom(elem)
+          output = "<#{elem.name}"
+          elem.attributes.each do |name, value|
+            output << " #{name}=\"#{escape_xml_attribute(value.to_s)}\""
+          end
+
+          if elem.nodes.nil? || elem.nodes.empty?
+            output << "/>"
+            return output
+          end
+
+          output << ">"
+          elem.nodes.each do |child|
+            output << serialize_node_custom(child)
+          end
+          output << "</#{elem.name}>"
+          output
+        end
+
+        def escape_xml_text(text)
+          text.to_s.gsub(/[<>&]/) do |match|
+            case match
+            when "<" then "&lt;"
+            when ">" then "&gt;"
+            when "&" then "&amp;"
+            end
+          end
+        end
+
+        def escape_xml_attribute(value)
+          value.to_s.gsub(/[<>&"]/) do |match|
+            case match
+            when "<" then "&lt;"
+            when ">" then "&gt;"
+            when "&" then "&amp;"
+            when '"' then "&quot;"
+            end
+          end
+        end
 
         # Translate a subset of XPath to Ox locate() syntax
         # Supports: //element, /path/to/element, .//element, element[@attr]

@@ -19,6 +19,8 @@ module Moxml
           case node
           when ::REXML::XMLDecl
             write_declaration(node, output)
+          when ::Moxml::Adapter::CustomizedRexml::EntityReference
+            output << "&#{node.name};"
           else
             super
           end

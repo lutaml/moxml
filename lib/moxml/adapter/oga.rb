@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "base"
-require_relative "customized_oga/xml_generator"
-require_relative "customized_oga/xml_declaration"
+require_relative "customized_oga"
 require "oga"
 
 module Moxml
@@ -70,6 +69,17 @@ module Moxml
 
         def create_native_text(content, _owner_doc = nil)
           ::Oga::XML::Text.new(text: encode_entity_markers(content))
+        end
+
+        def create_native_entity_reference(name)
+          text = ::Oga::XML::Text.new
+          text.text = "#{ENTITY_MARKER}#{name};"
+          text.instance_variable_set(:@moxml_entity_name, name)
+          text
+        end
+
+        def entity_reference_name(node)
+          node.instance_variable_get(:@moxml_entity_name)
         end
 
         def create_native_cdata(content, _owner_doc = nil)
@@ -150,7 +160,12 @@ module Moxml
         def node_type(node)
           case node
           when ::Oga::XML::Element then :element
-          when ::Oga::XML::Text then :text
+          when ::Oga::XML::Text
+            if node.instance_variable_get(:@moxml_entity_name)
+              :entity_reference
+            else
+              :text
+            end
           when ::Oga::XML::Cdata then :cdata
           when ::Oga::XML::Comment then :comment
           when ::Oga::XML::Attribute then :attribute
