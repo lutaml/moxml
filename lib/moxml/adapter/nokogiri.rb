@@ -47,7 +47,7 @@ module Moxml
           parser = ::Nokogiri::XML::SAX::Parser.new(bridge)
 
           # Parse
-          if xml.respond_to?(:read)
+          if xml.is_a?(IO) || xml.is_a?(StringIO)
             parser.parse(xml)
           else
             parser.parse(xml.to_s)
@@ -202,7 +202,7 @@ module Moxml
         end
 
         def root(document)
-          document.respond_to?(:root) ? document.root : document.children.first
+          document.is_a?(::Nokogiri::XML::Document) ? document.root : document.children.first
         end
 
         def attribute_element(attr)
@@ -390,8 +390,7 @@ module Moxml
           # 2. Check Nokogiri's internal @xml_decl (when remove is called, this becomes nil)
           if options.key?(:no_declaration)
             save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION if options[:no_declaration]
-          elsif node.respond_to?(:instance_variable_get) &&
-              node.instance_variable_defined?(:@xml_decl)
+          elsif node.instance_variable_defined?(:@xml_decl)
             # Nokogiri's internal state - if nil, declaration was removed
             xml_decl = node.instance_variable_get(:@xml_decl)
             save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION if xml_decl.nil?

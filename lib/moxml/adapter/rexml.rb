@@ -54,7 +54,7 @@ module Moxml
 
           bridge = REXMLSAX2Bridge.new(handler)
 
-          xml_string = xml.respond_to?(:read) ? xml.read : xml.to_s
+          xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
           source = ::REXML::IOSource.new(StringIO.new(xml_string))
 
           parser = ::REXML::Parsers::SAX2Parser.new(source)
@@ -166,7 +166,7 @@ module Moxml
         end
 
         def children(node)
-          return [] unless node.respond_to?(:children)
+          return [] unless node.is_a?(::REXML::Parent)
 
           # Get all children and filter out empty text nodes between elements
           result = node.children.reject do |child|
@@ -240,7 +240,7 @@ module Moxml
         end
 
         def attributes(element)
-          return [] unless element.respond_to?(:attributes)
+          return [] unless element.is_a?(::REXML::Element)
 
           # Only return non-namespace attributes
           element.attributes.values
@@ -447,7 +447,7 @@ module Moxml
         # add a namespace prefix to the element name AND a namespace definition
         def set_namespace(element, ns)
           prefix = ns.name.to_s.empty? ? "xmlns" : ns.name.to_s
-          if element.respond_to?(:add_namespace)
+          if element.is_a?(::REXML::Element)
             element.add_namespace(prefix,
                                   ns.value)
           end

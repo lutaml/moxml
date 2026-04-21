@@ -13,15 +13,13 @@ module Moxml
       @current_doc = context.create_document(native_doc)
 
       # Transfer has_declaration flag if present
-      if native_doc.respond_to?(:instance_variable_get) &&
-          native_doc.instance_variable_defined?(:@moxml_has_declaration)
+      if native_doc.instance_variable_defined?(:@moxml_has_declaration)
         has_declaration = native_doc.instance_variable_get(:@moxml_has_declaration)
         @current_doc.has_xml_declaration = has_declaration
       end
 
       # Transfer DOCTYPE from parsed document if it exists
-      if native_doc.respond_to?(:instance_variable_get) &&
-          native_doc.instance_variable_defined?(:@moxml_doctype)
+      if native_doc.instance_variable_defined?(:@moxml_doctype)
         doctype = native_doc.instance_variable_get(:@moxml_doctype)
         if doctype
           @current_doc.native.instance_variable_set(:@moxml_doctype,

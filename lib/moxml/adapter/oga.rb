@@ -45,7 +45,7 @@ module Moxml
         def sax_parse(xml, handler)
           bridge = OgaSAXBridge.new(handler)
 
-          xml_string = xml.respond_to?(:read) ? xml.read : xml.to_s
+          xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
 
           # Manually call start_document (Oga doesn't)
           handler.on_start_document
@@ -142,9 +142,9 @@ module Moxml
         end
 
         def namespace(element)
-          if element.respond_to?(:namespace)
+          if element.is_a?(::Oga::XML::Element)
             element.namespace
-          elsif element.respond_to?(:namespaces)
+          elsif element.is_a?(::Oga::XML::Attribute)
             element.namespaces.values.last
           end
         rescue NoMethodError
@@ -193,7 +193,7 @@ module Moxml
                              node.doctype].compact
           end
 
-          return all_children unless node.respond_to?(:children)
+          return all_children unless node.is_a?(::Oga::XML::Node) || node.is_a?(::Oga::XML::Document)
 
           all_children + node.children.reject do |child|
             child.is_a?(::Oga::XML::Text) &&
@@ -203,7 +203,7 @@ module Moxml
         end
 
         def parent(node)
-          node.parent if node.respond_to?(:parent)
+          node.parent if node.is_a?(::Oga::XML::Node)
         end
 
         def next_sibling(node)
@@ -230,7 +230,7 @@ module Moxml
         end
 
         def attributes(element)
-          return [] unless element.respond_to?(:attributes)
+          return [] unless element.is_a?(::Oga::XML::Element)
 
           # remove attributes-namespaces
           element.attributes.reject do |attr|
@@ -331,10 +331,9 @@ module Moxml
         end
 
         def inner_text(node)
-          text = if node.respond_to?(:inner_text)
+          text = if node.is_a?(::Oga::XML::Element)
                    node.inner_text
                  else
-                   # Oga::XML::Text node for example
                    node.text
                  end
           restore_entity_markers(text)
@@ -342,7 +341,7 @@ module Moxml
 
         def set_text_content(node, content)
           encoded = encode_entity_markers(content)
-          if node.respond_to?(:inner_text=)
+          if node.is_a?(::Oga::XML::Element)
             node.inner_text = encoded
           else
             node.text = encoded
@@ -385,7 +384,7 @@ module Moxml
         end
 
         def namespace_definitions(node)
-          return [] unless node.respond_to?(:namespaces)
+          return [] unless node.is_a?(::Oga::XML::Element)
 
           node.namespaces.values
         end

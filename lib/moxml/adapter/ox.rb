@@ -51,7 +51,7 @@ module Moxml
           bridge = OxSAXBridge.new(handler)
 
           # Parse using Ox's SAX parser
-          xml_string = xml.respond_to?(:read) ? xml.read : xml.to_s
+          xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
 
           begin
             ::Ox.sax_parse(bridge, StringIO.new(xml_string))
@@ -130,11 +130,11 @@ module Moxml
         end
 
         def set_namespace(element, ns)
-          return unless element.respond_to?(:name)
+          return unless element.is_a?(::Ox::Element) || element.is_a?(::Ox::Node)
 
           prefix = ns.prefix
           # attributes don't have attributes but can have a namespace prefix
-          if element.respond_to?(:attributes)
+          if element.is_a?(::Ox::Element)
             set_attribute(element, ns.expanded_prefix,
                           ns.uri)
           end
@@ -145,8 +145,7 @@ module Moxml
 
         def namespace(element)
           prefix =
-            if element.respond_to?(:prefix)
-              # attribute
+            if element.is_a?(::Moxml::Adapter::CustomizedOx::Attribute)
               element.prefix
             elsif element.name.include?(":")
               element.name.split(":").first
@@ -154,7 +153,7 @@ module Moxml
           attr_name = ["xmlns", prefix].compact.join(":")
 
           ([element] + ancestors(element)).each do |node|
-            next unless node.respond_to?(:attributes) && node.attributes
+            next unless node.is_a?(::Ox::Element) && node.attributes
 
             if node[attr_name]
               return ::Moxml::Adapter::CustomizedOx::Namespace.new(
@@ -204,10 +203,9 @@ module Moxml
         end
 
         def set_node_name(node, name)
-          if node.respond_to?(:name=)
-            node.name = name
-          elsif node.respond_to?(:value=)
-            node.value = name
+          case node
+          when ::Ox::Element then node.name = name
+          when ::Ox::Instruct then node.value = name
           end
         end
 
@@ -229,7 +227,7 @@ module Moxml
             else node
             end
 
-          new_node.parent = parent if new_node.respond_to?(:parent)
+          new_node.parent = parent if new_node.is_a?(::Ox::Node)
 
           new_node
         end
@@ -247,7 +245,7 @@ module Moxml
         end
 
         def children(node)
-          return [] unless node.respond_to?(:nodes)
+          return [] unless node.is_a?(::Ox::Element) || node.is_a?(::Ox::Document)
 
           result = node.nodes || []
           # Ox doesn't set parent references during parsing.
@@ -257,7 +255,7 @@ module Moxml
         end
 
         def parent(node)
-          node.parent if node.respond_to?(:parent)
+          node.parent if node.is_a?(::Ox::Node)
         end
 
         def next_sibling(node)
@@ -287,9 +285,7 @@ module Moxml
         end
 
         def attributes(element)
-          unless element.respond_to?(:attributes) && element.attributes
-            return []
-          end
+          return [] unless element.is_a?(::Ox::Element) && element.attributes
 
           element.attributes.filter_map do |name, value|
             next if name.to_s.start_with?("xmlns")
@@ -339,7 +335,7 @@ module Moxml
         end
 
         def get_attribute(element, name)
-          return unless element.respond_to?(:attributes) && element.attributes
+          return unless element.is_a?(::Ox::Element) && element.attributes
           unless element.attributes.key?(name.to_s) || element.attributes.key?(name.to_s.to_sym)
             return
           end
@@ -357,7 +353,7 @@ module Moxml
         end
 
         def remove_attribute(element, name)
-          return unless element.respond_to?(:attributes) && element.attributes
+          return unless element.is_a?(::Ox::Element) && element.attributes
 
           element.attributes.delete(name.to_s)
           element.attributes.delete(name.to_s.to_sym)
@@ -382,24 +378,24 @@ module Moxml
             end
           end
 
-          child.parent = element if child.respond_to?(:parent)
+          child.parent = element if child.is_a?(::Ox::Node)
           element.nodes ||= []
           element.nodes << child
 
           # Mark document if EntityReference is added (avoids tree scan in serialize)
           if child.is_a?(::Moxml::Adapter::CustomizedOx::EntityReference)
             root = element
-            while root.respond_to?(:parent) && root.parent
+            while root.is_a?(::Ox::Node) && root.parent
               root = root.parent
             end
-            root.instance_variable_set(:@moxml_entity_refs, true) if root
+            root&.instance_variable_set(:@moxml_entity_refs, true)
           end
         end
 
         def add_previous_sibling(node, sibling)
           return unless (parent = parent(node))
 
-          if sibling.respond_to?(:parent)
+          if sibling.is_a?(::Ox::Node)
             sibling.parent&.nodes&.delete(sibling)
             sibling.parent = parent
           end
@@ -410,7 +406,7 @@ module Moxml
         def add_next_sibling(node, sibling)
           return unless (parent = parent(node))
 
-          if sibling.respond_to?(:parent)
+          if sibling.is_a?(::Ox::Node)
             sibling.parent&.nodes&.delete(sibling)
             sibling.parent = parent
           end
@@ -445,7 +441,7 @@ module Moxml
 
           return unless (parent = parent(node))
 
-          new_node.parent = parent if new_node.respond_to?(:parent)
+          new_node.parent = parent if new_node.is_a?(::Ox::Node)
           idx = parent.nodes.index(node)
           parent.nodes[idx] = new_node if idx
         end
@@ -453,7 +449,7 @@ module Moxml
         def replace_children(node, new_children)
           node.remove_children_by_path("*")
           new_children.each do |child|
-            child.parent = node if child.respond_to?(:parent)
+            child.parent = node if child.is_a?(::Ox::Node)
             node << child
           end
           node
@@ -486,7 +482,7 @@ module Moxml
           when ::Moxml::Adapter::CustomizedOx::Text then node.value
           when ::Moxml::Adapter::CustomizedOx::EntityReference then ""
           else
-            return "" unless node.respond_to?(:nodes)
+            return "" unless node.is_a?(::Ox::Element) || node.is_a?(::Ox::Document)
 
             node.nodes.map do |n|
               text_content(n)
@@ -495,7 +491,7 @@ module Moxml
         end
 
         def inner_text(node)
-          return "" unless node.respond_to?(:nodes)
+          return "" unless node.is_a?(::Ox::Element) || node.is_a?(::Ox::Document)
 
           node.nodes.grep(String).join
         end
@@ -543,7 +539,7 @@ module Moxml
 
         def namespace_definitions(node)
           ([node] + ancestors(node)).reverse.each_with_object({}) do |n, namespaces|
-            next unless n.respond_to?(:attributes) && n.attributes
+            next unless n.is_a?(::Ox::Element) && n.attributes
 
             n.attributes.each do |name, value|
               next unless name.to_s.start_with?("xmlns")
@@ -621,7 +617,7 @@ module Moxml
         def serialize(node, options = {})
           # Fast path: skip EntityReference scan for documents (most common case)
           if node.is_a?(::Ox::Document) &&
-              !(node.instance_variable_get(:@moxml_entity_refs))
+              !node.instance_variable_get(:@moxml_entity_refs)
             return serialize_standard(node, options)
           end
 
@@ -667,9 +663,13 @@ module Moxml
           when ::Moxml::Adapter::CustomizedOx::EntityReference
             true
           when ::Ox::Element
-            node.nodes&.any? { |child| tree_has_entity_references?(child) } || false
+            node.nodes&.any? do |child|
+              tree_has_entity_references?(child)
+            end || false
           when ::Ox::Document
-            node.nodes&.any? { |child| tree_has_entity_references?(child) } || false
+            node.nodes&.any? do |child|
+              tree_has_entity_references?(child)
+            end || false
           else
             false
           end
@@ -805,7 +805,7 @@ module Moxml
 
           result = nil
           traverse(root) do |node|
-            next unless node.respond_to?(:nodes)
+            next unless node.is_a?(::Ox::Element) || node.is_a?(::Ox::Document)
 
             node.nodes&.each do |child|
               if child.equal?(target_node)
@@ -822,7 +822,7 @@ module Moxml
           return unless node
 
           yield node
-          return unless node.respond_to?(:nodes)
+          return unless node.is_a?(::Ox::Element) || node.is_a?(::Ox::Document)
 
           node.nodes&.each { |child| traverse(child, &block) }
         end
