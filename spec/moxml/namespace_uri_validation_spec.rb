@@ -134,11 +134,15 @@ RSpec.describe "Namespace URI validation" do
     end
 
     it "still accepts valid URIs" do
-      expect { element.add_namespace("ns", "http://example.com") }.not_to raise_error
+      expect do
+        element.add_namespace("ns", "http://example.com")
+      end.not_to raise_error
     end
 
     it "accepts prefixes with dots in lenient mode" do
-      expect { element.add_namespace("xmlns_1.0", "http://example.com") }.not_to raise_error
+      expect do
+        element.add_namespace("xmlns_1.0", "http://example.com")
+      end.not_to raise_error
     end
   end
 end

@@ -2,7 +2,8 @@
 
 require "rexml/document"
 
-W3C_NS_FIXTURES_DIR = File.expand_path("../fixtures/w3c/namespaces/1.0", __dir__)
+W3C_NS_FIXTURES_DIR = File.expand_path("../fixtures/w3c/namespaces/1.0",
+                                       __dir__)
 
 # Parse the test catalog to get test metadata
 def load_w3c_namespace_tests
