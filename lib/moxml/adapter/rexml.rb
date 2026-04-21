@@ -4,7 +4,7 @@ require_relative "base"
 require "rexml/document"
 require "rexml/xpath"
 require "set"
-require_relative "customized_rexml/formatter"
+require_relative "customized_rexml"
 
 module Moxml
   module Adapter
@@ -77,6 +77,14 @@ module Moxml
           ::REXML::Text.new(content.to_s, true, nil)
         end
 
+        def create_native_entity_reference(name)
+          ::Moxml::Adapter::CustomizedRexml::EntityReference.new(name)
+        end
+
+        def entity_reference_name(node)
+          node.name if node.is_a?(::Moxml::Adapter::CustomizedRexml::EntityReference)
+        end
+
         def create_native_cdata(content, _owner_doc = nil)
           ::REXML::CData.new(content.to_s)
         end
@@ -124,6 +132,7 @@ module Moxml
           when ::REXML::Instruction then :processing_instruction
           when ::REXML::DocType then :doctype
           when ::REXML::XMLDecl then :declaration
+          when ::Moxml::Adapter::CustomizedRexml::EntityReference then :entity_reference
           else :unknown
           end
         end
@@ -282,6 +291,12 @@ module Moxml
           case child
           when String
             element.add_text(child)
+          when ::Moxml::Adapter::CustomizedRexml::EntityReference
+            # REXML doesn't support custom node types in its tree.
+            # Store alongside native children via instance variable.
+            refs = element.instance_variable_get(:@moxml_entity_refs) || []
+            refs << child
+            element.instance_variable_set(:@moxml_entity_refs, refs)
           else
             element.add(child)
           end
@@ -375,6 +390,8 @@ module Moxml
           case node
           when ::REXML::Text, ::REXML::CData
             node.value.to_s
+          when ::Moxml::Adapter::CustomizedRexml::EntityReference
+            ""
           when ::REXML::Element
             # Extract text recursively from all children to match other adapters
             extract_text_recursively(node)
