@@ -119,4 +119,50 @@ RSpec.describe Moxml::Adapter::Oga do
       expect(serialized).not_to include("\x01")
     end
   end
+
+  describe "doctype handling" do
+    it "correctly parses PUBLIC doctype" do
+      xml = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html/>'
+      doc = described_class.parse(xml)
+      doctype = doc.children.find { |c| c.is_a?(Moxml::Doctype) }
+
+      expect(doctype.name).to eq("html")
+      expect(doctype.external_id).to eq("-//W3C//DTD XHTML 1.0 Strict//EN")
+      expect(doctype.system_id).to eq("http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd")
+    end
+
+    it "correctly parses SYSTEM doctype" do
+      xml = '<!DOCTYPE config SYSTEM "config.dtd"><config/>'
+      doc = described_class.parse(xml)
+      doctype = doc.children.find { |c| c.is_a?(Moxml::Doctype) }
+
+      expect(doctype.name).to eq("config")
+      expect(doctype.external_id).to be_nil
+      expect(doctype.system_id).to eq("config.dtd")
+    end
+
+    it "correctly parses simple doctype" do
+      xml = "<!DOCTYPE html><html/>"
+      doc = described_class.parse(xml)
+      doctype = doc.children.find { |c| c.is_a?(Moxml::Doctype) }
+
+      expect(doctype.name).to eq("html")
+      expect(doctype.external_id).to be_nil
+      expect(doctype.system_id).to be_nil
+    end
+
+    it "round-trips PUBLIC doctype" do
+      xml = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html/>'
+      doc = described_class.parse(xml)
+
+      expect(doc.to_xml).to include('PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"')
+    end
+
+    it "round-trips SYSTEM doctype" do
+      xml = '<!DOCTYPE config SYSTEM "config.dtd"><config/>'
+      doc = described_class.parse(xml)
+
+      expect(doc.to_xml).to include('SYSTEM "config.dtd"')
+    end
+  end
 end
