@@ -80,7 +80,7 @@ module Moxml
 
     def add_namespace(prefix, uri)
       adapter.create_namespace(@native, prefix, uri,
-                               namespace_uri_mode: context.config.namespace_uri_mode)
+                               namespace_validation_mode: context.config.namespace_validation_mode)
       @namespaces_cache = nil
       self
     rescue ValidationError => e
@@ -108,7 +108,7 @@ module Moxml
         adapter.set_namespace(
           @native,
           adapter.create_namespace(@native, *ns_or_hash.to_a.first,
-                                   namespace_uri_mode: context.config.namespace_uri_mode),
+                                   namespace_validation_mode: context.config.namespace_validation_mode),
         )
       else
         adapter.set_namespace(@native, ns_or_hash&.native)

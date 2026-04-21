@@ -17,8 +17,8 @@ RSpec.describe Moxml::Config do
       expect(config.entity_load_mode).to eq(:required)
     end
 
-    it "sets default namespace_uri_mode to :strict" do
-      expect(config.namespace_uri_mode).to eq(:strict)
+    it "sets default namespace_validation_mode to :strict" do
+      expect(config.namespace_validation_mode).to eq(:strict)
     end
   end
 
@@ -66,26 +66,26 @@ RSpec.describe Moxml::Config do
     end
   end
 
-  describe "#namespace_uri_mode=" do
+  describe "#namespace_validation_mode=" do
     it "accepts :strict" do
-      config.namespace_uri_mode = :strict
-      expect(config.namespace_uri_mode).to eq(:strict)
+      config.namespace_validation_mode = :strict
+      expect(config.namespace_validation_mode).to eq(:strict)
     end
 
     it "accepts :lenient" do
-      config.namespace_uri_mode = :lenient
-      expect(config.namespace_uri_mode).to eq(:lenient)
+      config.namespace_validation_mode = :lenient
+      expect(config.namespace_validation_mode).to eq(:lenient)
     end
 
     it "accepts string values" do
-      config.namespace_uri_mode = "lenient"
-      expect(config.namespace_uri_mode).to eq(:lenient)
+      config.namespace_validation_mode = "lenient"
+      expect(config.namespace_validation_mode).to eq(:lenient)
     end
 
     it "raises error for invalid mode" do
       expect do
-        config.namespace_uri_mode = :invalid
-      end.to raise_error(ArgumentError, /Invalid namespace_uri_mode/)
+        config.namespace_validation_mode = :invalid
+      end.to raise_error(ArgumentError, /Invalid namespace_validation_mode/)
     end
   end
 
