@@ -24,7 +24,7 @@ module Moxml
       end
     end
 
-    NAMESPACE_URI_MODES = %i[strict lenient].freeze
+    NAMESPACE_VALIDATION_MODES = %i[strict lenient].freeze
 
     attr_reader :adapter_name
     attr_accessor :strict_parsing,
@@ -35,7 +35,7 @@ module Moxml
                   :preload_entity_sets,
                   :entity_load_mode,
                   :entity_provider,
-                  :namespace_uri_mode
+                  :namespace_validation_mode
 
     def initialize(adapter_name = nil, strict_parsing = nil,
                    default_encoding = nil)
@@ -49,7 +49,7 @@ module Moxml
       @preload_entity_sets = []
       @entity_load_mode = :required
       @entity_provider = nil
-      @namespace_uri_mode = :strict
+      @namespace_validation_mode = :strict
     end
 
     def adapter=(name)
@@ -86,14 +86,14 @@ module Moxml
       @entity_load_mode = mode
     end
 
-    def namespace_uri_mode=(mode)
+    def namespace_validation_mode=(mode)
       mode = mode.to_sym
-      unless NAMESPACE_URI_MODES.include?(mode)
+      unless NAMESPACE_VALIDATION_MODES.include?(mode)
         raise ArgumentError,
-              "Invalid namespace_uri_mode: #{mode}. Must be one of: #{NAMESPACE_URI_MODES.join(', ')}"
+              "Invalid namespace_validation_mode: #{mode}. Must be one of: #{NAMESPACE_VALIDATION_MODES.join(', ')}"
       end
 
-      @namespace_uri_mode = mode
+      @namespace_validation_mode = mode
     end
 
     # Backward compatibility: convert old boolean to new symbol

@@ -92,10 +92,10 @@ RSpec.describe "Namespace URI validation" do
     end
   end
 
-  describe "lenient namespace_uri_mode" do
+  describe "lenient namespace_validation_mode" do
     let(:context) do
       Moxml.new do |config|
-        config.namespace_uri_mode = :lenient
+        config.namespace_validation_mode = :lenient
       end
     end
 
@@ -135,6 +135,10 @@ RSpec.describe "Namespace URI validation" do
 
     it "still accepts valid URIs" do
       expect { element.add_namespace("ns", "http://example.com") }.not_to raise_error
+    end
+
+    it "accepts prefixes with dots in lenient mode" do
+      expect { element.add_namespace("xmlns_1.0", "http://example.com") }.not_to raise_error
     end
   end
 end
