@@ -376,16 +376,26 @@ module Moxml
         end
 
         # Doctype accessor methods
+        # Note: Oga stores SYSTEM identifier in public_id for SYSTEM doctypes.
+        # See: Oga::XML::Doctype puts SYSTEM dtd in public_id, system_id is nil.
         def doctype_name(native)
           native.name
         end
 
         def doctype_external_id(native)
-          native.public_id
+          if native.type == "SYSTEM"
+            nil
+          else
+            native.public_id
+          end
         end
 
         def doctype_system_id(native)
-          native.system_id
+          if native.type == "SYSTEM"
+            native.public_id
+          else
+            native.system_id
+          end
         end
 
         def xpath(node, expression, namespaces = nil)

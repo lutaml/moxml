@@ -46,4 +46,45 @@ RSpec.describe Moxml::Doctype do
       expect(doctype.name).to eq("html")
     end
   end
+
+  describe "parsing" do
+    %i[nokogiri oga rexml ox].each do |adapter_name|
+      context "with #{adapter_name} adapter" do
+        let(:ctx) { Moxml.new(adapter_name) }
+
+        it "parses PUBLIC doctype with external and system identifiers" do
+          xml = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html/>'
+          doc = ctx.parse(xml)
+          doctype = doc.children.find { |c| c.is_a?(described_class) }
+
+          expect(doctype).not_to be_nil
+          expect(doctype.name).to eq("html")
+          expect(doctype.external_id).to eq("-//W3C//DTD XHTML 1.0 Strict//EN")
+          expect(doctype.system_id).to eq("http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd")
+        end
+
+        it "parses SYSTEM doctype with system identifier only" do
+          xml = '<!DOCTYPE config SYSTEM "config.dtd"><config/>'
+          doc = ctx.parse(xml)
+          doctype = doc.children.find { |c| c.is_a?(described_class) }
+
+          expect(doctype).not_to be_nil
+          expect(doctype.name).to eq("config")
+          expect(doctype.external_id).to be_nil
+          expect(doctype.system_id).to eq("config.dtd")
+        end
+
+        it "parses simple doctype without identifiers" do
+          xml = "<!DOCTYPE html><html/>"
+          doc = ctx.parse(xml)
+          doctype = doc.children.find { |c| c.is_a?(described_class) }
+
+          expect(doctype).not_to be_nil
+          expect(doctype.name).to eq("html")
+          expect(doctype.external_id).to be_nil
+          expect(doctype.system_id).to be_nil
+        end
+      end
+    end
+  end
 end

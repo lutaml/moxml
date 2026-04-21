@@ -3,6 +3,7 @@
 module Moxml
   class Builder
     attr_reader :document
+    alias_method :doc, :document
 
     def initialize(context)
       @context = context
