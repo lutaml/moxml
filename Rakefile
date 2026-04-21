@@ -36,7 +36,9 @@ namespace :spec do
       categories = ENV.fetch("CATEGORIES", "").split(",").map(&:strip)
       abort "Usage: CATEGORIES=metanorma,rfcxml rake spec:consistency:by_category" if categories.empty?
 
-      include_filters = categories.map { |c| "--tag fixture_category:#{c}" }.join(" ")
+      include_filters = categories.map do |c|
+        "--tag fixture_category:#{c}"
+      end.join(" ")
       sh "bundle exec rspec spec/consistency/ --tag round_trip #{include_filters}"
     end
   end

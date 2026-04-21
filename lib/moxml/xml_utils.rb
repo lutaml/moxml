@@ -81,7 +81,7 @@ module Moxml
     end
 
     def validate_prefix(prefix)
-      return if prefix.match?(/\A[a-zA-Z_][\w.\-]*\z/)
+      return if prefix.match?(/\A[a-zA-Z_][\w.-]*\z/)
 
       raise ValidationError, "Invalid namespace prefix: #{prefix}"
     end

@@ -815,25 +815,27 @@ context = Moxml.new do |config|
 end
 ----
 
-=== Namespace URI validation
+=== Namespace validation
 
 Moxml validates namespace URIs against
-https://www.rfc-editor.org/rfc/rfc3986[RFC 3986] by default, as required by the
-https://www.w3.org/TR/xml-names/[W3C Namespaces in XML] specification.
+https://www.rfc-editor.org/rfc/rfc3986[RFC 3986] and namespace prefixes against
+the https://www.w3.org/TR/xml-names/[W3C Namespaces in XML] NCName production
+rules by default.
 
-For documents that use non-standard namespace identifiers, a lenient mode is
-available:
+For documents that use non-standard namespace identifiers or prefixes, a lenient
+mode is available:
 
 [source,ruby]
 ----
-# Strict mode (default) — rejects invalid URIs per RFC 3986
+# Strict mode (default) — validates URI per RFC 3986 and prefix per NCName rules
 context = Moxml.new do |config|
-  config.namespace_uri_mode = :strict
+  config.namespace_validation_mode = :strict
 end
 
-# Lenient mode — accepts any string as a namespace URI
+# Lenient mode — accepts any URI string and defers prefix validation to the
+# underlying XML parser
 context = Moxml.new do |config|
-  config.namespace_uri_mode = :lenient
+  config.namespace_validation_mode = :lenient
 end
 ----
 
