@@ -109,9 +109,6 @@ RSpec.shared_examples "Moxml::Node" do
         if context.config.adapter_name == :ox
           pending "Ox doesn't have a native XPath"
         end
-        if context.config.adapter_name == :headed_ox
-          skip "HeadedOx limitation: Text content access from nested elements needs investigation. See docs/_pages/headed-ox-limitations.adoc"
-        end
 
         node = doc.at_xpath("//b")
         expect(node.text).to eq("1")

@@ -388,30 +388,38 @@ module Moxml
         document_or_node(input).if_true do
           # Create a proper if-else structure that prevents double traversal
           input.is_a?(doc_class).if_true do
-            # DOCUMENT PATH: test root, then traverse from root
-            root = unique_literal(:root)
-            root.assign(input.root).followed_by do
-              root.if_true do
-                # Test root first
-                condition = process(ast, root)
-                (if block_given?
-                   condition.if_true { yield root }
-                 else
-                   condition.if_true { root }
-                 end)
-                  .followed_by do
-                    # Traverse descendants FROM root only (not document.each_node)
-                    root.each_node.add_block(node) do
-                      desc_condition = process(ast, node)
-                      if block_given?
-                        desc_condition.if_true { yield node }
-                      else
-                        desc_condition.if_true { node }
+            # DOCUMENT PATH: test document (self), then root, then traverse
+            doc_condition = process(ast, input)
+            (if block_given?
+               doc_condition.if_true { yield input }
+             else
+               doc_condition.if_true { input }
+             end)
+              .followed_by do
+                root = unique_literal(:root)
+                root.assign(input.root).followed_by do
+                  root.if_true do
+                    # Test root
+                    condition = process(ast, root)
+                    (if block_given?
+                       condition.if_true { yield root }
+                     else
+                       condition.if_true { root }
+                     end)
+                      .followed_by do
+                        # Traverse descendants FROM root only (not document.each_node)
+                        root.each_node.add_block(node) do
+                          desc_condition = process(ast, node)
+                          if block_given?
+                            desc_condition.if_true { yield node }
+                          else
+                            desc_condition.if_true { node }
+                          end
+                        end
                       end
-                    end
                   end
+                end
               end
-            end
           end.else do
             # NON-DOCUMENT PATH: test self, then traverse from self
             condition = process(ast, input)
@@ -495,6 +503,17 @@ module Moxml
       # Handle wildcard test (*)
       def on_wildcard(_ast, input)
         element_or_attribute(input)
+      end
+
+      # Handle node type test (node(), text(), comment(), etc.)
+      # node() matches any node — always returns truthy
+      def on_node_type(ast, input)
+        case ast.value
+        when "node"
+          # node() matches everything — use a truthy literal
+          Ruby::Node.new(:lit, ["true"])
+        else element_or_attribute(input)
+        end
       end
 
       # Match element/attribute names and namespaces

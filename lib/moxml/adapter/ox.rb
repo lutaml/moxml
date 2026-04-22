@@ -620,17 +620,44 @@ module Moxml
         end
 
         def serialize(node, options = {})
-          # Fast path: skip EntityReference scan for documents (most common case)
-          if node.is_a?(::Ox::Document) &&
-              !attachments.get(node, :has_entity_refs)
+          needs_custom = needs_custom_serialize?(node)
+
+          unless needs_custom
             return serialize_standard(node, options)
           end
 
-          if tree_has_entity_references?(node)
-            serialize_custom(node, options)
-          else
-            serialize_standard(node, options)
+          serialize_custom(node, options)
+        end
+
+        def needs_custom_serialize?(node)
+          # Fast path: single CData with ]]>
+          return true if node.is_a?(::Ox::CData) && node.value&.include?("]]>")
+
+          # Only documents/elements can contain entity refs or CDATA issues
+          return false unless node.is_a?(::Ox::Document) || node.is_a?(::Ox::Element)
+
+          # Check cached flags on documents (most common case)
+          if node.is_a?(::Ox::Document)
+            return true if attachments.get(node, :has_entity_refs)
+            return true if attachments.get(node, :has_cdata_end_markers)
+            return false if attachments.key?(node, :has_entity_refs) &&
+                            attachments.key?(node, :has_cdata_end_markers)
           end
+
+          # Only scan tree on first call — short-circuit on first hit
+          has_er = tree_has_entity_references?(node)
+          if has_er
+            attachments.set(node, :has_entity_refs, true) if node.is_a?(::Ox::Document)
+            return true
+          end
+
+          has_cdata = tree_has_cdata_end_markers?(node)
+          if node.is_a?(::Ox::Document)
+            attachments.set(node, :has_entity_refs, false)
+            attachments.set(node, :has_cdata_end_markers, has_cdata)
+          end
+
+          has_cdata
         end
 
         def has_declaration?(native_doc, _wrapper)
@@ -665,7 +692,9 @@ module Moxml
             encoding: options[:encoding],
             no_empty: options[:expand_empty],
           }
-          output + ::Ox.dump(node, ox_options)
+          result = output + ::Ox.dump(node, ox_options)
+          # Fix CDATA ]]> end markers that Ox doesn't escape
+          result
         end
 
         def tree_has_entity_references?(node)
@@ -680,6 +709,19 @@ module Moxml
             node.nodes&.any? do |child|
               tree_has_entity_references?(child)
             end || false
+          else
+            false
+          end
+        end
+
+        def tree_has_cdata_end_markers?(node)
+          case node
+          when ::Ox::CData
+            node.value&.include?("]]>") || false
+          when ::Ox::Element
+            node.nodes&.any? { |child| tree_has_cdata_end_markers?(child) } || false
+          when ::Ox::Document
+            node.nodes&.any? { |child| tree_has_cdata_end_markers?(child) } || false
           else
             false
           end
@@ -717,7 +759,7 @@ module Moxml
           when String then escape_xml_text(node)
           when ::Moxml::Adapter::CustomizedOx::Text then escape_xml_text(node.value)
           when ::Moxml::Adapter::CustomizedOx::EntityReference then "&#{node.name};"
-          when ::Ox::CData then "<![CDATA[#{node.value}]]>"
+          when ::Ox::CData then serialize_cdata(node.value)
           when ::Ox::Comment then "<!--#{node.value}-->"
           when ::Ox::Instruct then "<?#{node.target} #{node.value || ''}?>"
           when ::Ox::DocType then "<!DOCTYPE #{node.value}>"
@@ -744,6 +786,11 @@ module Moxml
           output
         end
 
+        def serialize_cdata(content)
+          escaped = content.gsub("]]>", "]]]]><![CDATA[>")
+          "<![CDATA[#{escaped}]]>"
+        end
+
         def escape_xml_text(text)
           text.to_s.gsub(/[<>&]/) do |match|
             case match
@@ -764,6 +811,7 @@ module Moxml
             end
           end
         end
+
 
         # Translate a subset of XPath to Ox locate() syntax
         # Supports: //element, /path/to/element, .//element, element[@attr]
