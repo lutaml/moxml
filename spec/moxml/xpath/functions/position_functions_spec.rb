@@ -30,7 +30,7 @@ RSpec.describe "XPath Position Functions" do
 
     # These tests require predicate support to be implemented
     # They are marked as pending until predicates are working
-    xit "returns current position in predicate" do
+    it "returns current position in predicate" do
       ast = Moxml::XPath::Parser.parse("/root/item[position() = 2]")
       proc = Moxml::XPath::Compiler.compile_with_cache(ast)
       result = proc.call(doc)
@@ -39,7 +39,7 @@ RSpec.describe "XPath Position Functions" do
       expect(result.first.text).to eq("second")
     end
 
-    xit "works with position comparison" do
+    it "works with position comparison" do
       ast = Moxml::XPath::Parser.parse("/root/item[position() > 1]")
       proc = Moxml::XPath::Compiler.compile_with_cache(ast)
       result = proc.call(doc)
@@ -63,7 +63,7 @@ RSpec.describe "XPath Position Functions" do
 
     # These tests require predicate support to be implemented
     # They are marked as pending until predicates are working
-    xit "returns size of context in predicate" do
+    it "returns size of context in predicate" do
       ast = Moxml::XPath::Parser.parse("/root/item[position() = last()]")
       proc = Moxml::XPath::Compiler.compile_with_cache(ast)
       result = proc.call(doc)
@@ -72,7 +72,7 @@ RSpec.describe "XPath Position Functions" do
       expect(result.first.text).to eq("third")
     end
 
-    xit "works with last() - 1" do
+    it "works with last() - 1" do
       ast = Moxml::XPath::Parser.parse("/root/item[position() = last() - 1]")
       proc = Moxml::XPath::Compiler.compile_with_cache(ast)
       result = proc.call(doc)
@@ -81,7 +81,7 @@ RSpec.describe "XPath Position Functions" do
       expect(result.first.text).to eq("second")
     end
 
-    xit "works with comparison to last()" do
+    it "works with comparison to last()" do
       ast = Moxml::XPath::Parser.parse("/root/item[position() < last()]")
       proc = Moxml::XPath::Compiler.compile_with_cache(ast)
       result = proc.call(doc)

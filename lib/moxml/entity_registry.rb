@@ -178,7 +178,18 @@ module Moxml
       return false unless name
       return true if standard_entity?(codepoint)
 
-      config.restore_entities
+      return false unless config.restore_entities
+
+      case config.entity_restoration_mode
+      when :lenient
+        # Any known entity from the registry
+        true
+      when :strict
+        # Only DTD-declared entities (falls back to lenient until DTD parsing is implemented)
+        true
+      else
+        false
+      end
     end
 
     # Returns the set of codepoints that could potentially be restored as entities.

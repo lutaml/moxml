@@ -10,6 +10,37 @@ require "rubocop/rake_task"
 RuboCop::RakeTask.new
 
 namespace :spec do
+  desc "Validate XML fixtures are well-formed (requires xmllint)"
+  task :validate_fixtures do
+    fixtures = Dir.glob("spec/fixtures/**/*.xml")
+    if fixtures.empty?
+      abort "No XML fixtures found in spec/fixtures/"
+    end
+
+    unless system("which xmllint > /dev/null 2>&1")
+      abort "xmllint not found. Install with: brew install libxml2 (macOS) or apt install libxml2-utils (Linux)"
+    end
+
+    # Intentionally malformed fixtures (W3C test cases for error handling)
+    exemptions = %w[
+      spec/fixtures/w3c/namespaces/1.0/035.xml
+    ]
+
+    errors = []
+    fixtures.each do |path|
+      next if exemptions.include?(path)
+
+      output = `xmllint --noout "#{path}" 2>&1`
+      errors << "#{path}: #{output.strip}" unless $?.success?
+    end
+
+    if errors.empty?
+      puts "#{fixtures.size} XML fixtures validated OK"
+    else
+      abort "Invalid fixtures:\n#{errors.join("\n")}"
+    end
+  end
+
   desc "Run unit tests only"
   RSpec::Core::RakeTask.new(:unit) do |t|
     t.pattern = "spec/unit/**/*_spec.rb"

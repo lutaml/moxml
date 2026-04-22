@@ -60,10 +60,10 @@ module Moxml
         #
         # This overrides the Ox adapter's xpath method which uses locate().
         #
-        # @param [Moxml::Node] node Starting node (wrapped Moxml node)
+        # @param node Starting node (native or wrapped)
         # @param [String] expression XPath expression
         # @param [Hash] namespaces Namespace prefix mappings
-        # @return [Moxml::NodeSet, Object] Query results
+        # @return [Array, Object] Native node array or scalar value
         def xpath(node, expression, namespaces = {})
           # If we receive a native node, wrap it first
           # Document#xpath passes @native, but our compiled XPath needs Moxml nodes
@@ -85,16 +85,33 @@ module Moxml
           # Execute on the node (now guaranteed to be wrapped Moxml node)
           result = proc.call(node)
 
-          # Wrap Array results in NodeSet, return other types directly
+          # Return native arrays for Node#xpath to wrap, scalars directly.
+          # The adapter contract: xpath() returns Array<native> | scalar.
           case result
           when Array
-            # Deduplicate by native object identity to handle descendant-or-self
-            # which may yield the same native node multiple times
-            nodeset = NodeSet.new(result, node.context)
-            nodeset.uniq_by_native
+            # XPath engine returns wrapped Moxml::Node objects.
+            # Extract native nodes and deduplicate by object identity.
+            native_nodes = result.map { |n| n.is_a?(Moxml::Node) ? n.native : n }
+            seen = {}
+            native_nodes.select do |native|
+              id = native.object_id
+              if seen[id]
+                false
+              else
+                seen[id] = true
+              end
+            end
           when NodeSet
-            # Deduplicate NodeSet results as well
-            result.uniq_by_native
+            # NodeSet from intermediate evaluation - extract natives and deduplicate
+            seen = {}
+            result.to_a.map(&:native).select do |native|
+              id = native.object_id
+              if seen[id]
+                false
+              else
+                seen[id] = true
+              end
+            end
           else
             # Scalar values (string, number, boolean) - return as-is
             result
@@ -113,10 +130,10 @@ module Moxml
         # @param [Moxml::Node] node Starting node
         # @param [String] expression XPath expression
         # @param [Hash] namespaces Namespace prefix mappings
-        # @return [Moxml::Node, Object, nil] First result or nil
+        # @return [Object, nil] First native node or scalar value
         def at_xpath(node, expression, namespaces = {})
           result = xpath(node, expression, namespaces)
-          result.is_a?(NodeSet) ? result.first : result
+          result.is_a?(Array) ? result.first : result
         end
 
         # Check if XPath is supported

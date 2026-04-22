@@ -26,6 +26,11 @@ module Moxml
 
     NAMESPACE_VALIDATION_MODES = %i[strict lenient].freeze
 
+    # Entity restoration modes:
+    # - :lenient (default) — restore any known entity from the registry
+    # - :strict — only restore DTD-declared entities (falls back to lenient until DTD parsing is implemented)
+    ENTITY_RESTORATION_MODES = %i[strict lenient].freeze
+
     attr_reader :adapter_name
     attr_accessor :strict_parsing,
                   :default_encoding,
@@ -35,7 +40,8 @@ module Moxml
                   :preload_entity_sets,
                   :entity_load_mode,
                   :entity_provider,
-                  :namespace_validation_mode
+                  :namespace_validation_mode,
+                  :entity_restoration_mode
 
     def initialize(adapter_name = nil, strict_parsing = nil,
                    default_encoding = nil)
@@ -50,6 +56,7 @@ module Moxml
       @entity_load_mode = :required
       @entity_provider = nil
       @namespace_validation_mode = :strict
+      @entity_restoration_mode = :lenient
     end
 
     def adapter=(name)
@@ -94,6 +101,16 @@ module Moxml
       end
 
       @namespace_validation_mode = mode
+    end
+
+    def entity_restoration_mode=(mode)
+      mode = mode.to_sym
+      unless ENTITY_RESTORATION_MODES.include?(mode)
+        raise ArgumentError,
+              "Invalid entity_restoration_mode: #{mode}. Must be one of: #{ENTITY_RESTORATION_MODES.join(', ')}"
+      end
+
+      @entity_restoration_mode = mode
     end
 
     # Backward compatibility: convert old boolean to new symbol

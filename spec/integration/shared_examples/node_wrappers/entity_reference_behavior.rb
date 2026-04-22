@@ -180,4 +180,45 @@ RSpec.shared_examples "Moxml::EntityReference" do
       expect(registry.should_restore?(0xDEAD, config: config_on)).to be false
     end
   end
+
+  describe "entity_restoration_mode" do
+    let(:registry) { context.entity_registry }
+
+    it "defaults to :lenient" do
+      cfg = Moxml::Config.new(context.config.adapter_name)
+      expect(cfg.entity_restoration_mode).to eq(:lenient)
+    end
+
+    it "accepts :strict" do
+      cfg = Moxml::Config.new(context.config.adapter_name)
+      cfg.entity_restoration_mode = :strict
+      expect(cfg.entity_restoration_mode).to eq(:strict)
+    end
+
+    it "rejects invalid modes" do
+      cfg = Moxml::Config.new(context.config.adapter_name)
+      expect { cfg.entity_restoration_mode = :bogus }.to raise_error(ArgumentError)
+    end
+
+    it "restores non-standard entities in lenient mode" do
+      cfg = Moxml::Config.new(context.config.adapter_name)
+      cfg.restore_entities = true
+      cfg.entity_restoration_mode = :lenient
+      expect(registry.should_restore?(0xA0, config: cfg)).to be true
+    end
+
+    it "restores non-standard entities in strict mode (until DTD parsing)" do
+      cfg = Moxml::Config.new(context.config.adapter_name)
+      cfg.restore_entities = true
+      cfg.entity_restoration_mode = :strict
+      expect(registry.should_restore?(0xA0, config: cfg)).to be true
+    end
+
+    it "does not restore non-standard entities when restore_entities is false" do
+      cfg = Moxml::Config.new(context.config.adapter_name)
+      cfg.restore_entities = false
+      cfg.entity_restoration_mode = :lenient
+      expect(registry.should_restore?(0xA0, config: cfg)).to be false
+    end
+  end
 end

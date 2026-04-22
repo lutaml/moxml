@@ -62,14 +62,9 @@ def traverse_with_consistent_order(element, elements_array)
   end
 
   if element.respond_to?(:children)
-    # ENHANCED: More robust child selection and sorting
+    # Only traverse element children (skip text, comment, cdata nodes)
     children = element.children.select do |child|
-      # Only process element nodes with valid names
-      child.respond_to?(:name) &&
-        child.name &&
-        !child.name.empty? &&
-        child.name != "text" &&
-        child.name != "comment"
+      child.respond_to?(:element?) && child.element?
     end
 
     # CRITICAL: Enhanced sorting with multiple criteria for stability
@@ -324,29 +319,7 @@ EXAMPLE_TIMEOUT = ENV.fetch("MOXML_ROUNDTRIP_TIMEOUT", 120).to_i
 # Fixture cache — loaded once, shared across all examples.
 FIXTURE_CACHE = {}
 
-# Known element ordering issues with Ox adapter.
-# These (fixture_relative_path, source_adapter, target_adapter) tuples fail the
-# elements_with_attributes comparison because Ox produces elements in a different
-# order. The semantic equivalence check (double round-trip) still passes.
-# TODO: Investigate and fix the root cause in ox adapter element ordering.
-KNOWN_ELEMENT_ORDERING_ISSUES = Set.new([
-  # niso-jats/element_citation.xml - Ox produces different element ordering
-  ["niso-jats/element_citation.xml", :nokogiri, :ox],
-  ["niso-jats/element_citation.xml", :ox, :nokogiri],
-  ["niso-jats/element_citation.xml", :ox, :oga],
-  ["niso-jats/element_citation.xml", :oga, :ox],
-  ["niso-jats/element_citation.xml", :rexml, :ox],
-  ["niso-jats/element_citation.xml", :ox, :rexml],
-  ["niso-jats/pnas_sample.xml", :nokogiri, :rexml],
-  ["niso-jats/pnas_sample.xml", :rexml, :nokogiri],
-  # metanorma fixtures with similar issues
-  ["metanorma/collection1nested.xml", :nokogiri, :ox],
-  ["metanorma/collection1nested.xml", :ox, :nokogiri],
-  ["metanorma/collection1nested.xml", :ox, :oga],
-  ["metanorma/collection1nested.xml", :oga, :ox],
-  ["metanorma/collection1nested.xml", :rexml, :ox],
-  ["metanorma/collection1nested.xml", :ox, :rexml],
-])
+KNOWN_ELEMENT_ORDERING_ISSUES = Set.new([])
 
 RSpec.describe "Round-trip XML Testing", :round_trip do
   # Explicit adapter names for clarity and maintainability.
