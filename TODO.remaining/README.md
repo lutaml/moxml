@@ -28,15 +28,15 @@ TODO 9 (Cleanup Hygiene) — independent
 
 | # | File | Description | Status |
 |---|------|-------------|--------|
-| 1 | `1-entity-reference-adapter-support.md` | EntityReference in Ox, Oga, REXML, LibXML, HeadedOx | Not started |
-| 2 | `2-entity-restoration-model-driven.md` | Use EntityRegistry as source of truth for restoration | Not started |
-| 3 | `3-entity-reference-test-coverage.md` | Tests for EntityReference nodes and round-trips | Not started |
-| 4 | `4-lenient-entities-mode.md` | Strict vs lenient entity restoration mode | Not started |
-| 5 | `5-fixture-integrity.md` | Bilingual fixture verification + CI validation | Not started |
-| 6 | `6-ox-element-ordering-bug.md` | Ox adapter reorders elements in certain fixtures | Not started |
-| 7 | `7-headed-ox-limitations.md` | 15 skipped tests across 7 HeadedOx limitation areas | Not started |
-| 8 | `8-xpath-predicate-gaps.md` | position()/last()/id() not working in XPath predicates | Not started |
-| 9 | `9-cleanup-hygiene.md` | Stale doc links, untracked scripts, superseded files | Not started |
+| 1 | `1-entity-reference-adapter-support.md` | EntityReference in Ox, Oga, REXML, LibXML, HeadedOx | Done |
+| 2 | `2-entity-restoration-model-driven.md` | Use EntityRegistry as source of truth for restoration | Done |
+| 3 | `3-entity-reference-test-coverage.md` | Tests for EntityReference nodes and round-trips | Done |
+| 4 | `4-lenient-entities-mode.md` | Strict vs lenient entity restoration mode | Done |
+| 5 | `5-fixture-integrity.md` | Bilingual fixture verification + CI validation | Done |
+| 6 | `6-ox-element-ordering-bug.md` | Ox adapter reorders elements in certain fixtures | Done |
+| 7 | `7-headed-ox-limitations.md` | 15 skipped tests across 7 HeadedOx limitation areas | Partial (7c,7d,7g done; 7a done; 7b,7e blocked by Ox gem; 7f blocked by 7b) |
+| 8 | `8-xpath-predicate-gaps.md` | position()/last()/id() not working in XPath predicates | Done |
+| 9 | `9-cleanup-hygiene.md` | Stale doc links, untracked scripts, superseded files | Done |
 
 ## What's Already Done
 
