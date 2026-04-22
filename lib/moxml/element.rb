@@ -46,7 +46,8 @@ module Moxml
     end
 
     def [](name)
-      adapter.get_attribute_value(@native, name)
+      val = adapter.get_attribute_value(@native, name)
+      val && adapter.needs_entity_preprocessing? ? adapter.restore_entities(val) : val
     end
 
     def attribute(name)
@@ -137,7 +138,8 @@ module Moxml
     end
 
     def text
-      adapter.text_content(@native)
+      val = adapter.text_content(@native)
+      adapter.needs_entity_preprocessing? ? adapter.restore_entities(val) : val
     end
 
     def text=(content)
@@ -146,6 +148,13 @@ module Moxml
     end
 
     def inner_text
+      text = raw_inner_text
+      adapter.needs_entity_preprocessing? ? adapter.restore_entities(text) : text
+    end
+
+    # Returns inner text without entity marker restoration.
+    # Used internally when raw content with markers is needed (e.g., for DOM construction).
+    def raw_inner_text
       adapter.inner_text(@native)
     end
 

@@ -46,6 +46,10 @@ module Moxml
           doc.root = element
         end
 
+        def needs_entity_preprocessing?
+          true
+        end
+
         def parse(xml, options = {}, _context = nil)
           # LibXML doesn't preserve DOCTYPE during parsing, so we need to extract it manually
           xml_string = if xml.is_a?(String)
@@ -55,6 +59,9 @@ module Moxml
                        else
                          xml.to_s
                        end
+
+          # Preprocess entities before parsing
+          xml_string = preprocess_entities(xml_string)
 
           # Extract DOCTYPE before parsing
           doctype_match = xml_string.match(/<!DOCTYPE\s+(\S+)(?:\s+PUBLIC\s+"([^"]+)"\s+"([^"]+)"|  \s+SYSTEM\s+"([^"]+)")?\s*>/i)

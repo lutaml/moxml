@@ -17,6 +17,12 @@ module Moxml
     end
 
     def value
+      val = @native.value.to_s
+      adapter.needs_entity_preprocessing? ? adapter.restore_entities(val) : val
+    end
+
+    # Returns raw native value without entity marker restoration.
+    def raw_value
       @native.value
     end
 

@@ -28,6 +28,7 @@ RSpec.describe "Cross-adapter integration" do
     "XPath Examples",
     "Memory Usage Examples",
     "Thread Safety Examples",
+    "Entity Reference Whitespace Preservation",
     "Performance Examples",
   ]
 

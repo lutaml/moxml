@@ -10,6 +10,10 @@ module Moxml
   module Adapter
     class Rexml < Base
       class << self
+        def needs_entity_preprocessing?
+          true
+        end
+
         def attachments
           @attachments ||= Moxml::NativeAttachment.new
         end
@@ -21,6 +25,9 @@ module Moxml
                           else
                             xml.force_encoding("UTF-8").encode("UTF-8")
                           end
+
+          # Preprocess entities to avoid double-escaping on output
+          processed_xml = preprocess_entities(processed_xml)
 
           native_doc = begin
             ::REXML::Document.new(processed_xml)
@@ -412,7 +419,7 @@ module Moxml
           when ::REXML::Element
             # Extract text recursively from all children to match other adapters
             extract_text_recursively(node)
-          end
+          end.to_s
         end
 
         def extract_text_recursively(element)

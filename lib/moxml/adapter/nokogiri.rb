@@ -15,15 +15,22 @@ module Moxml
           doc.root = element
         end
 
+        def needs_entity_preprocessing?
+          true
+        end
+
         def parse(xml, options = {}, _context = nil)
+          processed_xml = preprocess_entities(xml)
+          parse_encoding = processed_xml.encoding == Encoding::UTF_8 ? "UTF-8" : options[:encoding]
+
           native_doc = begin
             if options[:fragment]
-              ::Nokogiri::XML::DocumentFragment.parse(xml) do |config|
+              ::Nokogiri::XML::DocumentFragment.parse(processed_xml) do |config|
                 config.strict.nonet
                 config.recover unless options[:strict]
               end
             else
-              ::Nokogiri::XML(xml, nil, options[:encoding]) do |config|
+              ::Nokogiri::XML(processed_xml, nil, parse_encoding) do |config|
                 config.strict.nonet
                 config.recover unless options[:strict]
               end
@@ -180,8 +187,14 @@ module Moxml
         def children(node)
           node.children.reject do |child|
             child.text? && child.content.strip.empty? &&
-              !(child.previous_sibling.nil? && child.next_sibling.nil?)
+              !(child.previous_sibling.nil? && child.next_sibling.nil?) &&
+              !adjacent_to_entity_reference?(child)
           end
+        end
+
+        def adjacent_to_entity_reference?(node)
+          node.previous_sibling.is_a?(::Nokogiri::XML::EntityReference) ||
+            node.next_sibling.is_a?(::Nokogiri::XML::EntityReference)
         end
 
         def replace_children(node, new_children)
@@ -288,7 +301,7 @@ module Moxml
         end
 
         def text_content(node)
-          node.text
+          node.text.to_s
         end
 
         def inner_text(node)
