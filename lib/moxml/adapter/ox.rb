@@ -335,7 +335,7 @@ module Moxml
         end
 
         def get_attribute(element, name)
-          return unless element.is_a?(::Ox::Element) && element.attributes
+          return unless element.is_a?(::Ox::HasAttrs) && element.attributes
           unless element.attributes.key?(name.to_s) || element.attributes.key?(name.to_s.to_sym)
             return
           end
@@ -353,7 +353,7 @@ module Moxml
         end
 
         def remove_attribute(element, name)
-          return unless element.is_a?(::Ox::Element) && element.attributes
+          return unless element.is_a?(::Ox::HasAttrs) && element.attributes
 
           element.attributes.delete(name.to_s)
           element.attributes.delete(name.to_s.to_sym)

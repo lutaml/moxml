@@ -1148,7 +1148,12 @@ module Moxml
 
         def unpatch_node(node)
           # Unwrap to get native LibXML node
-          node.is_a?(CustomizedLibxml::Node) ? node.native : node
+          case node
+          when CustomizedLibxml::Node, CustomizedLibxml::Declaration, DoctypeWrapper
+            node.native
+          else
+            node
+          end
         end
 
         def prepare_for_new_document(node, target_doc)
