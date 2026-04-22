@@ -3,7 +3,8 @@
 module Moxml
   class Config
     VALID_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
-    DEFAULT_ADAPTER = VALID_ADAPTERS.first
+    DEFAULT_ADAPTER = :nokogiri
+    OPAL_DEFAULT_ADAPTER = :oga
 
     # Entity loading modes:
     # - :required - Must load entities, raise error if unavailable (default)
@@ -20,7 +21,21 @@ module Moxml
       end
 
       def default_adapter
-        @default_adapter ||= DEFAULT_ADAPTER
+        @default_adapter ||= runtime_default_adapter
+      end
+
+      def runtime_default_adapter
+        return OPAL_DEFAULT_ADAPTER if RUBY_ENGINE == "opal"
+
+        detect_loaded_adapter || DEFAULT_ADAPTER
+      end
+
+      def detect_loaded_adapter
+        return :nokogiri if Object.const_defined?(:Nokogiri)
+        return :ox if Object.const_defined?(:Ox)
+        return :oga if Object.const_defined?(:Oga)
+
+        nil
       end
     end
 
