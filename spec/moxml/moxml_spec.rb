@@ -2,6 +2,28 @@
 
 # spec/moxml_spec.rb
 RSpec.describe Moxml do
+  around do |example|
+    original_default = Moxml::Config.instance_variable_get(:@default)
+    original_default_adapter = Moxml::Config.instance_variable_get(:@default_adapter)
+
+    Moxml::Config.remove_instance_variable(:@default) if Moxml::Config.instance_variable_defined?(:@default)
+    Moxml::Config.remove_instance_variable(:@default_adapter) if Moxml::Config.instance_variable_defined?(:@default_adapter)
+
+    example.run
+  ensure
+    if original_default.nil?
+      Moxml::Config.remove_instance_variable(:@default) if Moxml::Config.instance_variable_defined?(:@default)
+    else
+      Moxml::Config.instance_variable_set(:@default, original_default)
+    end
+
+    if original_default_adapter.nil?
+      Moxml::Config.remove_instance_variable(:@default_adapter) if Moxml::Config.instance_variable_defined?(:@default_adapter)
+    else
+      Moxml::Config.instance_variable_set(:@default_adapter, original_default_adapter)
+    end
+  end
+
   it "has a version number" do
     expect(Moxml::VERSION).not_to be_nil
   end
@@ -32,6 +54,23 @@ RSpec.describe Moxml do
 
       context = described_class.new
       expect(context.config.adapter_name).to eq(:nokogiri)
+    end
+
+    it "defaults to oga on Opal" do
+      stub_const("RUBY_ENGINE", "opal")
+
+      context = described_class.new
+      expect(context.config.adapter_name).to eq(:oga)
+    end
+
+    it "prefers ox when it is already loaded" do
+      allow(Object).to receive(:const_defined?).and_call_original
+      allow(Object).to receive(:const_defined?).with(:Nokogiri).and_return(false)
+      allow(Object).to receive(:const_defined?).with(:Ox).and_return(true)
+      allow(Object).to receive(:const_defined?).with(:Oga).and_return(false)
+
+      context = described_class.new
+      expect(context.config.adapter_name).to eq(:ox)
     end
 
     it "uses configured options from the block" do
