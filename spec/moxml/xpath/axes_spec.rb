@@ -222,7 +222,6 @@ RSpec.describe "XPath Axes" do
     end
 
     it "combines attribute axis with wildcards" do
-      skip "HeadedOx limitation: Attribute wildcard (@*) not supported by XPath parser. See docs/_pages/headed-ox-limitations.adoc"
       ast = Moxml::XPath::Parser.parse("//book/@*")
       proc = Moxml::XPath::Compiler.compile_with_cache(ast)
       result = proc.call(book_doc)
