@@ -488,7 +488,7 @@ class MoxmlBenchmarkReport
     f.puts "- Can accept 99.20% pass rate (16 documented Ox limitations)"
     f.puts ""
     f.puts "**Note:** HeadedOx = Ox parsing speed + full XPath features."
-    f.puts "See docs/HEADED_OX_LIMITATIONS.md for complete details."
+    f.puts "See docs/_pages/headed-ox-limitations.adoc for complete details."
     f.puts ""
   end
 

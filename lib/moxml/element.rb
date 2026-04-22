@@ -42,7 +42,7 @@ module Moxml
 
     def []=(name, value)
       adapter.set_attribute(@native, name, normalize_xml_value(value))
-      @attributes_cache = nil
+      @attributes = nil
     end
 
     def [](name)
@@ -67,21 +67,21 @@ module Moxml
     def attributes
       @attributes ||= adapter.attributes(@native).map do |attr|
         a = Attribute.new(attr, context)
-        a.instance_variable_set(:@parent_node, self)
+        a.parent_node = self
         a
       end
     end
 
     def remove_attribute(name)
       adapter.remove_attribute(@native, name)
-      @attributes_cache = nil
+      @attributes = nil
       self
     end
 
     def add_namespace(prefix, uri)
       adapter.create_namespace(@native, prefix, uri,
                                namespace_validation_mode: context.config.namespace_validation_mode)
-      @namespaces_cache = nil
+      @namespaces = nil
       self
     rescue ValidationError => e
       # Re-raise as NamespaceError, provide attributes for error context
@@ -113,7 +113,7 @@ module Moxml
       else
         adapter.set_namespace(@native, ns_or_hash&.native)
       end
-      @namespaces_cache = nil
+      @namespaces = nil
     end
 
     def namespaces
@@ -199,6 +199,11 @@ module Moxml
     # Alias for children (used by XPath engine)
     def nodes
       children
+    end
+
+    # Called by Attribute#remove to invalidate the cached attributes
+    def invalidate_attribute_cache!
+      @attributes = nil
     end
   end
 end

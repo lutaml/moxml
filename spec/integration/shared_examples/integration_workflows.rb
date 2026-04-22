@@ -60,7 +60,7 @@ RSpec.shared_examples "Moxml Integration" do
         pending "Ox doesn't support namespace-aware XPath with predicates"
       end
       if context.config.adapter_name == :headed_ox
-        skip "HeadedOx limitation: Namespace-aware XPath with predicates needs investigation. See docs/HEADED_OX_LIMITATIONS.md"
+        skip "HeadedOx limitation: Namespace-aware XPath with predicates needs investigation. See docs/_pages/headed-ox-limitations.adoc"
       end
       # Test XPath queries
       #
@@ -80,7 +80,7 @@ RSpec.shared_examples "Moxml Integration" do
         pending "Ox doesn't have a native XPath"
       end
       if context.config.adapter_name == :headed_ox
-        skip "HeadedOx limitation: Namespace methods not implemented in adapter. Requires Ox namespace API enhancement. See docs/HEADED_OX_LIMITATIONS.md"
+        skip "HeadedOx limitation: Namespace methods not implemented in adapter. Requires Ox namespace API enhancement. See docs/_pages/headed-ox-limitations.adoc"
       end
       xml = <<~XML
         <root xmlns="http://default.org" xmlns:a="http://a.org" xmlns:b="http://b.org">
@@ -123,7 +123,7 @@ RSpec.shared_examples "Moxml Integration" do
 
     it "handles complex modifications" do
       if context.config.adapter_name == :headed_ox
-        skip "HeadedOx limitation: Parent setter not implemented. Requires Ox node reparenting API. See docs/HEADED_OX_LIMITATIONS.md"
+        skip "HeadedOx limitation: Parent setter not implemented. Requires Ox node reparenting API. See docs/_pages/headed-ox-limitations.adoc"
       end
       if context.config.adapter_name == :ox
         skip "Ox doesn't have a native XPath"

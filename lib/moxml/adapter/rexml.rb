@@ -10,6 +10,10 @@ module Moxml
   module Adapter
     class Rexml < Base
       class << self
+        def attachments
+          @attachments ||= Moxml::NativeAttachment.new
+        end
+
         def parse(xml, options = {}, _context = nil)
           # Handle frozen strings by creating a mutable copy
           processed_xml = if xml.frozen?
@@ -175,6 +179,10 @@ module Moxml
               !(child.next_sibling.nil? && child.previous_sibling.nil?)
           end
 
+          # Include any EntityReference wrappers stored alongside native children
+          entity_refs = attachments.get(node, :entity_refs)
+          result.concat(entity_refs) if entity_refs
+
           # Ensure uniqueness by object_id to prevent duplicates
           result.uniq(&:object_id)
         end
@@ -284,22 +292,31 @@ module Moxml
         def add_child(element, child)
           # Special handling for declarations on REXML documents
           if element.is_a?(::REXML::Document) && child.is_a?(::REXML::XMLDecl)
-            # Set document's xml_decl directly
-            element.instance_variable_set(:@xml_declaration, child)
+            # Track declaration state in attachment map
+            attachments.set(element, :xml_declaration, child)
           end
 
           case child
           when String
             element.add_text(child)
+            append_child_sequence(element, :native)
           when ::Moxml::Adapter::CustomizedRexml::EntityReference
             # REXML doesn't support custom node types in its tree.
-            # Store alongside native children via instance variable.
-            refs = element.instance_variable_get(:@moxml_entity_refs) || []
+            # Store alongside native children via attachment map.
+            refs = attachments.get(element, :entity_refs) || []
             refs << child
-            element.instance_variable_set(:@moxml_entity_refs, refs)
+            attachments.set(element, :entity_refs, refs)
+            append_child_sequence(element, :eref)
           else
             element.add(child)
+            append_child_sequence(element, :native)
           end
+        end
+
+        def append_child_sequence(element, type)
+          seq = attachments.get(element, :child_sequence) || []
+          seq << type
+          attachments.set(element, :child_sequence, seq)
         end
 
         def add_previous_sibling(node, sibling)
@@ -320,8 +337,8 @@ module Moxml
         def remove(node)
           # Special handling for declarations on REXML documents
           if node.is_a?(::REXML::XMLDecl) && node.parent.is_a?(::REXML::Document)
-            # Clear document's xml_declaration when removing declaration
-            node.parent.instance_variable_set(:@xml_declaration, nil)
+            # Clear declaration state in attachment map
+            attachments.set(node.parent, :xml_declaration, nil)
           end
 
           node.remove
@@ -575,11 +592,26 @@ module Moxml
           output.strip
         end
 
+        def has_declaration?(native_doc, wrapper)
+          xml_decl = attachments.get(native_doc, :xml_declaration)
+          if xml_decl.nil?
+            # Attachment key doesn't exist - check native doc or wrapper flag
+            if attachments.key?(native_doc, :xml_declaration)
+              # Explicitly set to nil (was removed)
+              false
+            else
+              wrapper.has_xml_declaration
+            end
+          else
+            true
+          end
+        end
+
         private
 
         def write_with_formatter(node, output, indent = 2)
           formatter = ::Moxml::Adapter::CustomizedRexml::Formatter.new(
-            indentation: indent, self_close_empty: false,
+            indentation: indent, self_close_empty: false, adapter: self,
           )
           formatter.write(node, output)
         end

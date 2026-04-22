@@ -149,6 +149,20 @@ namespace_validation_mode: :strict)
           node
         end
 
+        # Check if the native document has an XML declaration
+        # @param native_doc the native document object
+        # @param wrapper [Moxml::Document] the wrapper with has_xml_declaration flag
+        # @return [Boolean]
+        def has_declaration?(_native_doc, wrapper)
+          wrapper.has_xml_declaration
+        end
+
+        # Return the actual native node after an add_child operation.
+        # Override for adapters where node identity may change (e.g., LibXML doc.root=).
+        def actual_native(child_native, _parent_native)
+          child_native
+        end
+
         protected
 
         def create_native_element(_name, _owner_doc = nil)

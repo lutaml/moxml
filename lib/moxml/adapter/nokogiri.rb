@@ -7,6 +7,10 @@ module Moxml
   module Adapter
     class Nokogiri < Base
       class << self
+        def attachments
+          @attachments ||= Moxml::NativeAttachment.new
+        end
+
         def set_root(doc, element)
           doc.root = element
         end
@@ -241,8 +245,8 @@ module Moxml
             encoding = declaration_attribute(child, "encoding")
             standalone = declaration_attribute(child, "standalone")
 
-            # Nokogiri's xml_decl can only be set via instance variable
-            element.instance_variable_set(:@xml_decl, {
+            # Store declaration state in attachment map
+            attachments.set(element, :xml_decl, {
               version: version,
               encoding: encoding,
               standalone: standalone,
@@ -273,7 +277,7 @@ module Moxml
               node.name == "xml" &&
               node.parent.is_a?(::Nokogiri::XML::Document)
             # Clear document's xml_decl when removing declaration
-            node.parent.instance_variable_set(:@xml_decl, nil)
+            attachments.set(node.parent, :xml_decl, nil)
           end
 
           node.remove
@@ -387,12 +391,12 @@ module Moxml
           # Handle declaration option
           # Priority:
           # 1. Explicit no_declaration option
-          # 2. Check Nokogiri's internal @xml_decl (when remove is called, this becomes nil)
+          # 2. Check attachment-stored xml_decl (when remove is called, this becomes nil)
           if options.key?(:no_declaration)
             save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION if options[:no_declaration]
-          elsif node.instance_variable_defined?(:@xml_decl)
-            # Nokogiri's internal state - if nil, declaration was removed
-            xml_decl = node.instance_variable_get(:@xml_decl)
+          elsif attachments.key?(node, :xml_decl)
+            # State stored in attachment - if nil, declaration was removed
+            xml_decl = attachments.get(node, :xml_decl)
             save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION if xml_decl.nil?
           end
 
@@ -401,6 +405,14 @@ module Moxml
             encoding: options[:encoding],
             save_with: save_options,
           )
+        end
+
+        def has_declaration?(native_doc, wrapper)
+          if attachments.key?(native_doc, :xml_decl)
+            !attachments.get(native_doc, :xml_decl).nil?
+          else
+            wrapper.has_xml_declaration
+          end
         end
 
         private

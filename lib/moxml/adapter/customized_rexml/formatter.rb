@@ -7,12 +7,13 @@ module Moxml
     module CustomizedRexml
       # Custom REXML formatter that fixes indentation and wrapping issues
       class Formatter < ::REXML::Formatters::Pretty
-        def initialize(indentation: 2, self_close_empty: false)
+        def initialize(indentation: 2, self_close_empty: false, adapter: nil)
           @indentation = " " * indentation
           @level = 0
           @compact = true
           @width = -1 # Disable line wrapping
           @self_close_empty = self_close_empty
+          @adapter = adapter
         end
 
         def write(node, output)
@@ -31,7 +32,13 @@ module Moxml
           output << "<#{node.expanded_name}"
           write_attributes(node, output)
 
-          if node.children.empty? && @self_close_empty
+          # Check for entity refs stored in adapter attachments
+          entity_refs = @adapter&.attachments&.get(node, :entity_refs)
+          child_sequence = @adapter&.attachments&.get(node, :child_sequence)
+
+          has_no_children = node.children.empty? && !(entity_refs && !entity_refs.empty?)
+
+          if has_no_children && @self_close_empty
             output << "/>"
             return
           end
@@ -44,26 +51,41 @@ module Moxml
           mixed = has_text && has_elements
 
           # Handle children based on content type
-          unless node.children.empty?
+          all_children_empty = node.children.empty? && !(entity_refs && !entity_refs.empty?)
+          unless all_children_empty
             @level += @indentation.length unless mixed
 
-            node.children.each_with_index do |child, _index|
-              # Skip insignificant whitespace
-              next if child.is_a?(::REXML::Text) &&
-                child.to_s.strip.empty? &&
-                !(child.next_sibling.nil? && child.previous_sibling.nil?)
+            if entity_refs && !entity_refs.empty? && child_sequence
+              # Interleave native children with entity refs using tracked sequence
+              eref_idx = 0
+              native_idx = 0
+              child_sequence.each do |type|
+                case type
+                when :native
+                  if native_idx < node.children.size
+                    child = node.children[native_idx]
+                    native_idx += 1
+                    next if child.is_a?(::REXML::Text) &&
+                      child.to_s.strip.empty? &&
+                      !(child.next_sibling.nil? && child.previous_sibling.nil?)
+                    write(child, output)
+                  end
+                when :eref
+                  if eref_idx < entity_refs.size
+                    write(entity_refs[eref_idx], output)
+                    eref_idx += 1
+                  end
+                end
+              end
+            else
+              node.children.each_with_index do |child, _index|
+                # Skip insignificant whitespace
+                next if child.is_a?(::REXML::Text) &&
+                  child.to_s.strip.empty? &&
+                  !(child.next_sibling.nil? && child.previous_sibling.nil?)
 
-              # Indent non-text nodes in non-mixed content
-              # if !mixed && !child.is_a?(::REXML::Text)
-              #   output << ' ' * @level
-              # end
-
-              write(child, output)
-
-              # Add newlines between elements in non-mixed content
-              # if !mixed && !child.is_a?(::REXML::Text) && index < node.children.size - 1
-              #   output << "\n"
-              # end
+                write(child, output)
+              end
             end
 
             # Reset indentation for closing tag in non-mixed content

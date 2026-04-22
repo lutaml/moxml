@@ -20,6 +20,12 @@ module Moxml
       @parent_node = nil
     end
 
+    # Update native reference after identity-changing operations
+    # (e.g., LibXML doc.root= creates a new Ruby wrapper)
+    def refresh_native!(new_native)
+      @native = new_native
+    end
+
     def document
       Document.wrap(adapter.document(@native), context)
     end
@@ -47,7 +53,10 @@ module Moxml
     def add_child(node)
       node = prepare_node(node)
       adapter.add_child(@native, node.native)
-      node.instance_variable_set(:@parent_node, self)
+      # Refresh native in case adapter changed identity (e.g., LibXML doc.root=)
+      refreshed = adapter.actual_native(node.native, @native)
+      node.refresh_native!(refreshed) if refreshed && refreshed != node.native
+      node.parent_node = self
       invalidate_children_cache!
       self
     end
@@ -228,6 +237,11 @@ module Moxml
       klass.new(node, context)
     end
 
+    # Internal: Set the parent node for cache invalidation tracking.
+    # Called by NodeSet, Document, Element when establishing parent-child
+    # relationships. Public to allow cross-class usage within Moxml internals.
+    attr_writer :parent_node
+
     protected
 
     def adapter
@@ -281,54 +295,8 @@ module Moxml
       return options[:declaration] if options.key?(:declaration)
       return options.fetch(:declaration, false) unless is_a?(Document)
 
-      # For Document nodes, check both wrapper flag and native state
-      # Wrapper flag is set by Context.parse for parsed documents
-      # Native state reflects programmatic changes (e.g., add/remove)
-
-      adapter_name = adapter.to_s.split("::").last
-
-      case adapter_name
-      when "Nokogiri"
-        # Nokogiri: if @xml_decl is explicitly set, use that state
-        # Otherwise, trust wrapper flag (for parsed documents)
-        if native.respond_to?(:instance_variable_defined?) &&
-            native.instance_variable_defined?(:@xml_decl)
-          # Explicitly set (programmatically added) - check if nil
-          !native.instance_variable_get(:@xml_decl).nil?
-        else
-          # Not set (parsed document) - trust wrapper flag
-          has_xml_declaration
-        end
-      when "Rexml"
-        # REXML: check @xml_declaration instance variable
-        # If not defined (parsed doc), trust wrapper flag
-        if native.respond_to?(:instance_variable_defined?) &&
-            native.instance_variable_defined?(:@xml_declaration)
-          # Explicitly set - check if nil
-          !native.instance_variable_get(:@xml_declaration).nil?
-        else
-          # Not set (parsed document) - trust wrapper flag
-          has_xml_declaration
-        end
-      when "Oga"
-        native.respond_to?(:xml_declaration) && !native.xml_declaration.nil?
-      when "Ox", "HeadedOx"
-        # Ox stores declaration in document attributes
-        native[:version] || native[:encoding] || native[:standalone]
-      when "Libxml"
-        # LibXML stores declaration wrapper as instance variable
-        if native.respond_to?(:instance_variable_defined?) &&
-            native.instance_variable_defined?(:@moxml_declaration)
-          # Explicitly set - check if nil
-          !native.instance_variable_get(:@moxml_declaration).nil?
-        else
-          # Not set - trust wrapper flag
-          has_xml_declaration
-        end
-      else
-        # Fallback - trust wrapper flag
-        has_xml_declaration
-      end
+      # For Document nodes, delegate to adapter for native state check
+      adapter.has_declaration?(@native, self)
     end
   end
 end

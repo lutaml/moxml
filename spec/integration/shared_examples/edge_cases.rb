@@ -36,7 +36,7 @@ RSpec.shared_examples "Moxml Edge Cases" do
         pending "Ox doesn't escape the end token"
       end
       if context.config.adapter_name == :headed_ox
-        skip "HeadedOx limitation: Ox doesn't escape CDATA end markers. See docs/HEADED_OX_LIMITATIONS.md"
+        skip "HeadedOx limitation: Ox doesn't escape CDATA end markers. See docs/_pages/headed-ox-limitations.adoc"
       end
       cdata_text = "]]>]]>]]>"
       doc = context.create_document
@@ -90,7 +90,7 @@ RSpec.shared_examples "Moxml Edge Cases" do
         pending "Ox doesn't have a native XPath"
       end
       if context.config.adapter_name == :headed_ox
-        skip "HeadedOx limitation: Namespace methods not implemented in adapter. Requires Ox namespace API enhancement. See docs/HEADED_OX_LIMITATIONS.md"
+        skip "HeadedOx limitation: Namespace methods not implemented in adapter. Requires Ox namespace API enhancement. See docs/_pages/headed-ox-limitations.adoc"
       end
       if context.config.adapter_name == :libxml
         skip "LibXML cannot query empty default namespace with XPath (documented limitation)"
@@ -116,7 +116,7 @@ RSpec.shared_examples "Moxml Edge Cases" do
         pending "Ox doesn't have a native XPath"
       end
       if context.config.adapter_name == :headed_ox
-        skip "HeadedOx limitation: Namespace methods not implemented in adapter. Requires Ox namespace API enhancement. See docs/HEADED_OX_LIMITATIONS.md"
+        skip "HeadedOx limitation: Namespace methods not implemented in adapter. Requires Ox namespace API enhancement. See docs/_pages/headed-ox-limitations.adoc"
       end
 
       xml = <<~XML
@@ -136,7 +136,7 @@ RSpec.shared_examples "Moxml Edge Cases" do
   describe "attribute edge cases" do
     it "handles attributes with same local name but different namespaces" do
       if context.config.adapter_name == :headed_ox
-        skip "HeadedOx limitation: Namespace-prefixed attribute access needs Ox namespace API enhancement. See docs/HEADED_OX_LIMITATIONS.md"
+        skip "HeadedOx limitation: Namespace-prefixed attribute access needs Ox namespace API enhancement. See docs/_pages/headed-ox-limitations.adoc"
       end
       if context.config.adapter_name == :ox
         skip "Ox doesn't have a native XPath"

@@ -26,7 +26,7 @@ module Moxml
 
     def root=(element)
       adapter.set_root(@native, element.native)
-      element.instance_variable_set(:@parent_node, self)
+      element.parent_node = self
       invalidate_children_cache!
     end
 
@@ -92,8 +92,11 @@ module Moxml
         raise Error, "Document already has a root element"
       else
         adapter.add_child(@native, node.native)
+        # Refresh native for adapters where identity changes (e.g., LibXML doc.root=)
+        refreshed = adapter.actual_native(node.native, @native)
+        node.refresh_native!(refreshed) if refreshed && refreshed != node.native
       end
-      node.instance_variable_set(:@parent_node, self)
+      node.parent_node = self
       invalidate_children_cache!
       self
     end

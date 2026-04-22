@@ -9,7 +9,7 @@ module Moxml
       # are read-only after creation. This wrapper allows mutation by
       # storing values internally and regenerating XML when needed.
       class Declaration
-        attr_accessor :version, :encoding
+        attr_accessor :version, :encoding, :removed, :parent_doc
         attr_reader :native
 
         def initialize(native_doc, version = nil, encoding = nil,
