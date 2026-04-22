@@ -41,7 +41,7 @@ RSpec.shared_examples "Moxml::Cdata" do
         pending "Ox doesn't escape the end token"
       end
       if context.config.adapter_name == :headed_ox
-        skip "HeadedOx limitation: Ox doesn't escape CDATA end markers. See docs/HEADED_OX_LIMITATIONS.md"
+        skip "HeadedOx limitation: Ox doesn't escape CDATA end markers. See docs/_pages/headed-ox-limitations.adoc"
       end
       cdata.content = "content]]>more"
       expect(cdata.to_xml).to eq("<![CDATA[content]]]]><![CDATA[>more]]>")

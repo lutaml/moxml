@@ -46,7 +46,7 @@ module Moxml
     def remove
       adapter.remove_attribute(element, name)
       if @parent_node.is_a?(Moxml::Element)
-        @parent_node.instance_variable_set(:@attributes_cache, nil)
+        @parent_node.invalidate_attribute_cache!
       end
       self
     end

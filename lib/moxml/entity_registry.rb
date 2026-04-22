@@ -154,7 +154,10 @@ module Moxml
     # @param codepoint [Integer] Unicode codepoint
     # @return [String, nil] primary entity name or nil
     def primary_name_for_codepoint(codepoint)
-      @by_codepoint[codepoint]&.first
+      names = @by_codepoint[codepoint]
+      return nil unless names&.any?
+      # Prefer lowercase names (e.g., "amp" over "AMP") for XML compatibility
+      names.find { |n| n == n.downcase } || names.first
     end
 
     # Check if a codepoint is one of the 5 standard XML predefined entities

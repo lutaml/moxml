@@ -130,7 +130,7 @@ module Moxml
     def wrap_with_parent(native_node)
       wrapped = Moxml::Node.wrap(native_node, @context)
       if @parent_node && wrapped
-        wrapped.instance_variable_set(:@parent_node, @parent_node)
+        wrapped.parent_node = @parent_node
       end
       wrapped
     end

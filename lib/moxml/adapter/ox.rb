@@ -11,6 +11,10 @@ module Moxml
   module Adapter
     class Ox < Base
       class << self
+        def attachments
+          @attachments ||= Moxml::NativeAttachment.new
+        end
+
         def set_root(doc, element)
           replace_children(doc, [element])
         end
@@ -70,7 +74,6 @@ module Moxml
 
         def create_native_element(name, _owner_doc = nil)
           element = ::Ox::Element.new(name)
-          element.instance_variable_set(:@attributes, {})
           element
         end
 
@@ -390,7 +393,7 @@ module Moxml
             while root.is_a?(::Ox::Node) && root.parent
               root = root.parent
             end
-            root&.instance_variable_set(:@moxml_entity_refs, true)
+            attachments.set(root, :has_entity_refs, true) if root
           end
         end
 
@@ -619,7 +622,7 @@ module Moxml
         def serialize(node, options = {})
           # Fast path: skip EntityReference scan for documents (most common case)
           if node.is_a?(::Ox::Document) &&
-              !node.instance_variable_get(:@moxml_entity_refs)
+              !attachments.get(node, :has_entity_refs)
             return serialize_standard(node, options)
           end
 
@@ -628,6 +631,11 @@ module Moxml
           else
             serialize_standard(node, options)
           end
+        end
+
+        def has_declaration?(native_doc, _wrapper)
+          # Ox stores declaration in document attributes
+          native_doc[:version] || native_doc[:encoding] || native_doc[:standalone]
         end
 
         private

@@ -38,6 +38,10 @@ module Moxml
       end
 
       class << self
+        def attachments
+          @attachments ||= Moxml::NativeAttachment.new
+        end
+
         def set_root(doc, element)
           doc.root = element
         end
@@ -85,7 +89,7 @@ module Moxml
               external_id,
               system_id,
             )
-            native_doc.instance_variable_set(:@moxml_doctype, doctype_wrapper)
+            attachments.set(native_doc, :doctype, doctype_wrapper)
           end
 
           ctx = _context || Context.new(:libxml)
@@ -273,10 +277,8 @@ module Moxml
             result = []
 
             # Include DOCTYPE if present
-            if native_node.instance_variable_defined?(:@moxml_doctype)
-              doctype_wrapper = native_node.instance_variable_get(:@moxml_doctype)
-              result << doctype_wrapper if doctype_wrapper
-            end
+            doctype_wrapper = attachments.get(native_node, :doctype)
+            result << doctype_wrapper if doctype_wrapper
 
             return result unless native_node.root
 
@@ -284,18 +286,19 @@ module Moxml
             return result
           end
 
-          return [] unless native_node.children?
-
           result = []
-          native_node.each_child do |child|
-            # Skip whitespace-only text nodes
-            next if child.text? && child.content.to_s.strip.empty?
+          if native_node.children?
+            native_node.each_child do |child|
+              # Skip whitespace-only text nodes
+              next if child.text? && child.content.to_s.strip.empty?
 
-            result << patch_node(child)
+              result << patch_node(child)
+            end
           end
 
-          # Include any EntityReference wrappers stored alongside native children
-          entity_refs = native_node.instance_variable_get(:@moxml_entity_refs)
+          # Include any EntityReference wrappers stored on the document
+          doc = native_node.doc
+          entity_refs = doc ? lookup_entity_refs(doc, native_node) : nil
           result.concat(entity_refs) if entity_refs
 
           result
@@ -499,11 +502,13 @@ module Moxml
           native_child = unpatch_node(child)
 
           # EntityReference wrappers can't go in LibXML's native tree.
-          # Store alongside native children via instance variable.
+          # Store on the document (stable identity) keyed by element.
+          # LibXML creates new Ruby wrappers on each access, so element
+          # object_id is unstable — we look up via == comparison.
           if child.is_a?(CustomizedLibxml::EntityReference)
-            refs = native_elem.instance_variable_get(:@moxml_entity_refs) || []
-            refs << child
-            native_elem.instance_variable_set(:@moxml_entity_refs, refs)
+            doc = native_elem.is_a?(::LibXML::XML::Document) ? native_elem : native_elem.doc
+            store_entity_ref_on_doc(doc, native_elem, child)
+            append_child_sequence_on_doc(doc, native_elem, :eref)
             return
           end
 
@@ -524,32 +529,32 @@ module Moxml
           if native_elem.is_a?(::LibXML::XML::Document)
             # For Declaration wrappers, store them for serialization
             if child.is_a?(CustomizedLibxml::Declaration)
-              native_elem.instance_variable_set(:@moxml_declaration, child)
+              attachments.set(native_elem, :declaration, child)
               # Also store reference to parent document in the declaration
-              child.instance_variable_set(:@parent_doc, native_elem)
+              child.parent_doc = native_elem
               return
             end
 
             # For DOCTYPE wrappers, store them for serialization
             if child.is_a?(DoctypeWrapper)
-              native_elem.instance_variable_set(:@moxml_doctype, child)
+              attachments.set(native_elem, :doctype, child)
               return
             end
 
             # For document-level PIs, store them for serialization
             if child.is_a?(CustomizedLibxml::ProcessingInstruction)
-              pis = native_elem.instance_variable_get(:@moxml_pis) || []
+              pis = attachments.get(native_elem, :pis) || []
               pis << child
-              native_elem.instance_variable_set(:@moxml_pis, pis)
+              attachments.set(native_elem, :pis, pis)
               return
             end
 
             # For text nodes added to document, store them for serialization
             # Documents can't have text children in LibXML
             if child.is_a?(CustomizedLibxml::Text)
-              texts = native_elem.instance_variable_get(:@moxml_texts) || []
+              texts = attachments.get(native_elem, :texts) || []
               texts << child
-              native_elem.instance_variable_set(:@moxml_texts, texts)
+              attachments.set(native_elem, :texts, texts)
               return
             end
 
@@ -557,13 +562,64 @@ module Moxml
             if native_elem.root.nil? && node_type(native_child) == :element
               # Set as root element
               native_elem.root = native_child
+              # Flag for actual_native to refresh the wrapper's native reference
+              attachments.set(native_elem, :_pending_root_refresh, native_child.object_id)
             elsif native_elem.root
               # Document has root, add to it instead
               import_and_add(native_elem.doc, native_elem.root, native_child)
             end
           else
             import_and_add(native_elem.doc, native_elem, native_child)
+            doc = native_elem.doc || native_elem
+            append_child_sequence_on_doc(doc, native_elem, :native)
           end
+        end
+
+        # Store entity ref on the document (stable identity).
+        # LibXML element wrappers are ephemeral, so we use == to find matching elements.
+        def store_entity_ref_on_doc(doc, element, ref)
+          pairs = attachments.get(doc, :_entity_ref_pairs) || []
+          pair = pairs.find { |elem, _| elem == element }
+          if pair
+            pair[1] << ref
+          else
+            pairs << [element, [ref]]
+          end
+          attachments.set(doc, :_entity_ref_pairs, pairs)
+        end
+
+        # Look up entity refs for an element from the document
+        def lookup_entity_refs(doc, element)
+          pairs = attachments.get(doc, :_entity_ref_pairs)
+          return nil unless pairs
+          pair = pairs.find { |elem, _| elem == element }
+          pair&.last
+        end
+
+        # Track child order on the document (stable identity)
+        def append_child_sequence_on_doc(doc, element, type)
+          pairs = attachments.get(doc, :_child_seq_pairs) || []
+          pair = pairs.find { |elem, _| elem == element }
+          if pair
+            pair[1] << type
+          else
+            pairs << [element, [type]]
+          end
+          attachments.set(doc, :_child_seq_pairs, pairs)
+        end
+
+        # Look up child sequence for an element from the document
+        def lookup_child_sequence(doc, element)
+          pairs = attachments.get(doc, :_child_seq_pairs)
+          return nil unless pairs
+          pair = pairs.find { |elem, _| elem == element }
+          pair&.last
+        end
+
+        def append_child_sequence(element, type)
+          seq = attachments.get(element, :child_sequence) || []
+          seq << type
+          attachments.set(element, :child_sequence, seq)
         end
 
         def add_previous_sibling(node, sibling)
@@ -577,9 +633,9 @@ module Moxml
           if sibling.is_a?(CustomizedLibxml::ProcessingInstruction) &&
               native_node.is_a?(::LibXML::XML::Node) && native_node.doc
             doc = native_node.doc
-            pis = doc.instance_variable_get(:@moxml_pis) || []
+            pis = attachments.get(doc, :pis) || []
             pis << sibling
-            doc.instance_variable_set(:@moxml_pis, pis)
+            attachments.set(doc, :pis, pis)
             return
           end
 
@@ -597,16 +653,7 @@ module Moxml
         def remove(node)
           # Handle Declaration wrapper - mark as removed on document
           if node.is_a?(CustomizedLibxml::Declaration)
-            # The Declaration wrapper is stored on the actual document
-            # We need to find which document it's stored on and mark it as removed
-            # This is a bit tricky since the Declaration's native is its own internal doc
-            # We rely on the fact that when a declaration is added to a document,
-            # the document stores a reference to it in @moxml_declaration
-            # So we need to clear that reference and mark it as removed
-
-            # Since we can't easily find the parent document from the Declaration,
-            # we'll set a flag on the Declaration itself
-            node.instance_variable_set(:@removed, true)
+            node.removed = true
             return
           end
 
@@ -867,12 +914,10 @@ module Moxml
 
             if should_include_decl
               # Check if declaration was explicitly managed
-              if native_node.instance_variable_defined?(:@moxml_declaration)
-                decl = native_node.instance_variable_get(:@moxml_declaration)
+              decl = attachments.get(native_node, :declaration)
+              if decl
                 # Only output declaration if it exists and wasn't removed
-                if decl && !decl.instance_variable_get(:@removed)
-                  output << decl.to_xml
-                end
+                output << decl.to_xml unless decl.removed
               else
                 # No declaration stored - create default
                 version = native_node.version || "1.0"
@@ -887,39 +932,33 @@ module Moxml
                   encoding_val,
                   nil, # No standalone by default
                 )
-                native_node.instance_variable_set(:@moxml_declaration, decl)
+                attachments.set(native_node, :declaration, decl)
                 output << decl.to_xml
               end
             end
 
             # Add DOCTYPE if stored on document
-            if native_node.instance_variable_defined?(:@moxml_doctype)
-              doctype_wrapper = native_node.instance_variable_get(:@moxml_doctype)
-              if doctype_wrapper
-                output << "\n" unless output.empty?
-                output << doctype_wrapper.to_xml
-              end
+            doctype_wrapper = attachments.get(native_node, :doctype)
+            if doctype_wrapper
+              output << "\n" unless output.empty?
+              output << doctype_wrapper.to_xml
             end
 
             # Add document-level processing instructions if stored
-            if native_node.instance_variable_defined?(:@moxml_pis)
-              pis = native_node.instance_variable_get(:@moxml_pis)
-              if pis && !pis.empty?
-                pis.each do |pi|
-                  output << "\n" unless output.empty?
-                  output << pi.to_xml
-                end
+            pis = attachments.get(native_node, :pis)
+            if pis && !pis.empty?
+              pis.each do |pi|
+                output << "\n" unless output.empty?
+                output << pi.to_xml
               end
             end
 
             # Add text nodes if stored (for documents without root)
-            if native_node.instance_variable_defined?(:@moxml_texts)
-              texts = native_node.instance_variable_get(:@moxml_texts)
-              if texts && !texts.empty?
-                texts.each do |text|
-                  output << "\n" unless output.empty?
-                  output << text.to_xml
-                end
+            texts = attachments.get(native_node, :texts)
+            if texts && !texts.empty?
+              texts.each do |text|
+                output << "\n" unless output.empty?
+                output << text.to_xml
               end
             end
 
@@ -1165,6 +1204,28 @@ module Moxml
           duplicate_node(node)
         end
 
+        def has_declaration?(native_doc, wrapper)
+          decl = attachments.get(native_doc, :declaration)
+          if decl
+            !decl.removed
+          else
+            wrapper.has_xml_declaration
+          end
+        end
+
+        # LibXML's doc.root= creates a new Ruby wrapper with different object_id.
+        # Return the actual root node so attachments are stored on the correct object.
+        def actual_native(child_native, parent_native)
+          if parent_native.is_a?(::LibXML::XML::Document)
+            pending = attachments.get(parent_native, :_pending_root_refresh)
+            if pending && pending == child_native.object_id
+              attachments.delete(parent_native, :_pending_root_refresh)
+              return parent_native.root
+            end
+          end
+          child_native
+        end
+
         private
 
         def serialize_element(elem)
@@ -1213,8 +1274,9 @@ module Moxml
             end
           end
 
-          # Append any EntityReference wrappers stored on this element
-          entity_refs = elem.instance_variable_get(:@moxml_entity_refs)
+          # Append any EntityReference wrappers stored on the document
+          doc = elem.doc
+          entity_refs = doc ? lookup_entity_refs(doc, elem) : nil
           entity_refs&.each { |ref| output << ref.to_xml }
 
           output << "</#{elem.name}>"
@@ -1396,9 +1458,47 @@ module Moxml
             end
           end
 
+          # Check for entity refs stored on the document
+          # LibXML element wrappers are ephemeral, so look up via == comparison
+          doc = elem.doc
+          entity_refs = doc ? lookup_entity_refs(doc, elem) : nil
+          child_sequence = doc ? lookup_child_sequence(doc, elem) : nil
+
           # Always use verbose format <tag></tag> for consistency with other adapters
           output << ">"
-          if elem.children?
+
+          if entity_refs && !entity_refs.empty? && child_sequence
+            # Interleave native children with entity refs using tracked sequence
+            native_children = []
+            if elem.children?
+              elem.each_child { |c| native_children << c unless c.text? && c.content.to_s.strip.empty? }
+            end
+
+            eref_idx = 0
+            native_idx = 0
+            child_sequence.each do |type|
+              case type
+              when :native
+                if native_idx < native_children.size
+                  child = native_children[native_idx]
+                  native_idx += 1
+                  wrapped_child = patch_node(child)
+                  output << if wrapped_child.is_a?(CustomizedLibxml::Node) && !wrapped_child.is_a?(CustomizedLibxml::Element)
+                              wrapped_child.to_xml
+                            elsif child.element?
+                              serialize_element_with_namespaces(child, false)
+                            else
+                              serialize_node(child)
+                            end
+                end
+              when :eref
+                if eref_idx < entity_refs.size
+                  output << entity_refs[eref_idx].to_xml
+                  eref_idx += 1
+                end
+              end
+            end
+          elsif elem.children?
             elem.each_child do |child|
               # Skip whitespace-only text nodes
               next if child.text? && child.content.to_s.strip.empty?

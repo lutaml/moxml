@@ -12,18 +12,19 @@ module Moxml
     def build(native_doc)
       @current_doc = context.create_document(native_doc)
 
-      # Transfer has_declaration flag if present
-      if native_doc.instance_variable_defined?(:@moxml_has_declaration)
-        has_declaration = native_doc.instance_variable_get(:@moxml_has_declaration)
+      # Transfer has_declaration flag if present in attachments
+      if adapter.respond_to?(:attachments) &&
+          adapter.attachments.key?(native_doc, :has_declaration)
+        has_declaration = adapter.attachments.get(native_doc, :has_declaration)
         @current_doc.has_xml_declaration = has_declaration
       end
 
-      # Transfer DOCTYPE from parsed document if it exists
-      if native_doc.instance_variable_defined?(:@moxml_doctype)
-        doctype = native_doc.instance_variable_get(:@moxml_doctype)
+      # Transfer DOCTYPE from parsed document if it exists in attachments
+      if adapter.respond_to?(:attachments) &&
+          adapter.attachments.key?(native_doc, :doctype)
+        doctype = adapter.attachments.get(native_doc, :doctype)
         if doctype
-          @current_doc.native.instance_variable_set(:@moxml_doctype,
-                                                    doctype)
+          adapter.attachments.set(@current_doc.native, :doctype, doctype)
         end
       end
 

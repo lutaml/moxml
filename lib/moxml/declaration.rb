@@ -35,9 +35,11 @@ module Moxml
 
     def remove
       # Mark document as having no declaration when declaration is removed
-      # Store on native document so all wrappers see it
+      # Store in adapter's attachment map so all wrappers see it
       native_doc = adapter.document(@native)
-      native_doc&.instance_variable_set(:@moxml_has_declaration, false)
+      if native_doc && adapter.respond_to?(:attachments)
+        adapter.attachments.set(native_doc, :has_declaration, false)
+      end
 
       super
     end
