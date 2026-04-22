@@ -55,7 +55,9 @@ RSpec.describe "Moxml node caching" do
 
       it "returns consistent attribute values" do
         attrs = attr_root.attributes
-        expect(attrs.map { |a| [a.name, a.value] }.to_h).to eq({ "a" => "1", "b" => "2" })
+        expect(attrs.to_h do |a|
+          [a.name, a.value]
+        end).to eq({ "a" => "1", "b" => "2" })
       end
 
       it "invalidates cache when an attribute is set" do

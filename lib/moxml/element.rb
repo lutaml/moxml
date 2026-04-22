@@ -65,7 +65,7 @@ module Moxml
     end
 
     def attributes
-      @attributes_cache ||= adapter.attributes(@native).map do |attr|
+      @attributes ||= adapter.attributes(@native).map do |attr|
         a = Attribute.new(attr, context)
         a.instance_variable_set(:@parent_node, self)
         a
@@ -117,7 +117,7 @@ module Moxml
     end
 
     def namespaces
-      @namespaces_cache ||= adapter.namespace_definitions(@native).map do |ns|
+      @namespaces ||= adapter.namespace_definitions(@native).map do |ns|
         Namespace.new(ns, context)
       end
     end

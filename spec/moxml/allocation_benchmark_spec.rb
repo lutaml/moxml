@@ -15,7 +15,7 @@ RSpec.describe "Moxml allocation benchmarks", :performance do
       # Before lazy parse: ~18,000 allocations for 100 elements via DocumentBuilder
       # After lazy parse: should be dramatically less (document wrapper + root only)
       expect(allocs).to be < 5000,
-        "Expected <5000 allocations for 100-element parse, got #{allocs}"
+                        "Expected <5000 allocations for 100-element parse, got #{allocs}"
     end
 
     it "parse + root access is allocation-efficient" do
@@ -25,7 +25,7 @@ RSpec.describe "Moxml allocation benchmarks", :performance do
         doc.root.name
       end
       expect(allocs).to be < 2000,
-        "Expected <2000 allocations for parse + root.name, got #{allocs}"
+                        "Expected <2000 allocations for parse + root.name, got #{allocs}"
     end
 
     it "children access is cached (repeated calls don't increase allocations)" do
@@ -38,7 +38,7 @@ RSpec.describe "Moxml allocation benchmarks", :performance do
 
       # Second call should allocate fewer objects because children are cached
       expect(allocs2).to be <= allocs1,
-        "Second children.to_a (#{allocs2}) should allocate <= first (#{allocs1})"
+                         "Second children.to_a (#{allocs2}) should allocate <= first (#{allocs1})"
     end
 
     it "attributes access is cached" do
@@ -50,7 +50,7 @@ RSpec.describe "Moxml allocation benchmarks", :performance do
       allocs2 = AllocationHelper.count_allocations { root.attributes }
 
       expect(allocs2).to be <= allocs1,
-        "Second attributes call (#{allocs2}) should allocate <= first (#{allocs1})"
+                         "Second attributes call (#{allocs2}) should allocate <= first (#{allocs1})"
     end
 
     it "namespaces access is cached" do
@@ -62,7 +62,7 @@ RSpec.describe "Moxml allocation benchmarks", :performance do
       allocs2 = AllocationHelper.count_allocations { root.namespaces }
 
       expect(allocs2).to be <= allocs1,
-        "Second namespaces call (#{allocs2}) should allocate <= first (#{allocs1})"
+                         "Second namespaces call (#{allocs2}) should allocate <= first (#{allocs1})"
     end
 
     it "NodeSet iteration is cached (second iteration allocates less)" do
@@ -70,11 +70,17 @@ RSpec.describe "Moxml allocation benchmarks", :performance do
       doc = ctx.parse(xml)
       root = doc.root
 
-      allocs1 = AllocationHelper.count_allocations { root.children.each { |_c| } }
-      allocs2 = AllocationHelper.count_allocations { root.children.each { |_c| } }
+      allocs1 = AllocationHelper.count_allocations do
+        root.children.each do |_c|
+        end
+      end
+      allocs2 = AllocationHelper.count_allocations do
+        root.children.each do |_c|
+        end
+      end
 
       expect(allocs2).to be <= allocs1,
-        "Second NodeSet iteration (#{allocs2}) should allocate <= first (#{allocs1})"
+                         "Second NodeSet iteration (#{allocs2}) should allocate <= first (#{allocs1})"
     end
   end
 

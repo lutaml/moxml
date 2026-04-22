@@ -76,7 +76,9 @@ RSpec.describe "Allocation guards", order: :defined do
 
         allocs = AllocationHelper.count_allocations { root.children.to_a }
         expect(allocs).to be <= threshold_for(adapter_name, :cached_children_access),
-          "Second children access (#{allocs}) should allocate <= #{threshold_for(adapter_name, :cached_children_access)}"
+                          "Second children access (#{allocs}) should allocate <= #{threshold_for(
+                            adapter_name, :cached_children_access
+                          )}"
       end
 
       it "attributes access is cached after first call" do
@@ -87,7 +89,9 @@ RSpec.describe "Allocation guards", order: :defined do
 
         allocs = AllocationHelper.count_allocations { root.attributes }
         expect(allocs).to be <= threshold_for(adapter_name, :cached_attributes_access),
-          "Second attributes access (#{allocs}) should allocate <= #{threshold_for(adapter_name, :cached_attributes_access)}"
+                          "Second attributes access (#{allocs}) should allocate <= #{threshold_for(
+                            adapter_name, :cached_attributes_access
+                          )}"
       end
 
       it "NodeSet iteration is cached on second pass" do
@@ -97,9 +101,15 @@ RSpec.describe "Allocation guards", order: :defined do
         # Warm the cache
         root.children.each { |_| nil }
 
-        allocs = AllocationHelper.count_allocations { root.children.each { |_| nil } }
+        allocs = AllocationHelper.count_allocations do
+          root.children.each do |_|
+            nil
+          end
+        end
         expect(allocs).to be <= threshold_for(adapter_name, :cached_iteration),
-          "Second NodeSet iteration (#{allocs}) should allocate <= #{threshold_for(adapter_name, :cached_iteration)}"
+                          "Second NodeSet iteration (#{allocs}) should allocate <= #{threshold_for(
+                            adapter_name, :cached_iteration
+                          )}"
       end
     end
 
@@ -133,8 +143,8 @@ RSpec.describe "Allocation guards", order: :defined do
         max_ratio = threshold_for(adapter_name, :scalability_ratio)
 
         expect(ratio).to be <= max_ratio,
-          "200-element parse (#{allocs_200}) vs 100-element (#{allocs_100}) = #{ratio.round(2)}x, " \
-          "expected <= #{max_ratio}x (linear growth)"
+                         "200-element parse (#{allocs_200}) vs 100-element (#{allocs_100}) = #{ratio.round(2)}x, " \
+                         "expected <= #{max_ratio}x (linear growth)"
       end
     end
 
@@ -153,7 +163,7 @@ RSpec.describe "Allocation guards", order: :defined do
 
         children_after = root.children
         expect(children_before).not_to equal(children_after),
-          "Children cache should be invalidated after add_child"
+                                       "Children cache should be invalidated after add_child"
         expect(children_after.size).to eq(2)
       end
 
@@ -167,7 +177,7 @@ RSpec.describe "Allocation guards", order: :defined do
 
         children_after = root.children
         expect(children_before).not_to equal(children_after),
-          "Children cache should be invalidated after text="
+                                       "Children cache should be invalidated after text="
       end
 
       it "setting attribute invalidates attributes cache" do
@@ -180,7 +190,7 @@ RSpec.describe "Allocation guards", order: :defined do
 
         attrs_after = root.attributes
         expect(attrs_before).not_to equal(attrs_after),
-          "Attributes cache should be invalidated after []="
+                                    "Attributes cache should be invalidated after []="
         expect(attrs_after.size).to eq(2)
       end
 
@@ -194,7 +204,7 @@ RSpec.describe "Allocation guards", order: :defined do
 
         attrs_after = root.attributes
         expect(attrs_before).not_to equal(attrs_after),
-          "Attributes cache should be invalidated after remove_attribute"
+                                    "Attributes cache should be invalidated after remove_attribute"
         expect(attrs_after.size).to eq(1)
       end
 
@@ -209,7 +219,7 @@ RSpec.describe "Allocation guards", order: :defined do
 
         children_after = root.children
         expect(children_before).not_to equal(children_after),
-          "Parent's children cache should be invalidated after child.remove"
+                                       "Parent's children cache should be invalidated after child.remove"
         expect(children_after.size).to eq(1)
       end
     end
@@ -225,7 +235,7 @@ RSpec.describe "Allocation guards", order: :defined do
         first_access = children[0]
         second_access = children[0]
         expect(first_access).to equal(second_access),
-          "Same index should return identical wrapper object"
+                                "Same index should return identical wrapper object"
       end
 
       it "returns the same wrapper from each as from []" do
@@ -237,7 +247,7 @@ RSpec.describe "Allocation guards", order: :defined do
         from_index = children[1]
 
         expect(from_each).to equal(from_index),
-          "Node from #each should be identical to same index from #[]"
+                             "Node from #each should be identical to same index from #[]"
       end
 
       it "preserves cache across multiple iterations" do
@@ -253,7 +263,7 @@ RSpec.describe "Allocation guards", order: :defined do
         pass2_nodes = children.to_a
         pass1_nodes.each_with_index do |node, i|
           expect(node).to equal(pass2_nodes[i]),
-            "Node #{i} should be identical across iterations"
+                          "Node #{i} should be identical across iterations"
         end
       end
     end

@@ -250,7 +250,9 @@ module Moxml
           result = node.nodes || []
           # Ox doesn't set parent references during parsing.
           # Set them here so parent/sibling navigation works.
-          result.each { |child| child.parent = node if child.respond_to?(:parent=) }
+          result.each do |child|
+            child.parent = node if child.respond_to?(:parent=)
+          end
           result
         end
 
@@ -465,7 +467,7 @@ module Moxml
         end
 
         def validate_single_root(document)
-          elements = document.nodes&.select { |n| n.is_a?(::Ox::Element) } || []
+          elements = document.nodes&.grep(::Ox::Element) || []
           return unless elements.size > 1
 
           raise Moxml::ParseError.new(

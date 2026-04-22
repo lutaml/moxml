@@ -26,7 +26,7 @@ module Moxml
     def [](index)
       case index
       when Integer
-        actual = index < 0 ? @nodes.size + index : index
+        actual = index.negative? ? @nodes.size + index : index
         return nil unless actual >= 0 && actual < @nodes.size
 
         @wrapped[actual] ||= wrap_with_parent(@nodes[actual])
