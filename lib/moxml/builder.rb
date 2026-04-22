@@ -2,6 +2,8 @@
 
 module Moxml
   class Builder
+    RESERVED_METHOD_PATTERN = /\A(to_|as_json|marshal_|inspect|freeze|dup|clone)/
+
     attr_reader :document
     alias_method :doc, :document
 
@@ -22,33 +24,18 @@ module Moxml
       )
     end
 
-    def element(name, attributes = {}, &block)
-      el = @document.create_element(name)
-
-      attributes.each do |key, value|
-        if key.to_s == "xmlns"
-          # Handle default namespace
-          el.add_namespace(nil, value.to_s)
-        elsif key.to_s.start_with?("xmlns:")
-          # Handle prefixed namespace
-          prefix = key.to_s.sub("xmlns:", "")
-          el.add_namespace(prefix, value.to_s)
-        else
-          # Regular attribute
-          el[key] = value
-        end
+    # When called with a String name: creates element via instance_eval (DSL block context).
+    # When called with a Hash (e.g., element(name: "foo")): creates <element> tag
+    # via yield — handles collision where "element" is both a builder method
+    # and a valid XML tag name (XSD/RelaxNG).
+    def element(name_or_attrs = nil, attributes = {}, &block)
+      if name_or_attrs.is_a?(Hash)
+        return create_element_node("element", name_or_attrs, block: block, eval_block: false)
       end
 
-      @current.add_child(el)
+      raise ArgumentError, "element requires a tag name" if name_or_attrs.nil?
 
-      if block
-        previous = @current
-        @current = el
-        instance_eval(&block)
-        @current = previous
-      end
-
-      el
+      create_element_node(name_or_attrs, attributes, block: block, eval_block: true)
     end
 
     def text(content)
@@ -101,6 +88,72 @@ module Moxml
       el = element(name, attributes, &block)
       prefix = @namespaces.key(namespace_uri)
       el.namespace = { prefix => namespace_uri } if prefix
+      el
+    end
+
+    # Dynamic element creation DSL.
+    # xml.schema(attrs) { } creates <schema> with those attributes.
+    # Uses yield so blocks preserve the caller's self context.
+    # Supported call shapes: (), (String), (Hash), (String, Hash).
+    def method_missing(method_name, *args, &block)
+      return super if RESERVED_METHOD_PATTERN.match?(method_name.to_s)
+
+      text_content = args.first.is_a?(String) ? args.shift : nil
+      attrs = args.first.is_a?(Hash) ? args.shift : {}
+
+      raise ArgumentError, "unexpected arguments for #{method_name}: #{args.inspect}" unless args.empty?
+
+      if text_content && block
+        raise ArgumentError, "#{method_name}: cannot combine text content with a block"
+      end
+
+      # Strip trailing underscore to allow reserved Ruby method names as tags
+      # (e.g., type_, class_, id_ become <type>, <class>, <id>)
+      tag_name = method_name.to_s.chomp("_")
+
+      create_element_node(tag_name, attrs, text_content: text_content,
+                                           block: block, eval_block: false)
+    end
+
+    def respond_to_missing?(method_name, _include_private = false)
+      return super if RESERVED_METHOD_PATTERN.match?(method_name.to_s)
+
+      true
+    end
+
+    private
+
+    # Single method for all element creation.
+    # eval_block: true  → instance_eval (build DSL context)
+    # eval_block: false → yield (preserves caller's self)
+    def create_element_node(tag_name, attrs = {}, text_content: nil, block: nil, eval_block: true)
+      el = @document.create_element(tag_name)
+
+      attrs.each do |key, value|
+        if key.to_s == "xmlns"
+          el.add_namespace(nil, value.to_s)
+        elsif key.to_s.start_with?("xmlns:")
+          prefix = key.to_s.sub("xmlns:", "")
+          el.add_namespace(prefix, value.to_s)
+        else
+          el[key] = value
+        end
+      end
+
+      @current.add_child(el)
+
+      el.add_child(@document.create_text(text_content)) if text_content
+
+      if block
+        previous = @current
+        @current = el
+        begin
+          eval_block ? instance_eval(&block) : block.call
+        ensure
+          @current = previous
+        end
+      end
+
       el
     end
   end
