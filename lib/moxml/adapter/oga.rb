@@ -142,10 +142,9 @@ module Moxml
         end
 
         def namespace(element)
-          if element.is_a?(::Oga::XML::Element)
+          case element
+          when ::Oga::XML::Element, ::Oga::XML::Attribute
             element.namespace
-          elsif element.is_a?(::Oga::XML::Attribute)
-            element.namespaces.values.last
           end
         rescue NoMethodError
           # Oga attributes fail with NoMethodError:
