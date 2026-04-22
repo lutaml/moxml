@@ -1738,7 +1738,10 @@ module Moxml
         until visit.empty?
           current = visit.pop
 
-          return true if current.type == :call && current.children[0] == name
+          # Function name is stored in :value field, not children
+          if (current.type == :call || current.type == :function) && current.value == name
+            return true
+          end
 
           current.children.each do |child|
             visit << child if child.is_a?(AST::Node)

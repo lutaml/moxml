@@ -41,7 +41,7 @@ RSpec.describe Moxml::Adapter::HeadedOx do
     it "executes simple XPath queries" do
       result = adapter.xpath(doc, "/root/book")
 
-      expect(result).to be_a(Moxml::NodeSet)
+      expect(result).to be_a(Array)
       expect(result.size).to eq(3)
     end
 
@@ -71,19 +71,19 @@ RSpec.describe Moxml::Adapter::HeadedOx do
     end
 
     it "supports XPath string functions in predicates" do
-      skip "HeadedOx limitation: Text content access from nested elements needs investigation. See docs/_pages/headed-ox-limitations.adoc"
       result = adapter.xpath(doc, "//book[contains(title, '2')]")
 
       expect(result.size).to eq(1)
-      expect(result.first.xpath("title").first.text).to eq("Book 2")
+      book = Moxml::Node.wrap(result.first, doc.context)
+      expect(book.xpath("title").first.text).to eq("Book 2")
     end
 
     it "supports XPath position functions" do
-      skip "HeadedOx limitation: Text content access from nested elements needs investigation. See docs/_pages/headed-ox-limitations.adoc"
       result = adapter.xpath(doc, "//book[position() = 2]")
 
       expect(result.size).to eq(1)
-      expect(result.first.xpath("title").first.text).to eq("Book 2")
+      book = Moxml::Node.wrap(result.first, doc.context)
+      expect(book.xpath("title").first.text).to eq("Book 2")
     end
 
     it "supports descendant axis" do
@@ -145,7 +145,7 @@ RSpec.describe Moxml::Adapter::HeadedOx do
     it "returns first matching node" do
       result = adapter.at_xpath(doc, "//book")
 
-      expect(result).to be_a(Moxml::Element)
+      expect(result).to be_a(::Ox::Element)
       expect(result.name).to eq("book")
     end
 
@@ -301,10 +301,10 @@ RSpec.describe Moxml::Adapter::HeadedOx do
       end
 
       it "supports last()" do
-        skip "HeadedOx limitation: Text content access from nested elements needs investigation. See docs/_pages/headed-ox-limitations.adoc"
         result = adapter.xpath(doc, "//book[position() = last()]")
         expect(result.size).to eq(1)
-        expect(result.first.xpath("title").first.text).to eq("Book 3")
+        book = Moxml::Node.wrap(result.first, doc.context)
+        expect(book.xpath("title").first.text).to eq("Book 3")
       end
     end
   end

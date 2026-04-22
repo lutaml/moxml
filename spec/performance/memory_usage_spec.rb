@@ -51,10 +51,6 @@ RSpec.shared_examples "Memory Usage Examples" do
     end
 
     it "handles streaming processing" do
-      if context.config.adapter_name == :headed_ox
-        pending "HeadedOx double-wrapping issue with file-based parsing"
-      end
-
       # Process file
       doc = nil
       File.open("spec/fixtures/small.xml") do |f|

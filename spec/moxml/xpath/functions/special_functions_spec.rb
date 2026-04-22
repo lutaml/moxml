@@ -66,7 +66,7 @@ RSpec.describe "XPath Special Functions" do
     end
 
     # Test with nodeset argument - requires path evaluation
-    xit "accepts nodeset argument containing IDs" do
+    it "accepts nodeset argument containing IDs" do
       xml = <<~XML
         <root>
           <item id="a">first</item>

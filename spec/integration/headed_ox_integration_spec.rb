@@ -187,7 +187,6 @@ RSpec.describe "HeadedOx Integration" do
       end
 
       it "selects last node with last()" do
-        skip "HeadedOx limitation: last() in predicate context needs temporary nodeset. See docs/_pages/headed-ox-limitations.adoc"
         last_book = doc.xpath("//book[position() = last()]")
 
         expect(last_book.size).to eq(1)
@@ -198,7 +197,6 @@ RSpec.describe "HeadedOx Integration" do
 
   describe "real-world use cases" do
     it "finds books by author and price range" do
-      skip "HeadedOx limitation: Text content access from nested elements needs investigation. See docs/_pages/headed-ox-limitations.adoc"
       results = doc.xpath(
         "//book[contains(author, 'Alice') and @price < 20]",
       )
