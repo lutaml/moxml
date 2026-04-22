@@ -107,8 +107,12 @@ module Moxml
         raise ArgumentError, "#{method_name}: cannot combine text content with a block"
       end
 
-      create_element_node(method_name.to_s, attrs, text_content: text_content,
-                                                   block: block, eval_block: false)
+      # Strip trailing underscore to allow reserved Ruby method names as tags
+      # (e.g., type_, class_, id_ become <type>, <class>, <id>)
+      tag_name = method_name.to_s.chomp("_")
+
+      create_element_node(tag_name, attrs, text_content: text_content,
+                                           block: block, eval_block: false)
     end
 
     def respond_to_missing?(method_name, _include_private = false)

@@ -159,6 +159,77 @@ RSpec.describe Moxml::Builder do
     end
   end
 
+  describe "trailing underscore stripping (special tags)" do
+    it "strips trailing underscore to allow reserved method names as tags" do
+      builder = described_class.new(context)
+      doc = builder.build do
+        element "root" do
+          builder.type_("Object")
+          builder.class_("String")
+          builder.id_("42")
+        end
+      end
+
+      children = doc.root.children
+      expect(children[0].name).to eq("type")
+      expect(children[0].text).to eq("Object")
+      expect(children[1].name).to eq("class")
+      expect(children[1].text).to eq("String")
+      expect(children[2].name).to eq("id")
+      expect(children[2].text).to eq("42")
+    end
+
+    it "strips trailing underscore with attributes" do
+      builder = described_class.new(context)
+      doc = builder.build do
+        element "root" do
+          builder.type_(name: "foo")
+        end
+      end
+
+      el = doc.root.children.first
+      expect(el.name).to eq("type")
+      expect(el["name"]).to eq("foo")
+    end
+
+    it "strips trailing underscore with block" do
+      builder = described_class.new(context)
+      doc = builder.build do
+        element "root" do
+          builder.class_ do
+            builder.name_("MyClass")
+          end
+        end
+      end
+
+      class_el = doc.root.children.first
+      expect(class_el.name).to eq("class")
+      expect(class_el.children.first.name).to eq("name")
+    end
+
+    it "works with bare method calls inside build block" do
+      doc = described_class.new(context).build do
+        root do
+          type_("Object")
+        end
+      end
+
+      expect(doc.root.children.first.name).to eq("type")
+      expect(doc.root.children.first.text).to eq("Object")
+    end
+
+    it "does not strip underscore from middle of name" do
+      builder = described_class.new(context)
+      doc = builder.build do
+        element "root" do
+          builder.my_element("text")
+        end
+      end
+
+      expect(doc.root.children.first.name).to eq("my_element")
+    end
+  end
+
   describe "respond_to_missing?" do
     it "returns true for arbitrary element names" do
       builder = described_class.new(context)
