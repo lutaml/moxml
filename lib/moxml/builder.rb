@@ -2,6 +2,8 @@
 
 module Moxml
   class Builder
+    RESERVED_METHOD_PATTERN = /\A(to_|as_json|marshal_|inspect|freeze|dup|clone)/
+
     attr_reader :document
     alias_method :doc, :document
 
@@ -30,6 +32,8 @@ module Moxml
       if name_or_attrs.is_a?(Hash)
         return create_element_node("element", name_or_attrs, block: block, eval_block: false)
       end
+
+      raise ArgumentError, "element requires a tag name" if name_or_attrs.nil?
 
       create_element_node(name_or_attrs, attributes, block: block, eval_block: true)
     end
@@ -90,15 +94,26 @@ module Moxml
     # Dynamic element creation DSL.
     # xml.schema(attrs) { } creates <schema> with those attributes.
     # Uses yield so blocks preserve the caller's self context.
+    # Supported call shapes: (), (String), (Hash), (String, Hash).
     def method_missing(method_name, *args, &block)
-      attrs = args.first.is_a?(Hash) ? args.first : {}
-      text_content = args.first.is_a?(String) ? args.first : nil
+      return super if RESERVED_METHOD_PATTERN.match?(method_name.to_s)
+
+      text_content = args.first.is_a?(String) ? args.shift : nil
+      attrs = args.first.is_a?(Hash) ? args.shift : {}
+
+      raise ArgumentError, "unexpected arguments for #{method_name}: #{args.inspect}" unless args.empty?
+
+      if text_content && block
+        raise ArgumentError, "#{method_name}: cannot combine text content with a block"
+      end
 
       create_element_node(method_name.to_s, attrs, text_content: text_content,
-                                                    block: block, eval_block: false)
+                                                   block: block, eval_block: false)
     end
 
-    def respond_to_missing?(_method_name, _include_private = false)
+    def respond_to_missing?(method_name, _include_private = false)
+      return super if RESERVED_METHOD_PATTERN.match?(method_name.to_s)
+
       true
     end
 
@@ -128,8 +143,11 @@ module Moxml
       if block
         previous = @current
         @current = el
-        eval_block ? instance_eval(&block) : block.call
-        @current = previous
+        begin
+          eval_block ? instance_eval(&block) : block.call
+        ensure
+          @current = previous
+        end
       end
 
       el
