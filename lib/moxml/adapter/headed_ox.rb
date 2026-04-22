@@ -30,7 +30,7 @@ module Moxml
         # ~176K allocations per 100-element parse). Lazy parse defers wrapper
         # creation until nodes are accessed, matching Ox adapter behavior.
         def parse(xml, options = {}, _context = nil)
-          processed_xml = needs_entity_preprocessing? ? preprocess_entities(xml) : xml
+          processed_xml = preprocess_entities(xml)
           native_doc = begin
             result = ::Ox.parse(processed_xml)
 

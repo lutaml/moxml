@@ -9,9 +9,11 @@ module Moxml
       # include XmlUtils
 
       # Entity marker for adapters that resolve entities during parsing.
-      # U+FFFC + U+FEFF is a two-character sentinel that doesn't appear in
-      # valid XML content. Non-standard entities like &copy; are converted
-      # to this marker before parsing, then restored during serialization.
+      # U+FFFC (Object Replacement Character) + U+FEFF (BOM) is a two-character
+      # sentinel chosen because this exact sequence followed by a valid entity
+      # name pattern is vanishingly unlikely in real XML content.
+      # Non-standard entities like &copy; are converted to this marker before
+      # parsing, then restored during serialization.
       # Standard XML entities (&amp; &lt; &gt; &quot; &apos;) are NOT converted.
       ENTITY_MARKER = "\u{FFFC}\u{FEFF}"
       ENTITY_NAME_PATTERN = "[a-zA-Z_][\\w.:-]*"
@@ -23,18 +25,17 @@ module Moxml
       class << self
         include XmlUtils
 
-        # Whether this adapter needs entity preprocessing before parsing.
-        # Override to return true in adapters that resolve entities (Ox, REXML).
-        def needs_entity_preprocessing?
-          false
-        end
-
         # Replace non-standard entity references with markers before parsing.
+        # Always returns a UTF-8 encoded string.
         def preprocess_entities(xml)
           return "" if xml.nil?
 
           str = if xml.encoding == Encoding::BINARY
-                  xml.dup.force_encoding("UTF-8")
+                  # Binary strings are assumed to be UTF-8. If the bytes are
+                  # not valid UTF-8, fall back to encoding as UTF-8 with
+                  # replacement to avoid raising on gsub.
+                  dup = xml.dup.force_encoding("UTF-8")
+                  dup.valid_encoding? ? dup : xml.dup.encode("UTF-8", "ASCII-8BIT", invalid: :replace, undef: :replace)
                 elsif xml.encoding == Encoding::UTF_8
                   xml
                 else

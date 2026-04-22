@@ -99,9 +99,8 @@ module Moxml
 
       result = adapter.serialize(@native, serialize_options)
 
-      # Restore entity markers to named entity references for adapters
-      # that use entity preprocessing (Ox, REXML).
-      adapter.needs_entity_preprocessing? ? adapter.restore_entities(result) : result
+      # Restore entity markers to named entity references
+      adapter.restore_entities(result)
     end
 
     def xpath(expression, namespaces = {})

@@ -15,14 +15,11 @@ module Moxml
           doc.root = element
         end
 
-        def needs_entity_preprocessing?
-          true
-        end
-
         def parse(xml, options = {}, _context = nil)
           processed_xml = preprocess_entities(xml)
-          parse_encoding = processed_xml.encoding == Encoding::UTF_8 ? "UTF-8" : options[:encoding]
 
+          # preprocess_entities always returns UTF-8, so tell Nokogiri to
+          # parse as UTF-8 regardless of any original encoding option.
           native_doc = begin
             if options[:fragment]
               ::Nokogiri::XML::DocumentFragment.parse(processed_xml) do |config|
@@ -30,7 +27,7 @@ module Moxml
                 config.recover unless options[:strict]
               end
             else
-              ::Nokogiri::XML(processed_xml, nil, parse_encoding) do |config|
+              ::Nokogiri::XML(processed_xml, nil, "UTF-8") do |config|
                 config.strict.nonet
                 config.recover unless options[:strict]
               end

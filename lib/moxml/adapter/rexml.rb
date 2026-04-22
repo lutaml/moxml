@@ -10,15 +10,13 @@ module Moxml
   module Adapter
     class Rexml < Base
       class << self
-        def needs_entity_preprocessing?
-          true
-        end
-
         def attachments
           @attachments ||= Moxml::NativeAttachment.new
         end
 
         def parse(xml, options = {}, _context = nil)
+          xml = "" if xml.nil?
+
           # Handle frozen strings by creating a mutable copy
           processed_xml = if xml.frozen?
                             xml.dup.force_encoding("UTF-8").encode("UTF-8")

@@ -19,12 +19,8 @@ module Moxml
           replace_children(doc, [element])
         end
 
-        def needs_entity_preprocessing?
-          true
-        end
-
         def parse(xml, options = {}, _context = nil)
-          processed_xml = needs_entity_preprocessing? ? preprocess_entities(xml) : xml
+          processed_xml = preprocess_entities(xml)
           native_doc = begin
             result = ::Ox.parse(processed_xml)
 

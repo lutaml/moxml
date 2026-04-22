@@ -47,7 +47,7 @@ module Moxml
 
     def [](name)
       val = adapter.get_attribute_value(@native, name)
-      val && adapter.needs_entity_preprocessing? ? adapter.restore_entities(val) : val
+      val ? adapter.restore_entities(val) : val
     end
 
     def attribute(name)
@@ -55,12 +55,7 @@ module Moxml
       native_attr && Attribute.new(native_attr, context)
     end
 
-    # Alias for attribute access
-    def get(attr_name)
-      attribute(attr_name)
-    end
-
-    # Alias for getting attribute value (used by XPath engine)
+    # Returns attribute value by name (used by XPath engine)
     def get(attr_name)
       self[attr_name]
     end
@@ -139,7 +134,7 @@ module Moxml
 
     def text
       val = adapter.text_content(@native)
-      adapter.needs_entity_preprocessing? ? adapter.restore_entities(val) : val
+      adapter.restore_entities(val)
     end
 
     def text=(content)
@@ -149,7 +144,7 @@ module Moxml
 
     def inner_text
       text = raw_inner_text
-      adapter.needs_entity_preprocessing? ? adapter.restore_entities(text) : text
+      adapter.restore_entities(text)
     end
 
     # Returns inner text without entity marker restoration.

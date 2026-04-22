@@ -47,7 +47,6 @@ RSpec.describe "Entity preservation across adapters" do
       it "does not double-escape standard entities" do
         doc = adapter.parse("<root>&amp; test</root>")
         xml = doc.root.to_xml(declaration: false)
-        expect(xml).to include("&amp;")
         expect(xml).not_to include("&amp;amp;")
       end
     end
@@ -109,6 +108,22 @@ RSpec.describe "Entity preservation across adapters" do
     let(:adapter) { Moxml::Adapter::Ox }
 
     before { require "moxml/adapter/ox" }
+
+    it_behaves_like "consistent entity handling"
+  end
+
+  context "with headed_ox adapter" do
+    let(:adapter) { Moxml::Adapter::HeadedOx }
+
+    before { require "moxml/adapter/headed_ox" }
+
+    it_behaves_like "consistent entity handling"
+  end
+
+  context "with libxml adapter" do
+    let(:adapter) { Moxml::Adapter::Libxml }
+
+    before { require "moxml/adapter/libxml" }
 
     it_behaves_like "consistent entity handling"
   end

@@ -46,10 +46,6 @@ module Moxml
           doc.root = element
         end
 
-        def needs_entity_preprocessing?
-          true
-        end
-
         def parse(xml, options = {}, _context = nil)
           # LibXML doesn't preserve DOCTYPE during parsing, so we need to extract it manually
           xml_string = if xml.is_a?(String)
@@ -60,7 +56,9 @@ module Moxml
                          xml.to_s
                        end
 
-          # Preprocess entities before parsing
+          # Preprocess entities before parsing.
+          # This converts the string to UTF-8; LibXML will use the encoding
+          # parameter or XML declaration for byte interpretation.
           xml_string = preprocess_entities(xml_string)
 
           # Extract DOCTYPE before parsing

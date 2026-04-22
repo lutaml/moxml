@@ -20,10 +20,6 @@ module Moxml
           doc.children << element
         end
 
-        def needs_entity_preprocessing?
-          true
-        end
-
         def parse(xml, options = {}, _context = nil)
           processed_xml = preprocess_entities(xml)
 

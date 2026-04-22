@@ -4,7 +4,7 @@ module Moxml
   class Text < Node
     def content
       text = raw_content
-      adapter.needs_entity_preprocessing? ? adapter.restore_entities(text) : text
+      adapter.restore_entities(text)
     end
 
     # Returns raw content without entity marker restoration.
