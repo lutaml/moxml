@@ -32,12 +32,6 @@ RSpec.shared_examples "Moxml Edge Cases" do
 
   describe "malformed content handling" do
     it "handles CDATA with nested markers" do
-      if context.config.adapter_name == :ox
-        pending "Ox doesn't escape the end token"
-      end
-      if context.config.adapter_name == :headed_ox
-        skip "HeadedOx limitation: Ox doesn't escape CDATA end markers. See docs/_pages/headed-ox-limitations.adoc"
-      end
       cdata_text = "]]>]]>]]>"
       doc = context.create_document
       cdata = doc.create_cdata(cdata_text)

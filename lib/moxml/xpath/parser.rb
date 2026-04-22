@@ -311,10 +311,10 @@ module Moxml
           return AST::Node.absolute_path(*steps.children)
         elsif match?(:dslash)
           advance
-          # Descendant-or-self: //
+          # Descendant-or-self: // (expands to /descendant-or-self::node()/)
           steps = parse_relative_path
           return AST::Node.absolute_path(
-            AST::Node.axis("descendant-or-self", AST::Node.wildcard),
+            AST::Node.axis("descendant-or-self", AST::Node.node_type("node")),
             *steps.children,
           )
         end
@@ -330,9 +330,9 @@ module Moxml
         while match?(:slash) && !at_end?
           advance
           if match?(:slash)
-            # Double slash within path
+            # Double slash within path: expands to descendant-or-self::node()
             advance
-            steps << AST::Node.axis("descendant-or-self", AST::Node.wildcard)
+            steps << AST::Node.axis("descendant-or-self", AST::Node.node_type("node"))
           end
           steps << parse_step unless at_end? || match?(:pipe, :rbracket,
                                                        :rparen, :comma)
@@ -352,9 +352,14 @@ module Moxml
           return AST::Node.parent
         elsif match?(:at)
           advance
-          # Attribute: @name
-          name = consume(:name, "Expected attribute name after @")
-          node_test = AST::Node.test(nil, name[1])
+          # Attribute: @name or @*
+          if match?(:star)
+            advance
+            node_test = AST::Node.wildcard
+          else
+            name = consume(:name, "Expected attribute name after @")
+            node_test = AST::Node.test(nil, name[1])
+          end
           step = AST::Node.axis("attribute", node_test)
           return parse_predicates(step)
         end

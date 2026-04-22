@@ -153,7 +153,6 @@ RSpec.describe Moxml::XPath::Compiler do
     end
 
     it "works with wildcards" do
-      skip "HeadedOx limitation: Wildcard count differs due to Ox's DOM structure. See docs/_pages/headed-ox-limitations.adoc"
       ast = Moxml::XPath::Parser.parse("//*")
       proc = described_class.compile_with_cache(ast)
       result = proc.call(nested_doc)
@@ -189,7 +188,6 @@ RSpec.describe Moxml::XPath::Compiler do
     end
 
     it "works with wildcards" do
-      skip "HeadedOx limitation: Attribute wildcard (@*) not supported by XPath parser. See docs/_pages/headed-ox-limitations.adoc"
       ast = Moxml::XPath::Parser.parse("/root/book/@*")
       proc = described_class.compile_with_cache(ast)
       result = proc.call(attr_doc)
