@@ -887,6 +887,18 @@ The Ox adapter provides maximum parsing speed but has XPath limitations.
 doc.xpath("//book").find { |book| book["id"] == "123" }
 ----
 
+**Upstream Ox gem limitations:**
+
+These limitations exist in the Ox gem itself and cannot be worked around in Moxml
+without changes to the Ox C extension:
+
+* *Namespace introspection* — Ox stores `xmlns` attributes but does not expose
+  namespace accessors on `Ox::Element`. Methods like `node.namespace`,
+  `node.namespaces`, and namespace inheritance are unavailable.
+* *Parent node reparenting* — Ox has no method to change a node's parent after
+  creation, preventing `node.parent=` functionality. Nodes are immutable with
+  respect to their parent relationship.
+
 For complete Ox adapter documentation including all limitations and workarounds,
 see link:docs/_pages/adapters/ox.adoc[Ox Adapter Guide].
 
@@ -911,6 +923,12 @@ comprehensive pure Ruby XPath 1.0 engine.
 * Want XPath functions (count, sum, contains, etc.)
 * Prefer pure Ruby XPath for debugging
 * Basic namespace queries are sufficient
+
+**Inherited Ox limitations:**
+
+HeadedOx inherits the upstream Ox gem limitations described above (namespace
+introspection and parent node reparenting). Additionally, some sibling axes
+are not fully supported due to Ox's tree structure.
 
 [source,ruby]
 ----
