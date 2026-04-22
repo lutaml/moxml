@@ -158,7 +158,7 @@ end
 # Generate a test XML document with N elements.
 # Each element has 2 attributes and nested text content.
 def generate_xml(element_count)
-  inner = element_count.times.map do |i|
+  inner = Array.new(element_count) do |i|
     "<elem#{i % 10} id=\"#{i}\" type=\"t#{i % 3}\">text#{i}</elem#{i % 10}>"
   end.join
   "<root>#{inner}</root>"

@@ -7,7 +7,9 @@ require "support/allocation_helper"
 # Verifies that lazy parse produces correct document structure
 # across all adapters without eager wrapper construction.
 RSpec.describe "Moxml lazy parse" do
-  let(:xml) { "<root><child><nested>text</nested></child><sibling>more</sibling></root>" }
+  let(:xml) do
+    "<root><child><nested>text</nested></child><sibling>more</sibling></root>"
+  end
 
   shared_examples "lazy parse behavior" do |adapter_name|
     let(:ctx) { Moxml::Context.new(adapter_name) }
@@ -69,7 +71,7 @@ RSpec.describe "Moxml lazy parse" do
       end
 
       it "handles processing instructions" do
-        pi_xml = '<?pi-target pi-content?><root/>'
+        pi_xml = "<?pi-target pi-content?><root/>"
         doc = ctx.parse(pi_xml)
         expect(doc.root.name).to eq("root")
       end
