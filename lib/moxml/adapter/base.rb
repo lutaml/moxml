@@ -208,6 +208,26 @@ namespace_validation_mode: :strict)
           child_native
         end
 
+        # Returns all namespaces in scope for this element, including
+        # inherited from ancestors. Adapters with native support (Nokogiri)
+        # override this. Default walks the ancestor chain.
+        def in_scope_namespaces(element)
+          namespaces = {}
+          node = element
+
+          while node
+            break unless node_type(node) == :element
+
+            namespace_definitions(node).each do |ns|
+              prefix = namespace_prefix(ns)
+              namespaces[prefix] = ns unless namespaces.key?(prefix)
+            end
+            node = parent(node)
+          end
+
+          namespaces.values
+        end
+
         protected
 
         def create_native_element(_name, _owner_doc = nil)
@@ -278,14 +298,6 @@ namespace_validation_mode: :strict)
           raise Moxml::NotImplementedError.new(
             "create_native_entity_reference not implemented",
             feature: "create_native_entity_reference",
-            adapter: name,
-          )
-        end
-
-        def in_scope_namespaces(_element)
-          raise Moxml::NotImplementedError.new(
-            "in_scope_namespaces not implemented",
-            feature: "in_scope_namespaces",
             adapter: name,
           )
         end
