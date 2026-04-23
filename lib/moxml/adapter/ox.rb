@@ -544,17 +544,17 @@ module Moxml
         end
 
         def namespace_definitions(node)
-          ([node] + ancestors(node)).reverse.each_with_object({}) do |n, namespaces|
-            next unless n.is_a?(::Ox::Element) && n.attributes
+          return [] unless node.is_a?(::Ox::Element) && node.attributes
 
-            n.attributes.each do |name, value|
-              next unless name.to_s.start_with?("xmlns")
+          namespaces = {}
+          node.attributes.each do |name, value|
+            next unless name.to_s.start_with?("xmlns")
 
-              namespaces[name] = ::Moxml::Adapter::CustomizedOx::Namespace.new(
-                name, value, n
-              )
-            end
-          end.values
+            namespaces[name] = ::Moxml::Adapter::CustomizedOx::Namespace.new(
+              name, value, node
+            )
+          end
+          namespaces.values
         end
 
         # Doctype accessor methods

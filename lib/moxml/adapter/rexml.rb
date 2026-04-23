@@ -496,9 +496,27 @@ module Moxml
         end
 
         def namespace_definitions(node)
-          node.namespaces.map do |prefix, uri|
-            ::REXML::Attribute.new(prefix.to_s, uri, node)
+          return [] unless node.is_a?(::REXML::Element)
+
+          result = []
+          node.attributes.each_attribute do |attr|
+            if attr.prefix == "xmlns"
+              result << attr
+            elsif attr.name == "xmlns" && attr.prefix.empty?
+              result << attr
+            end
           end
+          result
+        end
+
+        def in_scope_namespaces(element)
+          namespaces = {}
+          element.namespaces.each do |prefix, uri|
+            key = prefix.to_s.empty? ? "xmlns" : prefix.to_s
+            ns = ::REXML::Attribute.new(key, uri, element)
+            namespaces[prefix] = ns
+          end
+          namespaces.values
         end
 
         # Doctype accessor methods

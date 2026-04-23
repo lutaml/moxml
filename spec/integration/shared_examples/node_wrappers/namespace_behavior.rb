@@ -88,6 +88,87 @@ RSpec.shared_examples "Moxml::Namespace" do
       end
     end
 
+    describe "in_scope_namespaces" do
+      it "returns namespaces declared on the element itself" do
+        element.add_namespace("xs", "http://www.w3.org/2001/XMLSchema")
+        element.add_namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance")
+
+        in_scope = element.in_scope_namespaces
+        prefixes = in_scope.map(&:prefix)
+        uris = in_scope.map(&:uri)
+
+        expect(prefixes).to include("xs", "xsi")
+        expect(uris).to include(
+          "http://www.w3.org/2001/XMLSchema",
+          "http://www.w3.org/2001/XMLSchema-instance",
+        )
+      end
+
+      it "inherits namespaces from ancestor elements" do
+        root = doc.create_element("root")
+        root.add_namespace("xs", "http://www.w3.org/2001/XMLSchema")
+        child = doc.create_element("child")
+        root.add_child(child)
+
+        in_scope = child.in_scope_namespaces
+        prefixes = in_scope.map(&:prefix)
+
+        expect(prefixes).to include("xs")
+      end
+
+      it "collects namespaces from multiple ancestor levels" do
+        root = doc.create_element("root")
+        root.add_namespace("xs", "http://www.w3.org/2001/XMLSchema")
+        middle = doc.create_element("middle")
+        middle.add_namespace("dc", "http://purl.org/dc/elements/1.1/")
+        root.add_child(middle)
+        leaf = doc.create_element("leaf")
+        middle.add_child(leaf)
+
+        in_scope = leaf.in_scope_namespaces
+        prefixes = in_scope.map(&:prefix)
+
+        expect(prefixes).to include("xs", "dc")
+      end
+
+      it "closest ancestor wins for duplicate prefixes" do
+        root = doc.create_element("root")
+        root.add_namespace("ns", "http://example.org/old")
+        child = doc.create_element("child")
+        child.add_namespace("ns", "http://example.org/new")
+        root.add_child(child)
+
+        in_scope = child.in_scope_namespaces
+        ns_match = in_scope.find { |ns| ns.prefix == "ns" }
+
+        expect(ns_match.uri).to eq("http://example.org/new")
+      end
+
+      it "includes default namespace" do
+        root = doc.create_element("root")
+        root.add_namespace(nil, "http://example.org/default")
+        child = doc.create_element("child")
+        root.add_child(child)
+
+        in_scope = child.in_scope_namespaces
+        default_ns = in_scope.find { |ns| ns.prefix.nil? }
+
+        expect(default_ns).not_to be_nil
+        expect(default_ns.uri).to eq("http://example.org/default")
+      end
+
+      it "returns empty array for element with no namespaces" do
+        lonely = doc.create_element("lonely")
+        expect(lonely.in_scope_namespaces).to eq([])
+      end
+
+      it "returns empty array for document root with no namespace declarations" do
+        root = doc.create_element("root")
+        doc.add_child(root)
+        expect(root.in_scope_namespaces).to eq([])
+      end
+    end
+
     describe "inheritance" do
       it "does not inherit parent namespaces" do
         # https://stackoverflow.com/a/67347081
