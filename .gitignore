@@ -28,6 +28,9 @@ libxml_*.txt
 # Generated benchmark reports (machine-specific)
 /benchmarks/PERFORMANCE_REPORT.md
 
+# Local TODO tracking (kept locally, not committed)
+TODO*
+
 # IDE and editor files
 .vscode/
 .idea/
