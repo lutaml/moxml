@@ -847,7 +847,7 @@ module Moxml
           return [] unless native_node
           return [] unless native_node.is_a?(::LibXML::XML::Node)
 
-          native_node.namespaces.map do |ns|
+          native_node.namespaces.definitions.map do |ns|
             ns
           end
         end

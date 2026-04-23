@@ -88,6 +88,60 @@ RSpec.shared_examples "Moxml::Namespace" do
       end
     end
 
+    describe "namespace_definitions" do
+      it "returns only namespace declarations, not regular attributes" do
+        element.add_namespace("xs", "http://www.w3.org/2001/XMLSchema")
+        element["id"] = "test-id"
+        element["class"] = "foo"
+
+        ns_defs = element.namespaces
+        prefixes = ns_defs.map(&:prefix)
+
+        expect(prefixes).to include("xs")
+        expect(prefixes).not_to include("id", "class")
+        expect(ns_defs.size).to eq(1)
+      end
+
+      it "returns multiple prefixed namespace declarations" do
+        element.add_namespace("xs", "http://www.w3.org/2001/XMLSchema")
+        element.add_namespace("xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        element.add_namespace("dc", "http://purl.org/dc/elements/1.1/")
+        element["id"] = "test-id"
+
+        ns_defs = element.namespaces
+        prefixes = ns_defs.map(&:prefix)
+
+        expect(prefixes).to contain_exactly("xs", "xsi", "dc")
+      end
+
+      it "returns both default and prefixed namespace declarations" do
+        element.add_namespace(nil, "http://example.org/default")
+        element.add_namespace("xs", "http://www.w3.org/2001/XMLSchema")
+        element["attr"] = "value"
+
+        ns_defs = element.namespaces
+        prefixes = ns_defs.map(&:prefix)
+
+        expect(ns_defs.size).to eq(2)
+        expect(prefixes).to include("xs")
+        expect(ns_defs.find { |ns| ns.prefix.nil? }).not_to be_nil
+      end
+
+      it "does not include namespaces from ancestor elements" do
+        root = doc.create_element("root")
+        root.add_namespace("xs", "http://www.w3.org/2001/XMLSchema")
+        child = doc.create_element("child")
+        child.add_namespace("dc", "http://purl.org/dc/elements/1.1/")
+        root.add_child(child)
+
+        ns_defs = child.namespaces
+        prefixes = ns_defs.map(&:prefix)
+
+        expect(prefixes).to contain_exactly("dc")
+        expect(prefixes).not_to include("xs")
+      end
+    end
+
     describe "in_scope_namespaces" do
       it "returns namespaces declared on the element itself" do
         element.add_namespace("xs", "http://www.w3.org/2001/XMLSchema")
