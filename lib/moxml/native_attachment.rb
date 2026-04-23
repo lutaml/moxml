@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-require_relative "runtime_compatibility"
-
-Moxml::RuntimeCompatibility.require_runtime_relative(
-  __dir__,
-  native: "native_attachment/native",
-  opal: "native_attachment/opal",
-)
+if RUBY_ENGINE == "opal"
+  require_relative "native_attachment/opal"
+else
+  require_relative "native_attachment/native"
+end
