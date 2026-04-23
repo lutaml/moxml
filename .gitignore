@@ -52,3 +52,6 @@ TODO*
 /_site
 /docs/_site
 /docs/.jekyll-cache
+
+# Utility scripts (local only)
+/scripts/
