@@ -8,9 +8,6 @@ module Moxml
   module Adapter
     class Oga < Base
       class << self
-        # Standard XML entities handled natively by parsers
-        STANDARD_XML_ENTITIES = %w[amp lt gt quot apos].freeze
-
         def attachments
           @attachments ||= Moxml::NativeAttachment.new
         end
@@ -24,9 +21,7 @@ module Moxml
         end
 
         def parse(xml, options = {}, _context = nil)
-          # Pre-process XML to convert named entities to marker form (\x01name;).
-          # Oga drops named entity references like &nbsp; during parsing.
-          processed_xml = preprocess_named_entities(xml)
+          processed_xml = preprocess_entities(xml)
 
           native_doc = begin
             ::Oga.parse_xml(processed_xml, strict: options[:strict])
@@ -72,12 +67,12 @@ module Moxml
         end
 
         def create_native_text(content, _owner_doc = nil)
-          ::Oga::XML::Text.new(text: encode_entity_markers(content))
+          ::Oga::XML::Text.new(text: preprocess_entities(content))
         end
 
         def create_native_entity_reference(name)
           text = ::Oga::XML::Text.new
-          text.text = "#{ENTITY_MARKER}#{name};"
+          text.text = "#{self::ENTITY_MARKER}#{name};"
           attachments.set(text, :entity_name, name)
           text
         end
@@ -201,8 +196,18 @@ module Moxml
           all_children + node.children.reject do |child|
             child.is_a?(::Oga::XML::Text) &&
               child.text.strip.empty? &&
-              !(child.previous.nil? && child.next.nil?)
+              !(child.previous.nil? && child.next.nil?) &&
+              !adjacent_to_entity_reference?(child)
           end
+        end
+
+        def adjacent_to_entity_reference?(node)
+          entity_ref?(node.previous) || entity_ref?(node.next)
+        end
+
+        def entity_ref?(node)
+          node.is_a?(::Oga::XML::Text) &&
+            attachments.get(node, :entity_name)
         end
 
         def parent(node)
@@ -251,7 +256,7 @@ module Moxml
           attr = ::Oga::XML::Attribute.new(
             name: name.to_s,
             namespace_name: namespace_name,
-            value: encode_entity_markers(value.to_s),
+            value: preprocess_entities(value.to_s),
           )
           element.add_attribute(attr)
         end
@@ -261,7 +266,7 @@ module Moxml
         end
 
         def get_attribute_value(element, name)
-          restore_entity_markers(element[name.to_s])
+          element[name.to_s]
         end
 
         def remove_attribute(element, name)
@@ -330,24 +335,23 @@ module Moxml
         end
 
         def text_content(node)
-          restore_entity_markers(node.text)
+          node.text
         end
 
         def inner_text(node)
-          text = if node.is_a?(::Oga::XML::Element)
-                   node.inner_text
-                 else
-                   node.text
-                 end
-          restore_entity_markers(text)
+          if node.is_a?(::Oga::XML::Element)
+            node.inner_text
+          else
+            node.text
+          end
         end
 
         def set_text_content(node, content)
-          encoded = encode_entity_markers(content)
+          processed = preprocess_entities(content)
           if node.is_a?(::Oga::XML::Element)
-            node.inner_text = encoded
+            node.inner_text = processed
           else
-            node.text = encoded
+            node.text = processed
           end
         end
 
@@ -439,23 +443,8 @@ module Moxml
         end
 
         def serialize(node, options = {})
-          output = serialize_without_entity_processing(node, options)
-          # Post-process: convert entity markers back to entity references
-          output.gsub(ENTITY_MARKER_REGEX, '&\1;')
+          serialize_without_entity_processing(node, options)
         end
-
-        # Shared entity name pattern (W3C: 2-31 chars, starts with alpha)
-        ENTITY_PATTERN = "([a-zA-Z][a-zA-Z0-9]{1,30})"
-
-        # Marker character for entity preservation through Oga's parser.
-        # U+0001 is preserved literally by Oga through parse/serialize cycle.
-        ENTITY_MARKER = "\x01"
-
-        # Regular expression for entity marker post-processing
-        ENTITY_MARKER_REGEX = /#{ENTITY_MARKER}#{ENTITY_PATTERN};/
-
-        # Simple entity-only regex with no nested quantifiers
-        ENTITY_REF_REGEX = /&#{ENTITY_PATTERN};/
 
         def has_declaration?(native_doc, _wrapper)
           decl = attachments.get(native_doc, :xml_declaration)
@@ -468,32 +457,6 @@ module Moxml
         end
 
         private
-
-        # Convert &entity; back to \x01entity; for Oga text storage.
-        # Used when setting text content programmatically (not from parsing).
-        def encode_entity_markers(text)
-          return text unless text&.include?("&")
-
-          text.gsub(ENTITY_REF_REGEX) do
-            name = ::Regexp.last_match(1)
-
-            next ::Regexp.last_match(0) if STANDARD_XML_ENTITIES.include?(name)
-
-            codepoint = Moxml::EntityRegistry.default.codepoint_for_name(name)
-            if codepoint
-              "#{ENTITY_MARKER}#{name};"
-            else
-              ::Regexp.last_match(0)
-            end
-          end
-        end
-
-        # Convert \x01entity; back to &entity; for text accessors.
-        def restore_entity_markers(text)
-          return text unless text
-
-          text.gsub(ENTITY_MARKER_REGEX, '&\1;')
-        end
 
         def serialize_without_entity_processing(node, options = {})
           # Oga's XmlGenerator doesn't support options directly
@@ -570,30 +533,6 @@ module Moxml
           else
             # Normal case - use XmlGenerator directly
             ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
-          end
-        end
-
-        # Pre-process XML to convert named entities to marker format.
-        # Oga drops named entity references like &nbsp; but preserves control chars.
-        # By converting known named entities to marker form (\x01name;), we can
-        # reconstruct them during serialization.
-        #
-        # @param xml [String, #to_s] The XML string to process
-        # @return [String] The XML with known named entities converted to marker form
-        def preprocess_named_entities(xml)
-          return xml unless xml.is_a?(String)
-
-          xml.gsub(ENTITY_REF_REGEX) do
-            name = Regexp.last_match(1)
-
-            next Regexp.last_match(0) if STANDARD_XML_ENTITIES.include?(name)
-
-            codepoint = Moxml::EntityRegistry.default.codepoint_for_name(name)
-            if codepoint
-              "#{ENTITY_MARKER}#{name};"
-            else
-              Regexp.last_match(0)
-            end
           end
         end
       end

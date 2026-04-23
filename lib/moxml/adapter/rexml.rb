@@ -15,12 +15,17 @@ module Moxml
         end
 
         def parse(xml, options = {}, _context = nil)
+          xml = "" if xml.nil?
+
           # Handle frozen strings by creating a mutable copy
           processed_xml = if xml.frozen?
                             xml.dup.force_encoding("UTF-8").encode("UTF-8")
                           else
                             xml.force_encoding("UTF-8").encode("UTF-8")
                           end
+
+          # Preprocess entities to avoid double-escaping on output
+          processed_xml = preprocess_entities(processed_xml)
 
           native_doc = begin
             ::REXML::Document.new(processed_xml)
@@ -412,7 +417,7 @@ module Moxml
           when ::REXML::Element
             # Extract text recursively from all children to match other adapters
             extract_text_recursively(node)
-          end
+          end.to_s
         end
 
         def extract_text_recursively(element)

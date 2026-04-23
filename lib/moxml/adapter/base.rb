@@ -8,8 +8,53 @@ module Moxml
     class Base
       # include XmlUtils
 
+      # Entity marker for adapters that resolve entities during parsing.
+      # U+FFFC (Object Replacement Character) + U+FEFF (BOM) is a two-character
+      # sentinel chosen because this exact sequence followed by a valid entity
+      # name pattern is vanishingly unlikely in real XML content.
+      # Non-standard entities like &copy; are converted to this marker before
+      # parsing, then restored during serialization.
+      # Standard XML entities (&amp; &lt; &gt; &quot; &apos;) are NOT converted.
+      ENTITY_MARKER = "\u{FFFC}\u{FEFF}"
+      ENTITY_NAME_PATTERN = "[a-zA-Z_][\\w.:-]*"
+      ENTITY_NAME_RE = /&(#{ENTITY_NAME_PATTERN});/
+      ENTITY_MARKER_RE = /\u{FFFC}\u{FEFF}(#{ENTITY_NAME_PATTERN});/
+      SERIALIZED_ENTITY_MARKER_RE = /&#xFFFC;&#xFEFF;(#{ENTITY_NAME_PATTERN});/
+      STANDARD_ENTITIES = %w[amp lt gt quot apos].freeze
+
       class << self
         include XmlUtils
+
+        # Replace non-standard entity references with markers before parsing.
+        # Always returns a UTF-8 encoded string.
+        def preprocess_entities(xml)
+          return "" if xml.nil?
+
+          str = if xml.encoding == Encoding::BINARY
+                  # Binary strings are assumed to be UTF-8. If the bytes are
+                  # not valid UTF-8, fall back to encoding as UTF-8 with
+                  # replacement to avoid raising on gsub.
+                  dup = xml.dup.force_encoding("UTF-8")
+                  dup.valid_encoding? ? dup : xml.dup.encode("UTF-8", "ASCII-8BIT", invalid: :replace, undef: :replace)
+                elsif xml.encoding == Encoding::UTF_8
+                  xml
+                else
+                  xml.encode("UTF-8")
+                end
+          str.gsub(ENTITY_NAME_RE) do |match|
+            STANDARD_ENTITIES.include?(::Regexp.last_match(1)) ? match : "#{ENTITY_MARKER}#{::Regexp.last_match(1)};"
+          end
+        end
+
+        # Restore entity markers back to named entity references.
+        def restore_entities(text)
+          return text unless text.is_a?(String)
+
+          # Force UTF-8 encoding since markers are UTF-8 characters
+          str = text.encoding == Encoding::UTF_8 ? text : text.dup.force_encoding("UTF-8")
+          result = str.gsub(ENTITY_MARKER_RE, '&\1;')
+          result.gsub(SERIALIZED_ENTITY_MARKER_RE, '&\1;')
+        end
 
         def set_root(_doc, _element)
           raise Moxml::NotImplementedError.new(

@@ -3,6 +3,12 @@
 module Moxml
   class Text < Node
     def content
+      text = raw_content
+      adapter.restore_entities(text)
+    end
+
+    # Returns raw content without entity marker restoration.
+    def raw_content
       adapter.text_content(@native)
     end
 

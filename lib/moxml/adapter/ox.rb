@@ -20,8 +20,9 @@ module Moxml
         end
 
         def parse(xml, options = {}, _context = nil)
+          processed_xml = preprocess_entities(xml)
           native_doc = begin
-            result = ::Ox.parse(xml)
+            result = ::Ox.parse(processed_xml)
 
             # result can be either Document or Element
             if result.is_a?(::Ox::Document)

@@ -97,7 +97,10 @@ module Moxml
       serialize_options = default_options.merge(options)
       serialize_options[:no_declaration] = !should_include_declaration?(options)
 
-      adapter.serialize(@native, serialize_options)
+      result = adapter.serialize(@native, serialize_options)
+
+      # Restore entity markers to named entity references
+      adapter.restore_entities(result)
     end
 
     def xpath(expression, namespaces = {})

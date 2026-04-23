@@ -56,6 +56,11 @@ module Moxml
                          xml.to_s
                        end
 
+          # Preprocess entities before parsing.
+          # This converts the string to UTF-8; LibXML will use the encoding
+          # parameter or XML declaration for byte interpretation.
+          xml_string = preprocess_entities(xml_string)
+
           # Extract DOCTYPE before parsing
           doctype_match = xml_string.match(/<!DOCTYPE\s+(\S+)(?:\s+PUBLIC\s+"([^"]+)"\s+"([^"]+)"|  \s+SYSTEM\s+"([^"]+)")?\s*>/i)
 
