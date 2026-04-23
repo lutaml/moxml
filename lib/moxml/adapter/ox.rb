@@ -548,7 +548,8 @@ module Moxml
 
           namespaces = {}
           node.attributes.each do |name, value|
-            next unless name.to_s.start_with?("xmlns")
+            name_s = name.to_s
+            next unless name_s == "xmlns" || name_s.start_with?("xmlns:")
 
             namespaces[name] = ::Moxml::Adapter::CustomizedOx::Namespace.new(
               name, value, node

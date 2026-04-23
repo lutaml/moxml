@@ -500,7 +500,7 @@ module Moxml
 
           result = []
           node.attributes.each_attribute do |attr|
-            next if attr.prefix != "xmlns" && (attr.name != "xmlns" && attr.prefix.empty?)
+            next unless attr.prefix == "xmlns" || (attr.name == "xmlns" && attr.prefix.to_s.empty?)
 
             result << attr
           end

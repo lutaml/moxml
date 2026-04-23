@@ -847,9 +847,17 @@ module Moxml
           return [] unless native_node
           return [] unless native_node.is_a?(::LibXML::XML::Node)
 
-          native_node.namespaces.definitions.map do |ns|
-            ns
-          end
+          namespaces = native_node.namespaces
+          return [] unless namespaces
+
+          namespace_list =
+            if namespaces.respond_to?(:definitions)
+              namespaces.definitions
+            else
+              namespaces
+            end
+
+          namespace_list.to_a
         end
 
         # Doctype accessor methods
