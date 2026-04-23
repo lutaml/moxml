@@ -181,4 +181,72 @@ RSpec.describe Moxml::EntityRegistry do
       expect(registry.load_all).to be(registry)
     end
   end
+
+  describe "#standard_entity?" do
+    it "returns true for the 5 standard XML entities" do
+      registry = described_class.new
+      expect(registry.standard_entity?(0x26)).to be true  # amp
+      expect(registry.standard_entity?(0x3C)).to be true  # lt
+      expect(registry.standard_entity?(0x3E)).to be true  # gt
+      expect(registry.standard_entity?(0x22)).to be true  # quot
+      expect(registry.standard_entity?(0x27)).to be true  # apos
+    end
+
+    it "returns false for non-standard codepoints" do
+      registry = described_class.new
+      expect(registry.standard_entity?(0xA0)).to be false   # nbsp
+      expect(registry.standard_entity?(0xA9)).to be false   # copy
+      expect(registry.standard_entity?(0x30)).to be false   # '0'
+    end
+  end
+
+  describe "#should_restore?" do
+    it "always restores the 5 standard XML entities regardless of config" do
+      registry = described_class.new
+      config = Moxml::Config.new(:nokogiri)
+      config.restore_entities = false
+      expect(registry.should_restore?(0x26, config: config)).to be true  # amp
+      expect(registry.should_restore?(0x3C, config: config)).to be true  # lt
+    end
+
+    it "restores non-standard entities when restore_entities is true and mode is lenient" do
+      registry = described_class.new
+      config = Moxml::Config.new(:nokogiri)
+      config.restore_entities = true
+      config.entity_restoration_mode = :lenient
+      expect(registry.should_restore?(0xA0, config: config)).to be true  # nbsp
+      expect(registry.should_restore?(0xA9, config: config)).to be true  # copy
+    end
+
+    it "does not restore non-standard entities when restore_entities is false" do
+      registry = described_class.new
+      config = Moxml::Config.new(:nokogiri)
+      config.restore_entities = false
+      expect(registry.should_restore?(0xA0, config: config)).to be false
+    end
+
+    it "returns false for codepoints not in the registry" do
+      registry = described_class.new(mode: :disabled)
+      config = Moxml::Config.new(:nokogiri)
+      config.restore_entities = true
+      expect(registry.should_restore?(0x30, config: config)).to be false # '0'
+    end
+  end
+
+  describe "#restorable_codepoints" do
+    it "returns the set of codepoints that could be restored" do
+      registry = described_class.new
+      codepoints = registry.restorable_codepoints
+      expect(codepoints).to be_a(Set)
+      expect(codepoints).to include(0x26)  # amp
+      expect(codepoints).to include(0xA0)  # nbsp
+      expect(codepoints.size).to be > 100
+    end
+
+    it "returns only standard codepoints for empty registry" do
+      registry = described_class.new(mode: :disabled)
+      codepoints = registry.restorable_codepoints
+      expect(codepoints).to eq(described_class::STANDARD_CODEPOINTS)
+    end
+  end
 end

@@ -266,7 +266,22 @@ RSpec.describe Moxml::Builder do
             builder.title("Hello") { builder.child }
           end
         end
-      end.to raise_error(ArgumentError, /title: cannot combine text content with a block/)
+      end.to raise_error(ArgumentError,
+                         /title: cannot combine text content with a block/)
+    end
+  end
+
+  describe "#entity_reference" do
+    it "creates entity references via DSL" do
+      doc = described_class.new(context).build do
+        element "p" do
+          entity_reference "nbsp"
+        end
+      end
+      ref = doc.root.children.first
+      expect(ref).to be_a(Moxml::EntityReference)
+      expect(ref.name).to eq("nbsp")
+      expect(doc.to_xml).to include("&nbsp;")
     end
   end
 
