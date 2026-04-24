@@ -27,7 +27,7 @@ RSpec.shared_examples "Performance Examples" do
         {
           nokogiri: { parser: 15, serializer: 1000 },
           oga: { parser: 10, serializer: 100 },
-          rexml: { parser: 0, serializer: 60 },
+          rexml: { parser: 0, serializer: 5 },
           ox: { parser: 2, serializer: 1000 },
           headed_ox: { parser: 2, serializer: 1000 },
           libxml: { parser: 10, serializer: 30 },

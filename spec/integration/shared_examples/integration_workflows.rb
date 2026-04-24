@@ -113,7 +113,7 @@ RSpec.shared_examples "Moxml Integration" do
       expect(attr).to eq("value")
 
       # Test namespace override
-      deeper = a_element.children.first
+      deeper = a_element.children.find { |c| c.is_a?(Moxml::Element) }
       expect(deeper.namespace.uri).to eq("http://other.org")
     end
   end

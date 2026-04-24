@@ -104,7 +104,7 @@ RSpec.shared_examples "Entity Reference Whitespace Preservation" do
   end
 
   describe "structural whitespace filtering" do
-    it "still filters whitespace between elements" do
+    it "preserves whitespace text nodes between elements" do
       xml = <<~XML
         <root>
           <child1/>
@@ -115,8 +115,10 @@ RSpec.shared_examples "Entity Reference Whitespace Preservation" do
       doc = context.parse(xml)
       children = doc.root.children
 
-      expect(children.length).to eq(2)
-      expect(children.all?(Moxml::Element)).to be true
+      # Whitespace text nodes between elements are preserved
+      elements = children.select { |c| c.is_a?(Moxml::Element) }
+      expect(elements.length).to eq(2)
+      expect(elements.map(&:name)).to eq(%w[child1 child2])
     end
   end
 end

@@ -177,12 +177,8 @@ module Moxml
         def children(node)
           return [] unless node.is_a?(::REXML::Parent)
 
-          # Get all children and filter out empty text nodes between elements
-          result = node.children.reject do |child|
-            child.is_a?(::REXML::Text) &&
-              child.to_s.strip.empty? &&
-              !(child.next_sibling.nil? && child.previous_sibling.nil?)
-          end
+          # Return all children preserving whitespace text nodes
+          result = node.children.dup
 
           # Include any EntityReference wrappers stored alongside native children
           entity_refs = attachments.get(node, :entity_refs)

@@ -167,6 +167,91 @@ RSpec.shared_examples "Moxml Edge Cases" do
     end
   end
 
+  describe "whitespace text node preservation" do
+    # Ox/HeadedOx do not generate whitespace-only text nodes in their parser,
+    # so these tests only apply to adapters that do (Nokogiri, OGA, REXML, LibXML)
+    let(:preserves_ws) { !%i[ox headed_ox].include?(context.config.adapter_name) }
+
+    it "preserves whitespace-only text nodes between sibling elements" do
+      unless preserves_ws
+        skip "Ox/HeadedOx parser does not generate whitespace-only text nodes"
+      end
+
+      xml = <<~XML
+        <root>
+          <a>1</a>
+          <b>2</b>
+          <c>3</c>
+        </root>
+      XML
+
+      doc = context.parse(xml)
+      children = doc.root.children
+
+      # Should have whitespace text nodes between elements
+      expect(children.size).to be > 3
+
+      # Whitespace text nodes should be Text nodes
+      ws_nodes = children.select { |c| c.is_a?(Moxml::Text) && c.content.strip.empty? }
+      expect(ws_nodes).not_to be_empty
+
+      # Element children should still be accessible
+      elements = children.select { |c| c.is_a?(Moxml::Element) }
+      expect(elements.map(&:name)).to eq(%w[a b c])
+    end
+
+    it "preserves inline whitespace text nodes between text and elements" do
+      xml = "<p>Figure <sub>A</sub>.1</p>"
+      doc = context.parse(xml)
+
+      children = doc.root.children
+      expect(children.size).to eq(3)
+
+      # First child: "Figure " text node
+      expect(children[0]).to be_a(Moxml::Text)
+      expect(children[0].content).to eq("Figure ")
+
+      # Second child: <sub> element
+      expect(children[1]).to be_a(Moxml::Element)
+      expect(children[1].name).to eq("sub")
+      expect(children[1].text).to eq("A")
+
+      # Third child: ".1" text node
+      expect(children[2]).to be_a(Moxml::Text)
+      expect(children[2].content).to eq(".1")
+    end
+
+    it "preserves space-only text node as meaningful content" do
+      xml = "<p>Hello <b>world</b>!</p>"
+      doc = context.parse(xml)
+
+      children = doc.root.children
+      expect(children.size).to eq(3)
+
+      expect(children[0].content).to eq("Hello ")
+      expect(children[1]).to be_a(Moxml::Element)
+      expect(children[2].content).to eq("!")
+    end
+
+    it "distinguishes whitespace text nodes from element children" do
+      unless preserves_ws
+        skip "Ox/HeadedOx parser does not generate whitespace-only text nodes"
+      end
+
+      xml = "<root>  <child/>  </root>"
+      doc = context.parse(xml)
+
+      children = doc.root.children
+      # "  " before child, "  " after child
+      expect(children.size).to eq(3)
+      expect(children[0]).to be_a(Moxml::Text)
+      expect(children[0].content).to eq("  ")
+      expect(children[1]).to be_a(Moxml::Element)
+      expect(children[2]).to be_a(Moxml::Text)
+      expect(children[2].content).to eq("  ")
+    end
+  end
+
   describe "document structure edge cases" do
     it "handles deeply nested elements" do
       doc = context.create_document
