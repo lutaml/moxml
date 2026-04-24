@@ -182,11 +182,7 @@ module Moxml
         end
 
         def children(node)
-          node.children.reject do |child|
-            child.text? && child.content.strip.empty? &&
-              !(child.previous_sibling.nil? && child.next_sibling.nil?) &&
-              !adjacent_to_entity_reference?(child)
-          end
+          node.children
         end
 
         def adjacent_to_entity_reference?(node)

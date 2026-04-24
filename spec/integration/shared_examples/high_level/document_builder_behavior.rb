@@ -32,12 +32,14 @@ RSpec.shared_examples "Moxml::DocumentBuilder" do
 
       expect(doc.root.namespaces.count).to eq(1)
       expect(doc.root.namespaces.first.uri).to eq("http://example.org")
-      expect(doc.root.children[0]).to be_a(Moxml::Comment)
-      expect(doc.root.children[1]).to be_a(Moxml::Element)
-      expect(doc.root.children[1].name).to eq("child")
-      expect(doc.root.children[1]["id"]).to eq("1")
-      expect(doc.root.children[1].children.first).to be_a(Moxml::Cdata)
-      expect(doc.root.children[2]).to be_a(Moxml::ProcessingInstruction)
+      # Whitespace text nodes are preserved between elements
+      non_ws_children = doc.root.children.reject { |c| c.is_a?(Moxml::Text) && c.content.strip.empty? }
+      expect(non_ws_children[0]).to be_a(Moxml::Comment)
+      expect(non_ws_children[1]).to be_a(Moxml::Element)
+      expect(non_ws_children[1].name).to eq("child")
+      expect(non_ws_children[1]["id"]).to eq("1")
+      expect(non_ws_children[1].children.find { |c| c.is_a?(Moxml::Cdata) }).to be_a(Moxml::Cdata)
+      expect(non_ws_children[2]).to be_a(Moxml::ProcessingInstruction)
     end
   end
 end

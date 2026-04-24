@@ -294,9 +294,6 @@ module Moxml
           result = []
           if native_node.children?
             native_node.each_child do |child|
-              # Skip whitespace-only text nodes
-              next if child.text? && child.content.to_s.strip.empty?
-
               result << patch_node(child)
             end
           end

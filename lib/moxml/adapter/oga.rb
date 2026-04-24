@@ -193,12 +193,18 @@ module Moxml
 
           return all_children unless node.is_a?(::Oga::XML::Node) || node.is_a?(::Oga::XML::Document)
 
-          all_children + node.children.reject do |child|
-            child.is_a?(::Oga::XML::Text) &&
-              child.text.strip.empty? &&
-              !(child.previous.nil? && child.next.nil?) &&
-              !adjacent_to_entity_reference?(child)
+          child_nodes = node.children.to_a
+          # Filter out whitespace-only text nodes at document level only.
+          # Document-level whitespace (between <?xml?> and <root>) is
+          # formatting, not content, and differs across adapters.
+          # Whitespace inside elements (e.g. "FigureA.1" spacing) is
+          # meaningful and must be preserved.
+          if node.is_a?(::Oga::XML::Document)
+            child_nodes = child_nodes.reject do |child|
+              child.is_a?(::Oga::XML::Text) && child.text.strip.empty?
+            end
           end
+          all_children + child_nodes
         end
 
         def adjacent_to_entity_reference?(node)
