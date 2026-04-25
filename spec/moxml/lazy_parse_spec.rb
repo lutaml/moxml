@@ -86,7 +86,7 @@ RSpec.describe "Moxml lazy parse" do
 
       it "round-trips through serialize" do
         doc = ctx.parse(xml)
-        serialized = doc.to_xml
+        serialized = doc.to_xml(indent: 0)
         doc2 = ctx.parse(serialized)
         expect(doc2.root.name).to eq("root")
         expect(doc2.root.children.to_a.size).to eq(2)

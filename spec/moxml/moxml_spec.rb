@@ -58,6 +58,8 @@ RSpec.describe Moxml do
 
     it "defaults to oga on Opal" do
       stub_const("RUBY_ENGINE", "opal")
+      Moxml::Config.remove_instance_variable(:@default) if Moxml::Config.instance_variable_defined?(:@default)
+      Moxml::Config.remove_instance_variable(:@default_adapter) if Moxml::Config.instance_variable_defined?(:@default_adapter)
 
       context = described_class.new
       expect(context.config.adapter_name).to eq(:oga)
@@ -68,6 +70,8 @@ RSpec.describe Moxml do
       allow(Object).to receive(:const_defined?).with(:Nokogiri).and_return(false)
       allow(Object).to receive(:const_defined?).with(:Ox).and_return(true)
       allow(Object).to receive(:const_defined?).with(:Oga).and_return(false)
+      Moxml::Config.remove_instance_variable(:@default) if Moxml::Config.instance_variable_defined?(:@default)
+      Moxml::Config.remove_instance_variable(:@default_adapter) if Moxml::Config.instance_variable_defined?(:@default_adapter)
 
       context = described_class.new
       expect(context.config.adapter_name).to eq(:ox)
