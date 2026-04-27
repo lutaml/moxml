@@ -2,8 +2,8 @@
 
 module Moxml
   class NativeAttachment
-    autoload :Opal, "#{__dir__}/native_attachment/opal"
-    autoload :Native, "#{__dir__}/native_attachment/native"
+    autoload :Opal, "moxml/native_attachment/opal"
+    autoload :Native, "moxml/native_attachment/native"
 
     def self.default_backend
       constant = RUBY_ENGINE == "opal" ? :Opal : :Native
