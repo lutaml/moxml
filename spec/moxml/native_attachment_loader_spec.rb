@@ -14,33 +14,63 @@ RSpec.describe "NativeAttachment loader" do
       "-I",
       lib_dir,
       "-e",
-      'require "moxml"; puts Moxml::NativeAttachment.name',
+      'require "moxml"; puts Moxml::NativeAttachment.new.respond_to?(:set)',
     )
 
     expect(status.success?).to be(true), stderr
-    expect(stdout).to eq("Moxml::NativeAttachment\n")
+    expect(stdout).to eq("true\n")
   end
 
-  it "loads NativeAttachment through the direct compatibility entrypoint" do
+  it "loads NativeAttachment through the internal facade file" do
     stdout, stderr, status = Open3.capture3(
       ruby,
       "-I",
       lib_dir,
       "-e",
-      'require "moxml/native_attachment"; puts Moxml::NativeAttachment.name',
+      'require "moxml/native_attachment"; puts Moxml::NativeAttachment.new.respond_to?(:set)',
     )
 
     expect(status.success?).to be(true), stderr
-    expect(stdout).to eq("Moxml::NativeAttachment\n")
+    expect(stdout).to eq("true\n")
   end
 
-  it "uses literal runtime-specific requires in the top-level loader" do
-    source = File.read(File.expand_path("../../lib/moxml.rb", __dir__))
+  it "registers backend implementations with autoload" do
+    stdout, stderr, status = Open3.capture3(
+      ruby,
+      "-I",
+      lib_dir,
+      "-e",
+      <<~'RUBY',
+        require "moxml/native_attachment"
 
-    aggregate_failures do
-      expect(source).to include('if RUBY_ENGINE == "opal"')
-      expect(source).to include('require_relative "moxml/native_attachment/opal"')
-      expect(source).to include('require_relative "moxml/native_attachment/native"')
-    end
+        puts !!Moxml::NativeAttachment.autoload?(:Opal)
+        puts !!Moxml::NativeAttachment.autoload?(:Native)
+      RUBY
+    )
+
+    expect(status.success?).to be(true), stderr
+    expect(stdout).to eq("true\ntrue\n")
+  end
+
+  it "does not load the native backend when Opal is selected" do
+    stdout, stderr, status = Open3.capture3(
+      ruby,
+      "-I",
+      lib_dir,
+      "-e",
+      <<~'RUBY',
+        Object.send(:remove_const, :RUBY_ENGINE)
+        RUBY_ENGINE = "opal"
+
+        require "moxml/native_attachment"
+
+        puts !!Moxml::NativeAttachment.autoload?(:Native)
+        puts Moxml::NativeAttachment.new.backend.class
+        puts $LOADED_FEATURES.grep(%r{/native_attachment/native\.rb\z}).empty?
+      RUBY
+    )
+
+    expect(status.success?).to be(true), stderr
+    expect(stdout).to eq("true\nMoxml::NativeAttachment::Opal\ntrue\n")
   end
 end

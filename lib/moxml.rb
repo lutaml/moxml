@@ -43,11 +43,7 @@ require_relative "moxml/builder"
 require_relative "moxml/config"
 require_relative "moxml/context"
 require_relative "moxml/entity_registry"
-if RUBY_ENGINE == "opal"
-  require_relative "moxml/native_attachment/opal"
-else
-  require_relative "moxml/native_attachment/native"
-end
+require_relative "moxml/native_attachment"
 require_relative "moxml/adapter"
 require_relative "moxml/xpath"
 require_relative "moxml/sax"
