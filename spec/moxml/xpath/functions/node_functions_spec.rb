@@ -127,7 +127,7 @@ RSpec.describe "XPath Node Functions" do
     it "inherits language from parent element" do
       ast = Moxml::XPath::Parser.parse('lang("en")')
       proc = Moxml::XPath::Compiler.compile_with_cache(ast)
-      child = doc_with_lang.root.children.first
+      child = doc_with_lang.root.children.select { |c| c.is_a?(Moxml::Element) }.first
       result = proc.call(child)
 
       expect(result).to be true
@@ -136,7 +136,8 @@ RSpec.describe "XPath Node Functions" do
     it "uses closest xml:lang attribute" do
       ast = Moxml::XPath::Parser.parse('lang("fr")')
       proc = Moxml::XPath::Compiler.compile_with_cache(ast)
-      other = doc_with_lang.root.children[1]
+      elements = doc_with_lang.root.children.select { |c| c.is_a?(Moxml::Element) }
+      other = elements[1]
       result = proc.call(other)
 
       expect(result).to be true
