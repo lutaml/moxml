@@ -33,7 +33,7 @@ Moxml supports the following XML libraries:
 REXML:: https://github.com/ruby/rexml[REXML], a pure Ruby XML parser
 distributed with standard Ruby. Not the fastest, but always available.
 
-Nokogiri:: (default) https://github.com/sparklemotion/nokogiri[Nokogiri], a
+Nokogiri:: https://github.com/sparklemotion/nokogiri[Nokogiri], a
 widely used implementation which wraps around the performant
 https://github.com/GNOME/libxml2[libxml2] C library.
 
@@ -46,6 +46,29 @@ Ox:: https://github.com/ohler55/ox[Ox], a fast XML parser.
 LibXML:: https://github.com/xml4r/libxml-ruby[libxml-ruby], Ruby bindings
 for the performant https://github.com/GNOME/libxml2[libxml2] C library.
 Alternative to Nokogiri with similar performance characteristics.
+
+==== Default adapter selection
+
+When no adapter is explicitly specified, Moxml selects one automatically based on
+the runtime environment:
+
+. If running on Opal (`RUBY_ENGINE == "opal"`), Oga is used (pure Ruby, no C extensions)
+. Otherwise, Moxml detects already-loaded XML libraries in this order:
+  .. Nokogiri
+  .. Ox
+  .. Oga
+. If none of the above are loaded, Nokogiri is the fallback default
+
+[source,ruby]
+----
+# Automatic detection — picks the best available adapter
+ctx = Moxml.new
+ctx.config.adapter_name  # => :nokogiri (or :oga on Opal)
+
+# Explicit override — always takes precedence
+ctx = Moxml.new(:ox)
+ctx.config.adapter_name  # => :ox
+----
 
 === Feature table
 
