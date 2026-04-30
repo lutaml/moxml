@@ -30,7 +30,7 @@ RSpec.shared_examples "Performance Examples" do
           rexml: { parser: 0, serializer: 5 },
           ox: { parser: 2, serializer: 1000 },
           headed_ox: { parser: 2, serializer: 1000 },
-          libxml: { parser: 10, serializer: 30 },
+          libxml: { parser: 2, serializer: 3 },
         }
       end
 

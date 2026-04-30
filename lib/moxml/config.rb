@@ -21,7 +21,7 @@ module Moxml
       end
 
       def default_adapter
-        @default_adapter ||= runtime_default_adapter
+        @default_adapter || runtime_default_adapter
       end
 
       def runtime_default_adapter
