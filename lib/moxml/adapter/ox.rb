@@ -622,6 +622,13 @@ module Moxml
         end
 
         def serialize(node, options = {})
+          # CustomizedOx::Text subclasses ::Ox::Node so it can carry a @parent
+          # back-reference, but that makes it unknown to Ox.dump's XML emitter,
+          # which then falls back to generic object marshalling and writes
+          # `<o c="…CustomizedOx::Text"><s a="@value">…</s>…</o>` into output
+          # instead of plain character data. Short-circuit here.
+          return node.value.to_s if node.is_a?(CustomizedOx::Text)
+
           needs_custom = needs_custom_serialize?(node)
 
           unless needs_custom
