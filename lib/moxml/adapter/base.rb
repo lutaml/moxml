@@ -35,7 +35,12 @@ module Moxml
                   # not valid UTF-8, fall back to encoding as UTF-8 with
                   # replacement to avoid raising on gsub.
                   dup = xml.dup.force_encoding("UTF-8")
-                  dup.valid_encoding? ? dup : xml.dup.encode("UTF-8", "ASCII-8BIT", invalid: :replace, undef: :replace)
+                  if dup.valid_encoding?
+                    dup
+                  else
+                    xml.dup.encode("UTF-8",
+                                   "ASCII-8BIT", invalid: :replace, undef: :replace)
+                  end
                 elsif xml.encoding == Encoding::UTF_8
                   xml
                 else

@@ -470,7 +470,9 @@ module Moxml
           if node.is_a?(::Oga::XML::Document)
             # Check if we should include declaration
             # Priority: explicit option > existence of xml_declaration (native or attachment)
-            effective_xml_declaration = node.xml_declaration || attachments.get(node, :xml_declaration)
+            effective_xml_declaration = node.xml_declaration || attachments.get(
+              node, :xml_declaration
+            )
             should_include_decl = if options.key?(:no_declaration)
                                     !options[:no_declaration]
                                   elsif options.key?(:declaration)
@@ -519,7 +521,9 @@ module Moxml
 
           # Default: use XmlGenerator
           # But first check if we need to handle declaration specially
-          effective_xml_declaration = node.is_a?(::Oga::XML::Document) && (node.xml_declaration || attachments.get(node, :xml_declaration))
+          effective_xml_declaration = node.is_a?(::Oga::XML::Document) && (node.xml_declaration || attachments.get(
+            node, :xml_declaration
+          ))
           if node.is_a?(::Oga::XML::Document) && effective_xml_declaration
             # Document has declaration - use custom handling to avoid duplicates
             output = []

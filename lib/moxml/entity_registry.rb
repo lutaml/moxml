@@ -156,6 +156,7 @@ module Moxml
     def primary_name_for_codepoint(codepoint)
       names = @by_codepoint[codepoint]
       return nil unless names&.any?
+
       # Prefer lowercase names (e.g., "amp" over "AMP") for XML compatibility
       names.find { |n| n == n.downcase } || names.first
     end

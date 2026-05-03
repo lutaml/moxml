@@ -38,7 +38,9 @@ RSpec.shared_examples "Moxml::DocumentBuilder" do
       expect(non_ws_children[1]).to be_a(Moxml::Element)
       expect(non_ws_children[1].name).to eq("child")
       expect(non_ws_children[1]["id"]).to eq("1")
-      expect(non_ws_children[1].children.find { |c| c.is_a?(Moxml::Cdata) }).to be_a(Moxml::Cdata)
+      expect(non_ws_children[1].children.find do |c|
+        c.is_a?(Moxml::Cdata)
+      end).to be_a(Moxml::Cdata)
       expect(non_ws_children[2]).to be_a(Moxml::ProcessingInstruction)
     end
   end
