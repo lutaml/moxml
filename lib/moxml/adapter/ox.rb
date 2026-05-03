@@ -74,8 +74,7 @@ module Moxml
         end
 
         def create_native_element(name, _owner_doc = nil)
-          element = ::Ox::Element.new(name)
-          element
+          ::Ox::Element.new(name)
         end
 
         def create_native_text(content, _owner_doc = nil)
@@ -624,10 +623,9 @@ module Moxml
         def serialize(node, options = {})
           # CustomizedOx::Text subclasses ::Ox::Node so it can carry a @parent
           # back-reference, but that makes it unknown to Ox.dump's XML emitter,
-          # which then falls back to generic object marshalling and writes
-          # `<o c="…CustomizedOx::Text"><s a="@value">…</s>…</o>` into output
-          # instead of plain character data. Short-circuit here.
-          return node.value.to_s if node.is_a?(CustomizedOx::Text)
+          # which then falls back to generic object marshalling. Short-circuit
+          # here with proper XML escaping.
+          return escape_xml_text(node.value) if node.is_a?(CustomizedOx::Text)
 
           needs_custom = needs_custom_serialize?(node)
 
@@ -650,7 +648,7 @@ module Moxml
             return true if attachments.get(node, :has_entity_refs)
             return true if attachments.get(node, :has_cdata_end_markers)
             return false if attachments.key?(node, :has_entity_refs) &&
-                            attachments.key?(node, :has_cdata_end_markers)
+              attachments.key?(node, :has_cdata_end_markers)
           end
 
           # Only scan tree on first call — short-circuit on first hit
@@ -701,9 +699,8 @@ module Moxml
             encoding: options[:encoding],
             no_empty: options[:expand_empty],
           }
-          result = output + ::Ox.dump(node, ox_options)
+          output + ::Ox.dump(node, ox_options)
           # Fix CDATA ]]> end markers that Ox doesn't escape
-          result
         end
 
         def tree_has_entity_references?(node)
@@ -728,9 +725,13 @@ module Moxml
           when ::Ox::CData
             node.value&.include?("]]>") || false
           when ::Ox::Element
-            node.nodes&.any? { |child| tree_has_cdata_end_markers?(child) } || false
+            node.nodes&.any? do |child|
+              tree_has_cdata_end_markers?(child)
+            end || false
           when ::Ox::Document
-            node.nodes&.any? { |child| tree_has_cdata_end_markers?(child) } || false
+            node.nodes&.any? do |child|
+              tree_has_cdata_end_markers?(child)
+            end || false
           else
             false
           end
@@ -820,7 +821,6 @@ module Moxml
             end
           end
         end
-
 
         # Translate a subset of XPath to Ox locate() syntax
         # Supports: //element, /path/to/element, .//element, element[@attr]

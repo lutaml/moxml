@@ -390,6 +390,10 @@ Text nodes contain character data.
 | `#text`
 | Alias for #content
 | ✅ Yes
+
+| `#to_s`
+| Returns the text content (same as `#content`)
+| ✅ Yes
 |===
 
 ==== Identity Methods

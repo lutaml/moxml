@@ -116,7 +116,7 @@ RSpec.shared_examples "Entity Reference Whitespace Preservation" do
       children = doc.root.children
 
       # Whitespace text nodes between elements are preserved
-      elements = children.select { |c| c.is_a?(Moxml::Element) }
+      elements = children.grep(Moxml::Element)
       expect(elements.length).to eq(2)
       expect(elements.map(&:name)).to eq(%w[child1 child2])
     end

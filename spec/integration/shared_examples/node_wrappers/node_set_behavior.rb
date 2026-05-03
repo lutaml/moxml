@@ -42,7 +42,7 @@ RSpec.shared_examples "Moxml::NodeSet" do
 
       it "compares nodes" do
         xpath_results = doc.xpath("//child")
-        element_children = doc.root.children.select { |c| c.is_a?(Moxml::Element) }
+        element_children = doc.root.children.grep(Moxml::Element)
         expect(xpath_results.map(&:native)).to eq(element_children.map(&:native))
       end
     end

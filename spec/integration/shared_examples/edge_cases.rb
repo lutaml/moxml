@@ -170,7 +170,9 @@ RSpec.shared_examples "Moxml Edge Cases" do
   describe "whitespace text node preservation" do
     # Ox/HeadedOx do not generate whitespace-only text nodes in their parser,
     # so these tests only apply to adapters that do (Nokogiri, OGA, REXML, LibXML)
-    let(:preserves_ws) { !%i[ox headed_ox].include?(context.config.adapter_name) }
+    let(:preserves_ws) do
+      !%i[ox headed_ox].include?(context.config.adapter_name)
+    end
 
     it "preserves whitespace-only text nodes between sibling elements" do
       unless preserves_ws
@@ -196,7 +198,7 @@ RSpec.shared_examples "Moxml Edge Cases" do
       expect(ws_nodes).not_to be_empty
 
       # Element children should still be accessible
-      elements = children.select { |c| c.is_a?(Moxml::Element) }
+      elements = children.grep(Moxml::Element)
       expect(elements.map(&:name)).to eq(%w[a b c])
     end
 

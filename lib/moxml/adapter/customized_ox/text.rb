@@ -8,17 +8,15 @@ module Moxml
       #
       # ::Ox::Node subclasses that are neither ::Ox::Element nor ::Ox::Document
       # are unknown to Ox.dump's standard XML emitter, so they fall through to
-      # Ox's generic object-marshalling format (`<o c="ClassName"><s a="@ivar">…</s>…</o>`).
-      # The serializer in Moxml::Adapter::Ox#serialize special-cases this class
-      # to emit @value directly. The #to_s / #inspect overrides below cover the
-      # Ruby-idiomatic interpolation paths (`"#{text}"`, `p text`) that would
-      # otherwise inherit Object#inspect's `"#<Moxml::…::Text:0xaddr>"` form.
+      # Ox's generic object-marshalling format. The serializer in
+      # Moxml::Adapter::Ox#serialize special-cases this class to emit the value
+      # with proper XML escaping. The #to_s override ensures string
+      # interpolation (`"#{text}"`) produces the text content rather than the
+      # default Object representation.
       class Text < ::Ox::Node
         def to_s
-          @value.to_s
+          value.to_s
         end
-
-        alias_method :inspect, :to_s
       end
     end
   end

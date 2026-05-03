@@ -68,6 +68,7 @@ module Moxml
                     next if child.is_a?(::REXML::Text) &&
                       child.to_s.strip.empty? &&
                       !(child.next_sibling.nil? && child.previous_sibling.nil?)
+
                     write(child, output)
                   end
                 when :eref

@@ -129,16 +129,20 @@ RSpec.shared_examples "Moxml::EntityReference" do
 
   describe "entity restoration" do
     it "restores standard XML entities when enabled" do
-      ctx_restore = Moxml.new(context.config.adapter_name) { |c| c.restore_entities = true }
+      ctx_restore = Moxml.new(context.config.adapter_name) do |c|
+        c.restore_entities = true
+      end
       doc = ctx_restore.parse("<p>a&amp;b</p>")
       output = doc.to_xml
       expect(output).to include("&amp;")
     end
 
     it "does not create entity references when disabled" do
-      ctx_no_restore = Moxml.new(context.config.adapter_name) { |c| c.restore_entities = false }
+      ctx_no_restore = Moxml.new(context.config.adapter_name) do |c|
+        c.restore_entities = false
+      end
       doc = ctx_no_restore.parse("<p>text</p>")
-      refs = doc.root.children.select { |c| c.is_a?(Moxml::EntityReference) }
+      refs = doc.root.children.grep(Moxml::EntityReference)
       expect(refs).to be_empty
     end
   end
@@ -197,7 +201,9 @@ RSpec.shared_examples "Moxml::EntityReference" do
 
     it "rejects invalid modes" do
       cfg = Moxml::Config.new(context.config.adapter_name)
-      expect { cfg.entity_restoration_mode = :bogus }.to raise_error(ArgumentError)
+      expect do
+        cfg.entity_restoration_mode = :bogus
+      end.to raise_error(ArgumentError)
     end
 
     it "restores non-standard entities in lenient mode" do

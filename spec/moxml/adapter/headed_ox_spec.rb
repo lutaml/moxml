@@ -145,7 +145,7 @@ RSpec.describe Moxml::Adapter::HeadedOx do
     it "returns first matching node" do
       result = adapter.at_xpath(doc, "//book")
 
-      expect(result).to be_a(::Ox::Element)
+      expect(result).to be_a(Ox::Element)
       expect(result.name).to eq("book")
     end
 

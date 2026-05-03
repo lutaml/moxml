@@ -30,12 +30,14 @@ module Moxml
     # and a valid XML tag name (XSD/RelaxNG).
     def element(name_or_attrs = nil, attributes = {}, &block)
       if name_or_attrs.is_a?(Hash)
-        return create_element_node("element", name_or_attrs, block: block, eval_block: false)
+        return create_element_node("element", name_or_attrs, block: block,
+                                                             eval_block: false)
       end
 
       raise ArgumentError, "element requires a tag name" if name_or_attrs.nil?
 
-      create_element_node(name_or_attrs, attributes, block: block, eval_block: true)
+      create_element_node(name_or_attrs, attributes, block: block,
+                                                     eval_block: true)
     end
 
     def text(content)
@@ -101,10 +103,14 @@ module Moxml
       text_content = args.first.is_a?(String) ? args.shift : nil
       attrs = args.first.is_a?(Hash) ? args.shift : {}
 
-      raise ArgumentError, "unexpected arguments for #{method_name}: #{args.inspect}" unless args.empty?
+      unless args.empty?
+        raise ArgumentError,
+              "unexpected arguments for #{method_name}: #{args.inspect}"
+      end
 
       if text_content && block
-        raise ArgumentError, "#{method_name}: cannot combine text content with a block"
+        raise ArgumentError,
+              "#{method_name}: cannot combine text content with a block"
       end
 
       # Strip trailing underscore to allow reserved Ruby method names as tags
@@ -126,7 +132,8 @@ module Moxml
     # Single method for all element creation.
     # eval_block: true  → instance_eval (build DSL context)
     # eval_block: false → yield (preserves caller's self)
-    def create_element_node(tag_name, attrs = {}, text_content: nil, block: nil, eval_block: true)
+    def create_element_node(tag_name, attrs = {}, text_content: nil,
+block: nil, eval_block: true)
       el = @document.create_element(tag_name)
 
       attrs.each do |key, value|

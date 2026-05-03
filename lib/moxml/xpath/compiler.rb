@@ -1758,7 +1758,8 @@ module Moxml
           current = visit.pop
 
           # Function name is stored in :value field, not children
-          if (current.type == :call || current.type == :function) && current.value == name
+          if %i[call
+                function].include?(current.type) && current.value == name
             return true
           end
 

@@ -565,7 +565,8 @@ module Moxml
               # Set as root element
               native_elem.root = native_child
               # Flag for actual_native to refresh the wrapper's native reference
-              attachments.set(native_elem, :_pending_root_refresh, native_child.object_id)
+              attachments.set(native_elem, :_pending_root_refresh,
+                              native_child.object_id)
             elsif native_elem.root
               # Document has root, add to it instead
               import_and_add(native_elem.doc, native_elem.root, native_child)
@@ -594,6 +595,7 @@ module Moxml
         def lookup_entity_refs(doc, element)
           pairs = attachments.get(doc, :_entity_ref_pairs)
           return nil unless pairs
+
           pair = pairs.find { |elem, _| elem == element }
           pair&.last
         end
@@ -614,6 +616,7 @@ module Moxml
         def lookup_child_sequence(doc, element)
           pairs = attachments.get(doc, :_child_seq_pairs)
           return nil unless pairs
+
           pair = pairs.find { |elem, _| elem == element }
           pair&.last
         end
@@ -1481,7 +1484,9 @@ module Moxml
             # Interleave native children with entity refs using tracked sequence
             native_children = []
             if elem.children?
-              elem.each_child { |c| native_children << c unless c.text? && c.content.to_s.strip.empty? }
+              elem.each_child do |c|
+                native_children << c unless c.text? && c.content.to_s.strip.empty?
+              end
             end
 
             eref_idx = 0
