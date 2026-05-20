@@ -13,16 +13,13 @@ module Moxml
           @native.content
         end
 
-        # Serialize as XML with proper escaping
-        # LibXML's .content already contains escaped text, but it over-escapes
-        # quotes which don't need escaping in text nodes (only in attributes)
+        # Serialize as XML with proper escaping. The previous implementation
+        # used #content (which is the *decoded* text) and lost the escape
+        # of "&" → "&amp;". libxml's native #to_s on a text node correctly
+        # escapes "&", "<", and ">", leaving quotes alone (quotes only need
+        # escaping inside attribute values, not text content).
         def to_xml
-          content = @native.content
-          # Skip the gsub allocation entirely when there's nothing to undo —
-          # the common case for parsed text without literal quotes.
-          return content unless content.include?("&quot;")
-
-          content.gsub("&quot;", '"')
+          @native.to_s
         end
       end
     end

@@ -504,6 +504,7 @@ module Moxml
           case node
           when String then node.to_s
           when ::Moxml::Adapter::CustomizedOx::Text then node.value
+          when ::Ox::CData then node.value.to_s
           when ::Moxml::Adapter::CustomizedOx::EntityReference then ""
           else
             return "" unless node.is_a?(::Ox::Element) || node.is_a?(::Ox::Document)
