@@ -19,6 +19,8 @@ module Moxml
       SERIALIZED_ENTITY_MARKER_RE = /&#xFFFC;&#xFEFF;(#{ENTITY_NAME_PATTERN});/
       STANDARD_ENTITIES = %w[amp lt gt quot apos].freeze
 
+      NUMERIC_CHAR_REF_RE = /&#(?:(\d+)|[xX]([0-9a-fA-F]+));/
+
       class << self
         include XmlUtils
 
@@ -50,6 +52,38 @@ module Moxml
 
           str.gsub(ENTITY_NAME_RE) do |match|
             STANDARD_ENTITIES.include?(::Regexp.last_match(1)) ? match : "#{ENTITY_MARKER}#{::Regexp.last_match(1)};"
+          end
+        end
+
+        # Resolve numeric character references (&#NN; and &#xNN;) in a
+        # SAX-delivered string so it matches DOM-decoded attribute/text values.
+        # Single pass: the resulting character is data, not a new reference.
+        # Used by SAX bridges over libxml2 (nokogiri, libxml-ruby) which leave
+        # numeric refs producing XML-special chars unresolved in attributes.
+        #
+        # Tested against libxml2 2.9.x–2.13.x (libxml-ruby 5.0.x, nokogiri
+        # 1.18.x–1.19.x). The fix relies on libxml2's SAX2 behavior of
+        # rewriting `&amp;` to `&#38;` in attribute values. If a future
+        # libxml2 ever delivers attribute values with `&amp;` fully resolved
+        # to `&` instead, this method's gsub would no longer fire on those
+        # inputs (which is the desired behavior for that case). The
+        # destructive failure mode would be a libxml2 that decodes `&amp;`
+        # to `&` AND leaves a trailing `#38;` unresolved as text — none of
+        # the tested versions exhibit that, but pin the SAX-parity spec.
+        def decode_numeric_char_refs(text)
+          return text unless text.is_a?(String) && text.include?("&#")
+
+          text.gsub(NUMERIC_CHAR_REF_RE) do
+            code = ::Regexp.last_match(1) ? ::Regexp.last_match(1).to_i : ::Regexp.last_match(2).to_i(16)
+            # Preserve the original reference for code points that would
+            # produce invalid UTF-8: NUL, surrogate halves, or values
+            # above the Unicode max. pack("U") otherwise emits invalid
+            # byte sequences silently.
+            if code.zero? || code.between?(0xD800, 0xDFFF) || code > 0x10FFFF
+              ::Regexp.last_match(0)
+            else
+              [code].pack("U")
+            end
           end
         end
 

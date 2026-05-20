@@ -2,6 +2,7 @@
 
 require "rexml/document"
 require "rexml/xpath"
+require "rexml/streamlistener"
 require "set" unless RUBY_ENGINE == "opal"
 require "stringio" if RUBY_ENGINE == "opal"
 
@@ -60,18 +61,21 @@ module Moxml
         # @param handler [Moxml::SAX::Handler] Moxml SAX handler
         # @return [void]
         def sax_parse(xml, handler)
-          require "rexml/parsers/sax2parser"
+          require "rexml/parsers/streamparser"
           require "rexml/source"
-          require "stringio"
 
-          bridge = REXMLSAX2Bridge.new(handler)
+          bridge = REXMLStreamBridge.new(handler)
 
           xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
-          source = ::REXML::IOSource.new(StringIO.new(xml_string))
 
-          parser = ::REXML::Parsers::SAX2Parser.new(source)
-          parser.listen(bridge)
-          parser.parse
+          # StreamParser (rather than SAX2Parser) is used because
+          # SAX2Parser normalizes plain "&#NN;" and "&amp;#NN;" attribute
+          # literals to the same raw string, making spec-correct decoding
+          # impossible after the fact. StreamParser delivers values in
+          # the same decoded form as REXML's DOM.
+          handler.on_start_document
+          ::REXML::Parsers::StreamParser.new(xml_string, bridge).parse
+          handler.on_end_document
         rescue ::REXML::ParseException => e
           error = Moxml::ParseError.new(e.message, line: e.line)
           handler.on_error(error)
@@ -642,29 +646,33 @@ module Moxml
       end
     end
 
-    # Bridge between REXML SAX2 and Moxml SAX
+    # Bridge between REXML StreamParser and Moxml SAX
     #
-    # Translates REXML::SAX2Parser events to Moxml::SAX::Handler events
+    # StreamParser (rather than SAX2Parser) is used because SAX2Parser
+    # normalizes plain "&#NN;" and "&amp;#NN;" attribute literals to
+    # the same raw string, which makes spec-correct decoding impossible
+    # after the fact. StreamParser delivers attribute values in the
+    # same decoded form as REXML's DOM.
     #
     # @private
-    class REXMLSAX2Bridge
+    class REXMLStreamBridge
+      include ::REXML::StreamListener
       include Moxml::SAX::NamespaceSplitter
 
       def initialize(handler)
         @handler = handler
       end
 
-      # REXML splits element name into uri/localname/qname
-      def start_element(_uri, _localname, qname, attributes)
+      def tag_start(name, attributes)
         attr_hash, ns_hash = split_attributes_and_namespaces(attributes)
-        @handler.on_start_element(qname, attr_hash, ns_hash)
+        @handler.on_start_element(name, attr_hash, ns_hash)
       end
 
-      def end_element(_uri, _localname, qname)
-        @handler.on_end_element(qname)
+      def tag_end(name)
+        @handler.on_end_element(name)
       end
 
-      def characters(text)
+      def text(text)
         @handler.on_characters(text)
       end
 
@@ -676,25 +684,8 @@ module Moxml
         @handler.on_comment(text)
       end
 
-      def processing_instruction(target, data)
+      def instruction(target, data)
         @handler.on_processing_instruction(target, data || "")
-      end
-
-      def start_document
-        @handler.on_start_document
-      end
-
-      def end_document
-        @handler.on_end_document
-      end
-
-      # REXML calls these but we don't need to handle them
-      def xmldecl(version, encoding, standalone)
-        # XML declaration - we don't need to do anything
-      end
-
-      def progress(position)
-        # Progress callback - we don't need to do anything
       end
     end
   end
