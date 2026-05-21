@@ -13,12 +13,13 @@ module Moxml
       # single-pass decoding semantics. Replacing "&amp;" with a non-"&"
       # sentinel prevents pass 2/3 from finding anything to combine.
       #
-      # Three distinct Unicode noncharacters in sequence — U+FDD0..U+FDEF
+      # The default sentinel is three Unicode noncharacters (U+FDD0..U+FDEF
       # is the noncharacter block, explicitly reserved by Unicode for
-      # internal use and never permitted in interchange data. Using three
-      # different codepoints in a row makes accidental collision with
-      # real (even non-conforming) input effectively impossible.
-      AMP_MARKER = "\u{FDD0}\u{FDD1}\u{FDD2}"
+      # internal use and never permitted in interchange data). Real XML
+      # is forbidden from containing these — but inputs are not always
+      # well-formed, so we always check the source for collision and
+      # generate a unique marker if needed (see amp_marker_for).
+      DEFAULT_AMP_MARKER = "\u{FDD0}\u{FDD1}\u{FDD2}"
 
       # The workarounds in this adapter depend on three Oga internals:
       # Attribute#@value, Attribute#@decoded, Text#@text, Text#@decoded.
@@ -58,21 +59,33 @@ module Moxml
         # instructions, DOCTYPE declarations) — substituting inside any
         # of these would corrupt literal "&amp;" sequences (e.g. in an
         # <!ENTITY ...> body or a PI payload).
+        #
+        # Returns [processed_xml, marker]. `marker` is nil when no
+        # substitution was performed (the input had no "&amp;" outside
+        # verbatim blocks), and callers must skip restoration in that
+        # case — otherwise legitimate user data matching the default
+        # marker codepoints would be corrupted.
         def preprocess_amp_for_oga(xml)
-          return xml unless xml.is_a?(String) && xml.include?("&amp;")
+          return [xml, nil] unless xml.is_a?(String) && xml.include?("&amp;")
 
+          marker = amp_marker_for(xml)
           result = +""
           i = 0
           len = xml.length
+          substituted = false
           while i < len
             block_start, terminator = next_verbatim_block(xml, i)
 
             if block_start.nil?
-              result << xml[i..].gsub("&amp;", AMP_MARKER)
+              chunk = xml[i..]
+              substituted ||= chunk.include?("&amp;")
+              result << chunk.gsub("&amp;", marker)
               break
             end
 
-            result << xml[i...block_start].gsub("&amp;", AMP_MARKER)
+            chunk = xml[i...block_start]
+            substituted ||= chunk.include?("&amp;")
+            result << chunk.gsub("&amp;", marker)
             end_idx = find_block_terminator(xml, block_start, terminator)
 
             if end_idx.nil?
@@ -85,7 +98,29 @@ module Moxml
             result << xml[block_start..(end_idx + terminator.length - 1)]
             i = end_idx + terminator.length
           end
-          result
+          [result, substituted ? marker : nil]
+        end
+
+        # Choose a marker not present in the source XML. Falls back from
+        # the default three-noncharacter sequence to other noncharacter
+        # triples in U+FDD0..U+FDEF if the default appears in user data.
+        # Real XML interchange data must not contain these codepoints,
+        # but inputs are not always well-formed so we defend against
+        # accidental collision.
+        def amp_marker_for(xml)
+          return DEFAULT_AMP_MARKER unless xml.include?(DEFAULT_AMP_MARKER)
+
+          (0xFDD0..0xFDED).each do |start|
+            triple = [start, start + 1, start + 2].pack("U*")
+            return triple unless xml.include?(triple)
+          end
+
+          # Extreme fallback: extend with additional noncharacters until
+          # the marker is unique to the input. U+FFFE is also a permanent
+          # noncharacter.
+          marker = DEFAULT_AMP_MARKER.dup
+          marker << "\u{FFFE}" while xml.include?(marker)
+          marker.freeze
         end
 
         # Locate the terminator for a verbatim block. For DOCTYPE blocks
@@ -179,7 +214,7 @@ module Moxml
         end
 
         def parse(xml, options = {}, _context = nil)
-          processed_xml = preprocess_amp_for_oga(preprocess_entities(xml))
+          processed_xml, marker = preprocess_amp_for_oga(preprocess_entities(xml))
 
           native_doc = begin
             ::Oga.parse_xml(processed_xml, strict: options[:strict])
@@ -190,38 +225,44 @@ module Moxml
             )
           end
 
-          restore_amp_in_tree!(native_doc)
+          restore_amp_in_tree!(native_doc, marker) if marker
 
           ctx = _context || Context.new(:oga)
           DocumentBuilder.new(ctx).build(native_doc)
         end
 
-        # Walk the parsed tree and replace AMP_MARKER sentinels with "&" in
-        # attribute values and text nodes. The sentinel was inserted by
-        # preprocess_amp_for_oga to prevent Oga's broken 3-pass entity
-        # decoder from double-decoding "&amp;#NN;".
+        # Walk the parsed tree and replace the per-input marker sentinels
+        # with "&" in attribute values and text nodes. The marker was
+        # inserted by preprocess_amp_for_oga to prevent Oga's broken
+        # 3-pass entity decoder from double-decoding "&amp;#NN;".
         #
         # We use instance_variable_set instead of the public writers because
         # Oga's Attribute#value= and Text#text= reset the lazy @decoded flag,
         # which would cause the freshly-restored "&" to be re-fed into the
         # broken decoder on next read.
-        def restore_amp_in_tree!(node)
+        def restore_amp_in_tree!(node, marker)
+          return if marker.nil?
+
+          # PI, Comment, and Doctype are intentionally omitted:
+          # preprocess_amp_for_oga skips their source-text spans, so the
+          # marker is never inserted into their payloads and there is
+          # nothing to restore.
           case node
           when ::Oga::XML::Document
-            node.children.each { |c| restore_amp_in_tree!(c) }
+            node.children.each { |c| restore_amp_in_tree!(c, marker) }
           when ::Oga::XML::Element
-            node.attributes.each { |attr| restore_amp_in_attribute!(attr) }
-            node.children.each { |c| restore_amp_in_tree!(c) }
+            node.attributes.each { |attr| restore_amp_in_attribute!(attr, marker) }
+            node.children.each { |c| restore_amp_in_tree!(c, marker) }
           when ::Oga::XML::Text, ::Oga::XML::Cdata
-            restore_amp_in_text!(node)
+            restore_amp_in_text!(node, marker)
           end
         end
 
-        def restore_amp_in_attribute!(attr)
+        def restore_amp_in_attribute!(attr, marker)
           value = attr.value # triggers Oga's lazy decode once
-          return unless value.is_a?(String) && value.include?(AMP_MARKER)
+          return unless value.is_a?(String) && value.include?(marker)
 
-          restored = value.gsub(AMP_MARKER, "&")
+          restored = value.gsub(marker, "&")
           if OGA_INTERNALS_SUPPORTED && attr.instance_variable_defined?(:@value)
             attr.instance_variable_set(:@value, restored)
             attr.instance_variable_set(:@decoded, true)
@@ -233,11 +274,11 @@ module Moxml
           end
         end
 
-        def restore_amp_in_text!(node)
+        def restore_amp_in_text!(node, marker)
           text = node.text # triggers Oga's lazy decode once
-          return unless text.is_a?(String) && text.include?(AMP_MARKER)
+          return unless text.is_a?(String) && text.include?(marker)
 
-          restored = text.gsub(AMP_MARKER, "&")
+          restored = text.gsub(marker, "&")
           if OGA_INTERNALS_SUPPORTED && node.instance_variable_defined?(:@text)
             node.instance_variable_set(:@text, restored)
             node.instance_variable_set(:@decoded, true)
@@ -252,10 +293,10 @@ module Moxml
         # @param handler [Moxml::SAX::Handler] Moxml SAX handler
         # @return [void]
         def sax_parse(xml, handler)
-          bridge = OgaSAXBridge.new(handler)
-
           xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
-          xml_string = preprocess_amp_for_oga(xml_string)
+          xml_string, marker = preprocess_amp_for_oga(xml_string)
+
+          bridge = OgaSAXBridge.new(handler, marker)
 
           # Manually call start_document (Oga doesn't)
           handler.on_start_document
@@ -765,8 +806,9 @@ module Moxml
     class OgaSAXBridge
       include Moxml::SAX::NamespaceSplitter
 
-      def initialize(handler)
+      def initialize(handler, marker = nil)
         @handler = handler
+        @marker = marker
       end
 
       # Oga: on_element(namespace, name, attributes)
@@ -789,9 +831,10 @@ module Moxml
       end
 
       def restore_amp(value)
-        return value unless value.is_a?(String) && value.include?(Oga::AMP_MARKER)
+        return value if @marker.nil?
+        return value unless value.is_a?(String) && value.include?(@marker)
 
-        value.gsub(Oga::AMP_MARKER, "&")
+        value.gsub(@marker, "&")
       end
 
       def on_text(text)

@@ -734,20 +734,19 @@ module Moxml
 
           # libxml-ruby's .content= setter on a text node pre-escapes the
           # input ("&" stored as "&amp;"), which then double-escapes on
-          # serialization (".to_s" escapes again). For an UNPARENTED text
-          # node we work around this by swapping the wrapper's @native to
-          # a fresh new_text (which stores content raw). We can't do the
-          # same in-tree because libxml-ruby merges adjacent text nodes
-          # on next=/prev=/<<, which would lose data; in-tree text content
-          # mutation falls back to the setter and accepts libxml's escape
-          # semantics (callers should re-create the node if they need
-          # special-char content in an existing tree position). For
+          # serialization (".to_s" escapes again). Work around by swapping
+          # the wrapper's @native with a fresh new_text node (which stores
+          # content raw). For an UNPARENTED node we simply swap; for an
+          # IN-TREE node we detach the old node and insert the fresh one
+          # at the same position. libxml normalizes adjacent text nodes on
+          # insert, so an in-tree text node never has text siblings — the
+          # position swap is safe without triggering a text-merge. For
           # element/other nodes the setter is safe — libxml creates a
           # child text node internally with raw storage matching the
           # parser's path.
-          if native_node.is_a?(::LibXML::XML::Node) && native_node.text? &&
-              native_node.parent.nil?
+          if native_node.is_a?(::LibXML::XML::Node) && native_node.text?
             fresh = ::LibXML::XML::Node.new_text(content.to_s)
+            swap_native_in_place(native_node, fresh)
             if node.is_a?(CustomizedLibxml::Text)
               node.instance_variable_set(:@native, fresh)
             end
@@ -755,6 +754,26 @@ module Moxml
             native_node.content = content.to_s
           end
         end
+
+        # Replace `old_native` with `fresh` while preserving position in
+        # the parent. Safe for nodes that libxml does not auto-merge
+        # (text/PI never have like-typed siblings in-tree — see callers).
+        def swap_native_in_place(old_native, fresh)
+          parent = old_native.parent
+          return if parent.nil?
+
+          prev_sibling = old_native.prev
+          next_sibling = old_native.next
+          old_native.remove!
+          if prev_sibling
+            prev_sibling.next = fresh
+          elsif next_sibling
+            next_sibling.prev = fresh
+          else
+            parent << fresh
+          end
+        end
+        private :swap_native_in_place
 
         def cdata_content(node)
           native_node = unpatch_node(node)
@@ -807,20 +826,13 @@ module Moxml
 
           # libxml-ruby's .content= setter on a PI node pre-escapes input
           # ('"' → '&quot;'), which is wrong for PI content (XML 1.0 §2.6
-          # delivers PI text verbatim, no entity resolution). For an
-          # UNPARENTED PI we swap the wrapper's @native to a fresh new_pi
-          # (raw storage); we don't manipulate in-tree PIs here because
-          # libxml-ruby's sibling re-link is unsafe across node identity
-          # changes. In-tree PI content mutation falls back to the setter
-          # and accepts libxml's escape (callers should re-create the PI
-          # node if they need raw content in an existing tree position).
-          if native_node.parent.nil?
-            fresh = ::LibXML::XML::Node.new_pi(native_node.name, content.to_s)
-            if node.is_a?(CustomizedLibxml::ProcessingInstruction)
-              node.instance_variable_set(:@native, fresh)
-            end
-          else
-            native_node.content = content.to_s
+          # delivers PI text verbatim, no entity resolution). Replace the
+          # node with a fresh new_pi (raw storage). PIs are never merged
+          # by libxml, so the position swap is straightforward.
+          fresh = ::LibXML::XML::Node.new_pi(native_node.name, content.to_s)
+          swap_native_in_place(native_node, fresh)
+          if node.is_a?(CustomizedLibxml::ProcessingInstruction)
+            node.instance_variable_set(:@native, fresh)
           end
         end
 

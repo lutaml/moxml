@@ -176,6 +176,76 @@ RSpec.describe "SAX/DOM entity parity" do
         expect(reparsed_text).to eq("a & b")
       end
 
+      it "mutates in-tree text node content without double-escaping '&'" do
+        # Pins the libxml fix for set_text_content on attached text
+        # nodes: libxml-ruby's #content= setter pre-escapes the input,
+        # and #to_s escapes again on serialization. The adapter must
+        # replace the in-tree node with a fresh raw-storage node to
+        # avoid silent double-escape data corruption.
+        doc = ctx.create_document
+        el = doc.create_element("doc")
+        text = doc.create_text("placeholder")
+        el.add_child(text)
+        doc.add_child(el)
+
+        text.content = "a & b"
+        expect(text.content).to eq("a & b")
+
+        serialized = doc.to_xml.sub(/\A<\?[^>]*\?>\s*/, "").strip
+        expect(serialized).to include(">a &amp; b<")
+        expect(serialized).not_to include("&amp;amp;")
+        expect(ctx.parse(serialized).root.text).to eq("a & b")
+      end
+
+      it "mutates in-tree PI content verbatim without escaping" do
+        # Pins the libxml fix for set_processing_instruction_content
+        # on attached PI nodes: libxml-ruby's #content= setter pre-
+        # escapes quotes and ampersands, but XML 1.0 §2.6 specifies
+        # PI content is verbatim — entity references are not resolved
+        # and no escaping is required on serialization.
+        doc = ctx.create_document
+        el = doc.create_element("doc")
+        pi = doc.create_processing_instruction("target", "placeholder")
+        el.add_child(pi)
+        doc.add_child(el)
+
+        pi.content = 'a " & b'
+        expect(pi.content.strip).to eq('a " & b')
+
+        serialized = doc.to_xml.sub(/\A<\?[^>]*\?>\s*/, "").strip
+        expect(serialized).to include('a " & b?>')
+        expect(serialized).not_to include("&quot;")
+        expect(serialized).not_to include("&amp;")
+        reparsed = ctx.parse(serialized).root.children.find do |c|
+          c.is_a?(Moxml::ProcessingInstruction)
+        end
+        expect(reparsed.content.strip).to eq('a " & b')
+      end
+
+      it "mutates unparented text/PI content before adoption into the tree" do
+        # Pins the swap_native_in_place early-return when parent is nil:
+        # set_text_content / set_processing_instruction_content called
+        # before the node is added to any element must still replace the
+        # wrapper's @native with a fresh raw-storage node, so the value
+        # survives correctly once the node is later attached and serialized.
+        doc = ctx.create_document
+        el = doc.create_element("doc")
+
+        text = doc.create_text("placeholder")
+        text.content = "a & b"
+        pi = doc.create_processing_instruction("target", "placeholder")
+        pi.content = 'a " & b'
+
+        el.add_child(text)
+        el.add_child(pi)
+        doc.add_child(el)
+
+        serialized = doc.to_xml.sub(/\A<\?[^>]*\?>\s*/, "").strip
+        expect(serialized).to include(">a &amp; b<")
+        expect(serialized).to include('<?target a " & b?>')
+        expect(serialized).not_to include("&amp;amp;")
+      end
+
       # Regressions around &amp; appearing inside contexts that Oga's
       # source-level preprocessor must not touch (CDATA, comments,
       # DOCTYPE) — verified across adapters to ensure parity holds.
@@ -197,9 +267,31 @@ RSpec.describe "SAX/DOM entity parity" do
 
       it "preserves literal U+FDD0 U+FDD0 user data in attribute" do
         # Single noncharacters near the Oga marker codepoints — must not
-        # collide with the internal AMP_MARKER sentinel.
+        # collide with the internal DEFAULT_AMP_MARKER sentinel.
         xml = "<doc x=\"\u{FDD0}\u{FDD0} test\"/>"
         expect(ctx.parse(xml).root["x"]).to eq("\u{FDD0}\u{FDD0} test")
+      end
+
+      it "preserves the exact Oga DEFAULT_AMP_MARKER sequence in attribute (no amp)" do
+        # User data matching the default Oga marker codepoints with NO
+        # &amp; in the input — restore must not run, so the sequence
+        # survives intact.
+        xml = "<doc x=\"\u{FDD0}\u{FDD1}\u{FDD2} plain\"/>"
+        expect(ctx.parse(xml).root["x"]).to eq("\u{FDD0}\u{FDD1}\u{FDD2} plain")
+      end
+
+      it "preserves the exact Oga DEFAULT_AMP_MARKER sequence in attribute (with amp)" do
+        # User data matching the default Oga marker codepoints alongside
+        # an &amp; that the preprocessor would otherwise substitute.
+        # The adapter must pick a marker not present in user data so
+        # restore doesn't corrupt the original sequence.
+        xml = "<doc x=\"\u{FDD0}\u{FDD1}\u{FDD2} &amp; foo\"/>"
+        expect(ctx.parse(xml).root["x"]).to eq("\u{FDD0}\u{FDD1}\u{FDD2} & foo")
+      end
+
+      it "preserves the exact Oga DEFAULT_AMP_MARKER sequence in text" do
+        xml = "<doc>\u{FDD0}\u{FDD1}\u{FDD2} &amp; foo</doc>"
+        expect(ctx.parse(xml).root.text).to eq("\u{FDD0}\u{FDD1}\u{FDD2} & foo")
       end
 
       it "handles DOCTYPE with '[' in quoted system ID" do
@@ -217,7 +309,7 @@ RSpec.describe "SAX/DOM entity parity" do
         # exercises find_block_terminator's quote-aware ">" scan; if
         # the bare-DOCTYPE end was misidentified, the preprocessor
         # would rewrite "&amp;" inside the remaining quoted ID region
-        # to AMP_MARKER and leak it into the serialized doctype.
+        # to DEFAULT_AMP_MARKER and leak it into the serialized doctype.
         xml = %(<!DOCTYPE root SYSTEM "a>b&amp;c"><root x="&amp;#38;"/>)
         expect(ctx.parse(xml).root["x"]).to eq("&#38;")
       end

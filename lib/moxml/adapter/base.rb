@@ -70,6 +70,12 @@ module Moxml
         # destructive failure mode would be a libxml2 that decodes `&amp;`
         # to `&` AND leaves a trailing `#38;` unresolved as text — none of
         # the tested versions exhibit that, but pin the SAX-parity spec.
+        #
+        # Note: the libxml adapter's in-tree text/PI swap (see
+        # adapter/libxml.rb swap_native_in_place) also assumes libxml-ruby
+        # >= 5.0, which auto-adopts new nodes into the parent document on
+        # xmlAddNextSibling. Older libxml-ruby versions may require an
+        # explicit doc transfer.
         def decode_numeric_char_refs(text)
           return text unless text.is_a?(String) && text.include?("&#")
 
