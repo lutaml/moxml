@@ -91,7 +91,7 @@ module Moxml
           xml_string = preprocess_entities(xml_string)
 
           # Extract DOCTYPE before parsing
-          doctype_match = xml_string.match(/<!DOCTYPE\s+(\S+)(?:\s+PUBLIC\s+"([^"]+)"\s+"([^"]+)"|  \s+SYSTEM\s+"([^"]+)")?\s*>/i)
+          doctype_match = xml_string.match(/<!DOCTYPE\s+([^\s>]+)(?:\s+PUBLIC\s+"([^"]+)"\s+"([^"]+)"|\s+SYSTEM\s+"([^"]+)")?\s*>/i)
 
           native_doc = begin
             # Handle both string and file inputs

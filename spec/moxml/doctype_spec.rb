@@ -48,7 +48,7 @@ RSpec.describe Moxml::Doctype do
   end
 
   describe "parsing" do
-    %i[nokogiri oga rexml ox].each do |adapter_name|
+    %i[nokogiri oga rexml ox libxml].each do |adapter_name|
       context "with #{adapter_name} adapter" do
         let(:ctx) { Moxml.new(adapter_name) }
 
