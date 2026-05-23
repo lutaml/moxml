@@ -7,6 +7,10 @@ module Moxml
     module CustomizedLibxml
       # Wrapper for LibXML comment nodes
       class Comment < Node
+        def moxml_node_type
+          :comment
+        end
+
         # Serialize as XML comment
         # LibXML auto-escapes content, we need to un-escape it
         def to_xml
