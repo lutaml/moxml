@@ -20,9 +20,10 @@ RSpec.describe Moxml::Adapter::Libxml do
       doc.root
     end
 
-    def emit(root, indent_size: 2, depth: 0)
+    def emit(root, indent_size: 2, depth: 0, eref_active: false)
       output = +""
-      adapter.send(:emit_children_with_layout, output, root, indent_size, depth)
+      adapter.send(:emit_children_with_layout, output, root, indent_size, depth,
+                   eref_active: eref_active)
       output
     end
 

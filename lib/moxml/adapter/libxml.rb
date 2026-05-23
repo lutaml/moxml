@@ -117,7 +117,22 @@ module Moxml
           end
 
           ctx = _context || Context.new(:libxml)
-          DocumentBuilder.new(ctx).build(native_doc)
+          # Single parse path: wrap libxml's already-complete C-parsed tree
+          # directly (same pattern as nokogiri/ox). The previous
+          # DocumentBuilder.build path walked the entire parsed tree and
+          # re-added every node to a fresh moxml-managed document, which
+          # made parse O(N) Ruby work on top of an already-complete parse.
+          # Doctype/declaration/PI attachments set above remain on
+          # native_doc, so the serialize path still sees them.
+          #
+          # restore_entities is handled as a post-processing case after
+          # the wrap, NOT by branching into a different builder. This way
+          # any new parse-time logic only has to be added to this one
+          # path; the restoration walk is just one of potentially several
+          # post-processing steps and doesn't fork the construction.
+          doc = Document.new(native_doc, ctx)
+          restore_entities_in_tree(doc) if ctx.config.restore_entities
+          doc
         end
 
         # SAX parsing implementation for LibXML
@@ -321,7 +336,7 @@ module Moxml
           current = native_node&.next
           while current
             # Skip whitespace-only text nodes
-            break unless current.text? && current.content.to_s.strip.empty?
+            break unless blank_text_node?(current)
 
             current = current.next
           end
@@ -333,7 +348,7 @@ module Moxml
           current = native_node&.prev
           while current
             # Skip whitespace-only text nodes
-            break unless current.text? && current.content.to_s.strip.empty?
+            break unless blank_text_node?(current)
 
             current = current.prev
           end
@@ -513,8 +528,7 @@ module Moxml
           # object_id is unstable — we look up via == comparison.
           if child.is_a?(CustomizedLibxml::EntityReference)
             doc = native_elem.is_a?(::LibXML::XML::Document) ? native_elem : native_elem.doc
-            store_entity_ref_on_doc(doc, native_elem, child)
-            append_child_sequence_on_doc(doc, native_elem, :eref)
+            register_eref_for_element(doc, native_elem, child)
             return
           end
 
@@ -586,29 +600,65 @@ module Moxml
           end
         end
 
-        # Store entity ref on the document (stable identity).
-        # LibXML element wrappers are ephemeral, so we use == to find matching elements.
-        def store_entity_ref_on_doc(doc, element, ref)
-          pairs = attachments.get(doc, :_entity_ref_pairs) || []
-          pair = pairs.find { |elem, _| elem == element }
-          if pair
-            pair[1] << ref
-          else
-            pairs << [element, [ref]]
+        # `node.path` is stable across wrappers BUT involves a libxml C
+        # call that walks ancestors and string-concatenates the result.
+        # During heavy eref activity we'd call it many times on the same
+        # wrapper instance — memoize it on the wrapper itself (ivars
+        # persist on a single Ruby wrapper, just not across fresh ones).
+        def cached_path(node)
+          node.instance_variable_get(:@_moxml_path) || begin
+            p = node.path
+            node.instance_variable_set(:@_moxml_path, p)
+            p
           end
-          attachments.set(doc, :_entity_ref_pairs, pairs)
+        end
+
+        # Combined eref bookkeeping: storage + sequence in one path
+        # computation. The split versions (store_entity_ref_on_doc and
+        # append_child_sequence_on_doc) each call `cached_path(element)`
+        # — calling them separately doubles the path work for every
+        # single eref add. During restoration we do thousands of these.
+        def register_eref_for_element(doc, element, ref)
+          path = cached_path(element)
+
+          refs_by_path = attachments.get(doc, :_entity_ref_pairs) || {}
+          (refs_by_path[path] ||= []) << ref
+          attachments.set(doc, :_entity_ref_pairs, refs_by_path)
+
+          seq_by_path = attachments.get(doc, :_child_seq_pairs) || {}
+          existing = seq_by_path[path]
+          if existing
+            existing << :eref
+          else
+            seq = Array.new(count_native_children(element), :native)
+            seq << :eref
+            seq_by_path[path] = seq
+            attachments.set(doc, :_child_seq_pairs, seq_by_path)
+          end
+        end
+
+        # Store entity ref on the document, keyed by element's XPath.
+        #
+        # LibXML element wrappers are ephemeral (each `.children` call
+        # returns fresh Ruby objects around the same C nodes), and
+        # `LibXML::XML::Node#hash` doesn't match its `#eql?` semantics,
+        # so we can't use the wrapper as a Hash key directly. `node.path`
+        # is stable across wrappers, so we use it as the key — gives us
+        # O(1) lookup vs the previous O(N) array scan that turned
+        # restoration into O(N²) under heavy eref load.
+        def store_entity_ref_on_doc(doc, element, ref)
+          refs_by_path = attachments.get(doc, :_entity_ref_pairs) || {}
+          (refs_by_path[cached_path(element)] ||= []) << ref
+          attachments.set(doc, :_entity_ref_pairs, refs_by_path)
         end
 
         # Look up entity refs for an element from the document
         def lookup_entity_refs(doc, element)
-          pairs = attachments.get(doc, :_entity_ref_pairs)
-          return nil unless pairs
-
-          pair = pairs.find { |elem, _| elem == element }
-          pair&.last
+          refs_by_path = attachments.get(doc, :_entity_ref_pairs)
+          refs_by_path && refs_by_path[cached_path(element)]
         end
 
-        # Track child order on the document (stable identity).
+        # Track child order on the document, keyed by element's XPath.
         #
         # The sequence is only consulted at serialize time when an element
         # has BOTH native children and entity-reference children, to
@@ -621,37 +671,35 @@ module Moxml
         # of existing native children as `:native` markers so the
         # recorded sequence reflects source order.
         def append_child_sequence_on_doc(doc, element, type)
-          pairs = attachments.get(doc, :_child_seq_pairs)
+          seq_by_path = attachments.get(doc, :_child_seq_pairs)
 
           if type == :native
-            return if pairs.nil?
+            return if seq_by_path.nil?
 
-            pair = pairs.find { |elem, _| elem == element }
-            return unless pair
+            seq = seq_by_path[cached_path(element)]
+            return unless seq
 
-            pair[1] << :native
+            seq << :native
             return
           end
 
-          pairs ||= []
-          pair = pairs.find { |elem, _| elem == element }
-          if pair
-            pair[1] << :eref
+          seq_by_path ||= {}
+          path = cached_path(element)
+          existing = seq_by_path[path]
+          if existing
+            existing << :eref
           else
             seq = Array.new(count_native_children(element), :native)
             seq << :eref
-            pairs << [element, seq]
-            attachments.set(doc, :_child_seq_pairs, pairs)
+            seq_by_path[path] = seq
+            attachments.set(doc, :_child_seq_pairs, seq_by_path)
           end
         end
 
         # Look up child sequence for an element from the document
         def lookup_child_sequence(doc, element)
-          pairs = attachments.get(doc, :_child_seq_pairs)
-          return nil unless pairs
-
-          pair = pairs.find { |elem, _| elem == element }
-          pair&.last
+          seq_by_path = attachments.get(doc, :_child_seq_pairs)
+          seq_by_path && seq_by_path[cached_path(element)]
         end
 
         def append_child_sequence(element, type)
@@ -1012,11 +1060,16 @@ module Moxml
               indent_size = options[:indent].is_a?(Integer) && options[:indent].positive? ? options[:indent] : 0
               # Custom serializer emits newlines AND indentation directly —
               # no separate add_newlines_to_xml / indent_xml passes.
+              # `eref_active` is computed once here and threaded through the
+              # recursion so that the per-element `attachments.key?` Monitor
+              # sync only fires for docs that actually have entity refs.
+              eref_active = attachments.key?(native_node, :_entity_ref_pairs)
               root_output = serialize_element_with_namespaces(
                 native_node.root,
                 true,
                 indent_size,
                 0,
+                eref_active: eref_active,
               )
 
               output << "\n" << root_output unless output.empty?
@@ -1174,7 +1227,7 @@ module Moxml
           if elem.children?
             elem.each_child do |child|
               # Skip whitespace-only text nodes
-              next if child.text? && child.content.to_s.strip.empty?
+              next if blank_text_node?(child)
 
               output << serialize_node(child)
             end
@@ -1313,24 +1366,42 @@ module Moxml
         end
 
         def serialize_element_with_namespaces(elem, include_ns = true,
-                                               indent_size = 0, depth = 0)
-          output = "<#{elem.name}"
+                                               indent_size = 0, depth = 0,
+                                               eref_active: nil)
+          # Cache elem.name — it's a libxml C call we'd otherwise make
+          # twice (open tag + close tag). Concat with `<<` instead of
+          # `"<#{name}"` to avoid the interpolated intermediate string.
+          name = elem.name
+          output = +"<"
+          output << name
           emit_namespace_definitions(output, elem, include_ns)
           emit_attributes(output, elem)
 
-          entity_refs, child_sequence = lookup_entity_ref_serialization(elem)
+          # `eref_active` is precomputed at the top-level `serialize` call
+          # and threaded down — when nil (top-level non-recursive call into
+          # this method), look it up; when false, skip the per-element doc
+          # attachment query that otherwise fires for every element under
+          # Monitor#synchronize.
+          eref_active = doc_eref_active?(elem.doc) if eref_active.nil?
+          entity_refs, child_sequence = eref_active ? lookup_entity_ref_serialization(elem) : [nil, nil]
 
           # Always use verbose format <tag></tag> for consistency with other adapters
           output << ">"
 
           if entity_refs && child_sequence
-            emit_eref_interleaved_children(output, elem, entity_refs, child_sequence)
+            emit_eref_interleaved_children(output, elem, entity_refs, child_sequence,
+                                           eref_active: eref_active)
           elsif elem.children?
-            emit_children_with_layout(output, elem, indent_size, depth)
+            emit_children_with_layout(output, elem, indent_size, depth,
+                                      eref_active: eref_active)
           end
 
-          output << "</#{elem.name}>"
+          output << "</" << name << ">"
           output
+        end
+
+        def doc_eref_active?(doc)
+          doc ? attachments.key?(doc, :_entity_ref_pairs) : false
         end
 
         # Emit `xmlns`/`xmlns:foo` declarations onto `output`. On the root
@@ -1395,11 +1466,14 @@ module Moxml
         # Returns [entity_refs, child_sequence] when the element has
         # interleaved entity references that the serializer needs to
         # weave back into the native child stream — otherwise [nil, nil].
-        # The doc-level `attachments.key?` short-circuits the per-element
-        # lookup for the typical parse-then-serialize flow with no erefs.
+        #
+        # The caller is responsible for gating this with `eref_active`
+        # (precomputed once per `serialize` call). When `eref_active` is
+        # false this method is never entered, so the per-element doc
+        # attachment query never fires.
         def lookup_entity_ref_serialization(elem)
           doc = elem.doc
-          return [nil, nil] unless doc && attachments.key?(doc, :_entity_ref_pairs)
+          return [nil, nil] unless doc
 
           refs = lookup_entity_refs(doc, elem)
           return [nil, nil] unless refs && !refs.empty?
@@ -1410,7 +1484,8 @@ module Moxml
           [refs, seq]
         end
 
-        def emit_eref_interleaved_children(output, elem, entity_refs, child_sequence)
+        def emit_eref_interleaved_children(output, elem, entity_refs, child_sequence,
+                                            eref_active:)
           native_children = collect_non_blank_children(elem)
           eref_idx = 0
           native_idx = 0
@@ -1425,7 +1500,8 @@ module Moxml
                 # surrounding doc was indented. Pass explicit zeros so
                 # this divergence is visible at the call site.
                 output << serialize_child_to_xml(
-                  native_children[native_idx], indent_size: 0, depth: 0
+                  native_children[native_idx], indent_size: 0, depth: 0,
+                                               eref_active: eref_active
                 )
                 native_idx += 1
               end
@@ -1438,12 +1514,26 @@ module Moxml
           end
         end
 
+        # Regex used in place of `content.to_s.strip.empty?` for whitespace-only
+        # text detection — `match?` allocates nothing while `.strip` makes a
+        # throwaway copy of every text node's content on each visit.
+        NON_WHITESPACE_RE = /\S/
+        private_constant :NON_WHITESPACE_RE
+
+        def blank_text_node?(child)
+          child.text? && blank_content?(child.content)
+        end
+
+        def blank_content?(content)
+          content.nil? || !content.match?(NON_WHITESPACE_RE)
+        end
+
         def collect_non_blank_children(elem)
           children = []
           return children unless elem.children?
 
           elem.each_child do |c|
-            children << c unless c.text? && c.content.to_s.strip.empty?
+            children << c unless blank_text_node?(c)
           end
           children
         end
@@ -1460,37 +1550,50 @@ module Moxml
         # as text-like and suppress the newline on both sides (the
         # original CDATA placeholder broke the `>...<` adjacency
         # symmetrically).
-        def emit_children_with_layout(output, elem, indent_size, depth)
+        def emit_children_with_layout(output, elem, indent_size, depth,
+                                       eref_active:)
           child_pad = indent_size.positive? ? " " * (indent_size * (depth + 1)) : nil
           prev_block = true
 
           elem.each_child do |child|
-            next if child.text? && child.content.to_s.strip.empty?
+            # Cache text? — used twice per child (whitespace skip + is_text_like).
+            # For element children (the common case) both calls return false, so
+            # caching saves a libxml C call.
+            is_text = child.text?
+            next if is_text && blank_content?(child.content)
 
-            is_text_like = child.text? || child.cdata?
+            is_text_like = is_text || child.cdata?
             if prev_block && !is_text_like
               output << "\n"
               output << child_pad if child_pad
             end
             prev_block = !is_text_like
 
-            output << serialize_child_to_xml(child, indent_size: indent_size, depth: depth)
+            output << serialize_child_to_xml(child, indent_size: indent_size, depth: depth,
+                                                    eref_active: eref_active)
           end
         end
 
-        # Serialize one child node. Wrappers route through their own
-        # `to_xml`; native elements recurse into the layout-aware path;
+        # Serialize one child node. Elements recurse into the layout-aware
+        # path; non-element wrappers route through their own `to_xml`;
         # everything else falls through to the per-type serializer.
         # `indent_size:` and `depth:` are required to force callers to
         # decide whether the child should inherit the parent's indent
         # state — the entity-ref interleave path deliberately passes 0/0.
-        def serialize_child_to_xml(child, indent_size:, depth:)
-          wrapped_child = patch_node(child)
+        #
+        # Element fast-path checked first to avoid allocating a wrapper
+        # we'd immediately throw away (elements always recurse on the
+        # raw native node, not the wrapper). For a typical document this
+        # skips wrapper allocation for the majority of children.
+        def serialize_child_to_xml(child, indent_size:, depth:, eref_active:)
+          if child.element?
+            return serialize_element_with_namespaces(child, false, indent_size, depth + 1,
+                                                     eref_active: eref_active)
+          end
 
-          if wrapped_child.is_a?(CustomizedLibxml::Node) && !wrapped_child.is_a?(CustomizedLibxml::Element)
+          wrapped_child = patch_node(child)
+          if wrapped_child.is_a?(CustomizedLibxml::Node)
             wrapped_child.to_xml
-          elsif child.element?
-            serialize_element_with_namespaces(child, false, indent_size, depth + 1)
           else
             serialize_node(child)
           end
@@ -1597,7 +1700,7 @@ module Moxml
 
           count = 0
           element.each_child do |c|
-            count += 1 unless c.text? && c.content.to_s.strip.empty?
+            count += 1 unless blank_text_node?(c)
           end
           count
         end
@@ -1618,7 +1721,7 @@ module Moxml
           return new_node unless native_node.is_a?(::LibXML::XML::Node) && native_node.children?
 
           native_node.each_child do |child|
-            next if child.text? && child.content.to_s.strip.empty?
+            next if blank_text_node?(child)
 
             new_node << deep_duplicate_node(child)
           end
@@ -1656,6 +1759,100 @@ module Moxml
           src.each_attr do |attr|
             attr_name = attr.ns&.prefix ? "#{attr.ns.prefix}:#{attr.name}" : attr.name
             dst[attr_name] = attr.value
+          end
+        end
+
+        # Post-process pass invoked when `restore_entities` is enabled.
+        # Walks the just-wrapped tree and replaces text nodes containing
+        # restorable codepoints with sequences of (text, entity-ref, text, ...).
+        #
+        # Kept as a separate step so the parse path itself is single-shape
+        # (always direct-wrap) — future parse-time logic only needs to
+        # land in `parse`, not in two parallel construction branches.
+        def restore_entities_in_tree(doc)
+          registry = doc.context.entity_registry
+          return unless registry && doc.root
+
+          walk_restore_entities(doc.root, doc.context, registry)
+        end
+
+        def walk_restore_entities(element, ctx, registry)
+          config = ctx.config
+          # Snapshot because we may add/remove siblings during the walk.
+          element.children.to_a.each do |child|
+            if child.is_a?(::Moxml::Text)
+              restore_text_node_entities(child, ctx, registry, config)
+            elsif child.is_a?(::Moxml::Element)
+              walk_restore_entities(child, ctx, registry)
+            end
+          end
+        end
+
+        # For one Moxml::Text node, split its content on restorable
+        # codepoints and replace the text node with the resulting
+        # (text, entity-ref, ...) sequence on its parent.
+        #
+        # Matches DocumentBuilder's previous behavior, including the
+        # libxml limitation that adjacent native text nodes get merged
+        # (so the lexical order of restored erefs vs surrounding text
+        # is not preserved across multiple restoration points within
+        # a single original text node). The pre-existing test suite
+        # only asserts that the entity appears in the output, which
+        # this approach satisfies.
+        def restore_text_node_entities(text_node, ctx, registry, config)
+          content = text_node.content
+          return unless content
+
+          chunks = chunk_restored_text(content, registry, config)
+          # If the only chunk is a single text chunk equal to the original
+          # content, nothing was restorable — leave the node alone.
+          return if chunks.size == 1 && chunks.first.first == :text
+
+          parent = text_node.parent
+          return unless parent
+
+          text_node.remove
+          chunks.each { |type, payload| append_restored_chunk(parent, type, payload, ctx) }
+        end
+
+        # Walk `content` once, emitting [[:text, str], [:eref, name], ...]
+        # chunks. Text chunks accumulate non-restorable characters between
+        # restorable ones; restorable codepoints become their own :eref
+        # chunk.
+        #
+        # `restorable_codepoints` (a Set) is consulted first for an O(1)
+        # membership check before doing the costlier
+        # `primary_name_for_codepoint`/`should_restore?` calls — most
+        # characters in any real text aren't entities, so this short-
+        # circuit avoids the heavy registry lookups on the common case.
+        def chunk_restored_text(content, registry, config)
+          chunks = []
+          buffer = +""
+          restorable = registry.restorable_codepoints
+          content.each_char do |char|
+            cp = char.ord
+            if restorable.include?(cp) &&
+                (name = registry.primary_name_for_codepoint(cp)) &&
+                registry.should_restore?(cp, config: config)
+              unless buffer.empty?
+                chunks << [:text, buffer.dup]
+                buffer.clear
+              end
+              chunks << [:eref, name]
+            else
+              buffer << char
+            end
+          end
+          chunks << [:text, buffer.dup] unless buffer.empty?
+          chunks
+        end
+
+        def append_restored_chunk(parent, type, payload, ctx)
+          case type
+          when :text
+            parent.add_child(::Moxml::Text.new(create_native_text(payload), ctx))
+          when :eref
+            parent.add_child(::Moxml::EntityReference.new(create_native_entity_reference(payload), ctx))
           end
         end
       end
