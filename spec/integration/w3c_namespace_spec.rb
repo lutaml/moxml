@@ -11,7 +11,7 @@
 #   invalid  - validity error; non-validating parsers should accept
 
 RSpec.describe "W3C XML Namespaces 1.0 test suite" do
-  Moxml::Adapter::AVALIABLE_ADAPTERS.each do |adapter_name|
+  Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
     context "with #{adapter_name}" do
       around do |example|
         Moxml.with_config(adapter_name) do

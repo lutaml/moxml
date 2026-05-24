@@ -3,8 +3,10 @@
 require_relative "base"
 require "rexml/document"
 require "rexml/xpath"
-require "set"
+require "set" unless RUBY_ENGINE == "opal"
+require "stringio" if RUBY_ENGINE == "opal"
 require_relative "customized_rexml"
+require_relative "../sax/namespace_splitter"
 
 module Moxml
   module Adapter
@@ -45,9 +47,13 @@ module Moxml
         end
 
         def extract_encoding_from_xml(xml)
-          # Match XML declaration pattern: <?xml version="..." encoding="..."?>
-          # Use atomic group (?>) to prevent polynomial backtracking ReDoS
-          match = xml.match(/<\?xml(?>[^>]*)\bencoding\s*=\s*["']([^"']+)["']/i)
+          return "UTF-8" unless xml.start_with?("<?xml")
+
+          decl_end = xml.index("?>")
+          return "UTF-8" unless decl_end
+
+          decl = xml[0...decl_end]
+          match = decl.match(/encoding\s*=\s*["']([^"']+)["']/i)
           match ? match[1] : "UTF-8"
         end
 
@@ -195,21 +201,19 @@ module Moxml
         def next_sibling(node)
           current = node.next_sibling
 
-          # Skip empty text nodes and duplicates
-          seen = Set.new
+          seen = {}
           while current
             if current.is_a?(::REXML::Text) && current.to_s.strip.empty?
               current = current.next_sibling
               next
             end
 
-            # Check for duplicates
-            if seen.include?(current.object_id)
+            if seen[current.object_id]
               current = current.next_sibling
               next
             end
 
-            seen.add(current.object_id)
+            seen[current.object_id] = true
             break
           end
 
@@ -219,21 +223,19 @@ module Moxml
         def previous_sibling(node)
           current = node.previous_sibling
 
-          # Skip empty text nodes and duplicates
-          seen = Set.new
+          seen = {}
           while current
             if current.is_a?(::REXML::Text) && current.to_s.strip.empty?
               current = current.previous_sibling
               next
             end
 
-            # Check for duplicates
-            if seen.include?(current.object_id)
+            if seen[current.object_id]
               current = current.previous_sibling
               next
             end
 
-            seen.add(current.object_id)
+            seen[current.object_id] = true
             break
           end
 
@@ -546,8 +548,12 @@ module Moxml
           ns
         end
 
-        def xpath(node, expression, _namespaces = {})
-          node.get_elements(expression).to_a
+        def xpath(node, expression, namespaces = {})
+          if namespaces && !namespaces.empty?
+            ::REXML::XPath.match(node, expression, namespaces)
+          else
+            node.get_elements(expression).to_a
+          end
         rescue ::REXML::ParseException => e
           raise Moxml::XPathError.new(
             e.message,
@@ -563,7 +569,8 @@ module Moxml
         end
 
         def serialize(node, options = {})
-          output = +""
+          output = StringIO.new("") if RUBY_ENGINE == "opal"
+          output ||= +""
 
           if node.is_a?(::REXML::Document)
             # Check if we should include declaration
@@ -606,7 +613,8 @@ module Moxml
             write_with_formatter(node, output, options[:indent] || 2)
           end
 
-          output.strip
+          result = output.is_a?(StringIO) ? output.string : output
+          result.strip
         end
 
         def has_declaration?(native_doc, wrapper)
@@ -641,27 +649,15 @@ module Moxml
     #
     # @private
     class REXMLSAX2Bridge
+      include Moxml::SAX::NamespaceSplitter
+
       def initialize(handler)
         @handler = handler
       end
 
       # REXML splits element name into uri/localname/qname
       def start_element(_uri, _localname, qname, attributes)
-        # Convert REXML attributes to hash
-        attr_hash = {}
-        ns_hash = {}
-
-        attributes.each do |name, value|
-          if name.to_s.start_with?("xmlns")
-            # Namespace declaration
-            prefix = name.to_s == "xmlns" ? nil : name.to_s.sub("xmlns:", "")
-            ns_hash[prefix] = value
-          else
-            attr_hash[name.to_s] = value
-          end
-        end
-
-        # Use qname (qualified name) for element name
+        attr_hash, ns_hash = split_attributes_and_namespaces(attributes)
         @handler.on_start_element(qname, attr_hash, ns_hash)
       end
 

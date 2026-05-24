@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-require "json"
+require "json" unless RUBY_ENGINE == "opal"
 require "set"
+require_relative "entity_registry_opal_data" if RUBY_ENGINE == "opal"
 
 module Moxml
   # EntityRegistry maintains a knowledge base of XML entity definitions.
@@ -55,6 +56,10 @@ module Moxml
       # Load entity data from bundled gem data or local file
       # @return [Hash{String => String}]
       def load_entity_data
+        if RUBY_ENGINE == "opal"
+          return OPAL_ENTITY_DATA
+        end
+
         # Try multiple paths in order of priority
         paths_to_try = []
 
@@ -216,33 +221,40 @@ module Moxml
       self
     end
 
-    # Load all entities from the W3C HTMLMathML entity set
-    # This is called automatically by initialize
+    # Load all entities from the W3C HTMLMathML entity set.
+    # All entities are loaded during initialize; this method is a no-op
+    # kept for backward compatibility.
     # @return [self]
     def load_html5
-      # All entities are loaded by default from initialize
+      warn "EntityRegistry#load_html5 is a no-op (all entities load during initialize)", uplevel: 1
       self
     end
 
-    # Load MathML entity set (included in HTMLMathML)
+    # Load MathML entity set (included in HTMLMathML).
+    # All entities are loaded during initialize; this method is a no-op
+    # kept for backward compatibility.
     # @return [self]
     def load_mathml
-      # All entities are loaded by default from initialize
+      warn "EntityRegistry#load_mathml is a no-op (all entities load during initialize)", uplevel: 1
       self
     end
 
-    # Load ISO entity sets (included in HTMLMathML)
+    # Load ISO entity sets (included in HTMLMathML).
+    # All entities are loaded during initialize; this method is a no-op
+    # kept for backward compatibility.
     # @param _set_name [Symbol] (ignored, all loaded together)
     # @return [self]
     def load_iso(_set_name = :iso8879)
-      # All entities are loaded by default from initialize
+      warn "EntityRegistry#load_iso is a no-op (all entities load during initialize)", uplevel: 1
       self
     end
 
-    # Load all standard entity sets
+    # Load all standard entity sets.
+    # All entities are loaded during initialize; this method is a no-op
+    # kept for backward compatibility.
     # @return [self]
     def load_all
-      # All entities are loaded by default from initialize
+      warn "EntityRegistry#load_all is a no-op (all entities load during initialize)", uplevel: 1
       self
     end
 
@@ -256,6 +268,17 @@ module Moxml
 
     private
 
+    def populate_from_hash(data)
+      data.each do |name, char_or_codepoint|
+        codepoint = char_or_codepoint.is_a?(Integer) ? char_or_codepoint : parse_codepoint(char_or_codepoint)
+        next unless codepoint
+
+        @by_name[name] = codepoint
+        @by_codepoint[codepoint] ||= []
+        @by_codepoint[codepoint] << name unless @by_codepoint[codepoint].include?(name)
+      end
+    end
+
     # Load entities from the centralized JSON data source
     # @raise [EntityDataError] if entity data is required but cannot be loaded
     # @return [void]
@@ -267,14 +290,7 @@ module Moxml
               "Entity data is not available. Set entity_load_mode to :optional or :disabled to skip entity loading."
       end
 
-      data.each do |name, char|
-        codepoint = parse_codepoint(char)
-        next unless codepoint
-
-        @by_name[name] = codepoint
-        @by_codepoint[codepoint] ||= []
-        @by_codepoint[codepoint] << name unless @by_codepoint[codepoint].include?(name)
-      end
+      populate_from_hash(data)
     end
 
     # Load entities from the centralized JSON data source (optional mode)
@@ -284,14 +300,7 @@ module Moxml
       data = self.class.entity_data
       return unless data
 
-      data.each do |name, char|
-        codepoint = parse_codepoint(char)
-        next unless codepoint
-
-        @by_name[name] = codepoint
-        @by_codepoint[codepoint] ||= []
-        @by_codepoint[codepoint] << name unless @by_codepoint[codepoint].include?(name)
-      end
+      populate_from_hash(data)
     rescue EntityDataError
       # Silently ignore - optional mode
     end
@@ -304,11 +313,7 @@ module Moxml
       entities = @entity_provider.call
       return unless entities
 
-      entities.each do |name, codepoint|
-        @by_name[name] = codepoint
-        @by_codepoint[codepoint] ||= []
-        @by_codepoint[codepoint] << name unless @by_codepoint[codepoint].include?(name)
-      end
+      populate_from_hash(entities)
     end
 
     # Parse a Unicode character escape to codepoint

@@ -5,11 +5,40 @@ require "rspec/core/rake_task"
 
 RSpec::Core::RakeTask.new(:spec)
 
+begin
+  require "opal/rspec/rake_task"
+
+  # REXML is a bundled gem since Ruby 3.4; its source must be on Opal's
+  # global load path so the compiler can follow `require "rexml/document"`.
+  # Opal-compatible overrides go first so they shadow the gem originals.
+  if defined?(Opal)
+    Opal.append_path File.expand_path("lib/compat/opal", __dir__)
+    rexml_lib = $LOAD_PATH.find { |p| File.exist?(File.join(p, "rexml", "document.rb")) }
+    Opal.append_path rexml_lib if rexml_lib
+  end
+rescue LoadError
+  # Opal not available or incompatible with current Ruby version
+end
+
 require "rubocop/rake_task"
 
 RuboCop::RakeTask.new
 
 namespace :spec do
+  if defined?(Opal::RSpec::RakeTask)
+    desc "Run Opal (JavaScript) tests"
+    Opal::RSpec::RakeTask.new(:opal) do |server, runner|
+      server.append_path "lib"
+      server.append_path "spec"
+
+      runner.default_path = "spec"
+      runner.requires = %w[rexml_compat rexml/document rexml/xpath moxml/adapter/rexml spec_helper support/opal]
+      runner.files = Dir.glob("spec/moxml/*opal*_spec.rb") +
+                     Dir.glob("spec/moxml/native_attachment/opal_spec.rb") +
+                     Dir.glob("spec/moxml/adapter/shared_examples/*.rb")
+    end
+  end
+
   desc "Validate XML fixtures are well-formed (requires xmllint)"
   task :validate_fixtures do
     fixtures = Dir.glob("spec/fixtures/**/*.xml")
@@ -103,6 +132,44 @@ namespace :benchmark do
   desc "Generate adapter benchmark report"
   task :report do
     ruby "benchmarks/generate_report.rb"
+  end
+end
+
+namespace :opal do
+  desc "Regenerate entity data for Opal from w3c_entities.json"
+  task :generate_entity_data do
+    require "json"
+
+    source = File.join(__dir__, "data", "w3c_entities.json")
+    target = File.join(__dir__, "lib", "moxml", "entity_registry_opal_data.rb")
+
+    data = JSON.parse(File.read(source))
+    chars = data["characters"]
+
+    lines = []
+    lines << "# frozen_string_literal: true"
+    lines << "#"
+    lines << "# Auto-generated entity data for Opal runtime."
+    lines << "# Source: data/w3c_entities.json (#{chars.size} entities)"
+    lines << "# Regenerate with: rake opal:generate_entity_data"
+    lines << ""
+    lines << "module Moxml"
+    lines << "  class EntityRegistry"
+    lines << "    OPAL_ENTITY_DATA = {"
+    chars.each do |name, char|
+      codepoint = if char.start_with?("\\u")
+        char.unicode_normalize(:nfc)[2..].to_i(16)
+      else
+        char.ord
+      end
+      lines << "      #{name.inspect} => #{codepoint},"
+    end
+    lines << "    }.freeze"
+    lines << "  end"
+    lines << "end"
+
+    File.write(target, lines.join("\n") + "\n")
+    puts "Generated #{target} (#{chars.size} entities, #{lines.size} lines)"
   end
 end
 

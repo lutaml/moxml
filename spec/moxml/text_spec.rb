@@ -34,7 +34,7 @@ RSpec.describe Moxml::Text do
     end
 
     it "is consistent across adapters" do
-      Moxml::Adapter::AVALIABLE_ADAPTERS.each do |adapter_name|
+      Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
         ctx = Moxml.new(adapter_name)
         d = ctx.parse("<root>hello world</root>")
         text = d.root.children.first

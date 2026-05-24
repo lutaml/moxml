@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
+return if RUBY_ENGINE == "opal"
+
 require_relative "base"
 require "libxml"
 require_relative "customized_libxml"
+require_relative "../sax/namespace_splitter"
 
 module Moxml
   module Adapter
@@ -1656,6 +1659,7 @@ module Moxml
       # @private
       class LibXMLSAXBridge
         include ::LibXML::XML::SaxParser::Callbacks
+        include Moxml::SAX::NamespaceSplitter
 
         def initialize(handler)
           @handler = handler
@@ -1672,26 +1676,7 @@ module Moxml
         end
 
         def on_start_element(name, attributes)
-          # Convert LibXML attributes hash to separate attrs and namespaces
-          attr_hash = {}
-          ns_hash = {}
-
-          attributes&.each do |attr_name, attr_value|
-            if attr_name.to_s.start_with?("xmlns")
-              # Namespace declaration
-              prefix = if attr_name.to_s == "xmlns"
-                         nil
-                       else
-                         attr_name.to_s.sub(
-                           "xmlns:", ""
-                         )
-                       end
-              ns_hash[prefix] = attr_value
-            else
-              attr_hash[attr_name.to_s] = attr_value
-            end
-          end
-
+          attr_hash, ns_hash = split_attributes_and_namespaces(attributes)
           @handler.on_start_element(name.to_s, attr_hash, ns_hash)
         end
 

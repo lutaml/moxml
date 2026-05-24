@@ -32,7 +32,7 @@ RSpec.describe "Cross-adapter integration" do
     "Performance Examples",
   ]
 
-  Moxml::Adapter::AVALIABLE_ADAPTERS.each do |adapter_name|
+  Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
     context "with #{adapter_name}" do
       around do |example|
         Moxml.with_config(adapter_name) do

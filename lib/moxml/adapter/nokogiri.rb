@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
+return if RUBY_ENGINE == "opal"
+
 require_relative "base"
 require "nokogiri"
+require_relative "../sax/namespace_splitter"
 
 module Moxml
   module Adapter
@@ -446,6 +449,8 @@ module Moxml
       #
       # @private
       class NokogiriSAXBridge < ::Nokogiri::XML::SAX::Document
+        include Moxml::SAX::NamespaceSplitter
+
         def initialize(handler)
           super()
           @handler = handler
@@ -462,24 +467,8 @@ module Moxml
         end
 
         def start_element(name, attributes = [])
-          # Convert Nokogiri attributes array to hash
-          attr_hash = {}
-          namespaces_hash = {}
-
-          attributes.each do |attr|
-            attr_name = attr[0]
-            attr_value = attr[1]
-
-            if attr_name.start_with?("xmlns")
-              # Namespace declaration
-              prefix = attr_name == "xmlns" ? nil : attr_name.sub("xmlns:", "")
-              namespaces_hash[prefix] = attr_value
-            else
-              attr_hash[attr_name] = attr_value
-            end
-          end
-
-          @handler.on_start_element(name, attr_hash, namespaces_hash)
+          attr_hash, ns_hash = split_attributes_and_namespaces(attributes)
+          @handler.on_start_element(name, attr_hash, ns_hash)
         end
 
         def end_element(name)

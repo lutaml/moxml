@@ -159,9 +159,6 @@ RSpec.shared_examples "xml adapter" do
       if described_class.name.include?("Oga")
         pending("Oga does not support indentation settings")
       end
-      if described_class.name.include?("Rexml")
-        pending("Postponed for Rexml till better times")
-      end
       if described_class.name.include?("Libxml")
         skip("LibXML serialization does not support indentation (documented limitation)")
       end
@@ -219,9 +216,6 @@ RSpec.shared_examples "xml adapter" do
       end
 
       it "preserves and correctly handles multiple namespaces" do
-        if described_class.name.include?("Rexml")
-          pending("Rexml does not respect ZPath namespaces")
-        end
         # Parse original XML
         doc = described_class.parse(xml).native
 

@@ -75,7 +75,15 @@ module Moxml
       # (W3C Namespaces in XML, https://www.w3.org/TR/xml-names/).
       # Use split instead of parse to avoid scheme-specific validation
       # that rejects valid opaque URIs like "mailto:bar".
-      URI::RFC3986_PARSER.split(uri)
+      if defined?(URI::RFC3986_PARSER)
+        URI::RFC3986_PARSER.split(uri)
+      elsif uri.match?(/\A[a-zA-Z][a-zA-Z0-9+\-.]*:[^\x00-\x20]*\z/)
+        # Minimal URI validation for Opal (no RFC3986_PARSER available)
+      else
+        # Accept relative references and bare paths
+        return unless uri.match?(/[\x00-\x08\x0B\x0C\x0E-\x1F]/)
+        raise ValidationError, "Invalid URI: #{uri}"
+      end
     rescue URI::InvalidURIError
       raise ValidationError, "Invalid URI: #{uri}"
     end
