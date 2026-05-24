@@ -180,6 +180,16 @@ RSpec.describe Moxml::EntityRegistry do
       registry = described_class.new
       expect(registry.load_all).to be(registry)
     end
+
+    it "emits deprecation warnings" do
+      registry = described_class.new
+      [-> { registry.load_html5 },
+       -> { registry.load_mathml },
+       -> { registry.load_iso },
+       -> { registry.load_all }].each do |callable|
+        expect { callable.call }.to output.to_stderr
+      end
+    end
   end
 
   describe "#standard_entity?" do

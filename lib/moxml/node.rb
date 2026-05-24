@@ -136,19 +136,6 @@ module Moxml
     end
 
     # Returns the text content of this node
-    # For elements, returns concatenated text of all text children
-    # For text nodes, returns the content if available
-    def text
-      if respond_to?(:content)
-        content
-      elsif respond_to?(:children)
-        children.grep(Text).map(&:content).join
-      else
-        ""
-      end
-    end
-
-    # Returns the text content of this node
     # Subclasses should override this method
     # Element and Text have their own implementations
     def text
@@ -220,22 +207,28 @@ module Moxml
       nil
     end
 
+    # Registry mapping node type symbols to wrapper classes.
+    # Built lazily to avoid load-order issues with subclasses.
+    def self.node_type_map
+      @node_type_map ||= {
+        element: Element,
+        text: Text,
+        cdata: Cdata,
+        comment: Comment,
+        processing_instruction: ProcessingInstruction,
+        document: Document,
+        declaration: Declaration,
+        doctype: Doctype,
+        attribute: Attribute,
+        entity_reference: EntityReference,
+      }.freeze
+    end
+
     def self.wrap(node, context)
       return nil if node.nil?
 
-      klass = case adapter(context).node_type(node)
-              when :element then Element
-              when :text then Text
-              when :cdata then Cdata
-              when :comment then Comment
-              when :processing_instruction then ProcessingInstruction
-              when :document then Document
-              when :declaration then Declaration
-              when :doctype then Doctype
-              when :attribute then Attribute
-              when :entity_reference then EntityReference
-              else self
-              end
+      type = adapter(context).node_type(node)
+      klass = node_type_map[type] || self
 
       klass.new(node, context)
     end

@@ -11,6 +11,14 @@ RSpec.describe Moxml::Adapter::Ox do
 
   it_behaves_like "xml adapter"
 
+  describe "node_type" do
+    it "returns :namespace for CustomizedOx::Namespace nodes" do
+      element = described_class.create_native_element("test")
+      ns = described_class.create_native_namespace(element, "ns", "http://example.com")
+      expect(described_class.node_type(ns)).to eq(:namespace)
+    end
+  end
+
   describe "text handling" do
     let(:doc) { described_class.create_document }
     let(:element) { described_class.create_native_element("test") }

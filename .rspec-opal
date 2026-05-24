@@ -1,0 +1,5 @@
+--default-path=spec
+-I lib
+-I spec
+--require=spec_helper
+--require=support/opal

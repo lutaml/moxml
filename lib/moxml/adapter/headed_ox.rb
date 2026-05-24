@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+return if RUBY_ENGINE == "opal"
+
 require_relative "ox"
 require_relative "../xpath"
 # Force load XPath modules (autoload doesn't work well with relative requires in examples)
@@ -66,14 +68,8 @@ module Moxml
         # @param [Hash] namespaces Namespace prefix mappings
         # @return [Array, Object] Native node array or scalar value
         def xpath(node, expression, namespaces = {})
-          # If we receive a native node, wrap it first
-          # Document#xpath passes @native, but our compiled XPath needs Moxml nodes
           unless node.is_a?(Moxml::Node)
-            # Determine the context from the node if possible
-            # For now, create a basic context for wrapped nodes
             ctx = Context.new(:headed_ox)
-
-            # Wrap the native node - don't rebuild the whole document
             node = Moxml::Node.wrap(node, ctx)
           end
 

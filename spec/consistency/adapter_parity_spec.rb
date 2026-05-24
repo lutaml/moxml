@@ -6,7 +6,7 @@ RSpec.describe "Adapter Examples" do
   describe "Serialization consistency" do
     it "produces equivalent XML across adapters",
        skip: "No easy way to exclude the declaration from Nokogiri documents" do
-      docs = Moxml::Adapter::AVALIABLE_ADAPTERS.map do |adapter|
+      docs = Moxml::Adapter::AVAILABLE_ADAPTERS.map do |adapter|
         Moxml.new(adapter).parse(xml, fragment: true)
       end
 

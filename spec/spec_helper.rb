@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # SimpleCov must be loaded before application code
-if ENV.fetch("COVERAGE", nil) == "true"
+if ENV.fetch("COVERAGE", nil) == "true" && RUBY_ENGINE != "opal"
   require "simplecov"
 
   SimpleCov.start do
@@ -25,20 +25,25 @@ if ENV.fetch("COVERAGE", nil) == "true"
 end
 
 require "moxml"
-require "nokogiri"
+require "nokogiri" unless RUBY_ENGINE == "opal"
 
-# Load shared examples from new locations
-Dir[File.expand_path("integration/shared_examples/**/*.rb",
-                     __dir__)].each do |f|
-  require f
-end
-Dir[File.expand_path("moxml/adapter/shared_examples/**/*.rb",
-                     __dir__)].each do |f|
-  require f
+unless RUBY_ENGINE == "opal"
+  # Load shared examples from new locations
+  Dir[File.expand_path("integration/shared_examples/**/*.rb",
+                       __dir__)].each do |f|
+    require f
+  end
+  Dir[File.expand_path("moxml/adapter/shared_examples/**/*.rb",
+                       __dir__)].each do |f|
+    require f
+  end
 end
 Dir[File.expand_path("support/**/*.rb", __dir__)].each { |f| require f }
-Dir[File.expand_path("performance/*.rb", __dir__)].each { |f| require f }
-Dir[File.expand_path("examples/*.rb", __dir__)].each { |f| require f }
+
+unless RUBY_ENGINE == "opal"
+  Dir[File.expand_path("performance/*.rb", __dir__)].each { |f| require f }
+  Dir[File.expand_path("examples/*.rb", __dir__)].each { |f| require f }
+end
 
 # Clear XPath caches immediately to ensure fresh compilation
 # This is critical when code changes affect compiled XPath expressions
@@ -78,12 +83,26 @@ RSpec.configure do |config|
   # Configure to skip examples unless explicitly run
   config.filter_run_excluding examples: true unless ENV["RUN_EXAMPLES"]
 
+  # Under Opal, exclude specs that require native-only adapters or filesystem
+  if RUBY_ENGINE == "opal"
+    config.filter_run_excluding(
+      :native_adapter,
+      :native_fs,
+      :subprocess,
+      :xpath_native,
+      :performance,
+      :examples,
+      :consistency,
+    )
+  end
+
   config.order = :random
   Kernel.srand config.seed
 end
 
 Moxml.configure do |config|
-  config.adapter = :nokogiri
+  config.adapter = RUBY_ENGINE == "opal" ? :rexml : :nokogiri
   config.strict_parsing = true
   config.default_encoding = "UTF-8"
+  config.entity_load_mode = :optional if RUBY_ENGINE == "opal"
 end

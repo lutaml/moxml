@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+return if RUBY_ENGINE == "opal"
+
 require_relative "base"
 require "ox"
 require "stringio"
 require_relative "customized_ox"
+require_relative "../sax/namespace_splitter"
 
 # insert :parent methods to all Ox classes inherit the Node class
 Ox::Node.attr_accessor :parent
@@ -188,7 +191,7 @@ module Moxml
           when ::Ox::Element then :element
           when ::Ox::DocType then :doctype
           when ::Moxml::Adapter::CustomizedOx::EntityReference then :entity_reference
-          when ::Moxml::Adapter::CustomizedOx::Namespace then :banespace
+          when ::Moxml::Adapter::CustomizedOx::Namespace then :namespace
           when ::Moxml::Adapter::CustomizedOx::Attribute then :attribute
           else :unknown
           end
@@ -903,6 +906,8 @@ module Moxml
     #
     # @private
     class OxSAXBridge
+      include Moxml::SAX::NamespaceSplitter
+
       def initialize(handler)
         @handler = handler
         @pending_attrs = {}
@@ -972,28 +977,8 @@ module Moxml
       private
 
       def finalize_pending_element
-        # Separate namespace declarations from regular attributes
-        attr_hash = {}
-        namespaces_hash = {}
-
-        @pending_attrs.each do |attr_name, attr_value|
-          if attr_name.to_s.start_with?("xmlns")
-            # Namespace declaration
-            prefix = if attr_name.to_s == "xmlns"
-                       nil
-                     else
-                       attr_name.to_s.sub(
-                         "xmlns:", ""
-                       )
-                     end
-            namespaces_hash[prefix] = attr_value
-          else
-            attr_hash[attr_name.to_s] = attr_value
-          end
-        end
-
-        @handler.on_start_element(@pending_element_name, attr_hash,
-                                  namespaces_hash)
+        attr_hash, ns_hash = split_attributes_and_namespaces(@pending_attrs)
+        @handler.on_start_element(@pending_element_name, attr_hash, ns_hash)
 
         # Clear for next element
         @pending_attrs = {}

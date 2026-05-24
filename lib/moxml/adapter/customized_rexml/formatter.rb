@@ -27,8 +27,11 @@ module Moxml
           end
         end
 
+        def indented?
+          !@indentation.empty?
+        end
+
         def write_element(node, output)
-          # output << ' ' * @level
           output << "<#{node.expanded_name}"
           write_attributes(node, output)
 
@@ -45,18 +48,16 @@ module Moxml
 
           output << ">"
 
-          # Check for mixed content
           has_text = node.children.any? { |c| c.is_a?(::REXML::Text) && !c.to_s.strip.empty? }
           has_elements = node.children.any?(::REXML::Element)
-          mixed = has_text && has_elements
+          indent_children = indented? && has_elements && !has_text
 
           # Handle children based on content type
           all_children_empty = node.children.empty? && !(entity_refs && !entity_refs.empty?)
           unless all_children_empty
-            @level += @indentation.length unless mixed
+            @level += @indentation.length if indent_children
 
             if entity_refs && !entity_refs.empty? && child_sequence
-              # Interleave native children with entity refs using tracked sequence
               eref_idx = 0
               native_idx = 0
               child_sequence.each do |type|
@@ -69,10 +70,12 @@ module Moxml
                       child.to_s.strip.empty? &&
                       !(child.next_sibling.nil? && child.previous_sibling.nil?)
 
+                    output << "\n" << (' ' * @level) if indent_children
                     write(child, output)
                   end
                 when :eref
                   if eref_idx < entity_refs.size
+                    output << "\n" << (' ' * @level) if indent_children
                     write(entity_refs[eref_idx], output)
                     eref_idx += 1
                   end
@@ -80,24 +83,22 @@ module Moxml
               end
             else
               node.children.each_with_index do |child, _index|
-                # Skip insignificant whitespace
                 next if child.is_a?(::REXML::Text) &&
                   child.to_s.strip.empty? &&
                   !(child.next_sibling.nil? && child.previous_sibling.nil?)
 
+                output << "\n" << (' ' * @level) if indent_children
                 write(child, output)
               end
             end
 
-            # Reset indentation for closing tag in non-mixed content
-            unless mixed
+            if indent_children
               @level -= @indentation.length
-              # output << ' ' * @level
+              output << "\n" << (' ' * @level)
             end
           end
 
           output << "</#{node.expanded_name}>"
-          # output << "\n" unless mixed
         end
 
         def write_text(node, output)

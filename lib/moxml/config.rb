@@ -4,7 +4,7 @@ module Moxml
   class Config
     VALID_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
     DEFAULT_ADAPTER = :nokogiri
-    OPAL_DEFAULT_ADAPTER = :oga
+    OPAL_DEFAULT_ADAPTER = :rexml
 
     # Entity loading modes:
     # - :required - Must load entities, raise error if unavailable (default)

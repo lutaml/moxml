@@ -3,6 +3,7 @@
 require_relative "base"
 require_relative "customized_oga"
 require "oga"
+require_relative "../sax/namespace_splitter"
 
 module Moxml
   module Adapter
@@ -555,6 +556,8 @@ module Moxml
     #
     # @private
     class OgaSAXBridge
+      include Moxml::SAX::NamespaceSplitter
+
       def initialize(handler)
         @handler = handler
       end
@@ -563,29 +566,8 @@ module Moxml
       # namespace may be nil
       # attributes is an array of [name, value] pairs
       def on_element(namespace, name, attributes)
-        # Build full qualified name if namespace present
         element_name = namespace ? "#{namespace}:#{name}" : name
-
-        # Convert Oga attributes to hash
-        attr_hash = {}
-        ns_hash = {}
-
-        # Oga delivers attributes as array of [name, value] pairs
-        attributes.each do |attr_name, attr_value|
-          if attr_name.to_s.start_with?("xmlns")
-            prefix = if attr_name.to_s == "xmlns"
-                       nil
-                     else
-                       attr_name.to_s.sub(
-                         "xmlns:", ""
-                       )
-                     end
-            ns_hash[prefix] = attr_value
-          else
-            attr_hash[attr_name.to_s] = attr_value
-          end
-        end
-
+        attr_hash, ns_hash = split_attributes_and_namespaces(attributes)
         @handler.on_start_element(element_name, attr_hash, ns_hash)
       end
 

@@ -4,18 +4,25 @@ require_relative "adapter/base"
 
 module Moxml
   module Adapter
-    AVALIABLE_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
+    AVAILABLE_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
+
+    # Adapters that work under the Opal (JavaScript) runtime.
+    # REXML is pure Ruby and Opal reimplements strscan/stringio in its stdlib,
+    # enabling REXML to compile cleanly to JavaScript.
+    OPAL_AVAILABLE_ADAPTERS = %i[rexml].freeze
+
+    # Registry mapping adapter names to their class name suffixes.
+    # Special cases (like :headed_ox → "HeadedOx") live here instead of
+    # a case statement, keeping the dispatch open for extension.
+    CONST_NAME_MAP = {
+      headed_ox: "HeadedOx",
+    }.freeze
 
     class << self
       def load(name)
+        validate_platform!(name)
         require_adapter(name)
-        # Handle special case for headed_ox -> HeadedOx
-        const_name = case name
-                     when :headed_ox
-                       "HeadedOx"
-                     else
-                       name.to_s.capitalize
-                     end
+        const_name = const_name_for(name)
         const_get(const_name)
       rescue LoadError => e
         raise Moxml::AdapterError.new(
@@ -26,7 +33,30 @@ module Moxml
         )
       end
 
+      def available?(name)
+        platform_adapters.include?(name.to_sym)
+      end
+
+      def platform_adapters
+        RUBY_ENGINE == "opal" ? OPAL_AVAILABLE_ADAPTERS : AVAILABLE_ADAPTERS
+      end
+
       private
+
+      def validate_platform!(name)
+        return if platform_adapters.include?(name.to_sym)
+
+        available = platform_adapters.map(&:to_s).join(", ")
+        raise Moxml::AdapterError.new(
+          "The '#{name}' adapter is not available on this platform. Available: #{available}",
+          adapter: name,
+          operation: "platform_check",
+        )
+      end
+
+      def const_name_for(name)
+        CONST_NAME_MAP[name.to_sym] || name.to_s.capitalize
+      end
 
       def require_adapter(name)
         require "#{__dir__}/adapter/#{name}"
