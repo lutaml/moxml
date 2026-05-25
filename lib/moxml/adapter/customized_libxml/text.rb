@@ -7,10 +7,6 @@ module Moxml
     module CustomizedLibxml
       # Wrapper for LibXML text nodes
       class Text < Node
-        def moxml_node_type
-          :text
-        end
-
         def to_s
           @native.content
         end

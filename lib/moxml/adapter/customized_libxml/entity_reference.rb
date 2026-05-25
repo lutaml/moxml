@@ -10,10 +10,6 @@ module Moxml
           @name = name
         end
 
-        def moxml_node_type
-          :entity_reference
-        end
-
         def to_xml
           "&#{@name};"
         end

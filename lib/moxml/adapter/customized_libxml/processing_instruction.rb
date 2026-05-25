@@ -7,10 +7,6 @@ module Moxml
     module CustomizedLibxml
       # Wrapper for LibXML processing instruction nodes
       class ProcessingInstruction < Node
-        def moxml_node_type
-          :processing_instruction
-        end
-
         # Serialize as XML processing instruction
         # LibXML auto-escapes content, we need to un-escape it
         def to_xml

@@ -10,10 +10,6 @@ module Moxml
       # This wrapper provides automatic document import when adding children,
       # solving LibXML's strict document ownership requirement.
       class Element < Node
-        def moxml_node_type
-          :element
-        end
-
         # Add a child to this element, handling document import automatically
         def add_child(child)
           child_native = child.respond_to?(:native) ? child.native : child

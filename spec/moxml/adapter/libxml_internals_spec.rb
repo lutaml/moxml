@@ -134,4 +134,34 @@ RSpec.describe Moxml::Adapter::Libxml do
       expect(seq).to be_an(Array).and(include(:eref))
     end
   end
+
+  describe "entity-ref interleaved serialization" do
+    let(:adapter) { described_class }
+    let(:context) { Moxml.new(:libxml) }
+
+    it "preserves normal child indentation when entity refs are present" do
+      doc = context.parse("<root><a><b/></a></root>")
+      a = doc.root.children.first
+      eref = Moxml::EntityReference.new(
+        adapter.create_native_entity_reference("amp"), context
+      )
+      a.add_child(eref)
+
+      expect(doc.to_xml(no_declaration: true, indent: 2))
+        .to eq("<root>\n  <a>\n    <b></b>&amp;</a></root>")
+    end
+  end
+
+  describe Moxml::Adapter::Libxml::EntityRestorer do
+    let(:context) { Moxml.new(:libxml) }
+
+    it "restores entities through its public entry point" do
+      doc = context.parse("<p>\u00A9</p>")
+      context.config.restore_entities = true
+
+      described_class.new(doc).run
+
+      expect(doc.to_xml(no_declaration: true)).to eq("<p>&copy;</p>")
+    end
+  end
 end

@@ -7,10 +7,6 @@ module Moxml
     module CustomizedLibxml
       # Wrapper for LibXML CDATA section nodes
       class Cdata < Node
-        def moxml_node_type
-          :cdata
-        end
-
         # Serialize as XML CDATA section
         # LibXML auto-escapes content, we need to un-escape it
         def to_xml

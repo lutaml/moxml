@@ -9,11 +9,8 @@ module Moxml
       # allowing nodes to be moved between documents transparently.
       # Similar pattern to Ox adapter's customized classes.
       #
-      # Subclasses declare a `moxml_node_type` method returning the Moxml
-      # symbol for their kind (e.g. `:element`, `:text`). The `moxml_`
-      # prefix namespaces the convention to avoid colliding with any
-      # `node_type` method libxml-ruby may add on its own classes; the
-      # adapter's `Libxml.node_type` dispatches on `respond_to?(:moxml_node_type)`.
+      # The Libxml adapter owns wrapper type mapping in one place so the
+      # wrapper classes do not duplicate node-type knowledge.
       class Node
         attr_reader :native
 
