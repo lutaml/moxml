@@ -37,6 +37,32 @@ module Moxml
         end
       end
 
+      # Mapping from libxml's integer node_type to our symbol — built once
+      # at load so `node_type` can do a single hash lookup on the hot path
+      # instead of a large case/when on every node.
+      NATIVE_NODE_TYPE_MAP = {
+        ::LibXML::XML::Node::ELEMENT_NODE => :element,
+        ::LibXML::XML::Node::TEXT_NODE => :text,
+        ::LibXML::XML::Node::CDATA_SECTION_NODE => :cdata,
+        ::LibXML::XML::Node::COMMENT_NODE => :comment,
+        ::LibXML::XML::Node::PI_NODE => :processing_instruction,
+        ::LibXML::XML::Node::ATTRIBUTE_NODE => :attribute,
+        ::LibXML::XML::Node::DTD_NODE => :doctype,
+        ::LibXML::XML::Node::DOCUMENT_NODE => :document,
+      }.freeze
+      private_constant :NATIVE_NODE_TYPE_MAP
+
+      WRAPPER_NODE_TYPE_MAP = {
+        DoctypeWrapper => :doctype,
+        CustomizedLibxml::Element => :element,
+        CustomizedLibxml::Text => :text,
+        CustomizedLibxml::Cdata => :cdata,
+        CustomizedLibxml::Comment => :comment,
+        CustomizedLibxml::ProcessingInstruction => :processing_instruction,
+        CustomizedLibxml::EntityReference => :entity_reference,
+      }.freeze
+      private_constant :WRAPPER_NODE_TYPE_MAP
+
       class << self
         def attachments
           @attachments ||= Moxml::NativeAttachment.new
@@ -98,7 +124,22 @@ module Moxml
           end
 
           ctx = _context || Context.new(:libxml)
-          DocumentBuilder.new(ctx).build(native_doc)
+          # Single parse path: wrap libxml's already-complete C-parsed tree
+          # directly (same pattern as nokogiri/ox). The previous
+          # DocumentBuilder.build path walked the entire parsed tree and
+          # re-added every node to a fresh moxml-managed document, which
+          # made parse O(N) Ruby work on top of an already-complete parse.
+          # Doctype/declaration/PI attachments set above remain on
+          # native_doc, so the serialize path still sees them.
+          #
+          # restore_entities is handled as a post-processing case after
+          # the wrap, NOT by branching into a different builder. This way
+          # any new parse-time logic only has to be added to this one
+          # path; the restoration walk is just one of potentially several
+          # post-processing steps and doesn't fork the construction.
+          doc = Document.new(native_doc, ctx)
+          EntityRestorer.new(doc).run if ctx.config.restore_entities
+          doc
         end
 
         # SAX parsing implementation for LibXML
@@ -181,40 +222,23 @@ module Moxml
         def node_type(node)
           return :unknown unless node
 
-          # Handle wrapper classes
-          return :element if node.is_a?(CustomizedLibxml::Element)
-          return :text if node.is_a?(CustomizedLibxml::Text)
-          return :cdata if node.is_a?(CustomizedLibxml::Cdata)
-          return :comment if node.is_a?(CustomizedLibxml::Comment)
-          if node.is_a?(CustomizedLibxml::ProcessingInstruction)
-            return :processing_instruction
+          # Fast path: native libxml nodes are the vast majority during
+          # parse traversal (DocumentBuilder visits raw libxml children).
+          # Skip the wrapper checks below for them.
+          if node.is_a?(::LibXML::XML::Node)
+            return NATIVE_NODE_TYPE_MAP[node.node_type] || :unknown
           end
-          return :entity_reference if node.is_a?(CustomizedLibxml::EntityReference)
-          return :doctype if node.is_a?(DoctypeWrapper)
+          return :document if node.is_a?(::LibXML::XML::Document)
 
-          # Unwrap if needed
-          native_node = unpatch_node(node)
+          wrapper_type = WRAPPER_NODE_TYPE_MAP[node.class]
+          return wrapper_type if wrapper_type
 
-          case native_node.node_type
-          when ::LibXML::XML::Node::DOCUMENT_NODE
-            :document
-          when ::LibXML::XML::Node::ELEMENT_NODE
-            :element
-          when ::LibXML::XML::Node::TEXT_NODE
-            :text
-          when ::LibXML::XML::Node::CDATA_SECTION_NODE
-            :cdata
-          when ::LibXML::XML::Node::COMMENT_NODE
-            :comment
-          when ::LibXML::XML::Node::ATTRIBUTE_NODE
-            :attribute
-          when ::LibXML::XML::Node::PI_NODE
-            :processing_instruction
-          when ::LibXML::XML::Node::DTD_NODE
-            :doctype
-          else
-            :unknown
-          end
+          # Duck-typed fallback for libxml types that aren't ::Node
+          # subclasses but still expose node_type (e.g. ::Attr).
+          native = unpatch_node(node)
+          return :unknown unless native.respond_to?(:node_type)
+
+          NATIVE_NODE_TYPE_MAP[native.node_type] || :unknown
         end
 
         def node_name(node)
@@ -300,7 +324,7 @@ module Moxml
 
           # Include any EntityReference wrappers stored on the document
           doc = native_node.doc
-          entity_refs = doc ? lookup_entity_refs(doc, native_node) : nil
+          entity_refs = entity_ref_registry(doc).refs_for(native_node)
           result.concat(entity_refs) if entity_refs
 
           result
@@ -317,7 +341,7 @@ module Moxml
           current = native_node&.next
           while current
             # Skip whitespace-only text nodes
-            break unless current.text? && current.content.to_s.strip.empty?
+            break unless blank_text_node?(current)
 
             current = current.next
           end
@@ -329,7 +353,7 @@ module Moxml
           current = native_node&.prev
           while current
             # Skip whitespace-only text nodes
-            break unless current.text? && current.content.to_s.strip.empty?
+            break unless blank_text_node?(current)
 
             current = current.prev
           end
@@ -504,21 +528,22 @@ module Moxml
           native_child = unpatch_node(child)
 
           # EntityReference wrappers can't go in LibXML's native tree.
-          # Store on the document (stable identity) keyed by element.
-          # LibXML creates new Ruby wrappers on each access, so element
-          # object_id is unstable — we look up via == comparison.
+          # Store them on the document for interleaved serialization.
           if child.is_a?(CustomizedLibxml::EntityReference)
             doc = native_elem.is_a?(::LibXML::XML::Document) ? native_elem : native_elem.doc
-            store_entity_ref_on_doc(doc, native_elem, child)
-            append_child_sequence_on_doc(doc, native_elem, :eref)
+            entity_ref_registry(doc).register(native_elem, child)
             return
           end
 
           # For LibXML: if parent has a DEFAULT namespace (nil/empty prefix) and child is an element without a namespace,
           # explicitly set the child's namespace to match the parent's for XPath compatibility
-          # NOTE: Prefixed namespaces are NOT inherited, only default namespaces
-          if native_elem.is_a?(::LibXML::XML::Node) && native_elem.namespaces&.namespace &&
-              native_child.is_a?(::LibXML::XML::Node) && native_child.element? &&
+          # NOTE: Prefixed namespaces are NOT inherited, only default namespaces.
+          #
+          # Reorder cheap-first: skip the expensive `.namespaces` fetches
+          # entirely for non-element children (text, comment, cdata, PI),
+          # which is roughly 30-50% of adds in a typical doc.
+          if native_child.is_a?(::LibXML::XML::Node) && native_child.element? &&
+              native_elem.is_a?(::LibXML::XML::Node) && native_elem.namespaces&.namespace &&
               (!native_child.namespaces.namespace || native_child.namespaces.namespace.href.to_s.empty?)
 
             parent_ns = native_elem.namespaces.namespace
@@ -574,51 +599,8 @@ module Moxml
           else
             import_and_add(native_elem.doc, native_elem, native_child)
             doc = native_elem.doc || native_elem
-            append_child_sequence_on_doc(doc, native_elem, :native)
+            entity_ref_registry(doc).append_native(native_elem)
           end
-        end
-
-        # Store entity ref on the document (stable identity).
-        # LibXML element wrappers are ephemeral, so we use == to find matching elements.
-        def store_entity_ref_on_doc(doc, element, ref)
-          pairs = attachments.get(doc, :_entity_ref_pairs) || []
-          pair = pairs.find { |elem, _| elem == element }
-          if pair
-            pair[1] << ref
-          else
-            pairs << [element, [ref]]
-          end
-          attachments.set(doc, :_entity_ref_pairs, pairs)
-        end
-
-        # Look up entity refs for an element from the document
-        def lookup_entity_refs(doc, element)
-          pairs = attachments.get(doc, :_entity_ref_pairs)
-          return nil unless pairs
-
-          pair = pairs.find { |elem, _| elem == element }
-          pair&.last
-        end
-
-        # Track child order on the document (stable identity)
-        def append_child_sequence_on_doc(doc, element, type)
-          pairs = attachments.get(doc, :_child_seq_pairs) || []
-          pair = pairs.find { |elem, _| elem == element }
-          if pair
-            pair[1] << type
-          else
-            pairs << [element, [type]]
-          end
-          attachments.set(doc, :_child_seq_pairs, pairs)
-        end
-
-        # Look up child sequence for an element from the document
-        def lookup_child_sequence(doc, element)
-          pairs = attachments.get(doc, :_child_seq_pairs)
-          return nil unless pairs
-
-          pair = pairs.find { |elem, _| elem == element }
-          pair&.last
         end
 
         def append_child_sequence(element, type)
@@ -976,21 +958,23 @@ module Moxml
             end
 
             if native_node.root
-              # Use our custom serializer to control namespace output
+              indent_size = options[:indent].is_a?(Integer) && options[:indent].positive? ? options[:indent] : 0
+              # Custom serializer emits newlines AND indentation directly —
+              # no separate add_newlines_to_xml / indent_xml passes.
+              # `eref_active` is computed once here and threaded through the
+              # recursion so that the per-element `attachments.key?` Monitor
+              # sync only fires for docs that actually have entity refs.
+              eref_active = entity_ref_registry(native_node).active?
               root_output = serialize_element_with_namespaces(
                 native_node.root,
                 true,
+                indent_size,
+                0,
+                eref_active: eref_active,
               )
 
-              # Apply indentation if requested
-              if options[:indent]&.positive?
-                # First add newlines between elements
-                formatted = add_newlines_to_xml(root_output)
-                output << "\n" << indent_xml(formatted, options[:indent])
-              else
-                output << "\n" << root_output unless output.empty?
-                output << root_output if output.empty?
-              end
+              output << "\n" << root_output unless output.empty?
+              output << root_output if output.empty?
             end
 
             output
@@ -999,104 +983,22 @@ module Moxml
           end
         end
 
-        def add_newlines_to_xml(xml_string)
-          # Add newlines between XML elements for proper indentation
-          # But don't add newlines between opening and immediate closing tags (e.g., <tag></tag>)
-          # And most importantly, don't add newlines inside CDATA sections
-
-          # First, protect CDATA sections by replacing them with placeholders
-          # Manual scanning guarantees O(n) complexity with no backtracking (ReDoS-safe)
-          cdata_sections = []
-          result = +""
-          pos = 0
-
-          loop do
-            # Find next CDATA start
-            cdata_start = xml_string.index("<![CDATA[", pos)
-
-            if cdata_start
-              # Copy everything before CDATA
-              result << xml_string[pos...cdata_start]
-
-              # Find CDATA end
-              cdata_content_start = cdata_start + 9 # Length of "<![CDATA["
-              cdata_end = xml_string.index("]]>", cdata_content_start)
-
-              if cdata_end
-                # Extract full CDATA including markers
-                full_cdata_end = cdata_end + 3 # Include "]]>"
-                cdata_section = xml_string[cdata_start...full_cdata_end]
-
-                # Store and add placeholder
-                cdata_sections << cdata_section
-                result << "__CDATA_PLACEHOLDER_#{cdata_sections.length - 1}__"
-
-                # Continue after this CDATA
-                pos = full_cdata_end
-              else
-                # Malformed CDATA (no closing "]]>") - copy as-is
-                result << xml_string[cdata_start..]
-                break
-              end
-            else
-              # No more CDATA sections - copy rest
-              result << xml_string[pos..]
-              break
-            end
-          end
-
-          protected = result
-
-          # Add newlines between elements (but not in CDATA - already protected)
-          with_newlines = protected.gsub(%r{(<[^>]+)>(?=<(?!/))}, "\\1>\n")
-
-          # Restore CDATA sections
-          cdata_sections.each_with_index do |cdata, index|
-            with_newlines.sub!("__CDATA_PLACEHOLDER_#{index}__", cdata)
-          end
-
-          with_newlines
-        end
-
-        def indent_xml(xml_string, indent_size)
-          # Simple line-by-line indentation
-          lines = []
-          level = 0
-
-          xml_string.each_line do |line|
-            line = line.strip
-            next if line.empty?
-
-            # Decrease level for closing tags
-            level -= 1 if line.start_with?("</")
-            level = [level, 0].max
-
-            # Add indented line
-            lines << ((" " * (indent_size * level)) + line)
-
-            # Increase level for opening tags (but not self-closing or special tags)
-            next unless line.start_with?("<") && !line.start_with?("</") &&
-              !line.end_with?("/>") && !line.start_with?("<?") &&
-              !line.start_with?("<!") && !line.include?("</")
-
-            level += 1
-          end
-
-          lines.join("\n")
-        end
-
+        # Shallow duplication: copies the node itself (name, attrs, namespaces)
+        # but NOT its descendants. This is what DocumentBuilder needs — it
+        # walks the source tree and re-adds children one at a time via
+        # add_child, so a deep copy here would be done only to be stripped
+        # by replace_children, then rebuilt — O(N²) waste on parse.
+        #
+        # For callers that need a true deep copy (e.g. the import_and_add
+        # fallback when LibXML can't move the subtree directly), use
+        # deep_duplicate_node.
         def duplicate_node(node)
           return nil unless node
 
-          # Unwrap if wrapped
           native_node = unpatch_node(node)
 
-          # LibXML is strict about document ownership
-          # Create brand new NATIVE nodes that are document-independent
-          # Wrappers are only used via patch_node when reading children
           case node_type(node)
           when :doctype
-            # DoctypeWrapper - create a new one with same properties
             if node.is_a?(DoctypeWrapper)
               DoctypeWrapper.new(
                 create_document,
@@ -1105,64 +1007,10 @@ module Moxml
                 node.system_id,
               )
             else
-              # Should not happen, but handle gracefully
               node
             end
           when :element
-            new_node = ::LibXML::XML::Node.new(native_node.name)
-            # new_node.line = node.line
-
-            # Copy and set namespace definitions FIRST
-            if native_node.is_a?(::LibXML::XML::Node)
-              # First, copy all namespace definitions
-              native_node.namespaces.each do |ns|
-                ::LibXML::XML::Namespace.new(
-                  new_node,
-                  ns.prefix,
-                  ns.href,
-                )
-              end
-
-              # Then, set this element's own namespace if it has one
-              if native_node.namespaces.namespace
-                orig_ns = native_node.namespaces.namespace
-                # Find the matching namespace we just created
-                new_node.namespaces.each do |ns|
-                  if ns.prefix == orig_ns.prefix && ns.href == orig_ns.href
-                    new_node.namespaces.namespace = ns
-                    break
-                  end
-                end
-              end
-            end
-
-            # Copy attributes AFTER namespaces are set up
-            # LibXML handles namespaced attributes through their full names
-            if native_node.attributes?
-              native_node.each_attr do |attr|
-                # Get the full attribute name (may include namespace prefix)
-                attr_name = if attr.ns&.prefix
-                              "#{attr.ns.prefix}:#{attr.name}"
-                            else
-                              attr.name
-                            end
-                new_node[attr_name] = attr.value
-              end
-            end
-
-            # Recursively copy children
-            if native_node.children?
-              native_node.each_child do |child|
-                # Skip whitespace-only text nodes
-                next if child.text? && child.content.to_s.strip.empty?
-
-                # Recursively duplicate the child
-                child_copy = duplicate_node(child)
-                new_node << child_copy
-              end
-            end
-
-            new_node
+            shallow_duplicate_element(native_node)
           when :text
             ::LibXML::XML::Node.new_text(native_node.content)
           when :cdata
@@ -1172,7 +1020,6 @@ module Moxml
           when :processing_instruction
             ::LibXML::XML::Node.new_pi(native_node.name, native_node.content)
           else
-            # For other types, try dup as fallback
             native_node.dup
           end
         end
@@ -1281,7 +1128,7 @@ module Moxml
           if elem.children?
             elem.each_child do |child|
               # Skip whitespace-only text nodes
-              next if child.text? && child.content.to_s.strip.empty?
+              next if blank_text_node?(child)
 
               output << serialize_node(child)
             end
@@ -1289,7 +1136,7 @@ module Moxml
 
           # Append any EntityReference wrappers stored on the document
           doc = elem.doc
-          entity_refs = doc ? lookup_entity_refs(doc, elem) : nil
+          entity_refs = entity_ref_registry(doc).refs_for(elem)
           entity_refs&.each { |ref| output << ref.to_xml }
 
           output << "</#{elem.name}>"
@@ -1331,21 +1178,18 @@ module Moxml
             .gsub(">", "&gt;")
         end
 
-        def escape_xml(text)
-          text.to_s
-            .gsub("&", "&amp;")
-            .gsub("<", "&lt;")
-            .gsub(">", "&gt;")
-            .gsub("\"", "&quot;")
-        end
+        ESCAPE_XML_RE = /[&<>"]/
+        ESCAPE_XML_MAP = { "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", '"' => "&quot;" }.freeze
+        private_constant :ESCAPE_XML_RE, :ESCAPE_XML_MAP
 
-        def escape_attribute_value(value)
-          escaped = value.to_s
-            .gsub("&", "&amp;")
-            .gsub("<", "&lt;")
-            .gsub(">", "&gt;")
-            .gsub("\"", "&quot;")
-          escaped.to_s
+        def escape_xml(text)
+          # One gsub pass with a Hash replacement allocates a single new
+          # string. The previous chained gsubs allocated three throwaway
+          # strings on every call (very hot for attribute-heavy XML).
+          str = text.is_a?(String) ? text : text.to_s
+          return str unless str.match?(ESCAPE_XML_RE)
+
+          str.gsub(ESCAPE_XML_RE, ESCAPE_XML_MAP)
         end
 
         def import_and_add(doc, element, child)
@@ -1368,7 +1212,7 @@ module Moxml
             else
               # No target document - create a deep copy of the node instead
               # This handles the case where the element isn't attached to a document yet
-              copied = duplicate_node(child)
+              copied = deep_duplicate_node(child)
               element << copied
             end
 
@@ -1413,127 +1257,242 @@ module Moxml
           end
         end
 
-        def serialize_element_with_namespaces(elem, include_ns = true)
-          output = "<#{elem.name}"
+        def serialize_element_with_namespaces(elem, include_ns = true,
+                                               indent_size = 0, depth = 0,
+                                               eref_active: nil)
+          # Cache elem.name — it's a libxml C call we'd otherwise make
+          # twice (open tag + close tag). Concat with `<<` instead of
+          # `"<#{name}"` to avoid the interpolated intermediate string.
+          name = elem.name
+          output = +"<"
+          output << name
+          emit_namespace_definitions(output, elem, include_ns)
+          emit_attributes(output, elem)
 
-          # Include namespace definitions:
-          # - On root element (include_ns = true), output ALL namespace definitions
-          # - On child elements, output namespace definitions that override parent namespaces
-          if elem.is_a?(::LibXML::XML::Node) && elem.namespaces.respond_to?(:definitions)
-            # Get parent's namespace definitions to detect overrides
-            parent_ns_defs = if !include_ns && elem.parent && !elem.parent.is_a?(::LibXML::XML::Document)
-                               parent_namespaces = {}
-                               if elem.parent.is_a?(::LibXML::XML::Node)
-                                 elem.parent.namespaces.each do |ns|
-                                   parent_namespaces[ns.prefix] = ns.href
-                                 end
-                               end
-                               parent_namespaces
-                             else
-                               {}
-                             end
-
-            seen_ns = {}
-            elem.namespaces.definitions.each do |ns|
-              prefix = ns.prefix
-              uri = ns.href
-              next if seen_ns.key?(prefix)
-
-              # Output namespace if:
-              # 1. This is root element (include_ns = true), OR
-              # 2. This namespace overrides a parent namespace (different URI for same prefix)
-              should_output = include_ns ||
-                (parent_ns_defs.key?(prefix) && parent_ns_defs[prefix] != uri)
-
-              next unless should_output
-
-              seen_ns[prefix] = true
-              output << if prefix.nil? || prefix.empty?
-                          " xmlns=\"#{escape_xml(uri)}\""
-                        else
-                          " xmlns:#{prefix}=\"#{escape_xml(uri)}\""
-                        end
-            end
-          end
-
-          # Add attributes
-          if elem.attributes?
-            elem.each_attr do |attr|
-              next if attr.name.start_with?("xmlns")
-
-              # Include namespace prefix if attribute has one
-              attr_name = if attr.ns&.prefix
-                            "#{attr.ns.prefix}:#{attr.name}"
-                          else
-                            attr.name
-                          end
-              output << " #{attr_name}=\"#{escape_xml(attr.value)}\""
-            end
-          end
-
-          # Check for entity refs stored on the document
-          # LibXML element wrappers are ephemeral, so look up via == comparison
-          doc = elem.doc
-          entity_refs = doc ? lookup_entity_refs(doc, elem) : nil
-          child_sequence = doc ? lookup_child_sequence(doc, elem) : nil
+          # `eref_active` is precomputed at the top-level `serialize` call
+          # and threaded down — when nil (top-level non-recursive call into
+          # this method), look it up; when false, skip the per-element doc
+          # attachment query that otherwise fires for every element under
+          # Monitor#synchronize.
+          eref_active = doc_eref_active?(elem.doc) if eref_active.nil?
+          entity_refs, child_sequence = eref_active ? lookup_entity_ref_serialization(elem) : [nil, nil]
 
           # Always use verbose format <tag></tag> for consistency with other adapters
           output << ">"
 
-          if entity_refs && !entity_refs.empty? && child_sequence
-            # Interleave native children with entity refs using tracked sequence
-            native_children = []
-            if elem.children?
-              elem.each_child do |c|
-                native_children << c unless c.text? && c.content.to_s.strip.empty?
-              end
-            end
-
-            eref_idx = 0
-            native_idx = 0
-            child_sequence.each do |type|
-              case type
-              when :native
-                if native_idx < native_children.size
-                  child = native_children[native_idx]
-                  native_idx += 1
-                  wrapped_child = patch_node(child)
-                  output << if wrapped_child.is_a?(CustomizedLibxml::Node) && !wrapped_child.is_a?(CustomizedLibxml::Element)
-                              wrapped_child.to_xml
-                            elsif child.element?
-                              serialize_element_with_namespaces(child, false)
-                            else
-                              serialize_node(child)
-                            end
-                end
-              when :eref
-                if eref_idx < entity_refs.size
-                  output << entity_refs[eref_idx].to_xml
-                  eref_idx += 1
-                end
-              end
-            end
+          if entity_refs && child_sequence
+            emit_eref_interleaved_children(output, elem, entity_refs, child_sequence,
+                                           indent_size, depth, eref_active: eref_active)
           elsif elem.children?
-            elem.each_child do |child|
-              # Skip whitespace-only text nodes
-              next if child.text? && child.content.to_s.strip.empty?
+            emit_children_with_layout(output, elem, indent_size, depth,
+                                      eref_active: eref_active)
+          end
 
-              # Wrap the child and serialize
-              wrapped_child = patch_node(child)
-              output << if wrapped_child.is_a?(CustomizedLibxml::Node) && !wrapped_child.is_a?(CustomizedLibxml::Element)
-                          # Use wrapper's to_xml for proper serialization
-                          wrapped_child.to_xml
-                        elsif child.element?
-                          # Recursively serialize child elements
-                          serialize_element_with_namespaces(child, false)
-                        else
-                          serialize_node(child)
-                        end
+          output << "</" << name << ">"
+          output
+        end
+
+        def doc_eref_active?(doc)
+          entity_ref_registry(doc).active?
+        end
+
+        def entity_ref_registry(doc)
+          EntityRefRegistry.new(attachments, doc)
+        end
+
+        # Emit `xmlns`/`xmlns:foo` declarations onto `output`. On the root
+        # (`include_ns: true`) we emit ALL definitions; on children we
+        # emit only definitions that OVERRIDE a parent's same-prefix URI.
+        # Skips the whole block when the element has no local definitions,
+        # which is the common case for child elements in unnamespaced docs.
+        def emit_namespace_definitions(output, elem, include_ns)
+          return unless elem.is_a?(::LibXML::XML::Node)
+
+          ns_list = elem.namespaces
+          return unless ns_list.respond_to?(:definitions)
+
+          definitions = ns_list.definitions
+          return if definitions.empty?
+
+          parent_ns_defs = include_ns ? nil : parent_namespace_defs(elem)
+          seen_ns = nil
+
+          definitions.each do |ns|
+            prefix = ns.prefix
+            uri = ns.href
+            next unless include_ns ||
+              (parent_ns_defs&.key?(prefix) && parent_ns_defs[prefix] != uri)
+
+            seen_ns ||= {}
+            next if seen_ns.key?(prefix)
+
+            seen_ns[prefix] = true
+            output << format_ns_declaration(prefix, uri)
+          end
+        end
+
+        def parent_namespace_defs(elem)
+          parent = elem.parent
+          return nil unless parent.is_a?(::LibXML::XML::Node)
+
+          defs = {}
+          parent.namespaces.each { |ns| defs[ns.prefix] = ns.href }
+          defs
+        end
+
+        def format_ns_declaration(prefix, uri)
+          if prefix.nil? || prefix.empty?
+            " xmlns=\"#{escape_xml(uri)}\""
+          else
+            " xmlns:#{prefix}=\"#{escape_xml(uri)}\""
+          end
+        end
+
+        def emit_attributes(output, elem)
+          return unless elem.attributes?
+
+          elem.each_attr do |attr|
+            next if attr.name.start_with?("xmlns")
+
+            attr_name = attr.ns&.prefix ? "#{attr.ns.prefix}:#{attr.name}" : attr.name
+            output << " #{attr_name}=\"#{escape_xml(attr.value)}\""
+          end
+        end
+
+        # Returns [entity_refs, child_sequence] when the element has
+        # interleaved entity references that the serializer needs to
+        # weave back into the native child stream — otherwise [nil, nil].
+        #
+        # The caller is responsible for gating this with `eref_active`
+        # (precomputed once per `serialize` call). When `eref_active` is
+        # false this method is never entered, so the per-element doc
+        # attachment query never fires.
+        def lookup_entity_ref_serialization(elem)
+          doc = elem.doc
+          return [nil, nil] unless doc
+
+          entity_ref_registry(doc).serialization_for(elem)
+        end
+
+        def emit_eref_interleaved_children(output, elem, entity_refs, child_sequence,
+                                            indent_size, depth, eref_active:)
+          native_children = collect_non_blank_children(elem)
+          child_pad = indent_size.positive? ? " " * (indent_size * (depth + 1)) : nil
+          eref_idx = 0
+          native_idx = 0
+          prev_block = true
+
+          child_sequence.each do |type|
+            case type
+            when :native
+              if native_idx < native_children.size
+                child = native_children[native_idx]
+                is_text_like = child.text? || child.cdata?
+                if prev_block && !is_text_like
+                  output << "\n"
+                  output << child_pad if child_pad
+                end
+                prev_block = !is_text_like
+
+                output << serialize_child_to_xml(
+                  child, indent_size: indent_size, depth: depth,
+                         eref_active: eref_active
+                )
+                native_idx += 1
+              end
+            when :eref
+              if eref_idx < entity_refs.size
+                output << entity_refs[eref_idx].to_xml
+                eref_idx += 1
+                prev_block = false
+              end
             end
           end
-          output << "</#{elem.name}>"
+        end
 
-          output
+        # Regex used in place of `content.to_s.strip.empty?` for whitespace-only
+        # text detection — `match?` allocates nothing while `.strip` makes a
+        # throwaway copy of every text node's content on each visit.
+        NON_WHITESPACE_RE = /\S/
+        private_constant :NON_WHITESPACE_RE
+
+        def blank_text_node?(child)
+          child.text? && blank_content?(child.content)
+        end
+
+        def blank_content?(content)
+          content.nil? || !content.match?(NON_WHITESPACE_RE)
+        end
+
+        def collect_non_blank_children(elem)
+          children = []
+          return children unless elem.children?
+
+          elem.each_child do |c|
+            children << c unless blank_text_node?(c)
+          end
+          children
+        end
+
+        # Walk native children once and emit them with the same newline +
+        # indentation layout the old `add_newlines_to_xml` + `indent_xml`
+        # post-passes produced — but in a single recursion with no string
+        # rescanning.
+        #
+        # Newline rule (matching `>(?=<(?!/))` with CDATA-placeholder
+        # protection): emit `\n` + per-level padding before a child iff
+        # the previous emitted sibling was block-level (ended with `>`)
+        # AND the current sibling is block-level. Text and CDATA count
+        # as text-like and suppress the newline on both sides (the
+        # original CDATA placeholder broke the `>...<` adjacency
+        # symmetrically).
+        def emit_children_with_layout(output, elem, indent_size, depth,
+                                       eref_active:)
+          child_pad = indent_size.positive? ? " " * (indent_size * (depth + 1)) : nil
+          prev_block = true
+
+          elem.each_child do |child|
+            # Cache text? — used twice per child (whitespace skip + is_text_like).
+            # For element children (the common case) both calls return false, so
+            # caching saves a libxml C call.
+            is_text = child.text?
+            next if is_text && blank_content?(child.content)
+
+            is_text_like = is_text || child.cdata?
+            if prev_block && !is_text_like
+              output << "\n"
+              output << child_pad if child_pad
+            end
+            prev_block = !is_text_like
+
+            output << serialize_child_to_xml(child, indent_size: indent_size, depth: depth,
+                                                    eref_active: eref_active)
+          end
+        end
+
+        # Serialize one child node. Elements recurse into the layout-aware
+        # path; non-element wrappers route through their own `to_xml`;
+        # everything else falls through to the per-type serializer.
+        # `indent_size:` and `depth:` are required to force callers to
+        # decide whether the child should inherit the parent's indent
+        # state — the entity-ref interleave path deliberately passes 0/0.
+        #
+        # Element fast-path checked first to avoid allocating a wrapper
+        # we'd immediately throw away (elements always recurse on the
+        # raw native node, not the wrapper). For a typical document this
+        # skips wrapper allocation for the majority of children.
+        def serialize_child_to_xml(child, indent_size:, depth:, eref_active:)
+          if child.element?
+            return serialize_element_with_namespaces(child, false, indent_size, depth + 1,
+                                                     eref_active: eref_active)
+          end
+
+          wrapped_child = patch_node(child)
+          if wrapped_child.is_a?(CustomizedLibxml::Node)
+            wrapped_child.to_xml
+          else
+            serialize_node(child)
+          end
         end
 
         def remove_indentation(xml_string)
@@ -1631,6 +1590,63 @@ module Moxml
           end
           nil
         end
+
+        # Deep duplication for the rare `import_and_add` fallback (when
+        # libxml refuses to move a subtree across documents AND no target
+        # document is available). Walks the source subtree and rebuilds
+        # it as document-independent nodes. The DocumentBuilder hot path
+        # goes through the shallow `duplicate_node` instead.
+        def deep_duplicate_node(node)
+          return nil unless node
+
+          native_node = unpatch_node(node)
+
+          return duplicate_node(node) unless node_type(node) == :element
+
+          new_node = shallow_duplicate_element(native_node)
+          return new_node unless native_node.is_a?(::LibXML::XML::Node) && native_node.children?
+
+          native_node.each_child do |child|
+            next if blank_text_node?(child)
+
+            new_node << deep_duplicate_node(child)
+          end
+          new_node
+        end
+
+        # Copies a single element: its name, its OWN namespace definitions,
+        # the active default namespace, and its attributes. Children are NOT
+        # duplicated — callers that need the subtree use deep_duplicate_node.
+        def shallow_duplicate_element(native_node)
+          new_node = ::LibXML::XML::Node.new(native_node.name)
+          copy_element_namespaces(native_node, new_node) if native_node.is_a?(::LibXML::XML::Node)
+          copy_element_attributes(native_node, new_node) if native_node.attributes?
+          new_node
+        end
+
+        def copy_element_namespaces(src, dst)
+          ns_list = src.namespaces
+          ns_list.each do |ns|
+            ::LibXML::XML::Namespace.new(dst, ns.prefix, ns.href)
+          end
+
+          own_ns = ns_list.namespace
+          return unless own_ns
+
+          dst.namespaces.each do |ns|
+            next unless ns.prefix == own_ns.prefix && ns.href == own_ns.href
+
+            dst.namespaces.namespace = ns
+            break
+          end
+        end
+
+        def copy_element_attributes(src, dst)
+          src.each_attr do |attr|
+            attr_name = attr.ns&.prefix ? "#{attr.ns.prefix}:#{attr.name}" : attr.name
+            dst[attr_name] = attr.value
+          end
+        end
       end
 
       # Bridge between LibXML SAX and Moxml SAX
@@ -1706,3 +1722,6 @@ module Moxml
     end
   end
 end
+
+require_relative "libxml/entity_ref_registry"
+require_relative "libxml/entity_restorer"

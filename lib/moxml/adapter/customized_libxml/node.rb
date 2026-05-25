@@ -8,6 +8,9 @@ module Moxml
       # This wrapper hides LibXML's strict document ownership model,
       # allowing nodes to be moved between documents transparently.
       # Similar pattern to Ox adapter's customized classes.
+      #
+      # The Libxml adapter owns wrapper type mapping in one place so the
+      # wrapper classes do not duplicate node-type knowledge.
       class Node
         attr_reader :native
 

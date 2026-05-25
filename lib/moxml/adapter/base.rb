@@ -46,6 +46,11 @@ module Moxml
                 else
                   xml.encode("UTF-8")
                 end
+          # Fast path: no `&` means no entity references to mark — skip
+          # the regex scan and string allocation entirely. The vast
+          # majority of XML payloads contain no entity references.
+          return str unless str.include?("&")
+
           str.gsub(ENTITY_NAME_RE) do |match|
             STANDARD_ENTITIES.include?(::Regexp.last_match(1)) ? match : "#{ENTITY_MARKER}#{::Regexp.last_match(1)};"
           end
