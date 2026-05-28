@@ -10,6 +10,7 @@ RSpec.describe Moxml::Config do
       expect(config.strict_parsing).to be true
       expect(config.default_encoding).to eq("UTF-8")
       expect(config.default_indent).to eq(2)
+      expect(config.default_line_ending).to eq("\n")
       expect(config.entity_encoding).to eq(:basic)
     end
 

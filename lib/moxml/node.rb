@@ -98,6 +98,7 @@ module Moxml
       serialize_options[:no_declaration] = !should_include_declaration?(options)
 
       result = adapter.serialize(@native, serialize_options)
+      result = apply_line_ending(result, serialize_options[:line_ending])
 
       # Restore entity markers to named entity references
       adapter.restore_entities(result)
@@ -279,6 +280,7 @@ module Moxml
       {
         encoding: context.config.default_encoding,
         indent: context.config.default_indent,
+        line_ending: context.config.default_line_ending,
         # The short format of empty tags in Oga and Nokogiri isn't configurable
         # Oga: <empty /> (with a space)
         # Nokogiri: <empty/> (without a space)
@@ -293,6 +295,11 @@ module Moxml
 
       # For Document nodes, delegate to adapter for native state check
       adapter.has_declaration?(@native, self)
+    end
+
+    def apply_line_ending(xml, line_ending)
+      return xml if line_ending == Config::LINE_ENDING_LF || !xml.include?("\n")
+      xml.gsub("\n", line_ending)
     end
   end
 end

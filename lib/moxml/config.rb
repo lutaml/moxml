@@ -2,6 +2,8 @@
 
 module Moxml
   class Config
+    LINE_ENDING_LF = "\n"
+    LINE_ENDING_CRLF = "\r\n"
     VALID_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
     DEFAULT_ADAPTER = :nokogiri
     OPAL_DEFAULT_ADAPTER = :rexml
@@ -49,6 +51,7 @@ module Moxml
     attr_reader :adapter_name
     attr_accessor :strict_parsing,
                   :default_encoding,
+                  :default_line_ending,
                   :entity_encoding,
                   :default_indent,
                   :restore_entities,
@@ -63,8 +66,8 @@ module Moxml
       self.adapter = adapter_name || Config.default.adapter_name
       @strict_parsing = strict_parsing || Config.default.strict_parsing
       @default_encoding = default_encoding || Config.default.default_encoding
-      # reserved for future use
       @default_indent = 2
+      @default_line_ending = LINE_ENDING_LF
       @entity_encoding = :basic
       @restore_entities = false
       @preload_entity_sets = []
