@@ -9,7 +9,8 @@ module Moxml
         ENTITY_REFS_KEY = :_entity_ref_pairs
         CHILD_SEQUENCE_KEY = :_child_seq_pairs
         NON_WHITESPACE_RE = /\S/
-        private_constant :ENTITY_REFS_KEY, :CHILD_SEQUENCE_KEY, :NON_WHITESPACE_RE
+        private_constant :ENTITY_REFS_KEY, :CHILD_SEQUENCE_KEY,
+                         :NON_WHITESPACE_RE
 
         def initialize(attachments, doc)
           @attachments = attachments
@@ -34,7 +35,8 @@ module Moxml
           if existing
             existing << :eref
           else
-            seq_by_path[path] = Array.new(count_native_children(element), :native)
+            seq_by_path[path] =
+              Array.new(count_native_children(element), :native)
             seq_by_path[path] << :eref
             @attachments.set(@doc, CHILD_SEQUENCE_KEY, seq_by_path)
           end

@@ -1182,7 +1182,8 @@ module Moxml
         end
 
         ESCAPE_XML_RE = /[&<>"]/
-        ESCAPE_XML_MAP = { "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", '"' => "&quot;" }.freeze
+        ESCAPE_XML_MAP = { "&" => "&amp;", "<" => "&lt;", ">" => "&gt;",
+                           '"' => "&quot;" }.freeze
         private_constant :ESCAPE_XML_RE, :ESCAPE_XML_MAP
 
         def escape_xml(text)
@@ -1278,7 +1279,13 @@ module Moxml
           # attachment query that otherwise fires for every element under
           # Monitor#synchronize.
           eref_active = doc_eref_active?(elem.doc) if eref_active.nil?
-          entity_refs, child_sequence = eref_active ? lookup_entity_ref_serialization(elem) : [nil, nil]
+          entity_refs, child_sequence = if eref_active
+                                          lookup_entity_ref_serialization(elem)
+                                        else
+                                          [
+                                            nil, nil
+                                          ]
+                                        end
 
           # Always use verbose format <tag></tag> for consistency with other adapters
           output << ">"
@@ -1622,8 +1629,14 @@ module Moxml
         # duplicated — callers that need the subtree use deep_duplicate_node.
         def shallow_duplicate_element(native_node)
           new_node = ::LibXML::XML::Node.new(native_node.name)
-          copy_element_namespaces(native_node, new_node) if native_node.is_a?(::LibXML::XML::Node)
-          copy_element_attributes(native_node, new_node) if native_node.attributes?
+          if native_node.is_a?(::LibXML::XML::Node)
+            copy_element_namespaces(native_node,
+                                    new_node)
+          end
+          if native_node.attributes?
+            copy_element_attributes(native_node,
+                                    new_node)
+          end
           new_node
         end
 

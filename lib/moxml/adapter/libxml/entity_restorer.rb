@@ -76,7 +76,9 @@ module Moxml
         def append_chunk(parent, type, payload)
           case type
           when :text
-            parent.add_child(::Moxml::Text.new(@adapter.create_native_text(payload), @ctx))
+            parent.add_child(::Moxml::Text.new(
+                               @adapter.create_native_text(payload), @ctx
+                             ))
           when :eref
             parent.add_child(
               ::Moxml::EntityReference.new(

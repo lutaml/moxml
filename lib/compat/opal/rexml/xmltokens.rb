@@ -28,18 +28,18 @@ module REXML
       "\\u0300-\\u036F",
       "\\u203F-\\u2040",
     ]
-    NAME_START_CHAR = "[#{name_start_chars.join('')}]"
-    NAME_CHAR = "[#{name_chars.join('')}]"
+    NAME_START_CHAR = "[#{name_start_chars.join}]".freeze
+    NAME_CHAR = "[#{name_chars.join}]".freeze
     NAMECHAR = NAME_CHAR
 
     ncname_start_chars = name_start_chars - [":"]
     ncname_chars = name_chars - [":"]
-    NCNAME_STR = "[#{ncname_start_chars.join('')}][#{ncname_chars.join('')}]*"
-    NAME_STR = "(?:#{NCNAME_STR}:)?#{NCNAME_STR}"
+    NCNAME_STR = "[#{ncname_start_chars.join}][#{ncname_chars.join}]*".freeze
+    NAME_STR = "(?:#{NCNAME_STR}:)?#{NCNAME_STR}".freeze
 
-    NAME = "(#{NAME_START_CHAR}#{NAME_CHAR}*)"
-    NMTOKEN = "(?:#{NAME_CHAR})+"
-    NMTOKENS = "#{NMTOKEN}(\\s+#{NMTOKEN})*"
-    REFERENCE = "(?:&#{NAME};|&#\\d+;|&#x[0-9a-fA-F]+;)"
+    NAME = "(#{NAME_START_CHAR}#{NAME_CHAR}*)".freeze
+    NMTOKEN = "(?:#{NAME_CHAR})+".freeze
+    NMTOKENS = "#{NMTOKEN}(\\s+#{NMTOKEN})*".freeze
+    REFERENCE = "(?:&#{NAME};|&#\\d+;|&#x[0-9a-fA-F]+;)".freeze
   end
 end

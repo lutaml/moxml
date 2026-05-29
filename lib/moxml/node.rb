@@ -299,6 +299,7 @@ module Moxml
 
     def apply_line_ending(xml, line_ending)
       return xml if line_ending == Config::LINE_ENDING_LF || !xml.include?("\n")
+
       xml.gsub(/\r?\n/, line_ending)
     end
   end

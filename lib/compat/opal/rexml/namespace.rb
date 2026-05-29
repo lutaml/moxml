@@ -1,16 +1,18 @@
 # frozen_string_literal: true
 
-require 'rexml/xmltokens'
+require "rexml/xmltokens"
 
 module REXML
   module Namespace
     attr_reader :name, :expanded_name
     attr_accessor :prefix
+
     include XMLTokens
+
     NAME_WITHOUT_NAMESPACE = /^#{NCNAME_STR}$/
     NAMESPLIT = /^(?:(#{NCNAME_STR}):)?(#{NCNAME_STR})/u
 
-    def name=( name )
+    def name=(name)
       @expanded_name = name
       if name.match?(NAME_WITHOUT_NAMESPACE)
         @prefix = ""
@@ -35,9 +37,9 @@ module REXML
       end
     end
 
-    def has_name?( other, ns=nil )
+    def has_name?(other, ns = nil)
       if ns
-        namespace() == ns and name() == other
+        namespace == ns and name == other
       elsif other.include? ":"
         fully_expanded_name == other
       else
@@ -49,7 +51,8 @@ module REXML
 
     def fully_expanded_name
       ns = prefix
-      return "#{ns}:#@name" if ns.size > 0
+      return "#{ns}:#@name" if ns.size.positive?
+
       @name
     end
   end

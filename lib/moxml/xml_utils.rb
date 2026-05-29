@@ -82,6 +82,7 @@ module Moxml
       else
         # Accept relative references and bare paths
         return unless uri.match?(/[\x00-\x08\x0B\x0C\x0E-\x1F]/)
+
         raise ValidationError, "Invalid URI: #{uri}"
       end
     rescue URI::InvalidURIError

@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #
 # Auto-generated entity data for Opal runtime.
 # Source: data/w3c_entities.json (2125 entities)

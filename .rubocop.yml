@@ -17,3 +17,4 @@ AllCops:
     - 'vendor/**/*'
     - 'tmp/**/*'
     - 'spec/consistency/round_trip_spec.rb'
+    - 'lib/compat/**/*'

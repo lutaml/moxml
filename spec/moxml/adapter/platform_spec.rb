@@ -4,7 +4,8 @@ require "spec_helper"
 
 RSpec.describe Moxml::Adapter, ".platform_adapters" do
   it "includes all known adapters under MRI" do
-    expect(described_class.platform_adapters).to include(:nokogiri, :oga, :rexml, :ox)
+    expect(described_class.platform_adapters).to include(:nokogiri, :oga,
+                                                         :rexml, :ox)
   end
 
   it "uses the AVAILABLE_ADAPTERS constant under MRI" do

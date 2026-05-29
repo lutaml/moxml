@@ -105,7 +105,8 @@ RSpec.describe Moxml::Adapter::Libxml do
 
     it "returns [nil, nil] when the document has no entity-ref attachments" do
       root = libxml_native(context.parse("<root><a/></root>").root)
-      expect(adapter.send(:lookup_entity_ref_serialization, root)).to eq([nil, nil])
+      expect(adapter.send(:lookup_entity_ref_serialization,
+                          root)).to eq([nil, nil])
     end
 
     it "returns [nil, nil] for an element with no entity refs even when the doc has erefs elsewhere" do
@@ -129,7 +130,8 @@ RSpec.describe Moxml::Adapter::Libxml do
       )
       a.add_child(eref)
 
-      refs, seq = adapter.send(:lookup_entity_ref_serialization, libxml_native(a))
+      refs, seq = adapter.send(:lookup_entity_ref_serialization,
+                               libxml_native(a))
       expect(refs).to be_an(Array).and(satisfy { |r| !r.empty? })
       expect(seq).to be_an(Array).and(include(:eref))
     end

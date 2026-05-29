@@ -226,7 +226,8 @@ module Moxml
     # kept for backward compatibility.
     # @return [self]
     def load_html5
-      warn "EntityRegistry#load_html5 is a no-op (all entities load during initialize)", uplevel: 1
+      warn "EntityRegistry#load_html5 is a no-op (all entities load during initialize)",
+           uplevel: 1
       self
     end
 
@@ -235,7 +236,8 @@ module Moxml
     # kept for backward compatibility.
     # @return [self]
     def load_mathml
-      warn "EntityRegistry#load_mathml is a no-op (all entities load during initialize)", uplevel: 1
+      warn "EntityRegistry#load_mathml is a no-op (all entities load during initialize)",
+           uplevel: 1
       self
     end
 
@@ -245,7 +247,8 @@ module Moxml
     # @param _set_name [Symbol] (ignored, all loaded together)
     # @return [self]
     def load_iso(_set_name = :iso8879)
-      warn "EntityRegistry#load_iso is a no-op (all entities load during initialize)", uplevel: 1
+      warn "EntityRegistry#load_iso is a no-op (all entities load during initialize)",
+           uplevel: 1
       self
     end
 
@@ -254,7 +257,8 @@ module Moxml
     # kept for backward compatibility.
     # @return [self]
     def load_all
-      warn "EntityRegistry#load_all is a no-op (all entities load during initialize)", uplevel: 1
+      warn "EntityRegistry#load_all is a no-op (all entities load during initialize)",
+           uplevel: 1
       self
     end
 

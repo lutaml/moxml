@@ -1,7 +1,8 @@
 # frozen_string_literal: true
+
 # backtick_javascript: true
 
-require 'corelib/array/pack'
+require "corelib/array/pack"
 
 unless defined?(StringScanner::Version)
   class StringScanner
@@ -17,7 +18,7 @@ unless String.method_defined?(:force_encoding)
   end
 end
 
-unless defined?(::Encoding)
+unless defined?(Encoding)
   module ::Encoding
     UTF_8 = "UTF-8"
     ASCII_8BIT = "ASCII-8BIT"
@@ -36,35 +37,35 @@ end
 # Override with functional equivalents that return new strings.
 class String
   def <<(str)
-    %x{return self + #{str}.to_s}
+    `return self + #{str}.to_s`
   end
 
   def chomp!(sep = nil)
-    %x{
+    `
       var r = #{chomp(sep)};
       return r === self ? nil : r;
-    }
+    `
   end
 
   def gsub!(pattern, replacement, &block)
-    %x{
+    `
       var r = #{gsub(pattern, replacement, &block)};
       return r === self ? nil : r;
-    }
+    `
   end
 
   def squeeze!(*sets)
-    %x{
+    `
       var r = #{squeeze(*sets)};
       return r === self ? nil : r;
-    }
+    `
   end
 
   def strip!
-    %x{
+    `
       var r = #{strip};
       return r === self ? nil : r;
-    }
+    `
   end
 end
 

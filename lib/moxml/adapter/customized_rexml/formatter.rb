@@ -70,12 +70,12 @@ module Moxml
                       child.to_s.strip.empty? &&
                       !(child.next_sibling.nil? && child.previous_sibling.nil?)
 
-                    output << "\n" << (' ' * @level) if indent_children
+                    output << "\n" << (" " * @level) if indent_children
                     write(child, output)
                   end
                 when :eref
                   if eref_idx < entity_refs.size
-                    output << "\n" << (' ' * @level) if indent_children
+                    output << "\n" << (" " * @level) if indent_children
                     write(entity_refs[eref_idx], output)
                     eref_idx += 1
                   end
@@ -87,14 +87,14 @@ module Moxml
                   child.to_s.strip.empty? &&
                   !(child.next_sibling.nil? && child.previous_sibling.nil?)
 
-                output << "\n" << (' ' * @level) if indent_children
+                output << "\n" << (" " * @level) if indent_children
                 write(child, output)
               end
             end
 
             if indent_children
               @level -= @indentation.length
-              output << "\n" << (' ' * @level)
+              output << "\n" << (" " * @level)
             end
           end
 

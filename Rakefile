@@ -13,7 +13,9 @@ begin
   # Opal-compatible overrides go first so they shadow the gem originals.
   if defined?(Opal)
     Opal.append_path File.expand_path("lib/compat/opal", __dir__)
-    rexml_lib = $LOAD_PATH.find { |p| File.exist?(File.join(p, "rexml", "document.rb")) }
+    rexml_lib = $LOAD_PATH.find do |p|
+      File.exist?(File.join(p, "rexml", "document.rb"))
+    end
     Opal.append_path rexml_lib if rexml_lib
   end
 rescue LoadError
@@ -32,10 +34,11 @@ namespace :spec do
       server.append_path "spec"
 
       runner.default_path = "spec"
-      runner.requires = %w[rexml_compat rexml/document rexml/xpath moxml/adapter/rexml spec_helper support/opal]
+      runner.requires = %w[rexml_compat rexml/document rexml/xpath
+                           moxml/adapter/rexml spec_helper support/opal]
       runner.files = Dir.glob("spec/moxml/*opal*_spec.rb") +
-                     Dir.glob("spec/moxml/native_attachment/opal_spec.rb") +
-                     Dir.glob("spec/moxml/adapter/shared_examples/*.rb")
+        Dir.glob("spec/moxml/native_attachment/opal_spec.rb") +
+        Dir.glob("spec/moxml/adapter/shared_examples/*.rb")
     end
   end
 
@@ -158,17 +161,17 @@ namespace :opal do
     lines << "    OPAL_ENTITY_DATA = {"
     chars.each do |name, char|
       codepoint = if char.start_with?("\\u")
-        char.unicode_normalize(:nfc)[2..].to_i(16)
-      else
-        char.ord
-      end
+                    char.unicode_normalize(:nfc)[2..].to_i(16)
+                  else
+                    char.ord
+                  end
       lines << "      #{name.inspect} => #{codepoint},"
     end
     lines << "    }.freeze"
     lines << "  end"
     lines << "end"
 
-    File.write(target, lines.join("\n") + "\n")
+    File.write(target, "#{lines.join("\n")}\n")
     puts "Generated #{target} (#{chars.size} entities, #{lines.size} lines)"
   end
 end

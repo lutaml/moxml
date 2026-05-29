@@ -46,7 +46,7 @@ module Moxml
       def validate_platform!(name)
         return if platform_adapters.include?(name.to_sym)
 
-        available = platform_adapters.map(&:to_s).join(", ")
+        available = platform_adapters.join(", ")
         raise Moxml::AdapterError.new(
           "The '#{name}' adapter is not available on this platform. Available: #{available}",
           adapter: name,
