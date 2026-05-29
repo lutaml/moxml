@@ -245,25 +245,22 @@ module Moxml
         end
 
         def add_child(element, child)
-          # Special handling for declarations on Nokogiri documents
           if element.is_a?(::Nokogiri::XML::Document) &&
               child.is_a?(::Nokogiri::XML::ProcessingInstruction) &&
               child.name == "xml"
-            # Set document's xml_decl property
             version = declaration_attribute(child, "version") || "1.0"
             encoding = declaration_attribute(child, "encoding")
             standalone = declaration_attribute(child, "standalone")
 
-            # Store declaration state in attachment map
             attachments.set(element, :xml_decl, {
               version: version,
               encoding: encoding,
               standalone: standalone,
             }.compact)
+            return
           end
 
           if node_type(child) == :doctype
-            # avoid exceptions: cannot reparent Nokogiri::XML::DTD there
             element.create_internal_subset(
               child.name, child.external_id, child.system_id
             )
@@ -397,21 +394,28 @@ module Moxml
             save_options |= ::Nokogiri::XML::Node::SaveOptions::FORMAT
           end
 
-          # Handle declaration option
+          custom_decl = nil
           if options[:no_declaration]
             save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION
-          elsif attachments.key?(node, :xml_decl)
-            xml_decl = attachments.get(node, :xml_decl)
-            # When custom declaration is stored, suppress native to avoid duplicates.
-            # The custom declaration is serialized from the PI child node.
+          elsif attachments.key?(node, :xml_decl) && (xml_decl = attachments.get(node, :xml_decl))
             save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION
+            attrs = ["version=\"#{xml_decl[:version]}\""]
+            attrs << "encoding=\"#{xml_decl[:encoding]}\"" if xml_decl[:encoding]
+            attrs << "standalone=\"#{xml_decl[:standalone]}\"" if xml_decl[:standalone]
+            custom_decl = "<?xml #{attrs.join(' ')}?>"
           end
 
-          node.to_xml(
+          result = node.to_xml(
             indent: options[:indent],
             encoding: options[:encoding],
             save_with: save_options,
           )
+
+          if custom_decl
+            result = "#{custom_decl}\n#{result}"
+          end
+
+          result
         end
 
         def has_declaration?(native_doc, wrapper)
