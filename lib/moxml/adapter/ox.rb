@@ -19,7 +19,17 @@ module Moxml
         end
 
         def set_root(doc, element)
-          replace_children(doc, [element])
+          existing_root = root(doc)
+          if existing_root
+            # Replace the existing root element, preserving other children
+            element.parent = doc if element.is_a?(::Ox::Node)
+            idx = doc.nodes.index(existing_root)
+            doc.nodes[idx] = element
+          else
+            # No root yet, just append the element
+            element.parent = doc if element.is_a?(::Ox::Node)
+            doc << element
+          end
         end
 
         def parse(xml, options = {}, _context = nil)
