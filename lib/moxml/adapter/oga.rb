@@ -479,6 +479,14 @@ module Moxml
 
         private
 
+        def declaration_to_xml(decl)
+          parts = ["<?xml"]
+          parts << %( version="#{decl.version}") if decl.version
+          parts << %( encoding="#{decl.encoding}") if decl.encoding
+          parts << %( standalone="#{decl.standalone}") if decl.standalone
+          "#{parts.join}?>"
+        end
+
         def serialize_without_entity_processing(node, options = {})
           if node.is_a?(::Oga::XML::Document)
             effective_xml_declaration = attachments.get(node, :xml_declaration)
@@ -488,19 +496,18 @@ module Moxml
                                   elsif options.key?(:declaration)
                                     options[:declaration]
                                   else
-                                    effective_xml_declaration ? true : false
+                                    effective_xml_declaration || node.xml_declaration ? true : false
                                   end
 
             output = []
 
-            if should_include_decl && effective_xml_declaration
-              output << effective_xml_declaration.to_xml
-              output << "\n"
-            elsif should_include_decl && node.xml_declaration
-              output << node.xml_declaration.to_xml
-              output << "\n"
-            elsif should_include_decl
-              output << '<?xml version="1.0" encoding="UTF-8"?>'
+            if should_include_decl
+              decl = effective_xml_declaration || node.xml_declaration
+              if decl
+                output << declaration_to_xml(decl)
+              else
+                output << '<?xml version="1.0" encoding="UTF-8"?>'
+              end
               output << "\n"
             end
 
