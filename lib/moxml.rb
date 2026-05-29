@@ -32,6 +32,13 @@ module Moxml
       end
       original_config = nil
     end
+    def preprocess_entities(xml)
+      Adapter::Base.preprocess_entities(xml)
+    end
+
+    def restore_entities(text)
+      Adapter::Base.restore_entities(text)
+    end
   end
 end
 
