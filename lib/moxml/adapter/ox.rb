@@ -111,9 +111,14 @@ module Moxml
         end
 
         def create_native_doctype(name, external_id, system_id)
-          ::Ox::DocType.new(
-            "#{name} PUBLIC \"#{external_id}\" \"#{system_id}\"",
-          )
+          value = if external_id
+                    "#{name} PUBLIC \"#{external_id}\" \"#{system_id}\""
+                  elsif system_id
+                    "#{name} SYSTEM \"#{system_id}\""
+                  else
+                    "#{name}"
+                  end
+          ::Ox::DocType.new(value)
         end
 
         def create_native_processing_instruction(target, content)
@@ -398,7 +403,18 @@ module Moxml
 
           child.parent = element if child.is_a?(::Ox::Node)
           element.nodes ||= []
-          element.nodes << child
+
+          # Insert doctype before root element in document
+          if element.is_a?(::Ox::Document) && child.is_a?(::Ox::DocType)
+            root_idx = element.nodes.index { |n| n.is_a?(::Ox::Element) }
+            if root_idx
+              element.nodes.insert(root_idx, child)
+            else
+              element.nodes << child
+            end
+          else
+            element.nodes << child
+          end
 
           # Mark document if EntityReference is added (avoids tree scan in serialize)
           if child.is_a?(::Moxml::Adapter::CustomizedOx::EntityReference)
