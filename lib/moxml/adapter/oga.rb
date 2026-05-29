@@ -298,7 +298,13 @@ module Moxml
 
           # Insert doctype before root element in document
           if element.is_a?(::Oga::XML::Document) && child.is_a?(::Oga::XML::Doctype)
-            root_idx = element.children.index { |n| n.is_a?(::Oga::XML::Element) }
+            root_idx = nil
+            element.children.each_with_index do |n, i|
+              if n.is_a?(::Oga::XML::Element)
+                root_idx = i
+                break
+              end
+            end
             if root_idx
               element.children.insert(root_idx, child)
               return
