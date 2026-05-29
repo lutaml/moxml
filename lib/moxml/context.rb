@@ -97,7 +97,6 @@ module Moxml
         encoding: config.default_encoding,
         strict: config.strict_parsing,
         indent: config.default_indent,
-        line_ending: config.default_line_ending,
       }
     end
   end

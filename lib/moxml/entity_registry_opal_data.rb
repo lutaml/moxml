@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 #
 # Auto-generated entity data for Opal runtime.
-# Generated from data/w3c_entities.json
-# Do not edit manually. Regenerate with: rake opal:generate_entity_data
+# Source: data/w3c_entities.json (2125 entities)
+# Regenerate with: rake opal:generate_entity_data
 
 module Moxml
   class EntityRegistry

@@ -4,6 +4,7 @@ module Moxml
   class Config
     LINE_ENDING_LF = "\n"
     LINE_ENDING_CRLF = "\r\n"
+    VALID_LINE_ENDINGS = [LINE_ENDING_LF, LINE_ENDING_CRLF].freeze
     VALID_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
     DEFAULT_ADAPTER = :nokogiri
     OPAL_DEFAULT_ADAPTER = :rexml
@@ -48,10 +49,9 @@ module Moxml
     # - :strict — only restore DTD-declared entities (falls back to lenient until DTD parsing is implemented)
     ENTITY_RESTORATION_MODES = %i[strict lenient].freeze
 
-    attr_reader :adapter_name
+    attr_reader :adapter_name, :default_line_ending
     attr_accessor :strict_parsing,
                   :default_encoding,
-                  :default_line_ending,
                   :entity_encoding,
                   :default_indent,
                   :restore_entities,
@@ -60,6 +60,16 @@ module Moxml
                   :entity_provider,
                   :namespace_validation_mode,
                   :entity_restoration_mode
+
+    def default_line_ending=(value)
+      unless VALID_LINE_ENDINGS.include?(value)
+        raise ArgumentError,
+              "Invalid line_ending: #{value.inspect}. " \
+              "Must be Config::LINE_ENDING_LF or Config::LINE_ENDING_CRLF"
+      end
+
+      @default_line_ending = value
+    end
 
     def initialize(adapter_name = nil, strict_parsing = nil,
                    default_encoding = nil)
