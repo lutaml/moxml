@@ -385,20 +385,11 @@ module Moxml
         def add_child(element, child)
           # Special handling for declarations on Ox documents
           if element.is_a?(::Ox::Document) && child.is_a?(::Ox::Instruct) && child.target == "xml"
-            # Transfer declaration attributes to document
             element.attributes ||= {}
-            if child.attributes["version"]
-              element.attributes[:version] =
-                child.attributes["version"]
-            end
-            if child.attributes["encoding"]
-              element.attributes[:encoding] =
-                child.attributes["encoding"]
-            end
-            if child.attributes["standalone"]
-              element.attributes[:standalone] =
-                child.attributes["standalone"]
-            end
+            element.attributes[:version] = child.attributes["version"] if child.attributes["version"]
+            element.attributes[:encoding] = child.attributes["encoding"] if child.attributes["encoding"]
+            element.attributes[:standalone] = child.attributes["standalone"] if child.attributes["standalone"]
+            return
           end
 
           child.parent = element if child.is_a?(::Ox::Node)

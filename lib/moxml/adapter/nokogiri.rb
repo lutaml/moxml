@@ -398,15 +398,13 @@ module Moxml
           end
 
           # Handle declaration option
-          # Priority:
-          # 1. Explicit no_declaration option
-          # 2. Check attachment-stored xml_decl (when remove is called, this becomes nil)
-          if options.key?(:no_declaration)
-            save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION if options[:no_declaration]
+          if options[:no_declaration]
+            save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION
           elsif attachments.key?(node, :xml_decl)
-            # State stored in attachment - if nil, declaration was removed
             xml_decl = attachments.get(node, :xml_decl)
-            save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION if xml_decl.nil?
+            # When custom declaration is stored, suppress native to avoid duplicates.
+            # The custom declaration is serialized from the PI child node.
+            save_options |= ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION
           end
 
           node.to_xml(

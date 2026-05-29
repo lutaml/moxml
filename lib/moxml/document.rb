@@ -81,13 +81,7 @@ module Moxml
       if node.is_a?(Declaration)
         # Mark that document now has a declaration
         @has_xml_declaration = true
-
-        if children.empty?
-          adapter.add_child(@native, node.native)
-        else
-          adapter.add_previous_sibling(adapter.children(@native).first,
-                                       node.native)
-        end
+        adapter.add_child(@native, node.native)
       elsif root && !node.is_a?(ProcessingInstruction) && !node.is_a?(Comment) && !node.is_a?(Doctype)
         raise Error, "Document already has a root element"
       else
