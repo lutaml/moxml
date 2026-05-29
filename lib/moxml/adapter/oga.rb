@@ -289,11 +289,10 @@ module Moxml
               child_or_text
             end
 
-          # Special handling for declarations on Oga documents
           if element.is_a?(::Oga::XML::Document) &&
               child.is_a?(::Oga::XML::XmlDeclaration)
-            # Track declaration state in attachment map
             attachments.set(element, :xml_declaration, child)
+            return
           end
 
           # Insert doctype before root element in document
@@ -481,85 +480,45 @@ module Moxml
         private
 
         def serialize_without_entity_processing(node, options = {})
-          # Oga's XmlGenerator doesn't support options directly
-          # We need to handle declaration options ourselves for Document nodes
           if node.is_a?(::Oga::XML::Document)
-            # Check if we should include declaration
-            # Priority: explicit option > existence of xml_declaration (native or attachment)
-            effective_xml_declaration = node.xml_declaration || attachments.get(
-              node, :xml_declaration
-            )
+            effective_xml_declaration = attachments.get(node, :xml_declaration)
+
             should_include_decl = if options.key?(:no_declaration)
                                     !options[:no_declaration]
                                   elsif options.key?(:declaration)
                                     options[:declaration]
                                   else
-                                    # Default: include if document has xml_declaration
                                     effective_xml_declaration ? true : false
                                   end
 
-            # Fix: Check if declaration already exists in children
-            # This prevents duplicate declarations when document already has one
-            has_existing_declaration = node.children.any?(::Oga::XML::XmlDeclaration)
+            output = []
 
-            if should_include_decl && !effective_xml_declaration && !has_existing_declaration
-              # Need to add declaration - create default one
-              output = []
+            if should_include_decl && effective_xml_declaration
+              output << effective_xml_declaration.to_xml
+              output << "\n"
+            elsif should_include_decl && node.xml_declaration
+              output << node.xml_declaration.to_xml
+              output << "\n"
+            elsif should_include_decl
               output << '<?xml version="1.0" encoding="UTF-8"?>'
               output << "\n"
-
-              # Serialize doctype if present
-              output << node.doctype.to_xml << "\n" if node.doctype
-
-              # Serialize children
-              node.children.each do |child|
-                output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
-              end
-
-              return output.join
-            elsif !should_include_decl
-              # Skip xml_declaration
-              output = []
-
-              # Serialize doctype if present
-              output << node.doctype.to_xml << "\n" if node.doctype
-
-              # Serialize root and other children
-              node.children.each do |child|
-                next if child.is_a?(::Oga::XML::XmlDeclaration)
-
-                output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
-              end
-
-              return output.join
             end
-          end
 
-          # Default: use XmlGenerator
-          # But first check if we need to handle declaration specially
-          effective_xml_declaration = node.is_a?(::Oga::XML::Document) && (node.xml_declaration || attachments.get(
-            node, :xml_declaration
-          ))
-          if node.is_a?(::Oga::XML::Document) && effective_xml_declaration
-            # Document has declaration - use custom handling to avoid duplicates
-            output = []
-            xml_declaration_serialized = false
+            if node.doctype
+              output << node.doctype.to_xml
+              output << "\n"
+            end
 
-            # Serialize children, but skip XmlDeclaration if it would cause duplication
             node.children.each do |child|
-              xml_declaration = child.is_a?(::Oga::XML::XmlDeclaration)
-              next if xml_declaration && xml_declaration_serialized
-
-              xml_declaration_serialized = true if xml_declaration
+              next if child.is_a?(::Oga::XML::XmlDeclaration)
 
               output << ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(child).to_xml
             end
 
-            output.join
-          else
-            # Normal case - use XmlGenerator directly
-            ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
+            return output.join
           end
+
+          ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
         end
       end
     end
