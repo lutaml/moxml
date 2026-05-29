@@ -296,6 +296,15 @@ module Moxml
             attachments.set(element, :xml_declaration, child)
           end
 
+          # Insert doctype before root element in document
+          if element.is_a?(::Oga::XML::Document) && child.is_a?(::Oga::XML::Doctype)
+            root_idx = element.children.index { |n| n.is_a?(::Oga::XML::Element) }
+            if root_idx
+              element.children.insert(root_idx, child)
+              return
+            end
+          end
+
           element.children << child
         end
 
