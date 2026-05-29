@@ -29,6 +29,7 @@ RSpec.describe "Cross-adapter integration" do
     "Memory Usage Examples",
     "Thread Safety Examples",
     "Entity Reference Whitespace Preservation",
+    "Moxml Line Ending",
     "Performance Examples",
   ]
 

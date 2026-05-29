@@ -25,36 +25,6 @@ RSpec.describe Moxml::Node do
       expect(node.to_xml).to include("<root>")
       expect(node.to_xml).to include("<child>")
     end
-
-    it "uses LF line ending by default" do
-      xml = doc.to_xml
-      expect(xml).to include("\n")
-      expect(xml).not_to include("\r\n")
-    end
-
-    it "applies CRLF line ending from config" do
-      context.config.default_line_ending = Moxml::Config::LINE_ENDING_CRLF
-      xml = doc.to_xml
-      expect(xml).to include("\r\n")
-    end
-
-    it "allows per-call line ending override" do
-      xml = doc.to_xml(line_ending: Moxml::Config::LINE_ENDING_CRLF)
-      expect(xml).to include("\r\n")
-    end
-
-    it "does not convert when already LF" do
-      xml = doc.to_xml(line_ending: Moxml::Config::LINE_ENDING_LF)
-      expect(xml).to include("\n")
-      expect(xml).not_to include("\r\n")
-    end
-
-    it "applies CRLF to indented output" do
-      context.config.default_line_ending = Moxml::Config::LINE_ENDING_CRLF
-      xml = doc.to_xml(indent: 2)
-      expect(xml).to include("\r\n")
-      expect(xml).not_to match(/(?<!\r)\n/)
-    end
   end
 
   describe "#remove" do

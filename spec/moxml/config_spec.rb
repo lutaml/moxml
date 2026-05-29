@@ -90,6 +90,38 @@ RSpec.describe Moxml::Config do
     end
   end
 
+  describe "#default_line_ending=" do
+    it "accepts LINE_ENDING_LF" do
+      config.default_line_ending = Moxml::Config::LINE_ENDING_LF
+      expect(config.default_line_ending).to eq("\n")
+    end
+
+    it "accepts LINE_ENDING_CRLF" do
+      config.default_line_ending = Moxml::Config::LINE_ENDING_CRLF
+      expect(config.default_line_ending).to eq("\r\n")
+    end
+
+    it "rejects nil" do
+      expect { config.default_line_ending = nil }
+        .to raise_error(ArgumentError, /Invalid line_ending/)
+    end
+
+    it "rejects arbitrary strings" do
+      expect { config.default_line_ending = "BAD" }
+        .to raise_error(ArgumentError, /Invalid line_ending/)
+    end
+
+    it "rejects bare CR" do
+      expect { config.default_line_ending = "\r" }
+        .to raise_error(ArgumentError, /Invalid line_ending/)
+    end
+
+    it "rejects empty string" do
+      expect { config.default_line_ending = "" }
+        .to raise_error(ArgumentError, /Invalid line_ending/)
+    end
+  end
+
   describe "#adapter=" do
     it "sets valid adapter" do
       config.adapter = :ox
