@@ -68,8 +68,7 @@ module Moxml
     end
 
     def <<(node)
-      # If it's a wrapped Moxml node, unwrap to native before storing
-      native_node = node.respond_to?(:native) ? node.native : node
+      native_node = node.is_a?(Node) ? node.native : node
       @nodes << native_node
       @wrapped << nil
       self
@@ -113,8 +112,7 @@ module Moxml
     # Delete a node from the set
     # Accepts both wrapped Moxml nodes and native nodes
     def delete(node)
-      # If it's a wrapped Moxml node, unwrap to native
-      native_node = node.respond_to?(:native) ? node.native : node
+      native_node = node.is_a?(Node) ? node.native : node
       idx = @nodes.index(native_node)
       if idx
         @nodes.delete_at(idx)

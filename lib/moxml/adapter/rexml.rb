@@ -1,12 +1,9 @@
 # frozen_string_literal: true
 
-require_relative "base"
 require "rexml/document"
 require "rexml/xpath"
 require "set" unless RUBY_ENGINE == "opal"
 require "stringio" if RUBY_ENGINE == "opal"
-require_relative "customized_rexml"
-require_relative "../sax/namespace_splitter"
 
 module Moxml
   module Adapter
@@ -173,7 +170,7 @@ module Moxml
         end
 
         def duplicate_node(node)
-          if node.respond_to?(:deep_clone)
+          if node.is_a?(::REXML::Parent)
             node.deep_clone
           else
             Marshal.load(Marshal.dump(node))
@@ -620,9 +617,7 @@ module Moxml
         def has_declaration?(native_doc, wrapper)
           xml_decl = attachments.get(native_doc, :xml_declaration)
           if xml_decl.nil?
-            # Attachment key doesn't exist - check native doc or wrapper flag
             if attachments.key?(native_doc, :xml_declaration)
-              # Explicitly set to nil (was removed)
               false
             else
               wrapper.has_xml_declaration
@@ -630,6 +625,10 @@ module Moxml
           else
             true
           end
+        end
+
+        def remove_declaration(native_doc)
+          attachments.set(native_doc, :xml_declaration, nil)
         end
 
         private

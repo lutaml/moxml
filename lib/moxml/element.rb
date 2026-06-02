@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "attribute"
-require_relative "namespace"
-
 module Moxml
   class Element < Node
     def name
@@ -137,6 +134,8 @@ module Moxml
       adapter.restore_entities(val)
     end
 
+    alias content text
+
     def text=(content)
       adapter.set_text_content(@native, normalize_xml_value(content))
       invalidate_children_cache!
@@ -158,7 +157,8 @@ module Moxml
     end
 
     def inner_xml=(xml)
-      doc = context.parse("<root>#{xml}</root>")
+      wrapper = "_moxml_inner_#{Process.pid}_#{object_id}"
+      doc = context.parse("<#{wrapper}>#{xml}</#{wrapper}>")
       adapter.replace_children(@native, doc.root.children.map(&:native))
       invalidate_children_cache!
     end

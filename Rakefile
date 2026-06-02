@@ -35,7 +35,7 @@ namespace :spec do
 
       runner.default_path = "spec"
       runner.requires = %w[rexml_compat rexml/document rexml/xpath
-                           moxml/adapter/rexml spec_helper support/opal]
+                           moxml_boot spec_helper support/opal]
       runner.files = Dir.glob("spec/moxml/*opal*_spec.rb") +
         Dir.glob("spec/moxml/native_attachment/opal_spec.rb") +
         Dir.glob("spec/moxml/adapter/shared_examples/*.rb")

@@ -2,9 +2,7 @@
 
 return if RUBY_ENGINE == "opal"
 
-require_relative "base"
 require "nokogiri"
-require_relative "../sax/namespace_splitter"
 
 module Moxml
   module Adapter
@@ -424,6 +422,10 @@ module Moxml
           else
             wrapper.has_xml_declaration
           end
+        end
+
+        def remove_declaration(native_doc)
+          attachments.set(native_doc, :xml_decl, nil)
         end
 
         private

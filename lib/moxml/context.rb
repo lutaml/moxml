@@ -17,13 +17,12 @@ module Moxml
     end
 
     def parse(xml, options = {})
-      # Detect if input has XML declaration
-      xml_string = if xml.respond_to?(:read)
-                     xml.read.tap do
-                       xml.rewind if xml.respond_to?(:rewind)
-                     end
+      xml_string = if xml.is_a?(String)
+                     xml
                    else
-                     xml.to_s
+                     xml.read.tap do
+                       xml.rewind if xml.is_a?(IO) || xml.is_a?(StringIO)
+                     end
                    end
       has_declaration = xml_string.strip.start_with?("<?xml")
 
@@ -59,9 +58,6 @@ module Moxml
     #   end
     #
     def sax_parse(xml, handler = nil, &block)
-      # Load SAX module if not already loaded
-      require_relative "sax" unless defined?(Moxml::SAX)
-
       # Create block handler if block given
       handler ||= SAX::BlockHandler.new(&block) if block
 
@@ -73,6 +69,10 @@ module Moxml
 
       # Delegate to adapter
       config.adapter.sax_parse(xml, handler)
+    end
+
+    def build(&block)
+      Builder.new(self).build(&block)
     end
 
     private

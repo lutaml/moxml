@@ -1,16 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "node"
-require_relative "element"
-require_relative "text"
-require_relative "cdata"
-require_relative "comment"
-require_relative "processing_instruction"
-require_relative "declaration"
-require_relative "namespace"
-require_relative "doctype"
-require_relative "entity_reference"
-
 module Moxml
   class Document < Node
     attr_accessor :has_xml_declaration

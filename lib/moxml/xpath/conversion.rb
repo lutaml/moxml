@@ -12,11 +12,11 @@ module Moxml
       # @param [Object] right
       # @return [Array<Object, Object>]
       def self.to_compatible_types(left, right)
-        if left.is_a?(Moxml::NodeSet) || left.respond_to?(:text)
+        if left.is_a?(Moxml::NodeSet) || left.is_a?(Moxml::Node)
           left = to_string(left)
         end
 
-        if right.is_a?(Moxml::NodeSet) || right.respond_to?(:text)
+        if right.is_a?(Moxml::NodeSet) || right.is_a?(Moxml::Node)
           right = to_string(right)
         end
 
@@ -51,7 +51,7 @@ module Moxml
           value = first_node_text(value)
         end
 
-        if value.respond_to?(:text)
+        if value.is_a?(Moxml::Node)
           value = value.text
         end
 
@@ -67,7 +67,7 @@ module Moxml
           value = first_node_text(value)
         end
 
-        if value.respond_to?(:text)
+        if value.is_a?(Moxml::Node)
           value = value.text
         end
 
@@ -95,7 +95,7 @@ module Moxml
           bool = !value.nan? && !value.zero?
         elsif value.is_a?(Integer)
           bool = !value.zero?
-        elsif value.respond_to?(:empty?)
+        elsif value.is_a?(String) || value.is_a?(Moxml::NodeSet) || value.is_a?(Array)
           bool = !value.empty?
         elsif value
           bool = true
@@ -117,7 +117,8 @@ module Moxml
       # @param [Moxml::NodeSet] set
       # @return [String]
       def self.first_node_text(set)
-        set[0].respond_to?(:text) ? set[0].text : ""
+        first = set[0]
+        first.is_a?(Moxml::Node) ? first.text : ""
       end
     end
   end

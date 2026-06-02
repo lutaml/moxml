@@ -1,9 +1,13 @@
 # frozen_string_literal: true
 
-require_relative "adapter/base"
-
 module Moxml
   module Adapter
+    autoload :Base, "moxml/adapter/base"
+    autoload :CustomizedOga, "moxml/adapter/customized_oga"
+    autoload :CustomizedOx, "moxml/adapter/customized_ox"
+    autoload :CustomizedRexml, "moxml/adapter/customized_rexml"
+    autoload :CustomizedLibxml, "moxml/adapter/customized_libxml"
+
     AVAILABLE_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
 
     # Adapters that work under the Opal (JavaScript) runtime.
@@ -59,11 +63,15 @@ module Moxml
       end
 
       def require_adapter(name)
-        require "#{__dir__}/adapter/#{name}"
+        # Opal pre-loads all dependencies via the Rakefile; skip runtime require.
+        return if RUBY_ENGINE == "opal"
+
+        require "moxml/adapter/base"
+        require "moxml/adapter/#{name}"
       rescue LoadError
         begin
           require name.to_s
-          require "#{__dir__}/adapter/#{name}"
+          require "moxml/adapter/#{name}"
         rescue LoadError => e
           raise Moxml::AdapterError.new(
             "Failed to load #{name} adapter",

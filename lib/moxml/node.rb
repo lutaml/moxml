@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
-require_relative "xml_utils"
-require_relative "node_set"
-
 module Moxml
   class Node
     include XmlUtils
+    include Enumerable
 
     TYPES = %i[
       element text cdata comment processing_instruction document
@@ -143,13 +141,14 @@ module Moxml
       ""
     end
 
-    # Attribute accessor - only works on Element nodes
-    # Returns nil for non-element nodes
-    def [](name)
-      return nil unless respond_to?(:attribute)
-
-      attr = attribute(name)
-      attr&.value if attr.respond_to?(:value)
+    # Returns the content/value of this node as a string.
+    # Each subclass overrides this with type-specific semantics:
+    # - Text, Comment, Cdata: raw text content
+    # - ProcessingInstruction: instruction content
+    # - Attribute: attribute value
+    # - Element: delegates to text (descendant text concatenation)
+    def content
+      ""
     end
 
     # Returns the namespace of this node
@@ -176,15 +175,39 @@ module Moxml
     def each_node(&block)
       children.each do |child|
         yield child
-        child.each_node(&block) if child.respond_to?(:each_node)
+        child.each_node(&block)
       end
     end
 
-    # Clone node (deep copy)
-    def clone
+    # Yield direct children, enabling Enumerable on the node.
+    def each(&block)
+      return to_enum(:each) unless block
+
+      children.each(&block)
+    end
+
+    def outer_xml
+      to_xml
+    end
+
+    def before(node)
+      add_previous_sibling(node)
+    end
+
+    def after(node)
+      add_next_sibling(node)
+    end
+
+    def blank?
+      text.strip.empty?
+    end
+
+    # Deep copy of the node (both dup and clone create deep copies for XML nodes)
+    def dup
       Moxml::Node.wrap(adapter.dup(@native), context)
     end
-    alias dup clone
+
+    alias clone dup
 
     def ==(other)
       self.class == other.class && @native == other.native

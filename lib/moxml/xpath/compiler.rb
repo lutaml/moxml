@@ -62,16 +62,6 @@ module Moxml
         matched = matched_literal
         context_var = context_literal
 
-        # Enable debug output
-        debug = ENV["DEBUG_XPATH"] == "1"
-        if debug
-          puts "\n#{'=' * 60}"
-          puts "COMPILING XPath"
-          puts "=" * 60
-          puts "AST: #{ast.inspect}"
-          puts
-        end
-
         ruby_ast = if return_nodeset?(ast)
                      process(ast, document) { |node| matched.push(node) }
                    else
@@ -102,14 +92,6 @@ module Moxml
 
         generator = Ruby::Generator.new
         source = generator.process(proc_ast)
-
-        if debug
-          puts "GENERATED RUBY CODE:"
-          puts "-" * 60
-          puts source
-          puts "=" * 60
-          puts
-        end
 
         CONTEXT.evaluate(source)
       ensure
@@ -1506,7 +1488,7 @@ module Moxml
             xml_lang.assign(string("xml:lang"))
           end
           .followed_by do
-            node.respond_to?(symbol(:attribute)).while_true do
+            node.is_a?(const_ref("Moxml", "Element")).while_true do
               found.assign(node.get(xml_lang))
                 .followed_by do
                   found.if_true do
@@ -1620,36 +1602,6 @@ module Moxml
         arg_var = unique_literal(:argument_or_first_node)
 
         arg_var.assign(arg_ast).followed_by { yield arg_var }
-      end
-
-      # Helper: Try to match first node v1
-      def try_match_first_node_v1(ast, input, optimize_first = true)
-        if return_nodeset?(ast) && optimize_first
-          matched_set = unique_literal(:matched_set)
-          first_node = unique_literal(:first_node)
-          context_var = context_literal
-
-          # Create NodeSet for results
-          nodeset_class = const_ref("Moxml", "NodeSet")
-          empty_array = Ruby::Node.new(:array, [])
-          nodeset_new = Ruby::Node.new(:send,
-                                       [nodeset_class, "new", empty_array,
-                                        context_var])
-
-          matched_set.assign(nodeset_new)
-            .followed_by do
-              # Process with block to accumulate results
-              process(ast, input) { |node| matched_set.push(node) }
-            end
-            .followed_by do
-              first_node.assign(matched_set[literal(0)])
-            end
-            .followed_by do
-              first_node.if_true { first_node }.else { string("") }
-            end
-        else
-          process(ast, input)
-        end
       end
 
       # Helper: Create mass assignment node

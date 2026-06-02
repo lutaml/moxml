@@ -27,4 +27,20 @@ RSpec.describe Moxml::Attribute do
       expect(attr.to_s).to match(/\w+="\w+"/)
     end
   end
+
+  describe "#element" do
+    it "returns wrapped Element" do
+      attr = element.attributes.find { |a| a.name == "id" }
+      parent = attr.element
+      expect(parent).to be_a(Moxml::Element)
+      expect(parent.name).to eq("root")
+    end
+  end
+
+  describe "#content" do
+    it "returns attribute value" do
+      attr = element.attributes.find { |a| a.name == "id" }
+      expect(attr.content).to eq("123")
+    end
+  end
 end

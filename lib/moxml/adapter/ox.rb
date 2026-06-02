@@ -2,11 +2,8 @@
 
 return if RUBY_ENGINE == "opal"
 
-require_relative "base"
 require "ox"
 require "stringio"
-require_relative "customized_ox"
-require_relative "../sax/namespace_splitter"
 
 # insert :parent methods to all Ox classes inherit the Node class
 Ox::Node.attr_accessor :parent
@@ -20,14 +17,13 @@ module Moxml
 
         def set_root(doc, element)
           existing_root = root(doc)
+          element.parent = doc if element.is_a?(::Ox::Node)
           if existing_root
             # Replace the existing root element, preserving other children
-            element.parent = doc if element.is_a?(::Ox::Node)
             idx = doc.nodes.index(existing_root)
             doc.nodes[idx] = element
           else
             # No root yet, just append the element
-            element.parent = doc if element.is_a?(::Ox::Node)
             doc << element
           end
         end
@@ -116,7 +112,7 @@ module Moxml
                   elsif system_id
                     "#{name} SYSTEM \"#{system_id}\""
                   else
-                    "#{name}"
+                    name.to_s
                   end
           ::Ox::DocType.new(value)
         end
@@ -272,7 +268,7 @@ module Moxml
           # Ox doesn't set parent references during parsing.
           # Set them here so parent/sibling navigation works.
           result.each do |child|
-            child.parent = node if child.respond_to?(:parent=)
+            child.parent = node if child.is_a?(::Ox::Element)
           end
           result
         end
@@ -383,12 +379,15 @@ module Moxml
         end
 
         def add_child(element, child)
-          # Special handling for declarations on Ox documents
           if element.is_a?(::Ox::Document) && child.is_a?(::Ox::Instruct) && child.target == "xml"
             element.attributes ||= {}
             element.attributes[:version] = child.attributes["version"] if child.attributes["version"]
             element.attributes[:encoding] = child.attributes["encoding"] if child.attributes["encoding"]
             element.attributes[:standalone] = child.attributes["standalone"] if child.attributes["standalone"]
+            attachments.set(element, :decl_explicit, {
+                              encoding: child.attributes.key?("encoding") ? child.attributes["encoding"] : nil,
+                              standalone: child.attributes.key?("standalone") ? child.attributes["standalone"] : nil,
+                            })
             return
           end
 
@@ -481,8 +480,8 @@ module Moxml
         end
 
         def assign_parents(node, parent = nil)
-          node.parent = parent if node.respond_to?(:parent=) && parent
-          return unless node.respond_to?(:nodes)
+          node.parent = parent if node.is_a?(::Ox::Element) && parent
+          return unless node.is_a?(::Ox::Element) || node.is_a?(::Ox::Document)
 
           node.nodes&.each do |child|
             assign_parents(child, node)
@@ -688,11 +687,25 @@ module Moxml
         end
 
         def has_declaration?(native_doc, _wrapper)
-          # Ox stores declaration in document attributes
           native_doc[:version] || native_doc[:encoding] || native_doc[:standalone]
         end
 
+        def remove_declaration(native_doc)
+          native_doc.attributes&.delete(:version)
+          native_doc.attributes&.delete(:encoding)
+          native_doc.attributes&.delete(:standalone)
+          attachments.delete(native_doc, :decl_explicit)
+        end
+
         private
+
+        def resolve_decl_attr(node, attr, fallback)
+          if attachments.key?(node, :decl_explicit)
+            attachments.get(node, :decl_explicit)[attr]
+          else
+            node[attr] || fallback
+          end
+        end
 
         def serialize_standard(node, options = {})
           output = ""
@@ -705,8 +718,8 @@ module Moxml
 
             if should_include_decl
               version = node[:version] || "1.0"
-              encoding = options[:encoding] || node[:encoding]
-              standalone = node[:standalone]
+              encoding = resolve_decl_attr(node, :encoding, options[:encoding])
+              standalone = resolve_decl_attr(node, :standalone, nil)
 
               decl = create_native_declaration(version, encoding, standalone)
               output = ::Ox.dump(::Ox::Document.new << decl).strip
@@ -715,7 +728,7 @@ module Moxml
 
           ox_options = {
             indent: -1,
-            with_instructions: true,
+            with_instructions: false,
             encoding: options[:encoding],
             no_empty: options[:expand_empty],
           }
@@ -767,8 +780,8 @@ module Moxml
                                   end
             if should_include_decl
               version = node[:version] || "1.0"
-              encoding = options[:encoding] || node[:encoding]
-              standalone = node[:standalone]
+              encoding = resolve_decl_attr(node, :encoding, options[:encoding])
+              standalone = resolve_decl_attr(node, :standalone, nil)
               output << "<?xml version=\"#{version}\""
               output << " encoding=\"#{encoding}\"" if encoding
               output << " standalone=\"#{standalone}\"" if standalone

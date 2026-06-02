@@ -21,6 +21,8 @@ module Moxml
       adapter.restore_entities(val)
     end
 
+    alias content value
+
     # Returns raw native value without entity marker restoration.
     def raw_value
       @native.value
@@ -46,11 +48,12 @@ module Moxml
     end
 
     def element
-      adapter.attribute_element(@native)
+      native_elem = adapter.attribute_element(@native)
+      native_elem && Moxml::Node.wrap(native_elem, context)
     end
 
     def remove
-      adapter.remove_attribute(element, name)
+      adapter.remove_attribute(adapter.attribute_element(@native), name)
       if @parent_node.is_a?(Moxml::Element)
         @parent_node.invalidate_attribute_cache!
       end

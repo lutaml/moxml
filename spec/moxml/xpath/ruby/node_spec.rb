@@ -113,13 +113,13 @@ RSpec.describe Moxml::XPath::Ruby::Node do
   describe "#is_a?" do
     it "creates a :send node for is_a? method call" do
       node = described_class.new(:lit, ["obj"])
-      result = node.is_a?(String)
+      klass_node = described_class.new(:const, ["String"])
+      result = node.is_a?(klass_node)
 
       expect(result.type).to eq(:send)
       expect(result.to_a[0]).to eq(node)
       expect(result.to_a[1]).to eq("is_a?")
-      expect(result.to_a[2].type).to eq(:lit)
-      expect(result.to_a[2].to_a[0]).to eq("String")
+      expect(result.to_a[2]).to eq(klass_node)
     end
   end
 

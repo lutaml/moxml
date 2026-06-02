@@ -52,4 +52,17 @@ RSpec.describe Moxml do
       expect(Moxml::Config::VALID_ADAPTERS).to include(Moxml::Config.runtime_default_adapter)
     end
   end
+
+  describe ".parse" do
+    it "parses XML with shorthand" do
+      doc = described_class.parse("<root>hello</root>")
+      expect(doc).to be_a(Moxml::Document)
+      expect(doc.root.text).to eq("hello")
+    end
+
+    it "accepts adapter option" do
+      doc = described_class.parse("<root/>", adapter: :rexml)
+      expect(doc).to be_a(Moxml::Document)
+    end
+  end
 end

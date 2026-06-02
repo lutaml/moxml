@@ -13,15 +13,13 @@ module Moxml
       @current_doc = context.create_document(native_doc)
 
       # Transfer has_declaration flag if present in attachments
-      if adapter.respond_to?(:attachments) &&
-          adapter.attachments.key?(native_doc, :has_declaration)
+      if adapter.attachments.key?(native_doc, :has_declaration)
         has_declaration = adapter.attachments.get(native_doc, :has_declaration)
         @current_doc.has_xml_declaration = has_declaration
       end
 
       # Transfer DOCTYPE from parsed document if it exists in attachments
-      if adapter.respond_to?(:attachments) &&
-          adapter.attachments.key?(native_doc, :doctype)
+      if adapter.attachments.key?(native_doc, :doctype)
         doctype = adapter.attachments.get(native_doc, :doctype)
         if doctype
           adapter.attachments.set(@current_doc.native, :doctype, doctype)
@@ -35,10 +33,16 @@ module Moxml
     private
 
     def visit_node(node)
-      method_name = "visit_#{node_type(node)}"
-      return unless respond_to?(method_name, true)
-
-      send(method_name, node)
+      case node_type(node)
+      when :document then visit_document(node)
+      when :element then visit_element(node)
+      when :text then visit_text(node)
+      when :cdata then visit_cdata(node)
+      when :comment then visit_comment(node)
+      when :processing_instruction then visit_processing_instruction(node)
+      when :doctype then visit_doctype(node)
+      when :entity_reference then visit_entity_reference(node)
+      end
     end
 
     def visit_document(doc)
