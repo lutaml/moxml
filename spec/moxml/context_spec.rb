@@ -25,4 +25,18 @@ RSpec.describe Moxml::Context do
       expect(context.config.adapter.ancestors).to include(Moxml::Adapter::Base)
     end
   end
+
+  describe "#build" do
+    it "creates a document via builder DSL" do
+      doc = context.build do
+        element("root") do
+          element("child") do
+            text("hello")
+          end
+        end
+      end
+      expect(doc).to be_a(Moxml::Document)
+      expect(doc.root.name).to eq("root")
+    end
+  end
 end

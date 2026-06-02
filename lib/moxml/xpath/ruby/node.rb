@@ -95,15 +95,7 @@ module Moxml
         # @param [Class] klass
         # @return [Moxml::XPath::Ruby::Node]
         def is_a?(klass)
-          # If klass is already a Node (e.g., a const node), use it directly
-          # Otherwise wrap it in a lit node
-          klass_node = if klass.respond_to?(:type)
-                         klass
-                       else
-                         Node.new(:lit, [klass.to_s])
-                       end
-
-          Node.new(:send, [self, "is_a?", klass_node])
+          Node.new(:send, [self, "is_a?", klass])
         end
 
         # Wraps the current node in a block.

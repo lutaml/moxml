@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "base"
-require_relative "customized_oga"
 require "oga"
-require_relative "../sax/namespace_splitter"
 
 module Moxml
   module Adapter
@@ -470,11 +467,14 @@ module Moxml
         def has_declaration?(native_doc, _wrapper)
           decl = attachments.get(native_doc, :xml_declaration)
           if decl.nil? && !attachments.key?(native_doc, :xml_declaration)
-            # No attachment entry - check native doc (for parsed documents)
-            native_doc.respond_to?(:xml_declaration) && !native_doc.xml_declaration.nil?
+            native_doc.is_a?(::Oga::XML::Document) && !native_doc.xml_declaration.nil?
           else
             !decl.nil?
           end
+        end
+
+        def remove_declaration(native_doc)
+          attachments.set(native_doc, :xml_declaration, nil)
         end
 
         private
@@ -503,11 +503,11 @@ module Moxml
 
             if should_include_decl
               decl = effective_xml_declaration || node.xml_declaration
-              if decl
-                output << declaration_to_xml(decl)
-              else
-                output << '<?xml version="1.0" encoding="UTF-8"?>'
-              end
+              output << if decl
+                          declaration_to_xml(decl)
+                        else
+                          '<?xml version="1.0" encoding="UTF-8"?>'
+                        end
               output << "\n"
             end
 

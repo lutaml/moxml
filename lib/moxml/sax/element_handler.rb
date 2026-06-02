@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "handler"
-
 module Moxml
   module SAX
     # Element-focused SAX handler with stack tracking

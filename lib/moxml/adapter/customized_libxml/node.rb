@@ -22,7 +22,7 @@ module Moxml
         def ==(other)
           return false unless other
 
-          other_native = other.respond_to?(:native) ? other.native : other
+          other_native = other.is_a?(self.class) ? other.native : other
           @native == other_native
         end
 
@@ -34,7 +34,7 @@ module Moxml
 
         # Check if node has a document
         def document_present?
-          @native.respond_to?(:doc) && !@native.doc.nil?
+          @native.is_a?(::LibXML::XML::Node) && !@native.doc.nil?
         end
 
         # Get the document this node belongs to

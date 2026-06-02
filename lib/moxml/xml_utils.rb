@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
-require_relative "xml_utils/encoder"
-
-# Ruby 3.3+ requires the URI module to be explicitly required
 require "uri" unless defined?(URI)
 
 module Moxml
   module XmlUtils
+    autoload :Encoder, "moxml/xml_utils/encoder"
     def encode_entities(text, mode = nil)
       Encoder.new(text, mode).call
     end

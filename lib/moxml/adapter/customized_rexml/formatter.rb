@@ -185,9 +185,8 @@ module Moxml
           node.attributes.each do |name, attr|
             next unless name.to_s.start_with?("xmlns:") || name.to_s == "xmlns"
 
-            # convert the default namespace
             name = "xmlns" if name.to_s == "xmlns:"
-            value = attr.respond_to?(:value) ? attr.value : attr
+            value = attr.is_a?(::REXML::Attribute) ? attr.value : attr
             output << " #{name}=\"#{value}\""
           end
 
@@ -196,14 +195,14 @@ module Moxml
             next if name.to_s.start_with?("xmlns:") || name.to_s == "xmlns"
 
             output << " "
-            output << if attr.respond_to?(:prefix) && attr.prefix
+            output << if attr.is_a?(::REXML::Attribute) && attr.prefix
                         "#{attr.prefix}:#{attr.name}"
                       else
                         name.to_s
                       end
 
             output << "=\""
-            value = attr.respond_to?(:value) ? attr.value : attr
+            value = attr.is_a?(::REXML::Attribute) ? attr.value : attr
             output << escape_attribute_value(value.to_s)
             output << "\""
           end # rubocop:enable Style/CombinableLoops

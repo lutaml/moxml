@@ -13,13 +13,7 @@ module Moxml
         # @param [Moxml::XPath::Ruby::Node] ast
         # @return [String]
         def process(ast)
-          handler = :"on_#{ast.type}"
-          unless respond_to?(handler, true)
-            raise NotImplementedError,
-                  "Generator missing handler for node type :#{ast.type}. Node: #{ast.inspect}"
-          end
-
-          send(handler, ast)
+          send(:"on_#{ast.type}", ast)
         end
 
         # @param [Moxml::XPath::Ruby::Node] ast
@@ -79,6 +73,15 @@ module Moxml
           right_str = process(right)
 
           "#{left_str} == #{right_str}"
+        end
+
+        def on_neq(ast)
+          left, right = *ast
+
+          left_str = process(left)
+          right_str = process(right)
+
+          "#{left_str} != #{right_str}"
         end
 
         # Processes a boolean "and" node.
@@ -167,14 +170,8 @@ module Moxml
           brackets = name == "[]"
 
           unless args.empty?
-            arg_strs = []
-            args.each do |arg|
-              result = process(arg)
-              # Keep processing if we got a Node back (happens with nested send nodes)
-              while result.respond_to?(:type)
-                result = process(result)
-              end
-              arg_strs << result
+            arg_strs = args.map do |arg|
+              process(arg)
             end
             arg_str = arg_strs.join(", ")
             call = brackets ? "[#{arg_str}]" : "#{call}(#{arg_str})"
@@ -182,10 +179,6 @@ module Moxml
 
           if receiver
             rec_str = process(receiver)
-            # Keep processing if we got a Node back
-            while rec_str.respond_to?(:type)
-              rec_str = process(rec_str)
-            end
             call = brackets ? "#{rec_str}#{call}" : "#{rec_str}.#{call}"
           end
 

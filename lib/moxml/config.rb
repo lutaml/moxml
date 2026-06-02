@@ -113,6 +113,7 @@ module Moxml
     end
 
     def entity_load_mode=(mode)
+      mode = mode.to_sym
       unless ENTITY_LOAD_MODES.include?(mode)
         raise ArgumentError,
               "Invalid entity_load_mode: #{mode}. Must be one of: #{ENTITY_LOAD_MODES.join(', ')}"

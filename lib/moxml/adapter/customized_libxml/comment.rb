@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "node"
-
 module Moxml
   module Adapter
     module CustomizedLibxml

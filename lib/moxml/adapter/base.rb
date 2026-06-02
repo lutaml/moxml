@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "../xml_utils"
-require_relative "../document_builder"
-
 module Moxml
   module Adapter
     class Base
@@ -104,8 +101,7 @@ module Moxml
         #
         # @return [Boolean] true if SAX parsing is supported
         def sax_supported?
-          respond_to?(:sax_parse) &&
-            method(:sax_parse).owner != Moxml::Adapter::Base.singleton_class
+          method(:sax_parse).owner != Moxml::Adapter::Base.singleton_class
         end
 
         def create_document(_native_doc = nil)
@@ -211,6 +207,10 @@ namespace_validation_mode: :strict)
         def has_declaration?(_native_doc, wrapper)
           wrapper.has_xml_declaration
         end
+
+        # Clear the declaration state from the native document.
+        # Called when a Declaration node is removed from a document.
+        def remove_declaration(_native_doc); end
 
         # Return the actual native node after an add_child operation.
         # Override for adapters where node identity may change (e.g., LibXML doc.root=).

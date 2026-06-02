@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "handler"
-
 module Moxml
   module SAX
     # Block-based SAX handler with DSL

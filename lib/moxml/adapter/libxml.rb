@@ -2,14 +2,14 @@
 
 return if RUBY_ENGINE == "opal"
 
-require_relative "base"
 require "libxml"
-require_relative "customized_libxml"
-require_relative "../sax/namespace_splitter"
 
 module Moxml
   module Adapter
     class Libxml < Base
+      autoload :EntityRefRegistry, "moxml/adapter/libxml/entity_ref_registry"
+      autoload :EntityRestorer, "moxml/adapter/libxml/entity_restorer"
+
       # Wrapper class to store DOCTYPE information
       class DoctypeWrapper
         attr_reader :native_doc
@@ -239,7 +239,7 @@ module Moxml
           # Duck-typed fallback for libxml types that aren't ::Node
           # subclasses but still expose node_type (e.g. ::Attr).
           native = unpatch_node(node)
-          return :unknown unless native.respond_to?(:node_type)
+          return :unknown unless native.is_a?(::LibXML::XML::Node)
 
           NATIVE_NODE_TYPE_MAP[native.node_type] || :unknown
         end
@@ -836,7 +836,7 @@ module Moxml
           return [] unless namespaces
 
           namespace_list =
-            if namespaces.respond_to?(:definitions)
+            if namespaces.is_a?(::LibXML::XML::Namespaces)
               namespaces.definitions
             else
               namespaces
@@ -1074,6 +1074,11 @@ module Moxml
           else
             wrapper.has_xml_declaration
           end
+        end
+
+        def remove_declaration(native_doc)
+          decl = attachments.get(native_doc, :declaration)
+          decl&.removed = true
         end
 
         # LibXML's doc.root= creates a new Ruby wrapper with different object_id.
@@ -1319,7 +1324,7 @@ module Moxml
           return unless elem.is_a?(::LibXML::XML::Node)
 
           ns_list = elem.namespaces
-          return unless ns_list.respond_to?(:definitions)
+          return unless ns_list.is_a?(::LibXML::XML::Namespaces)
 
           definitions = ns_list.definitions
           return if definitions.empty?
@@ -1551,7 +1556,7 @@ module Moxml
 
           # Also check if this element has an active namespace (inherited or own)
           # This catches cases where elements inherit namespaces from parents
-          if node.is_a?(::LibXML::XML::Node) && node.namespaces.respond_to?(:namespace)
+          if node.is_a?(::LibXML::XML::Node) && node.namespaces.is_a?(::LibXML::XML::Namespaces)
             active_ns = node.namespaces.namespace
             if active_ns
               prefix = active_ns.prefix
@@ -1720,6 +1725,3 @@ module Moxml
     end
   end
 end
-
-require_relative "libxml/entity_ref_registry"
-require_relative "libxml/entity_restorer"

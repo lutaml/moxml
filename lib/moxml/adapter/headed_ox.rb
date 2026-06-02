@@ -2,11 +2,7 @@
 
 return if RUBY_ENGINE == "opal"
 
-require_relative "ox"
-require_relative "../xpath"
-# Force load XPath modules (autoload doesn't work well with relative requires in examples)
-require_relative "../xpath/parser"
-require_relative "../xpath/compiler"
+require "moxml/adapter/ox"
 
 module Moxml
   module Adapter

@@ -38,11 +38,12 @@ module Moxml
         when nil
           # nothing
         else
-          if attributes.respond_to?(:each)
+          if attributes.is_a?(Enumerable)
             attributes.each do |item|
-              if item.is_a?(Array) && item.size >= 2
-                yield item[0], item[1]
-              elsif item.respond_to?(:name) && item.respond_to?(:value)
+              case item
+              when Array
+                yield item[0], item[1] if item.size >= 2
+              else
                 yield item.name, item.value
               end
             end
