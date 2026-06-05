@@ -730,34 +730,20 @@ module Moxml
 
         def set_text_content(node, content)
           native_node = unpatch_node(node)
-          return unless native_node
+          return unless native_node.is_a?(::LibXML::XML::Node)
 
-          # libxml-ruby's .content= setter on a text node pre-escapes the
-          # input ("&" stored as "&amp;"), which then double-escapes on
-          # serialization (".to_s" escapes again). Work around by swapping
-          # the wrapper's @native with a fresh new_text node (which stores
-          # content raw). For an UNPARENTED node we simply swap; for an
-          # IN-TREE node we detach the old node and insert the fresh one
-          # at the same position. libxml normalizes adjacent text nodes on
-          # insert, so an in-tree text node never has text siblings — the
-          # position swap is safe without triggering a text-merge. For
-          # element/other nodes the setter is safe — libxml creates a
-          # child text node internally with raw storage matching the
-          # parser's path.
-          if native_node.is_a?(::LibXML::XML::Node) && native_node.text?
-            fresh = ::LibXML::XML::Node.new_text(content.to_s)
-            swap_native_in_place(native_node, fresh)
-            if node.is_a?(CustomizedLibxml::Text)
-              node.instance_variable_set(:@native, fresh)
-            end
+          # Text wrapper: swap with new_text to preserve verbatim storage.
+          # Element wrapper: let libxml manage the child text node.
+          if native_node.text?
+            replace_native_verbatim(node, ::LibXML::XML::Node.new_text(content.to_s))
           else
             native_node.content = content.to_s
           end
         end
 
-        # Replace `old_native` with `fresh` while preserving position in
-        # the parent. Safe for nodes that libxml does not auto-merge
-        # (text/PI never have like-typed siblings in-tree — see callers).
+        # Replace `old_native` with `fresh`, preserving position. Both
+        # neighbor pointers are set explicitly to match `replace`'s
+        # semantics (see #replace above).
         def swap_native_in_place(old_native, fresh)
           parent = old_native.parent
           return if parent.nil?
@@ -765,33 +751,31 @@ module Moxml
           prev_sibling = old_native.prev
           next_sibling = old_native.next
           old_native.remove!
-          if prev_sibling
-            prev_sibling.next = fresh
-          elsif next_sibling
-            next_sibling.prev = fresh
-          else
-            parent << fresh
-          end
+          prev_sibling.next = fresh if prev_sibling
+          next_sibling.prev = fresh if next_sibling
+          parent << fresh unless prev_sibling || next_sibling
         end
         private :swap_native_in_place
 
-        def cdata_content(node)
-          native_node = unpatch_node(node)
-          content = native_node&.content
-          # LibXML may HTML-escape CDATA content, un-escape it
-          return nil unless content
+        # libxml-ruby's node.content= pre-escapes; building a fresh node via
+        # new_<kind> stores content verbatim. Swap in place and re-point the
+        # wrapper.
+        def replace_native_verbatim(node, fresh)
+          native = unpatch_node(node)
+          return unless native.is_a?(::LibXML::XML::Node)
 
-          content.gsub("&quot;", '"')
-            .gsub("&apos;", "'")
-            .gsub("&lt;", "<")
-            .gsub("&gt;", ">")
-            .gsub("&amp;", "&")
+          swap_native_in_place(native, fresh)
+          node.native = fresh if node.is_a?(CustomizedLibxml::Node)
+        end
+        private :replace_native_verbatim
+
+        def cdata_content(node)
+          # libxml stores CDATA payload verbatim; no decoding needed.
+          unpatch_node(node)&.content
         end
 
         def set_cdata_content(node, content)
-          native_node = unpatch_node(node)
-          # CDATA content should NOT be escaped
-          native_node.content = content.to_s if native_node
+          replace_native_verbatim(node, ::LibXML::XML::Node.new_cdata(content.to_s))
         end
 
         def comment_content(node)
@@ -800,8 +784,7 @@ module Moxml
         end
 
         def set_comment_content(node, content)
-          native_node = unpatch_node(node)
-          native_node.content = content.to_s if native_node
+          replace_native_verbatim(node, ::LibXML::XML::Node.new_comment(content.to_s))
         end
 
         def processing_instruction_target(node)
@@ -810,30 +793,18 @@ module Moxml
         end
 
         def processing_instruction_content(node)
-          # PI content is delivered verbatim by XML parsers — entity
-          # references inside a PI are not resolved per XML 1.0 §2.6.
-          # libxml's native #content already returns the literal source
-          # text, so no decoding is needed (the previous implementation
-          # decoded entities and lost the distinction between "&amp;"
-          # and "&" in PI payloads).
+          # XML 1.0 §2.6: PI content is verbatim — no entity resolution.
           unpatch_node(node)&.content
         end
 
         def set_processing_instruction_content(node, content)
           native_node = unpatch_node(node)
-          return unless native_node
           return unless native_node.is_a?(::LibXML::XML::Node)
 
-          # libxml-ruby's .content= setter on a PI node pre-escapes input
-          # ('"' → '&quot;'), which is wrong for PI content (XML 1.0 §2.6
-          # delivers PI text verbatim, no entity resolution). Replace the
-          # node with a fresh new_pi (raw storage). PIs are never merged
-          # by libxml, so the position swap is straightforward.
-          fresh = ::LibXML::XML::Node.new_pi(native_node.name, content.to_s)
-          swap_native_in_place(native_node, fresh)
-          if node.is_a?(CustomizedLibxml::ProcessingInstruction)
-            node.instance_variable_set(:@native, fresh)
-          end
+          replace_native_verbatim(
+            node,
+            ::LibXML::XML::Node.new_pi(native_node.name, content.to_s),
+          )
         end
 
         def create_native_namespace(element, prefix, uri)
@@ -1744,12 +1715,10 @@ module Moxml
         end
 
         def on_start_element(name, attributes)
-          # libxml2's SAX2 attribute normalization leaves numeric character
-          # references that produce XML-special chars (e.g. &#38;, &#x26;)
-          # unresolved in attribute values, and rewrites &amp; to &#38;.
-          # Resolve them once here so SAX output matches DOM output.
-          decoded = (attributes || {}).map { |k, v| [k.to_s, Libxml.decode_numeric_char_refs(v)] }
-          attr_hash, ns_hash = split_attributes_and_namespaces(decoded)
+          normalized = (attributes || {}).map { |k, v| [k.to_s, v] }
+          attr_hash, ns_hash = split_attributes_and_namespaces(normalized) do |v|
+            Libxml.decode_entities(v)
+          end
           @handler.on_start_element(name.to_s, attr_hash, ns_hash)
         end
 

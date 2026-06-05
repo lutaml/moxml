@@ -13,11 +13,7 @@ module Moxml
           @native.content
         end
 
-        # Serialize as XML with proper escaping. The previous implementation
-        # used #content (which is the *decoded* text) and lost the escape
-        # of "&" → "&amp;". libxml's native #to_s on a text node correctly
-        # escapes "&", "<", and ">", leaving quotes alone (quotes only need
-        # escaping inside attribute values, not text content).
+        # @native.to_s escapes & < > but leaves quotes alone, which text nodes need.
         def to_xml
           @native.to_s
         end

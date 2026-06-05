@@ -9,6 +9,8 @@ module Moxml
     # attribute. This module provides a single implementation.
     module NamespaceSplitter
       # @param attributes [Hash, Array<Array>] attributes as a hash or array of pairs
+      # @yieldparam value [Object] raw attribute/namespace value
+      # @yieldreturn [Object] transformed value to store
       # @return [Array(Hash, Hash)] [regular_attrs, namespaces]
       def split_attributes_and_namespaces(attributes)
         attrs = {}
@@ -16,11 +18,12 @@ module Moxml
 
         each_attribute(attributes) do |name, value|
           name_s = name.to_s
+          v = block_given? ? yield(value) : value
           if name_s == "xmlns" || name_s.start_with?("xmlns:")
             prefix = name_s == "xmlns" ? nil : name_s.sub("xmlns:", "")
-            ns[prefix] = value
+            ns[prefix] = v
           else
-            attrs[name_s] = value
+            attrs[name_s] = v
           end
         end
 

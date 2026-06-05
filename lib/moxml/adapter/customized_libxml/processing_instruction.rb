@@ -5,11 +5,7 @@ module Moxml
     module CustomizedLibxml
       # Wrapper for LibXML processing instruction nodes
       class ProcessingInstruction < Node
-        # PI content in XML 1.0 §2.6 is verbatim — entity references are
-        # not resolved by the parser and no escaping is required on
-        # serialization. The libxml adapter's set_processing_instruction_content
-        # uses new_pi (raw storage), and the parser delivers .content
-        # verbatim, so the wrapper just emits it as-is.
+        # XML 1.0 §2.6: PI content is verbatim — no entity resolution, no escaping.
         def to_xml
           target = @native.name
           content = @native.content
