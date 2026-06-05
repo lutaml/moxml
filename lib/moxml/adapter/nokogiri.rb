@@ -471,12 +471,9 @@ module Moxml
         end
 
         def start_element(name, attributes = [])
-          # libxml2's SAX2 attribute normalization leaves numeric character
-          # references that produce XML-special chars (e.g. &#38;, &#x26;)
-          # unresolved in attribute values, and rewrites &amp; to &#38;.
-          # Resolve them once here so SAX output matches DOM output.
-          decoded = attributes.map { |a| [a[0], Nokogiri.decode_numeric_char_refs(a[1])] }
-          attr_hash, ns_hash = split_attributes_and_namespaces(decoded)
+          attr_hash, ns_hash = split_attributes_and_namespaces(attributes) do |v|
+            Nokogiri.decode_entities(v)
+          end
           @handler.on_start_element(name, attr_hash, ns_hash)
         end
 

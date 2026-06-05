@@ -5,19 +5,10 @@ module Moxml
     module CustomizedLibxml
       # Wrapper for LibXML CDATA section nodes
       class Cdata < Node
-        # Serialize as XML CDATA section
-        # LibXML auto-escapes content, we need to un-escape it
+        # libxml stores CDATA payload verbatim. Only the `]]>` end-marker
+        # needs splitting before re-wrapping.
         def to_xml
-          content = @native.content
-            .gsub("&quot;", '"')
-            .gsub("&apos;", "'")
-            .gsub("&lt;", "<")
-            .gsub("&gt;", ">")
-            .gsub("&amp;", "&")
-
-          # Handle CDATA end marker escaping (]]> becomes ]]]]><![CDATA[>)
-          # Replace all ]]> markers in the content before wrapping
-          escaped_content = content.gsub("]]>", "]]]]><![CDATA[>")
+          escaped_content = @native.content.gsub("]]>", "]]]]><![CDATA[>")
           "<![CDATA[#{escaped_content}]]>"
         end
       end

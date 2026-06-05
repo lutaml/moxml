@@ -5,204 +5,9 @@ require "oga"
 module Moxml
   module Adapter
     class Oga < Base
-      # Sentinel that replaces "&amp;" before handing XML to Oga, then is
-      # restored to "&" after parsing. Works around Oga's 3-pass entity
-      # decoder (named -> decimal -> hex) which double-decodes inputs like
-      # "&amp;#38;" — pass 1 turns "&amp;" into "&", then pass 2 combines
-      # it with the trailing "#38;" to produce "&", violating XML 1.0
-      # single-pass decoding semantics. Replacing "&amp;" with a non-"&"
-      # sentinel prevents pass 2/3 from finding anything to combine.
-      #
-      # The default sentinel is three Unicode noncharacters (U+FDD0..U+FDEF
-      # is the noncharacter block, explicitly reserved by Unicode for
-      # internal use and never permitted in interchange data). Real XML
-      # is forbidden from containing these — but inputs are not always
-      # well-formed, so we always check the source for collision and
-      # generate a unique marker if needed (see amp_marker_for).
-      DEFAULT_AMP_MARKER = "\u{FDD0}\u{FDD1}\u{FDD2}"
-
-      # The workarounds in this adapter depend on three Oga internals:
-      # Attribute#@value, Attribute#@decoded, Text#@text, Text#@decoded.
-      # Detect at load time whether the running Oga exposes these so the
-      # adapter can degrade gracefully (and log a clear warning) if a
-      # future Oga release renames or removes them.
-      OGA_INTERNALS_SUPPORTED = begin
-        probe_attr = ::Oga::XML::Attribute.new(name: "x", value: "v")
-        probe_text = ::Oga::XML::Text.new(text: "t")
-        probe_attr.instance_variable_defined?(:@value) &&
-          probe_attr.instance_variable_defined?(:@decoded) &&
-          probe_text.instance_variable_defined?(:@text) &&
-          probe_text.instance_variable_defined?(:@decoded)
-      rescue StandardError
-        false
-      end
-
-      unless OGA_INTERNALS_SUPPORTED
-        warn "[moxml] Oga internal ivars (@value/@text/@decoded) not detected " \
-             "on Oga #{begin
-               ::Oga::VERSION
-             rescue StandardError
-               '?'
-             end} — entity-decoding " \
-             "workarounds will fall back to public setters and may " \
-             "double-decode '&amp;#NN;' inputs. Pin oga ~> 3.4."
-      end
-
       class << self
         def attachments
           @attachments ||= Moxml::NativeAttachment.new
-        end
-
-        # Replace "&amp;" with a sentinel that Oga's entity decoder won't
-        # touch (it doesn't start with "&"). Skips regions where the XML
-        # parser delivers content verbatim (CDATA, comments, processing
-        # instructions, DOCTYPE declarations) — substituting inside any
-        # of these would corrupt literal "&amp;" sequences (e.g. in an
-        # <!ENTITY ...> body or a PI payload).
-        #
-        # Returns [processed_xml, marker]. `marker` is nil when no
-        # substitution was performed (the input had no "&amp;" outside
-        # verbatim blocks), and callers must skip restoration in that
-        # case — otherwise legitimate user data matching the default
-        # marker codepoints would be corrupted.
-        def preprocess_amp_for_oga(xml)
-          return [xml, nil] unless xml.is_a?(String) && xml.include?("&amp;")
-
-          marker = amp_marker_for(xml)
-          result = +""
-          i = 0
-          len = xml.length
-          substituted = false
-          while i < len
-            block_start, terminator = next_verbatim_block(xml, i)
-
-            if block_start.nil?
-              chunk = xml[i..]
-              substituted ||= chunk.include?("&amp;")
-              result << chunk.gsub("&amp;", marker)
-              break
-            end
-
-            chunk = xml[i...block_start]
-            substituted ||= chunk.include?("&amp;")
-            result << chunk.gsub("&amp;", marker)
-            end_idx = find_block_terminator(xml, block_start, terminator)
-
-            if end_idx.nil?
-              # Unterminated declaration; copy the rest verbatim
-              # (Oga's parser will surface the error).
-              result << xml[block_start..]
-              break
-            end
-
-            result << xml[block_start..(end_idx + terminator.length - 1)]
-            i = end_idx + terminator.length
-          end
-          [result, substituted ? marker : nil]
-        end
-
-        # Choose a marker not present in the source XML. Falls back from
-        # the default three-noncharacter sequence to other noncharacter
-        # triples in U+FDD0..U+FDEF if the default appears in user data.
-        # Real XML interchange data must not contain these codepoints,
-        # but inputs are not always well-formed so we defend against
-        # accidental collision.
-        def amp_marker_for(xml)
-          return DEFAULT_AMP_MARKER unless xml.include?(DEFAULT_AMP_MARKER)
-
-          (0xFDD0..0xFDED).each do |start|
-            triple = [start, start + 1, start + 2].pack("U*")
-            return triple unless xml.include?(triple)
-          end
-
-          # Extreme fallback: extend with additional noncharacters until
-          # the marker is unique to the input. U+FFFE is also a permanent
-          # noncharacter.
-          marker = DEFAULT_AMP_MARKER.dup
-          marker << "\u{FFFE}" while xml.include?(marker)
-          marker.freeze
-        end
-
-        # Locate the terminator for a verbatim block. For DOCTYPE blocks
-        # the terminator may legally appear inside a quoted ExternalID
-        # (e.g. `">"` or `"]>"` inside a SYSTEM/PUBLIC id, or inside an
-        # <!ENTITY> body); scan quote-aware so those literal occurrences
-        # are not mistaken for the real end. CDATA / comment / PI
-        # terminators (`]]>`, `-->`, `?>`) cannot appear inside quoted
-        # strings in their respective grammars, so a plain substring
-        # search is fine for those.
-        def find_block_terminator(xml, block_start, terminator)
-          return xml.index(terminator, block_start) unless ["]>", ">"].include?(terminator)
-
-          quote = nil
-          i = block_start
-          len = xml.length
-          while i < len
-            ch = xml[i]
-            if quote
-              quote = nil if ch == quote
-            elsif DOCTYPE_QUOTES.include?(ch)
-              quote = ch
-            elsif (terminator == "]>" && ch == "]" && xml[i + 1] == ">") ||
-                (terminator == ">" && ch == ">")
-              return i
-            end
-            i += 1
-          end
-          nil
-        end
-
-        # Find the next region starting at or after `from` that the XML
-        # parser delivers verbatim. Returns [start_idx, terminator] or
-        # [nil, nil] if no such region remains.
-        def next_verbatim_block(xml, from)
-          candidates = {
-            "<![CDATA[" => "]]>",
-            "<!--" => "-->",
-            "<?" => "?>",
-            "<!DOCTYPE" => nil, # terminator computed dynamically
-          }
-
-          best_start = nil
-          best_terminator = nil
-          candidates.each do |opener, terminator|
-            idx = xml.index(opener, from)
-            next if idx.nil?
-            next if best_start && idx >= best_start
-
-            best_start = idx
-            best_terminator = terminator || doctype_terminator(xml, idx)
-          end
-          [best_start, best_terminator]
-        end
-
-        DOCTYPE_QUOTES = ['"', "'"].freeze
-        private_constant :DOCTYPE_QUOTES
-
-        # DOCTYPE may include an internal subset "[ ... ]" after the
-        # ExternalID. The terminator is "]>" if an unquoted "[" appears
-        # before an unquoted ">", otherwise just ">". We scan
-        # character-by-character tracking quoted strings (system/public
-        # IDs use single or double quotes) so a literal "[" inside a
-        # quoted ID is not mistaken for the internal subset opener.
-        def doctype_terminator(xml, start_idx)
-          quote = nil
-          i = start_idx
-          len = xml.length
-          while i < len
-            ch = xml[i]
-            if quote
-              quote = nil if ch == quote
-            elsif DOCTYPE_QUOTES.include?(ch)
-              quote = ch
-            elsif ch == "["
-              return "]>"
-            elsif ch == ">"
-              return ">"
-            end
-            i += 1
-          end
-          ">"
         end
 
         def set_root(doc, element)
@@ -214,7 +19,7 @@ module Moxml
         end
 
         def parse(xml, options = {}, _context = nil)
-          processed_xml, marker = preprocess_amp_for_oga(preprocess_entities(xml))
+          processed_xml = preprocess_entities(xml)
 
           native_doc = begin
             ::Oga.parse_xml(processed_xml, strict: options[:strict])
@@ -225,89 +30,35 @@ module Moxml
             )
           end
 
-          restore_amp_in_tree!(native_doc, marker) if marker
+          decode_entities_in_tree!(native_doc)
 
           ctx = _context || Context.new(:oga)
           DocumentBuilder.new(ctx).build(native_doc)
         end
 
-        # Walk the parsed tree and replace the per-input marker sentinels
-        # with "&" in attribute values and text nodes. The marker was
-        # inserted by preprocess_amp_for_oga to prevent Oga's broken
-        # 3-pass entity decoder from double-decoding "&amp;#NN;".
+        # SAX parsing implementation for Oga.
         #
-        # We use instance_variable_set instead of the public writers because
-        # Oga's Attribute#value= and Text#text= reset the lazy @decoded flag,
-        # which would cause the freshly-restored "&" to be re-fed into the
-        # broken decoder on next read.
-        def restore_amp_in_tree!(node, marker)
-          return if marker.nil?
-
-          # PI, Comment, and Doctype are intentionally omitted:
-          # preprocess_amp_for_oga skips their source-text spans, so the
-          # marker is never inserted into their payloads and there is
-          # nothing to restore.
-          case node
-          when ::Oga::XML::Document
-            node.children.each { |c| restore_amp_in_tree!(c, marker) }
-          when ::Oga::XML::Element
-            node.attributes.each { |attr| restore_amp_in_attribute!(attr, marker) }
-            node.children.each { |c| restore_amp_in_tree!(c, marker) }
-          when ::Oga::XML::Text, ::Oga::XML::Cdata
-            restore_amp_in_text!(node, marker)
-          end
-        end
-
-        def restore_amp_in_attribute!(attr, marker)
-          value = attr.value # triggers Oga's lazy decode once
-          return unless value.is_a?(String) && value.include?(marker)
-
-          restored = value.gsub(marker, "&")
-          if OGA_INTERNALS_SUPPORTED && attr.instance_variable_defined?(:@value)
-            attr.instance_variable_set(:@value, restored)
-            attr.instance_variable_set(:@decoded, true)
-          else
-            # Fallback for unknown Oga versions: use the public setter.
-            # This resets @decoded and risks re-decoding on next read,
-            # but is the best we can do without internal access.
-            attr.value = restored
-          end
-        end
-
-        def restore_amp_in_text!(node, marker)
-          text = node.text # triggers Oga's lazy decode once
-          return unless text.is_a?(String) && text.include?(marker)
-
-          restored = text.gsub(marker, "&")
-          if OGA_INTERNALS_SUPPORTED && node.instance_variable_defined?(:@text)
-            node.instance_variable_set(:@text, restored)
-            node.instance_variable_set(:@decoded, true)
-          else
-            node.text = restored
-          end
-        end
-
-        # SAX parsing implementation for Oga
+        # Driven off `Oga.parse_xml` because Oga 3.4's SAX parser decodes
+        # `on_text` content before delivering it to the handler — there is
+        # no upstream hook to override. Parse-then-walk is simpler than
+        # source-level preprocessing and shares the DOM decoder. Trade-off:
+        # peak memory scales with document size (Oga 3.4 is the final
+        # release of an unmaintained gem; the trade is accepted).
         #
         # @param xml [String, IO] XML to parse
         # @param handler [Moxml::SAX::Handler] Moxml SAX handler
         # @return [void]
         def sax_parse(xml, handler)
           xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
-          xml_string, marker = preprocess_amp_for_oga(xml_string)
+          native_doc = ::Oga.parse_xml(xml_string)
+          decode_entities_in_tree!(native_doc)
 
-          bridge = OgaSAXBridge.new(handler, marker)
-
-          # Manually call start_document (Oga doesn't)
-          handler.on_start_document
-
-          ::Oga.sax_parse_xml(bridge, xml_string)
-
-          # Manually call end_document (Oga doesn't)
-          handler.on_end_document
+          bridge = OgaSAXBridge.new(handler)
+          bridge.on_start_document
+          native_doc.children.each { |child| bridge.emit(child) }
+          bridge.on_end_document
         rescue StandardError => e
-          error = Moxml::ParseError.new(e.message)
-          handler.on_error(error)
+          handler.on_error(Moxml::ParseError.new(e.message))
         end
 
         def create_document(_native_doc = nil)
@@ -320,11 +71,9 @@ module Moxml
 
         def create_native_text(content, _owner_doc = nil)
           text = ::Oga::XML::Text.new(text: preprocess_entities(content))
-          # Mark as already-decoded so Oga's broken 3-pass entity decoder
-          # doesn't mangle "&#NN;"-style literals on first read.
-          if OGA_INTERNALS_SUPPORTED && text.instance_variable_defined?(:@decoded)
-            text.instance_variable_set(:@decoded, true)
-          end
+          # Mark already-decoded so Oga's broken decoder doesn't mangle
+          # "&#NN;"-style literals on first read.
+          mark_decoded(text)
           text
         end
 
@@ -523,12 +272,8 @@ module Moxml
             value: preprocess_entities(value.to_s),
           )
           # Tell Oga's lazy decoder this value is already literal text and
-          # must not be run through the broken 3-pass entity decoder; without
-          # this, "&#38;" set by the user would be silently resolved to "&"
-          # (and the trailing "#38;" lost) on first read.
-          if OGA_INTERNALS_SUPPORTED && attr.instance_variable_defined?(:@decoded)
-            attr.instance_variable_set(:@decoded, true)
-          end
+          # must not be run through the broken decoder.
+          mark_decoded(attr)
           element.add_attribute(attr)
         end
 
@@ -746,6 +491,43 @@ module Moxml
 
         private
 
+        # Replace Oga's broken lazy 3-pass decoder with a single-pass
+        # decoder by reading raw `@text`/`@value` ivars and rewriting
+        # them with `@decoded = true`. Oga's lexer stores literal source
+        # text in the ivars and only runs the decoder on first read of
+        # `#text`/`#value`; this walk gets in front of that.
+        #
+        # CDATA, Comment, Doctype, and ProcessingInstruction payloads
+        # are delivered verbatim by Oga and require no decoding (XML 1.0
+        # §2.6).
+        def decode_entities_in_tree!(node)
+          case node
+          when ::Oga::XML::Element
+            node.attributes.each do |attr|
+              write_decoded(attr, :@value, decode_entities(attr.instance_variable_get(:@value)))
+            end
+            node.children.each { |c| decode_entities_in_tree!(c) }
+          when ::Oga::XML::Document
+            node.children.each { |c| decode_entities_in_tree!(c) }
+          when ::Oga::XML::Text
+            write_decoded(node, :@text, decode_entities(node.instance_variable_get(:@text)))
+          end
+        end
+
+        # Mark an authored node as already-decoded so Oga's lazy decoder
+        # leaves the literal `@text`/`@value` alone on first read.
+        def mark_decoded(target)
+          target.instance_variable_set(:@decoded, true)
+        end
+
+        # Overwrite a lazy ivar and mark it decoded in one step. Used by
+        # the post-parse tree walk after `decode_entities` has produced
+        # the correct single-pass value.
+        def write_decoded(target, ivar, value)
+          target.instance_variable_set(ivar, value)
+          mark_decoded(target)
+        end
+
         def declaration_to_xml(decl)
           parts = ["<?xml"]
           parts << %( version="#{decl.version}") if decl.version
@@ -795,62 +577,53 @@ module Moxml
           ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
         end
       end
-    end
 
-    # Bridge between Oga SAX and Moxml SAX
-    #
-    # Translates Oga SAX events to Moxml::SAX::Handler events.
-    # Oga has different event naming and namespace as first param.
-    #
-    # @private
-    class OgaSAXBridge
-      include Moxml::SAX::NamespaceSplitter
+      # Bridge between a parsed Oga DOM and Moxml SAX events.
+      #
+      # @private
+      class OgaSAXBridge
+        include Moxml::SAX::NamespaceSplitter
 
-      def initialize(handler, marker = nil)
-        @handler = handler
-        @marker = marker
-      end
+        def initialize(handler)
+          @handler = handler
+        end
 
-      # Oga: on_element(namespace, name, attributes)
-      # namespace may be nil
-      # attributes is an array of [name, value] pairs
-      def on_element(namespace, name, attributes)
-        element_name = namespace ? "#{namespace}:#{name}" : name
-        # Oga delivers attributes as array of [name, value] pairs.
-        # Restore the &amp; sentinel we inserted before parsing so SAX
-        # output matches DOM-decoded values.
-        decoded = attributes.map { |a| [a[0].to_s, restore_amp(a[1])] }
-        attr_hash, ns_hash = split_attributes_and_namespaces(decoded)
-        @handler.on_start_element(element_name, attr_hash, ns_hash)
-      end
+        def on_start_document
+          @handler.on_start_document
+        end
 
-      # Oga: after_element(namespace, name)
-      def after_element(namespace, name)
-        element_name = namespace ? "#{namespace}:#{name}" : name
-        @handler.on_end_element(element_name)
-      end
+        def on_end_document
+          @handler.on_end_document
+        end
 
-      def restore_amp(value)
-        return value if @marker.nil?
-        return value unless value.is_a?(String) && value.include?(@marker)
+        # Walk a parsed Oga node and emit Moxml SAX events.
+        def emit(node)
+          case node
+          when ::Oga::XML::Element
+            element_name = qualified_name(node.namespace_name, node.name)
+            pairs = node.attributes.map do |a|
+              [qualified_name(a.namespace_name, a.name), a.value]
+            end
+            attrs, namespaces = split_attributes_and_namespaces(pairs)
+            @handler.on_start_element(element_name, attrs, namespaces)
+            node.children.each { |c| emit(c) }
+            @handler.on_end_element(element_name)
+          when ::Oga::XML::Text
+            @handler.on_characters(node.text)
+          when ::Oga::XML::Cdata
+            @handler.on_cdata(node.text)
+          when ::Oga::XML::Comment
+            @handler.on_comment(node.text)
+          when ::Oga::XML::ProcessingInstruction
+            @handler.on_processing_instruction(node.name, node.text || "")
+          end
+        end
 
-        value.gsub(@marker, "&")
-      end
+        private
 
-      def on_text(text)
-        @handler.on_characters(restore_amp(text))
-      end
-
-      def on_cdata(text)
-        @handler.on_cdata(restore_amp(text))
-      end
-
-      def on_comment(text)
-        @handler.on_comment(text)
-      end
-
-      def on_processing_instruction(name, text)
-        @handler.on_processing_instruction(name, text || "")
+        def qualified_name(namespace, local)
+          namespace ? "#{namespace}:#{local}" : local
+        end
       end
     end
   end
