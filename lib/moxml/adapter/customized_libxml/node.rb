@@ -18,10 +18,13 @@ module Moxml
           @native = native_node
         end
 
-        def native=(node)
-          @native = node
+        # Swap the wrapped native node. Used by the Libxml adapter when
+        # libxml-ruby's content= setter would silently re-escape stored
+        # text; replacing the node with a fresh raw-storage instance is
+        # the only way to preserve verbatim content.
+        def replace_native!(fresh)
+          @native = fresh
         end
-        private :native=
 
         # Compare wrappers based on their native nodes
         def ==(other)

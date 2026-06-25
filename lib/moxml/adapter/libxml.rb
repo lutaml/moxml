@@ -765,7 +765,7 @@ module Moxml
           return unless native.is_a?(::LibXML::XML::Node)
 
           swap_native_in_place(native, fresh)
-          node.native = fresh if node.is_a?(CustomizedLibxml::Node)
+          node.replace_native!(fresh) if node.is_a?(CustomizedLibxml::Node)
         end
         private :replace_native_verbatim
 
