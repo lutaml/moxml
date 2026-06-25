@@ -7,7 +7,7 @@ module Moxml
     VALID_LINE_ENDINGS = [LINE_ENDING_LF, LINE_ENDING_CRLF].freeze
     VALID_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
     DEFAULT_ADAPTER = :nokogiri
-    OPAL_DEFAULT_ADAPTER = :rexml
+    OPAL_DEFAULT_ADAPTER = :oga
 
     # Entity loading modes:
     # - :required - Must load entities, raise error if unavailable (default)

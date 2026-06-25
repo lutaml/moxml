@@ -11,9 +11,11 @@ module Moxml
     AVAILABLE_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
 
     # Adapters that work under the Opal (JavaScript) runtime.
-    # REXML is pure Ruby and Opal reimplements strscan/stringio in its stdlib,
-    # enabling REXML to compile cleanly to JavaScript.
-    OPAL_AVAILABLE_ADAPTERS = %i[rexml].freeze
+    # Oga is pure Ruby and designed with Opal compatibility in mind — it is the
+    # canonical XML parser for the JavaScript runtime. REXML is also pure Ruby
+    # but requires extensive runtime compat shims (regex features like /n,
+    # \u{...}, (?-mix:...) don't transpile cleanly), so it is opt-in only.
+    OPAL_AVAILABLE_ADAPTERS = %i[oga rexml].freeze
 
     # Registry mapping adapter names to their class name suffixes.
     # Special cases (like :headed_ox → "HeadedOx") live here instead of
