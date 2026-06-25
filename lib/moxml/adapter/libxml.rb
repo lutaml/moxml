@@ -1717,7 +1717,7 @@ module Moxml
         def on_start_element(name, attributes)
           normalized = (attributes || {}).map { |k, v| [k.to_s, v] }
           attr_hash, ns_hash = split_attributes_and_namespaces(normalized) do |v|
-            Libxml.decode_entities(v)
+            Moxml::Adapter::Base.decode_entities(v)
           end
           @handler.on_start_element(name.to_s, attr_hash, ns_hash)
         end

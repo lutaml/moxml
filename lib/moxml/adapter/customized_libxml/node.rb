@@ -12,11 +12,16 @@ module Moxml
       # The Libxml adapter owns wrapper type mapping in one place so the
       # wrapper classes do not duplicate node-type knowledge.
       class Node
-        attr_accessor :native
+        attr_reader :native
 
         def initialize(native_node)
           @native = native_node
         end
+
+        def native=(node)
+          @native = node
+        end
+        private :native=
 
         # Compare wrappers based on their native nodes
         def ==(other)
