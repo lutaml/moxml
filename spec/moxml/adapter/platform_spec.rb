@@ -32,6 +32,10 @@ RSpec.describe Moxml::Adapter, ".available?" do
       expect(described_class.available?(:nokogiri)).to be false
     end
 
+    it "returns true for :oga" do
+      expect(described_class.available?(:oga)).to be true
+    end
+
     it "returns true for :rexml" do
       expect(described_class.available?(:rexml)).to be true
     end
@@ -54,8 +58,8 @@ RSpec.describe Moxml::Adapter, ".load" do
 end
 
 RSpec.describe "Moxml::Adapter::OPAL_AVAILABLE_ADAPTERS" do
-  it "contains only :rexml" do
-    expect(Moxml::Adapter::OPAL_AVAILABLE_ADAPTERS).to eq(%i[rexml])
+  it "lists :oga as the primary Opal adapter, with :rexml as opt-in" do
+    expect(Moxml::Adapter::OPAL_AVAILABLE_ADAPTERS).to eq(%i[oga rexml])
   end
 end
 
