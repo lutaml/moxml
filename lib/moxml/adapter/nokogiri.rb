@@ -472,7 +472,7 @@ module Moxml
 
         def start_element(name, attributes = [])
           attr_hash, ns_hash = split_attributes_and_namespaces(attributes) do |v|
-            Nokogiri.decode_entities(v)
+            Moxml::Adapter::Base.decode_entities(v)
           end
           @handler.on_start_element(name, attr_hash, ns_hash)
         end
