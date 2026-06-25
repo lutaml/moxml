@@ -101,7 +101,7 @@ RSpec.configure do |config|
 end
 
 Moxml.configure do |config|
-  config.adapter = RUBY_ENGINE == "opal" ? :oga : :nokogiri
+  config.adapter = RUBY_ENGINE == "opal" ? Moxml::Config::OPAL_DEFAULT_ADAPTER : Moxml::Config::DEFAULT_ADAPTER
   config.strict_parsing = true
   config.default_encoding = "UTF-8"
   config.entity_load_mode = :optional if RUBY_ENGINE == "opal"
