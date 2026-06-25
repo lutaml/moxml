@@ -5,6 +5,16 @@ require "oga"
 module Moxml
   module Adapter
     class Oga < Base
+      # Trigger autoloads that prepend override modules onto Oga's
+      # native classes before any parse / read runs.
+      # - EntityDecoderOverride: replace Oga 3.4's multi-pass decoder
+      #   with a single-pass decoder on Oga::EntityDecoder.
+      # - RawValueOverride: route Attribute#value / Text#text through
+      #   the NativeAttachment sidecar so user-authored values bypass
+      #   the lazy decoder and are returned verbatim.
+      ::Moxml::Adapter::CustomizedOga::EntityDecoderOverride
+      ::Moxml::Adapter::CustomizedOga::RawValueOverride
+
       class << self
         def attachments
           @attachments ||= Moxml::NativeAttachment.new
@@ -30,20 +40,19 @@ module Moxml
             )
           end
 
-          decode_entities_in_tree!(native_doc)
-
           ctx = _context || Context.new(:oga)
           DocumentBuilder.new(ctx).build(native_doc)
         end
 
         # SAX parsing implementation for Oga.
         #
-        # Driven off `Oga.parse_xml` because Oga 3.4's SAX parser decodes
-        # `on_text` content before delivering it to the handler — there is
-        # no upstream hook to override. Parse-then-walk is simpler than
-        # source-level preprocessing and shares the DOM decoder. Trade-off:
-        # peak memory scales with document size (Oga 3.4 is the final
-        # release of an unmaintained gem; the trade is accepted).
+        # Driven off `Oga.parse_xml` plus a DOM walk because Oga 3.4's
+        # native SAX parser decodes `on_text` content before delivery and
+        # exposes no hook to override. The prepended EntityDecoderOverride
+        # ensures `node.text` invoked during the walk produces the correct
+        # single-pass decode, so no separate entity pass is needed here.
+        # Trade-off: peak memory scales with document size (Oga 3.4 is the
+        # final release of an unmaintained gem; the trade is accepted).
         #
         # @param xml [String, IO] XML to parse
         # @param handler [Moxml::SAX::Handler] Moxml SAX handler
@@ -51,7 +60,6 @@ module Moxml
         def sax_parse(xml, handler)
           xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
           native_doc = ::Oga.parse_xml(xml_string)
-          decode_entities_in_tree!(native_doc)
 
           bridge = OgaSAXBridge.new(handler)
           bridge.on_start_document
@@ -70,10 +78,13 @@ module Moxml
         end
 
         def create_native_text(content, _owner_doc = nil)
-          text = ::Oga::XML::Text.new(text: preprocess_entities(content))
-          # Mark already-decoded so Oga's broken decoder doesn't mangle
-          # "&#NN;"-style literals on first read.
-          mark_decoded(text)
+          processed = preprocess_entities(content)
+          text = ::Oga::XML::Text.new(text: processed)
+          # Oga::XML::Text.new stores the value via ivar, bypassing the
+          # RawValueOverride setter. Set the sidecar explicitly so reads
+          # return the user-supplied value verbatim rather than running
+          # it through the lazy decoder.
+          attachments.set(text, :raw_text, processed)
           text
         end
 
@@ -266,14 +277,15 @@ module Moxml
                                                    2)
           end
 
+          processed = preprocess_entities(value.to_s)
           attr = ::Oga::XML::Attribute.new(
             name: name.to_s,
             namespace_name: namespace_name,
-            value: preprocess_entities(value.to_s),
+            value: processed,
           )
-          # Tell Oga's lazy decoder this value is already literal text and
-          # must not be run through the broken decoder.
-          mark_decoded(attr)
+          # See create_native_text: Attribute.new bypasses the override
+          # setter, so populate the sidecar here.
+          attachments.set(attr, :raw_value, processed)
           element.add_attribute(attr)
         end
 
@@ -282,7 +294,8 @@ module Moxml
         end
 
         def get_attribute_value(element, name)
-          element[name.to_s]
+          attr = element.attribute(name.to_s)
+          attr&.value
         end
 
         def remove_attribute(element, name)
@@ -490,43 +503,6 @@ module Moxml
         end
 
         private
-
-        # Replace Oga's broken lazy 3-pass decoder with a single-pass
-        # decoder by reading raw `@text`/`@value` ivars and rewriting
-        # them with `@decoded = true`. Oga's lexer stores literal source
-        # text in the ivars and only runs the decoder on first read of
-        # `#text`/`#value`; this walk gets in front of that.
-        #
-        # CDATA, Comment, Doctype, and ProcessingInstruction payloads
-        # are delivered verbatim by Oga and require no decoding (XML 1.0
-        # §2.6).
-        def decode_entities_in_tree!(node)
-          case node
-          when ::Oga::XML::Element
-            node.attributes.each do |attr|
-              write_decoded(attr, :@value, decode_entities(attr.instance_variable_get(:@value)))
-            end
-            node.children.each { |c| decode_entities_in_tree!(c) }
-          when ::Oga::XML::Document
-            node.children.each { |c| decode_entities_in_tree!(c) }
-          when ::Oga::XML::Text
-            write_decoded(node, :@text, decode_entities(node.instance_variable_get(:@text)))
-          end
-        end
-
-        # Mark an authored node as already-decoded so Oga's lazy decoder
-        # leaves the literal `@text`/`@value` alone on first read.
-        def mark_decoded(target)
-          target.instance_variable_set(:@decoded, true)
-        end
-
-        # Overwrite a lazy ivar and mark it decoded in one step. Used by
-        # the post-parse tree walk after `decode_entities` has produced
-        # the correct single-pass value.
-        def write_decoded(target, ivar, value)
-          target.instance_variable_set(ivar, value)
-          mark_decoded(target)
-        end
 
         def declaration_to_xml(decl)
           parts = ["<?xml"]
