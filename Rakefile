@@ -99,6 +99,7 @@ namespace :vendor do
   end
 end
 
+if defined?(RSpec)
 namespace :spec do
   if defined?(Opal::RSpec::RakeTask)
     desc "Run Opal (JavaScript) tests"
@@ -204,6 +205,7 @@ namespace :spec do
   desc "Run everything including examples and performance"
   task all: %i[unit adapter integration consistency examples
                performance]
+end
 end
 
 namespace :benchmark do
