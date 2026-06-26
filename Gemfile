@@ -11,11 +11,19 @@ gem "benchmark-ips"
 gem "get_process_mem"
 gem "libxml-ruby", "~> 5.0"
 gem "nokogiri", "~> 1.18"
-gem "oga", "~> 3.4"
 gem "openssl", "~> 3.0"
 gem "ox", "~> 2.14"
 gem "rake"
 gem "rexml"
+
+# Opal-compatible forks of oga and ruby-ll. The forks add pure-Ruby lexer
+# and driver fallbacks (under ext/pureruby/) plus an Opal-aware conditional
+# in lib/oga.rb / lib/ll/setup.rb that selects the pure-Ruby implementation
+# when RUBY_PLATFORM == 'opal'. Under CRuby/JRuby the forks behave
+# identically to upstream (the conditional falls through to liboga/libll).
+gem "oga", path: "vendor/opal-oga"
+gem "ruby-ll", path: "vendor/opal-ruby-ll"
+
 gem "rspec"
 gem "rubocop"
 gem "rubocop-performance"

@@ -889,6 +889,130 @@ performance optimization, and testing strategies, see
 link:docs/_pages/best-practices.adoc[Best Practices Guide].
 
 
+== Running under Opal (JavaScript)
+
+Opal compiles Ruby to JavaScript and cannot load C extensions. To run
+Moxml on Opal you need three things: an adapter with no native code, a
+XML library fork that exposes pure-Ruby fallbacks for its lexer and
+parser driver, and an Opal build that puts those pure-Ruby
+implementations on the load path.
+
+=== Default adapter under Opal
+
+Under `RUBY_ENGINE == "opal"`, Moxml's default adapter is `:oga` (see
+<<Default adapter selection>>). Oga is a pure-Ruby XML parser; under
+standard CRuby its lexer and parsers are accelerated by the `liboga`
+and `libll` C extensions. Those extensions cannot be compiled into
+JavaScript, so on Opal they are replaced by the pure-Ruby fallbacks
+shipped in `ext/pureruby/` of the Opal-compatible forks below.
+
+The REXML adapter is also available on Opal (`Moxml.new(:rexml)`) but
+relies on a number of compatibility shims because REXML uses Ruby
+regular-expression features (the `/n` flag, `\u{...}` codepoint
+escapes, inline flag groups) and String APIs that do not all transpile
+to JavaScript today. `:oga` is the recommended path for new Opal
+projects.
+
+=== Required XML library forks
+
+Upstream https://github.com/yorickpeterse/oga[oga] and
+https://github.com/yorickpeterse/ruby-ll[ruby-ll] do not currently
+ship Opal-compatible fallbacks. Moxml vendors the following forks:
+
+* https://github.com/lutaml/opal-oga[lutaml/opal-oga] — oga with an
+  `ext/pureruby/oga/native/lexer.rb` fallback that fires when
+  `RUBY_PLATFORM == 'opal'`. Under CRuby/JRuby the fork behaves
+  identically to upstream oga.
+* https://github.com/lutaml/opal-ruby-ll[lutaml/opal-ruby-ll] —
+  ruby-ll with `ext/pureruby/ll/native/{driver,driver_config}.rb`
+  fallbacks selected by the same conditional in `lib/ll/setup.rb`.
+
+Both forks are vendored as submodules under `vendor/opal-oga` and
+`vendor/opal-ruby-ll` in the Moxml repository. Moxml's own `Gemfile`
+references them via `path:` source so that any consumer of Moxml under
+Opal resolves to the same fork commits Moxml was tested against.
+
+=== Wiring the forks in a downstream Gemfile
+
+Downstream libraries that run on Opal (for example
+https://github.com/plurimath/plurimath-js[plurimath-js]) must also use
+the Opal-compatible forks rather than upstream `oga` and `ruby-ll`.
+Wire them as `path:` or `git:` sources so the fork's
+`RUBY_PLATFORM == 'opal'` conditional can fire:
+
+[source,ruby]
+----
+# In your downstream gem's Gemfile (or gemspec)
+gem "moxml",    "~> 0.1.24"        # provides the :oga adapter
+gem "oga",      git: "https://github.com/lutaml/opal-oga.git",
+                ref: "<commit-sha-moxml-tests-against>"
+gem "ruby-ll",  git: "https://github.com/lutaml/opal-ruby-ll.git",
+                ref: "<commit-sha-moxml-tests-against>"
+----
+
+Pin the `ref:` to the submodule commits Moxml ships in
+`vendor/opal-oga` and `vendor/opal-ruby-ll` (recorded in
+`.gitmodules`) so your fork and Moxml's fork stay in lockstep. If you
+prefer to vendor the forks yourself, replace the `git:` source with
+`path: "vendor/opal-oga"` and `path: "vendor/opal-ruby-ll"` after
+copying them in.
+
+=== Opal build configuration
+
+Under Opal, the forks' `lib/` directory is on the load path (via the
+gem), but the pure-Ruby implementations live under `ext/pureruby/`.
+That directory must be added to Opal's load path so the
+`if RUBY_PLATFORM == 'opal'` branch in `lib/oga.rb` and
+`lib/ll/setup.rb` resolves to the pure-Ruby files instead of trying to
+load the C extension.
+
+For consumers using https://github.com/opal/opal[Opal] directly:
+
+[source,ruby]
+----
+require "opal"
+
+# Opal path: put both lib/ and ext/pureruby/ on the load path so the
+# fork's conditional requires resolve to the pure-Ruby fallback.
+%w[opal-oga opal-ruby-ll].each do |fork|
+  Opal.append_path File.expand_path("vendor/#{fork}/lib", __dir__)
+  Opal.append_path File.expand_path("vendor/#{fork}/ext/pureruby", __dir__)
+end
+
+# Moxml's Opal boot file (lib/compat/opal/moxml_boot.rb) explicitly
+# requires every module that would normally be autoloaded under CRuby.
+require "moxml_boot"
+----
+
+For consumers using https://github.com/opal/opal-compiler[Opal via
+Sprockets/Webpack], the equivalent is to add both `lib/` and
+`ext/pureruby/` from each fork to the Opal `paths` array.
+
+=== Verifying the Opal build
+
+Moxml's own Opal test suite exercises the wiring described above. To
+reproduce:
+
+[source,shell]
+----
+# One-time setup: install ragel + ruby-ll so the forks' gitignored
+# generated lexer/parser sources can be produced.
+gem install ruby-ll --no-document
+# (Install ragel via your package manager, e.g. apt-get install ragel
+#  or brew install ragel.)
+
+# Generate the gitignored outputs in the vendored forks.
+bundle exec rake vendor:prepare
+
+# Run the Opal (JavaScript) test suite.
+bundle exec rake spec:opal
+----
+
+Reference implementation: https://github.com/plurimath/plurimath-js[plurimath-js]
+is the canonical downstream consumer; its `Rakefile` and `env/` wrapper
+scripts show the full pattern end-to-end.
+
+
 == Specific adapter limitations
 
 === Ox adapter

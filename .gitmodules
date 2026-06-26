@@ -1,0 +1,6 @@
+[submodule "opal-oga"]
+	path = vendor/opal-oga
+	url = git@github.com:lutaml/opal-oga.git
+[submodule "opal-ruby-ll"]
+	path = vendor/opal-ruby-ll
+	url = git@github.com:lutaml/opal-ruby-ll.git
