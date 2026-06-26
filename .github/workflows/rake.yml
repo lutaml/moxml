@@ -42,6 +42,12 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
+      - name: Compile liboga / libll native extensions
+        # Bundler does not reliably build path-source gems' native
+        # extensions; compile them explicitly so `require "oga"` (which
+        # requires libll) resolves under CRuby.
+        run: rake vendor:compile
+
       - name: Run fast tests (unit + adapter + integration)
         run: bundle exec rake spec:fast
 

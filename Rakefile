@@ -97,6 +97,34 @@ namespace :vendor do
       sh cmd
     end
   end
+
+  # Bundler does not reliably compile native extensions for path-source
+  # gems. Build liboga/libll explicitly so `require "oga"` resolves.
+  desc "Compile liboga / libll native extensions for vendored forks"
+  task :compile do
+    require "fileutils"
+    require "rbconfig"
+
+    dlext = RbConfig::CONFIG["DLEXT"]
+
+    {
+      "vendor/opal-ruby-ll" => "libll",
+      "vendor/opal-oga"     => "liboga",
+    }.each do |fork_path, ext_name|
+      abs_fork    = File.expand_path(fork_path, __dir__)
+      lib_bundle  = File.join(abs_fork, "lib", "#{ext_name}.#{dlext}")
+      ext_dir     = File.join(abs_fork, "ext", "c")
+      extconf     = File.join(ext_dir, "extconf.rb")
+      lib_dir     = File.join(abs_fork, "lib")
+      next if File.exist?(lib_bundle)
+
+      Dir.chdir(ext_dir) do
+        sh "ruby #{extconf}"
+        sh "make"
+        FileUtils.cp("#{ext_name}.#{dlext}", lib_dir)
+      end
+    end
+  end
 end
 
 if defined?(RSpec)

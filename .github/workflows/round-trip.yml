@@ -44,6 +44,9 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
+      - name: Compile liboga / libll native extensions
+        run: rake vendor:compile
+
       - name: Run round-trip tests (${{ matrix.category }})
         run: bundle exec rspec spec/consistency/ --tag round_trip --tag fixture_category:${{ matrix.category }}
         env:
@@ -80,6 +83,9 @@ jobs:
 
       - name: Install dependencies
         run: bundle install
+
+      - name: Compile liboga / libll native extensions
+        run: rake vendor:compile
 
       - name: Run Nokogiri × Ox round-trip tests (${{ matrix.category }})
         run: bundle exec rspec spec/consistency/ --tag round_trip --tag fixture_category:${{ matrix.category }}
@@ -119,6 +125,9 @@ jobs:
 
       - name: Install dependencies
         run: bundle install
+
+      - name: Compile liboga / libll native extensions
+        run: rake vendor:compile
 
       - name: Run Nokogiri × REXML round-trip tests (${{ matrix.category }})
         run: bundle exec rspec spec/consistency/ --tag round_trip --tag fixture_category:${{ matrix.category }}
