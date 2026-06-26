@@ -13,6 +13,14 @@ on:
           Next release version. Possible values: x.y.z, major, minor, patch or pre|rc|etc
         required: true
         default: 'skip'
+      gated:
+        description: |
+          Defer rubygems publish to a separate repository_dispatch (do-release) run.
+          - false (default): bump + tag + publish in one step.
+          - true: bump + tag only; publish when do-release is triggered.
+        required: false
+        default: false
+        type: boolean
   repository_dispatch:
     types: [ do-release ]
 
@@ -21,6 +29,7 @@ jobs:
     uses: metanorma/ci/.github/workflows/rubygems-release.yml@main
     with:
       next_version: ${{ github.event.inputs.next_version }}
+      gated: ${{ inputs.gated == true }}
     secrets:
       rubygems-api-key: ${{ secrets.LUTAML_CI_RUBYGEMS_API_KEY }}
       pat_token: ${{ secrets.GITHUB_TOKEN }}
