@@ -675,6 +675,8 @@ RSpec/SpecFilePathFormat:
     - '**/spec/routing/**/*'
     - 'spec/moxml/node_type_map_spec.rb'
     - 'spec/moxml/opal_rexml_adapter_spec.rb'
+    - 'spec/moxml/opal_oga_adapter_spec.rb'
+    - 'spec/moxml/adapter/platform_spec.rb'
     - 'spec/moxml/xpath/ast/node_spec.rb'
     - 'spec/moxml/xpath/cache_spec.rb'
     - 'spec/moxml/xpath/compiler_spec.rb'

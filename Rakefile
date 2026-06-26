@@ -109,13 +109,13 @@ namespace :vendor do
 
     {
       "vendor/opal-ruby-ll" => "libll",
-      "vendor/opal-oga"     => "liboga",
+      "vendor/opal-oga" => "liboga",
     }.each do |fork_path, ext_name|
-      abs_fork    = File.expand_path(fork_path, __dir__)
-      lib_bundle  = File.join(abs_fork, "lib", "#{ext_name}.#{dlext}")
-      ext_dir     = File.join(abs_fork, "ext", "c")
-      extconf     = File.join(ext_dir, "extconf.rb")
-      lib_dir     = File.join(abs_fork, "lib")
+      abs_fork = File.expand_path(fork_path, __dir__)
+      lib_bundle = File.join(abs_fork, "lib", "#{ext_name}.#{dlext}")
+      ext_dir = File.join(abs_fork, "ext", "c")
+      extconf = File.join(ext_dir, "extconf.rb")
+      lib_dir = File.join(abs_fork, "lib")
       next if File.exist?(lib_bundle)
 
       Dir.chdir(ext_dir) do
@@ -149,7 +149,8 @@ namespace :spec do
         Dir.glob("spec/moxml/adapter/shared_examples/*.rb")
     end
 
-    task :opal => "vendor:prepare"
+    desc "Alias for spec:opal that also runs vendor:prepare"
+    task opal: "vendor:prepare"
   end
 
   desc "Validate XML fixtures are well-formed (requires xmllint)"

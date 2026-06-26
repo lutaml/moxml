@@ -57,7 +57,7 @@ RSpec.describe "XPath Node Functions" do
       result = proc.call(doc)
 
       # Depending on adapter, may include ns: prefix
-      expect(result).to match(/item/)
+      expect(result).to include("item")
     end
 
     it "returns empty string when no node matched" do
