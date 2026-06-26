@@ -1,9 +1,16 @@
 # frozen_string_literal: true
 
 require "bundler/gem_tasks"
-require "rspec/core/rake_task"
 
-RSpec::Core::RakeTask.new(:spec)
+# vendor:prepare must be runnable before `bundle install` (CI runs it
+# first so the path-source oga/ruby-ll forks' gitignored lexer/parser
+# outputs exist before their extconf.rb runs). Guard the rspec/opal
+# requires so the file loads with only `rake` + `bundler` available.
+begin
+  require "rspec/core/rake_task"
+  RSpec::Core::RakeTask.new(:spec)
+rescue LoadError
+end
 
 begin
   require "opal/rspec/rake_task"
@@ -33,9 +40,11 @@ rescue LoadError
   # Opal not available or incompatible with current Ruby version
 end
 
-require "rubocop/rake_task"
-
-RuboCop::RakeTask.new
+begin
+  require "rubocop/rake_task"
+  RuboCop::RakeTask.new
+rescue LoadError
+end
 
 # Regenerate the ragel / ruby-ll outputs that the Opal-compatible forks
 # (vendored as submodules under vendor/) gitignore. The forks ship the
