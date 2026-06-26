@@ -31,7 +31,7 @@ RSpec.describe "Moxml Opal oga feature coverage", if: RUBY_ENGINE == "opal" do
         end
       end
 
-      books = doc.root.children.select { |c| c.is_a?(Moxml::Element) }
+      books = doc.root.children.grep(Moxml::Element)
       expect(books.length).to eq(2)
       expect(books.map { |b| b["id"] }).to eq(%w[1 2])
     end
@@ -127,7 +127,7 @@ RSpec.describe "Moxml Opal oga feature coverage", if: RUBY_ENGINE == "opal" do
     end
 
     it "round-trips the doctype through serialization" do
-      xml = '<!DOCTYPE root><root/>'
+      xml = "<!DOCTYPE root><root/>"
       doc = context.parse(xml)
       expect(doc.to_xml).to include("DOCTYPE")
       expect(doc.to_xml).to include("root")
@@ -165,7 +165,7 @@ RSpec.describe "Moxml Opal oga feature coverage", if: RUBY_ENGINE == "opal" do
     end
 
     it "round-trips a document with CDATA" do
-      xml = '<root><![CDATA[<unparsed>content</unparsed>]]></root>'
+      xml = "<root><![CDATA[<unparsed>content</unparsed>]]></root>"
       doc1 = context.parse(xml)
       serialized1 = doc1.to_xml
 
@@ -204,7 +204,7 @@ RSpec.describe "Moxml Opal oga feature coverage", if: RUBY_ENGINE == "opal" do
     end
 
     it "preserves processing instructions through parse/serialize" do
-      xml = '<?pi-target pi-data?><root/>'
+      xml = "<?pi-target pi-data?><root/>"
       doc = context.parse(xml)
       expect(doc.to_xml).to include("pi-target")
     end
