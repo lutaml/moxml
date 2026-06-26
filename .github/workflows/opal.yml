@@ -21,16 +21,33 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.4"
-          bundler-cache: true
+          # NOTE: bundler-cache is disabled because the path-source oga
+          # and ruby-ll forks need ragel + ruby-ll outputs generated
+          # (rake vendor:prepare) before their C extensions can compile.
+          bundler-cache: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "18"
 
+      - name: Install ragel
+        run: sudo apt-get update && sudo apt-get install -y ragel
+
+      - name: Install ruby-ll (for rake vendor:prepare)
+        run: gem install ruby-ll --no-document
+
+      - name: Generate ragel / ruby-ll outputs in vendored forks
+        # Run before `bundle install`: the path-source oga/ruby-ll forks
+        # gitignore their generated .rb/.c files (parser.rb, lexer.rb,
+        # ext/c/lexer.c). bundle install compiles the C extensions via
+        # each fork's extconf.rb, which requires ext/c/lexer.c to exist.
+        run: rake vendor:prepare
+
       - name: Install Opal dependencies
         run: |
           npm list -g opal-compiler || npm install -g opal-compiler
+          bundle install
           bundle exec rake opal:generate_entity_data
 
       - name: Run Opal tests
