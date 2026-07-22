@@ -89,6 +89,7 @@ module Moxml
   autoload :Adapter, "moxml/adapter"
   autoload :XPath, "moxml/xpath"
   autoload :SAX, "moxml/sax"
+  autoload :Signature, "moxml/signature"
 
   # Error hierarchy — each subclass autoloads from the same file
   autoload :Error, "moxml/error"
