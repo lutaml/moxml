@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "forwardable"
-
 module Moxml
   module Signature
     # Core Validation per spec §3.2, with the safe ordering prescribed by
@@ -22,7 +20,7 @@ module Moxml
         signatures = find_signatures
 
         results = signatures.map { |sig_elem| verify_one(sig_elem) }
-        Result.new(results: results)
+        VerificationResult.new(results: results)
       end
 
       private
@@ -34,57 +32,64 @@ module Moxml
 
       def verify_one(signature_element)
         signature = Parser.new(context: context).parse(signature_element)
-        signature_value_ok = verify_signature_value(signature, signature_element)
+        signature_value_ok, error = verify_signature_value(signature, signature_element)
         reference_results = if signature_value_ok
                               verify_references(signature, signature_element)
                             else
                               []
                             end
 
-        SingleResult.new(
+        SingleVerificationResult.new(
           signature_id: signature.id,
           signature_valid: signature_value_ok,
           references: reference_results,
+          error: error,
         )
       end
 
+      # Returns [Boolean, ErrorOrNil] so the caller can attach the error
+      # to the result for debugging. The error is never raised — Best
+      # Practice 1 says authenticate first; surfacing why auth failed is
+      # an application concern, not a panic.
       def verify_signature_value(signature, signature_element)
-        return false if signature.signature_value.nil?
-        return false if signature.signature_value.value.nil?
+        return [false, nil] if signature.signature_value.nil?
+        return [false, nil] if signature.signature_value.value.nil?
 
-        # Canonicalize the original SignedInfo element as it appears in the
-        # document — re-serializing the parsed model would change prefixes
-        # (e.g., default-namespace SignedInfo → ds:SignedInfo), breaking
-        # the byte-exact match the signature was computed against.
         signed_info_elem = signature_element.at_xpath(
           "./ds:SignedInfo", "ds" => DSIG_NS
         )
-        return false if signed_info_elem.nil?
+        return [false, nil] if signed_info_elem.nil?
 
         c14n_uri = signature.signed_info.canonicalization_method&.algorithm
-        return false if c14n_uri.nil?
+        return [false, nil] if c14n_uri.nil?
 
-        c14n = Algorithms.lookup(:canonicalization, c14n_uri)
-          .new(identifier_uri: c14n_uri)
-        canonical = c14n.canonicalize(signed_info_elem)
-
+        canonical = canonicalize_signed_info(c14n_uri, signed_info_elem)
         sm_uri = signature.signed_info.signature_method.algorithm
-        sm = Algorithms.lookup(:signature_method, sm_uri)
-          .new(
-            identifier_uri: sm_uri,
-            parameters: signature.signed_info.signature_method.parameters,
-          )
+        sm = Algorithms.lookup(:signature_method, sm_uri).new(
+          identifier_uri: sm_uri,
+          parameters: signature.signed_info.signature_method.parameters,
+        )
         verification_key = resolve_key(signature)
-        return false if verification_key.nil?
+        return [false, nil] if verification_key.nil?
 
-        sm.verify(canonical, verification_key, signature.signature_value.value)
-      rescue VerificationError
-        false
+        ok = sm.verify(canonical, verification_key, signature.signature_value.value)
+        [ok, nil]
+      rescue VerificationError, UnknownAlgorithm => e
+        [false, e]
+      end
+
+      # Canonicalize the original SignedInfo element as it appears in the
+      # document. Re-serializing the parsed model would change namespace
+      # prefixes (e.g. SignedInfo → ds:SignedInfo) and break byte-exact
+      # verification.
+      def canonicalize_signed_info(c14n_uri, signed_info_elem)
+        Algorithms.lookup(:canonicalization, c14n_uri)
+          .new(identifier_uri: c14n_uri)
+          .canonicalize(signed_info_elem)
       end
 
       def resolve_key(signature)
         return key if key
-
         return nil unless signature.key_info
 
         KeyExtractor.new(key_map: key_map).extract(signature.key_info)
@@ -118,65 +123,6 @@ module Moxml
           expected: expected,
           computed: computed,
         )
-      end
-
-      def canonicalization_from_transforms(reference)
-        return nil unless reference.transforms
-
-        reference.transforms.transforms.reverse_each.find do |t|
-          Algorithms.registered?(:canonicalization, t.algorithm)
-        end&.algorithm
-      end
-    end
-
-    # Aggregated verification result for a document (may contain multiple
-    # signatures).
-    class Result
-      attr_reader :results
-
-      def initialize(results:)
-        @results = results
-      end
-
-      def valid?
-        results.all?(&:valid?)
-      end
-
-      def signature_count
-        results.size
-      end
-    end
-
-    class SingleResult
-      attr_reader :signature_id, :references
-
-      def initialize(signature_id:, signature_valid:, references:)
-        @signature_id = signature_id
-        @signature_valid = signature_valid
-        @references = references
-      end
-
-      def signature_valid?
-        @signature_valid
-      end
-
-      def valid?
-        @signature_valid && references.all?(&:valid?)
-      end
-    end
-
-    class ReferenceResult
-      attr_reader :uri, :digest_method, :expected, :computed
-
-      def initialize(uri:, digest_method:, expected:, computed:)
-        @uri = uri
-        @digest_method = digest_method
-        @expected = expected
-        @computed = computed
-      end
-
-      def valid?
-        expected == computed
       end
     end
   end

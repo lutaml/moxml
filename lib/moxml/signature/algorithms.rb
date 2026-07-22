@@ -40,16 +40,6 @@ module Moxml
           registry[category]
         end
 
-        def clear(category = nil)
-          if category.nil?
-            CATEGORIES.each { |c| registry[c].clear }
-          else
-            validate_category!(category)
-            registry[category].clear
-          end
-          @builtins_loaded = false
-        end
-
         # Forces autoload of every built-in algorithm class so that
         # self-registration runs. Pure autoload — no `require` calls.
         def load_builtins!

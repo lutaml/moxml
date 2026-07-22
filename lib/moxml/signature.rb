@@ -37,6 +37,10 @@ module Moxml
     autoload :Verifier, "moxml/signature/verifier"
     autoload :KeyExtractor, "moxml/signature/key_extractor"
     autoload :TransformPipeline, "moxml/signature/transform_pipeline"
+    autoload :VerificationResult, "moxml/signature/verification_result"
+    autoload :SingleVerificationResult,
+             "moxml/signature/single_verification_result"
+    autoload :ReferenceResult, "moxml/signature/reference_result"
 
     class << self
       def sign(context:, document:, key:, **options)
