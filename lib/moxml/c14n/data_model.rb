@@ -10,7 +10,9 @@ module Moxml
     #   - xml:* inheritable attribute resolution
     #
     # Ported from canon (lutaml/canon) — adapted to build directly from
-    # Moxml::Node rather than via a separate Nokogiri pass.
+    # Moxml::Node rather than via a separate Nokogiri pass. Matches
+    # canon's document-level node iteration (PIs and comments outside
+    # the document root element).
     class DataModel
       def self.from_xml(xml_string)
         from_node(::Moxml.parse(xml_string))
@@ -24,11 +26,26 @@ module Moxml
         root
       end
 
+      # Build from a Moxml::Document. Matches canon's Nokogiri path:
+      # the root element is added first, then all other document-level
+      # children (PIs, comments) in document order.
       def self.build_from_document(document)
         root = Nodes::RootNode.new
+
         if document.root
           root.add_child(build_element_node(document.root))
+          # Iterate ALL document children — not just the root element.
+          # This captures PIs and comments that appear outside the
+          # document element, which are part of the canonical form.
+          document.children.each do |child|
+            next if child.equal?(document.root)
+            next if child.is_a?(::Moxml::Element)
+
+            built = build_node(child)
+            root.add_child(built) if built
+          end
         end
+
         root
       end
 
@@ -60,8 +77,6 @@ module Moxml
         element
       end
 
-      # Collects namespaces in scope at this element (declared here or
-      # inherited from ancestors). moxml exposes in_scope_namespaces.
       def self.build_namespace_nodes(moxml_element, element)
         moxml_element.in_scope_namespaces.each do |ns|
           element.add_namespace(
@@ -69,7 +84,6 @@ module Moxml
           )
         end
 
-        # The `xml` namespace is always implicitly in scope.
         return if element.namespace_nodes.any? { |n| n.prefix == "xml" }
 
         element.add_namespace(
@@ -102,18 +116,15 @@ module Moxml
       def self.build_pi_node(moxml_pi)
         Nodes::ProcessingInstructionNode.new(
           target: moxml_pi.target || moxml_pi.name,
-          data: moxml_pi.data || moxml_pi.content || "",
+          data: moxml_pi.content || "",
         )
       end
 
-      # Mark every node in the tree as in_node_set = value (used by subset).
       def self.mark_all(node, value)
         node.in_node_set = value
         node.children.each { |child| mark_all(child, value) }
       end
 
-      # Mark a subset: matched nodes and their descendants. Root is always
-      # in the set so processing starts.
       def self.mark_subset(root_node, matched)
         matched.each { |node| mark_node_and_descendants(node) }
         root_node.in_node_set = true

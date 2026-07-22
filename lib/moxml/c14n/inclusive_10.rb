@@ -10,168 +10,32 @@ module Moxml
     #
     # xml:* inheritable attributes (xml:lang, xml:space) are also inherited
     # from the nearest ancestor in which they are declared.
+    #
+    # Implementation: delegates to the canon-derived Processor pipeline
+    # (DataModel + NamespaceHandler + AttributeHandler + XmlBaseHandler).
     class Inclusive10
-      # `node`: a Moxml::Node — element, document, text, comment, or PI.
-      # `with_comments:`: include comment nodes in output.
-      # `inclusive_namespaces`: extra prefixes to render at the apex
-      #   (informational; ignored in pure inclusive C14N, which already
-      #   renders all in-scope namespaces).
-      # rubocop:disable Lint/UnusedMethodArgument -- signature must match CanonicalizationBase
-      def canonicalize(node, with_comments: false, inclusive_namespaces: [])
+      # rubocop:disable Lint/UnusedMethodArgument -- signature must match Exclusive
+      def canonicalize(node_or_xml, with_comments: false, inclusive_namespaces: [])
         # rubocop:enable Lint/UnusedMethodArgument
-        writer = Writer.new
-        context = NamespaceContext.new
-        render(node, writer, context, with_comments, true)
-        writer.output
+        root = coerce_to_data_model(node_or_xml)
+        Processor.new(with_comments: with_comments).process(root)
       end
 
       private
 
-      def render(node, writer, context, with_comments, is_apex)
-        case node_type(node)
-        when :document
-          node.children.each do |c|
-            render(c, writer, context, with_comments, is_apex)
-            is_apex = false
-          end
-        when :element
-          render_element(node, writer, context, with_comments, is_apex)
-        when :text, :cdata
-          writer.text(node.content)
-        when :comment
-          writer.comment(node.content) if with_comments
-        when :processing_instruction
-          target, content = pi_target_and_content(node)
-          writer.processing_instruction(target, content)
-        end
-      end
+      def coerce_to_data_model(node_or_xml)
+        return node_or_xml if node_or_xml.is_a?(Nodes::RootNode)
 
-      def render_element(element, writer, context, with_comments, is_apex)
-        declared = bindings_declared_on(element)
-        context.push(declared)
-
-        in_scope_bindings = if is_apex
-                              bindings_in_scope_on(element)
-                            else
-                              declared
-                            end
-
-        namespaces_to_render = renderable_namespaces(
-          element, in_scope_bindings, writer, is_apex
-        )
-
-        prefix = element_namespace_prefix(element)
-        local = element_name(element)
-
-        writer.open_rendered_frame(element)
-        writer.open_tag(prefix, local)
-        render_namespaces(writer, element, namespaces_to_render)
-        render_attributes(writer, element)
-        writer.close_tag_open
-
-        element.children.each { |c| render(c, writer, context, with_comments, false) }
-
-        writer.close_tag(prefix, local)
-        writer.close_rendered_frame
-        context.pop
-      end
-
-      def renderable_namespaces(element, in_scope_bindings, writer, is_apex)
-        already_rendered = writer.rendered_namespaces_for(element)
-        if is_apex
-          in_scope_bindings.filter_map do |prefix, uri|
-            next if prefix == "xml" && already_rendered[prefix] == uri
-
-            [prefix, uri]
-          end
+        case node_or_xml
+        when ::Moxml::Document, ::Moxml::Node
+          DataModel.from_node(node_or_xml)
+        when String
+          DataModel.from_xml(node_or_xml)
         else
-          in_scope_bindings.filter_map do |prefix, uri|
-            next if already_rendered[prefix] == uri
-
-            [prefix, uri]
-          end
+          raise ArgumentError,
+                "Inclusive10#canonicalize expects a Moxml::Node, " \
+                "Moxml::Document, or XML String; got #{node_or_xml.class}"
         end
-      end
-
-      def render_namespaces(writer, element, namespaces)
-        sorted = namespaces.sort_by { |(prefix, _)| prefix.to_s }
-        sorted.each do |(prefix, uri)|
-          writer.namespace(prefix, uri)
-          writer.mark_rendered(element, prefix, uri)
-        end
-      end
-
-      def render_attributes(writer, element)
-        attrs = collect_attributes(element)
-        sorted = attrs.sort_by { |a| [a[:ns_uri] || "", a[:local]] }
-        sorted.each { |a| writer.attribute(a[:expanded], a[:value]) }
-      end
-
-      def collect_attributes(element)
-        attrs = []
-        element.attributes.each do |attr|
-          ns = attr.namespace
-          attrs << {
-            ns_uri: ns&.uri,
-            local: attr.name,
-            expanded: attr_expanded_name(attr),
-            value: attr.value,
-          }
-        end
-        attrs
-      end
-
-      def attr_expanded_name(attr)
-        prefix = attr.namespace&.prefix
-        if prefix && !prefix.empty?
-          "#{prefix}:#{attr.name}"
-        else
-          attr.name
-        end
-      end
-
-      def bindings_declared_on(element)
-        bindings = {}
-        element.namespaces.each do |ns|
-          prefix = ns.prefix
-          prefix = "" if prefix.nil? || prefix == "xmlns"
-          bindings[prefix] = ns.uri
-        end
-        bindings
-      end
-
-      def bindings_in_scope_on(element)
-        bindings = {}
-        element.in_scope_namespaces.each do |ns|
-          prefix = ns.prefix
-          prefix = "" if prefix.nil? || prefix == "xmlns"
-          bindings[prefix] = ns.uri
-        end
-        bindings
-      end
-
-      def element_namespace_prefix(element)
-        ns = element.namespace
-        ns&.prefix
-      end
-
-      def element_name(element)
-        element.name
-      end
-
-      def pi_target_and_content(node)
-        [node.name, node.text]
-      end
-
-      def node_type(node)
-        return :document if node.is_a?(::Moxml::Document)
-        return :element if node.is_a?(::Moxml::Element)
-        return :text if node.is_a?(::Moxml::Text)
-        return :cdata if node.is_a?(::Moxml::Cdata)
-        return :comment if node.is_a?(::Moxml::Comment)
-        return :processing_instruction if node.is_a?(::Moxml::ProcessingInstruction)
-
-        :unknown
       end
     end
   end

@@ -64,7 +64,7 @@ module Moxml
           candidate.prefix == namespace.prefix && candidate.in_node_set?
         end
 
-        parent_ns && parent_ns.uri == ns.uri
+        parent_ns && parent_ns.uri == namespace.uri
       end
     end
   end

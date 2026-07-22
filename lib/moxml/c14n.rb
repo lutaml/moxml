@@ -31,14 +31,37 @@ module Moxml
     XMLNS_URI = "http://www.w3.org/2000/xmlns/"
     XML_URI = "http://www.w3.org/XML/1998/namespace"
 
-    # Default canonical form (inclusive C14N 1.0, no comments).
-    def self.canonicalize(node_or_xml, with_comments: false)
+    # Canonicalize using the named algorithm.
+    #
+    # +algorithm+ is one of:
+    #   :inclusive_10  Canonical XML 1.0 (default; W3C REC-xml-c14n-20010315)
+    #   :inclusive_11  Canonical XML 1.1 (W3C REC-xml-c14n11-20080502)
+    #   :exclusive_10  Exclusive C14N 1.0 (W3C REC-xml-exc-c14n-20020718)
+    #
+    # Input accepts a Moxml::Node, Moxml::Document, or XML String.
+    # Returns canonical UTF-8 octets.
+    def self.canonicalize(node_or_xml, with_comments: false,
+                          algorithm: :inclusive_10, inclusive_namespaces: [])
+      engine_for(algorithm).canonicalize(
+        node_or_xml,
+        with_comments: with_comments,
+        inclusive_namespaces: inclusive_namespaces,
+      )
+    end
+
+    # Convenience: inclusive C14N 1.0 (the most common case).
+    def self.canonicalize_inclusive_10(node_or_xml, with_comments: false)
       Inclusive10.new.canonicalize(node_or_xml, with_comments: with_comments)
     end
 
-    # Exclusive C14N 1.0. Renders only namespaces visibly utilized by
-    # the apex element and its descendants. Used to keep signatures
-    # portable across ancestor contexts.
+    # Convenience: inclusive C14N 1.1.
+    def self.canonicalize_inclusive_11(node_or_xml, with_comments: false)
+      Inclusive11.new.canonicalize(node_or_xml, with_comments: with_comments)
+    end
+
+    # Convenience: exclusive C14N 1.0. Renders only namespaces visibly
+    # utilized by the apex element and its descendants. Used to keep
+    # signatures portable across ancestor contexts.
     def self.canonicalize_exclusive(node_or_xml, with_comments: false,
                                     inclusive_namespaces: [])
       Exclusive.new.canonicalize(
@@ -48,33 +71,40 @@ module Moxml
       )
     end
 
-    # Convenience: build a data model from a Moxml::Node or XML String,
-    # then run the canonicalizer. Subset canonicalization (XPath node-set
-    # membership) is the foundation of enveloped-signature handling.
-    def self.canonicalize_subset(node_or_xml, matched_nodes, with_comments: false)
-      root = node_or_xml.is_a?(Nodes::RootNode) ? node_or_xml : DataModel.from_node_or_xml(node_or_xml)
-      DataModel.mark_all(root, false)
-      DataModel.mark_subset(root, matched_nodes)
-      Processor.new(with_comments: with_comments).process(root)
+    # Compare two XML inputs by their canonical forms. Returns true iff
+    # the canonical outputs are byte-identical.
+    #
+    # Useful for tests, diff reporting, and round-trip verification.
+    def self.equivalent?(a, b, with_comments: false, algorithm: :inclusive_10,
+                         inclusive_namespaces: [])
+      canonicalize(a, with_comments: with_comments, algorithm: algorithm,
+                   inclusive_namespaces: inclusive_namespaces) ==
+        canonicalize(b, with_comments: with_comments, algorithm: algorithm,
+                     inclusive_namespaces: inclusive_namespaces)
     end
 
     # Escape helpers used by both canon-ported code and Exclusive.
+    # Prefer CharacterEncoder class methods in new code.
     def self.escape_text(text)
-      text.to_s
-        .gsub("&", "&amp;")
-        .gsub("<", "&lt;")
-        .gsub(">", "&gt;")
-        .gsub("\r", "&#xD;")
+      CharacterEncoder.new.encode_text(text)
     end
 
     def self.escape_attribute(value)
-      value.to_s
-        .gsub("&", "&amp;")
-        .gsub("<", "&lt;")
-        .gsub("\"", "&quot;")
-        .gsub("\t", "&#x9;")
-        .gsub("\n", "&#xA;")
-        .gsub("\r", "&#xD;")
+      CharacterEncoder.new.encode_attribute(value)
     end
+
+    # Internal: pick the engine class for a given algorithm symbol.
+    def self.engine_for(algorithm)
+      case algorithm
+      when :inclusive_10 then Inclusive10.new
+      when :inclusive_11 then Inclusive11.new
+      when :exclusive_10 then Exclusive.new
+      else
+        raise ArgumentError,
+              "unknown C14N algorithm #{algorithm.inspect}; expected one of " \
+              ":inclusive_10, :inclusive_11, :exclusive_10"
+      end
+    end
+    private_class_method :engine_for
   end
 end
