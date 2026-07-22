@@ -8,12 +8,13 @@ module Moxml
     # Best Practice 1: verify SignatureValue BEFORE running any reference
     # transforms (which could be hostile).
     class Verifier
-      attr_reader :context, :document, :key
+      attr_reader :context, :document, :key, :key_map
 
-      def initialize(context:, document:, key:, **_options)
+      def initialize(context:, document:, key: nil, key_map: {}, **_options)
         @context = context
         @document = document
         @key = key
+        @key_map = key_map || {}
       end
 
       def verify
@@ -33,7 +34,7 @@ module Moxml
 
       def verify_one(signature_element)
         signature = Parser.new(context: context).parse(signature_element)
-        signature_value_ok = verify_signature_value(signature)
+        signature_value_ok = verify_signature_value(signature, signature_element)
         reference_results = if signature_value_ok
                               verify_references(signature, signature_element)
                             else
@@ -47,19 +48,25 @@ module Moxml
         )
       end
 
-      def verify_signature_value(signature)
+      def verify_signature_value(signature, signature_element)
         return false if signature.signature_value.nil?
         return false if signature.signature_value.value.nil?
 
-        signed_info_doc = Serializer.new(context: context)
-          .serialize_signed_info(signature.signed_info)
+        # Canonicalize the original SignedInfo element as it appears in the
+        # document — re-serializing the parsed model would change prefixes
+        # (e.g., default-namespace SignedInfo → ds:SignedInfo), breaking
+        # the byte-exact match the signature was computed against.
+        signed_info_elem = signature_element.at_xpath(
+          "./ds:SignedInfo", "ds" => DSIG_NS
+        )
+        return false if signed_info_elem.nil?
 
         c14n_uri = signature.signed_info.canonicalization_method&.algorithm
         return false if c14n_uri.nil?
 
         c14n = Algorithms.lookup(:canonicalization, c14n_uri)
           .new(identifier_uri: c14n_uri)
-        canonical = c14n.canonicalize(signed_info_doc.root)
+        canonical = c14n.canonicalize(signed_info_elem)
 
         sm_uri = signature.signed_info.signature_method.algorithm
         sm = Algorithms.lookup(:signature_method, sm_uri)
@@ -67,9 +74,20 @@ module Moxml
             identifier_uri: sm_uri,
             parameters: signature.signed_info.signature_method.parameters,
           )
-        sm.verify(canonical, key, signature.signature_value.value)
+        verification_key = resolve_key(signature)
+        return false if verification_key.nil?
+
+        sm.verify(canonical, verification_key, signature.signature_value.value)
       rescue VerificationError
         false
+      end
+
+      def resolve_key(signature)
+        return key if key
+
+        return nil unless signature.key_info
+
+        KeyExtractor.new(key_map: key_map).extract(signature.key_info)
       end
 
       def verify_references(signature, signature_element)
@@ -81,8 +99,12 @@ module Moxml
       def verify_reference(reference, signature_element)
         resolver = ReferenceResolver.new(context: context, document: document)
         input = resolver.resolve(reference.uri)
-        input = apply_transforms(input, reference, signature_element: signature_element)
-        canonical = nodeset_to_octets(input, reference)
+        pipeline = TransformPipeline.new(
+          context: context,
+          signature_element: signature_element,
+        )
+        transformed = pipeline.apply(input, reference.transforms)
+        canonical = pipeline.to_octets(transformed, reference)
 
         digest_algo = Algorithms.lookup(
           :digest, reference.digest_method.algorithm
@@ -98,75 +120,12 @@ module Moxml
         )
       end
 
-      def apply_transforms(input, reference, signature_element:)
-        current = input
-        current_type = type_of(current)
-        (reference.transforms&.transforms || []).each do |t|
-          algo_class = lookup_transform(t.algorithm)
-          transform = algo_class.new(
-            parameters: t.parameters,
-            context: context,
-            signature_element: signature_element,
-          )
-          new_type, coerced = coerce_type(current, current_type,
-                                          algo_class.input_type)
-          current_type = new_type
-          current = transform.transform(coerced)
-          current_type = algo_class.output_type
-        end
-        current
-      end
-
-      def lookup_transform(uri)
-        Algorithms.lookup(:transform, uri)
-      rescue UnknownAlgorithm
-        Algorithms.lookup(:canonicalization, uri)
-      end
-
-      def coerce_type(input, from, to)
-        return [to, input] if from == to
-
-        case [from, to]
-        when %i[octets nodeset]
-          parsed = context.parse(input.to_s)
-          [:nodeset, parsed.root]
-        when %i[nodeset octets]
-          octets = C14n::Inclusive10.new.canonicalize(input)
-          [:octets, octets]
-        else
-          raise TransformError, "cannot coerce #{from} to #{to}"
-        end
-      end
-
-      def type_of(value)
-        case value
-        when ::Moxml::Node, Array then :nodeset
-        else :octets
-        end
-      end
-
-      def nodeset_to_octets(value, reference)
-        return value if value.is_a?(String)
-
-        # Prefer the last canonicalization transform in the reference if any,
-        # else fall back to the SignedInfo's canonicalization method.
-        c14n_uri = canonicalization_from_transforms(reference) ||
-          signature_signed_info_c14n(reference)
-        klass = Algorithms.lookup(:canonicalization, c14n_uri)
-        klass.new(identifier_uri: c14n_uri).canonicalize(value)
-      end
-
       def canonicalization_from_transforms(reference)
         return nil unless reference.transforms
 
         reference.transforms.transforms.reverse_each.find do |t|
           Algorithms.registered?(:canonicalization, t.algorithm)
         end&.algorithm
-      end
-
-      def signature_signed_info_c14n(_reference)
-        # We don't have direct access to SignedInfo here; default to exc-c14n.
-        "http://www.w3.org/2001/10/xml-exc-c14n#"
       end
     end
 

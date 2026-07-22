@@ -20,6 +20,16 @@ module Moxml
       autoload :KeyInfo, "moxml/signature/model/key_info"
       autoload :KeyValue, "moxml/signature/model/key_value"
       autoload :ObjectElement, "moxml/signature/model/object_element"
+
+      module Key
+        autoload :X509Data, "moxml/signature/model/key/x509_data"
+        autoload :X509IssuerSerial,
+                 "moxml/signature/model/key/x509_issuer_serial"
+        autoload :X509Digest, "moxml/signature/model/key/x509_digest"
+        autoload :RSAKeyValue, "moxml/signature/model/key/rsa_key_value"
+        autoload :DSAKeyValue, "moxml/signature/model/key/dsa_key_value"
+        autoload :ECKeyValue, "moxml/signature/model/key/ec_key_value"
+      end
     end
   end
 end

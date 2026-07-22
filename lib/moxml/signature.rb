@@ -35,6 +35,8 @@ module Moxml
     autoload :ReferenceResolver, "moxml/signature/reference_resolver"
     autoload :Signer, "moxml/signature/signer"
     autoload :Verifier, "moxml/signature/verifier"
+    autoload :KeyExtractor, "moxml/signature/key_extractor"
+    autoload :TransformPipeline, "moxml/signature/transform_pipeline"
 
     class << self
       def sign(context:, document:, key:, **options)
@@ -48,7 +50,7 @@ module Moxml
         signature
       end
 
-      def verify(context:, document:, key:, **options)
+      def verify(context:, document:, key: nil, **options)
         Verifier.new(context: context, document: document, key: key, **options).verify
       end
 

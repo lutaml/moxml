@@ -64,11 +64,16 @@ module Moxml
           # Signature methods
           RsaPkcs1Sha
           HmacSha
+          EcdsaSha
+          DsaSha
           # Canonicalization
           ExcC14n10
+          InclusiveC14n10
+          InclusiveC14n11
           # Transforms
           Base64Transform
           EnvelopedSignatureTransform
+          XPathFilterTransform
 
           @builtins_loaded = true
         end
@@ -102,14 +107,20 @@ module Moxml
       # Signature methods
       autoload :RsaPkcs1Sha, "moxml/signature/algorithms/rsa_pkcs1_sha"
       autoload :HmacSha, "moxml/signature/algorithms/hmac_sha"
+      autoload :EcdsaSha, "moxml/signature/algorithms/ecdsa_sha"
+      autoload :DsaSha, "moxml/signature/algorithms/dsa_sha"
 
       # Canonicalization (delegates to Moxml::Signature::C14n engine)
       autoload :ExcC14n10, "moxml/signature/algorithms/exc_c14n_10"
+      autoload :InclusiveC14n10, "moxml/signature/algorithms/inclusive_c14n_10"
+      autoload :InclusiveC14n11, "moxml/signature/algorithms/inclusive_c14n_11"
 
       # Transforms
       autoload :Base64Transform, "moxml/signature/algorithms/base64_transform"
       autoload :EnvelopedSignatureTransform,
                "moxml/signature/algorithms/enveloped_signature_transform"
+      autoload :XPathFilterTransform,
+               "moxml/signature/algorithms/xpath_filter_transform"
     end
   end
 end

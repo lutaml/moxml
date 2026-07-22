@@ -55,6 +55,15 @@ RSpec.describe "Ported reference fixtures" do
                                                              "http://www.w3.org/2001/10/xml-exc-c14n#",
                                                            ])
     end
+
+    it "cross-verifies with the Ruby ref's RSA public key" do
+      pub_pem = File.read(File.join(fixtures_dir, "keys", "rsa_ref.pub"))
+      pub = OpenSSL::PKey::RSA.new(pub_pem)
+      result = Moxml::Signature.verify(context: ctx, document: doc, key: pub)
+      expect(result.valid?).to be true
+      expect(result.results.first.signature_valid?).to be true
+      expect(result.results.first.references.first.valid?).to be true
+    end
   end
 
   describe "sign2-doc.xml (the unsigned payload)" do
