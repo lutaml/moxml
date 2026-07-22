@@ -10,6 +10,10 @@ module Moxml
 
         def initialize
           @output = (+"")
+          # Tracks namespaces already rendered in the output ancestor chain,
+          # so descendants don't re-render the same declaration.
+          # Key: element (by object identity), value: { prefix => uri }.
+          @rendered_stack = []
         end
 
         def <<(str)
@@ -19,6 +23,29 @@ module Moxml
 
         def raw(str)
           @output << str.to_s
+          self
+        end
+
+        # Push a fresh "rendered" frame for the given element. Called by the
+        # canonicalizer before rendering the element's namespaces.
+        def open_rendered_frame(element)
+          parent_rendered = @rendered_stack.last || {}
+          # Inherit parent's rendered namespaces as the starting set.
+          @rendered_stack.push(parent_rendered.dup)
+          element
+        end
+
+        def close_rendered_frame
+          @rendered_stack.pop
+          self
+        end
+
+        def rendered_namespaces_for(_element)
+          @rendered_stack.last || {}
+        end
+
+        def mark_rendered(_element, prefix, uri)
+          (@rendered_stack.last || {})[prefix] = uri
           self
         end
 

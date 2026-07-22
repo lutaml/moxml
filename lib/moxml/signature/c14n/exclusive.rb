@@ -42,8 +42,9 @@ module Moxml
         end
 
         def render_element(element, writer, context, with_comments, inclusive)
-          bindings = bindings_on(element)
-          context.push(bindings)
+          declared = bindings_declared_on(element)
+          in_scope = bindings_in_scope_on(element)
+          context.push(in_scope)
 
           prefix = element_namespace_prefix(element)
           local = element_name(element)
@@ -53,24 +54,37 @@ module Moxml
           visible_prefixes.add("xml") if visibly_uses_xml(element)
 
           namespaces_to_render = visible_prefixes.map do |p|
-            uri = context.uri_for(p)
-            [p, uri]
-          end
+            [p, context.uri_for(p)]
+          end.reject { |(_, uri)| uri.nil? }
 
+          writer.open_rendered_frame(element)
           writer.open_tag(prefix, local)
-          render_namespaces(writer, namespaces_to_render)
+          render_namespaces(writer, element, namespaces_to_render)
           render_attributes(writer, element)
           writer.close_tag_open
+
+          # Switch context from in-scope (apex lookup) to declared-only so
+          # children build their own in-scope view by pushing their declared
+          # set on top of the parent's declared set.
+          context.pop
+          context.push(declared)
 
           element.children.each { |c| render(c, writer, context, with_comments, inclusive) }
 
           writer.close_tag(prefix, local)
+          writer.close_rendered_frame
           context.pop
         end
 
-        def render_namespaces(writer, namespaces)
-          sorted = namespaces.sort_by { |prefix, _| prefix.to_s }
-          sorted.each { |prefix, uri| writer.namespace(prefix, uri) if uri }
+        def render_namespaces(writer, element, namespaces)
+          already_rendered = writer.rendered_namespaces_for(element)
+          sorted = namespaces
+            .reject { |(prefix, _)| already_rendered.include?(prefix) }
+            .sort_by { |(prefix, _)| prefix.to_s }
+          sorted.each do |(prefix, uri)|
+            writer.namespace(prefix, uri)
+            writer.mark_rendered(element, prefix, uri)
+          end
         end
 
         def render_attributes(writer, element)
@@ -106,11 +120,16 @@ module Moxml
 
         def visibly_used_prefixes(element, element_prefix)
           set = Set.new
-          set.add(element_prefix) if element_prefix && !element_prefix.empty?
+          # The element's qualified name visibly uses its own namespace.
+          # Default namespace (prefix == "" or nil) is included so it gets
+          # rendered on the apex element when the apex uses default ns.
+          if element.namespace_uri
+            set.add(element_prefix || "")
+          end
           element.attributes.each do |attr|
             ns = attr.namespace
-            p = ns&.prefix
-            set.add(p) if p && !p.empty?
+            prefix = ns&.prefix
+            set.add(prefix || "") if ns&.uri
           end
           set
         end
@@ -119,9 +138,22 @@ module Moxml
           element.attributes.any? { |a| a.namespace&.prefix == "xml" }
         end
 
-        def bindings_on(element)
+        def bindings_declared_on(element)
           bindings = {}
           element.namespaces.each do |ns|
+            prefix = ns.prefix
+            prefix = "" if prefix.nil? || prefix == "xmlns"
+            bindings[prefix] = ns.uri
+          end
+          bindings
+        end
+
+        # In-scope namespaces (declared + inherited from ancestors).
+        # Used at the apex to find URIs for visibly-used prefixes whose
+        # declarations live on ancestors.
+        def bindings_in_scope_on(element)
+          bindings = {}
+          element.in_scope_namespaces.each do |ns|
             prefix = ns.prefix
             prefix = "" if prefix.nil? || prefix == "xmlns"
             bindings[prefix] = ns.uri

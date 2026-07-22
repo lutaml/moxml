@@ -13,13 +13,8 @@ module Moxml
                    with_comments: true
 
         def initialize(identifier_uri: nil, with_comments: nil,
-                       inclusive_namespaces: [])
+                       inclusive_namespaces: [], **_unused)
           super
-          # If the URI is the WithComments variant, default with_comments true.
-          return if !identifier_uri.nil?
-          return if !with_comments.nil?
-
-          @with_comments = false
         end
 
         private
