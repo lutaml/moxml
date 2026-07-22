@@ -32,7 +32,7 @@ RSpec.describe Moxml::Signature::Algorithms::EnvelopedSignatureTransform do
     expect(doc.at_xpath("//ds:Signature",
                         "ds" => "http://www.w3.org/2000/09/xmldsig#")).not_to be_nil
 
-    c14n = Moxml::Signature::C14n::Exclusive.new
+    c14n = Moxml::C14n::Exclusive.new
     canonical = c14n.canonicalize(result)
     expect(canonical).not_to include("Signature")
     expect(canonical).to include("important")

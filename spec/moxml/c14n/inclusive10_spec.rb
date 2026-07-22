@@ -3,7 +3,7 @@
 require "spec_helper"
 require "moxml/signature"
 
-RSpec.describe Moxml::Signature::C14n::Inclusive10 do
+RSpec.describe Moxml::C14n::Inclusive10 do
   let(:ctx) { Moxml.new(:nokogiri) }
   let(:canon) { described_class.new }
 

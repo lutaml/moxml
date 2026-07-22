@@ -3,8 +3,8 @@
 require "spec_helper"
 require "moxml/signature"
 
-RSpec.describe Moxml::Signature::C14n do
-  describe Moxml::Signature::C14n::Exclusive do
+RSpec.describe "Moxml C14N engine" do
+  describe Moxml::C14n::Exclusive do
     let(:ctx) { Moxml.new(:nokogiri) }
     let(:canon) { described_class.new }
 
@@ -69,19 +69,19 @@ RSpec.describe Moxml::Signature::C14n do
 
   describe ".escape_text" do
     it "escapes &, <, >" do
-      expect(described_class.escape_text("a & b < c > d"))
+      expect(Moxml::C14n.escape_text("a & b < c > d"))
         .to eq("a &amp; b &lt; c &gt; d")
     end
 
     it "escapes bare CR as &#xD;" do
-      expect(described_class.escape_text("a\rb"))
+      expect(Moxml::C14n.escape_text("a\rb"))
         .to eq("a&#xD;b")
     end
   end
 
   describe ".escape_attribute" do
     it "escapes quotes and tabs/newlines" do
-      expect(described_class.escape_attribute(%(a"b\tc\nd)))
+      expect(Moxml::C14n.escape_attribute(%(a"b\tc\nd)))
         .to eq(%(a&quot;b&#x9;c&#xA;d))
     end
   end
