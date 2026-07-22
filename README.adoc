@@ -559,6 +559,70 @@ ruby examples/api_client/api_client.rb
 See the link:examples/README.md[examples README] for complete documentation and
 learning paths.
 
+== XML Signature (Moxml::Signature)
+
+Moxml includes an XML-implementation-agnostic implementation of W3C XML
+Signature (xmldsig-core-1.1). Sign and verify documents with any moxml
+adapter; the canonicalization engine produces byte-exact output that
+cross-verifies with libxmlsec1.
+
+=== Quick start
+
+[source,ruby]
+----
+require "moxml"
+require "moxml/signature"
+require "openssl"
+
+ctx = Moxml.new(:nokogiri)
+key = OpenSSL::PKey::RSA.generate(2048)
+doc = ctx.parse("<doc><greeting>Hello, World!</greeting></doc>")
+
+# Sign
+signature = Moxml::Signature.sign(
+  context: ctx, document: doc, key: key,
+  signature_method: "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
+  canonicalization_method: "http://www.w3.org/2001/10/xml-exc-c14n#",
+  digest_method: "http://www.w3.org/2001/04/xmlenc#sha256",
+  reference_uri: "",
+  transforms: ["http://www.w3.org/2000/09/xmldsig#enveloped-signature"],
+)
+serialized = Moxml::Signature::Serializer.new(context: ctx).serialize(signature)
+doc.root.add_child(serialized.root)
+
+# Verify (auto-extracts key from KeyInfo if absent)
+result = Moxml::Signature.verify(context: ctx, document: doc, key: key)
+result.valid?  # => true
+----
+
+=== Supported algorithms
+
+Digests:: SHA-1, SHA-224, SHA-256, SHA-384, SHA-512
+Signature methods:: RSA-PKCS1v1.5, HMAC, ECDSA (P-256/P-384/P-521), DSA
+Canonicalization:: Exclusive C14N 1.0, Inclusive C14N 1.0, Inclusive C14N 1.1
+Transforms:: base64, Enveloped Signature
+
+Adding a custom algorithm means declaring `identifier "http://..."` on a
+subclass — no edits to existing code. See
+link:docs/signature/algorithms.md[the algorithms doc].
+
+=== Canonicalization (Moxml::C14n)
+
+C14N is a top-level moxml feature (sibling to XPath, Builder, SAX).
+Inclusive C14N is ported from the sibling `canon` gem; Exclusive C14N
+is moxml-native. See link:docs/signature/c14n.md[the C14N doc].
+
+=== Documentation
+
+* link:docs/signature/architecture.md[Architecture]
+* link:docs/signature/algorithms.md[Algorithm registry]
+* link:docs/signature/c14n.md[Canonicalization]
+* link:docs/signature/flows.md[Signer and Verifier flows]
+* link:docs/signature/key-extraction.md[Key extraction] (TODO)
+* link:docs/signature/security.md[Security considerations]
+* link:docs/signature/quick-reference.md[Quick reference]
+* link:examples/signature/[Runnable examples]
+
 == Working with documents
 
 === Using the builder pattern

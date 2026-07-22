@@ -5,12 +5,10 @@ module Moxml
     module Algorithms
       # Canonical XML 1.0 (https://www.w3.org/TR/xml-c14n/)
       #
-      # Status: implemented via C14n::Inclusive10.
+      # Implemented via the canon-derived C14n::Inclusive10 engine.
       class InclusiveC14n10 < CanonicalizationBase
-        identifier "http://www.w3.org/TR/2001/REC-xml-c14n-20010315",
-                   with_comments: false
-        identifier "http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments",
-                   with_comments: true
+        identifier "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+        identifier "http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments"
 
         private
 
