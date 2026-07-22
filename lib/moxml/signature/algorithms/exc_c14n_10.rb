@@ -15,7 +15,7 @@ module Moxml
         private
 
         def engine
-          C14n::Exclusive.new
+          ::Moxml::C14n::Exclusive.new
         end
       end
     end
