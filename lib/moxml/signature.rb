@@ -28,7 +28,7 @@ module Moxml
     autoload :SignatureKeyError, "moxml/signature/errors"
 
     autoload :Algorithms, "moxml/signature/algorithms"
-    autoload :C14n, "moxml/signature/c14n"
+    autoload :C14n, "moxml/c14n"
     autoload :Model, "moxml/signature/model"
     autoload :Serializer, "moxml/signature/serializer"
     autoload :Parser, "moxml/signature/parser"
