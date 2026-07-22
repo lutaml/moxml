@@ -33,15 +33,12 @@ module Moxml
 
     # Canonicalize using the named algorithm.
     #
-    # +algorithm+ is one of:
-    #   :inclusive_10  Canonical XML 1.0 (default; W3C REC-xml-c14n-20010315)
-    #   :inclusive_11  Canonical XML 1.1 (W3C REC-xml-c14n11-20080502)
-    #   :exclusive_10  Exclusive C14N 1.0 (W3C REC-xml-exc-c14n-20020718)
-    #
-    # Input accepts a Moxml::Node, Moxml::Document, or XML String.
-    # Returns canonical UTF-8 octets.
+    # algorithm is one of:
+    #   :inclusive10  Canonical XML 1.0 (default; W3C REC-xml-c14n-20010315)
+    #   :inclusive11  Canonical XML 1.1 (W3C REC-xml-c14n11-20080502)
+    #   :exclusive10  Exclusive C14N 1.0 (W3C REC-xml-exc-c14n-20020718)
     def self.canonicalize(node_or_xml, with_comments: false,
-                          algorithm: :inclusive_10, inclusive_namespaces: [])
+                          algorithm: :inclusive10, inclusive_namespaces: [])
       engine_for(algorithm).canonicalize(
         node_or_xml,
         with_comments: with_comments,
@@ -49,19 +46,14 @@ module Moxml
       )
     end
 
-    # Convenience: inclusive C14N 1.0 (the most common case).
-    def self.canonicalize_inclusive_10(node_or_xml, with_comments: false)
+    def self.canonicalize_inclusive10(node_or_xml, with_comments: false)
       Inclusive10.new.canonicalize(node_or_xml, with_comments: with_comments)
     end
 
-    # Convenience: inclusive C14N 1.1.
-    def self.canonicalize_inclusive_11(node_or_xml, with_comments: false)
+    def self.canonicalize_inclusive11(node_or_xml, with_comments: false)
       Inclusive11.new.canonicalize(node_or_xml, with_comments: with_comments)
     end
 
-    # Convenience: exclusive C14N 1.0. Renders only namespaces visibly
-    # utilized by the apex element and its descendants. Used to keep
-    # signatures portable across ancestor contexts.
     def self.canonicalize_exclusive(node_or_xml, with_comments: false,
                                     inclusive_namespaces: [])
       Exclusive.new.canonicalize(
@@ -71,20 +63,15 @@ module Moxml
       )
     end
 
-    # Compare two XML inputs by their canonical forms. Returns true iff
-    # the canonical outputs are byte-identical.
-    #
-    # Useful for tests, diff reporting, and round-trip verification.
-    def self.equivalent?(a, b, with_comments: false, algorithm: :inclusive_10,
-                         inclusive_namespaces: [])
-      canonicalize(a, with_comments: with_comments, algorithm: algorithm,
-                   inclusive_namespaces: inclusive_namespaces) ==
-        canonicalize(b, with_comments: with_comments, algorithm: algorithm,
-                     inclusive_namespaces: inclusive_namespaces)
+    # Compare two XML inputs by their canonical forms.
+    def self.equivalent?(left, right, with_comments: false,
+                         algorithm: :inclusive10, inclusive_namespaces: [])
+      canonicalize(left, with_comments: with_comments, algorithm: algorithm,
+                         inclusive_namespaces: inclusive_namespaces) ==
+        canonicalize(right, with_comments: with_comments, algorithm: algorithm,
+                            inclusive_namespaces: inclusive_namespaces)
     end
 
-    # Escape helpers used by both canon-ported code and Exclusive.
-    # Prefer CharacterEncoder class methods in new code.
     def self.escape_text(text)
       CharacterEncoder.new.encode_text(text)
     end
@@ -93,16 +80,15 @@ module Moxml
       CharacterEncoder.new.encode_attribute(value)
     end
 
-    # Internal: pick the engine class for a given algorithm symbol.
     def self.engine_for(algorithm)
       case algorithm
-      when :inclusive_10 then Inclusive10.new
-      when :inclusive_11 then Inclusive11.new
-      when :exclusive_10 then Exclusive.new
+      when :inclusive10 then Inclusive10.new
+      when :inclusive11 then Inclusive11.new
+      when :exclusive10 then Exclusive.new
       else
         raise ArgumentError,
               "unknown C14N algorithm #{algorithm.inspect}; expected one of " \
-              ":inclusive_10, :inclusive_11, :exclusive_10"
+              ":inclusive10, :inclusive11, :exclusive10"
       end
     end
     private_class_method :engine_for

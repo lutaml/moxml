@@ -60,33 +60,33 @@ module Moxml
 
       private
 
-      def build_signature(context:, document:, reference_uri:, signature_method:,
-                          canonicalization_method:, digest_method:, transforms:,
-                          key_info: nil, signature_id: nil, **)
+      def build_signature(**opts)
+        _context = opts[:context]
+        _document = opts[:document]
         signed_info = Model::SignedInfo.new(
           canonicalization_method: Model::AlgorithmMethod.new(
-            algorithm: canonicalization_method,
+            algorithm: opts[:canonicalization_method],
           ),
           signature_method: Model::AlgorithmMethod.new(
-            algorithm: signature_method,
+            algorithm: opts[:signature_method],
           ),
           references: [
             Model::Reference.new(
-              uri: reference_uri,
+              uri: opts[:reference_uri],
               transforms: Model::Transforms.new(
-                transforms: transforms.map do |t|
-                  Model::Transform.new(algorithm: t)
+                transforms: opts[:transforms].map do |transform|
+                  Model::Transform.new(algorithm: transform)
                 end,
               ),
-              digest_method: Model::DigestMethod.new(algorithm: digest_method),
+              digest_method: Model::DigestMethod.new(algorithm: opts[:digest_method]),
             ),
           ],
         )
 
         Model::Signature.new(
-          id: signature_id,
+          id: opts[:signature_id],
           signed_info: signed_info,
-          key_info: key_info,
+          key_info: opts[:key_info],
         )
       end
     end
