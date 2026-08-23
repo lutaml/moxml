@@ -30,7 +30,8 @@ gem "rubocop-performance"
 gem "rubocop-rake"
 gem "rubocop-rspec"
 gem "simplecov", require: false
-gem "stackprof"
+# stackprof relies on POSIX signals (SIGPROF/sigaction) unavailable on Windows
+gem "stackprof" unless Gem.win_platform?
 gem "tempfile"
 
 # Needed by get_process_mem on Windows
