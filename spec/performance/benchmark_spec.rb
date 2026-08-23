@@ -23,14 +23,20 @@ RSpec.shared_examples "Performance Examples" do
     context "measures performance" do
       let(:doc) { context.parse(large_xml) }
 
+      # Absolute ips varies more than 2x across machines and even between
+      # runs on the same machine (observed: rexml serializer 1.5-2.9 ips on
+      # one machine). These thresholds sit at roughly half of typical
+      # modern-runner throughput so they only trip on asymptotic
+      # regressions (accidental O(n^2), broken caching), not on hardware
+      # variance or a few percent of legitimate overhead.
       let(:thresholds) do
         {
-          nokogiri: { parser: 15, serializer: 1000 },
-          oga: { parser: 10, serializer: 100 },
-          rexml: { parser: 0, serializer: 5 },
-          ox: { parser: 2, serializer: 1000 },
-          headed_ox: { parser: 2, serializer: 1000 },
-          libxml: { parser: 500, serializer: 60 },
+          nokogiri: { parser: 8, serializer: 500 },
+          oga: { parser: 5, serializer: 50 },
+          rexml: { parser: 0, serializer: 1 },
+          ox: { parser: 1, serializer: 400 },
+          headed_ox: { parser: 1, serializer: 400 },
+          libxml: { parser: 200, serializer: 30 },
         }
       end
 

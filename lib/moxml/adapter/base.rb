@@ -25,7 +25,7 @@ module Moxml
       }.freeze
       private_constant :NAMED_ENTITY_DECODE_MAP
 
-      ENTITY_DECODE_RE = /&(?:(amp|lt|gt|quot|apos)|#(?:(\d+)|[xX]([0-9a-fA-F]+)));/.freeze
+      ENTITY_DECODE_RE = /&(?:(amp|lt|gt|quot|apos)|#(?:(\d+)|[xX]([0-9a-fA-F]+)));/
       private_constant :ENTITY_DECODE_RE
 
       class << self
