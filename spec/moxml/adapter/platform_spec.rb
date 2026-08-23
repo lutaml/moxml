@@ -75,9 +75,22 @@ RSpec.describe Moxml::Adapter do
   end
 
   describe "default adapter / available list invariants" do
-    it "DEFAULT_ADAPTER is a member of AVAILABLE_ADAPTERS" do
+    it "PREFERRED and FALLBACK adapters are members of AVAILABLE_ADAPTERS" do
       expect(Moxml::Adapter::AVAILABLE_ADAPTERS)
-        .to include(Moxml::Config::DEFAULT_ADAPTER)
+        .to include(Moxml::Config::PREFERRED_ADAPTER, Moxml::Config::FALLBACK_ADAPTER)
+    end
+
+    it "the resolved runtime default adapter is loadable" do
+      expect(Moxml::Adapter::AVAILABLE_ADAPTERS)
+        .to include(Moxml::Config.default_adapter)
+    end
+
+    it "prefers leptris only when the installed gem supports document construction" do
+      if Moxml::Config.leptris_preferred_available?
+        expect(Moxml::Config.runtime_default_adapter).to eq(:leptris)
+      else
+        expect(Moxml::Config.runtime_default_adapter).not_to eq(:leptris)
+      end
     end
 
     it "OPAL_DEFAULT_ADAPTER is a member of OPAL_AVAILABLE_ADAPTERS" do

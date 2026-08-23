@@ -1,5 +1,16 @@
 # frozen_string_literal: true
 
+# Leptris needs the unreleased programmatic-document-construction C
+# API; skip its integration matrix until the binding ships it.
+def leptris_ready?
+  @leptris_ready ||= begin
+    require "leptris"
+    Leptris::XML::Document.respond_to?(:create)
+  rescue LoadError
+    false
+  end
+end
+
 RSpec.describe "Cross-adapter integration" do
   # Integration shared examples - use the names as defined in the files
   all_shared_examples = [
@@ -39,6 +50,10 @@ RSpec.describe "Cross-adapter integration" do
         Moxml.with_config(adapter_name) do
           example.run
         end
+      end
+
+      if adapter_name == :leptris && !leptris_ready?
+        before { skip "requires leptris with Leptris::XML::Document.create (unreleased C API)" }
       end
 
       all_shared_examples.each do |shared_example_name|

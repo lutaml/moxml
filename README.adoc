@@ -47,12 +47,21 @@ LibXML:: https://github.com/xml4r/libxml-ruby[libxml-ruby], Ruby bindings
 for the performant https://github.com/GNOME/libxml2[libxml2] C library.
 Alternative to Nokogiri with similar performance characteristics.
 
+Leptris:: https://github.com/leptris/leptris[Leptris], a pure-C99 XML 1.0
+parser with a W3C-conformant XPath 1.0 engine, consumed through the
+https://github.com/leptris/leptris-ruby[leptris-ruby] FFI binding
+(precompiled platform gems — no compilation at install). Fastest on
+every measured operation; requires leptris >= 1.2 for programmatic
+document construction.
+
 ==== Default adapter selection
 
 When no adapter is explicitly specified, Moxml selects one automatically based on
 the runtime environment:
 
 . If running on Opal (`RUBY_ENGINE == "opal"`), Oga is used (pure Ruby, no C extensions)
+. Otherwise, if the installed leptris gem supports programmatic document
+  construction (`Leptris::XML::Document.create`, leptris >= 1.2), Leptris is used
 . Otherwise, Moxml detects already-loaded XML libraries in this order:
   .. Nokogiri
   .. Ox
@@ -63,7 +72,7 @@ the runtime environment:
 ----
 # Automatic detection — picks the best available adapter
 ctx = Moxml.new
-ctx.config.adapter_name  # => :nokogiri (or :oga on Opal)
+ctx.config.adapter_name  # => :leptris (leptris >= 1.2), :nokogiri otherwise, :oga on Opal
 
 # Explicit override — always takes precedence
 ctx = Moxml.new(:ox)
@@ -80,11 +89,12 @@ The following table summarizes the features supported by each library.
 NOTE: The checkmarks indicate support for the feature, while the footnotes
 provide additional context for specific features.
 
-[cols="1,1,1,1,1,3"]
+[cols="1,1,1,1,1,1,1,3"]
 |===
-|Feature |Nokogiri |Oga |REXML |LibXML |Ox |HeadedOx
+|Feature |Nokogiri |Oga |REXML |LibXML |Ox |HeadedOx |Leptris
 
 |Parsing, serializing
+| ✅
 | ✅
 | ✅
 | ✅
@@ -99,6 +109,7 @@ provide additional context for specific features.
 | ✅ Full (10/10 events)
 | ⚠️ Core (4/10 events) See NOTE 7.
 | ⚠️ Core (4/10 events) See NOTE 7.
+| ✅ Full See NOTE 8.
 
 |Node manipulation
 | ✅
@@ -107,6 +118,7 @@ provide additional context for specific features.
 | ✅
 | ✅ See NOTE 1.
 | ✅ See NOTE 1.
+| ✅
 
 |Basic XPath
 | ✅
@@ -115,6 +127,8 @@ provide additional context for specific features.
 | ✅
 | Uses Ox-specific API `locate`. See NOTE 2.
 | ✅ Full XPath 1.0. See NOTE 3.
+| ✅ Full XPath 1.0 via Moxml's Ruby engine. See NOTE 8.
+
 
 |XPath with namespaces
 | ✅
@@ -123,6 +137,7 @@ provide additional context for specific features.
 | ✅
 | Uses Ox-specific API `locate`. See NOTE 2.
 | ⚠️ Basic. See NOTE 3.
+| ✅ Full See NOTE 8.
 
 |===
 
@@ -139,15 +154,23 @@ NOTE: Ox/HeadedOx SAX: Only core events supported (start_element, end_element,
 characters, errors). No separate CDATA, comment, or processing instruction
 events.
 
+NOTE: Leptris: XPath is evaluated by Moxml's pure-Ruby XPath 1.0 engine
+(same as HeadedOx) rather than libleptris's native engine, because the
+native engine does not resolve expression prefixes against
+document-declared namespaces. XML declarations, programmatic DOCTYPEs,
+and entity references are value objects stored via NativeAttachment —
+libleptris has no first-class nodes for them.
+
 == Adapter comparison
 
 === Feature compatibility matrix
 
-[cols="3,1,1,1,1,1,1", options="header"]
+[cols="3,1,1,1,1,1,1,1", options="header"]
 |===
-| Feature/Operation | Nokogiri | Oga | REXML | LibXML | Ox | HeadedOx
+| Feature/Operation | Nokogiri | Oga | REXML | LibXML | Ox | HeadedOx | Leptris
 
 | *Core Operations*
+
 |
 |
 |
@@ -162,8 +185,10 @@ events.
 | ✅ Full
 | ✅ Full
 | ✅ Full
+| ✅ Full
 
 | Parse XML file/IO
+| ✅ Full
 | ✅ Full
 | ✅ Full
 | ✅ Full
@@ -178,9 +203,12 @@ events.
 | ✅ Full
 | ✅ Full
 | ✅ Full
+| ✅ Full
 
 | *Element Operations*
+
 |
+ 
 |
 |
 |
@@ -188,6 +216,7 @@ events.
 |
 
 | Create elements
+| ✅ Full
 | ✅ Full
 | ✅ Full
 | ✅ Full
@@ -202,8 +231,10 @@ events.
 | ✅ Full
 | ✅ Full
 | ✅ Full
+| ✅ Full
 
 | Add/remove children
+| ✅ Full
 | ✅ Full
 | ✅ Full
 | ✅ Full
@@ -218,9 +249,12 @@ events.
 | ✅ Full
 | ⚠️ Limited^1^
 | ⚠️ Limited^1^
+| ✅ Full
 
 | *Namespace Operations*
+
 |
+ 
 |
 |
 |
@@ -228,6 +262,7 @@ events.
 |
 
 | Add namespaces
+| ✅ Full
 | ✅ Full
 | ✅ Full
 | ✅ Full
@@ -242,6 +277,7 @@ events.
 | ✅ Full
 | ⚠️ Basic
 | ⚠️ Basic
+| ✅ Full
 
 | Namespace inheritance
 | ✅ Full
@@ -250,6 +286,7 @@ events.
 | ✅ Full
 | ❌ None
 | ❌ None^5^
+| ✅ Full
 
 | Namespaced attributes
 | ✅ Full
@@ -258,9 +295,12 @@ events.
 | ✅ Full
 | ⚠️ Limited
 | ⚠️ Limited^5^
+| ✅ Full
 
 | *XPath Queries*
+
 |
+ 
 |
 |
 |
@@ -268,6 +308,7 @@ events.
 |
 
 | Basic paths (`//element`)
+| ✅ Full
 | ✅ Full
 | ✅ Full
 | ✅ Full
@@ -282,6 +323,7 @@ events.
 | ✅ Full
 | ⚠️ Existence only^2^
 | ✅ Full
+| ✅ Full
 
 | Attribute values (`[@id='123']`)
 | ✅ Full
@@ -289,6 +331,7 @@ events.
 | ✅ Full
 | ✅ Full
 | ❌ None^3^
+| ✅ Full
 | ✅ Full
 
 | Logical operators (`[@a and @b]`)
@@ -298,6 +341,7 @@ events.
 | ✅ Full
 | ❌ None
 | ✅ Full
+| ✅ Full
 
 | Position predicates (`[1]`, `[last()]`)
 | ✅ Full
@@ -305,6 +349,7 @@ events.
 | ✅ Full
 | ✅ Full
 | ❌ None
+| ✅ Full
 | ✅ Full
 
 | Text predicates (`[text()='x']`)
@@ -314,6 +359,7 @@ events.
 | ✅ Full
 | ❌ None
 | ✅ Full
+| ✅ Full
 
 | Namespace-aware queries
 | ✅ Full
@@ -322,6 +368,7 @@ events.
 | ✅ Full
 | ❌ None
 | ⚠️ Basic^5^
+| ✅ Full
 
 | Parent axis (`..`)
 | ✅ Full
@@ -329,6 +376,7 @@ events.
 | ✅ Full
 | ✅ Full
 | ❌ None
+| ✅ Full
 | ✅ Full
 
 | Sibling axes
@@ -338,6 +386,7 @@ events.
 | ✅ Full
 | ❌ None
 | ❌ None^5^
+| ✅ Full
 
 | XPath functions (`count()`, etc.)
 | ✅ Full
@@ -346,9 +395,12 @@ events.
 | ✅ Full
 | ❌ None
 | ✅ All 27
+| ✅ All 27
 
 | *Special Content*
+
 |
+ 
 |
 |
 |
@@ -356,6 +408,7 @@ events.
 |
 
 | CDATA sections
+| ✅ Full
 | ✅ Full
 | ✅ Full
 | ✅ Full
@@ -370,8 +423,10 @@ events.
 | ✅ Full
 | ✅ Full
 | ✅ Full
+| ✅ Full
 
 | Processing instructions
+| ✅ Full
 | ✅ Full
 | ✅ Full
 | ✅ Full
@@ -386,9 +441,12 @@ events.
 | ✅ Full
 | ✅ Full
 | ✅ Full
+| ⚠️ Value-object sidecar^8^
 
 | *Performance*
+
 |
+ 
 |
 |
 |
@@ -402,12 +460,14 @@ events.
 | Fast
 | Very Fast
 | Very Fast
+| Fastest
 
 | Serialize speed
 | Fast
 | Fast
 | Medium
 | Medium
+| Very Fast
 | Very Fast
 | Very Fast
 
@@ -418,6 +478,7 @@ events.
 | Good
 | Excellent
 | Excellent
+| Excellent
 
 | Thread safety
 | ✅ Yes
@@ -426,13 +487,15 @@ events.
 | ✅ Yes
 | ✅ Yes
 | ✅ Yes
+| ⚠️ One doc per thread^8^
 |===
 +
 ^1^ Ox/HeadedOx: Text node replacement may fail in some cases due to internal node structure +
 ^2^ Ox: `//book[@id]` works (returns all book elements), but doesn't filter by attribute existence +
 ^3^ HeadedOx: Full XPath 1.0 with all 27 functions and 6 axes. Pure Ruby XPath engine on Ox's C parser. 99.20% pass rate. See link:docs/headed-ox.adoc[] +
 ^4^ Ox: Use `.find { |el| el["id"] == "123" }` instead of XPath attribute value predicates +
-^5^ HeadedOx limitations: Namespace introspection and 7 axes not implemented. See link:docs/HEADED_OX_LIMITATIONS.md[]
+^5^ HeadedOx limitations: Namespace introspection and 7 axes not implemented. See link:docs/HEADED_OX_LIMITATIONS.md[] +
+^8^ Leptris: XPath runs through Moxml's pure-Ruby XPath 1.0 engine (the native C engine does not resolve expression prefixes against document namespaces); DOCTYPEs and XML declarations are value objects stored via NativeAttachment; libleptris documents are not thread-safe — one document per thread
 
 === Adapter selection guide
 

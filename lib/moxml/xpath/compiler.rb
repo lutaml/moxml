@@ -534,6 +534,11 @@ module Moxml
             # Resolve prefix to URI using namespace mappings
             ns_uri = @namespaces[ns]
             ns_match = input.namespace.and(input.namespace.uri.eq(string(ns_uri)))
+          elsif ns == "xmlns"
+            # Nokogiri-compatible reserved prefix: xmlns:name addresses
+            # elements in the default namespace (no prefix).
+            ns_match = input.namespace.and(
+              input.namespace.prefix.to_s.eq(string("")))
           else
             # No mapping provided - check against element's namespace prefix
             # Need to ensure input.namespace exists first

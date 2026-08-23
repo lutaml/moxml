@@ -37,6 +37,7 @@ RSpec.shared_examples "Performance Examples" do
           ox: { parser: 1, serializer: 400 },
           headed_ox: { parser: 1, serializer: 400 },
           libxml: { parser: 200, serializer: 30 },
+          leptris: { parser: 1300, serializer: 900 },
         }
       end
 
