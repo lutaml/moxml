@@ -20,6 +20,7 @@ unless Leptris::XML::Document.respond_to?(:create)
       skip "requires leptris with Leptris::XML::Document.create (unreleased C API)"
     end
   end
+
   return
 end
 
