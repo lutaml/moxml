@@ -224,17 +224,28 @@ module Moxml
           attr.parent
         end
 
-        def attributes(element)
-          element.attributes.values
-        end
-
         def set_attribute(element, name, value)
           element[name.to_s] = value.to_s
         end
 
+        def attributes(element)
+          # attribute_nodes, not attributes.values: the attributes Hash
+          # is keyed by local name, so xmi:type and type collide and
+          # one is silently dropped (issue #94).
+          element.attribute_nodes
+        end
+
         def get_attribute(element, name)
-          # attributes keys don't include attribute namespaces
-          element.attributes[name.to_s]
+          name_s = name.to_s
+          if name_s.include?(":")
+            prefix, local = name_s.split(":", 2)
+            href = element.namespace_definitions
+                           .find { |ns| ns.prefix == prefix }&.href
+            element.attribute_with_ns(local, href)
+          else
+            element.attribute_with_ns(name_s, nil) ||
+              element.attributes[name_s]
+          end
         end
 
         def get_attribute_value(element, name)
