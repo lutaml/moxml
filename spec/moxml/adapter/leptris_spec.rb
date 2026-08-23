@@ -13,7 +13,9 @@ end
 # 1.1.x does not ship it yet; skip instead of failing until the binding
 # release catches up.
 unless Leptris::XML::Document.respond_to?(:create)
-  RSpec.describe Moxml::Adapter::Leptris do
+  # String form: the adapter constant is not loaded in this branch —
+  # resolving it would raise NameError before the skip applies.
+  RSpec.describe "Moxml::Adapter::Leptris" do
     it "waits for a leptris release with programmatic document construction" do
       skip "requires leptris with Leptris::XML::Document.create (unreleased C API)"
     end
