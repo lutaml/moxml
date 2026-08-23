@@ -2,13 +2,15 @@
 
 # Leptris needs the unreleased programmatic-document-construction C
 # API; skip its integration matrix until the binding ships it.
+#
+# const_defined? only — deliberately NO require here: loading a native
+# gem at example-group definition time is a load-order side effect
+# (and the only new load-time behavior on this branch). The leptris
+# adapter spec is what loads the gem in its own process.
 def leptris_ready?
-  @leptris_ready ||= begin
-    require "leptris"
-    Leptris::XML::Document.respond_to?(:create)
-  rescue LoadError
-    false
-  end
+  return false unless Object.const_defined?(:Leptris)
+
+  Leptris::XML::Document.respond_to?(:create)
 end
 
 RSpec.describe "Cross-adapter integration" do
