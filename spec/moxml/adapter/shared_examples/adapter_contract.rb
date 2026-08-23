@@ -125,6 +125,27 @@ RSpec.shared_examples "xml adapter" do
       value = attr.respond_to?(:to_xml) ? attr&.to_xml : attr.to_s
       expect(value).to match(/&lt; &gt; &amp; (&quot;|") ('|&apos;)/)
     end
+
+    it "keeps attributes that share a local name across namespaces (issues #94/#95)" do
+      collision = described_class.parse(
+        '<probe xmlns:xmi="http://www.example.com/xmi" ' \
+        'xmi:type="uml:Parameter" type="EAnone_void"/>'
+      ).native
+      probe = described_class.root(collision)
+
+      attrs = described_class.attributes(probe)
+      expect(attrs.size).to eq(2)
+      expect(attrs.map(&:value).sort).to eq(["EAnone_void", "uml:Parameter"])
+
+      reversed = described_class.parse(
+        '<probe type="EAnone_void" ' \
+        'xmlns:xmi="http://www.example.com/xmi" xmi:type="uml:Parameter"/>'
+      ).native
+      expect(described_class.attributes(described_class.root(reversed)).size).to eq(2)
+
+      expect(described_class.get_attribute_value(probe, "type"))
+        .to eq("EAnone_void")
+    end
   end
 
   describe "namespaces" do

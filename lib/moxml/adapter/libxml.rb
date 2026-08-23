@@ -472,30 +472,46 @@ module Moxml
           native_elem = unpatch_node(element)
           return nil unless native_elem
 
-          # Try to get the attribute with the given name (handles namespaced attrs)
-          value = native_elem[name.to_s]
-          return value if value
-
-          # If name contains ':', try to get as namespaced attribute
-          if name.to_s.include?(":")
-            prefix, local_name = name.to_s.split(":", 2)
+          name_s = name.to_s
+          if name_s.include?(":")
+            prefix, local_name = name_s.split(":", 2)
             # Try to find attribute by namespace
             if native_elem.attributes?
               native_elem.each_attr do |attr|
-                if attr.name == local_name || attr.name == name.to_s
+                if attr.name == local_name || attr.name == name_s
                   # Check if attribute's namespace matches the prefix
                   if attr.ns && attr.ns.prefix == prefix
                     return attr.value
-                  elsif attr.name == name.to_s
+                  elsif attr.name == name_s
                     # Fallback: attribute name includes the prefix
                     return attr.value
                   end
                 end
               end
             end
+
+            return nil
           end
 
-          nil
+          # Bare name: node[name_s] is ambiguous when a namespaced
+          # attribute shares the local name (issue #94), so prefer the
+          # namespace-less attribute explicitly.
+          if native_elem.attributes?
+            namespaced_value = nil
+            native_elem.each_attr do |attr|
+              next if attr.name.to_s.start_with?("xmlns")
+              next unless attr.name == name_s
+
+              if attr.ns.nil?
+                return attr.value
+              elsif namespaced_value.nil?
+                namespaced_value = attr.value
+              end
+            end
+            return namespaced_value unless namespaced_value.nil?
+          end
+
+          native_elem[name_s]
         end
 
         def remove_attribute(element, name)

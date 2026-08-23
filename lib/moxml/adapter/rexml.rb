@@ -254,9 +254,17 @@ module Moxml
         def attributes(element)
           return [] unless element.is_a?(::REXML::Element)
 
-          # Only return non-namespace attributes
-          element.attributes.values
-            .reject { |attr| attr.prefix.to_s.start_with?("xmlns") }
+          # Each real Attribute node, not Attributes#values: when two
+          # attributes share a local name across namespaces, REXML's
+          # values leaks its internal prefix-grouping Hash alongside
+          # the Attribute objects (issue #95).
+          result = []
+          element.attributes.each_attribute do |attr|
+            next if attr.prefix.to_s.start_with?("xmlns")
+
+            result << attr
+          end
+          result
         end
 
         def attribute_element(attribute)
