@@ -240,7 +240,7 @@ module Moxml
           if name_s.include?(":")
             prefix, local = name_s.split(":", 2)
             href = element.namespace_definitions
-                           .find { |ns| ns.prefix == prefix }&.href
+              .find { |ns| ns.prefix == prefix }&.href
             element.attribute_with_ns(local, href)
           else
             element.attribute_with_ns(name_s, nil) ||

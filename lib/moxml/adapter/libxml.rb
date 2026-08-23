@@ -478,7 +478,7 @@ module Moxml
             # Try to find attribute by namespace
             if native_elem.attributes?
               native_elem.each_attr do |attr|
-                if attr.name == local_name || attr.name == name_s
+                if [local_name, name_s].include?(attr.name)
                   # Check if attribute's namespace matches the prefix
                   if attr.ns && attr.ns.prefix == prefix
                     return attr.value

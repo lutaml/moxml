@@ -129,7 +129,7 @@ RSpec.shared_examples "xml adapter" do
     it "keeps attributes that share a local name across namespaces (issues #94/#95)" do
       collision = described_class.parse(
         '<probe xmlns:xmi="http://www.example.com/xmi" ' \
-        'xmi:type="uml:Parameter" type="EAnone_void"/>'
+        'xmi:type="uml:Parameter" type="EAnone_void"/>',
       ).native
       probe = described_class.root(collision)
 
@@ -139,7 +139,7 @@ RSpec.shared_examples "xml adapter" do
 
       reversed = described_class.parse(
         '<probe type="EAnone_void" ' \
-        'xmlns:xmi="http://www.example.com/xmi" xmi:type="uml:Parameter"/>'
+        'xmlns:xmi="http://www.example.com/xmi" xmi:type="uml:Parameter"/>',
       ).native
       expect(described_class.attributes(described_class.root(reversed)).size).to eq(2)
 
