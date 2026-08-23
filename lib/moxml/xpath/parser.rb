@@ -385,14 +385,18 @@ module Moxml
         if match?(:star)
           advance
           return AST::Node.wildcard
-        elsif match?(:node_type)
+        elsif match?(:node_type) && peek_is?(:lparen)
           type_name = current_value
           advance
           consume(:lparen, "Expected '(' after node type")
           consume(:rparen, "Expected ')' after node type")
           return AST::Node.node_type(type_name)
-        elsif match?(:name, :and, :or, :mod, :div)
-          # Accept keywords as valid element names (they're valid XML names)
+        elsif match?(:name, :node_type, :and, :or, :mod, :div)
+          # Accept keywords as valid element names (they're valid XML
+          # names). Node-type words (text, comment, node) also land here
+          # when not followed by '(' — they name elements, either alone
+          # ("//text") or as the local part of a prefixed name
+          # ("//svg:text").
           name = current_value
           advance
 
@@ -402,7 +406,7 @@ module Moxml
             if match?(:star)
               advance
               return AST::Node.test(name, "*")
-            elsif match?(:name, :and, :or, :mod, :div)
+            elsif match?(:name, :node_type, :and, :or, :mod, :div)
               # Accept keywords as local names too
               local_name = current_value
               advance

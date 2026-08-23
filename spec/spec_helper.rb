@@ -101,7 +101,11 @@ RSpec.configure do |config|
 end
 
 Moxml.configure do |config|
-  config.adapter = RUBY_ENGINE == "opal" ? Moxml::Config::OPAL_DEFAULT_ADAPTER : Moxml::Config::DEFAULT_ADAPTER
+  # Pin the suite baseline to the fallback adapter so results are
+  # reproducible regardless of whether the local environment has a
+  # leptris new enough to win the runtime-default probe. Leptris gets
+  # full coverage through its explicit adapter/integration matrices.
+  config.adapter = RUBY_ENGINE == "opal" ? Moxml::Config::OPAL_DEFAULT_ADAPTER : Moxml::Config::FALLBACK_ADAPTER
   config.strict_parsing = true
   config.default_encoding = "UTF-8"
   config.entity_load_mode = :optional if RUBY_ENGINE == "opal"

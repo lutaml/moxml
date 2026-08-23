@@ -5,8 +5,15 @@ module Moxml
     LINE_ENDING_LF = "\n"
     LINE_ENDING_CRLF = "\r\n"
     VALID_LINE_ENDINGS = [LINE_ENDING_LF, LINE_ENDING_CRLF].freeze
-    VALID_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
-    DEFAULT_ADAPTER = :nokogiri
+    VALID_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml leptris].freeze
+    # Preferred CRuby default (issue #96): fastest on every measured
+    # operation and the cleanest deployment story. Only takes effect
+    # when the installed leptris supports programmatic document
+    # construction (Leptris::XML::Document.create); otherwise moxml
+    # falls back to FALLBACK_ADAPTER so released-gem environments keep
+    # working. Oga remains the Opal default (pure Ruby).
+    PREFERRED_ADAPTER = :leptris
+    FALLBACK_ADAPTER = :nokogiri
     OPAL_DEFAULT_ADAPTER = :oga
 
     # Entity loading modes:
@@ -30,7 +37,23 @@ module Moxml
       def runtime_default_adapter
         return OPAL_DEFAULT_ADAPTER if RUBY_ENGINE == "opal"
 
-        detect_loaded_adapter || DEFAULT_ADAPTER
+        return PREFERRED_ADAPTER if leptris_preferred_available?
+
+        detect_loaded_adapter || FALLBACK_ADAPTER
+      end
+
+      # True when the leptris gem is installed AND new enough for the
+      # adapter (it needs programmatic document construction, which
+      # released 1.1.x lacks). Memoized: the require probe runs once.
+      def leptris_preferred_available?
+        return @leptris_preferred_available if defined?(@leptris_preferred_available)
+
+        @leptris_preferred_available = begin
+          require "leptris"
+          ::Leptris::XML::Document.respond_to?(:create)
+        rescue LoadError
+          false
+        end
       end
 
       def detect_loaded_adapter

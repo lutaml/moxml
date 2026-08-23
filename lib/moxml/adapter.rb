@@ -7,8 +7,9 @@ module Moxml
     autoload :CustomizedOx, "moxml/adapter/customized_ox"
     autoload :CustomizedRexml, "moxml/adapter/customized_rexml"
     autoload :CustomizedLibxml, "moxml/adapter/customized_libxml"
+    autoload :CustomizedLeptris, "moxml/adapter/customized_leptris"
 
-    AVAILABLE_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml].freeze
+    AVAILABLE_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml leptris].freeze
 
     # Adapters that work under the Opal (JavaScript) runtime.
     # Oga is pure Ruby and designed with Opal compatibility in mind — it is the
