@@ -49,15 +49,7 @@ jobs:
         run: rake vendor:compile
 
       - name: Run fast tests (unit + adapter + integration)
-        # TEMPORARY DIAGNOSTIC for the spec:fast hang on this branch:
-        # per-suite timeout converts a hang into a failed run whose
-        # flushed log shows the suite and the progress output where it
-        # stopped. Remove once the hang is diagnosed.
-        run: |
-          set -x
-          timeout 300 bundle exec rake spec:unit || exit 1
-          timeout 300 bundle exec rake spec:adapter || exit 1
-          timeout 900 bundle exec rake spec:integration || exit 1
+        run: bundle exec rake spec:fast
 
       - name: Run rubocop
         run: bundle exec rubocop
