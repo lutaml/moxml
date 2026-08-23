@@ -115,7 +115,7 @@ module Moxml
           element.add_namespace_definition(prefix, uri)
         end
 
-        def set_namespace(_element, _ns)
+        def set_namespace(_element, _namespace)
           # libleptris resolves namespaces from declarations on the
           # tree itself; there is no separate node-to-namespace link
           # to maintain.
@@ -146,16 +146,13 @@ module Moxml
         end
 
         def node_name(node)
-          case node
-          when CustomizedLeptris::Doctype then node.name
-          when ::Leptris::XML::DocType then node.root_name
-          else node.name
-          end
+          return node.root_name if node.is_a?(::Leptris::XML::DocType)
+
+          node.name
         end
 
         def set_node_name(node, name)
           case node
-          when CustomizedLeptris::Doctype then node.name = name
           when ::Leptris::XML::ProcessingInstruction then node.target = name
           else node.name = name
           end
@@ -190,7 +187,6 @@ module Moxml
           case node
           when ::Leptris::XML::Document then nil
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype then node.parent_doc
-          when CustomizedLeptris::EntityReference then node.parent
           else node.parent
           end
         end
@@ -298,9 +294,11 @@ module Moxml
           # unlinking and re-inserting: after an element sibling when
           # one exists, else appended (end-of-list) to the parent.
           parent = node.parent
-          raise Moxml::DocumentStructureError.new(
-            "cannot replace a detached node",
-          ) unless parent
+          unless parent
+            raise Moxml::DocumentStructureError.new(
+              "cannot replace a detached node",
+            )
+          end
 
           prev = node.previous_sibling
           node.unlink
@@ -363,12 +361,12 @@ module Moxml
           node.data = content.to_s
         end
 
-        def namespace_prefix(ns)
-          ns.prefix
+        def namespace_prefix(namespace)
+          namespace.prefix
         end
 
-        def namespace_uri(ns)
-          ns.href
+        def namespace_uri(namespace)
+          namespace.href
         end
 
         def namespace_definitions(element)
@@ -404,16 +402,16 @@ module Moxml
           case result
           when Array, NodeSet
             nodes = result.is_a?(NodeSet) ? result.to_a : result
-            seen = {}
+            seen = {}.compare_by_identity
             nodes.map { |n| n.is_a?(Moxml::Node) ? n.native : n }
-                .select do |native|
-                  if seen[native.object_id]
-                    false
-                  else
-                    seen[native.object_id] = true
-                    true
-                  end
+              .select do |native|
+                if seen.key?(native)
+                  false
+                else
+                  seen[native] = true
+                  true
                 end
+              end
           else
             result
           end
@@ -433,7 +431,7 @@ module Moxml
           when ::Leptris::XML::Comment
             return "<!--#{node.content}-->"
           when ::Leptris::XML::CDATA
-            return "<![CDATA[#{node.content.to_s.gsub("]]>", "]]]]><![CDATA[>")}]]>"
+            return "<![CDATA[#{node.content.to_s.gsub(']]>', ']]]]><![CDATA[>')}]]>"
           when ::Leptris::XML::ProcessingInstruction
             content = node.content.to_s
             return content.empty? ? "<?#{node.target}?>" : "<?#{node.target} #{content}?>"
