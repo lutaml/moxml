@@ -212,6 +212,13 @@ namespace_validation_mode: :strict)
         # Called when a Declaration node is removed from a document.
         def remove_declaration(_native_doc); end
 
+        # Source line of a native node (1-based), or nil when the
+        # underlying backend does not track source positions.
+        # Adapters that track lines (Nokogiri, LibXML) override this.
+        def line_number(_node)
+          nil
+        end
+
         # Return the actual native node after an add_child operation.
         # Override for adapters where node identity may change (e.g., LibXML doc.root=).
         def actual_native(child_native, _parent_native)
