@@ -216,6 +216,10 @@ module Moxml
           document.is_a?(::Nokogiri::XML::Document) ? document.root : document.children.first
         end
 
+        def line_number(node)
+          node.line
+        end
+
         def attribute_element(attr)
           attr.parent
         end

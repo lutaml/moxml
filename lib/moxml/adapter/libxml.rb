@@ -379,6 +379,11 @@ module Moxml
           native_doc&.root
         end
 
+        def line_number(node)
+          native = unpatch_node(node)
+          native.is_a?(::LibXML::XML::Node) ? native.line_num : nil
+        end
+
         def attributes(element)
           native_elem = unpatch_node(element)
           return [] unless native_elem

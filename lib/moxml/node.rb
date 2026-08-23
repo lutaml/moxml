@@ -186,6 +186,69 @@ module Moxml
       children.each(&block)
     end
 
+    # Returns all ancestor nodes from the parent up to and including
+    # the document node.
+    #
+    # @return [NodeSet] ancestors ordered nearest-first
+    def ancestors
+      return NodeSet.new([], context) if document?
+
+      natives = []
+      current = parent
+      while current
+        natives << current.native
+        break if current.document?
+
+        current = current.parent
+      end
+      NodeSet.new(natives, context)
+    end
+
+    # Returns all descendant nodes (children, grandchildren, and so on),
+    # excluding the node itself.
+    #
+    # @return [NodeSet] descendants in document order
+    def descendants
+      natives = []
+      each_node { |node| natives << node.native }
+      NodeSet.new(natives, context)
+    end
+
+    # Returns an XPath expression that uniquely locates this node within
+    # its document. Positional predicates are emitted only when sibling
+    # elements share the same qualified name, keeping paths minimal.
+    #
+    # @return [String] XPath expression
+    # @raise [Moxml::NotImplementedError] for node types other than
+    #   element and document
+    def path
+      return "/" if document?
+
+      unless element?
+        raise Moxml::NotImplementedError.new(
+          "path is only supported for element and document nodes",
+          feature: "path",
+        )
+      end
+
+      segments = []
+      current = self
+      while current && !current.document?
+        segments.unshift(path_segment_for(current))
+        current = current.parent
+      end
+      "/#{segments.join('/')}"
+    end
+
+    # Returns the 1-based line number where this node appears in the
+    # source XML, or nil when the underlying adapter does not track
+    # source positions.
+    #
+    # @return [Integer, nil]
+    def line_number
+      adapter.line_number(@native)
+    end
+
     def outer_xml
       to_xml
     end
@@ -285,6 +348,21 @@ module Moxml
     end
 
     private
+
+    # XPath segment for an element: the qualified name, plus a positional
+    # predicate only when same-named element siblings make it ambiguous.
+    def path_segment_for(element)
+      name = element.name
+      parent = element.parent
+      return name unless parent
+
+      same_name = parent.children.select do |child|
+        child.element? && child.name == name
+      end
+      return name if same_name.size == 1
+
+      "#{name}[#{same_name.find_index(element) + 1}]"
+    end
 
     def prepare_node(node)
       case node
