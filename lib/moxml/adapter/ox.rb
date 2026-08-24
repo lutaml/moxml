@@ -167,6 +167,19 @@ module Moxml
             elsif element.name.include?(":")
               element.name.split(":").first
             end
+
+          # Unprefixed attributes are in no namespace — the default
+          # namespace declaration does not apply to attribute names
+          # (Namespaces 1.0 §5.2). Unprefixed elements DO take it.
+          return nil if element.is_a?(::Moxml::Adapter::CustomizedOx::Attribute) && prefix.nil?
+
+          # Namespaces 1.0 §4: xml is prebound; no declaration required.
+          if prefix == "xml"
+            return ::Moxml::Adapter::CustomizedOx::Namespace.new(
+              prefix, Moxml::AttributeResolver::XML_NAMESPACE_URI, element
+            )
+          end
+
           attr_name = ["xmlns", prefix].compact.join(":")
 
           ([element] + ancestors(element)).each do |node|

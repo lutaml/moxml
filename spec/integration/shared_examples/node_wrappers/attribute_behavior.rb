@@ -162,4 +162,43 @@ RSpec.shared_examples "Moxml::Attribute" do
       end
     end
   end
+
+  describe "unified XML-correct name resolution" do
+    let(:context) { Moxml.new }
+    let(:doc) do
+      context.parse(
+        %(<root xmlns:p="urn:1"><child xmlns:q="urn:1" q:type="v" type="plain" xml:lang="en"/></root>),
+      )
+    end
+    let(:child) { doc.root.children.find(&:element?) }
+
+    it "matches prefixed lookups by expanded name across redeclared prefixes" do
+      # p and q both bind urn:1; the attribute is written q:type
+      expect(child["p:type"]).to eq("v")
+      expect(child["q:type"]).to eq("v")
+    end
+
+    it "keeps bare and namespaced attributes distinct" do
+      expect(child["type"]).to eq("plain")
+      expect(child[:type]).to eq("plain")
+    end
+
+    it "resolves the prebound xml prefix without any declaration" do
+      expect(child["xml:lang"]).to eq("en")
+    end
+
+    it "returns nil for undeclared prefixes — no prefix-string fallback" do
+      expect(child["undeclared:type"]).to be_nil
+    end
+
+    it "never treats namespace declarations as attributes" do
+      expect(child["xmlns:q"]).to be_nil
+      expect(child["xmlns"]).to be_nil
+    end
+
+    it "attribute(name) agrees with []" do
+      expect(child.attribute("p:type").value).to eq("v")
+      expect(child.attribute("undeclared:type")).to be_nil
+    end
+  end
 end

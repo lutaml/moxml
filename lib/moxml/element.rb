@@ -42,14 +42,15 @@ module Moxml
       @attributes = nil
     end
 
+    # Unified XML-correct name resolution (see AttributeResolver):
+    # bare names match only no-namespace attributes; prefixed names
+    # resolve through in-scope declarations to expanded names.
     def [](name)
-      val = adapter.get_attribute_value(@native, name)
-      val ? adapter.restore_entities(val) : val
+      Moxml::AttributeResolver.resolve(self, name)&.value
     end
 
     def attribute(name)
-      native_attr = adapter.get_attribute(@native, name)
-      native_attr && Attribute.new(native_attr, context)
+      Moxml::AttributeResolver.resolve(self, name)
     end
 
     # Returns attribute value by name (used by XPath engine)

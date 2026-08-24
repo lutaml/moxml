@@ -76,6 +76,7 @@ module Moxml
   autoload :Cdata, "moxml/cdata"
   autoload :Comment, "moxml/comment"
   autoload :Attribute, "moxml/attribute"
+  autoload :AttributeResolver, "moxml/attribute_resolver"
   autoload :ProcessingInstruction, "moxml/processing_instruction"
   autoload :Declaration, "moxml/declaration"
   autoload :Namespace, "moxml/namespace"
