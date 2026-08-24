@@ -128,9 +128,6 @@ RSpec.shared_examples "Moxml Integration" do
       if context.config.adapter_name == :ox
         skip "Ox doesn't have a native XPath"
       end
-      if context.config.adapter_name == :leptris
-        skip "libleptris 1.3.0 corrupts the sibling list when moving nodes; later inserts or serialization hang (leptris/leptris#518)"
-      end
 
       # Move nodes
       b_node = doc.at_xpath("//b")

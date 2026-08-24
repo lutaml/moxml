@@ -16,12 +16,11 @@ end
 # Leptris known gaps: shared-example groups that do not pass yet, each
 # with its reason. Groups not listed here run fully. This manifest is
 # the burn-down checklist for the adapter — remove entries as they
-# close. Upstream: leptris/leptris#518 (sibling-move list corruption),
-# #519 (node setters reject rootless-document nodes).
+# close. Verified against leptris 1.6.0 (which fixed leptris#518,
+# #519, #525, #526 — Comment and ProcessingInstruction groups now run
+# fully; Moxml::Comment and Moxml::ProcessingInstruction left the list).
 LEPTRIS_KNOWN_GAPS = {
-  "Moxml::Cdata" => "leptris#519: content setter rejects CDATA nodes on rootless documents",
-  "Moxml::Comment" => "leptris#519: content setter rejects comment nodes on rootless documents",
-  "Moxml::ProcessingInstruction" => "leptris#519: target/content setters reject PI nodes on rootless documents",
+  "Moxml::Cdata" => "adapter: CDATA serialization formatting",
   "Moxml::Declaration" => "adapter: declaration serialization formatting",
   "Moxml::Doctype" => "adapter: doctype wrapper serialization formatting",
   "Moxml::EntityReference" => "adapter: entity-reference pipeline not wired",
@@ -34,7 +33,7 @@ LEPTRIS_KNOWN_GAPS = {
   "Moxml::Node" => "adapter: parent resolution edge case",
   "Moxml::Text" => "adapter: text entity encoding",
   "Moxml Edge Cases" => "adapter: deep nesting / CDATA markers / default-namespace changes",
-  "Moxml Integration" => "leptris#518: sibling moves corrupt the child list",
+  "Moxml Integration" => "leptris#534: indenting serializer adds whitespace inside mixed-content elements",
   "Moxml Line Ending" => "adapter: CRLF re-serialization stability",
   "Basic Usage Examples" => "adapter: document-creation workflows",
   "README Examples" => "adapter: builder + thread-safety workflows",
