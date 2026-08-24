@@ -4,6 +4,11 @@ return if RUBY_ENGINE == "opal"
 
 require "stringio"
 require "leptris"
+# leptris-ruby 1.9.0 regression (leptris-ruby#53): the eager ffi load
+# shadows the Leptris::XML autoload manifest, leaving Document/Element
+# unreachable. Loading the manifest explicitly is a no-op when the gem
+# is fixed.
+require "leptris/xml"
 
 module Moxml
   module Adapter
@@ -362,10 +367,17 @@ module Moxml
         end
 
         def namespace_prefix(namespace)
+          # Attr#namespace is the bare URI string in leptris 1.9+ (the
+          # C model: a namespace handle IS the URI); attributes carry
+          # their prefix on the Attr itself.
+          return nil if namespace.is_a?(String)
+
           namespace.prefix
         end
 
         def namespace_uri(namespace)
+          return namespace if namespace.is_a?(String)
+
           namespace.href
         end
 
