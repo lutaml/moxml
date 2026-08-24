@@ -10,7 +10,7 @@ module Moxml
         class DSAKeyValue
           attr_accessor :p, :q, :g, :y, :j, :seed, :pgen_counter
 
-          # rubocop:disable Naming/MethodParameterName -- P/Q/G/Y/J are W3C spec names
+          # rubocop:disable-next Naming/MethodParameterName -- P/Q/G/Y/J are W3C spec names
           def initialize(p:, q:, y:, g: nil, j: nil, seed: nil,
                          pgen_counter: nil)
             @p = p
@@ -21,7 +21,6 @@ module Moxml
             @seed = seed
             @pgen_counter = pgen_counter
           end
-          # rubocop:enable Naming/MethodParameterName
         end
       end
     end
