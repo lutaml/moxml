@@ -21,13 +21,12 @@ module Moxml
       # fixed decoder, so the adapter no longer needs to walk the parsed
       # tree rewriting @text/@value ivars behind Oga's back.
       module EntityDecoderOverride
-        # rubocop:disable Style/OptionalBooleanParameter -- must match Oga's signature
+        # rubocop:disable-next Style/OptionalBooleanParameter -- must match Oga's signature
         def decode(input, html = false)
           return super if html
 
           ::Moxml::Adapter::Base.decode_entities(input)
         end
-        # rubocop:enable Style/OptionalBooleanParameter
       end
     end
   end
