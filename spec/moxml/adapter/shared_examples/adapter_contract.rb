@@ -143,8 +143,14 @@ RSpec.shared_examples "xml adapter" do
       ).native
       expect(described_class.attributes(described_class.root(reversed)).size).to eq(2)
 
+      # Bare name resolves to the namespace-less attribute; the
+      # prefixed name to the namespaced one — on every adapter.
       expect(described_class.get_attribute_value(probe, "type"))
         .to eq("EAnone_void")
+      expect(described_class.get_attribute_value(probe, "xmi:type"))
+        .to eq("uml:Parameter")
+      expect(described_class.get_attribute_value(probe, "bogus:missing"))
+        .to be_nil
     end
   end
 
