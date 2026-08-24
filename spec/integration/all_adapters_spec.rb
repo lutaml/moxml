@@ -16,24 +16,26 @@ end
 # Leptris known gaps: shared-example groups that do not pass yet, each
 # with its reason. Groups not listed here run fully. This manifest is
 # the burn-down checklist for the adapter — remove entries as they
-# close. Verified against leptris 1.7.0 (fixed #518, #519, #525, #526,
-# #534 — Comment and ProcessingInstruction groups left the list;
-# Moxml Integration remains for leptris#540).
+# close. Verified against leptris 1.9.0: every upstream issue is fixed
+# (#518, #519, #525, #526, #534, #540, #542, #546, #547, #514) and the
+# unified attribute-resolution examples pass; the remaining gaps are
+# all moxml adapter TODOs. leptris-ruby#53 (1.9.0 autoload-shadowing
+# regression) is worked around in the adapter and config probe.
 LEPTRIS_KNOWN_GAPS = {
   "Moxml::Cdata" => "adapter: CDATA serialization formatting",
   "Moxml::Declaration" => "adapter: declaration serialization formatting",
   "Moxml::Doctype" => "adapter: doctype wrapper serialization formatting",
   "Moxml::EntityReference" => "adapter: entity-reference pipeline not wired",
   "Entity Reference Whitespace Preservation" => "adapter: entity-reference pipeline not wired",
-  "Moxml::Attribute" => "adapter: attribute rename and namespace mutation (leptris binding lacks per-attribute namespace accessors)",
+  "Moxml::Attribute" => "adapter: attribute rename and namespace mutation",
   "Attribute Examples" => "adapter: attribute serialization edge cases",
   "Moxml::Element" => "adapter: mixed content and namespace setter",
   "Namespace Examples" => "adapter: namespace inheritance overrides",
   "Moxml::Namespace" => "adapter: namespace inheritance overrides",
   "Moxml::Node" => "adapter: parent resolution edge case",
-  "Moxml::Text" => "adapter: text entity encoding",
-  "Moxml Integration" => "leptris#540: insert_before rejects detached elements on rootless documents (bottom-up construction)",
+  "Moxml::Text" => "adapter: text-at-document-level support",
   "Moxml Edge Cases" => "adapter: deep nesting / CDATA markers / default-namespace changes",
+  "Moxml Integration" => "adapter: complete-document workflow (document modification now passes)",
   "Moxml Line Ending" => "adapter: CRLF re-serialization stability",
   "Basic Usage Examples" => "adapter: document-creation workflows",
   "README Examples" => "adapter: builder + thread-safety workflows",

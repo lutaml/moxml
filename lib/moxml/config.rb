@@ -50,8 +50,11 @@ module Moxml
 
         @leptris_preferred_available = begin
           require "leptris"
+          # leptris-ruby 1.9.0 regression (leptris-ruby#53): the XML
+          # autoload manifest is shadowed; load it explicitly.
+          require "leptris/xml"
           ::Leptris::XML::Document.respond_to?(:create)
-        rescue LoadError
+        rescue LoadError, NameError
           false
         end
       end
