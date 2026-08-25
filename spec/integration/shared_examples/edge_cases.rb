@@ -80,9 +80,6 @@ RSpec.shared_examples "Moxml Edge Cases" do
 
   describe "namespace edge cases" do
     it "handles default namespace changes" do
-      if context.config.adapter_name == :ox
-        pending "Ox doesn't have a native XPath"
-      end
       if context.config.adapter_name == :headed_ox
         skip "HeadedOx limitation: Namespace methods not implemented in adapter. Requires Ox namespace API enhancement. See docs/_pages/headed-ox-limitations.adoc"
       end
@@ -106,9 +103,6 @@ RSpec.shared_examples "Moxml Edge Cases" do
     end
 
     it "handles recursive namespace definitions" do
-      if context.config.adapter_name == :ox
-        pending "Ox doesn't have a native XPath"
-      end
       if context.config.adapter_name == :headed_ox
         skip "HeadedOx limitation: Namespace methods not implemented in adapter. Requires Ox namespace API enhancement. See docs/_pages/headed-ox-limitations.adoc"
       end
@@ -132,10 +126,6 @@ RSpec.shared_examples "Moxml Edge Cases" do
       if context.config.adapter_name == :headed_ox
         skip "HeadedOx limitation: Namespace-prefixed attribute access needs Ox namespace API enhancement. See docs/_pages/headed-ox-limitations.adoc"
       end
-      if context.config.adapter_name == :ox
-        skip "Ox doesn't have a native XPath"
-      end
-
       xml = <<~XML
         <root xmlns:a="http://a.org" xmlns:b="http://b.org">
           <element a:id="1" b:id="2"/>

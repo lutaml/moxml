@@ -529,6 +529,13 @@ module Moxml
         when "node"
           # node() matches everything — use a truthy literal
           Ruby::Node.new(:lit, ["true"])
+        when "text"
+          # CDATA sections are text nodes in the XPath data model
+          text_class = const_ref("Moxml", "Text")
+          cdata_class = const_ref("Moxml", "CData")
+          input.is_a?(text_class).or(input.is_a?(cdata_class))
+        when "comment"
+          input.is_a?(const_ref("Moxml", "Comment"))
         else element_or_attribute(input)
         end
       end

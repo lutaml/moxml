@@ -51,7 +51,7 @@ module Moxml
             )
           end
 
-          ctx = _context || Context.new(:ox)
+          ctx = _context || Context.new(context_adapter_name)
           Document.new(native_doc, ctx)
         end
 
@@ -630,34 +630,34 @@ module Moxml
           matches.last&.first
         end
 
+        # XPath runs through Moxml's pure-Ruby XPath 1.0 engine (shared
+        # with HeadedOx and Leptris). Ox's locate() only covers a
+        # small XPath subset; the engine provides all axes,
+        # predicates, functions and variables.
         def xpath(node, expression, namespaces = {})
-          # Translate common XPath patterns to Ox locate() syntax
-          locate_expr = translate_xpath_to_locate(expression, namespaces)
+          wrapped = if node.is_a?(Moxml::Node)
+                      node
+                    else
+                      Moxml::Node.wrap(node, Context.new(context_adapter_name))
+                    end
 
-          # Ox's locate() works differently on documents vs elements
-          # For relative descendant searches on elements, we need special handling
-          if expression.start_with?(".//") && node.is_a?(::Ox::Element)
-            # Manually search descendants for relative paths from elements
-            element_name = locate_expr.sub("?/", "")
-            results = []
-            traverse(node) do |n|
-              next unless n.is_a?(::Ox::Element)
+          ast = XPath::Parser.parse(expression)
+          proc = XPath::Compiler.compile_with_cache(ast, namespaces: namespaces)
+          result = proc.call(wrapped)
 
-              results << n if n.name == element_name || element_name.empty?
-            end
-            return results.map do |n|
-              patch_node(n, find_parent_in_tree(n, node))
-            end
+          case result
+          when Array
+            dedupe_natives(result.map do |n|
+              n.is_a?(Moxml::Node) ? n.native : n
+            end)
+          when NodeSet
+            dedupe_natives(result.to_a.map(&:native))
+          else
+            result
           end
-
-          # Use Ox's locate method for other cases
-          results = node.locate(locate_expr)
-
-          # Wrap results and set their parents by finding them in the tree
-          results.map { |n| patch_node(n, find_parent_in_tree(n, node)) }
         rescue StandardError => e
           raise Moxml::XPathError.new(
-            "XPath translation failed: #{e.message}",
+            "XPath execution failed: #{e.message}",
             expression: expression,
             adapter: "Ox",
             node: node,
@@ -665,7 +665,32 @@ module Moxml
         end
 
         def at_xpath(node, expression, namespaces = {})
-          xpath(node, expression, namespaces)&.first
+          result = xpath(node, expression, namespaces)
+          result.is_a?(Array) ? result.first : result
+        end
+
+        def xpath_supported?
+          true
+        end
+
+        # Identity-based dedup: uniq's value equality would collapse
+        # equal String text nodes.
+        def dedupe_natives(natives)
+          seen = {}
+          natives.select do |native|
+            id = native.object_id
+            if seen[id]
+              false
+            else
+              seen[id] = true
+            end
+          end
+        end
+
+        # Adapter name used when wrapping bare native nodes; kept
+        # overridable so HeadedOx wraps into its own adapter.
+        def context_adapter_name
+          :ox
         end
 
         def serialize(node, options = {})
@@ -882,78 +907,6 @@ module Moxml
             when '"' then "&quot;"
             end
           end
-        end
-
-        # Translate a subset of XPath to Ox locate() syntax
-        # Supports: //element, /path/to/element, .//element, element[@attr]
-        # Note: Ox locate() doesn't support namespace prefixes in the path
-        def translate_xpath_to_locate(xpath, namespaces = {})
-          expr = xpath.dup
-
-          # Strip namespace prefixes from element names
-          # XPath: //ns:element → locate: element
-          if namespaces && !namespaces.empty?
-            namespaces.each_key do |prefix|
-              expr = expr.gsub("/#{prefix}:", "/")
-              expr = expr.gsub("/*#{prefix}:", "/*")
-              expr = expr.gsub("//*#{prefix}:", "//")
-              expr = expr.gsub("//#{prefix}:", "//")
-              expr = expr.gsub("///#{prefix}:", "///")
-            end
-          end
-
-          # Remove any remaining namespace prefixes
-          # Use possessive quantifier to prevent ReDoS
-          expr = expr.gsub(/[a-zA-Z_][\w-]*+:/, "")
-
-          # Remove attribute predicates for now - we'll filter manually
-          # Save the attribute name if present
-          expr = expr.gsub(/\[@(\w+)\]/, "")
-
-          # XPath: //element → locate: ?/element (any depth)
-          # Note: In Ox, ?/ means "any path"
-          expr = expr.sub(%r{^//}, "?/") if expr.start_with?("//")
-
-          # XPath: .//element → locate: ?/element (relative any depth)
-          # For relative paths from an element, we still use ?/ which searches
-          # descendants
-          expr = expr.sub(%r{^\.//}, "?/") if expr.start_with?(".//")
-
-          # XPath: /root/child → locate: root/child (absolute path)
-          # Remove leading / for Ox
-          expr = expr.sub(%r{^/}, "")
-
-          # XPath: ./element → locate: element (direct child, just remove ./)
-          expr.sub(%r{^\./}, "")
-        end
-
-        # Find the actual parent of a node by searching the tree
-        def find_parent_in_tree(target_node, search_root)
-          # Start from the document root if we have a document
-          root = search_root.is_a?(::Ox::Document) ? search_root : document(search_root)
-
-          result = nil
-          traverse(root) do |node|
-            next unless node.is_a?(::Ox::Element) || node.is_a?(::Ox::Document)
-
-            node.nodes&.each do |child|
-              if child.equal?(target_node)
-                result = node
-                break
-              end
-            end
-            break if result
-          end
-          result
-        end
-
-        def traverse(node, &block)
-          return unless node
-
-          yield node
-          return unless node.is_a?(::Ox::Element) || node.is_a?(::Ox::Document)
-
-          node.nodes&.each { |child| traverse(child, &block) }
         end
       end
     end

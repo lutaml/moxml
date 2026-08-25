@@ -376,7 +376,10 @@ module Moxml
         end
 
         def xpath(node, expression, namespaces = nil)
-          node.xpath(expression, namespaces).to_a
+          result = node.xpath(expression, namespaces)
+          # Adapter contract: Array<native> | scalar (count(),
+          # string-length(), boolean functions return scalars).
+          result.is_a?(Enumerable) ? result.to_a : result
         rescue ::Nokogiri::XML::XPath::SyntaxError => e
           raise Moxml::XPathError.new(
             e.message,

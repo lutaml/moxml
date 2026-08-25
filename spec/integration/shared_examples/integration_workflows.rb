@@ -56,9 +56,6 @@ RSpec.shared_examples "Moxml Integration" do
     end
 
     it "handles xpath queries" do
-      if context.config.adapter_name == :ox
-        pending "Ox doesn't support namespace-aware XPath with predicates"
-      end
       if context.config.adapter_name == :headed_ox
         skip "HeadedOx limitation: Namespace-aware XPath with predicates needs investigation. See docs/_pages/headed-ox-limitations.adoc"
       end
@@ -76,9 +73,6 @@ RSpec.shared_examples "Moxml Integration" do
 
   describe "namespace handling" do
     it "handles complex namespace scenarios" do
-      if context.config.adapter_name == :ox
-        pending "Ox doesn't have a native XPath"
-      end
       if context.config.adapter_name == :headed_ox
         skip "HeadedOx limitation: Namespace methods not implemented in adapter. Requires Ox namespace API enhancement. See docs/_pages/headed-ox-limitations.adoc"
       end
@@ -125,10 +119,6 @@ RSpec.shared_examples "Moxml Integration" do
       if context.config.adapter_name == :headed_ox
         skip "HeadedOx limitation: Parent setter not implemented. Requires Ox node reparenting API. See docs/_pages/headed-ox-limitations.adoc"
       end
-      if context.config.adapter_name == :ox
-        skip "Ox doesn't have a native XPath"
-      end
-
       # Move nodes
       b_node = doc.at_xpath("//b")
       a_node = doc.at_xpath("//a")

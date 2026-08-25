@@ -103,7 +103,10 @@ module Moxml
     end
 
     def xpath(expression, namespaces = {})
-      NodeSet.new(adapter.xpath(@native, expression, namespaces), context)
+      result = adapter.xpath(@native, expression, namespaces)
+      # Adapter contract: Array<native> | scalar. Scalars (count(),
+      # string-length(), booleans) pass through unwrapped.
+      result.is_a?(Array) ? NodeSet.new(result, context) : result
     end
 
     def at_xpath(expression, namespaces = {})
