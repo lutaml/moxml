@@ -49,6 +49,7 @@ module Moxml
 
       WRAPPER_NODE_TYPE_MAP = {
         DoctypeWrapper => :doctype,
+        CustomizedLibxml::Declaration => :declaration,
         CustomizedLibxml::Element => :element,
         CustomizedLibxml::Text => :text,
         CustomizedLibxml::Cdata => :cdata,

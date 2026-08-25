@@ -121,15 +121,12 @@ module Moxml
         def create_native_doctype(name, external_id, system_id)
           return nil unless name
 
-          parts = [name]
-          if external_id
-            parts.push("PUBLIC", %("#{external_id}"))
-            parts << %("#{system_id}") if system_id
-          elsif system_id
-            parts.push("SYSTEM", %("#{system_id}"))
-          end
-
-          ::REXML::DocType.new(parts.join(" "))
+          external = if external_id
+                       system_id ? %(PUBLIC "#{external_id}" "#{system_id}") : %(PUBLIC "#{external_id}")
+                     elsif system_id
+                       %(SYSTEM "#{system_id}")
+                     end
+          external ? ::REXML::DocType.new(name.to_s, external) : ::REXML::DocType.new(name.to_s)
         end
 
         def set_root(doc, element)
@@ -538,11 +535,17 @@ module Moxml
         end
 
         def doctype_external_id(native)
-          native.public
+          # Constructed doctypes keep the identifier as a raw
+          # external_id string; parsed ones populate public directly
+          native.public ||
+            native.external_id&.match(/PUBLIC\s+"([^"]*)"/)&.[](1)
         end
 
         def doctype_system_id(native)
-          native.system
+          return native.system if native.system
+
+          quoted = native.external_id&.scan(/"([^"]*)"/)
+          quoted&.last&.first
         end
 
         # not used at the moment
