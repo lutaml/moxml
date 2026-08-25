@@ -591,24 +591,76 @@ module Moxml
         # caller asked for it — matching the other adapters' contract.
         # Runs segment-aware: CDATA content is literal and must not be
         # touched.
+        # Regions whose content is literal and must never be rewritten.
+        # Scanned positionally (String#index), not with a regex: the
+        # scan is linear in the input length, so pathological document
+        # content cannot blow up the serializer.
+        LITERAL_REGIONS = {
+          "<!--" => "-->",
+          "<![CDATA[" => "]]>",
+          "<?" => "?>",
+        }.freeze
+
         def normalize_serialization(xml, options)
           needs_apos = xml.include?("&apos;")
           needs_expand = options[:expand_empty] && xml.include?("/>")
           return xml unless needs_apos || needs_expand
 
-          parts = xml.split(/(<!--.*?-->|<!\[CDATA\[.*?\]\]>|<\?.*?\?>)/m)
-          parts.map do |part|
-            literal = part.start_with?("<!--", "<![CDATA[", "<?")
-            next part if literal
-
-            part = part.gsub("&apos;", "'") if needs_apos
-            if needs_expand
-              part = part.gsub(%r{<([A-Za-z_][\w.:-]*)((?:"[^"]*"|'[^']*'|[^<"'>])*)/>}) do
-                "<#{$1}#{$2}></#{$1}>"
-              end
+          out = +""
+          pos = 0
+          while pos < xml.length
+            opener_at, terminator = next_literal_region(xml, pos)
+            if opener_at.nil?
+              out << normalize_markup(xml[pos..], needs_apos, needs_expand)
+              break
             end
-            part
-          end.join
+
+            out << normalize_markup(xml[pos...opener_at], needs_apos, needs_expand)
+            search_from = opener_at + opener_at_offset(terminator)
+            close = xml.index(terminator, search_from)
+            close_end = close.nil? ? xml.length : close + terminator.length
+            out << xml[opener_at...close_end]
+            pos = close_end
+          end
+          out
+        end
+
+        # Nearest literal region at/after from: [position, terminator].
+        def next_literal_region(xml, from)
+          best = nil
+          best_terminator = nil
+          LITERAL_REGIONS.each do |opener, terminator|
+            idx = xml.index(opener, from)
+            next if idx.nil?
+
+            if best.nil? || idx < best
+              best = idx
+              best_terminator = terminator
+            end
+          end
+          best.nil? ? nil : [best, best_terminator]
+        end
+
+        # Search for a terminator past its opener's overlap-safe offset
+        # ("-->" cannot start inside "<!--").
+        def opener_at_offset(terminator)
+          terminator == "-->" ? 4 : 0
+        end
+
+        # All quantifiers are possessive and the bare-part class
+        # excludes "/" and ">": the possessive groups can never consume
+        # the closing delimiter, so no backtracking is possible and the
+        # match is linear even on malformed tags.
+        EMPTY_ELEMENT_RE = %r{<([A-Za-z_][\w.:-]*+)((?:"[^"]*+"|'[^']*+'|[^<>"'/]++)*+)/>}
+
+        def normalize_markup(markup, needs_apos, needs_expand)
+          markup = markup.gsub("&apos;", "'") if needs_apos
+          if needs_expand
+            markup = markup.gsub(EMPTY_ELEMENT_RE) do
+              "<#{Regexp.last_match(1)}#{Regexp.last_match(2)}></#{Regexp.last_match(1)}>"
+            end
+          end
+          markup
         end
 
         # Documents compose from their parts: the native serializer
