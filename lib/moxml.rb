@@ -84,6 +84,7 @@ module Moxml
   autoload :EntityReference, "moxml/entity_reference"
   autoload :DocumentBuilder, "moxml/document_builder"
   autoload :Builder, "moxml/builder"
+  autoload :Entity, "moxml/entity"
   autoload :EntityRegistry, "moxml/entity_registry"
   autoload :NativeAttachment, "moxml/native_attachment"
   autoload :XmlUtils, "moxml/xml_utils"

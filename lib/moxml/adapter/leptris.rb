@@ -267,8 +267,8 @@ module Moxml
           result = []
           natives.each do |child|
             content = child.content.to_s.dup.force_encoding("UTF-8") if child.is_a?(::Leptris::XML::Text)
-            if content&.include?(Base::ENTITY_MARKER)
-              content.scan(/([^#{Base::ENTITY_MARKER}]*)(?:#{Base::ENTITY_MARKER}([\w.:-]+);)?/o) do
+            if content&.include?(Entity::MARKER)
+              content.scan(/([^#{Entity::MARKER}]*)(?:#{Entity::MARKER}([\w.:-]+);)?/o) do
                 text_part = Regexp.last_match(1)
                 name = Regexp.last_match(2)
                 result << CustomizedLeptris::TextSegment.new(text_part, parent) unless text_part.empty?
@@ -376,7 +376,7 @@ module Moxml
           when ::Leptris::XML::Document then add_document_child(parent, child)
           else
             if child.is_a?(CustomizedLeptris::EntityReference)
-              marker = parent.document.create_text_node("#{Base::ENTITY_MARKER}#{child.name};")
+              marker = parent.document.create_text_node("#{Entity::MARKER}#{child.name};")
               parent.add_child(marker)
               return child
             end
@@ -726,7 +726,7 @@ module Moxml
         def marker_text_for(parent, name)
           return nil unless parent.is_a?(::Leptris::XML::Element)
 
-          marker = "#{Base::ENTITY_MARKER}#{name};"
+          marker = "#{Entity::MARKER}#{name};"
           parent.children.to_a.find do |child|
             child.is_a?(::Leptris::XML::Text) && child.content == marker
           end
