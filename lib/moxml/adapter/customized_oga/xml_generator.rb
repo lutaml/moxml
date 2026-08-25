@@ -45,36 +45,10 @@ module Moxml
         end
 
         def on_cdata(node, output)
-          # Escape the end sequence
+          # Split any embedded end sequence into adjacent sections
           return super unless node.text.include?("]]>")
 
-          chunks = node.text.split(/(\]\]>)/)
-          chunks = ["]]", ">"] if chunks.size == 1
-
-          while (index = chunks.index("]]>"))
-            # the end tag cannot be the first and the last at the same time
-
-            if index.zero?
-              # it's the first text chunk
-              chunks[index] = "]]"
-              chunks[index + 1] = ">#{chunks[index + 1]}"
-            elsif index - 1 == chunks.size
-              # it's the last text chunk
-              chunks[index - 1] += "]]"
-              chunks[index] = ">"
-            else
-              # it's a chunk in the middle
-              chunks[index - 1] += "]]"
-              chunks[index + 1] = ">#{chunks[index + 1]}"
-              chunks.delete_at(index)
-            end
-          end
-
-          chunks.each do |chunk|
-            output << "<![CDATA[#{chunk}]]>"
-          end
-
-          output
+          output << ::Moxml::XmlEmitter.cdata(node.text)
         end
 
         def on_processing_instruction(node, output)
@@ -91,12 +65,8 @@ module Moxml
         protected
 
         def encode(input)
-          # similar to ::Oga::XML::Entities.encode_attribute
-          input&.gsub(
-            ::Oga::XML::Entities::ENCODE_ATTRIBUTE_REGEXP,
-            # Keep apostrophes in attributes
-            ::Oga::XML::Entities::ENCODE_ATTRIBUTE_MAPPING.merge("'" => "'"),
-          )
+          # moxml-canonical attribute form: apostrophes stay literal
+          ::Moxml::XmlEmitter.escape_attribute(input.to_s)
         end
       end
     end

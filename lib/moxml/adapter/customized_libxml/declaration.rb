@@ -47,16 +47,7 @@ module Moxml
 
         # Generate XML declaration string
         def to_xml
-          output = "<?xml version=\"#{@version}\""
-          if @encoding && !@encoding.empty?
-            output << " encoding=\"#{@encoding}\""
-          end
-          # Include standalone attribute if explicitly set (true or false)
-          unless @standalone_value.nil?
-            output << " standalone=\"#{standalone}\""
-          end
-          output << "?>"
-          output
+          XmlEmitter.declaration_xml(@version, @encoding, standalone)
         end
 
         private

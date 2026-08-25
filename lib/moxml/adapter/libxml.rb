@@ -28,15 +28,7 @@ module Moxml
         end
 
         def to_xml
-          output = "<!DOCTYPE #{@name}"
-          if @external_id && !@external_id.empty?
-            output << " PUBLIC \"#{@external_id}\""
-            output << " \"#{@system_id}\"" if @system_id
-          elsif @system_id && !@system_id.empty?
-            output << " SYSTEM \"#{@system_id}\""
-          end
-          output << ">"
-          output
+          XmlEmitter.doctype_xml(@name, @external_id, @system_id)
         end
       end
 
@@ -1164,9 +1156,9 @@ module Moxml
 
               seen_ns[prefix] = true
               output << if prefix.nil? || prefix.empty?
-                          " xmlns=\"#{escape_xml(uri)}\""
+                          " xmlns=\"#{XmlEmitter.escape_attribute(uri)}\""
                         else
-                          " xmlns:#{prefix}=\"#{escape_xml(uri)}\""
+                          " xmlns:#{prefix}=\"#{XmlEmitter.escape_attribute(uri)}\""
                         end
             end
           end
@@ -1182,7 +1174,7 @@ module Moxml
                           else
                             attr.name
                           end
-              output << " #{attr_name}=\"#{escape_xml(attr.value)}\""
+              output << " #{attr_name}=\"#{XmlEmitter.escape_attribute(attr.value)}\""
             end
           end
 
@@ -1222,7 +1214,7 @@ module Moxml
           when ::LibXML::XML::Node::ELEMENT_NODE
             serialize_element(node)
           when ::LibXML::XML::Node::TEXT_NODE
-            escape_text(node.content)
+            XmlEmitter.escape_text(node.content)
           when ::LibXML::XML::Node::CDATA_SECTION_NODE
             "<![CDATA[#{node.content}]]>"
           when ::LibXML::XML::Node::COMMENT_NODE
@@ -1232,28 +1224,6 @@ module Moxml
           else
             node.to_s
           end
-        end
-
-        def escape_text(text)
-          text.to_s
-            .gsub("&", "&amp;")
-            .gsub("<", "&lt;")
-            .gsub(">", "&gt;")
-        end
-
-        ESCAPE_XML_RE = /[&<>"]/
-        ESCAPE_XML_MAP = { "&" => "&amp;", "<" => "&lt;", ">" => "&gt;",
-                           '"' => "&quot;" }.freeze
-        private_constant :ESCAPE_XML_RE, :ESCAPE_XML_MAP
-
-        def escape_xml(text)
-          # One gsub pass with a Hash replacement allocates a single new
-          # string. The previous chained gsubs allocated three throwaway
-          # strings on every call (very hot for attribute-heavy XML).
-          str = text.is_a?(String) ? text : text.to_s
-          return str unless str.match?(ESCAPE_XML_RE)
-
-          str.gsub(ESCAPE_XML_RE, ESCAPE_XML_MAP)
         end
 
         def import_and_add(doc, element, child)
@@ -1412,9 +1382,9 @@ module Moxml
 
         def format_ns_declaration(prefix, uri)
           if prefix.nil? || prefix.empty?
-            " xmlns=\"#{escape_xml(uri)}\""
+            " xmlns=\"#{XmlEmitter.escape_attribute(uri)}\""
           else
-            " xmlns:#{prefix}=\"#{escape_xml(uri)}\""
+            " xmlns:#{prefix}=\"#{XmlEmitter.escape_attribute(uri)}\""
           end
         end
 
@@ -1425,7 +1395,7 @@ module Moxml
             next if attr.name.start_with?("xmlns")
 
             attr_name = attr.ns&.prefix ? "#{attr.ns.prefix}:#{attr.name}" : attr.name
-            output << " #{attr_name}=\"#{escape_xml(attr.value)}\""
+            output << " #{attr_name}=\"#{XmlEmitter.escape_attribute(attr.value)}\""
           end
         end
 

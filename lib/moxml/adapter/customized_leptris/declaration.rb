@@ -17,10 +17,7 @@ module Moxml
         end
 
         def to_xml
-          attrs = %(version="#{version}")
-          attrs += %( encoding="#{encoding}") if encoding
-          attrs += %( standalone="#{standalone}") if standalone
-          "<?xml #{attrs}?>"
+          XmlEmitter.declaration_xml(version, encoding, standalone)
         end
 
         def ==(other)

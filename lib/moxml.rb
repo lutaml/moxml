@@ -88,6 +88,7 @@ module Moxml
   autoload :EntityRegistry, "moxml/entity_registry"
   autoload :NativeAttachment, "moxml/native_attachment"
   autoload :XmlUtils, "moxml/xml_utils"
+  autoload :XmlEmitter, "moxml/xml_emitter"
   autoload :Adapter, "moxml/adapter"
   autoload :XPath, "moxml/xpath"
   autoload :SAX, "moxml/sax"

@@ -698,7 +698,7 @@ module Moxml
           # back-reference, but that makes it unknown to Ox.dump's XML emitter,
           # which then falls back to generic object marshalling. Short-circuit
           # here with proper XML escaping.
-          return escape_xml_text(node.value) if node.is_a?(CustomizedOx::Text)
+          return XmlEmitter.escape_text(node.value) if node.is_a?(CustomizedOx::Text)
 
           needs_custom = needs_custom_serialize?(node)
 
@@ -836,10 +836,7 @@ module Moxml
               version = node[:version] || "1.0"
               encoding = resolve_decl_attr(node, :encoding, options[:encoding])
               standalone = resolve_decl_attr(node, :standalone, nil)
-              output << "<?xml version=\"#{version}\""
-              output << " encoding=\"#{encoding}\"" if encoding
-              output << " standalone=\"#{standalone}\"" if standalone
-              output << "?>"
+              output << XmlEmitter.declaration_xml(version, encoding, standalone)
             end
             (node.nodes || []).each do |child|
               output << serialize_node_custom(child)
@@ -853,10 +850,10 @@ module Moxml
         def serialize_node_custom(node)
           case node
           when ::Ox::Element then serialize_element_custom(node)
-          when String then escape_xml_text(node)
-          when ::Moxml::Adapter::CustomizedOx::Text then escape_xml_text(node.value)
+          when String then XmlEmitter.escape_text(node)
+          when ::Moxml::Adapter::CustomizedOx::Text then XmlEmitter.escape_text(node.value)
           when ::Moxml::Adapter::CustomizedOx::EntityReference then "&#{node.name};"
-          when ::Ox::CData then serialize_cdata(node.value)
+          when ::Ox::CData then XmlEmitter.cdata(node.value)
           when ::Ox::Comment then "<!--#{node.value}-->"
           when ::Ox::Instruct then "<?#{node.target} #{node.value || ''}?>"
           when ::Ox::DocType then "<!DOCTYPE #{node.value}>"
@@ -867,7 +864,7 @@ module Moxml
         def serialize_element_custom(elem)
           output = "<#{elem.name}"
           elem.attributes.each do |name, value|
-            output << " #{name}=\"#{escape_xml_attribute(value.to_s)}\""
+            output << " #{name}=\"#{XmlEmitter.escape_attribute(value)}\""
           end
 
           if elem.nodes.nil? || elem.nodes.empty?
@@ -881,32 +878,6 @@ module Moxml
           end
           output << "</#{elem.name}>"
           output
-        end
-
-        def serialize_cdata(content)
-          escaped = content.gsub("]]>", "]]]]><![CDATA[>")
-          "<![CDATA[#{escaped}]]>"
-        end
-
-        def escape_xml_text(text)
-          text.to_s.gsub(/[<>&]/) do |match|
-            case match
-            when "<" then "&lt;"
-            when ">" then "&gt;"
-            when "&" then "&amp;"
-            end
-          end
-        end
-
-        def escape_xml_attribute(value)
-          value.to_s.gsub(/[<>&"]/) do |match|
-            case match
-            when "<" then "&lt;"
-            when ">" then "&gt;"
-            when "&" then "&amp;"
-            when '"' then "&quot;"
-            end
-          end
         end
       end
     end
