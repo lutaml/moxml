@@ -78,7 +78,6 @@ module Moxml
     attr_reader :adapter_name, :default_line_ending
     attr_accessor :strict_parsing,
                   :default_encoding,
-                  :entity_encoding,
                   :default_indent,
                   :restore_entities,
                   :preload_entity_sets,
@@ -104,7 +103,6 @@ module Moxml
       @default_encoding = default_encoding || Config.default.default_encoding
       @default_indent = 2
       @default_line_ending = LINE_ENDING_LF
-      @entity_encoding = :basic
       @restore_entities = false
       @preload_entity_sets = []
       @entity_load_mode = :required

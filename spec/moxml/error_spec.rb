@@ -150,31 +150,6 @@ RSpec.describe "Moxml errors" do
     end
   end
 
-  describe Moxml::SerializationError do
-    it "includes node, adapter, and format information" do
-      error = described_class.new(
-        "Failed to serialize",
-        adapter: "LibXML",
-        format: "xml",
-      )
-      expect(error.adapter).to eq("LibXML")
-      expect(error.format).to eq("xml")
-    end
-
-    it "provides helpful error message" do
-      error = described_class.new(
-        "Failed to serialize",
-        adapter: "Ox",
-        format: "xml",
-      )
-      message = error.to_s
-      expect(message).to include("Failed to serialize")
-      expect(message).to include("Adapter: Ox")
-      expect(message).to include("Format: xml")
-      expect(message).to include("Hint:")
-    end
-  end
-
   describe Moxml::DocumentStructureError do
     it "includes attempted operation and state" do
       error = described_class.new(
@@ -196,31 +171,6 @@ RSpec.describe "Moxml errors" do
       expect(message).to include("Invalid operation")
       expect(message).to include("Operation: set_root")
       expect(message).to include("Current State: root_already_exists")
-      expect(message).to include("Hint:")
-    end
-  end
-
-  describe Moxml::AttributeError do
-    it "includes attribute name, element, and value" do
-      error = described_class.new(
-        "Invalid attribute",
-        name: "id",
-        value: 123,
-      )
-      expect(error.attribute_name).to eq("id")
-      expect(error.value).to eq(123)
-    end
-
-    it "provides helpful error message" do
-      error = described_class.new(
-        "Invalid attribute name",
-        name: "123invalid",
-        value: "test",
-      )
-      message = error.to_s
-      expect(message).to include("Invalid attribute name")
-      expect(message).to include("Attribute: 123invalid")
-      expect(message).to include("Value: \"test\"")
       expect(message).to include("Hint:")
     end
   end

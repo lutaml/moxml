@@ -75,24 +75,6 @@ module Moxml
     end
 
     # Batch element creation
-    def elements(element_specs)
-      element_specs.each do |name, content_or_attrs|
-        if content_or_attrs.is_a?(Hash)
-          element(name, content_or_attrs)
-        else
-          element(name) { text(content_or_attrs) }
-        end
-      end
-    end
-
-    # Helper for creating namespaced elements
-    def ns_element(namespace_uri, name, attributes = {}, &block)
-      el = element(name, attributes, &block)
-      prefix = @namespaces.key(namespace_uri)
-      el.namespace = { prefix => namespace_uri } if prefix
-      el
-    end
-
     # Dynamic element creation DSL.
     # xml.schema(attrs) { } creates <schema> with those attributes.
     # Uses yield so blocks preserve the caller's self context.
