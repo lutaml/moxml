@@ -156,6 +156,7 @@ module Moxml
 
         def set_namespace(element, ns_or_string)
           element.namespace_name = ns_or_string.to_s
+          element
         end
 
         def namespace(element)

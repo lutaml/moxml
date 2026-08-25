@@ -283,6 +283,7 @@ module Moxml
           element = attribute.element
           element.attributes.delete(old_name)
           element.attributes << attribute
+          attribute
         end
 
         def set_attribute_value(attribute, value)
@@ -481,10 +482,10 @@ module Moxml
                                   ns.value)
           end
           # Renames the node in place (works for elements and
-          # attributes alike). Return nothing: the mutation is in-place
-          # and the wrapper must keep tracking the same native.
+          # attributes alike); the caller keeps tracking the same
+          # native.
           element.name = "#{prefix}:#{element.name}"
-          nil
+          element
         end
 
         def namespace_prefix(node)

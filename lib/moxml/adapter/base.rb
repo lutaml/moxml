@@ -209,8 +209,22 @@ namespace_validation_mode: :strict)
           create_native_entity_reference(name)
         end
 
+        # Mutation return contract: protocol methods that may change
+        # which native a wrapper tracks (set_attribute_name,
+        # set_namespace) always return the native the wrapper must
+        # keep tracking — the same object when mutated in place, a
+        # fresh object when the adapter recreates the node.
         def set_attribute_name(attribute, name)
           attribute.name = name
+          attribute
+        end
+
+        def set_namespace(_node, _namespace)
+          raise Moxml::NotImplementedError.new(
+            "set_namespace not implemented",
+            feature: "set_namespace",
+            adapter: name,
+          )
         end
 
         def set_attribute_value(attribute, value)
