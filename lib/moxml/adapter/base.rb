@@ -91,6 +91,11 @@ module Moxml
 
           # Force UTF-8 encoding since markers are UTF-8 characters
           str = text.encoding == Encoding::UTF_8 ? text : text.dup.force_encoding("UTF-8")
+          # Fast path: the vast majority of documents carry no entity
+          # markers — two C-level scans beat two regex passes.
+          return str unless str.include?(ENTITY_MARKER) ||
+            str.include?("&#xFFFC;")
+
           result = str.gsub(ENTITY_MARKER_RE, '&\1;')
           result.gsub(SERIALIZED_ENTITY_MARKER_RE, '&\1;')
         end
@@ -249,6 +254,13 @@ namespace_validation_mode: :strict)
         # Adapters that track lines (Nokogiri, LibXML) override this.
         def line_number(_node)
           nil
+        end
+
+        # Local name of a native attribute node. Adapters whose natives
+        # carry qualified names override this to expose the local part;
+        # the wrapper composes the prefix.
+        def attribute_name(attr)
+          attr.name
         end
 
         # Return the actual native node after an add_child operation.

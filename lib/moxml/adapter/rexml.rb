@@ -480,9 +480,11 @@ module Moxml
             element.add_namespace(prefix,
                                   ns.value)
           end
+          # Renames the node in place (works for elements and
+          # attributes alike). Return nothing: the mutation is in-place
+          # and the wrapper must keep tracking the same native.
           element.name = "#{prefix}:#{element.name}"
-          owner = element.is_a?(::REXML::Attribute) ? element.element : element
-          ::REXML::Attribute.new(prefix, ns.value, owner)
+          nil
         end
 
         def namespace_prefix(node)

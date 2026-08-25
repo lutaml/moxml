@@ -120,14 +120,76 @@ module Moxml
           element.add_namespace_definition(prefix, uri)
         end
 
-        def set_namespace(_element, _namespace)
-          # libleptris resolves namespaces from declarations on the
-          # tree itself; there is no separate node-to-namespace link
-          # to maintain.
+        def set_namespace(node, namespace)
+          return set_attribute_namespace(node, namespace) if node.is_a?(::Leptris::XML::Attr)
+
+          element = node
+          prefix = namespace.is_a?(String) ? nil : namespace.prefix
+          uri = namespace.is_a?(String) ? namespace : namespace.href
+          if prefix.nil? || prefix.empty?
+            element.default_namespace = uri.to_s
+            # Drop any prefix from the element name: a default namespace
+            # never applies to a prefixed name.
+            element.name = element.name.split(":", 2)[-1] if element.name.include?(":")
+          else
+            element.add_namespace_definition(prefix, uri.to_s)
+            element.name = "#{prefix}:#{element.name.split(':', 2)[-1]}"
+          end
         end
 
-        def namespace(element)
-          element.namespace
+        # Attr is an immutable value object: namespace changes go
+        # through the owning element, recreating the attribute with a
+        # qualified name, and yield a fresh native for the wrapper.
+        def set_attribute_namespace(attr, namespace)
+          element = attr.element
+          local = attr.name.include?(":") ? attr.name.split(":", 2)[1] : attr.name
+          value = attr.value
+          element.remove_attribute(attr.name)
+          prefix = namespace.is_a?(String) ? nil : namespace.prefix
+          uri = namespace.is_a?(String) ? namespace : namespace.href
+          qualified = prefix.nil? || prefix.empty? ? local : "#{prefix}:#{local}"
+          element[qualified] = value
+          if prefix && !prefix.empty? && !uri.to_s.empty? && !resolve_prefix_ns(element, prefix)
+            element.add_namespace_definition(prefix, uri.to_s)
+          end
+          element.attribute_nodes.reverse.find { |candidate| candidate.name == qualified }
+        end
+
+        def namespace(node)
+          ns = node.namespace
+          return ns unless ns.nil?
+
+          # Set-side namespaces (created attributes, renamed elements)
+          # carry a prefix the native resolver did not bind; resolve
+          # through the scope chain so wrapper-level access stays
+          # XML-correct.
+          owner = node.is_a?(::Leptris::XML::Attr) ? node.element : node
+          prefix = if node.is_a?(::Leptris::XML::Attr)
+                     node.prefix || prefix_part(node.name)
+                   else
+                     prefix_part(node.name)
+                   end
+          return nil if prefix.nil?
+
+          resolve_prefix_ns(owner, prefix)
+        end
+
+        # Nearest in-scope declaration of prefix, walking owner then
+        # ancestors. Unbound prefix → nil. Returns the Namespace object
+        # so wrappers keep prefix and uri.
+        def resolve_prefix_ns(owner, prefix)
+          current = owner
+          while current.is_a?(::Leptris::XML::Element)
+            hit = current.namespace_definitions.find { |ns| ns.prefix == prefix }
+            return hit if hit
+
+            current = current.parent
+          end
+          nil
+        end
+
+        def prefix_part(name)
+          name.include?(":") ? name.split(":", 2)[0] : nil
         end
 
         def processing_instruction_target(node)
@@ -143,7 +205,7 @@ module Moxml
           when ::Leptris::XML::CDATA then :cdata
           when ::Leptris::XML::Comment then :comment
           when ::Leptris::XML::ProcessingInstruction then :processing_instruction
-          when ::Leptris::XML::Text then :text
+          when ::Leptris::XML::Text, CustomizedLeptris::TextSegment then :text
           when ::Leptris::XML::Element then :element
           when ::Leptris::XML::Attr then :attribute
           else :unknown
@@ -153,7 +215,7 @@ module Moxml
         def node_name(node)
           return node.root_name if node.is_a?(::Leptris::XML::DocType)
 
-          node.name
+          node.name.to_s.dup.force_encoding("UTF-8")
         end
 
         def set_node_name(node, name)
@@ -181,18 +243,42 @@ module Moxml
           when ::Leptris::XML::Document
             assemble_document_children(node)
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
-               CustomizedLeptris::EntityReference
+               CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment
             []
           else
-            node.children.to_a
+            split_entity_markers(node.children.to_a, node)
           end
+        end
+
+        # Expand marker-bearing text nodes into the child sequence the
+        # moxml contract exposes: text, EntityReference, text, ...
+        def split_entity_markers(natives, parent)
+          result = []
+          natives.each do |child|
+            content = child.content.to_s.dup.force_encoding("UTF-8") if child.is_a?(::Leptris::XML::Text)
+            if content&.include?(Base::ENTITY_MARKER)
+              content.scan(/([^#{Base::ENTITY_MARKER}]*)(?:#{Base::ENTITY_MARKER}([\w.:-]+);)?/o) do
+                text_part = Regexp.last_match(1)
+                name = Regexp.last_match(2)
+                result << CustomizedLeptris::TextSegment.new(text_part, parent) unless text_part.empty?
+                result << CustomizedLeptris::EntityReference.new(name) if name
+              end
+            else
+              result << child
+            end
+          end
+          result
         end
 
         def parent(node)
           case node
           when ::Leptris::XML::Document then nil
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype then node.parent_doc
-          else node.parent
+          when CustomizedLeptris::TextSegment, CustomizedLeptris::EntityReference then node.parent
+          else
+            # The binding reports the root element as parentless; the
+            # moxml contract roots at the document.
+            node.parent || (node.document&.root == node ? node.document : nil)
           end
         end
 
@@ -232,7 +318,11 @@ module Moxml
         end
 
         def attribute_name(attr)
-          attr.name
+          # leptris Attr names are qualified; the wrapper composes the
+          # prefix, so expose the local part.
+          return attr.name.split(":", 2)[1] if attr.name.include?(":")
+
+          attr.name.to_s.dup.force_encoding("UTF-8")
         end
 
         def set_attribute(element, name, value)
@@ -240,11 +330,13 @@ module Moxml
         end
 
         def set_attribute_name(attr, name)
-          # Attr is an immutable value object; renames go through the element.
+          # Attr is an immutable value object; renames go through the
+          # element and yield a fresh native, which the wrapper adopts.
           element = attr.element
           value = attr.value
           element.remove_attribute(attr.name)
           element[name.to_s] = value
+          element.attribute_nodes.reverse.find { |candidate| candidate.name == name.to_s }
         end
 
         def set_attribute_value(attr, value)
@@ -267,12 +359,24 @@ module Moxml
           case parent
           when ::Leptris::XML::Document then add_document_child(parent, child)
           else
+            if child.is_a?(CustomizedLeptris::EntityReference)
+              marker = parent.document.create_text_node("#{Base::ENTITY_MARKER}#{child.name};")
+              parent.add_child(marker)
+              return child
+            end
             child = parent.document.create_text_node(child) if child.is_a?(String)
             parent.add_child(child)
           end
         end
 
         def add_previous_sibling(node, new_node)
+          # A PI inserted before the root lives at document level in
+          # libleptris's model, not in the element tree.
+          if new_node.is_a?(::Leptris::XML::ProcessingInstruction) &&
+              node.document&.root == node
+            node.document.add_pi(new_node.target, new_node.content.to_s)
+            return new_node
+          end
           node.add_previous_sibling(new_node)
         end
 
@@ -286,6 +390,8 @@ module Moxml
             remove_declaration(node.parent_doc) if node.parent_doc
           when CustomizedLeptris::Doctype
             attachments.delete(node.parent_doc, :doctype) if node.parent_doc
+          when CustomizedLeptris::EntityReference
+            marker_text_for(node.parent, node.name)&.unlink
           else
             node.unlink
           end
@@ -325,12 +431,23 @@ module Moxml
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
                CustomizedLeptris::EntityReference
             ""
+          when CustomizedLeptris::TextSegment then node.content
           else node.content.to_s
           end
         end
 
         def inner_text(node)
-          node.inner_text
+          # moxml semantic: direct text children only — no descendant
+          # text (that is #text), no comments. Entity references
+          # contribute their serialized form.
+          children(node).filter_map do |child|
+            case child
+            when CustomizedLeptris::EntityReference then "&#{child.name};"
+            when ::Leptris::XML::CDATA then child.content
+            when ::Leptris::XML::Text, CustomizedLeptris::TextSegment
+              child.content.to_s.dup.force_encoding("UTF-8")
+            end
+          end.join
         end
 
         def set_text_content(node, content)
@@ -434,30 +551,151 @@ module Moxml
         end
 
         def serialize(node, options = {})
+          xml = raw_serialize(node, options)
+          xml = restore_entities(xml)
+          normalize_serialization(xml, options)
+        end
+
+        def raw_serialize(node, options)
+          # CDATA must precede Text in this chain: CDATA < Text in the
+          # binding, so a Text branch first would swallow CDATA nodes.
           case node
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
                CustomizedLeptris::EntityReference
             return node.to_xml
-          when ::Leptris::XML::Text
-            return encode_entities(node.content.to_s)
-          when ::Leptris::XML::Comment
-            return "<!--#{node.content}-->"
           when ::Leptris::XML::CDATA
             return "<![CDATA[#{node.content.to_s.gsub(']]>', ']]]]><![CDATA[>')}]]>"
+          when ::Leptris::XML::Comment
+            return "<!--#{node.content}-->"
           when ::Leptris::XML::ProcessingInstruction
             content = node.content.to_s
             return content.empty? ? "<?#{node.target}?>" : "<?#{node.target} #{content}?>"
+          when ::Leptris::XML::Text, CustomizedLeptris::TextSegment
+            return escape_text(node.content.to_s)
+          when ::Leptris::XML::Document
+            return serialize_document(node, options)
           end
 
           include_decl = options.fetch(:declaration) do
             options[:no_declaration] ? false : document_has_declaration?(node)
           end
-          xml = node.to_xml(
+          node.to_xml(
             indent: options.fetch(:indent, 0),
             no_decl: !include_decl,
             encoding: options[:encoding],
           )
-          restore_entities(xml)
+        end
+
+        # moxml canonical serialization: apostrophes stay literal
+        # (only & < > " are escaped) and empty elements expand when the
+        # caller asked for it — matching the other adapters' contract.
+        # Runs segment-aware: CDATA content is literal and must not be
+        # touched.
+        def normalize_serialization(xml, options)
+          needs_apos = xml.include?("&apos;")
+          needs_expand = options[:expand_empty] && xml.include?("/>")
+          return xml unless needs_apos || needs_expand
+
+          parts = xml.split(/(<!--.*?-->|<!\[CDATA\[.*?\]\]>|<\?.*?\?>)/m)
+          parts.map do |part|
+            literal = part.start_with?("<!--", "<![CDATA[", "<?")
+            next part if literal
+
+            part = part.gsub("&apos;", "'") if needs_apos
+            if needs_expand
+              part = part.gsub(%r{<([A-Za-z_][\w.:-]*)((?:"[^"]*"|'[^']*'|[^<"'>])*)/>}) do
+                "<#{$1}#{$2}></#{$1}>"
+              end
+            end
+            part
+          end.join
+        end
+
+        # Documents compose from their parts: the native serializer
+        # only walks the root subtree, so declaration, DOCTYPE, PIs and
+        # document-level text are assembled around it explicitly.
+        def serialize_document(doc, options)
+          parts = []
+
+          include_decl = !options[:no_declaration] && options.fetch(:declaration) do
+            document_has_declaration?(doc)
+          end
+          if include_decl
+            declaration = attachments.get(doc, :declaration)
+            parts << (declaration ? declaration.to_xml : default_declaration_xml(doc, options))
+          end
+
+          doctype = attachments.get(doc, :doctype)
+          parts << doctype.to_xml if doctype
+
+          native = native_doctype_xml(doc)
+          parts << native if native
+
+          (doc.processing_instructions || []).each do |(target, data)|
+            parts << (data.to_s.empty? ? "<?#{target}?>" : "<?#{target} #{data}?>")
+          end
+
+          parts << raw_serialize(doc.root, options) if doc.root
+
+          texts = attachments.get(doc, :document_text)
+          texts&.each { |text| parts << escape_text(text.content.to_s) }
+
+          parts.join
+        end
+
+        # moxml text canonical form: only & < > are escaped; quotes
+        # stay literal in content.
+        def escape_text(text)
+          text.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;")
+        end
+
+        def default_declaration_xml(doc, options)
+          encoding = options[:encoding] || doc.encoding
+          encoding = "UTF-8" if encoding.to_s.empty?
+          %(<?xml version="1.0" encoding="#{encoding}"?>)
+        end
+
+        def marker_text_for(parent, name)
+          return nil unless parent.is_a?(::Leptris::XML::Element)
+
+          marker = "#{Base::ENTITY_MARKER}#{name};"
+          parent.children.to_a.find do |child|
+            child.is_a?(::Leptris::XML::Text) && child.content == marker
+          end
+        end
+
+        def native_doctype_xml(doc)
+          dt = doc.doctype
+          return nil unless dt
+
+          output = "<!DOCTYPE #{dt.root_name}"
+          if dt.public_id && !dt.public_id.empty?
+            output += %( PUBLIC "#{dt.public_id}")
+            output += %( "#{dt.system_id}") if dt.system_id
+          elsif dt.system_id && !dt.system_id.to_s.empty?
+            output += %( SYSTEM "#{dt.system_id}")
+          end
+          "#{output}>"
+        end
+
+        def entity_refs?(element)
+          element.is_a?(::Leptris::XML::Element) &&
+            !attachments.get(element, :entity_refs).to_a.empty?
+        end
+
+        # Registry-based entity references are not in the native tree,
+        # so the native serializer cannot see them; compose the element
+        # from the wrapper-visible children instead.
+        def serialize_entity_bearing_element(element, options)
+          name = element.prefix ? "#{element.prefix}:#{element.name}" : element.name
+          attrs = element.attribute_nodes.map do |attr|
+            %( #{attr.name}="#{attr.value.to_s.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;').gsub('"', '&quot;')}")
+          end.join
+          decls = element.namespace_definitions.map do |ns|
+            ns.prefix ? %( xmlns:#{ns.prefix}="#{ns.href}") : %( xmlns="#{ns.href}")
+          end.join
+          inner = children(element).map { |child| raw_serialize(child, options) }.join
+          "<#{name}#{decls}#{attrs}>#{inner}</#{name}>"
         end
 
         def sax_parse(xml, handler)
@@ -493,6 +731,9 @@ module Moxml
           children << doctype_wrapper if doctype_wrapper
 
           children << doc.root if doc.root
+
+          texts = attachments.get(doc, :document_text)
+          children.concat(texts) if texts
           children
         end
 
@@ -511,10 +752,12 @@ module Moxml
           when ::Leptris::XML::Element
             doc.root = child
           when ::Leptris::XML::ProcessingInstruction
-            raise Moxml::NotImplementedError.new(
-              "libleptris does not support document-level processing instructions",
-              feature: "document PI",
-            )
+            doc.add_pi(child.target, child.content.to_s)
+          when ::Leptris::XML::Text
+            texts = attachments.get(doc, :document_text) || []
+            texts << child
+            attachments.set(doc, :document_text, texts)
+            child
           else
             raise Moxml::DocumentStructureError.new(
               "Unsupported document child: #{child.class}",

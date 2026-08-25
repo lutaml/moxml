@@ -3,11 +3,17 @@
 module Moxml
   class Attribute < Node
     def name
-      @native.name
+      adapter.attribute_name(@native)
     end
 
     def name=(new_name)
-      adapter.set_attribute_name(@native, new_name)
+      # Immutable-native adapters (leptris) recreate the attribute and
+      # hand back the fresh native. Adopt only same-class natives:
+      # adapters that mutate in place return unrelated values (the
+      # value, the owning element, the namespace), which must not
+      # replace the native.
+      fresh = adapter.set_attribute_name(@native, new_name)
+      @native = fresh if fresh.is_a?(@native.class) && !fresh.equal?(@native)
     end
 
     # Returns the primary identifier for this attribute (its name)
@@ -44,7 +50,9 @@ module Moxml
     end
 
     def namespace=(ns)
-      adapter.set_namespace(@native, ns&.native)
+      # See name= for the same-class adoption rule.
+      fresh = adapter.set_namespace(@native, ns&.native)
+      @native = fresh if fresh.is_a?(@native.class) && !fresh.equal?(@native)
     end
 
     def element

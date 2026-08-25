@@ -531,9 +531,15 @@ module Moxml
         # Match namespace if specified
         if ns && ns != STAR
           if @namespaces && @namespaces[ns]
-            # Resolve prefix to URI using namespace mappings
+            # Resolve prefix to URI using namespace mappings. An empty
+            # URI binding ("xmlns" => "") selects elements in no
+            # namespace, e.g. after an xmlns="" undeclaration.
             ns_uri = @namespaces[ns]
-            ns_match = input.namespace.and(input.namespace.uri.eq(string(ns_uri)))
+            ns_match = if ns_uri.to_s.empty?
+                         input.namespace.nil?.or(input.namespace.uri.eq(string("")))
+                       else
+                         input.namespace.and(input.namespace.uri.eq(string(ns_uri)))
+                       end
           elsif ns == "xmlns"
             # Nokogiri-compatible reserved prefix: xmlns:name addresses
             # elements in the default namespace (no prefix).
