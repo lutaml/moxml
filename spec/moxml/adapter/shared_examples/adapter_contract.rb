@@ -173,6 +173,13 @@ RSpec.shared_examples "xml adapter" do
       tracked = described_class.set_namespace(native, ns)
       expect(tracked).to be_a(native.class)
     end
+
+    it "returns the native to track from set_attribute_value" do
+      native = described_class.attributes(element).first
+      tracked = described_class.set_attribute_value(native, "updated")
+      expect(tracked).to be_a(native.class)
+      expect(tracked.value).to eq("updated")
+    end
   end
 
   describe "tree mutation" do

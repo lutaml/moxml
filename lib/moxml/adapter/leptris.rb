@@ -352,6 +352,7 @@ module Moxml
 
         def set_attribute_value(attr, value)
           attr.value = value.to_s
+          attr
         end
 
         def get_attribute(element, name)

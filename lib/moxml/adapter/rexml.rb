@@ -285,6 +285,7 @@ module Moxml
 
         def set_attribute_value(attribute, value)
           attribute.normalized = value
+          attribute
         end
 
         def remove_attribute_native(attribute)

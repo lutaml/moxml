@@ -1536,11 +1536,6 @@ module Moxml
           end
         end
 
-        def remove_indentation(xml_string)
-          # Remove all newlines and extra spaces between tags
-          xml_string.gsub(/>\s+</, "><").gsub(/\n\s*/, "")
-        end
-
         def collect_namespace_definitions(node)
           ns_defs = {}
 

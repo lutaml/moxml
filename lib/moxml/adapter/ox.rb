@@ -371,6 +371,7 @@ module Moxml
             element.attributes[expanded] = new_value
             attribute.value = new_value
           end
+          attribute
         end
 
         def get_attribute(element, name)

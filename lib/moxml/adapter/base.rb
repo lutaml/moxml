@@ -38,7 +38,7 @@ module Moxml
           )
         end
 
-        def parse(_xml, _options = {})
+        def parse(_xml, _options = {}, _context = nil)
           raise Moxml::NotImplementedError.new(
             "parse not implemented",
             feature: "parse",
@@ -141,9 +141,10 @@ namespace_validation_mode: :strict)
 
         # Mutation return contract: protocol methods that may change
         # which native a wrapper tracks (set_attribute_name,
-        # set_namespace) always return the native the wrapper must
-        # keep tracking — the same object when mutated in place, a
-        # fresh object when the adapter recreates the node.
+        # set_namespace, set_attribute_value) always return the native
+        # the wrapper must keep tracking — the same object when
+        # mutated in place, a fresh object when the adapter recreates
+        # the node.
         def set_attribute_name(attribute, name)
           attribute.name = name
           attribute
@@ -159,6 +160,7 @@ namespace_validation_mode: :strict)
 
         def set_attribute_value(attribute, value)
           attribute.value = value
+          attribute
         end
 
         # Remove a specific native attribute node from its owning
