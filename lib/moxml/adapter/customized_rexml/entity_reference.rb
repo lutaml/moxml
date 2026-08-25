@@ -3,17 +3,7 @@
 module Moxml
   module Adapter
     module CustomizedRexml
-      class EntityReference
-        attr_reader :name
-
-        def initialize(name)
-          @name = name
-        end
-
-        def ==(other)
-          other.is_a?(self.class) && @name == other.name
-        end
-      end
+      EntityReference = ::Moxml::Entity::Reference
     end
   end
 end
