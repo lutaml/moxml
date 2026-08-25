@@ -8,7 +8,6 @@ module Moxml
   module Adapter
     class Libxml < Base
       autoload :EntityRefRegistry, "moxml/adapter/libxml/entity_ref_registry"
-      autoload :EntityRestorer, "moxml/adapter/libxml/entity_restorer"
 
       # Wrapper class to store DOCTYPE information
       class DoctypeWrapper
@@ -121,10 +120,7 @@ module Moxml
 
           ctx = _context || Context.new(:libxml)
           # Single parse path: wrap libxml's already-complete C-parsed tree
-          # directly (same pattern as nokogiri/ox). The previous
-          # DocumentBuilder.build path walked the entire parsed tree and
-          # re-added every node to a fresh moxml-managed document, which
-          # made parse O(N) Ruby work on top of an already-complete parse.
+          # directly (same pattern as the other adapters).
           # Doctype/declaration/PI attachments set above remain on
           # native_doc, so the serialize path still sees them.
           #
@@ -134,7 +130,7 @@ module Moxml
           # path; the restoration walk is just one of potentially several
           # post-processing steps and doesn't fork the construction.
           doc = Document.new(native_doc, ctx)
-          EntityRestorer.new(doc).run if ctx.config.restore_entities
+          Entity::Restorer.new(doc).run if ctx.config.restore_entities
           doc
         end
 
@@ -219,7 +215,7 @@ module Moxml
           return :unknown unless node
 
           # Fast path: native libxml nodes are the vast majority during
-          # parse traversal (DocumentBuilder visits raw libxml children).
+          # parse traversal (wrapping visits raw libxml children).
           # Skip the wrapper checks below for them.
           if node.is_a?(::LibXML::XML::Node)
             return NATIVE_NODE_TYPE_MAP[node.node_type] || :unknown
@@ -1035,7 +1031,7 @@ module Moxml
         end
 
         # Shallow duplication: copies the node itself (name, attrs, namespaces)
-        # but NOT its descendants. This is what DocumentBuilder needs — it
+        # but NOT its descendants (deep duplication composes this).
         # walks the source tree and re-adds children one at a time via
         # add_child, so a deep copy here would be done only to be stripped
         # by replace_children, then rebuilt — O(N²) waste on parse.
@@ -1105,15 +1101,6 @@ module Moxml
           else
             node
           end
-        end
-
-        def prepare_for_new_document(node, target_doc)
-          return node unless node && target_doc
-
-          # For LibXML, we need to duplicate ALL nodes to avoid
-          # document ownership issues. Simply importing doesn't work
-          # because nodes from the parsed document still have references.
-          duplicate_node(node)
         end
 
         def has_declaration?(native_doc, wrapper)

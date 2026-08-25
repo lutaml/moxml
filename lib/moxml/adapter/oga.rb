@@ -40,8 +40,23 @@ module Moxml
             )
           end
 
+          # Oga parses multiple root elements leniently; the moxml
+          # contract requires a single root. to_a because the vendored
+          # fork's NodeSet#count ignores its block.
+          roots = native_doc.children.to_a.count do |child|
+            child.instance_of?(::Oga::XML::Element)
+          end
+          if roots > 1
+            raise Moxml::ParseError.new(
+              "multiple root elements",
+              source: xml.is_a?(String) ? xml[0..100] : nil,
+            )
+          end
+
           ctx = _context || Context.new(:oga)
-          DocumentBuilder.new(ctx).build(native_doc)
+          doc = Document.new(native_doc, ctx)
+          Entity::Restorer.new(doc).run if ctx.config.restore_entities
+          doc
         end
 
         # SAX parsing implementation for Oga.
@@ -237,6 +252,38 @@ module Moxml
 
         def parent(node)
           node.parent if node.is_a?(::Oga::XML::Node)
+        end
+
+        # Oga's Node#dup shallow-copies the ivars, leaving attributes
+        # and children shared with the original; the public dup
+        # contract needs a full deep copy.
+        def duplicate_node(node)
+          case node
+          when ::Oga::XML::Element
+            copy = ::Oga::XML::Element.new(name: node.name)
+            copy.namespace_name = node.namespace_name if node.namespace_name
+            node.attributes.each do |attr|
+              copy.add_attribute(::Oga::XML::Attribute.new(
+                                   name: attr.name,
+                                   namespace_name: attr.namespace_name,
+                                   value: attr.value,
+                                 ))
+            end
+            node.children.each do |child|
+              copy.children << duplicate_node(child)
+            end
+            copy
+          when ::Oga::XML::Text
+            ::Oga::XML::Text.new(text: node.text)
+          when ::Oga::XML::Cdata
+            ::Oga::XML::Cdata.new(text: node.text)
+          when ::Oga::XML::Comment
+            ::Oga::XML::Comment.new(text: node.text)
+          when ::Oga::XML::ProcessingInstruction
+            ::Oga::XML::ProcessingInstruction.new(name: node.name, text: node.text)
+          else
+            node.dup
+          end
         end
 
         def next_sibling(node)

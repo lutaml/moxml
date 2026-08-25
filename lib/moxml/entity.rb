@@ -29,6 +29,7 @@ module Moxml
   # shared, single-sourced parts.
   module Entity
     autoload :Reference, "moxml/entity/reference"
+    autoload :Restorer, "moxml/entity/restorer"
 
     # Marker for adapters that resolve entities during parsing.
     # U+FFFC (Object Replacement Character) + U+FEFF (BOM) is a
