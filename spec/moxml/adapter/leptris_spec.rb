@@ -49,7 +49,7 @@ RSpec.describe Moxml::Adapter::Leptris do
     it "evaluates document-context queries on the native engine" do
       expect(doc.xpath("//item[@id='2']").map(&:text)).to eq(["beta"])
       expect(doc.xpath("count(//item)")).to eq(2.0)
-      expect(doc.xpath(%q{//item[@p:kind='a']}).map { |n| n["id"] }).to eq(["1"])
+      expect(doc.xpath("//item[@p:kind='a']").map { |n| n["id"] }).to eq(["1"])
     end
 
     it "falls back to the Ruby engine for attribute-node results" do
