@@ -175,6 +175,131 @@ RSpec.shared_examples "xml adapter" do
     end
   end
 
+  describe "tree mutation" do
+    let(:doc) { described_class.parse(xml).native }
+    let(:root) { described_class.root(doc) }
+
+    def names_of(node)
+      described_class.children(node)
+        .map { |child| described_class.node_name(child) }
+    end
+
+    it "inserts previous and next siblings" do
+      target = described_class.children(root)[1]
+      described_class.add_previous_sibling(
+        target, described_class.create_element("before")
+      )
+      described_class.add_next_sibling(
+        target, described_class.create_element("after")
+      )
+
+      expect(names_of(root)).to eq(%w[child before child after special])
+    end
+
+    it "removes nodes from the tree" do
+      described_class.remove(described_class.children(root)[1])
+      expect(names_of(root)).to eq(%w[child special])
+    end
+
+    it "replaces a node in place" do
+      described_class.replace(
+        described_class.children(root)[1],
+        described_class.create_element("replacement"),
+      )
+      expect(names_of(root)).to eq(%w[child replacement special])
+    end
+
+    it "replaces all children" do
+      described_class.replace_children(
+        root, [described_class.create_element("only")]
+      )
+      expect(names_of(root)).to eq(%w[only])
+    end
+  end
+
+  describe "content accessors" do
+    let(:doc) { described_class.parse(xml).native }
+    let(:root) { described_class.root(doc) }
+
+    it "reads inner text from direct text children" do
+      child = described_class.children(root)[0]
+      expect(described_class.inner_text(child)).to eq("Text")
+    end
+
+    it "writes text content" do
+      element = described_class.create_element("scratch")
+      described_class.set_text_content(element, "written")
+      expect(described_class.inner_text(element)).to eq("written")
+    end
+
+    it "reads and writes comment content" do
+      comment = described_class.create_comment("note")
+      expect(described_class.comment_content(comment)).to eq("note")
+      described_class.set_comment_content(comment, "changed")
+      expect(described_class.comment_content(comment)).to eq("changed")
+    end
+
+    it "reads and writes CDATA content" do
+      cdata = described_class.create_cdata("<raw>")
+      expect(described_class.cdata_content(cdata)).to eq("<raw>")
+      described_class.set_cdata_content(cdata, "<new>")
+      expect(described_class.cdata_content(cdata)).to eq("<new>")
+    end
+  end
+
+  describe "auxiliary node creation" do
+    it "creates doctypes with external identifiers" do
+      doctype = described_class.create_doctype("cfg", "pub", "sys")
+      expect(described_class.node_type(doctype)).to eq(:doctype)
+      expect(described_class.doctype_name(doctype)).to eq("cfg")
+      expect(described_class.doctype_external_id(doctype)).to eq("pub")
+      expect(described_class.doctype_system_id(doctype)).to eq("sys")
+    end
+
+    it "creates declarations with version, encoding and standalone" do
+      declaration = described_class.create_declaration("1.0", "UTF-8", "yes")
+      expect(described_class.declaration_attribute(declaration, "version"))
+        .to eq("1.0")
+      expect(described_class.declaration_attribute(declaration, "standalone"))
+        .to eq("yes")
+    end
+
+    it "creates entity references by name" do
+      reference = described_class.create_entity_reference("copy")
+      expect(described_class.node_type(reference)).to eq(:entity_reference)
+      expect(described_class.entity_reference_name(reference)).to eq("copy")
+    end
+
+    it "duplicates nodes with their names" do
+      element = described_class.create_element("original")
+      duplicate = described_class.duplicate_node(element)
+      expect(described_class.node_name(duplicate)).to eq("original")
+      expect(duplicate).not_to equal(element)
+    end
+  end
+
+  describe "in-scope namespaces" do
+    let(:doc) { described_class.parse(xml).native }
+    let(:special) { described_class.children(described_class.root(doc)).last }
+
+    it "returns the ancestor-declared prefixes" do
+      prefixes = described_class.in_scope_namespaces(special)
+        .map { |ns| described_class.namespace_prefix(ns) }
+      # The default declaration is reported as a nil prefix everywhere
+      # except Ox, which spells it "xmlns"
+      expect(prefixes).to include("x")
+      expect(prefixes.size).to eq(2)
+    end
+  end
+
+  describe "line numbers" do
+    it "returns a 1-based position or nil" do
+      doc = described_class.parse(xml).native
+      line = described_class.line_number(described_class.root(doc))
+      expect(line.nil? || (line.is_a?(Integer) && line >= 1)).to be(true)
+    end
+  end
+
   describe "namespaces" do
     let(:doc) { described_class.parse(xml).native }
     let(:root) { described_class.root(doc) }
