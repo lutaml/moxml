@@ -38,21 +38,35 @@ RSpec.describe Moxml::Adapter::Ox do
 
   describe "xpath support" do
     let(:doc) do
-      described_class.parse("<root><child id='1'>text</child></root>").native
+      described_class.parse("<root><child id='1'>text</child><child id='2'>more</child></root>").native
     end
 
     it "supports basic element matching" do
       nodes = described_class.xpath(doc, "//child")
-      expect(nodes.size).to eq(1)
+      expect(nodes.size).to eq(2)
       expect(nodes.first.name).to eq("child")
     end
 
-    it "supports attribute matching" do
-      pending("Ox does not support attribute value predicates in XPath (documented limitation)")
-
+    it "supports attribute value predicates" do
       nodes = described_class.xpath(doc, "//child[@id='1']")
       expect(nodes.size).to eq(1)
-      expect(nodes.first.attributes["id"]).to eq("1")
+      expect(nodes.first.attributes[:id]).to eq("1")
+    end
+
+    it "supports logical operators" do
+      nodes = described_class.xpath(doc, "//child[@id='1' or @id='2']")
+      expect(nodes.size).to eq(2)
+    end
+
+    it "supports position predicates" do
+      nodes = described_class.xpath(doc, "//child[2]")
+      expect(nodes.size).to eq(1)
+      expect(nodes.first.attributes[:id]).to eq("2")
+    end
+
+    it "supports XPath functions" do
+      count = described_class.xpath(doc, "count(//child)")
+      expect(count).to eq(2)
     end
   end
 end

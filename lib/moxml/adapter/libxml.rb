@@ -918,14 +918,18 @@ module Moxml
           # LibXML requires ALL prefixes in the XPath to be registered
           ns_context = build_xpath_namespaces(native_node, namespaces)
 
-          results = if ns_context.empty?
-                      native_node.find(expression).to_a
-                    else
-                      native_node.find(expression, ns_context).to_a
-                    end
+          found = if ns_context.empty?
+                    native_node.find(expression)
+                  else
+                    native_node.find(expression, ns_context)
+                  end
 
-          # Wrap results
-          results.map { |n| patch_node(n) }
+          # find returns an XPath::Object for node results, scalars for
+          # count()/string()/boolean functions (adapter contract)
+          return found if found.is_a?(Float) || found.is_a?(String) ||
+            [true, false].include?(found)
+
+          found.to_a.map { |n| patch_node(n) }
         rescue ::LibXML::XML::Error => e
           raise Moxml::XPathError.new(
             e.message,

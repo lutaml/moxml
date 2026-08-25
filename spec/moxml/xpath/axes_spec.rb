@@ -205,6 +205,36 @@ RSpec.describe "XPath Axes" do
       end
     end
 
+    describe "descendant-or-self shorthand from an element" do
+      it "selects descendants with .//step" do
+        ast = Moxml::XPath::Parser.parse(".//grandchild")
+        proc = Moxml::XPath::Compiler.compile_with_cache(ast)
+        result = proc.call(doc.root.children.find(&:element?))
+
+        expect(result.map { |n| n.attribute("id").value })
+          .to contain_exactly("g1", "g2")
+      end
+    end
+
+    describe "node type tests as steps" do
+      it "selects text nodes with text()" do
+        ast = Moxml::XPath::Parser.parse("//grandchild/text()")
+        proc = Moxml::XPath::Compiler.compile_with_cache(ast)
+        result = proc.call(doc)
+
+        expect(result.map(&:content)).to contain_exactly("text1", "text2")
+      end
+
+      it "selects comments with comment()" do
+        commented = context.parse("<root><!-- c1 --><a/><!-- c2 --></root>")
+        ast = Moxml::XPath::Parser.parse("//comment()")
+        proc = Moxml::XPath::Compiler.compile_with_cache(ast)
+        result = proc.call(commented)
+
+        expect(result.map(&:content)).to contain_exactly(" c1 ", " c2 ")
+      end
+    end
+
     describe "descendant axis" do
       it "finds descendants without self" do
         ast = Moxml::XPath::Parser.parse("/root/descendant::child")

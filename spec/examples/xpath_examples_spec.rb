@@ -24,20 +24,12 @@ RSpec.shared_examples "XPath Examples" do
     end
 
     it "finds nodes with namespaces" do
-      if context.config.adapter_name == :ox
-        pending "Ox doesn't have a native XPath"
-      end
-
       titles = doc.xpath("//dc:title",
                          "dc" => "http://purl.org/dc/elements/1.1/")
       expect(titles.map(&:text)).to eq(%w[First Second])
     end
 
     it "finds nodes by attributes" do
-      if context.config.adapter_name == :ox
-        pending "Ox doesn't have native XPath"
-      end
-
       book = doc.at_xpath('//book[@id="2"]')
       expect(book).not_to be_nil
       title = book.at_xpath(".//dc:title",
@@ -46,9 +38,6 @@ RSpec.shared_examples "XPath Examples" do
     end
 
     it "finds nested attributes efficiently" do
-      if context.config.adapter_name == :ox
-        pending "Ox doesn't have native XPath"
-      end
       # More efficient - specific path
       titles1 = doc.xpath("//book/dc:title")
 

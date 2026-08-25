@@ -328,15 +328,17 @@ module Moxml
         steps = [parse_step]
 
         # Continue on both step separators: "/step" and the
-        # descendant-or-self shorthand "//step" (the lexer emits
-        # :dslash; some paths arrive as a :slash/:slash pair).
-        # ".//step" and "a//step" are the same grammar production.
+        # descendant-or-self shorthand "//step". A "//" arrives as a
+        # single :dslash (".//step", "a//step") or occasionally as a
+        # :slash/:slash or :slash/:dslash pair.
         while !at_end? && match?(:slash, :dslash)
+          is_dslash = match?(:dslash)
           advance
-          if match?(:dslash)
-            steps << AST::Node.axis("descendant-or-self", AST::Node.node_type("node"))
-          elsif match?(:slash)
+          if !is_dslash && match?(:slash, :dslash)
             advance
+            is_dslash = true
+          end
+          if is_dslash
             steps << AST::Node.axis("descendant-or-self", AST::Node.node_type("node"))
           end
           steps << parse_step unless at_end? || match?(:pipe, :rbracket,

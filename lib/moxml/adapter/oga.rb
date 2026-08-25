@@ -470,8 +470,10 @@ module Moxml
         end
 
         def xpath(node, expression, namespaces = nil)
-          node.xpath(expression, {},
-                     namespaces: namespaces&.transform_keys(&:to_s)).to_a
+          result = node.xpath(expression, {},
+                              namespaces: namespaces&.transform_keys(&:to_s))
+          # Adapter contract: Array<native> | scalar
+          result.is_a?(Enumerable) ? result.to_a : result
         rescue ::LL::ParserError => e
           raise Moxml::XPathError.new(
             e.message,

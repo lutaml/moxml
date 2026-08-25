@@ -131,11 +131,13 @@ RSpec.describe "XPath Capabilities" do
       end
 
       describe "XPath functions" do
-        it "supports count() function" do
+        it "supports count() function, returning the scalar unwrapped" do
           doc = Moxml.new.parse(simple_xml)
-          # NOTE: count() returns a number, not nodes
           result = doc.xpath("count(//book)")
-          expect(result).to be_a(Numeric) if result.is_a?(Numeric)
+          # REXML's XPath has no function support and yields an empty set
+          skip "count() function not supported on #{adapter_name}" if result.is_a?(Moxml::NodeSet)
+
+          expect(result).to eq(2)
         rescue Moxml::XPathError, NoMethodError
           skip "count() function not supported on #{adapter_name}"
         end
