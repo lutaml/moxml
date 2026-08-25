@@ -106,27 +106,6 @@ module Moxml
     end
   end
 
-  # Error raised when serialization fails
-  class SerializationError < Error
-    attr_reader :node, :adapter, :format
-
-    def initialize(message, node: nil, adapter: nil, format: nil)
-      @node = node
-      @adapter = adapter
-      @format = format
-      super(message)
-    end
-
-    def to_s
-      msg = super
-      msg += "\n  Node: <#{@node.name}>" if @node.is_a?(Element) || @node.is_a?(Attribute)
-      msg += "\n  Adapter: #{@adapter}" if @adapter
-      msg += "\n  Format: #{@format}" if @format
-      msg += "\n  Hint: Check that the node structure is valid for serialization"
-      msg
-    end
-  end
-
   # Error raised when document structure is invalid
   class DocumentStructureError < Error
     attr_reader :attempted_operation, :current_state
@@ -142,27 +121,6 @@ module Moxml
       msg += "\n  Operation: #{@attempted_operation}" if @attempted_operation
       msg += "\n  Current State: #{@current_state}" if @current_state
       msg += "\n  Hint: Ensure the document structure follows XML specifications"
-      msg
-    end
-  end
-
-  # Error raised when attribute operations fail
-  class AttributeError < Error
-    attr_reader :attribute_name, :element, :value
-
-    def initialize(message, name: nil, element: nil, value: nil)
-      @attribute_name = name
-      @element = element
-      @value = value
-      super(message)
-    end
-
-    def to_s
-      msg = super
-      msg += "\n  Attribute: #{@attribute_name}" if @attribute_name
-      msg += "\n  Element: <#{@element.name}>" if @element.is_a?(Element)
-      msg += "\n  Value: #{@value.inspect}" if @value
-      msg += "\n  Hint: Verify attribute name follows XML naming rules"
       msg
     end
   end

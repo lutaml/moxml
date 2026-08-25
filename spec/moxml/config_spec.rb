@@ -11,7 +11,6 @@ RSpec.describe Moxml::Config do
       expect(config.default_encoding).to eq("UTF-8")
       expect(config.default_indent).to eq(2)
       expect(config.default_line_ending).to eq("\n")
-      expect(config.entity_encoding).to eq(:basic)
     end
 
     it "sets default entity_load_mode to :required" do

@@ -64,7 +64,7 @@ module Moxml
     end
 
     def +(other)
-      self.class.new(@nodes + other.nodes, @context)
+      self.class.new(@nodes + other.nodes, @context, @parent_node)
     end
 
     def <<(node)

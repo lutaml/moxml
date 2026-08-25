@@ -26,7 +26,6 @@ module Moxml
         default_indent: original.default_indent,
         default_line_ending: original.default_line_ending,
         entity_load_mode: original.entity_load_mode,
-        entity_encoding: original.entity_encoding,
         restore_entities: original.restore_entities,
         namespace_validation_mode: original.namespace_validation_mode,
         entity_restoration_mode: original.entity_restoration_mode,
@@ -48,7 +47,6 @@ module Moxml
         config.default_indent = saved_values[:default_indent]
         config.default_line_ending = saved_values[:default_line_ending]
         config.entity_load_mode = saved_values[:entity_load_mode]
-        config.entity_encoding = saved_values[:entity_encoding]
         config.restore_entities = saved_values[:restore_entities]
         config.namespace_validation_mode = saved_values[:namespace_validation_mode]
         config.entity_restoration_mode = saved_values[:entity_restoration_mode]
