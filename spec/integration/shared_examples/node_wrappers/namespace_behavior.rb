@@ -170,6 +170,32 @@ RSpec.shared_examples "Moxml::Namespace" do
         expect(prefixes).to include("xs")
       end
 
+      it "sees ancestor declarations made after a first read (cache invalidation)" do
+        root = doc.create_element("root")
+        root.add_namespace("a", "http://a.org")
+        child = doc.create_element("child")
+        root.add_child(child)
+        child.in_scope_namespaces # materialize the scope cache
+
+        root.add_namespace("b", "http://b.org")
+
+        expect(child.in_scope_namespaces.map(&:prefix)).to include("b")
+      end
+
+      it "recomputes the scope after the subtree is reparented" do
+        source = doc.create_element("source")
+        source.add_namespace("s", "http://s.org")
+        child = doc.create_element("child")
+        source.add_child(child)
+        child.in_scope_namespaces # materialize the scope cache
+
+        target = doc.create_element("target")
+        child.remove
+        target.add_child(child)
+
+        expect(child.in_scope_namespaces.map(&:prefix)).not_to include("s")
+      end
+
       it "collects namespaces from multiple ancestor levels" do
         root = doc.create_element("root")
         root.add_namespace("xs", "http://www.w3.org/2001/XMLSchema")

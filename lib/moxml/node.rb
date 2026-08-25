@@ -55,6 +55,8 @@ module Moxml
       refreshed = adapter.actual_native(node.native, @native)
       node.refresh_native!(refreshed) if refreshed && refreshed != node.native
       node.parent_node = self
+      # The adopted subtree's in-scope namespaces changed
+      node.invalidate_namespace_cache!
       invalidate_children_cache!
       self
     end
@@ -77,8 +79,14 @@ module Moxml
       invalidate_parent_children_cache!
       adapter.remove(@native)
       invalidate_children_cache!
+      # The detached subtree left its declaring ancestors behind
+      invalidate_namespace_cache!
       self
     end
+
+    # Namespace-scope caches live on Element; the base no-op lets tree
+    # mutations invalidate uniformly without type checks.
+    def invalidate_namespace_cache!; end
 
     def replace(node)
       node = prepare_node(node)

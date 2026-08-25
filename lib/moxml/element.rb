@@ -77,7 +77,7 @@ module Moxml
     def add_namespace(prefix, uri)
       adapter.create_namespace(@native, prefix, uri,
                                namespace_validation_mode: context.config.namespace_validation_mode)
-      @namespaces = nil
+      invalidate_namespace_cache!
       self
     rescue ValidationError => e
       # Re-raise as NamespaceError, provide attributes for error context
@@ -109,7 +109,7 @@ module Moxml
       else
         adapter.set_namespace(@native, ns_or_hash&.native)
       end
-      @namespaces = nil
+      invalidate_namespace_cache!
     end
 
     def namespaces
@@ -122,9 +122,14 @@ module Moxml
     # Returns all namespaces in scope for this element,
     # including those inherited from ancestor elements.
     def in_scope_namespaces
-      adapter.in_scope_namespaces(@native).map do |ns|
-        Namespace.new(ns, context)
+      generation = context.namespace_scope_generation
+      if @in_scope_namespaces.nil? || @in_scope_generation != generation
+        @in_scope_namespaces = adapter.in_scope_namespaces(@native).map do |ns|
+          Namespace.new(ns, context)
+        end
+        @in_scope_generation = generation
       end
+      @in_scope_namespaces
     end
 
     # Returns the namespace URI of this element (alias for namespace_uri)
@@ -211,6 +216,15 @@ module Moxml
     # Called by Attribute#remove to invalidate the cached attributes
     def invalidate_attribute_cache!
       @attributes = nil
+    end
+
+    # Clear the namespace caches and bump the context's scope
+    # generation so every wrapper — including ones not reachable from
+    # any children cache — recomputes on next read.
+    def invalidate_namespace_cache!
+      @namespaces = nil
+      @in_scope_namespaces = nil
+      context.bump_namespace_scope_generation
     end
   end
 end
