@@ -80,7 +80,6 @@ module Moxml
   autoload :Namespace, "moxml/namespace"
   autoload :Doctype, "moxml/doctype"
   autoload :EntityReference, "moxml/entity_reference"
-  autoload :DocumentBuilder, "moxml/document_builder"
   autoload :Builder, "moxml/builder"
   autoload :Entity, "moxml/entity"
   autoload :EntityRegistry, "moxml/entity_registry"

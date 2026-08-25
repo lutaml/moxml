@@ -183,13 +183,6 @@ namespace_validation_mode: :strict)
           node
         end
 
-        def prepare_for_new_document(node, _target_doc)
-          # Hook for adapters that need special handling when moving nodes
-          # between documents (e.g., LibXML's document.import)
-          # Default: no-op for backward compatibility
-          node
-        end
-
         # Check if the native document has an XML declaration
         # @param native_doc the native document object
         # @param wrapper [Moxml::Document] the wrapper with has_xml_declaration flag

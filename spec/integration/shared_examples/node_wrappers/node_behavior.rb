@@ -117,14 +117,6 @@ RSpec.shared_examples "Moxml::Node" do
         expect(copy.name).to eq("a")
         expect(copy["id"]).to eq("1")
         expect(copy.text).to eq("text")
-
-        # Oga's parse still runs through DocumentBuilder, which relies
-        # on the shallow native dup; independence lands when the
-        # builder retires.
-        if context.config.adapter_name == :oga
-          skip "Oga dup shares attributes until DocumentBuilder retires"
-        end
-
         copy["id"] = "changed"
         expect(original["id"]).to eq("1")
       end

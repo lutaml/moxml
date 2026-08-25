@@ -154,7 +154,7 @@ RSpec.describe Moxml::Adapter::Libxml do
     end
   end
 
-  describe Moxml::Adapter::Libxml::EntityRestorer do
+  describe Moxml::Entity::Restorer do
     let(:context) { Moxml.new(:libxml) }
 
     it "restores entities through its public entry point" do

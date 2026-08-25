@@ -41,7 +41,9 @@ module Moxml
           end
 
           ctx = _context || Context.new(:rexml)
-          DocumentBuilder.new(ctx).build(native_doc)
+          doc = Document.new(native_doc, ctx)
+          Entity::Restorer.new(doc).run if ctx.config.restore_entities
+          doc
         end
 
         def extract_encoding_from_xml(xml)

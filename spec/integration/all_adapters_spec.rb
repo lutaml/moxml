@@ -31,7 +31,7 @@ RSpec.describe "Cross-adapter integration" do
     "Moxml::EntityReference",
     "Moxml::Context",
     "Moxml::Builder",
-    "Moxml::DocumentBuilder",
+    "Moxml::Parse Behavior",
     "Moxml Integration",
     "Moxml Edge Cases",
     "Attribute Examples",

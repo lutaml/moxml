@@ -199,7 +199,7 @@ module Moxml
     end
 
     # Returns the set of codepoints that could potentially be restored as entities.
-    # Used by DocumentBuilder for O(1) fast-path checks.
+    # Used by Entity::Restorer for O(1) fast-path checks.
     # @return [Set<Integer>]
     def restorable_codepoints
       @restorable_codepoints ||= if @by_name.empty?
