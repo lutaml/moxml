@@ -6,6 +6,18 @@ module Moxml
 
     def initialize(adapter = nil)
       @config = Config.new(adapter)
+      # Bumped on any namespace-scope mutation; Element scope caches
+      # compare against it so every wrapper sees changes without
+      # needing wrapper identity.
+      @namespace_scope_generation = 0
+    end
+
+    def namespace_scope_generation
+      @namespace_scope_generation
+    end
+
+    def bump_namespace_scope_generation
+      @namespace_scope_generation += 1
     end
 
     def entity_registry
