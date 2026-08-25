@@ -1718,16 +1718,24 @@ module Moxml
           @handler.on_end_document
         end
 
-        def on_start_element(name, attributes)
+        # libxml strips prefixes and namespace declarations from the
+        # plain on_start_element callback; the _ns variants carry
+        # them. The namespaces hash uses nil for the default
+        # declaration — the same key convention as every other
+        # bridge's split. Attribute name prefixes are lost by the
+        # binding in both callbacks (documented limitation).
+        def on_start_element_ns(name, attributes, prefix, _uri, namespaces)
           normalized = (attributes || {}).map { |k, v| [k.to_s, v] }
-          attr_hash, ns_hash = split_attributes_and_namespaces(normalized) do |v|
+          attr_hash, = split_attributes_and_namespaces(normalized) do |v|
             Moxml::Adapter::Base.decode_entities(v)
           end
-          @handler.on_start_element(name.to_s, attr_hash, ns_hash)
+          qualified = prefix ? "#{prefix}:#{name}" : name.to_s
+          @handler.on_start_element(qualified, attr_hash, namespaces || {})
         end
 
-        def on_end_element(name)
-          @handler.on_end_element(name.to_s)
+        def on_end_element_ns(name, prefix, _uri)
+          qualified = prefix ? "#{prefix}:#{name}" : name.to_s
+          @handler.on_end_element(qualified)
         end
 
         def on_characters(chars)
