@@ -163,6 +163,48 @@ RSpec.describe "XPath Axes" do
       end
     end
 
+    describe "attribute axis with namespaces" do
+      let(:ns_doc) do
+        xml = <<~XML
+          <root xmlns:p="http://x.org" xmlns:q="http://x.org">
+            <item q:type="namespaced" type="bare" other="o"/>
+          </root>
+        XML
+        context.parse(xml)
+      end
+
+      def select(expression, namespaces = nil)
+        ast = Moxml::XPath::Parser.parse(expression)
+        proc = Moxml::XPath::Compiler.compile_with_cache(ast,
+                                                         namespaces: namespaces)
+        proc.call(ns_doc).map(&:value)
+      end
+
+      it "matches bare names against no-namespace attributes only" do
+        expect(select("/root/item/@type")).to eq(["bare"])
+      end
+
+      it "matches prefixed names by namespace URI, not by prefix spelling" do
+        expect(select("/root/item/@p:type")).to eq(["namespaced"])
+        expect(select("/root/item/@q:type")).to eq(["namespaced"])
+      end
+
+      it "matches any local name within a prefix's namespace" do
+        expect(select("/root/item/@q:*")).to eq(["namespaced"])
+      end
+
+      it "matches nothing for an undeclared prefix" do
+        expect(select("/root/item/@z:type")).to be_empty
+      end
+
+      it "prefers context prefix mappings over document declarations" do
+        expect(select("/root/item/@p:type", "p" => "http://other.org"))
+          .to be_empty
+        expect(select("/root/item/@zzz:type", "zzz" => "http://x.org"))
+          .to eq(["namespaced"])
+      end
+    end
+
     describe "descendant axis" do
       it "finds descendants without self" do
         ast = Moxml::XPath::Parser.parse("/root/descendant::child")

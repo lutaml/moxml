@@ -304,6 +304,12 @@ module Moxml
           element.attributes.delete(attr) if attr
         end
 
+        def remove_attribute_native(attr)
+          element = attr.element
+          element&.attributes&.delete(attr)
+          attr
+        end
+
         def add_child(element, child_or_text)
           child =
             if child_or_text.is_a?(String)

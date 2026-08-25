@@ -37,9 +37,12 @@ module Moxml
       ns&.uri
     end
 
+    # Write path shares the resolver's expanded-name semantics (see
+    # AttributeResolver.assign): bare names target no-namespace
+    # attributes only; prefixed names replace by namespace URI and
+    # require a declared prefix. Cache coherence is the resolver's.
     def []=(name, value)
-      adapter.set_attribute(@native, name, normalize_xml_value(value))
-      @attributes = nil
+      Moxml::AttributeResolver.assign(self, name, normalize_xml_value(value))
     end
 
     # Unified XML-correct name resolution (see AttributeResolver):
@@ -67,8 +70,7 @@ module Moxml
     end
 
     def remove_attribute(name)
-      adapter.remove_attribute(@native, name)
-      @attributes = nil
+      Moxml::AttributeResolver.remove(self, name)
       self
     end
 

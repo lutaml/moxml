@@ -57,6 +57,103 @@ module Moxml
         .find { |candidate| candidate.prefix == prefix }&.uri
     end
 
+    # Assign a value to the attribute named by XML-correct resolution,
+    # mirroring #resolve:
+    #
+    # - "xmlns"/"xmlns:*" are namespace declarations, not attributes:
+    #   delegated verbatim to the adapter (declaration creation is
+    #   adapter territory).
+    # - A bare name replaces the no-namespace attribute only — a
+    #   namespaced attribute sharing the local name is left alone.
+    # - A prefixed name replaces by expanded name: assigning p:x
+    #   overwrites an attribute spelled q:x when both prefixes are
+    #   bound to the same URI.
+    #
+    # When nothing matches, the attribute is created with the given
+    # spelling. A prefix not yet in scope is stored raw — builders
+    # legitimately write detached children before attaching them under
+    # the declaring ancestor, and reads resolve by expanded name once
+    # the prefix is in scope (matching nokogiri/libxml creation
+    # behavior; namespace validity is a property of the serialized
+    # document).
+    #
+    # @return [String] the assigned value
+    def assign(element, name, value)
+      name = name.to_s
+      adapter = element.context.config.adapter
+      if name == "xmlns" || name.start_with?("xmlns:")
+        adapter.set_attribute(element.native, name, value)
+        element.invalidate_attribute_cache!
+        return value
+      end
+
+      existing = resolve(element, name)
+      if existing
+        existing.value = value
+        return value
+      end
+
+      adapter.set_attribute(element.native, name, value)
+      element.invalidate_attribute_cache!
+      value
+    end
+
+    # Remove the attribute named by XML-correct resolution (see
+    # #assign for the name semantics).
+    #
+    # @return [Moxml::Attribute, nil] the removed attribute
+    def remove(element, name)
+      name = name.to_s
+      adapter = element.context.config.adapter
+      if name == "xmlns" || name.start_with?("xmlns:")
+        adapter.remove_attribute(element.native, name)
+        element.invalidate_attribute_cache!
+        return nil
+      end
+
+      attr = resolve(element, name)
+      return nil unless attr
+
+      adapter.remove_attribute_native(attr.native)
+      element.invalidate_attribute_cache!
+      attr
+    end
+
+    # XPath 1.0 attribute node test, sharing the resolver's
+    # expanded-name semantics:
+    #
+    # @param prefix [String, Symbol, nil]
+    #   - String: match by namespace URI resolved against the
+    #     element's in-scope declarations; the prefix spelling is
+    #     irrelevant (q:x matches a p:x test when URIs agree)
+    #   - :any: any namespace, including none (*:local)
+    #   - nil: bare name — no-namespace attributes only (Namespaces
+    #     1.0 §5.2)
+    # @param local [String, nil] local name, or nil for any (p:*)
+    # @return [Boolean]
+    def attribute_test?(element, attr, prefix, local)
+      return false if local && local_name(attr.name) != local
+
+      case prefix
+      when :any then true
+      when nil then attribute_uri(element, attr).nil?
+      else
+        uri = prefix_uri(element, prefix)
+        !uri.nil? && uri == attribute_uri(element, attr)
+      end
+    end
+
+    # Attribute node test with a URI resolved at XPath compile time
+    # (the static context's prefix mapping wins over the document's
+    # own declarations). See #attribute_test? for local semantics.
+    #
+    # @return [Boolean]
+    def attribute_test_uri?(element, attr, uri, local)
+      return false if local && local_name(attr.name) != local
+
+      attribute_uri(element, attr) == uri
+    end
+
     # Local part of a wrapper attribute name. Local names cannot
     # contain ':' in namespace-well-formed documents; splitting is for
     # adapters whose natives carry the qualified name (leptris).

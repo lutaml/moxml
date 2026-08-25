@@ -442,9 +442,13 @@ module Moxml
               native_elem.attributes.get_attribute(name_str)
             end
           else
-            # Regular attribute without namespace
-            native_elem[name_str] = value_str
-            native_elem.attributes.get_attribute(name_str)
+            # node[]= is ambiguous when a namespace-bound attribute
+            # shares the local name (it clobbers that attribute);
+            # create or replace the no-namespace attribute explicitly.
+            native_elem.each_attr do |attr|
+              attr.remove! if !attr.ns && attr.name == name_str
+            end if native_elem.attributes?
+            ::LibXML::XML::Attr.new(native_elem, name_str, value_str)
           end
         end
 
@@ -520,6 +524,10 @@ module Moxml
           return unless native_elem.attributes?
 
           attr = native_elem.attributes.get_attribute(name.to_s)
+          attr&.remove!
+        end
+
+        def remove_attribute_native(attr)
           attr&.remove!
         end
 

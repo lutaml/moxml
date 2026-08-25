@@ -290,6 +290,11 @@ module Moxml
           attribute.normalized = value
         end
 
+        def remove_attribute_native(attribute)
+          attribute.element.attributes.delete(attribute.expanded_name)
+          attribute
+        end
+
         def get_attribute(element, name)
           element.attributes.get_attribute(name)
         end
