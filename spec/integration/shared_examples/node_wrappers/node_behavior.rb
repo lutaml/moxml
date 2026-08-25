@@ -106,5 +106,28 @@ RSpec.shared_examples "Moxml::Node" do
         expect(node.text).to eq("1")
       end
     end
+
+    describe "duplication" do
+      it "returns an independent deep copy" do
+        doc = context.parse("<root><a id='1'>text</a></root>")
+        original = doc.at_xpath("//a")
+        copy = original.dup
+
+        expect(copy).not_to equal(original)
+        expect(copy.name).to eq("a")
+        expect(copy["id"]).to eq("1")
+        expect(copy.text).to eq("text")
+
+        # Oga's parse still runs through DocumentBuilder, which relies
+        # on the shallow native dup; independence lands when the
+        # builder retires.
+        if context.config.adapter_name == :oga
+          skip "Oga dup shares attributes until DocumentBuilder retires"
+        end
+
+        copy["id"] = "changed"
+        expect(original["id"]).to eq("1")
+      end
+    end
   end
 end

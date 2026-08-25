@@ -294,6 +294,12 @@ module Moxml
 
         handler = axis_name.gsub("-", "_")
 
+        unless respond_to?(:"on_axis_#{handler}", true)
+          raise XPath::Error.new(
+            "XPath axis #{axis_name.inspect} is not supported by this engine",
+          )
+        end
+
         send(:"on_axis_#{handler}", test, input, &block)
       end
 
@@ -357,6 +363,78 @@ module Moxml
               condition.if_true { yield parent }
             else
               condition.if_true { parent }
+            end
+          end
+        end
+      end
+
+      # AXIS: ancestor - all ancestors up to the document
+      def on_axis_ancestor(ast, input)
+        ancestor = unique_literal(:ancestor)
+
+        document_or_node(input).if_true do
+          input.ancestors.each.add_block(ancestor) do
+            condition = process(ast, ancestor)
+            if block_given?
+              condition.if_true { yield ancestor }
+            else
+              condition.if_true { ancestor }
+            end
+          end
+        end
+      end
+
+      # AXIS: ancestor-or-self - the context node and its ancestors
+      def on_axis_ancestor_or_self(ast, input)
+        ancestor = unique_literal(:ancestor)
+
+        document_or_node(input).if_true do
+          self_result = process(ast, input)
+          self_collection = if block_given?
+                              self_result.if_true { yield input }
+                            else
+                              self_result.if_true { input }
+                            end
+          self_collection.followed_by do
+            input.ancestors.each.add_block(ancestor) do
+              condition = process(ast, ancestor)
+              if block_given?
+                condition.if_true { yield ancestor }
+              else
+                condition.if_true { ancestor }
+              end
+            end
+          end
+        end
+      end
+
+      # AXIS: following-sibling - siblings after the context node
+      def on_axis_following_sibling(ast, input)
+        sibling = unique_literal(:sibling)
+
+        document_or_node(input).if_true do
+          input.following_siblings.each.add_block(sibling) do
+            condition = process(ast, sibling)
+            if block_given?
+              condition.if_true { yield sibling }
+            else
+              condition.if_true { sibling }
+            end
+          end
+        end
+      end
+
+      # AXIS: preceding-sibling - siblings before the context node
+      def on_axis_preceding_sibling(ast, input)
+        sibling = unique_literal(:sibling)
+
+        document_or_node(input).if_true do
+          input.preceding_siblings.each.add_block(sibling) do
+            condition = process(ast, sibling)
+            if block_given?
+              condition.if_true { yield sibling }
+            else
+              condition.if_true { sibling }
             end
           end
         end
@@ -623,7 +701,11 @@ module Moxml
 
       # Parent node (..)
       def on_parent(_ast, input)
-        input.parent
+        if block_given?
+          yield input.parent
+        else
+          input.parent
+        end
       end
 
       # ===== OPERATORS =====

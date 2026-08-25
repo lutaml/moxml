@@ -225,6 +225,41 @@ module Moxml
       NodeSet.new(natives, context)
     end
 
+    # Returns the siblings after this node, in document order.
+    #
+    # @return [NodeSet]
+    def following_siblings
+      parent = self.parent
+      return NodeSet.new([], context) unless parent
+
+      siblings = parent.children.to_a
+      index = siblings.index { |child| child.native.equal?(@native) }
+      return NodeSet.new([], context) if index.nil?
+
+      NodeSet.new(siblings[(index + 1)..].map(&:native), context)
+    end
+
+    # Returns the siblings before this node, in document order.
+    #
+    # @return [NodeSet]
+    def preceding_siblings
+      parent = self.parent
+      return NodeSet.new([], context) unless parent
+
+      siblings = parent.children.to_a
+      index = siblings.index { |child| child.native.equal?(@native) }
+      return NodeSet.new([], context) if index.nil?
+
+      NodeSet.new(siblings[0...index].map(&:native), context)
+    end
+
+    # Deep copy of the node (both dup and clone create deep copies for XML nodes)
+    def dup
+      Moxml::Node.wrap(adapter.duplicate_node(@native), context)
+    end
+
+    alias clone dup
+
     # Returns an XPath expression that uniquely locates this node within
     # its document. Positional predicates are emitted only when sibling
     # elements share the same qualified name, keeping paths minimal.
@@ -275,13 +310,6 @@ module Moxml
     def blank?
       text.strip.empty?
     end
-
-    # Deep copy of the node (both dup and clone create deep copies for XML nodes)
-    def dup
-      Moxml::Node.wrap(adapter.dup(@native), context)
-    end
-
-    alias clone dup
 
     def ==(other)
       self.class == other.class && @native == other.native

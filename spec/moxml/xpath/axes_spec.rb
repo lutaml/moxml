@@ -205,6 +205,46 @@ RSpec.describe "XPath Axes" do
       end
     end
 
+    describe "ancestor and sibling axes" do
+      let(:family) do
+        context.parse("<root><parent id='p1'><b id='1'/><b id='2'/><c/><d/></parent></root>")
+      end
+
+      def select(expression, node = family)
+        ast = Moxml::XPath::Parser.parse(expression)
+        proc = Moxml::XPath::Compiler.compile_with_cache(ast)
+        proc.call(node).map(&:name)
+      end
+
+      it "selects ancestors with ancestor::" do
+        expect(select("//c/ancestor::*")).to eq(%w[parent root])
+      end
+
+      it "includes the context node with ancestor-or-self::" do
+        expect(select("//c/ancestor-or-self::*")).to eq(%w[c parent root])
+      end
+
+      it "selects following siblings" do
+        expect(select("//c/following-sibling::*")).to eq(%w[d])
+        expect(select("//b[@id='1']/following-sibling::b")).to eq(%w[b])
+        expect(select("//b[@id='1']/following-sibling::*").size).to eq(3)
+      end
+
+      it "selects preceding siblings" do
+        expect(select("//c/preceding-sibling::*")).to eq(%w[b b])
+      end
+
+      it "resolves the bare parent step and steps after it" do
+        expect(select("//c/..")).to eq(%w[parent])
+        expect(select("//c/../*").size).to eq(4)
+      end
+
+      it "raises a clear error for unimplemented axes" do
+        expect { select("//c/following::*") }
+          .to raise_error(Moxml::XPath::Error, /not supported/)
+      end
+    end
+
     describe "descendant-or-self shorthand from an element" do
       it "selects descendants with .//step" do
         ast = Moxml::XPath::Parser.parse(".//grandchild")
