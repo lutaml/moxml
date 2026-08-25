@@ -147,7 +147,7 @@ module Moxml
         end
 
         def set_namespace(element, ns)
-          return unless element.is_a?(::Ox::Element) || element.is_a?(::Ox::Node)
+          return element unless element.is_a?(::Ox::Element) || element.is_a?(::Ox::Node)
 
           prefix = ns.prefix
           # attributes don't have attributes but can have a namespace prefix
@@ -157,7 +157,7 @@ module Moxml
           end
           element.name = [prefix,
                           element.name.delete_prefix("xmlns:")].compact.join(":")
-          namespace(element)
+          element
         end
 
         def namespace(element)
@@ -354,6 +354,7 @@ module Moxml
           element = attribute.parent
           element.attributes.delete(old_name)
           element.attributes[name] = attribute.value
+          attribute
         end
 
         def set_attribute_value(attribute, new_value)

@@ -154,6 +154,27 @@ RSpec.shared_examples "xml adapter" do
     end
   end
 
+  describe "mutation return contract" do
+    let(:doc) { described_class.parse(xml).native }
+    let(:element) { described_class.children(described_class.root(doc)).first }
+
+    it "returns the native to track from set_attribute_name" do
+      native = described_class.attributes(element).first
+      tracked = described_class.set_attribute_name(native, "renamed")
+      expect(tracked).to be_a(native.class)
+      expect(described_class.attribute_name(tracked)).to eq("renamed")
+    end
+
+    it "returns the native to track from set_namespace on an attribute" do
+      native = described_class.attributes(element).first
+      ns = described_class.namespace_definitions(
+        described_class.root(doc),
+      ).last
+      tracked = described_class.set_namespace(native, ns)
+      expect(tracked).to be_a(native.class)
+    end
+  end
+
   describe "namespaces" do
     let(:doc) { described_class.parse(xml).native }
     let(:root) { described_class.root(doc) }

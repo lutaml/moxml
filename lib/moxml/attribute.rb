@@ -7,13 +7,10 @@ module Moxml
     end
 
     def name=(new_name)
-      # Immutable-native adapters (leptris) recreate the attribute and
-      # hand back the fresh native. Adopt only same-class natives:
-      # adapters that mutate in place return unrelated values (the
-      # value, the owning element, the namespace), which must not
-      # replace the native.
-      fresh = adapter.set_attribute_name(@native, new_name)
-      @native = fresh if fresh.is_a?(@native.class) && !fresh.equal?(@native)
+      # Mutation return contract (Adapter::Base): returns the native
+      # to keep tracking — same object for in-place adapters, fresh
+      # object for value-object adapters (leptris).
+      @native = adapter.set_attribute_name(@native, new_name)
     end
 
     # Returns the primary identifier for this attribute (its name)
@@ -50,9 +47,8 @@ module Moxml
     end
 
     def namespace=(ns)
-      # See name= for the same-class adoption rule.
-      fresh = adapter.set_namespace(@native, ns&.native)
-      @native = fresh if fresh.is_a?(@native.class) && !fresh.equal?(@native)
+      # See name= for the mutation return contract.
+      @native = adapter.set_namespace(@native, ns&.native)
     end
 
     def element

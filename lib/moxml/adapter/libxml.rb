@@ -846,9 +846,10 @@ module Moxml
 
         def set_namespace(element, ns)
           native_elem = unpatch_node(element)
-          return unless native_elem && ns
+          return element unless native_elem
 
-          native_elem.namespaces.namespace = ns
+          native_elem.namespaces.namespace = ns if ns
+          element
         end
 
         def namespace(element)

@@ -135,6 +135,7 @@ module Moxml
             element.add_namespace_definition(prefix, uri.to_s)
             element.name = "#{prefix}:#{element.name.split(':', 2)[-1]}"
           end
+          element
         end
 
         # Attr is an immutable value object: namespace changes go
