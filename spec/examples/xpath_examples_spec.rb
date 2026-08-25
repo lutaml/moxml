@@ -34,8 +34,8 @@ RSpec.shared_examples "XPath Examples" do
     end
 
     it "finds nodes by attributes" do
-      if %i[ox headed_ox].include?(context.config.adapter_name)
-        pending "Ox doesn't have native XPath, HeadedOx parser doesn't support .// syntax yet"
+      if context.config.adapter_name == :ox
+        pending "Ox doesn't have native XPath"
       end
 
       book = doc.at_xpath('//book[@id="2"]')
@@ -46,8 +46,8 @@ RSpec.shared_examples "XPath Examples" do
     end
 
     it "finds nested attributes efficiently" do
-      if %i[ox headed_ox].include?(context.config.adapter_name)
-        pending "Ox doesn't have native XPath, HeadedOx parser doesn't support .// syntax yet"
+      if context.config.adapter_name == :ox
+        pending "Ox doesn't have native XPath"
       end
       # More efficient - specific path
       titles1 = doc.xpath("//book/dc:title")

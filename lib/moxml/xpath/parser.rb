@@ -327,10 +327,15 @@ module Moxml
       def parse_relative_path
         steps = [parse_step]
 
-        while match?(:slash) && !at_end?
+        # Continue on both step separators: "/step" and the
+        # descendant-or-self shorthand "//step" (the lexer emits
+        # :dslash; some paths arrive as a :slash/:slash pair).
+        # ".//step" and "a//step" are the same grammar production.
+        while !at_end? && match?(:slash, :dslash)
           advance
-          if match?(:slash)
-            # Double slash within path: expands to descendant-or-self::node()
+          if match?(:dslash)
+            steps << AST::Node.axis("descendant-or-self", AST::Node.node_type("node"))
+          elsif match?(:slash)
             advance
             steps << AST::Node.axis("descendant-or-self", AST::Node.node_type("node"))
           end

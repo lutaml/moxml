@@ -13,35 +13,6 @@ def leptris_ready?
   Leptris::XML::Document.respond_to?(:create)
 end
 
-# Leptris known gaps: shared-example groups that do not pass yet, each
-# with its reason. Groups not listed here run fully. This manifest is
-# the burn-down checklist for the adapter — remove entries as they
-# close. Verified against leptris 1.9.0: every upstream issue is fixed
-# (#518, #519, #525, #526, #534, #540, #542, #546, #547, #514) and the
-# unified attribute-resolution examples pass; the remaining gaps are
-# all moxml adapter TODOs. leptris-ruby#53 (1.9.0 autoload-shadowing
-# regression) is worked around in the adapter and config probe.
-LEPTRIS_KNOWN_GAPS = {
-  "Moxml::Cdata" => "adapter: CDATA serialization formatting",
-  "Moxml::Declaration" => "adapter: declaration serialization formatting",
-  "Moxml::Doctype" => "adapter: doctype wrapper serialization formatting",
-  "Moxml::EntityReference" => "adapter: entity-reference pipeline not wired",
-  "Entity Reference Whitespace Preservation" => "adapter: entity-reference pipeline not wired",
-  "Moxml::Attribute" => "adapter: attribute rename and namespace mutation",
-  "Attribute Examples" => "adapter: attribute serialization edge cases",
-  "Moxml::Element" => "adapter: mixed content and namespace setter",
-  "Namespace Examples" => "adapter: namespace inheritance overrides",
-  "Moxml::Namespace" => "adapter: namespace inheritance overrides",
-  "Moxml::Node" => "adapter: parent resolution edge case",
-  "Moxml::Text" => "adapter: text-at-document-level support",
-  "Moxml Edge Cases" => "adapter: deep nesting / CDATA markers / default-namespace changes",
-  "Moxml Integration" => "adapter: complete-document workflow (document modification now passes)",
-  "Moxml Line Ending" => "adapter: CRLF re-serialization stability",
-  "Basic Usage Examples" => "adapter: document-creation workflows",
-  "README Examples" => "adapter: builder + thread-safety workflows",
-  "XPath Examples" => "adapter: attribute-node XPath results",
-}.freeze
-
 RSpec.describe "Cross-adapter integration" do
   # Integration shared examples - use the names as defined in the files
   all_shared_examples = [
@@ -87,17 +58,8 @@ RSpec.describe "Cross-adapter integration" do
         before { skip "requires leptris with Leptris::XML::Document.create (unreleased C API)" }
       end
 
-      gaps = adapter_name == :leptris && leptris_ready? ? LEPTRIS_KNOWN_GAPS : {}
-      (all_shared_examples - gaps.keys).each do |shared_example_name|
+      all_shared_examples.each do |shared_example_name|
         it_behaves_like shared_example_name
-      end
-
-      gaps.each do |gap_name, reason|
-        describe gap_name do
-          before { skip "leptris known gap: #{reason}" }
-
-          it_behaves_like gap_name
-        end
       end
     end
   end
