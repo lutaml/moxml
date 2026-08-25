@@ -357,14 +357,10 @@ module Moxml
           return AST::Node.parent
         elsif match?(:at)
           advance
-          # Attribute: @name or @*
-          if match?(:star)
-            advance
-            node_test = AST::Node.wildcard
-          else
-            name = consume(:name, "Expected attribute name after @")
-            node_test = AST::Node.test(nil, name[1])
-          end
+          # Attribute: @name, @prefix:name, @prefix:* or @* (XPath 1.0
+          # §3.2, NameTest). parse_node_test handles prefixed and
+          # wildcard names; bare names land in its plain-name branch.
+          node_test = parse_node_test
           step = AST::Node.axis("attribute", node_test)
           return parse_predicates(step)
         end

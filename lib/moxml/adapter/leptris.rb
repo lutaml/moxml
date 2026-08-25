@@ -157,6 +157,16 @@ module Moxml
         end
 
         def namespace(node)
+          # The binding resolves Attr#namespace to the declaration but
+          # without the prefix; when the qualified name carries one,
+          # prefer the in-scope declaration that binds it so wrappers
+          # keep prefix and uri.
+          if node.is_a?(::Leptris::XML::Attr) &&
+              (prefix = node.prefix || prefix_part(node.name))
+            resolved = resolve_prefix_ns(node.element, prefix)
+            return resolved if resolved
+          end
+
           ns = node.namespace
           return ns unless ns.nil?
 
@@ -354,6 +364,11 @@ module Moxml
 
         def remove_attribute(element, name)
           element.remove_attribute(name.to_s)
+        end
+
+        def remove_attribute_native(attr)
+          attr.element.remove_attribute(attr.name)
+          attr
         end
 
         def add_child(parent, child)

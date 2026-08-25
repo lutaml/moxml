@@ -65,6 +65,65 @@ RSpec.shared_examples "Moxml::Attribute" do
         expect(attribute.namespace.prefix).to eq("other")
         expect(attribute.to_s).to eq('other:attr="value"')
       end
+
+      it "replaces by expanded name across prefix spellings" do
+        element["ns:attr"] = "first"
+        element.add_namespace("alias", "http://example.org")
+        element["alias:attr"] = "second"
+
+        expect(element["ns:attr"]).to eq("second")
+        expect(element.attributes.size).to eq(1)
+      end
+    end
+
+    describe "expanded-name writes (AttributeResolver)" do
+      before do
+        element.add_namespace("p", "http://x.org")
+        element.add_namespace("q", "http://x.org")
+        element["q:type"] = "namespaced"
+        element["type"] = "bare"
+      end
+
+      it "does not clobber a namespaced attribute sharing the local name" do
+        element["type"] = "changed"
+
+        expect(element["type"]).to eq("changed")
+        expect(element["q:type"]).to eq("namespaced")
+      end
+
+      it "overwrites by expanded name regardless of prefix spelling" do
+        element["p:type"] = "overwritten"
+
+        expect(element["q:type"]).to eq("overwritten")
+        expect(element.attributes.size).to eq(2)
+      end
+
+      it "stores writes through undeclared prefixes raw for later resolution" do
+        element["z:type"] = "value"
+
+        # No declaration in scope: the read resolves to nothing, but
+        # the attribute is stored (detached builds attach under the
+        # declaring ancestor later).
+        expect(element["z:type"]).to be_nil
+        expect(element.attributes.size).to eq(3)
+
+        element.add_namespace("z", "http://z.org")
+        expect(element["z:type"]).to eq("value")
+      end
+
+      it "removes the bare attribute without touching the namespaced one" do
+        element.remove_attribute("type")
+
+        expect(element["type"]).to be_nil
+        expect(element["q:type"]).to eq("namespaced")
+      end
+
+      it "removes by expanded name regardless of prefix spelling" do
+        element.remove_attribute("p:type")
+
+        expect(element["q:type"]).to be_nil
+        expect(element["type"]).to eq("bare")
+      end
     end
 
     describe "manipulation" do

@@ -362,8 +362,14 @@ module Moxml
             # Ox converts all values to strings
             remove_attribute(attribute.parent, attribute.name)
           else
+            element = attribute.parent
+            # Rekey by the expanded name (Ox hash keys carry the
+            # prefix) and collapse any symbol/string spelling of the
+            # same key, or a stale symbol key shadows the new value.
+            expanded = attribute.expanded_name
+            element.attributes.delete(expanded.to_sym)
+            element.attributes[expanded] = new_value
             attribute.value = new_value
-            attribute.parent.attributes[attribute.name] = new_value
           end
         end
 
@@ -390,6 +396,14 @@ module Moxml
 
           element.attributes.delete(name.to_s)
           element.attributes.delete(name.to_s.to_sym)
+        end
+
+        def remove_attribute_native(attribute)
+          expanded = attribute.expanded_name
+          element = attribute.parent
+          element.attributes.delete(expanded)
+          element.attributes.delete(expanded.to_sym)
+          attribute
         end
 
         def add_child(element, child)

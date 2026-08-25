@@ -60,6 +60,12 @@ RSpec.describe Moxml::XPath::Parser do
         expect(ast.type).to eq(:relative_path)
       end
 
+      it "parses prefixed attribute names" do
+        ast = described_class.parse("@xmi:type")
+        expect(ast.type).to eq(:relative_path)
+        expect { described_class.parse("@xmi:*") }.not_to raise_error
+      end
+
       it "parses path with parent reference" do
         ast = described_class.parse("../book")
         expect(ast.type).to eq(:relative_path)

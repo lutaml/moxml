@@ -231,6 +231,13 @@ namespace_validation_mode: :strict)
           attribute.value = value
         end
 
+        # Remove a specific native attribute node from its owning
+        # element. Semantics (which attribute a name addresses) live
+        # in Moxml::AttributeResolver; this is the raw primitive.
+        def remove_attribute_native(attr)
+          attr.remove
+        end
+
         def entity_reference_name(node)
           node.name
         end

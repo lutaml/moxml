@@ -425,15 +425,22 @@ module Moxml
         end
       end
 
-      # AXIS: attribute - Enables @attribute syntax
+      # AXIS: attribute - Enables @attribute syntax. Name tests share
+      # the resolver's expanded-name semantics (Namespaces 1.0): bare
+      # names match no-namespace attributes only; prefixed names match
+      # by namespace URI, never by prefix spelling.
       def on_axis_attribute(ast, input)
         elem_class = const_ref("Moxml", "Element")
         attribute = unique_literal(:attribute)
 
         input.is_a?(elem_class).if_true do
           input.attributes.each.add_block(attribute) do
-            # Use process to handle both :test and :wildcard nodes
-            condition = process(ast, attribute)
+            condition = if ast.type == :test
+                          attribute_test_condition(ast, input, attribute)
+                        else
+                          # Wildcards and node types keep the generic path
+                          process(ast, attribute)
+                        end
 
             if block_given?
               condition.if_true { yield attribute }
@@ -442,6 +449,34 @@ module Moxml
             end
           end
         end
+      end
+
+      # Attribute node-test condition built on AttributeResolver. The
+      # XPath context's prefix mapping (when provided) wins over the
+      # document's own declarations and is resolved at compile time.
+      # Returns nil for the both-wildcard test (@*): no name constraint.
+      def attribute_test_condition(ast, element, attribute)
+        resolver = const_ref("Moxml", "AttributeResolver")
+        ns = ast.value[:namespace]
+        name = ast.value[:name]
+
+        return nil if name == STAR && (!ns || ns == STAR)
+
+        local = name == STAR ? self_nil : string(name)
+
+        if ns && ns != STAR && @namespaces && (uri = @namespaces[ns])
+          return resolver.attribute_test_uri?(element, attribute,
+                                              string(uri.to_s), local)
+        end
+
+        prefix = if ns.nil?
+                   self_nil
+                 elsif ns == STAR
+                   symbol(:any)
+                 else
+                   string(ns)
+                 end
+        resolver.attribute_test?(element, attribute, prefix, local)
       end
 
       # AXIS: descendant - All descendant nodes (without self)
