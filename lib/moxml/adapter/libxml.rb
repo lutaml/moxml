@@ -1061,7 +1061,8 @@ module Moxml
               node
             end
           when :element
-            shallow_duplicate_element(native_node)
+            # Public dup contract: a full deep copy of the subtree
+            deep_duplicate_node(native_node)
           when :text
             ::LibXML::XML::Node.new_text(native_node.content)
           when :cdata
