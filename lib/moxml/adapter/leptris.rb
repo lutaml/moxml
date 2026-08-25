@@ -530,12 +530,105 @@ module Moxml
           node.system_id
         end
 
-        # XPath is evaluated by Moxml's pure-Ruby XPath engine rather
-        # than libleptris's native engine: the native engine does not
-        # resolve expression prefixes against document-declared
-        # namespaces, which Moxml's cross-adapter consistency contract
-        # requires. Same trade-off HeadedOx makes over Ox.
+        # XPath prefers libleptris' native C engine (three orders of
+        # magnitude faster than the Ruby engine) for document-context
+        # queries, with a conservative gate: the Ruby engine handles
+        # element-context evaluation (native relative-context
+        # semantics are not contract-verified), variable references,
+        # and expressions whose results are attribute nodes (native
+        # returns those without name accessors). Both engines resolve
+        # expression prefixes against document-declared namespaces.
+        NATIVE_XPATH_CACHE = XPath::Cache.new(100)
+
         def xpath(node, expression, namespaces = {})
+          native = native_xpath(node, expression, namespaces)
+          return native unless native.nil?
+
+          engine_xpath(node, expression, namespaces)
+        end
+
+        def at_xpath(node, expression, namespaces = {})
+          native = native_xpath(node, expression, namespaces, first_only: true)
+          return native unless native.nil?
+
+          result = engine_xpath(node, expression, namespaces)
+          result.is_a?(Array) ? result.first : result
+        end
+
+        # @return [Array, Object, nil] native results, or nil when the
+        #   query must run on the Ruby engine
+        def native_xpath(node, expression, namespaces, first_only: false)
+          return nil unless node.is_a?(::Leptris::XML::Document)
+          return nil unless native_expression?(expression)
+
+          compiled = NATIVE_XPATH_CACHE.get_or_set(expression) do
+            ::Leptris::XML::XPath.compile(expression)
+          end
+          result = if namespaces && !namespaces.empty?
+                     compiled.eval(node, namespaces)
+                   else
+                     compiled.eval(node)
+                   end
+          case result
+          when ::Leptris::XML::NodeSet
+            nodes = result.to_a
+            first_only ? nodes.first : nodes
+          else
+            result
+          end
+        rescue ::Leptris::XML::XPathError
+          # Not supported by the native engine — the Ruby engine is a
+          # full XPath 1.0 implementation, including Moxml's syntax
+          # errors for invalid expressions.
+          nil
+        end
+
+        # Document-context queries without variable references,
+        # attribute-node results, or the nokogiri-compat xmlns:
+        # reserved prefix convention.
+        def native_expression?(expression)
+          ast = XPath::Parser.parse_with_cache(expression)
+          return false if ast_contains_type?(ast, :variable)
+          return false if uses_xmlns_prefix?(ast)
+
+          !selects_attribute_results?(ast)
+        rescue XPath::SyntaxError
+          false
+        end
+
+        def ast_contains_type?(ast, type)
+          return true if ast.type == type
+
+          ast.children.any? do |child|
+            child.is_a?(XPath::AST::Node) && ast_contains_type?(child, type)
+          end
+        end
+
+        # xmlns:name is a nokogiri-compat convention addressing
+        # elements in the default namespace; only the Ruby engine
+        # implements it.
+        def uses_xmlns_prefix?(ast)
+          return true if ast.type == :test && ast.value[:namespace] == "xmlns"
+
+          ast.children.any? do |child|
+            child.is_a?(XPath::AST::Node) && uses_xmlns_prefix?(child)
+          end
+        end
+
+        def selects_attribute_results?(ast)
+          case ast.type
+          when :pipe, :union, :filter_expr
+            ast.children.any? { |child| selects_attribute_results?(child) }
+          when :absolute_path, :relative_path
+            step = ast.children.last
+            step = step.children.first if step.type == :step_with_predicates
+            step.type == :axis && step.children.first == "attribute"
+          else
+            false
+          end
+        end
+
+        def engine_xpath(node, expression, namespaces = {})
           unless node.is_a?(Moxml::Node)
             node = Moxml::Node.wrap(node, Context.new(:leptris))
           end
@@ -560,10 +653,6 @@ module Moxml
           else
             result
           end
-        end
-
-        def at_xpath(node, expression, namespaces = {})
-          xpath(node, expression, namespaces).first
         end
 
         def serialize(node, options = {})

@@ -34,4 +34,42 @@ RSpec.describe Moxml::Adapter::Leptris do
   end
 
   it_behaves_like "xml adapter"
+
+  describe "native xpath dispatch" do
+    let(:ctx) { Moxml.new(:leptris) }
+    let(:doc) do
+      ctx.parse(<<~XML)
+        <root xmlns:p="http://x.org">
+          <item id="1" p:kind="a">alpha</item>
+          <item id="2">beta</item>
+        </root>
+      XML
+    end
+
+    it "evaluates document-context queries on the native engine" do
+      expect(doc.xpath("//item[@id='2']").map(&:text)).to eq(["beta"])
+      expect(doc.xpath("count(//item)")).to eq(2.0)
+      expect(doc.xpath(%q{//item[@p:kind='a']}).map { |n| n["id"] }).to eq(["1"])
+    end
+
+    it "falls back to the Ruby engine for attribute-node results" do
+      attrs = doc.xpath("//item/@id")
+      expect(attrs.map(&:name)).to eq(%w[id id])
+      expect(attrs.map(&:value)).to eq(%w[1 2])
+    end
+
+    it "falls back to the Ruby engine for element-context queries" do
+      expect(doc.root.xpath(".//item").size).to eq(2)
+    end
+
+    it "falls back to the Ruby engine for the xmlns: reserved prefix" do
+      expect(doc.xpath("//xmlns:item").size).to eq(0)
+      prefixed = ctx.parse('<r xmlns="http://d.org"><item/></r>')
+      expect(prefixed.xpath("//xmlns:item").size).to eq(1)
+    end
+
+    it "raises Moxml::XPathError for invalid expressions" do
+      expect { doc.xpath("//item[") }.to raise_error(Moxml::XPathError)
+    end
+  end
 end
