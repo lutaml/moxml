@@ -901,7 +901,9 @@ module Moxml
 
       # Ox delivers attributes AFTER start_element
       def attr(name, value)
-        @pending_attrs[name] = value
+        # Attributes arriving before the first start_element belong
+        # to the XML declaration, not to any element
+        @pending_attrs[name.to_s] = value if @pending_element_name
       end
 
       # Called when element starts (but attributes come AFTER this)
