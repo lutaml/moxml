@@ -532,7 +532,7 @@ module Moxml
         when "text"
           # CDATA sections are text nodes in the XPath data model
           text_class = const_ref("Moxml", "Text")
-          cdata_class = const_ref("Moxml", "CData")
+          cdata_class = const_ref("Moxml", "Cdata")
           input.is_a?(text_class).or(input.is_a?(cdata_class))
         when "comment"
           input.is_a?(const_ref("Moxml", "Comment"))
