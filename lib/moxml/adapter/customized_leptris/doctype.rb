@@ -16,14 +16,7 @@ module Moxml
         end
 
         def to_xml
-          output = "<!DOCTYPE #{name}"
-          if external_id && !external_id.to_s.empty?
-            output += %( PUBLIC "#{external_id}")
-            output += %( "#{system_id}") if system_id
-          elsif system_id && !system_id.to_s.empty?
-            output += %( SYSTEM "#{system_id}")
-          end
-          "#{output}>"
+          XmlEmitter.doctype_xml(name, external_id, system_id)
         end
 
         def ==(other)

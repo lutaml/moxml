@@ -580,14 +580,14 @@ module Moxml
                CustomizedLeptris::EntityReference
             return node.to_xml
           when ::Leptris::XML::CDATA
-            return "<![CDATA[#{node.content.to_s.gsub(']]>', ']]]]><![CDATA[>')}]]>"
+            return XmlEmitter.cdata(node.content)
           when ::Leptris::XML::Comment
             return "<!--#{node.content}-->"
           when ::Leptris::XML::ProcessingInstruction
             content = node.content.to_s
             return content.empty? ? "<?#{node.target}?>" : "<?#{node.target} #{content}?>"
           when ::Leptris::XML::Text, CustomizedLeptris::TextSegment
-            return escape_text(node.content.to_s)
+            return XmlEmitter.escape_text(node.content.to_s)
           when ::Leptris::XML::Document
             return serialize_document(node, options)
           end
@@ -706,21 +706,15 @@ module Moxml
           parts << raw_serialize(doc.root, options) if doc.root
 
           texts = attachments.get(doc, :document_text)
-          texts&.each { |text| parts << escape_text(text.content.to_s) }
+          texts&.each { |text| parts << XmlEmitter.escape_text(text.content.to_s) }
 
           parts.join
-        end
-
-        # moxml text canonical form: only & < > are escaped; quotes
-        # stay literal in content.
-        def escape_text(text)
-          text.gsub("&", "&amp;").gsub("<", "&lt;").gsub(">", "&gt;")
         end
 
         def default_declaration_xml(doc, options)
           encoding = options[:encoding] || doc.encoding
           encoding = "UTF-8" if encoding.to_s.empty?
-          %(<?xml version="1.0" encoding="#{encoding}"?>)
+          XmlEmitter.declaration_xml("1.0", encoding, nil)
         end
 
         def marker_text_for(parent, name)
@@ -736,14 +730,7 @@ module Moxml
           dt = doc.doctype
           return nil unless dt
 
-          output = "<!DOCTYPE #{dt.root_name}"
-          if dt.public_id && !dt.public_id.empty?
-            output += %( PUBLIC "#{dt.public_id}")
-            output += %( "#{dt.system_id}") if dt.system_id
-          elsif dt.system_id && !dt.system_id.to_s.empty?
-            output += %( SYSTEM "#{dt.system_id}")
-          end
-          "#{output}>"
+          XmlEmitter.doctype_xml(dt.root_name, dt.public_id, dt.system_id)
         end
 
         def entity_refs?(element)
@@ -757,7 +744,7 @@ module Moxml
         def serialize_entity_bearing_element(element, options)
           name = element.prefix ? "#{element.prefix}:#{element.name}" : element.name
           attrs = element.attribute_nodes.map do |attr|
-            %( #{attr.name}="#{attr.value.to_s.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;').gsub('"', '&quot;')}")
+            %( #{attr.name}="#{XmlEmitter.escape_attribute(attr.value)}")
           end.join
           decls = element.namespace_definitions.map do |ns|
             ns.prefix ? %( xmlns:#{ns.prefix}="#{ns.href}") : %( xmlns="#{ns.href}")
