@@ -21,7 +21,12 @@ module Moxml
     # Update native reference after identity-changing operations
     # (e.g., LibXML doc.root= creates a new Ruby wrapper)
     def refresh_native!(new_native)
-      @native = new_native
+      unless new_native.equal?(@native)
+        context.unregister_wrapper(@native)
+        @native = new_native
+        context.register_wrapper(new_native, self)
+      end
+      self
     end
 
     def document
@@ -353,10 +358,13 @@ module Moxml
     def self.wrap(node, context)
       return nil if node.nil?
 
+      cached = context.wrapper_for(node)
+      return cached if cached
+
       type = adapter(context).node_type(node)
       klass = node_type_map[type] || self
 
-      klass.new(node, context)
+      klass.new(node, context).tap { |wrapper| context.register_wrapper(node, wrapper) }
     end
 
     # Internal: Set the parent node for cache invalidation tracking.

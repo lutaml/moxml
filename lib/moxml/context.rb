@@ -10,6 +10,27 @@ module Moxml
       # compare against it so every wrapper sees changes without
       # needing wrapper identity.
       @namespace_scope_generation = 0
+      # Native → wrapper identity map: repeated traversals hand back
+      # the same wrapper instead of allocating a fresh one per
+      # access. Keyed by object identity; re-keyed by
+      # Node#refresh_native! when an adapter swaps a native.
+      @wrappers = {}.compare_by_identity
+    end
+
+    def wrapper_for(native)
+      @wrappers[native]
+    end
+
+    def register_wrapper(native, wrapper)
+      # Safety valve: adapters whose natives are recreated per access
+      # (nokogiri mints new Ruby objects for the same C node) would
+      # grow the map without bound in pathological loops.
+      @wrappers.clear if @wrappers.size >= 65_536
+      @wrappers[native] = wrapper
+    end
+
+    def unregister_wrapper(native)
+      @wrappers.delete(native)
     end
 
     def namespace_scope_generation
