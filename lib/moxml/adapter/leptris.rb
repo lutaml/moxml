@@ -852,26 +852,6 @@ module Moxml
           XmlEmitter.doctype_xml(dt.root_name, dt.public_id, dt.system_id)
         end
 
-        def entity_refs?(element)
-          element.is_a?(::Leptris::XML::Element) &&
-            !attachments.get(element, :entity_refs).to_a.empty?
-        end
-
-        # Registry-based entity references are not in the native tree,
-        # so the native serializer cannot see them; compose the element
-        # from the wrapper-visible children instead.
-        def serialize_entity_bearing_element(element, options)
-          name = element.prefix ? "#{element.prefix}:#{element.name}" : element.name
-          attrs = element.attribute_nodes.map do |attr|
-            %( #{attr.name}="#{XmlEmitter.escape_attribute(attr.value)}")
-          end.join
-          decls = element.namespace_definitions.map do |ns|
-            ns.prefix ? %( xmlns:#{ns.prefix}="#{ns.href}") : %( xmlns="#{ns.href}")
-          end.join
-          inner = children(element).map { |child| raw_serialize(child, options) }.join
-          "<#{name}#{decls}#{attrs}>#{inner}</#{name}>"
-        end
-
         def sax_parse(xml, handler)
           bridge = LeptrisSAXBridge.new(handler)
           xml_string = xml.is_a?(IO) || xml.is_a?(::StringIO) ? xml.read : xml.to_s

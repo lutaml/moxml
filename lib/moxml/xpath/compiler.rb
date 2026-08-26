@@ -95,10 +95,6 @@ module Moxml
         source = generator.process(proc_ast)
 
         CONTEXT.evaluate(source)
-      ensure
-        @literal_id = 0
-        @predicate_nodesets.clear
-        @predicate_indexes.clear
       end
 
       # Process a single XPath AST node
