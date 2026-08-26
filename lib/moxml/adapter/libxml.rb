@@ -1060,6 +1060,11 @@ module Moxml
           # output keeps the walker.
           return nil if output.include?("xmlns")
 
+          # The native serializer escapes non-ASCII codepoints in
+          # attribute values as numeric character references
+          # (x="&#xA9;"); the walker emits literal UTF-8
+          return nil if output.include?("&#x")
+
           # Layout: pull closing tags onto the last child's line
           output = output.gsub(/\n[ \t]*(<\/[\w.:-]+>)/, '\1')
 
@@ -1073,7 +1078,6 @@ module Moxml
 
           # Native escapes attribute apostrophes; moxml keeps them literal
           output.gsub("&apos;", "'")
-          
         end
 
         # Shallow duplication: copies the node itself (name, attrs, namespaces)
