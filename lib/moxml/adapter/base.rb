@@ -215,6 +215,16 @@ namespace_validation_mode: :strict)
           child_native
         end
 
+        # Whether `Node.wrap` may safely memoize the wrapper for this
+        # native across calls. Adapters whose parser hands back the
+        # same Ruby object for the same logical node (nokogiri, ox,
+        # oga, rexml, leptris) opt in (default true). Adapters that
+        # mint a new Ruby object per access (libxml) opt out so the
+        # identity map does not accumulate dead entries.
+        def wrappers_recyclable?
+          true
+        end
+
         # Returns all namespaces in scope for this element, including
         # inherited from ancestors. Adapters with native support (Nokogiri)
         # override this. Default walks the ancestor chain.

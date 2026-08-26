@@ -22,6 +22,7 @@ module Moxml
     class Compiler
       # Shared context for compiled Procs
       CONTEXT = Context.new
+      private_constant :CONTEXT
 
       # Expression cache
       CACHE = Cache.new
@@ -1834,7 +1835,7 @@ module Moxml
 
       # Helper: Check if AST node is a number
       def number?(ast)
-        %i[int float number].include?(ast.type)
+        ast.type == :number
       end
 
       # Helper: Check if AST contains a call node with given name
