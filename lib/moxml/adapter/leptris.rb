@@ -546,6 +546,10 @@ module Moxml
         # returns those without name accessors). Both engines resolve
         # expression prefixes against document-declared namespaces.
         NATIVE_XPATH_CACHE = XPath::Cache.new(100)
+        # The gate decision is expression-intrinsic; re-walking the
+        # cached AST three times per xpath call cost ~23% of repeated
+        # selective queries, so the boolean caches beside it.
+        NATIVE_GATE_CACHE = XPath::Cache.new(100)
 
         def xpath(node, expression, namespaces = {})
           native = native_xpath(node, expression, namespaces)
@@ -623,11 +627,13 @@ module Moxml
         # attribute-node results, or the nokogiri-compat xmlns:
         # reserved prefix convention.
         def native_expression?(expression)
-          ast = XPath::Parser.parse_with_cache(expression)
-          return false if ast_contains_type?(ast, :variable)
-          return false if uses_xmlns_prefix?(ast)
+          NATIVE_GATE_CACHE.get_or_set(expression) do
+            ast = XPath::Parser.parse_with_cache(expression)
+            next false if ast_contains_type?(ast, :variable)
+            next false if uses_xmlns_prefix?(ast)
 
-          !selects_attribute_results?(ast)
+            !selects_attribute_results?(ast)
+          end
         rescue XPath::SyntaxError
           false
         end
