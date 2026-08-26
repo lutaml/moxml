@@ -22,9 +22,12 @@ module Moxml
     end
 
     def register_wrapper(native, wrapper)
-      # Safety valve: adapters whose natives are recreated per access
-      # (nokogiri mints new Ruby objects for the same C node) would
-      # grow the map without bound in pathological loops.
+      # Safety valve + adapter opt-in. Adapters whose natives are
+      # recreated per access (libxml mints fresh Ruby objects for the
+      # same C node) opt out so the map does not accumulate dead
+      # entries; the default is opt-in.
+      return if @config&.adapter&.wrappers_recyclable? == false
+
       @wrappers.clear if @wrappers.size >= 65_536
       @wrappers[native] = wrapper
     end
