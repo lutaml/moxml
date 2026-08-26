@@ -39,11 +39,15 @@ module Moxml
         return nil if uri.nil?
 
         element.attributes.find do |attr|
-          local_name(attr.name) == local && attribute_uri(element, attr) == uri
+          # attr.name allocates on several adapters (native string,
+          # plus leptris' force_encoding dup) — read it once per probe
+          attr_name = attr.name
+          local_name(attr_name) == local && attribute_uri(element, attr, attr_name) == uri
         end
       else
         element.attributes.find do |attr|
-          local_name(attr.name) == name && attribute_uri(element, attr).nil?
+          attr_name = attr.name
+          local_name(attr_name) == name && attribute_uri(element, attr, attr_name).nil?
         end
       end
     end
@@ -170,11 +174,11 @@ module Moxml
     # adapters that report a prefix without resolving it (rexml/ox for
     # the prebound xml prefix) and adapters that expose neither
     # namespace nor separate prefix (leptris qualified names).
-    def attribute_uri(element, attr)
+    def attribute_uri(element, attr, attr_name = nil)
       ns = attr.namespace
       return ns.uri unless ns.nil? || ns.uri.to_s.empty?
 
-      prefix = ns&.prefix || prefix_part(attr.name)
+      prefix = ns&.prefix || prefix_part(attr_name || attr.name)
       return nil if prefix.nil? || prefix.empty?
       return XML_NAMESPACE_URI if prefix == "xml"
 
