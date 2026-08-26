@@ -39,4 +39,26 @@ RSpec.describe Moxml::Context do
       expect(doc.root.name).to eq("root")
     end
   end
+
+  describe "wrapper identity map" do
+    it "hands back the same wrapper for the same native" do
+      doc = context.parse("<root><item id='1'/></root>")
+      first = doc.xpath("//item").first
+      second = doc.xpath("//item").first
+      expect(first).to equal(second)
+
+      again = doc.root.children.last
+      expect(again).to equal(first)
+    end
+
+    it "re-keys when refresh_native! swaps the native" do
+      doc = context.create_document
+      element = doc.create_element("x")
+      doc.add_child(element)
+
+      refreshed = doc.root
+      expect(refreshed.name).to eq("x")
+      expect(context.wrapper_for(refreshed.native)).to equal(refreshed)
+    end
+  end
 end

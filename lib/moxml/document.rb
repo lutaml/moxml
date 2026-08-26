@@ -21,7 +21,7 @@ module Moxml
 
     def root
       root_element = adapter.root(@native)
-      root_element ? Element.new(root_element, context) : nil
+      root_element ? Moxml::Node.wrap(root_element, context) : nil
     end
 
     def create_element(name)
