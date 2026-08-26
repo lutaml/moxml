@@ -559,8 +559,16 @@ module Moxml
         # @return [Array, Object, nil] native results, or nil when the
         #   query must run on the Ruby engine
         def native_xpath(node, expression, namespaces, first_only: false)
-          return nil unless node.is_a?(::Leptris::XML::Document)
+          return nil unless native_context_node?(node)
           return nil unless native_expression?(expression)
+          # The binding reports the root element parentless while moxml
+          # roots it at the document, so parent-axis queries from the
+          # root element keep the Ruby engine.
+          if node.is_a?(::Leptris::XML::Element) &&
+              node.document&.root.equal?(node) &&
+              expression_uses_parent_axis?(expression)
+            return nil
+          end
 
           compiled = NATIVE_XPATH_CACHE.get_or_set(expression) do
             ::Leptris::XML::XPath.compile(expression)
@@ -582,6 +590,27 @@ module Moxml
           # full XPath 1.0 implementation, including Moxml's syntax
           # errors for invalid expressions.
           nil
+        end
+
+        def native_context_node?(node)
+          node.is_a?(::Leptris::XML::Document) ||
+            node.is_a?(::Leptris::XML::Element)
+        end
+
+        def expression_uses_parent_axis?(expression)
+          ast = XPath::Parser.parse_with_cache(expression)
+          contains_parent_axis?(ast)
+        rescue XPath::SyntaxError
+          true
+        end
+
+        def contains_parent_axis?(ast)
+          return true if ast.type == :parent
+          return true if ast.type == :axis && ast.children.first == "parent"
+
+          ast.children.any? do |child|
+            child.is_a?(XPath::AST::Node) && contains_parent_axis?(child)
+          end
         end
 
         # Document-context queries without variable references,
