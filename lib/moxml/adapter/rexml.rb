@@ -186,12 +186,16 @@ module Moxml
           # Return all children preserving whitespace text nodes
           result = node.children.dup
 
-          # Include any EntityReference wrappers stored alongside native children
+          # Include any EntityReference wrappers stored alongside native
+          # children. Native children are identity-unique; only this
+          # concat can duplicate (the same wrapper added twice), so the
+          # dedupe lives here and the common path stays scan-free.
           entity_refs = attachments.get(node, :entity_refs)
-          result.concat(entity_refs) if entity_refs
-
-          # Ensure uniqueness by object_id to prevent duplicates
-          result.uniq(&:object_id)
+          if entity_refs
+            result.concat(entity_refs).uniq!(&:object_id) || result
+          else
+            result
+          end
         end
 
         def parent(node)

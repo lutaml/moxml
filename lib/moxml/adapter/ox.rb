@@ -717,28 +717,48 @@ module Moxml
           # Only documents/elements can contain entity refs or CDATA issues
           return false unless node.is_a?(::Ox::Document) || node.is_a?(::Ox::Element)
 
-          # Check cached flags on documents (most common case)
-          if node.is_a?(::Ox::Document)
-            return true if attachments.get(node, :has_entity_refs)
-            return true if attachments.get(node, :has_cdata_end_markers)
-            return false if attachments.key?(node, :has_entity_refs) &&
-              attachments.key?(node, :has_cdata_end_markers)
+          # Element serializes consult the owning document's cached
+          # flags — a rescan per call made element to_xml ~30x slower
+          # than document to_xml on plain documents.
+          scan_root = node
+          if node.is_a?(::Ox::Element) && (doc = document(node))
+            return true if attachments.get(doc, :has_entity_refs)
+            return true if attachments.get(doc, :has_cdata_end_markers)
+            return false if attachments.key?(doc, :has_entity_refs) &&
+              attachments.key?(doc, :has_cdata_end_markers)
+
+            scan_root = doc
           end
 
-          # Only scan tree on first call — short-circuit on first hit
-          has_er = tree_has_entity_references?(node)
-          if has_er
-            attachments.set(node, :has_entity_refs, true) if node.is_a?(::Ox::Document)
-            return true
+          # One merged tree scan instead of two; flags cache on the
+          # document either way.
+          has_er, has_cdata = tree_scan_custom_needs(scan_root)
+          if scan_root.is_a?(::Ox::Document)
+            attachments.set(scan_root, :has_entity_refs, has_er)
+            attachments.set(scan_root, :has_cdata_end_markers, has_cdata)
           end
 
-          has_cdata = tree_has_cdata_end_markers?(node)
-          if node.is_a?(::Ox::Document)
-            attachments.set(node, :has_entity_refs, false)
-            attachments.set(node, :has_cdata_end_markers, has_cdata)
-          end
+          has_er || has_cdata
+        end
 
-          has_cdata
+        # Single walk collecting both custom-serialize triggers.
+        def tree_scan_custom_needs(node)
+          has_er = false
+          has_cdata = false
+          stack = [node]
+          until stack.empty?
+            current = stack.pop
+            case current
+            when ::Moxml::Adapter::CustomizedOx::EntityReference
+              has_er = true
+            when ::Ox::CData
+              has_cdata = true if current.value&.include?("]]>")
+            when ::Ox::Element, ::Ox::Document
+              current.nodes&.each { |child| stack << child }
+            end
+            return [true, has_cdata] if has_er
+          end
+          [has_er, has_cdata]
         end
 
         def has_declaration?(native_doc, _wrapper)
