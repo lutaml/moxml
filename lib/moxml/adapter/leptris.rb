@@ -266,7 +266,13 @@ module Moxml
         def split_entity_markers(natives, parent)
           result = []
           natives.each do |child|
-            content = child.content.to_s.dup.force_encoding("UTF-8") if child.is_a?(::Leptris::XML::Text)
+            # FFI Text#content returns a fresh unfrozen BINARY string:
+            # retag in place (dup would be a throwaway allocation), but
+            # before include? — BINARY.include? with the UTF-8 marker raises
+            if child.is_a?(::Leptris::XML::Text)
+              content = child.content
+              content.force_encoding("UTF-8")
+            end
             if content&.include?(Entity::MARKER)
               content.scan(/([^#{Entity::MARKER}]*)(?:#{Entity::MARKER}([\w.:-]+);)?/o) do
                 text_part = Regexp.last_match(1)
@@ -862,8 +868,23 @@ module Moxml
 
         private
 
+        # The variable-length \s* gap after \A defeats Onigmo's anchor
+        # optimization, forcing a full-buffer scan — 6.5 ms on a 1 MB
+        # document without a declaration (the common case). Match a
+        # head slice instead; fall back to the full string only when
+        # the head is all whitespace (pathological prefixes).
+        SOURCE_DECLARATION_RE = /\A\s*<\?xml\b/
+        private_constant :SOURCE_DECLARATION_RE
+
         def record_source_declaration(native_doc, xml_string)
-          had = xml_string.match?(/\A\s*<\?xml\b/)
+          head = xml_string[0, 256]
+          had = if head.match?(SOURCE_DECLARATION_RE)
+                  true
+                elsif head.match?(/\A\s*\z/)
+                  xml_string.match?(SOURCE_DECLARATION_RE)
+                else
+                  false
+                end
           attachments.set(native_doc, :had_source_declaration, had)
         end
 
