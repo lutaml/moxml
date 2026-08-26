@@ -67,6 +67,13 @@ module Moxml
           doc.root = element
         end
 
+        # libxml-ruby mints a fresh Ruby object for the same C node on
+        # each access; the wrapper identity map would accumulate dead
+        # entries without bound at full mutation throughput.
+        def moxml_wrappers_recursable
+          false
+        end
+
         def parse(xml, options = {}, _context = nil)
           # LibXML doesn't preserve DOCTYPE during parsing, so we need to extract it manually
           xml_string = if xml.is_a?(String)
