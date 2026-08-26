@@ -58,8 +58,16 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(attrs.map(&:value)).to eq(%w[1 2])
     end
 
-    it "falls back to the Ruby engine for element-context queries" do
+    it "evaluates element-context queries on the native engine" do
       expect(doc.root.xpath(".//item").size).to eq(2)
+      first_item = doc.root.children.find(&:element?)
+      expect(first_item.xpath("following-sibling::*").map(&:name)).to eq(%w[item])
+    end
+
+    it "falls back to the Ruby engine for parent-axis queries from the root" do
+      # The binding reports the root element parentless; moxml roots
+      # it at the document
+      expect(doc.root.xpath("../*").size).to eq(1)
     end
 
     it "falls back to the Ruby engine for the xmlns: reserved prefix" do
