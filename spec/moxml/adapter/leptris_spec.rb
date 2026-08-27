@@ -112,10 +112,20 @@ RSpec.describe Moxml::Adapter::Leptris do
       # epilog anchoring); children and to_xml must at least agree.
       doc = ctx.parse('<?xml version="1.0"?><?pi-a 1?><root/><?pi-b 2?>')
       from_children = doc.children.to_a.select(&:processing_instruction?)
-        .map(&:to_xml).join
-      from_document = doc.to_xml.sub(%r{\A<\?xml[^>]*\?>}, "")
+        .map(&:to_xml).join("\n")
+      from_document = doc.to_xml.sub(%r{\A<\?xml[^>]*\?>\n}, "")
 
       expect(from_document).to start_with(from_children)
+    end
+
+    it "matches raw Nokogiri byte-for-byte for pretty-printing (issue #129)" do
+      source = %(<root><a/><b>x</b></root>)
+      target = Nokogiri::XML(source).to_xml(indent: 2, encoding: "UTF-8")
+      output = ctx.parse(source).to_xml(
+        indent: 2, declaration: true, expand_empty: false, encoding: "UTF-8",
+      )
+
+      expect(output).to eq(target)
     end
 
     it "reports the tracked native for a re-added document PI" do
