@@ -30,7 +30,9 @@ module Moxml
 
         def parse(xml, options = {}, _context = nil)
           xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
-          processed = preprocess_entities(xml_string)
+          # The marker flag rides preprocess's own `&` scan — no
+          # second full-buffer probe (issue #132 parse-side note).
+          processed, entity_markers = Entity.preprocess_with_marker_flag(xml_string)
 
           # readonly: true (issue #133): the binding memoizes reads and
           # refuses mutations — the parse-and-read lifecycle for
@@ -49,7 +51,7 @@ module Moxml
           doc = Document.new(native_doc, ctx)
 
           record_source_declaration(native_doc, processed)
-          attachments.set(native_doc, :entity_markers, processed.include?(Entity::MARKER))
+          attachments.set(native_doc, :entity_markers, entity_markers)
 
           doc
         end
@@ -310,17 +312,21 @@ module Moxml
         end
 
         def node_type(node)
+          # Frequency-ordered: elements and text dominate every real
+          # document, and Node.wrap dispatches here once per cold
+          # wrap. CDATA must precede Text (CDATA < Text in the
+          # binding).
           case node
+          when ::Leptris::XML::Element then :element
+          when ::Leptris::XML::CDATA then :cdata
+          when ::Leptris::XML::Text, CustomizedLeptris::TextSegment then :text
+          when ::Leptris::XML::Attr then :attribute
+          when ::Leptris::XML::Comment then :comment
+          when ::Leptris::XML::ProcessingInstruction, CustomizedLeptris::DocumentPI then :processing_instruction
           when ::Leptris::XML::Document then :document
           when ::Leptris::XML::DocType, CustomizedLeptris::Doctype then :doctype
           when CustomizedLeptris::Declaration then :declaration
           when CustomizedLeptris::EntityReference then :entity_reference
-          when ::Leptris::XML::CDATA then :cdata
-          when ::Leptris::XML::Comment then :comment
-          when ::Leptris::XML::ProcessingInstruction, CustomizedLeptris::DocumentPI then :processing_instruction
-          when ::Leptris::XML::Text, CustomizedLeptris::TextSegment then :text
-          when ::Leptris::XML::Element then :element
-          when ::Leptris::XML::Attr then :attribute
           else :unknown
           end
         end
