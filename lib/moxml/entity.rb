@@ -55,9 +55,12 @@ module Moxml
     module_function
 
     # Replace non-standard entity references with markers before
-    # parsing. Always returns a UTF-8 encoded string.
-    def preprocess_entities(xml)
-      return "" if xml.nil?
+    # parsing. Always returns a UTF-8 encoded string, and reports
+    # whether the result can contain markers: the flag rides the
+    # same `&` scan, so callers needing it (leptris parse) avoid a
+    # second full-buffer multibyte probe.
+    def preprocess_with_marker_flag(xml)
+      return ["", false] if xml.nil?
 
       str = if xml.encoding == Encoding::BINARY
               # Binary strings are assumed to be UTF-8. If the bytes are
@@ -78,11 +81,23 @@ module Moxml
       # Fast path: no `&` means no entity references to mark — skip
       # the regex scan and string allocation entirely. The vast
       # majority of XML payloads contain no entity references.
-      return str unless str.include?("&")
+      return [str, false] unless str.include?("&")
 
-      str.gsub(NAME_RE) do |match|
-        STANDARD_ENTITIES.include?(::Regexp.last_match(1)) ? match : "#{MARKER}#{::Regexp.last_match(1)};"
+      marked = false
+      processed = str.gsub(NAME_RE) do |match|
+        name = ::Regexp.last_match(1)
+        if STANDARD_ENTITIES.include?(name)
+          match
+        else
+          marked = true
+          "#{MARKER}#{name};"
+        end
       end
+      [processed, marked]
+    end
+
+    def preprocess_entities(xml)
+      preprocess_with_marker_flag(xml)[0]
     end
 
     # Resolve numeric (&#NN; / &#xNN;) and the five standard named
