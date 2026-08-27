@@ -24,6 +24,13 @@ module Moxml
       root_element ? Moxml::Node.wrap(root_element, context) : nil
     end
 
+    # Materialize the root subtree — see Moxml::Materializer.
+    def materialize(&block)
+      return to_enum(:materialize) unless block
+
+      root&.materialize(&block)
+    end
+
     def create_element(name)
       Element.new(adapter.create_element(name, owner_doc: @native), context)
     end

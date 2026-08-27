@@ -189,6 +189,15 @@ namespace_validation_mode: :strict)
           true
         end
 
+        # Whether the engine offers a bulk materialization path for
+        # Materializer (issue #132). When true, materialize_records
+        # yields flattened records for the subtree; returning nil
+        # (e.g. for document shapes the bulk path cannot express)
+        # falls back to the generic wrapper walk.
+        def bulk_materialize?
+          false
+        end
+
         # Check if the native document has an XML declaration
         # @param native_doc the native document object
         # @param wrapper [Moxml::Document] the wrapper with has_xml_declaration flag

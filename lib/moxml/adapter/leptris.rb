@@ -32,8 +32,11 @@ module Moxml
           xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
           processed = preprocess_entities(xml_string)
 
+          # readonly: true (issue #133): the binding memoizes reads and
+          # refuses mutations — the parse-and-read lifecycle for
+          # multi-pass consumers (comparison, diff, signature).
           native_doc = begin
-            ::Leptris::XML::Document.parse(processed)
+            ::Leptris::XML::Document.parse(processed, readonly: options[:readonly] == true)
           rescue ::Leptris::XML::ParseError => e
             # libleptris has no recovery mode that survives unclosed
             # tags; non-strict callers get an empty document, matching
@@ -221,6 +224,88 @@ module Moxml
           else
             doc = native.document
             doc.nil? || attachments.get(doc, :entity_markers) != false
+          end
+        end
+
+        # Bulk materialization (issue #132): leptris_node_traverse
+        # walks the subtree with one FFI call; the only per-node cost
+        # is the C->Ruby callback and the property reads below. No
+        # Moxml::Node or Attribute wrapper is allocated.
+        def bulk_materialize?
+          true
+        end
+
+        def materialize_records(native, &block)
+          doc = native.is_a?(::Leptris::XML::Document) ? native : native.document
+          # Marker-bearing text needs the split pipeline (children-level
+          # ER expansion); the bulk path has no marker handling.
+          return nil if doc.nil? || attachments.get(doc, :entity_markers)
+
+          root = native.is_a?(::Leptris::XML::Document) ? native.root : native
+          return nil if root.nil?
+
+          depth_memo = {}.compare_by_identity
+          root.traverse do |node|
+            record = case node
+                     when ::Leptris::XML::Element
+                       element_material_record(node, depth_memo)
+                     when ::Leptris::XML::CDATA
+                       # CDATA < Text in the binding: this arm must come
+                       # first or CDATA content reports as text.
+                       text_material_record(:cdata, node.content, node, depth_memo)
+                     when ::Leptris::XML::Text
+                       text_material_record(:text, node.content, node, depth_memo)
+                     when ::Leptris::XML::Comment
+                       text_material_record(:comment, node.content, node, depth_memo)
+                     when ::Leptris::XML::ProcessingInstruction
+                       text_material_record(:processing_instruction, node.content, node, depth_memo)
+                         .merge(qname: node.target)
+                     end
+            yield(record) if record
+          end
+          true
+        end
+
+        def element_material_record(node, depth_memo)
+          attributes = node.each_attribute.map do |attr|
+            # Local name + separate prefix, matching the generic
+            # path's resolver semantics (moxml's canonical shape).
+            name = attr.name
+            prefix = attr.prefix
+            name = name.split(":", 2)[1] || name if prefix
+            [name, attr.value, attr.namespace_uri, prefix]
+          end
+          ns = node.namespace
+          {
+            kind: :element,
+            qname: node.name,
+            prefix: node.prefix,
+            namespace_uri: ns&.href,
+            attributes: attributes,
+            text: nil,
+            depth: material_depth(node, depth_memo),
+          }
+        end
+
+        def text_material_record(kind, text, node, depth_memo)
+          {
+            kind: kind,
+            qname: nil,
+            prefix: nil,
+            namespace_uri: nil,
+            attributes: Materializer::EMPTY_ATTRIBUTES,
+            text: text,
+            depth: material_depth(node, depth_memo),
+          }
+        end
+
+        # Binding wrappers are address-stable and #parent is memoized,
+        # so each edge is fetched once; depths resolve through the
+        # identity-keyed memo.
+        def material_depth(node, memo)
+          memo[node] ||= begin
+            parent = node.parent
+            parent.nil? || parent.is_a?(::Leptris::XML::Document) ? 0 : material_depth(parent, memo) + 1
           end
         end
 
