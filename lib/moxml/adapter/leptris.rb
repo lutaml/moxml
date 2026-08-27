@@ -859,6 +859,11 @@ module Moxml
         # only walks the root subtree, so declaration, DOCTYPE, PIs and
         # document-level text are assembled around it explicitly.
         def serialize_document(doc, options)
+          # Nokogiri's document shape: every top-level part is
+          # newline-terminated, at any indent — declaration, DOCTYPE,
+          # document PIs, the root element, trailing newline after it.
+          # Document-level text is content, not structure: no added
+          # newline.
           parts = []
 
           include_decl = !options[:no_declaration] && options.fetch(:declaration) do
@@ -866,18 +871,18 @@ module Moxml
           end
           if include_decl
             declaration = attachments.get(doc, :declaration)
-            parts << (declaration ? declaration.to_xml : default_declaration_xml(doc, options))
+            parts << (declaration ? declaration.to_xml : default_declaration_xml(doc, options)) << "\n"
           end
 
           doctype = attachments.get(doc, :doctype)
-          parts << doctype.to_xml if doctype
+          parts << doctype.to_xml << "\n" if doctype
 
           native = native_doctype_xml(doc)
-          parts << native if native
+          parts << native << "\n" if native
 
-          document_pi_nodes(doc).each { |pi| parts << pi.to_xml }
+          document_pi_nodes(doc).each { |pi| parts << pi.to_xml << "\n" }
 
-          parts << raw_serialize(doc.root, options) if doc.root
+          parts << raw_serialize(doc.root, options) << "\n" if doc.root
 
           texts = attachments.get(doc, :document_text)
           texts&.each { |text| parts << XmlEmitter.escape_text(text.content.to_s) }
