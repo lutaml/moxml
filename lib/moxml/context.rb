@@ -60,7 +60,9 @@ module Moxml
                        xml.rewind if xml.is_a?(IO) || xml.is_a?(StringIO)
                      end
                    end
-      has_declaration = xml_string.strip.start_with?("<?xml")
+      # Allocation-free declaration sniff: String#strip would copy the
+      # whole buffer just to test its prefix.
+      has_declaration = xml_string.match?(/\A[ \t\r\n\f\v\0]*<\?xml/)
 
       # Parse with adapter, passing self (context) so adapter can use our config
       parsed_options = default_options.merge(options)
