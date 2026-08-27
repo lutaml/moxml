@@ -38,11 +38,11 @@ module Moxml
     end
 
     def children
-      @children ||= NodeSet.new(
-        adapter.children(@native).map { adapter.patch_node(_1, @native) },
-        context,
-        self,
-      )
+      @children ||= begin
+        natives = adapter.children(@native)
+        natives = natives.map { adapter.patch_node(_1, @native) } if adapter.patches_children?
+        NodeSet.new(natives, context, self)
+      end
     end
 
     def next_sibling

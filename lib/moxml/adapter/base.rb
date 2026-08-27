@@ -173,6 +173,14 @@ namespace_validation_mode: :strict)
           node
         end
 
+        # Whether children() results need per-child patch_node
+        # rewriting. Adapters whose natives arrive pre-wrapped (all but
+        # ox and libxml) answer false so the wrapper layer can skip
+        # the identity map over every child list.
+        def patches_children?
+          false
+        end
+
         # Whether the subtree at native can contain entity markers.
         # Marker-tracking adapters override this so the post-serialize
         # restore can skip its full-output scans on marker-free
