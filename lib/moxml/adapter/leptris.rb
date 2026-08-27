@@ -215,7 +215,8 @@ module Moxml
         def entity_bearing?(native)
           case native
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
-               CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment
+               CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment,
+               CustomizedLeptris::DocumentPI
             true
           else
             doc = native.document
@@ -231,7 +232,7 @@ module Moxml
           when CustomizedLeptris::EntityReference then :entity_reference
           when ::Leptris::XML::CDATA then :cdata
           when ::Leptris::XML::Comment then :comment
-          when ::Leptris::XML::ProcessingInstruction then :processing_instruction
+          when ::Leptris::XML::ProcessingInstruction, CustomizedLeptris::DocumentPI then :processing_instruction
           when ::Leptris::XML::Text, CustomizedLeptris::TextSegment then :text
           when ::Leptris::XML::Element then :element
           when ::Leptris::XML::Attr then :attribute
@@ -241,13 +242,14 @@ module Moxml
 
         def node_name(node)
           return node.root_name if node.is_a?(::Leptris::XML::DocType)
+          return node.target if node.is_a?(CustomizedLeptris::DocumentPI)
 
           node.name.to_s.dup.force_encoding("UTF-8")
         end
 
         def set_node_name(node, name)
           case node
-          when ::Leptris::XML::ProcessingInstruction then node.target = name
+          when ::Leptris::XML::ProcessingInstruction, CustomizedLeptris::DocumentPI then node.target = name
           else node.name = name
           end
         end
@@ -260,6 +262,8 @@ module Moxml
             CustomizedLeptris::Doctype.new(node.name, node.external_id, node.system_id)
           when CustomizedLeptris::EntityReference
             CustomizedLeptris::EntityReference.new(node.name)
+          when CustomizedLeptris::DocumentPI
+            CustomizedLeptris::DocumentPI.new(node.target, node.data, node.parent_doc)
           else
             node.dup
           end
@@ -271,6 +275,7 @@ module Moxml
             assemble_document_children(node)
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
                CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment,
+               CustomizedLeptris::DocumentPI,
                # Terminal node kinds pay an FFI round trip for an empty
                # list; unfiltered recursions visit every text node.
                ::Leptris::XML::Text, ::Leptris::XML::Comment,
@@ -321,7 +326,8 @@ module Moxml
         def parent(node)
           case node
           when ::Leptris::XML::Document then nil
-          when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype then node.parent_doc
+          when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
+               CustomizedLeptris::DocumentPI then node.parent_doc
           when CustomizedLeptris::TextSegment, CustomizedLeptris::EntityReference then node.parent
           else
             # The binding reports the root element as parentless; the
@@ -447,6 +453,12 @@ module Moxml
             attachments.delete(node.parent_doc, :doctype) if node.parent_doc
           when CustomizedLeptris::EntityReference
             marker_text_for(node.parent, node.name)&.unlink
+          when CustomizedLeptris::DocumentPI
+            raise Moxml::NotImplementedError.new(
+              "libleptris has no document-level PI removal",
+              adapter: :leptris,
+              feature: :remove,
+            )
           else
             node.unlink
           end
@@ -741,7 +753,7 @@ module Moxml
           # binding, so a Text branch first would swallow CDATA nodes.
           case node
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
-               CustomizedLeptris::EntityReference
+               CustomizedLeptris::EntityReference, CustomizedLeptris::DocumentPI
             return node.to_xml
           when ::Leptris::XML::CDATA
             return XmlEmitter.cdata(node.content)
@@ -863,9 +875,7 @@ module Moxml
           native = native_doctype_xml(doc)
           parts << native if native
 
-          (doc.processing_instructions || []).each do |(target, data)|
-            parts << (data.to_s.empty? ? "<?#{target}?>" : "<?#{target} #{data}?>")
-          end
+          document_pi_nodes(doc).each { |pi| parts << pi.to_xml }
 
           parts << raw_serialize(doc.root, options) if doc.root
 
@@ -935,6 +945,21 @@ module Moxml
           attachments.get(native, :had_source_declaration) ? true : false
         end
 
+        # Document-level PI pseudo-nodes, materialized once from the C
+        # list and cached per document: children and serialization read
+        # the same objects, so wrapper mutations round-trip. Build the
+        # cache BEFORE appending a PI with add_pi, or the C-side
+        # addition would be double-counted.
+        def document_pi_nodes(doc)
+          attachments.get(doc, :doc_pi_nodes) || begin
+            nodes = doc.processing_instructions.map do |(target, data)|
+              CustomizedLeptris::DocumentPI.new(target, data, doc)
+            end
+            attachments.set(doc, :doc_pi_nodes, nodes)
+            nodes
+          end
+        end
+
         def assemble_document_children(doc)
           children = []
 
@@ -943,6 +968,15 @@ module Moxml
 
           doctype_wrapper = attachments.get(doc, :doctype)
           children << doctype_wrapper if doctype_wrapper
+
+          # Document-level PIs live outside the element tree in
+          # libleptris (a flat list; its serializer emits them before
+          # the root). Listed after the DOCTYPE to match the order
+          # serialize_document emits, so children and serialization
+          # agree. Epilog anchoring is not representable in the C
+          # model — a known divergence from the Nokogiri-shaped
+          # contract the other adapters expose.
+          children.concat(document_pi_nodes(doc))
 
           children << doc.root if doc.root
 
@@ -966,7 +1000,15 @@ module Moxml
           when ::Leptris::XML::Element
             doc.root = child
           when ::Leptris::XML::ProcessingInstruction
+            document_pi_nodes(doc)
             doc.add_pi(child.target, child.content.to_s)
+            document_pi_nodes(doc) << CustomizedLeptris::DocumentPI.new(
+              child.target, child.content.to_s, doc
+            )
+          when CustomizedLeptris::DocumentPI
+            document_pi_nodes(doc)
+            doc.add_pi(child.target, child.data)
+            document_pi_nodes(doc) << child
           when ::Leptris::XML::Text
             texts = attachments.get(doc, :document_text) || []
             texts << child
