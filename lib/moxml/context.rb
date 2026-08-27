@@ -74,6 +74,13 @@ module Moxml
       doc
     end
 
+    # Parse then flatten in one call — see Moxml::Materializer
+    # (issue #132). Yields records; returns an Enumerator when no
+    # block is given.
+    def materialize(xml, options = {}, &block)
+      parse(xml, options).materialize(&block)
+    end
+
     # Parse XML using SAX (event-driven) parsing
     #
     # SAX parsing is memory-efficient and suitable for large XML files.

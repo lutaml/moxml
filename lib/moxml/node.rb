@@ -124,6 +124,13 @@ module Moxml
       result.is_a?(Array) ? NodeSet.new(result, context) : result
     end
 
+    # Flattened post-order records for this subtree without
+    # allocating wrappers — see Moxml::Materializer (issue #132).
+    # Returns an Enumerator when no block is given.
+    def materialize(&block)
+      Materializer.materialize(self, &block)
+    end
+
     def at_xpath(expression, namespaces = {})
       Moxml::Node.wrap(adapter.at_xpath(@native, expression, namespaces),
                        context)
