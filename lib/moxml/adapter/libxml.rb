@@ -1134,6 +1134,10 @@ module Moxml
           end
         end
 
+        def patches_children?
+          true
+        end
+
         def patch_node(node, _parent = nil)
           # Wrap native LibXML nodes in our wrapper classes
           return node if node.nil?

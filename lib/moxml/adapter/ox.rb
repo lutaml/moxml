@@ -243,6 +243,10 @@ module Moxml
           Marshal.load(Marshal.dump(node))
         end
 
+        def patches_children?
+          true
+        end
+
         def patch_node(node, parent = nil)
           new_node =
             case node
