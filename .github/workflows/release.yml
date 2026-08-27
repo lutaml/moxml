@@ -30,6 +30,8 @@ jobs:
     with:
       next_version: ${{ github.event.inputs.next_version }}
       gated: ${{ inputs.gated == true }}
+    # No rubygems-api-key: the gem publishes through its configured
+    # RubyGems OIDC trusted publisher. pat_token covers the version
+    # bump push to main.
     secrets:
-      rubygems-api-key: ${{ secrets.LUTAML_CI_RUBYGEMS_API_KEY }}
       pat_token: ${{ secrets.GITHUB_TOKEN }}
