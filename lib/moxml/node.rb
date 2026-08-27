@@ -111,8 +111,10 @@ module Moxml
       result = adapter.serialize(@native, serialize_options)
       result = apply_line_ending(result, serialize_options[:line_ending])
 
-      # Restore entity markers to named entity references
-      adapter.restore_entities(result)
+      # Restore entity markers to named entity references; skipped
+      # when the adapter knows the document carries no markers.
+      result = adapter.restore_entities(result) if adapter.entity_bearing?(@native)
+      result
     end
 
     def xpath(expression, namespaces = {})

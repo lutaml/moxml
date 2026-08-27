@@ -5,16 +5,6 @@ module Moxml
     class Base
       # include XmlUtils
 
-      # Entity round-trip pipeline lives in Moxml::Entity; these
-      # constants and methods stay on the adapter protocol so
-      # adapters and wrappers keep their calling convention.
-      ENTITY_MARKER = Entity::MARKER
-      ENTITY_NAME_PATTERN = Entity::NAME_PATTERN
-      ENTITY_NAME_RE = Entity::NAME_RE
-      ENTITY_MARKER_RE = Entity::MARKER_RE
-      SERIALIZED_ENTITY_MARKER_RE = Entity::SERIALIZED_MARKER_RE
-      STANDARD_ENTITIES = Entity::STANDARD_ENTITIES
-
       class << self
         include XmlUtils
 
@@ -181,6 +171,14 @@ namespace_validation_mode: :strict)
         def patch_node(node, _parent = nil)
           # monkey-patch the native node if necessary
           node
+        end
+
+        # Whether the subtree at native can contain entity markers.
+        # Marker-tracking adapters override this so the post-serialize
+        # restore can skip its full-output scans on marker-free
+        # documents; the default stays conservative.
+        def entity_bearing?(_native)
+          true
         end
 
         # Check if the native document has an XML declaration

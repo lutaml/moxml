@@ -80,4 +80,39 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect { doc.xpath("//item[") }.to raise_error(Moxml::XPathError)
     end
   end
+
+  describe "entity-marker tracking" do
+    let(:ctx) { Moxml.new(:leptris) }
+
+    it "skips the marker split for entity-free documents" do
+      doc = ctx.parse("<root>\n  <a>text</a>\n  <b/>\n</root>")
+      kids = doc.root.children.to_a
+      expect(kids.map(&:class)).to eq([Moxml::Text, Moxml::Element, Moxml::Text, Moxml::Element, Moxml::Text])
+      expect(described_class.entity_bearing?(doc.root.native)).to be(false)
+    end
+
+    it "splits markers when the source carries entities" do
+      doc = ctx.parse("<root><a>pre&nbsp;post</a></root>")
+      kids = doc.at_xpath("//a").children.to_a
+      expect(kids.map(&:class)).to include(Moxml::EntityReference)
+      expect(described_class.entity_bearing?(doc.root.native)).to be(true)
+    end
+
+    it "returns serialized markup for entity-free documents" do
+      # to_xml must not return nil when the restore scan is skipped
+      doc = ctx.parse("<root><a>text</a></root>")
+      expect(doc.to_xml).to include("<root>")
+      expect(doc.at_xpath("//a").to_xml).to eq("<a>text</a>")
+    end
+
+    it "flips the flag when the builder mints an entity reference" do
+      doc = ctx.parse("<root><a/></root>")
+      expect(described_class.entity_bearing?(doc.root.native)).to be(false)
+
+      er = doc.create_entity_reference("nbsp")
+      doc.at_xpath("//a").add_child(er)
+      expect(described_class.entity_bearing?(doc.root.native)).to be(true)
+      expect(doc.at_xpath("//a").children.to_a.map(&:class)).to include(Moxml::EntityReference)
+    end
+  end
 end

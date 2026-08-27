@@ -46,6 +46,7 @@ module Moxml
           doc = Document.new(native_doc, ctx)
 
           record_source_declaration(native_doc, processed)
+          attachments.set(native_doc, :entity_markers, processed.include?(Entity::MARKER))
 
           doc
         end
@@ -207,6 +208,21 @@ module Moxml
           node.target
         end
 
+        # Marker presence is a document-level fact: parse records it,
+        # the ER builder path flips it, and the split/restore scans
+        # consult it. Customized natives only exist as split products
+        # of marker-bearing text, so they always report true.
+        def entity_bearing?(native)
+          case native
+          when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
+               CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment
+            true
+          else
+            doc = native.document
+            doc.nil? || attachments.get(doc, :entity_markers) != false
+          end
+        end
+
         def node_type(node)
           case node
           when ::Leptris::XML::Document then :document
@@ -257,7 +273,17 @@ module Moxml
                CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment
             []
           else
-            split_entity_markers(node.children.to_a, node)
+            natives = node.children.to_a
+            # Parse records whether the preprocessed source held any
+            # entity markers, and the ER builder path flips the flag
+            # when it mints one. A false flag lets traversal skip the
+            # marker split — including the per-text content fetch that
+            # dominates cold children cost. Cross-document moves of
+            # marker-bearing text into an entity-free document degrade
+            # to literal text.
+            return natives if attachments.get(node.document, :entity_markers) == false
+
+            split_entity_markers(natives, node)
           end
         end
 
@@ -385,6 +411,7 @@ module Moxml
             if child.is_a?(CustomizedLeptris::EntityReference)
               marker = parent.document.create_text_node("#{Entity::MARKER}#{child.name};")
               parent.add_child(marker)
+              attachments.set(parent.document, :entity_markers, true)
               return child
             end
             child = parent.document.create_text_node(child) if child.is_a?(String)
@@ -698,9 +725,10 @@ module Moxml
         end
 
         def serialize(node, options = {})
-          xml = raw_serialize(node, options)
-          xml = restore_entities(xml)
-          normalize_serialization(xml, options)
+          # Entity restoration belongs to the wrapper layer
+          # (Node#to_xml runs adapter.restore_entities for every
+          # adapter); doing it here scanned the output a second time.
+          normalize_serialization(raw_serialize(node, options), options)
         end
 
         def raw_serialize(node, options)
