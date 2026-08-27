@@ -270,7 +270,12 @@ module Moxml
           when ::Leptris::XML::Document
             assemble_document_children(node)
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
-               CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment
+               CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment,
+               # Terminal node kinds pay an FFI round trip for an empty
+               # list; unfiltered recursions visit every text node.
+               ::Leptris::XML::Text, ::Leptris::XML::Comment,
+               ::Leptris::XML::CDATA, ::Leptris::XML::ProcessingInstruction,
+               ::Leptris::XML::Attr
             []
           else
             natives = node.children.to_a
