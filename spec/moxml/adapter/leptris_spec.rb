@@ -81,6 +81,54 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
   end
 
+  describe "document-level processing instructions" do
+    let(:ctx) { Moxml.new(:leptris) }
+
+    it "lists document PIs as children with the root" do
+      doc = ctx.parse('<?xml version="1.0"?><?pi-prolog before?><root/><?pi-epilog after?>')
+      kids = doc.children.to_a
+
+      expect(kids.map(&:class)).to eq(
+        [Moxml::ProcessingInstruction, Moxml::ProcessingInstruction, Moxml::Element],
+      )
+      expect(kids.select(&:processing_instruction?).map(&:target)).to eq(%w[pi-prolog pi-epilog])
+      expect(kids[0].content).to eq("before")
+    end
+
+    it "round-trips mutations and additions through serialization" do
+      doc = ctx.parse("<?pi-original x?><root/>")
+      pi = doc.children.to_a[0]
+      pi.target = "renamed"
+      pi.content = "changed"
+      expect(doc.to_xml).to include("<?renamed changed?>")
+
+      doc.add_child(doc.create_processing_instruction("added", "now"))
+      expect(doc.to_xml).to include("<?added now?>")
+      expect(doc.children.to_a.select(&:processing_instruction?).map(&:target)).to eq(%w[renamed added])
+    end
+
+    it "serializes children and document output in agreement" do
+      # libleptris stores document PIs as one flat pre-root list (no
+      # epilog anchoring); children and to_xml must at least agree.
+      doc = ctx.parse('<?xml version="1.0"?><?pi-a 1?><root/><?pi-b 2?>')
+      from_children = doc.children.to_a.select(&:processing_instruction?)
+        .map(&:to_xml).join
+      from_document = doc.to_xml.sub(%r{\A<\?xml[^>]*\?>}, "")
+
+      expect(from_document).to start_with(from_children)
+    end
+
+    it "reports the tracked native for a re-added document PI" do
+      doc = ctx.parse("<?pi-src orig?><root/>")
+      moved = doc.children.to_a[0]
+      target_doc = ctx.parse("<other/>")
+      target_doc.add_child(moved)
+
+      expect(target_doc.to_xml).to include("<?pi-src orig?>")
+      expect(target_doc.children.to_a.select(&:processing_instruction?).map(&:target)).to include("pi-src")
+    end
+  end
+
   describe "entity-marker tracking" do
     let(:ctx) { Moxml.new(:leptris) }
 
