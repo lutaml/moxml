@@ -1080,7 +1080,8 @@ module Moxml
           dt = doc.doctype
           return nil unless dt
 
-          XmlEmitter.doctype_xml(dt.root_name, dt.public_id, dt.system_id)
+          subset = dt.internal_subset if dt.class.method_defined?(:internal_subset)
+          XmlEmitter.doctype_xml(dt.root_name, dt.public_id, dt.system_id, subset)
         end
 
         def sax_parse(xml, handler)
