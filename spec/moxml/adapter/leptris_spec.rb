@@ -85,37 +85,51 @@ RSpec.describe Moxml::Adapter::Leptris do
     let(:ctx) { Moxml.new(:leptris) }
 
     it "lists document PIs as children with the root" do
-      doc = ctx.parse('<?xml version="1.0"?><?pi-prolog before?><root/><?pi-epilog after?>')
+      doc = ctx.parse('<?xml version="1.0"?><?pi-prolog before?><root/><?pi-epilog after?><!-- tail -->')
       kids = doc.children.to_a
 
       expect(kids.map(&:class)).to eq(
-        [Moxml::ProcessingInstruction, Moxml::ProcessingInstruction, Moxml::Element],
+        [Moxml::ProcessingInstruction, Moxml::Element,
+         Moxml::ProcessingInstruction, Moxml::Comment],
       )
       expect(kids.select(&:processing_instruction?).map(&:target)).to eq(%w[pi-prolog pi-epilog])
       expect(kids[0].content).to eq("before")
+      expect(doc.to_xml.index("pi-epilog")).to be > doc.to_xml.index("</root>")
+      expect(doc.to_xml.index("<!-- tail -->")).to be > doc.to_xml.index("</root>")
     end
 
-    it "round-trips mutations and additions through serialization" do
-      doc = ctx.parse("<?pi-original x?><root/>")
-      pi = doc.children.to_a[0]
+    it "round-trips tree-level PI mutations through serialization" do
+      doc = ctx.parse("<root><a><?pi-original x?></a></root>")
+      pi = doc.at_xpath("//a").children.to_a.find(&:processing_instruction?)
       pi.target = "renamed"
       pi.content = "changed"
       expect(doc.to_xml).to include("<?renamed changed?>")
+    end
 
+    it "adds document PIs and lists them as children" do
+      doc = ctx.parse("<root/>")
       doc.add_child(doc.create_processing_instruction("added", "now"))
       expect(doc.to_xml).to include("<?added now?>")
-      expect(doc.children.to_a.select(&:processing_instruction?).map(&:target)).to eq(%w[renamed added])
+      expect(doc.children.to_a.select(&:processing_instruction?).map(&:target)).to eq(%w[added])
+    end
+
+    it "reports document-level PI mutation as unsupported on the native path" do
+      # libleptris 1.9.7 exposes document PIs read-only: target=/data=
+      # and unlink are rejected for nodes outside the element tree.
+      doc = ctx.parse("<?pi x?><root/>")
+      pi = doc.children.to_a[0]
+
+      expect { pi.target = "renamed" }.to raise_error(Leptris::XML::Error)
     end
 
     it "serializes children and document output in agreement" do
       # libleptris stores document PIs as one flat pre-root list (no
       # epilog anchoring); children and to_xml must at least agree.
       doc = ctx.parse('<?xml version="1.0"?><?pi-a 1?><root/><?pi-b 2?>')
-      from_children = doc.children.to_a.select(&:processing_instruction?)
-        .map(&:to_xml).join("\n")
+      parts = doc.children.to_a.map { |c| "#{c.to_xml}\n" }.join
       from_document = doc.to_xml.sub(%r{\A<\?xml[^>]*\?>\n}, "")
 
-      expect(from_document).to start_with(from_children)
+      expect(from_document).to eq(parts)
     end
 
     it "matches raw Nokogiri byte-for-byte for pretty-printing (issue #129)" do

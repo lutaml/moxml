@@ -36,6 +36,10 @@ RSpec.describe Moxml::Materializer do
     expect(book[:namespace_uri]).to eq("urn:c")
     expect(book[:text]).to be_nil
 
+    catalog = records.last
+    expect(catalog[:namespaces]).to eq([[nil, "urn:c"], ["p", "urn:p"]])
+    expect(book[:namespaces]).to eq([])
+
     title_text = records.find { |r| r[:kind] == :text && r[:text] == "T" }
     expect(title_text[:attributes]).to eq([])
   end
@@ -77,6 +81,6 @@ RSpec.describe Moxml::Materializer do
 
     # Records themselves allocate (hash + FFI strings); the wrapper
     # tree does not: far fewer allocations than 2 wrappers per node.
-    expect(allocated).to be < node_count * 20
+    expect(allocated).to be < node_count * 24
   end
 end

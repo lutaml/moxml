@@ -69,6 +69,10 @@ module Moxml
         qname: element.name,
         prefix: element.namespace_prefix,
         namespace_uri: ns&.uri,
+        # The element's OWN namespace declarations ([prefix, uri]
+        # pairs; nil prefix = default), not the in-scope set — enough
+        # for a consumer to rebuild scope while walking (issue #138).
+        namespaces: element.declared_namespaces,
         attributes: attributes,
         text: nil,
         depth: depth,
@@ -81,6 +85,7 @@ module Moxml
         qname: nil,
         prefix: nil,
         namespace_uri: nil,
+        namespaces: EMPTY_ATTRIBUTES,
         attributes: EMPTY_ATTRIBUTES,
         text: text,
         depth: depth,
