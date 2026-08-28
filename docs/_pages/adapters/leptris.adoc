@@ -1,0 +1,69 @@
+---
+title: Leptris
+parent: Adapters
+nav_order: 1
+---
+
+== Leptris adapter
+
+Leptris is a pure-C99 XML 1.0 parser with an FFI binding (the
+https://github.com/leptris/leptris-ruby[leptris-ruby] gem). It is the
+preferred default on CRuby: fastest on every measured moxml operation,
+with a native XPath 1.0 engine, SAX, and canonicalization.
+
+== Default resolution
+
+Leptris becomes the default when the installed binding supports
+programmatic document construction (`Leptris::XML::Document.create`,
+leptris >= 1.3). Otherwise the default falls back to Nokogiri. Under
+Opal the default is rexml (stock oga requires its C extension and
+libleptris does not build for Opal).
+
+[source,ruby]
+----
+Moxml.new                     # => Leptris context when capable
+ctx.config.adapter_name        # => :leptris / :nokogiri / :rexml (Opal)
+----
+
+== Parse options
+
+`readonly: true`::
+The binding memoizes every read and refuses mutations — the
+parse-and-read lifecycle for multi-pass consumers (comparison, diff,
+signatures). Repeat attribute reads on a large element drop by
+orders of magnitude. Builder documents stay read-write.
+
+`dtdattr: true`::
+Materialize DTD `<!ATTLIST>` defaults. Off by default, matching
+libxml2/Nokogiri/REXML semantics (libleptris >= 1.9.8).
+
+`strict: true`::
+Raise `Moxml::ParseError` on malformed input instead of returning an
+empty document.
+
+== Lifecycle
+
+`Document#free` releases the C tree deterministically — batch
+workloads parsing thousands of documents otherwise hold native memory
+until GC finalizers run. Access after `#free` raises the binding's
+use-after-free error.
+
+== Document model
+
+Documents expose the libxml2-shaped document node: prolog PIs and
+comments, the root element, epilog PIs and comments, in document
+order (leptris >= 1.9.26). The DOCTYPE round-trips with its internal
+subset. See link:../conversion-apis[Conversion and memory lifecycle APIs]
+for `materialize` — the flattened-record conversion path with a bulk
+implementation over one `leptris_node_traverse` call.
+
+== Known limitations (tracked upstream)
+
+* Tab indentation (`indent_text`) needs a serialize-time parameter in
+  libleptris; post-hoc rewriting would corrupt mixed content.
+* Document-level PIs are read-only natives (`target=`/`data=`/
+  `unlink` rejected); write-through and removal are pending C
+  surface (leptris/leptris#612).
+* A PI preceding the DOCTYPE reorders on serialization — libleptris
+  normalizes DOCTYPE-first and the document node does not record its
+  relative position.

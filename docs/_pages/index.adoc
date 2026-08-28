@@ -31,6 +31,9 @@ Configure Moxml for your application's requirements.
 link:conversion-apis[Conversion and memory lifecycle APIs]::
 Bulk materialization, deterministic document release, and parse-lifecycle options for conversion-heavy workloads.
 
+link:adapter-protocol[The adapter protocol]::
+The seam between the wrapper layer and engine adapters — method groups, capability predicates, return shapes, and how to add an adapter.
+
 link:error-handling[Error handling]::
 Comprehensive guide to Moxml's error classes and debugging.
 

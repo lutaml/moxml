@@ -1,0 +1,113 @@
+---
+title: Adapter protocol
+nav_order: 46
+---
+
+= The adapter protocol
+
+The seam between moxml's wrapper layer (`Moxml::Node` and friends) and the
+engine adapters. Every adapter is a class under `Moxml::Adapter` implementing
+class methods over its library's native nodes; wrappers dispatch through
+`context.config.adapter` and never touch a native directly.
+
+The contract is pinned by the shared example groups under
+`spec/moxml/adapter/shared_examples/` (the adapter contract) and the
+consistency suite — behavior there is authoritative when this page and the
+code disagree.
+
+== Method groups
+
+Parse and document lifecycle::
+`parse(xml, options, context)`, `create_document`, `create` factories
+(`create_native_element`, `create_native_text`, `create_native_cdata`,
+`create_native_comment`, `create_native_processing_instruction`,
+`create_native_declaration`, `create_native_doctype`,
+`create_native_entity_reference`, `create_native_namespace`),
+`free_document` (#134; no-op on GC-managed engines).
+
+Tree navigation::
+`children`, `parent`, `next_sibling`, `previous_sibling`, `root`,
+`set_root`, `document`, `duplicate_node`. `children` on a document
+lists document-level parts in document order where the engine exposes
+them (Nokogiri-shaped contract).
+
+Node typing and names::
+`node_type`, `node_name`, `set_node_name`, `attribute_name`.
+
+Attributes::
+`get_attribute` / `get_attribute_value` (the raw layer beneath
+`Moxml::AttributeResolver` — expanded-name resolution lives above the
+adapter), `set_attribute_value`, `remove_attribute`,
+`patch_node`/`unpatch_node` for engines needing wrapper natives
+(libxml, ox).
+
+Namespaces::
+`namespace`, `namespace_definitions` (the element's own declarations),
+`in_scope_namespaces`, `set_namespace`, `remove_namespace`.
+
+Mutation::
+`add_child`, `add_next_sibling`, `add_previous_sibling`, `remove`,
+`replace`, `replace_children`. Return contract: methods that can swap
+the native (`set_attribute_name`, `set_namespace`, adoptions) return
+the tracked native; wrappers re-key through `refresh_native!`.
+
+Serialization::
+`serialize(node, options)`. Options: `indent`, `encoding`,
+`declaration`, `no_declaration`, `expand_empty`, `line_ending`.
+Entity-marker restoration is owned by the wrapper layer
+(`Node#to_xml`), guarded by `entity_bearing?`.
+
+XPath::
+`xpath(expression, namespaces)`. Engines without a native engine use
+moxml's pure-Ruby XPath 1.0 engine (`Moxml::XPath`).
+
+== Capability predicates
+
+The wrapper layer probes adapters rather than assuming:
+
+`patches_children?`::
+True when `children` results need per-child `patch_node` rewriting
+(libxml, ox). Others skip the identity map over every child list.
+
+`wrappers_recyclable?`::
+False for engines that mint fresh Ruby objects per access (libxml) —
+the context's wrapper identity map opts out.
+
+`entity_bearing?(native)`::
+Whether the subtree can contain entity markers; gates the
+post-serialize restore scan.
+
+`bulk_materialize?`::
+Whether the adapter offers a bulk path for `Moxml::Materializer`;
+`materialize_records` yields flattened records, returning nil falls
+back to the generic wrapper walk.
+
+Constants like `DOC_NODE_SUPPORTED` / `DTDATTR_SUPPORTED` /
+`TRAVERSE_SUBTREE_BOUNDED` (Leptris) follow the same idea: one probe
+per engine capability, computed at load.
+
+== Return shapes
+
+* Mutations return the tracked native (or nil when not applicable) —
+  never a wrapper.
+* `children` returns an array of natives; the wrapper layer builds the
+  `NodeSet`.
+* `xpath` returns `Array<native>` or a scalar for non-node results.
+* Marker-bearing text (leptris) is split by the adapter into
+  text/entity-reference pseudo-natives before the wrapper sees it.
+
+== Writing an adapter
+
+Subclass `Moxml::Adapter::Base`, implement the groups above, and
+include the shared examples:
+
+[source,ruby]
+----
+RSpec.describe Moxml::Adapter::Mine do
+  it_behaves_like "xml adapter"
+  it_behaves_like "adapter contract"
+end
+----
+
+The contract suite is the test surface: if it passes, the wrapper
+layer's behavior is covered.
