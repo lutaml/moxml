@@ -198,6 +198,14 @@ namespace_validation_mode: :strict)
           false
         end
 
+        # Deterministic native-memory release for adapters backed by
+        # C trees (issue #134). GC-managed engines no-op; released
+        # documents raise the engine's use-after-free error on
+        # further access.
+        def free_document(_native)
+          nil
+        end
+
         # Check if the native document has an XML declaration
         # @param native_doc the native document object
         # @param wrapper [Moxml::Document] the wrapper with has_xml_declaration flag

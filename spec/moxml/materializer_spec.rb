@@ -60,6 +60,17 @@ RSpec.describe Moxml::Materializer do
     )
   end
 
+  it "scopes the document stream to the root subtree (issue #140)" do
+    scoped = %(<?xml version="1.0"?><!-- prolog c --><?pi b?><root>t</root><!-- epilog c --><?pi2 a?>)
+    leptris = Moxml.new(:leptris).materialize(scoped).to_a
+    nokogiri = Moxml.new(:nokogiri).materialize(scoped).to_a
+
+    expect(leptris).to eq(nokogiri)
+    expect(leptris.map { |r| [r[:kind], r[:depth]] }).to eq(
+      [[:text, 1], [:element, 0]],
+    )
+  end
+
   it "materializes from any element subtree" do
     doc = Moxml.new(:nokogiri).parse(xml)
     title = doc.at_xpath("//*[local-name()='title']")

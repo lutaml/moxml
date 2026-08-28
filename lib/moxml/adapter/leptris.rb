@@ -23,6 +23,10 @@ module Moxml
       # the libxml2-model document node — prolog/epilog parts in
       # document order. Older bindings keep the flat pre-root PI path.
       DOC_NODE_SUPPORTED = ::Leptris::XML::Document.method_defined?(:node)
+      # libleptris 1.9.8 (leptris-ruby 1.9.30): plain parse excludes
+      # DTD ATTLIST defaults, matching libxml2/Nokogiri semantics;
+      # ParseOptions::DTDATTR opts in (leptris/leptris#606).
+      DTDATTR_SUPPORTED = ::Leptris::XML::ParseOptions.const_defined?(:DTDATTR)
 
       class << self
         def attachments
@@ -42,8 +46,14 @@ module Moxml
           # readonly: true (issue #133): the binding memoizes reads and
           # refuses mutations — the parse-and-read lifecycle for
           # multi-pass consumers (comparison, diff, signature).
+          # dtdattr: true opts into DTD ATTLIST default materialization
+          # (off by default since libleptris 1.9.8, matching libxml2).
           native_doc = begin
-            ::Leptris::XML::Document.parse(processed, readonly: options[:readonly] == true)
+            ::Leptris::XML::Document.parse(
+              processed,
+              readonly: options[:readonly] == true,
+              options: dtdattr_parse_options(options),
+            )
           rescue ::Leptris::XML::ParseError => e
             # libleptris has no recovery mode that survives unclosed
             # tags; non-strict callers get an empty document, matching
@@ -59,6 +69,30 @@ module Moxml
           attachments.set(native_doc, :entity_markers, entity_markers)
 
           doc
+        end
+
+        # nil when DTDATTR is unsupported or not requested — the
+        # binding treats a nil options hash as plain defaults.
+        def dtdattr_parse_options(options)
+          return nil unless DTDATTR_SUPPORTED && options[:dtdattr] == true
+
+          ::Leptris::XML::ParseOptions.dtdattr
+        end
+
+        # Issue #134: deterministic release of the C tree. The binding
+        # clears its wrapper cache and raises UseAfterFreeError on
+        # later access; moxml-side attachments for the document are
+        # swept too (the context wrapper identity map self-cleans via
+        # its size valve).
+        DOCUMENT_ATTACHMENT_KEYS = %i[
+          entity_markers doc_pi_nodes declaration doctype
+          had_source_declaration document_text
+        ].freeze
+
+        def free_document(native)
+          DOCUMENT_ATTACHMENT_KEYS.each { |key| attachments.delete(native, key) }
+          native.free
+          nil
         end
 
         def create_document(_native_doc = nil)
@@ -248,24 +282,33 @@ module Moxml
           # ER expansion); the bulk path has no marker handling.
           return nil if doc.nil? || attachments.get(doc, :entity_markers)
 
-          root = native.is_a?(::Leptris::XML::Document) ? native.root : native
+          # leptris 1.9.28+'s traverse follows the document chain; from
+          # an arbitrary element it can visit following siblings. Use
+          # the bulk path only for document materialization, and filter
+          # the stream to the document element's subtree (issue #140).
+          return nil unless native.is_a?(::Leptris::XML::Document)
+
+          root = doc.root
           return nil if root.nil?
 
           depth_memo = {}.compare_by_identity
           root.traverse do |node|
+            depth = material_depth_in_subtree(node, root, depth_memo)
+            next if depth.nil?
+
             record = case node
                      when ::Leptris::XML::Element
-                       element_material_record(node, depth_memo)
+                       element_material_record(node, depth)
                      when ::Leptris::XML::CDATA
                        # CDATA < Text in the binding: this arm must come
                        # first or CDATA content reports as text.
-                       text_material_record(:cdata, node.content, node, depth_memo)
+                       text_material_record(:cdata, node.content, depth)
                      when ::Leptris::XML::Text
-                       text_material_record(:text, node.content, node, depth_memo)
+                       text_material_record(:text, node.content, depth)
                      when ::Leptris::XML::Comment
-                       text_material_record(:comment, node.content, node, depth_memo)
+                       text_material_record(:comment, node.content, depth)
                      when ::Leptris::XML::ProcessingInstruction
-                       text_material_record(:processing_instruction, node.content, node, depth_memo)
+                       text_material_record(:processing_instruction, node.content, depth)
                          .merge(qname: node.target)
                      end
             yield(record) if record
@@ -273,7 +316,7 @@ module Moxml
           true
         end
 
-        def element_material_record(node, depth_memo)
+        def element_material_record(node, depth)
           attributes = node.each_attribute.map do |attr|
             # Local name + separate prefix, matching the generic
             # path's resolver semantics (moxml's canonical shape).
@@ -296,11 +339,11 @@ module Moxml
             end,
             attributes: attributes,
             text: nil,
-            depth: material_depth(node, depth_memo),
+            depth: depth,
           }
         end
 
-        def text_material_record(kind, text, node, depth_memo)
+        def text_material_record(kind, text, depth)
           {
             kind: kind,
             qname: nil,
@@ -309,18 +352,30 @@ module Moxml
             namespaces: Materializer::EMPTY_ATTRIBUTES,
             attributes: Materializer::EMPTY_ATTRIBUTES,
             text: text,
-            depth: material_depth(node, depth_memo),
+            depth: depth,
           }
         end
 
-        # Binding wrappers are address-stable and #parent is memoized,
-        # so each edge is fetched once; depths resolve through the
+        # Depth relative to the subtree root, or nil when the node
+        # lies outside it (traverse follows the document chain since
+        # leptris 1.9.28, so epilog siblings can appear in the
+        # stream). Binding wrappers are address-stable and #parent is
+        # memoized, so each edge resolves once through the
         # identity-keyed memo.
-        def material_depth(node, memo)
-          memo[node] ||= begin
-            parent = node.parent
-            parent.nil? || parent.is_a?(::Leptris::XML::Document) ? 0 : material_depth(parent, memo) + 1
-          end
+        def material_depth_in_subtree(node, root, memo)
+          memo[node] ||= if node.equal?(root)
+                           0
+                         else
+                           parent = node.parent
+                           if parent.nil? || parent.is_a?(::Leptris::XML::Document)
+                             nil
+                           else
+
+                             parent_depth = material_depth_in_subtree(parent, root, memo)
+                             parent_depth.nil? ? nil : parent_depth + 1
+
+                           end
+                         end
         end
 
         def node_type(node)
