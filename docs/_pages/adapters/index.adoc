@@ -14,15 +14,21 @@ how to choose the right adapter for your needs.
 === What are adapters?
 
 Moxml uses an adapter pattern to provide a unified interface over different
-XML processing libraries. Each adapter wraps a specific XML library (Nokogiri,
-LibXML, Oga, REXML, or Ox) and provides consistent behavior through Moxml's
-API.
+XML processing libraries. Each adapter wraps a specific XML library (Leptris,
+Nokogiri, LibXML, Oga, REXML, or Ox) and provides consistent behavior through
+Moxml's API. See link:../adapter-protocol[the adapter protocol] for the seam
+itself.
 
 === Available adapters
 
+link:leptris[Leptris adapter]::
+Pure-C99 XML engine, the default on CRuby when the installed binding
+supports programmatic documents — fastest on every measured operation,
+with native XPath 1.0, SAX, and deterministic memory release.
+
 link:nokogiri[Nokogiri adapter]::
-Industry standard XML library with excellent performance and full XPath 1.0
-support. Recommended for most use cases.
+The industry-standard XML library and the fallback default when Leptris
+is not installed. Excellent performance with full XPath 1.0 support.
 
 link:libxml[LibXML adapter]::
 Alternative to Nokogiri using native libxml2 bindings. Excellent performance
