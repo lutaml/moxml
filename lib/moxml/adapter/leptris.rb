@@ -27,6 +27,12 @@ module Moxml
       # DTD ATTLIST defaults, matching libxml2/Nokogiri semantics;
       # ParseOptions::DTDATTR opts in (leptris/leptris#606).
       DTDATTR_SUPPORTED = ::Leptris::XML::ParseOptions.const_defined?(:DTDATTR)
+      # leptris-ruby 1.9.32 (#89): traverse is subtree-bounded again —
+      # earlier 1.9.x walks followed the document chain and swept
+      # following siblings, so element materialize had to fall back
+      # to the generic wrapper walk.
+      TRAVERSE_SUBTREE_BOUNDED =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.32")
 
       class << self
         def attachments
@@ -282,13 +288,17 @@ module Moxml
           # ER expansion); the bulk path has no marker handling.
           return nil if doc.nil? || attachments.get(doc, :entity_markers)
 
-          # leptris 1.9.28+'s traverse follows the document chain; from
-          # an arbitrary element it can visit following siblings. Use
-          # the bulk path only for document materialization, and filter
-          # the stream to the document element's subtree (issue #140).
-          return nil unless native.is_a?(::Leptris::XML::Document)
+          # On bindings whose traverse follows the document chain
+          # (leptris 1.9.28–1.9.31), element materialize falls back to
+          # the generic wrapper walk — only document materialization
+          # can filter safely there (issue #140).
+          root = if native.is_a?(::Leptris::XML::Document)
+                   doc.root
+                 else
+                   return nil unless TRAVERSE_SUBTREE_BOUNDED
 
-          root = doc.root
+                   native
+                 end
           return nil if root.nil?
 
           depth_memo = {}.compare_by_identity
