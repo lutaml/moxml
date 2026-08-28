@@ -56,14 +56,18 @@ module Moxml
       output << "?>"
     end
 
-    # @return [String] a DOCTYPE with its external identifier
-    def doctype_xml(name, public_id, system_id)
+    # @return [String] a DOCTYPE with its external identifier and
+    #   optional internal subset
+    def doctype_xml(name, public_id, system_id, internal_subset = nil)
       output = "<!DOCTYPE #{name}"
       if public_id && !public_id.to_s.empty?
         output << %( PUBLIC "#{public_id}")
         output << %( "#{system_id}") if system_id
       elsif system_id && !system_id.to_s.empty?
         output << %( SYSTEM "#{system_id}")
+      end
+      if internal_subset && !internal_subset.empty?
+        output << " [" << internal_subset << "]"
       end
       output << ">"
     end
