@@ -153,6 +153,31 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
   end
 
+  describe "DTD ATTLIST defaults" do
+    # libleptris 1.9.8: plain parse excludes ATTLIST defaults,
+    # matching libxml2/Nokogiri/REXML; dtdattr: true opts in.
+    let(:ctx) { Moxml.new(:leptris) }
+    let(:dtd_xml) do
+      %(<?xml version="1.0"?><!DOCTYPE doc [<!ATTLIST e9 attr CDATA "default">]><doc><e9/></doc>)
+    end
+
+    it "excludes ATTLIST defaults on plain parse" do
+      skip "requires leptris with no-DTDATTR semantics" unless Moxml::Adapter::Leptris::DTDATTR_SUPPORTED
+
+      doc = ctx.parse(dtd_xml)
+      expect(doc.at_xpath("//e9")["attr"]).to be_nil
+      expect(doc.to_xml).not_to include("attr=")
+    end
+
+    it "materializes ATTLIST defaults with dtdattr: true" do
+      skip "requires leptris with ParseOptions::DTDATTR" unless Moxml::Adapter::Leptris::DTDATTR_SUPPORTED
+
+      doc = ctx.parse(dtd_xml, dtdattr: true)
+      expect(doc.at_xpath("//e9")["attr"]).to eq("default")
+      expect(doc.to_xml).to include(%(attr="default"))
+    end
+  end
+
   describe "entity-marker tracking" do
     let(:ctx) { Moxml.new(:leptris) }
 

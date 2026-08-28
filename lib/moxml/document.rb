@@ -31,6 +31,17 @@ module Moxml
       root&.materialize(&block)
     end
 
+    # Deterministically release the adapter's native memory for this
+    # document (issue #134) — batch workloads parsing thousands of
+    # documents otherwise hold C trees until GC finalizers run.
+    # GC-managed engines no-op. Further access raises the engine's
+    # use-after-free error; ordinary garbage-collected documents keep
+    # working via the finalizer either way.
+    def free
+      adapter.free_document(@native)
+      nil
+    end
+
     def create_element(name)
       Element.new(adapter.create_element(name, owner_doc: @native), context)
     end
