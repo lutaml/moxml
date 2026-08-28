@@ -119,6 +119,16 @@ module Moxml
     end
     alias namespace_definitions namespaces
 
+    # The element's OWN namespace declarations as [prefix, uri]
+    # pairs (nil prefix = default namespace) — not the inherited
+    # scope. The shape materialize records carry (issue #138).
+    def declared_namespaces
+      adapter.namespace_definitions(@native).map do |ns|
+        wrapper = Namespace.new(ns, context)
+        [wrapper.prefix, wrapper.uri]
+      end
+    end
+
     # Returns all namespaces in scope for this element,
     # including those inherited from ancestor elements.
     def in_scope_namespaces

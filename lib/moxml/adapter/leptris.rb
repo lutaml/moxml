@@ -19,6 +19,11 @@ module Moxml
     # programmatic DOCTYPE, so those live in CustomizedLeptris value
     # objects stored through NativeAttachment.
     class Leptris < Base
+      # libleptris 1.9.7 (leptris-ruby 1.9.26): Document#node exposes
+      # the libxml2-model document node — prolog/epilog parts in
+      # document order. Older bindings keep the flat pre-root PI path.
+      DOC_NODE_SUPPORTED = ::Leptris::XML::Document.method_defined?(:node)
+
       class << self
         def attachments
           @attachments ||= Moxml::NativeAttachment.new
@@ -283,6 +288,12 @@ module Moxml
             qname: node.name,
             prefix: node.prefix,
             namespace_uri: ns&.href,
+            # Own declarations only — same shape as the generic
+            # path's Element#declared_namespaces (issue #138).
+            namespaces: begin
+              decls = node.namespace_definitions.map { |d| [d.prefix, d.href] }
+              decls.empty? ? Materializer::EMPTY_ATTRIBUTES : decls
+            end,
             attributes: attributes,
             text: nil,
             depth: material_depth(node, depth_memo),
@@ -295,6 +306,7 @@ module Moxml
             qname: nil,
             prefix: nil,
             namespace_uri: nil,
+            namespaces: Materializer::EMPTY_ATTRIBUTES,
             attributes: Materializer::EMPTY_ATTRIBUTES,
             text: text,
             depth: material_depth(node, depth_memo),
@@ -971,9 +983,22 @@ module Moxml
           native = native_doctype_xml(doc)
           parts << native << "\n" if native
 
-          document_pi_nodes(doc).each { |pi| parts << pi.to_xml << "\n" }
+          if DOC_NODE_SUPPORTED
+            # The libxml2-model document node: prolog PIs/comments,
+            # the root, epilog PIs/comments — in document order, so
+            # epilog parts serialize after the root (issue #130).
+            doc_children = document_node_children(doc)
+            if doc_children
+              doc_children.each { |child| parts << raw_serialize(child, options) << "\n" }
+            else
+              document_pi_nodes(doc).each { |pi| parts << pi.to_xml << "\n" }
+              parts << raw_serialize(doc.root, options) << "\n" if doc.root
+            end
+          else
+            document_pi_nodes(doc).each { |pi| parts << pi.to_xml << "\n" }
 
-          parts << raw_serialize(doc.root, options) << "\n" if doc.root
+            parts << raw_serialize(doc.root, options) << "\n" if doc.root
+          end
 
           texts = attachments.get(doc, :document_text)
           texts&.each { |text| parts << XmlEmitter.escape_text(text.content.to_s) }
@@ -1046,6 +1071,20 @@ module Moxml
         # the same objects, so wrapper mutations round-trip. Build the
         # cache BEFORE appending a PI with add_pi, or the C-side
         # addition would be double-counted.
+        # The document node's children, or nil when the node does not
+        # reflect reality: parsed documents always list the root
+        # element among their children, but programmatically built
+        # ones do not (binding gap) — those keep the legacy parts
+        # path.
+        def document_node_children(doc)
+          doc_children = doc.children.to_a
+          has_root = doc_children.any?(::Leptris::XML::Element)
+          return doc_children if has_root
+          return doc_children if doc.root.nil?
+
+          nil
+        end
+
         def document_pi_nodes(doc)
           attachments.get(doc, :doc_pi_nodes) || begin
             nodes = doc.processing_instructions.map do |(target, data)|
@@ -1065,16 +1104,29 @@ module Moxml
           doctype_wrapper = attachments.get(doc, :doctype)
           children << doctype_wrapper if doctype_wrapper
 
-          # Document-level PIs live outside the element tree in
-          # libleptris (a flat list; its serializer emits them before
-          # the root). Listed after the DOCTYPE to match the order
-          # serialize_document emits, so children and serialization
-          # agree. Epilog anchoring is not representable in the C
-          # model — a known divergence from the Nokogiri-shaped
-          # contract the other adapters expose.
-          children.concat(document_pi_nodes(doc))
+          if DOC_NODE_SUPPORTED
+            # The libxml2-model document node lists prolog PIs/comments,
+            # the root, and epilog PIs/comments in document order —
+            # the Nokogiri-shaped contract, epilog anchoring included
+            # (issue #130). Built (programmatic) documents are not yet
+            # fully reflected by the node (binding gap: an attached
+            # root does not appear); document_node_children answers
+            # nil there for the legacy parts path.
+            doc_children = document_node_children(doc)
+            if doc_children
+              children.concat(doc_children)
+            else
+              children.concat(document_pi_nodes(doc))
+              children << doc.root if doc.root
+            end
+          else
+            # Legacy path: document-level PIs live outside the element
+            # tree in a flat pre-root list (libleptris < 1.9.7 C
+            # model); epilog anchoring is not representable there.
+            children.concat(document_pi_nodes(doc))
 
-          children << doc.root if doc.root
+            children << doc.root if doc.root
+          end
 
           texts = attachments.get(doc, :document_text)
           children.concat(texts) if texts
