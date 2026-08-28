@@ -312,17 +312,26 @@ module Moxml
           native_node = unpatch_node(node)
           return [] unless native_node
 
-          # Handle Document specially - it doesn't have children? method
+          # Handle Document specially - it doesn't have children? method.
+          # The binding's document chain lists prolog/epilog PIs and
+          # comments around the root (Nokogiri-shaped contract); the
+          # DOCTYPE attachment rides along first, mirroring the other
+          # adapters.
           if native_node.is_a?(::LibXML::XML::Document)
             result = []
+            has_native_doctype = false
+            node = native_node.child
+            while node
+              has_native_doctype ||= node.node_type == ::LibXML::XML::Node::DTD_NODE
+              result << patch_node(node)
+              node = node.next
+            end
 
-            # Include DOCTYPE if present
-            doctype_wrapper = attachments.get(native_node, :doctype)
-            result << doctype_wrapper if doctype_wrapper
+            unless has_native_doctype
+              doctype_wrapper = attachments.get(native_node, :doctype)
+              result.unshift(doctype_wrapper) if doctype_wrapper
+            end
 
-            return result unless native_node.root
-
-            result << patch_node(native_node.root)
             return result
           end
 
@@ -1005,6 +1014,29 @@ module Moxml
               output << doctype_wrapper.to_xml
             end
 
+            # Parse-time document-level parts live on the chain around
+            # the root (prolog/epilog PIs and comments); programmatic
+            # ones stay in attachments. The chain nodes serialize in
+            # document order around the root output below.
+            chain_pre = []
+            chain_post = []
+            if native_node.root
+              past_root = false
+              chain_node = native_node.child
+              while chain_node
+                case chain_node.node_type
+                when ::LibXML::XML::Node::ELEMENT_NODE then past_root = true
+                when ::LibXML::XML::Node::PI_NODE, ::LibXML::XML::Node::COMMENT_NODE
+                  (past_root ? chain_post : chain_pre) << chain_node.to_s
+                end
+                chain_node = chain_node.next
+              end
+            end
+            chain_pre.each do |part|
+              output << "\n" unless output.empty?
+              output << part
+            end
+
             # Add document-level processing instructions if stored
             pis = attachments.get(native_node, :pis)
             if pis && !pis.empty?
@@ -1040,6 +1072,11 @@ module Moxml
 
               output << "\n" << root_output unless output.empty?
               output << root_output if output.empty?
+            end
+
+            unless chain_post.empty?
+              output << "\n" unless output.empty?
+              output << chain_post.join("\n") << "\n"
             end
 
             output

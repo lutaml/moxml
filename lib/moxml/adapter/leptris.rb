@@ -34,6 +34,17 @@ module Moxml
       TRAVERSE_SUBTREE_BOUNDED =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.32")
 
+      # Cohesive clusters extracted from this class — the adapter
+      # protocol surface is unchanged; the modules hold the document
+      # parts assembly, the entity-marker pipeline, and the bulk
+      # materializer respectively.
+      autoload :DocumentParts, "moxml/adapter/leptris/document_parts"
+      autoload :Markers, "moxml/adapter/leptris/markers"
+      autoload :Materialize, "moxml/adapter/leptris/materialize"
+      extend DocumentParts
+      extend Markers
+      extend Materialize
+
       class << self
         def attachments
           @attachments ||= Moxml::NativeAttachment.new
@@ -83,22 +94,6 @@ module Moxml
           return nil unless DTDATTR_SUPPORTED && options[:dtdattr] == true
 
           ::Leptris::XML::ParseOptions.dtdattr
-        end
-
-        # Issue #134: deterministic release of the C tree. The binding
-        # clears its wrapper cache and raises UseAfterFreeError on
-        # later access; moxml-side attachments for the document are
-        # swept too (the context wrapper identity map self-cleans via
-        # its size valve).
-        DOCUMENT_ATTACHMENT_KEYS = %i[
-          entity_markers doc_pi_nodes declaration doctype
-          had_source_declaration document_text
-        ].freeze
-
-        def free_document(native)
-          DOCUMENT_ATTACHMENT_KEYS.each { |key| attachments.delete(native, key) }
-          native.free
-          nil
         end
 
         def create_document(_native_doc = nil)
@@ -258,136 +253,6 @@ module Moxml
           node.target
         end
 
-        # Marker presence is a document-level fact: parse records it,
-        # the ER builder path flips it, and the split/restore scans
-        # consult it. Customized natives only exist as split products
-        # of marker-bearing text, so they always report true.
-        def entity_bearing?(native)
-          case native
-          when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
-               CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment,
-               CustomizedLeptris::DocumentPI
-            true
-          else
-            doc = native.document
-            doc.nil? || attachments.get(doc, :entity_markers) != false
-          end
-        end
-
-        # Bulk materialization (issue #132): leptris_node_traverse
-        # walks the subtree with one FFI call; the only per-node cost
-        # is the C->Ruby callback and the property reads below. No
-        # Moxml::Node or Attribute wrapper is allocated.
-        def bulk_materialize?
-          true
-        end
-
-        def materialize_records(native, &block)
-          doc = native.is_a?(::Leptris::XML::Document) ? native : native.document
-          # Marker-bearing text needs the split pipeline (children-level
-          # ER expansion); the bulk path has no marker handling.
-          return nil if doc.nil? || attachments.get(doc, :entity_markers)
-
-          # On bindings whose traverse follows the document chain
-          # (leptris 1.9.28–1.9.31), element materialize falls back to
-          # the generic wrapper walk — only document materialization
-          # can filter safely there (issue #140).
-          root = if native.is_a?(::Leptris::XML::Document)
-                   doc.root
-                 else
-                   return nil unless TRAVERSE_SUBTREE_BOUNDED
-
-                   native
-                 end
-          return nil if root.nil?
-
-          depth_memo = {}.compare_by_identity
-          root.traverse do |node|
-            depth = material_depth_in_subtree(node, root, depth_memo)
-            next if depth.nil?
-
-            record = case node
-                     when ::Leptris::XML::Element
-                       element_material_record(node, depth)
-                     when ::Leptris::XML::CDATA
-                       # CDATA < Text in the binding: this arm must come
-                       # first or CDATA content reports as text.
-                       text_material_record(:cdata, node.content, depth)
-                     when ::Leptris::XML::Text
-                       text_material_record(:text, node.content, depth)
-                     when ::Leptris::XML::Comment
-                       text_material_record(:comment, node.content, depth)
-                     when ::Leptris::XML::ProcessingInstruction
-                       text_material_record(:processing_instruction, node.content, depth)
-                         .merge(qname: node.target)
-                     end
-            yield(record) if record
-          end
-          true
-        end
-
-        def element_material_record(node, depth)
-          attributes = node.each_attribute.map do |attr|
-            # Local name + separate prefix, matching the generic
-            # path's resolver semantics (moxml's canonical shape).
-            name = attr.name
-            prefix = attr.prefix
-            name = name.split(":", 2)[1] || name if prefix
-            [name, attr.value, attr.namespace_uri, prefix]
-          end
-          ns = node.namespace
-          {
-            kind: :element,
-            qname: node.name,
-            prefix: node.prefix,
-            namespace_uri: ns&.href,
-            # Own declarations only — same shape as the generic
-            # path's Element#declared_namespaces (issue #138).
-            namespaces: begin
-              decls = node.namespace_definitions.map { |d| [d.prefix, d.href] }
-              decls.empty? ? Materializer::EMPTY_ATTRIBUTES : decls
-            end,
-            attributes: attributes,
-            text: nil,
-            depth: depth,
-          }
-        end
-
-        def text_material_record(kind, text, depth)
-          {
-            kind: kind,
-            qname: nil,
-            prefix: nil,
-            namespace_uri: nil,
-            namespaces: Materializer::EMPTY_ATTRIBUTES,
-            attributes: Materializer::EMPTY_ATTRIBUTES,
-            text: text,
-            depth: depth,
-          }
-        end
-
-        # Depth relative to the subtree root, or nil when the node
-        # lies outside it (traverse follows the document chain since
-        # leptris 1.9.28, so epilog siblings can appear in the
-        # stream). Binding wrappers are address-stable and #parent is
-        # memoized, so each edge resolves once through the
-        # identity-keyed memo.
-        def material_depth_in_subtree(node, root, memo)
-          memo[node] ||= if node.equal?(root)
-                           0
-                         else
-                           parent = node.parent
-                           if parent.nil? || parent.is_a?(::Leptris::XML::Document)
-                             nil
-                           else
-
-                             parent_depth = material_depth_in_subtree(parent, root, memo)
-                             parent_depth.nil? ? nil : parent_depth + 1
-
-                           end
-                         end
-        end
-
         def node_type(node)
           # Frequency-ordered: elements and text dominate every real
           # document, and Node.wrap dispatches here once per cold
@@ -463,32 +328,6 @@ module Moxml
 
             split_entity_markers(natives, node)
           end
-        end
-
-        # Expand marker-bearing text nodes into the child sequence the
-        # moxml contract exposes: text, EntityReference, text, ...
-        def split_entity_markers(natives, parent)
-          result = []
-          natives.each do |child|
-            # FFI Text#content returns a fresh unfrozen BINARY string:
-            # retag in place (dup would be a throwaway allocation), but
-            # before include? — BINARY.include? with the UTF-8 marker raises
-            if child.is_a?(::Leptris::XML::Text)
-              content = child.content
-              content.force_encoding("UTF-8")
-            end
-            if content&.include?(Entity::MARKER)
-              content.scan(/([^#{Entity::MARKER}]*)(?:#{Entity::MARKER}([\w.:-]+);)?/o) do
-                text_part = Regexp.last_match(1)
-                name = Regexp.last_match(2)
-                result << CustomizedLeptris::TextSegment.new(text_part, parent) unless text_part.empty?
-                result << CustomizedLeptris::EntityReference.new(name) if name
-              end
-            else
-              result << child
-            end
-          end
-          result
         end
 
         def parent(node)
@@ -1023,77 +862,6 @@ module Moxml
           markup
         end
 
-        # Documents compose from their parts: the native serializer
-        # only walks the root subtree, so declaration, DOCTYPE, PIs and
-        # document-level text are assembled around it explicitly.
-        def serialize_document(doc, options)
-          # Nokogiri's document shape: every top-level part is
-          # newline-terminated, at any indent — declaration, DOCTYPE,
-          # document PIs, the root element, trailing newline after it.
-          # Document-level text is content, not structure: no added
-          # newline.
-          parts = []
-
-          include_decl = !options[:no_declaration] && options.fetch(:declaration) do
-            document_has_declaration?(doc)
-          end
-          if include_decl
-            declaration = attachments.get(doc, :declaration)
-            parts << (declaration ? declaration.to_xml : default_declaration_xml(doc, options)) << "\n"
-          end
-
-          doctype = attachments.get(doc, :doctype)
-          parts << doctype.to_xml << "\n" if doctype
-
-          native = native_doctype_xml(doc)
-          parts << native << "\n" if native
-
-          if DOC_NODE_SUPPORTED
-            # The libxml2-model document node: prolog PIs/comments,
-            # the root, epilog PIs/comments — in document order, so
-            # epilog parts serialize after the root (issue #130).
-            doc_children = document_node_children(doc)
-            if doc_children
-              doc_children.each { |child| parts << raw_serialize(child, options) << "\n" }
-            else
-              document_pi_nodes(doc).each { |pi| parts << pi.to_xml << "\n" }
-              parts << raw_serialize(doc.root, options) << "\n" if doc.root
-            end
-          else
-            document_pi_nodes(doc).each { |pi| parts << pi.to_xml << "\n" }
-
-            parts << raw_serialize(doc.root, options) << "\n" if doc.root
-          end
-
-          texts = attachments.get(doc, :document_text)
-          texts&.each { |text| parts << XmlEmitter.escape_text(text.content.to_s) }
-
-          parts.join
-        end
-
-        def default_declaration_xml(doc, options)
-          encoding = options[:encoding] || doc.encoding
-          encoding = "UTF-8" if encoding.to_s.empty?
-          XmlEmitter.declaration_xml("1.0", encoding, nil)
-        end
-
-        def marker_text_for(parent, name)
-          return nil unless parent.is_a?(::Leptris::XML::Element)
-
-          marker = "#{Entity::MARKER}#{name};"
-          parent.children.to_a.find do |child|
-            child.is_a?(::Leptris::XML::Text) && child.content == marker
-          end
-        end
-
-        def native_doctype_xml(doc)
-          dt = doc.doctype
-          return nil unless dt
-
-          subset = dt.internal_subset if dt.class.method_defined?(:internal_subset)
-          XmlEmitter.doctype_xml(dt.root_name, dt.public_id, dt.system_id, subset)
-        end
-
         def sax_parse(xml, handler)
           bridge = LeptrisSAXBridge.new(handler)
           xml_string = xml.is_a?(IO) || xml.is_a?(::StringIO) ? xml.read : xml.to_s
@@ -1122,118 +890,6 @@ module Moxml
                   false
                 end
           attachments.set(native_doc, :had_source_declaration, had)
-        end
-
-        def document_has_declaration?(native)
-          return false unless native.is_a?(::Leptris::XML::Document)
-
-          return true if attachments.get(native, :declaration)
-
-          attachments.get(native, :had_source_declaration) ? true : false
-        end
-
-        # Document-level PI pseudo-nodes, materialized once from the C
-        # list and cached per document: children and serialization read
-        # the same objects, so wrapper mutations round-trip. Build the
-        # cache BEFORE appending a PI with add_pi, or the C-side
-        # addition would be double-counted.
-        # The document node's children, or nil when the node does not
-        # reflect reality: parsed documents always list the root
-        # element among their children, but programmatically built
-        # ones do not (binding gap) — those keep the legacy parts
-        # path.
-        def document_node_children(doc)
-          doc_children = doc.children.to_a
-          has_root = doc_children.any?(::Leptris::XML::Element)
-          return doc_children if has_root
-          return doc_children if doc.root.nil?
-
-          nil
-        end
-
-        def document_pi_nodes(doc)
-          attachments.get(doc, :doc_pi_nodes) || begin
-            nodes = doc.processing_instructions.map do |(target, data)|
-              CustomizedLeptris::DocumentPI.new(target, data, doc)
-            end
-            attachments.set(doc, :doc_pi_nodes, nodes)
-            nodes
-          end
-        end
-
-        def assemble_document_children(doc)
-          children = []
-
-          native_doctype = doc.doctype
-          children << native_doctype if native_doctype
-
-          doctype_wrapper = attachments.get(doc, :doctype)
-          children << doctype_wrapper if doctype_wrapper
-
-          if DOC_NODE_SUPPORTED
-            # The libxml2-model document node lists prolog PIs/comments,
-            # the root, and epilog PIs/comments in document order —
-            # the Nokogiri-shaped contract, epilog anchoring included
-            # (issue #130). Built (programmatic) documents are not yet
-            # fully reflected by the node (binding gap: an attached
-            # root does not appear); document_node_children answers
-            # nil there for the legacy parts path.
-            doc_children = document_node_children(doc)
-            if doc_children
-              children.concat(doc_children)
-            else
-              children.concat(document_pi_nodes(doc))
-              children << doc.root if doc.root
-            end
-          else
-            # Legacy path: document-level PIs live outside the element
-            # tree in a flat pre-root list (libleptris < 1.9.7 C
-            # model); epilog anchoring is not representable there.
-            children.concat(document_pi_nodes(doc))
-
-            children << doc.root if doc.root
-          end
-
-          texts = attachments.get(doc, :document_text)
-          children.concat(texts) if texts
-          children
-        end
-
-        def add_document_child(doc, child)
-          case child
-          when CustomizedLeptris::Declaration
-            child.parent_doc = doc
-            attachments.set(doc, :declaration, child)
-          when CustomizedLeptris::Doctype
-            child.parent_doc = doc
-            attachments.set(doc, :doctype, child)
-          when ::Leptris::XML::DocType
-            raise Moxml::DocumentStructureError.new(
-              "libleptris does not support attaching a native DocType to a document",
-            )
-          when ::Leptris::XML::Element
-            doc.root = child
-          when ::Leptris::XML::ProcessingInstruction
-            document_pi_nodes(doc)
-            doc.add_pi(child.target, child.content.to_s)
-            document_pi_nodes(doc) << CustomizedLeptris::DocumentPI.new(
-              child.target, child.content.to_s, doc
-            )
-          when CustomizedLeptris::DocumentPI
-            document_pi_nodes(doc)
-            doc.add_pi(child.target, child.data)
-            document_pi_nodes(doc) << child
-          when ::Leptris::XML::Text
-            texts = attachments.get(doc, :document_text) || []
-            texts << child
-            attachments.set(doc, :document_text, texts)
-            child
-          else
-            raise Moxml::DocumentStructureError.new(
-              "Unsupported document child: #{child.class}",
-            )
-          end
-          child
         end
       end
 
