@@ -28,6 +28,9 @@ Compare features, performance, and compatibility across adapters.
 link:configuration[Configuration]::
 Configure Moxml for your application's requirements.
 
+link:conversion-apis[Conversion and memory lifecycle APIs]::
+Bulk materialization, deterministic document release, and parse-lifecycle options for conversion-heavy workloads.
+
 link:error-handling[Error handling]::
 Comprehensive guide to Moxml's error classes and debugging.
 

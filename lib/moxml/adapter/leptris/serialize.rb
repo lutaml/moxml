@@ -1,0 +1,127 @@
+# frozen_string_literal: true
+
+module Moxml
+  module Adapter
+    class Leptris
+      # Wire-format knowledge: the C serializer entry, the
+      # canonicalization pass (apostrophes stay literal, optional
+      # empty-element expansion), and the literal-region scanner that
+      # keeps both from touching CDATA/comment/PI content.
+      module Serialize
+        # moxml canonical serialization: apostrophes stay literal
+        # (only & < > " are escaped) and empty elements expand when the
+        # caller asked for it — matching the other adapters' contract.
+        # Runs segment-aware: CDATA content is literal and must not be
+        # touched.
+        # Regions whose content is literal and must never be rewritten.
+        # Scanned positionally (String#index), not with a regex: the
+        # scan is linear in the input length, so pathological document
+        # content cannot blow up the serializer.
+        LITERAL_REGIONS = {
+          "<!--" => "-->",
+          "<![CDATA[" => "]]>",
+          "<?" => "?>",
+        }.freeze
+
+        # All quantifiers are possessive and the bare-part class
+        # excludes "/" and ">": the possessive groups can never consume
+        # the closing delimiter, so no backtracking is possible and the
+        # match is linear even on malformed tags.
+        EMPTY_ELEMENT_RE = %r{<([A-Za-z_][\w.:-]*+)((?:"[^"]*+"|'[^']*+'|[^<>"'/]++)*+)/>}
+
+        def serialize(node, options = {})
+          # Entity restoration belongs to the wrapper layer
+          # (Node#to_xml runs adapter.restore_entities for every
+          # adapter); doing it here scanned the output a second time.
+          normalize_serialization(raw_serialize(node, options), options)
+        end
+
+        def raw_serialize(node, options)
+          # CDATA must precede Text in this chain: CDATA < Text in the
+          # binding, so a Text branch first would swallow CDATA nodes.
+          case node
+          when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
+               CustomizedLeptris::EntityReference, CustomizedLeptris::DocumentPI
+            return node.to_xml
+          when ::Leptris::XML::CDATA
+            return XmlEmitter.cdata(node.content)
+          when ::Leptris::XML::Comment
+            return "<!--#{node.content}-->"
+          when ::Leptris::XML::ProcessingInstruction
+            content = node.content.to_s
+            return content.empty? ? "<?#{node.target}?>" : "<?#{node.target} #{content}?>"
+          when ::Leptris::XML::Text, CustomizedLeptris::TextSegment
+            return XmlEmitter.escape_text(node.content.to_s)
+          when ::Leptris::XML::Document
+            return serialize_document(node, options)
+          end
+
+          include_decl = options.fetch(:declaration) do
+            options[:no_declaration] ? false : document_has_declaration?(node)
+          end
+          node.to_xml(
+            indent: options.fetch(:indent, 0),
+            no_decl: !include_decl,
+            encoding: options[:encoding],
+          )
+        end
+
+        def normalize_serialization(xml, options)
+          needs_apos = xml.include?("&apos;")
+          needs_expand = options[:expand_empty] && xml.include?("/>")
+          return xml unless needs_apos || needs_expand
+
+          out = +""
+          pos = 0
+          while pos < xml.length
+            opener_at, terminator = next_literal_region(xml, pos)
+            if opener_at.nil?
+              out << normalize_markup(xml[pos..], needs_apos, needs_expand)
+              break
+            end
+
+            out << normalize_markup(xml[pos...opener_at], needs_apos, needs_expand)
+            search_from = opener_at + opener_at_offset(terminator)
+            close = xml.index(terminator, search_from)
+            close_end = close.nil? ? xml.length : close + terminator.length
+            out << xml[opener_at...close_end]
+            pos = close_end
+          end
+          out
+        end
+
+        # Nearest literal region at/after from: [position, terminator].
+        def next_literal_region(xml, from)
+          best = nil
+          best_terminator = nil
+          LITERAL_REGIONS.each do |opener, terminator|
+            idx = xml.index(opener, from)
+            next if idx.nil?
+
+            if best.nil? || idx < best
+              best = idx
+              best_terminator = terminator
+            end
+          end
+          best.nil? ? nil : [best, best_terminator]
+        end
+
+        # Search for a terminator past its opener's overlap-safe offset
+        # ("-->" cannot start inside "<!--").
+        def opener_at_offset(terminator)
+          terminator == "-->" ? 4 : 0
+        end
+
+        def normalize_markup(markup, needs_apos, needs_expand)
+          markup = markup.gsub("&apos;", "'") if needs_apos
+          if needs_expand
+            markup = markup.gsub(EMPTY_ELEMENT_RE) do
+              "<#{Regexp.last_match(1)}#{Regexp.last_match(2)}></#{Regexp.last_match(1)}>"
+            end
+          end
+          markup
+        end
+      end
+    end
+  end
+end
