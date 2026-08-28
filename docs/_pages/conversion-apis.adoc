@@ -1,0 +1,78 @@
+---
+title: Conversion and memory lifecycle APIs
+nav_order: 45
+---
+
+= Conversion and Memory Lifecycle APIs
+
+Scanned streaming (`materialize`), deterministic release (`Document#free`), and parse-lifecycle options (`readonly:`, `dtdattr:`) — the seams for conversion-heavy and batch workloads.
+
+== Bulk materialization — `materialize` (issue #132)
+
+Flattened, post-order records for a subtree with no `Moxml::Node` allocation — the conversion path for consumers that build their own tree from a document:
+
+[source,ruby]
+----
+context.materialize(xml) { |record| ... }   # parse + flatten
+document.materialize.each                    # Enumerator, root subtree
+any_element.materialize                      # any subtree
+----
+
+Record shape (all seven keys on every record):
+
+[source,ruby]
+----
+{ kind: :element|:text|:cdata|:comment|:processing_instruction|:entity_reference,
+  qname: "tag"|"pi-target"|nil,
+  prefix: "p"|nil,
+  namespace_uri: "urn:x"|nil,
+  namespaces: [[prefix, uri], ...],              # element's OWN declarations; nil prefix = default
+  attributes: [[name, value, namespace_uri, prefix], ...],
+  text: String|nil,
+  depth: Integer }
+----
+
+* Post-order: children arrive before their parent — build with a stack.
+* `Document#materialize` yields exactly the root subtree (issue #140); document-level parts (prolog/epilog PIs and comments, DOCTYPE) stay enumerable via `children`.
+* The leptris adapter has a bulk path (one `leptris_node_traverse` call); every other adapter uses the generic wrapper walk. Both emit identical streams — the parity is spec-pinned.
+* Entity-bearing documents fall back to the generic walk so entity references still split.
+
+== Deterministic release — `Document#free` (issue #134)
+
+Adapters backed by C trees hold native memory until a GC finalizer runs. Batch workloads (parse → convert → discard, thousands of documents) release it deterministically:
+
+[source,ruby]
+----
+doc = context.parse(xml)
+doc.free            # C tree released now; attachments swept
+doc.root            # => raises the engine's use-after-free error (leptris)
+----
+
+`#free` is a no-op on GC-managed engines (nokogiri, oga, ox, rexml). Normally-scoped documents keep working via the finalizer either way. Measured with GC disabled, 1000 × ~115KB parses: +1.2GB RSS without `#free` vs +121MB with it.
+
+== Parse-lifecycle options
+
+Both options pass through `Context#parse` to the engine and are no-ops where the concept does not apply:
+
+* `readonly: true` (issue #133, leptris) — memoized reads, refused mutations. The parse-and-read lifecycle for multi-pass consumers (comparison, diff, signature): repeat attribute reads on a 100-attribute element drop from ~99µs to ~0.15µs (680×). Builder documents stay read-write.
+
+* `dtdattr: true` (libleptris 1.9.8+, leptris/leptris#606) — materialize DTD `<!ATTLIST>` defaults. Off by default, matching libxml2/Nokogiri/REXML semantics:
+
+[source,ruby]
+----
+context.parse(dtd_xml)                     # plain: ATTLIST defaults excluded
+context.parse(dtd_xml, dtdattr: true)      # opt-in: attr="default" materialized
+----
+
+== Pretty-print parity (issue #129)
+
+Through the leptris adapter, byte-identical output to raw Nokogiri:
+
+[source,ruby]
+----
+context.parse(src).to_xml(
+  indent: 2, declaration: true, expand_empty: false, encoding: "UTF-8",
+) == Nokogiri::XML(src).to_xml(indent: 2, encoding: "UTF-8")   # => true
+----
+
+Known residual divergences (engine-level, tracked upstream): tab indentation needs a serialize-time parameter in libleptris, and a PI preceding the DOCTYPE reorders (the engine normalizes DOCTYPE-first).

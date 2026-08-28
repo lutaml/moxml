@@ -25,6 +25,39 @@ module Moxml
     # adapters' bulk paths reference it too.
     EMPTY_ATTRIBUTES = [].freeze
 
+    # The one constructor for the record shape — both the generic
+    # walk and adapter bulk paths build records through it, so the
+    # seven-key contract lives in exactly one place.
+    module Record
+      module_function
+
+      def element(qname:, prefix:, namespace_uri:, namespaces:, attributes:, depth:)
+        {
+          kind: :element,
+          qname: qname,
+          prefix: prefix,
+          namespace_uri: namespace_uri,
+          namespaces: namespaces,
+          attributes: attributes,
+          text: nil,
+          depth: depth,
+        }
+      end
+
+      def text(kind:, text:, depth:)
+        {
+          kind: kind,
+          qname: nil,
+          prefix: nil,
+          namespace_uri: nil,
+          namespaces: EMPTY_ATTRIBUTES,
+          attributes: EMPTY_ATTRIBUTES,
+          text: text,
+          depth: depth,
+        }
+      end
+    end
+
     module_function
 
     def materialize(node, &block)
@@ -64,32 +97,21 @@ module Moxml
         [attr.name, attr.value, ns&.uri, ns&.prefix]
       end
       ns = element.namespace
-      {
-        kind: :element,
+      # declared_namespaces: the element's OWN declarations ([prefix,
+      # uri] pairs; nil prefix = default), not the in-scope set —
+      # enough for a consumer to rebuild scope while walking (#138).
+      Record.element(
         qname: element.name,
         prefix: element.namespace_prefix,
         namespace_uri: ns&.uri,
-        # The element's OWN namespace declarations ([prefix, uri]
-        # pairs; nil prefix = default), not the in-scope set — enough
-        # for a consumer to rebuild scope while walking (issue #138).
         namespaces: element.declared_namespaces,
         attributes: attributes,
-        text: nil,
         depth: depth,
-      }
+      )
     end
 
     def text_record(kind, text, depth)
-      {
-        kind: kind,
-        qname: nil,
-        prefix: nil,
-        namespace_uri: nil,
-        namespaces: EMPTY_ATTRIBUTES,
-        attributes: EMPTY_ATTRIBUTES,
-        text: text,
-        depth: depth,
-      }
+      Record.text(kind: kind, text: text, depth: depth)
     end
   end
 end
