@@ -61,6 +61,11 @@ implementation over one `leptris_node_traverse` call.
 
 * Tab indentation (`indent_text`) needs a serialize-time parameter in
   libleptris; post-hoc rewriting would corrupt mixed content.
+* Child PIs serialize inline (engine emits `<r>\n<?pi x?>  <e/>`
+  rather than libxml2's one-PI-per-indented-line layout); safe
+  post-hoc rewriting is impossible in mixed content.
+* DOCTYPE internal subsets serialize inline; libxml2 separates the
+  declarations with newlines.
 * Document-level PIs are read-only natives (`target=`/`data=`/
   `unlink` rejected); write-through and removal are pending C
   surface (leptris/leptris#612).
