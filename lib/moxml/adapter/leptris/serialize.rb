@@ -33,7 +33,11 @@ module Moxml
           # Entity restoration belongs to the wrapper layer
           # (Node#to_xml runs adapter.restore_entities for every
           # adapter); doing it here scanned the output a second time.
-          normalize_serialization(raw_serialize(node, options), options)
+          xml = normalize_serialization(raw_serialize(node, options), options)
+          # The binding's FFI strings come back binary-tagged; the
+          # engine encoded the bytes per this option, so tag them.
+          xml.force_encoding(options[:encoding]) if options[:encoding]
+          xml
         end
 
         def raw_serialize(node, options)
@@ -59,11 +63,15 @@ module Moxml
           include_decl = options.fetch(:declaration) do
             options[:no_declaration] ? false : document_has_declaration?(node)
           end
-          node.to_xml(
+          xml = node.to_xml(
             indent: options.fetch(:indent, 0),
             no_decl: !include_decl,
             encoding: options[:encoding],
           )
+          # Element output always ends with the close tag — but the
+          # engine's serializer appends a stray trailing newline when
+          # the element's last text child is non-ASCII.
+          xml.sub(/\n+\z/, "")
         end
 
         def normalize_serialization(xml, options)

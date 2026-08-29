@@ -143,13 +143,27 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
 
     it "matches raw Nokogiri byte-for-byte for pretty-printing (issue #129)" do
-      source = %(<root><a/><b>x</b></root>)
-      target = Nokogiri::XML(source).to_xml(indent: 2, encoding: "UTF-8")
-      output = ctx.parse(source).to_xml(
-        indent: 2, declaration: true, expand_empty: false, encoding: "UTF-8",
-      )
+      cases = {
+        minimal: %(<root><a/><b>x</b></root>),
+        namespaces: %(<root xmlns="urn:a" xmlns:p="urn:p"><p:child p:attr="v" plain="w"/><other>x &amp; y</other></root>),
+        attributes: %(<r a="1" b="two &lt;three&gt;" c="apos &apos;here&apos;"><e/></r>),
+        mixed: %(<r>text <b>bold</b> tail<!-- c --></r>),
+        cdata: %(<r><![CDATA[raw <stuff> & things]]></r>),
+        deep: %(<l1><l2><l3><l4><leaf/></l4></l3></l2></l1>),
+        unicode: %(<r name="Ünïcödé">日本語テキスト &amp; more</r>),
+        unicode_nested: %(<r>a<b>日本</b>c</r>),
+        longtext: %(<r>#{'word ' * 30}</r>),
+        empty_root: %(<r/>),
+        selfclosing: %(<r><a/><b/><c>t</c><d/></r>),
+      }
 
-      expect(output).to eq(target)
+      cases.each do |name, source|
+        target = Nokogiri::XML(source).to_xml(indent: 2, encoding: "UTF-8")
+        output = ctx.parse(source).to_xml(
+          indent: 2, declaration: true, expand_empty: false, encoding: "UTF-8",
+        )
+        expect(output).to eq(target), "byte-parity failed for #{name}"
+      end
     end
 
     it "reports the tracked native for a re-added document PI" do
