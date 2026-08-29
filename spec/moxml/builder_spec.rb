@@ -298,7 +298,14 @@ RSpec.describe Moxml::Builder do
         end
       end.to raise_error(RuntimeError, "test error")
 
-      expect(builder.instance_variable_get(:@current)).to equal(builder.document)
+      # Restoration contract, observed behaviorally: the cursor is
+      # fully unwound to the document — an empty build on the same
+      # builder completes against the document and returns it, and
+      # the root built before the failure is intact. (The partially
+      # built subtree stays; restoration moves the cursor, it does
+      # not roll back the tree.)
+      expect(builder.build {}).to equal(builder.document)
+      expect(builder.document.root.name).to eq("root")
     end
   end
 end

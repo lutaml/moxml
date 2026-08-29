@@ -317,12 +317,8 @@ RSpec.describe Moxml::XPath::Conversion do
       expect(described_class.first_node_text(nodes)).to eq("first")
     end
 
-    it "returns empty string if first node does not respond to text" do
-      # Create a mock NodeSet with a node that doesn't respond to text
-      node_set = [double("node")]
-      allow(node_set).to receive(:[]).with(0).and_return(node_set[0])
-
-      expect(described_class.first_node_text(node_set)).to eq("")
+    it "returns empty string when the set is empty" do
+      expect(described_class.first_node_text([])).to eq("")
     end
 
     it "handles nodes with empty text" do

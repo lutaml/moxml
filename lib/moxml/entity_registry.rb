@@ -2,7 +2,6 @@
 
 require "json" unless RUBY_ENGINE == "opal"
 require "set"
-require_relative "entity_registry_opal_data" if RUBY_ENGINE == "opal"
 
 module Moxml
   # EntityRegistry maintains a knowledge base of XML entity definitions.
