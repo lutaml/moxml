@@ -81,6 +81,14 @@ module Moxml
       parse(xml, options).materialize(&block)
     end
 
+    # Parse then stream the zero-allocation field form (issue #143) —
+    # see Moxml::Materializer.
+    def materialize_fields(xml, options = {}, &block)
+      raise ArgumentError, "materialize_fields requires a block" unless block
+
+      parse(xml, options).materialize_fields(&block)
+    end
+
     # Parse XML using SAX (event-driven) parsing
     #
     # SAX parsing is memory-efficient and suitable for large XML files.

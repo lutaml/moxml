@@ -18,3 +18,12 @@ AllCops:
     - 'tmp/**/*'
     - 'spec/consistency/round_trip_spec.rb'
     - 'lib/compat/**/*'
+
+# materialize_fields yields the eight record fields positionally —
+# the zero-allocation streaming form (issue #143). One parameter per
+# record key is the interface; a shorter list would need a wrapper
+# object, which is the allocation the API exists to avoid.
+Metrics/ParameterLists:
+  Exclude:
+    - 'lib/moxml/materializer.rb'
+    - 'spec/moxml/materializer_spec.rb'

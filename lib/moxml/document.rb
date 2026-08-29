@@ -31,6 +31,14 @@ module Moxml
       root&.materialize(&block)
     end
 
+    # Zero-allocation streaming form over the root subtree (issue
+    # #143) — see Moxml::Materializer.
+    def materialize_fields(&block)
+      raise ArgumentError, "materialize_fields requires a block" unless block
+
+      root&.materialize_fields(&block)
+    end
+
     # Deterministically release the adapter's native memory for this
     # document (issue #134) — batch workloads parsing thousands of
     # documents otherwise hold C trees until GC finalizers run.

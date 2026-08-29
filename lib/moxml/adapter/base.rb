@@ -190,12 +190,17 @@ namespace_validation_mode: :strict)
         end
 
         # Whether the engine offers a bulk materialization path for
-        # Materializer (issue #132). When true, materialize_records
-        # yields flattened records for the subtree; returning nil
-        # (e.g. for document shapes the bulk path cannot express)
-        # falls back to the generic wrapper walk.
+        # Materializer (issue #132). When true, the adapter gets
+        # #materialize_fields(native, buffers, &block) — fill the
+        # reused flat buffers and yield the eight record fields per
+        # node. Returning nil (e.g. for document shapes the bulk path
+        # cannot express) falls back to the generic wrapper walk.
         def bulk_materialize?
           false
+        end
+
+        def materialize_fields(_native, _buffers)
+          nil
         end
 
         # Deterministic native-memory release for adapters backed by

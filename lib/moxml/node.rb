@@ -131,6 +131,14 @@ module Moxml
       Materializer.materialize(self, &block)
     end
 
+    # Zero-allocation streaming form — flat reused buffers valid only
+    # inside the block (issue #143). See Moxml::Materializer.
+    def materialize_fields(&block)
+      raise ArgumentError, "materialize_fields requires a block" unless block
+
+      Materializer.materialize_fields(self, &block)
+    end
+
     def at_xpath(expression, namespaces = {})
       Moxml::Node.wrap(adapter.at_xpath(@native, expression, namespaces),
                        context)
