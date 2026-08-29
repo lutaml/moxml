@@ -11,4 +11,12 @@ RSpec.describe Moxml::Adapter::Nokogiri do
   end
 
   it_behaves_like "xml adapter"
+
+  describe "recover-mode error channel" do
+    it "exposes recoverable syntax errors as parse_errors" do
+      doc = Moxml.new(:nokogiri).parse("<root><unclosed>", strict: false)
+      expect(doc.parse_errors).not_to be_empty
+      expect(doc.parse_errors).to all(be_a(String))
+    end
+  end
 end

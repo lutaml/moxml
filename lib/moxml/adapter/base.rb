@@ -206,6 +206,15 @@ namespace_validation_mode: :strict)
           nil
         end
 
+        # Recover-mode parse diagnostics (issue #147): the error
+        # messages the engine recorded while parsing, [] when the
+        # parse was clean. Engines with a native recover channel
+        # (Nokogiri's `doc.errors`) or a non-strict path that loses
+        # the raised error (leptris) override this.
+        def parse_errors(_native_doc)
+          []
+        end
+
         # Check if the native document has an XML declaration
         # @param native_doc the native document object
         # @param wrapper [Moxml::Document] the wrapper with has_xml_declaration flag

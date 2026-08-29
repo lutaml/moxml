@@ -42,6 +42,10 @@ RSpec.shared_examples "Moxml::Document" do
       context.config.strict_parsing = true
       expect { context.parse("<invalid>") }.to raise_error(Moxml::ParseError)
     end
+
+    it "answers no parse errors on clean documents" do
+      expect(doc.parse_errors).to eq([])
+    end
   end
 
   describe "node creation" do

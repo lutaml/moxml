@@ -188,6 +188,25 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
   end
 
+  describe "recover-path parse diagnostics" do
+    let(:ctx) { Moxml.new(:leptris) }
+
+    it "records the fatal error on non-strict parses" do
+      doc = ctx.parse("<root><unclosed>", strict: false)
+      expect(doc.root).to be_nil
+      expect(doc.parse_errors).not_to be_empty
+      expect(doc.parse_errors).to all(be_a(String))
+    end
+
+    it "answers [] on clean parses" do
+      expect(ctx.parse("<root/>").parse_errors).to eq([])
+    end
+
+    it "still raises on strict parses" do
+      expect { ctx.parse("<root><unclosed>") }.to raise_error(Moxml::ParseError)
+    end
+  end
+
   describe "entity-marker tracking" do
     let(:ctx) { Moxml.new(:leptris) }
 

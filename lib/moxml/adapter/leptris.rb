@@ -27,6 +27,8 @@ module Moxml
       # DTD ATTLIST defaults, matching libxml2/Nokogiri semantics;
       # ParseOptions::DTDATTR opts in (leptris/leptris#606).
       DTDATTR_SUPPORTED = ::Leptris::XML::ParseOptions.const_defined?(:DTDATTR)
+      NO_PARSE_ERRORS = [].freeze
+      private_constant :NO_PARSE_ERRORS
       # leptris-ruby 1.9.32 (#89): traverse is subtree-bounded again —
       # earlier 1.9.x walks followed the document chain and swept
       # following siblings, so element materialize had to fall back
@@ -77,9 +79,12 @@ module Moxml
           rescue ::Leptris::XML::ParseError => e
             # libleptris has no recovery mode that survives unclosed
             # tags; non-strict callers get an empty document, matching
-            # the Libxml adapter's non-strict behavior.
+            # the Libxml adapter's non-strict behavior. The fatal
+            # error rides the document as parse diagnostics (issue
+            # #147) — otherwise nothing says why it came back empty.
             raise Moxml::ParseError.new(e.message) if options[:strict]
 
+            recover_errors = [e.message]
             create_document
           end
           ctx = _context || Context.new(:leptris)
@@ -87,6 +92,7 @@ module Moxml
 
           record_source_declaration(native_doc, processed)
           attachments.set(native_doc, :entity_markers, entity_markers)
+          attachments.set(native_doc, :parse_errors, recover_errors) if recover_errors
 
           doc
         end
@@ -97,6 +103,10 @@ module Moxml
           return nil unless DTDATTR_SUPPORTED && options[:dtdattr] == true
 
           ::Leptris::XML::ParseOptions.dtdattr
+        end
+
+        def parse_errors(native_doc)
+          attachments.get(native_doc, :parse_errors) || NO_PARSE_ERRORS
         end
 
         def create_document(_native_doc = nil)
