@@ -56,7 +56,7 @@ RSpec.describe Moxml::Signature::Algorithms do
 
   describe "custom algorithm registration" do
     after do
-      described_class.instance_variable_get(:@registry)[:digest]
+      described_class.registry[:digest]
         &.delete("http://test.example/custom-digest")
     end
 
