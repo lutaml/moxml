@@ -9,7 +9,9 @@ Scanned streaming (`materialize`), deterministic release (`Document#free`), and 
 
 == Bulk materialization — `materialize` (issue #132)
 
-Flattened, post-order records for a subtree with no `Moxml::Node` allocation — the conversion path for consumers that build their own tree from a document:
+Flattened, post-order records for a subtree with no `Moxml::Node`
+allocation — the conversion path for consumers that build their own
+tree from a document:
 
 [source,ruby]
 ----
@@ -18,7 +20,7 @@ document.materialize.each                    # Enumerator, root subtree
 any_element.materialize                      # any subtree
 ----
 
-Record shape (all seven keys on every record):
+Record shape (all eight keys on every record):
 
 [source,ruby]
 ----
@@ -34,8 +36,31 @@ Record shape (all seven keys on every record):
 
 * Post-order: children arrive before their parent — build with a stack.
 * `Document#materialize` yields exactly the root subtree (issue #140); document-level parts (prolog/epilog PIs and comments, DOCTYPE) stay enumerable via `children`.
-* The leptris adapter has a bulk path (one `leptris_node_traverse` call); every other adapter uses the generic wrapper walk. Both emit identical streams — the parity is spec-pinned.
+* Every record is an independent Hash snapshot — safe to retain.
 * Entity-bearing documents fall back to the generic walk so entity references still split.
+
+=== The streaming form — `materialize_fields` (issue #143)
+
+The conversion hot path: the same walk with zero per-record
+allocation. The block receives the eight fields positionally, and the
+two list arguments are flat, reused buffers:
+
+[source,ruby]
+----
+context.materialize_fields(xml) do |kind, qname, prefix, uri,
+                                namespaces, attributes, text, depth|
+  # namespaces: flat [prefix, uri, ...]            (stride 2)
+  # attributes: flat [name, value, uri, prefix, ...] (stride 4)
+end
+----
+
+The buffers are refilled per element record — valid only inside the
+block. Copy what you keep, or use `materialize` (which layers a fresh
+Hash snapshot on this same stream). On CRuby + leptris the walk runs
+over raw C pointers with the batch `leptris_node_children` call — no
+wrapper objects, no per-node FFI callback, no depth bookkeeping;
+measured ~1.2x faster than an equivalent raw-Nokogiri DOM walk.
+Requires a block (raises `ArgumentError` otherwise).
 
 == Deterministic release — `Document#free` (issue #134)
 

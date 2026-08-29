@@ -304,7 +304,7 @@ RSpec.describe Moxml::Builder do
       # the root built before the failure is intact. (The partially
       # built subtree stays; restoration moves the cursor, it does
       # not roll back the tree.)
-      expect(builder.build {}).to equal(builder.document)
+      expect(builder.build { nil }).to equal(builder.document)
       expect(builder.document.root.name).to eq("root")
     end
   end

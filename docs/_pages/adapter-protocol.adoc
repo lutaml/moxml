@@ -81,11 +81,13 @@ post-serialize restore scan.
 
 `bulk_materialize?`::
 Whether the adapter offers a bulk path for `Moxml::Materializer`;
-`materialize_records` yields flattened records, returning nil falls
-back to the generic wrapper walk.
+`materialize_fields` fills the reused flat buffers and yields the
+eight record fields per node, returning nil falls back to the
+generic wrapper walk. Leptris walks raw C pointers with the batch
+`leptris_node_children` call — no wrappers, no per-node callback.
 
 Constants like `DOC_NODE_SUPPORTED` / `DTDATTR_SUPPORTED` /
-`TRAVERSE_SUBTREE_BOUNDED` (Leptris) follow the same idea: one probe
+`BULK_FIELD_READS` (Leptris) follow the same idea: one probe
 per engine capability, computed at load.
 
 == Return shapes

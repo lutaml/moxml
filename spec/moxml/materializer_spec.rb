@@ -94,4 +94,55 @@ RSpec.describe Moxml::Materializer do
     # tree does not: far fewer allocations than 2 wrappers per node.
     expect(allocated).to be < node_count * 24
   end
+
+  describe "materialize_fields (issue #143)" do
+    it "streams the same data as the Hash snapshot form on every adapter" do
+      %i[leptris nokogiri rexml oga ox].each do |adapter|
+        skip "adapter not installed" unless Moxml::Adapter.available?(adapter)
+
+        ctx = Moxml.new(adapter)
+        snapshot = ctx.materialize(xml).to_a.map do |r|
+          [r[:kind], r[:qname], r[:prefix], r[:namespace_uri],
+           r[:namespaces], r[:attributes], r[:text], r[:depth]]
+        end
+        fields = []
+        ctx.materialize_fields(xml) do |kind, qname, prefix, uri, namespaces, attributes, text, depth|
+          # Copy out of the reused buffers before they are refilled.
+          fields << [
+            kind, qname, prefix, uri,
+            namespaces.each_slice(2).to_a,
+            attributes.each_slice(4).to_a,
+            text, depth
+          ]
+        end
+        expect(fields).to eq(snapshot)
+      end
+    end
+
+    it "reuses one buffer pair across the element stream" do
+      skip "leptris not installed" unless Moxml::Adapter.available?(:leptris)
+
+      element_buffers = []
+      Moxml.new(:leptris).parse(xml).root.materialize_fields do |kind, _qname, _p, _u, _ns, attrs, _t, _d|
+        element_buffers << attrs if kind == :element
+      end
+      expect(element_buffers.map(&:object_id).uniq.size).to eq(1)
+    end
+
+    it "builds independent snapshots in the Hash form" do
+      ctx = Moxml.new(:nokogiri)
+      first = ctx.materialize(xml).to_a
+      first.each { |r| r[:attributes] = nil }
+      second = ctx.materialize(xml).to_a
+      expect(second.find { |r| r[:qname] == "book" }[:attributes])
+        .to include(["id", "b1", nil, nil])
+    end
+
+    it "requires a block" do
+      expect { Moxml.new(:nokogiri).materialize_fields(xml) }
+        .to raise_error(ArgumentError)
+      expect { Moxml.new(:nokogiri).parse(xml).materialize_fields }
+        .to raise_error(ArgumentError)
+    end
+  end
 end

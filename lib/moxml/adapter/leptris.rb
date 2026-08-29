@@ -27,14 +27,24 @@ module Moxml
       # DTD ATTLIST defaults, matching libxml2/Nokogiri semantics;
       # ParseOptions::DTDATTR opts in (leptris/leptris#606).
       DTDATTR_SUPPORTED = ::Leptris::XML::ParseOptions.const_defined?(:DTDATTR)
+
+      # The raw field-read surface for the bulk materializer (issue
+      # #143). Bindings without the full set fall back to the generic
+      # wrapper walk.
+      BULK_FIELD_READS = %i[
+        leptris_node_children leptris_node_get_type
+        leptris_element_name leptris_element_prefix leptris_element_namespace
+        leptris_element_namespace_count leptris_element_namespace_decl_prefix
+        leptris_element_namespace_decl_uri leptris_element_first_attribute
+        leptris_attribute_get_name leptris_attribute_get_value
+        leptris_attribute_next leptris_attribute_namespace_uri
+        leptris_text_node_get_content leptris_cdata_node_get_content
+        leptris_comment_node_get_content leptris_pi_node_get_target
+        leptris_pi_node_get_data
+      ].all? { |fn| ::Leptris::XML::FFI.respond_to?(fn) }
+
       NO_PARSE_ERRORS = [].freeze
       private_constant :NO_PARSE_ERRORS
-      # leptris-ruby 1.9.32 (#89): traverse is subtree-bounded again —
-      # earlier 1.9.x walks followed the document chain and swept
-      # following siblings, so element materialize had to fall back
-      # to the generic wrapper walk.
-      TRAVERSE_SUBTREE_BOUNDED =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.32")
 
       # Cohesive clusters extracted from this class — the adapter
       # protocol surface is unchanged; the modules hold the document
