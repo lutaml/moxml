@@ -36,11 +36,10 @@ RSpec.shared_examples "Moxml::Declaration" do
     end
 
     it "normalizes encoding" do
-      if Moxml.new.config.adapter.name.include?("Rexml")
-        pending("Rexml Encoding upcases the string")
-      end
+      # Encoding names are case-insensitive (XML 1.0 §4.3.3); some
+      # engine/REXML builds upcase the stored value.
       declaration.encoding = "utf-8"
-      expect(declaration.encoding).to eq("utf-8")
+      expect(declaration.encoding.downcase).to eq("utf-8")
     end
   end
 
