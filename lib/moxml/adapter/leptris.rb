@@ -685,6 +685,7 @@ module Moxml
             ast = XPath::Parser.parse_with_cache(expression)
             next false if ast_contains_type?(ast, :variable)
             next false if uses_xmlns_prefix?(ast)
+            next false if prefixed_attribute_test?(ast)
 
             !selects_attribute_results?(ast)
           end
@@ -721,6 +722,24 @@ module Moxml
             step.type == :axis && step.children.first == "attribute"
           else
             false
+          end
+        end
+
+        # Some released native engines do not match prefixed attribute
+        # tests inside predicates (@p:kind='a'); the Ruby engine does.
+        # An attribute test is a :test whose parent axis is
+        # "attribute"; bare ones (namespace nil) stay native.
+        def prefixed_attribute_test?(ast, parent_axis = nil)
+          if ast.type == :test && parent_axis == "attribute"
+            ns = ast.value[:namespace]
+            return true if ns && !ns.empty? && ns != "xmlns"
+          end
+
+          axis = ast.children.first if ast.type == :axis
+
+          ast.children.any? do |child|
+            child.is_a?(XPath::AST::Node) &&
+              prefixed_attribute_test?(child, axis || (child.type == :axis ? nil : parent_axis))
           end
         end
 
