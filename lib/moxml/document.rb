@@ -42,6 +42,16 @@ module Moxml
       nil
     end
 
+    # Parse diagnostics from the engine's recover path (issue #147):
+    # [] when the parse was clean, otherwise the recorded error
+    # messages. A non-strict leptris parse that came back empty
+    # reports the fatal error that emptied it; Nokogiri reports its
+    # recover-mode syntax errors; engines without an error channel
+    # answer [].
+    def parse_errors
+      adapter.parse_errors(@native)
+    end
+
     def create_element(name)
       Element.new(adapter.create_element(name, owner_doc: @native), context)
     end

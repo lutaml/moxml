@@ -23,7 +23,9 @@ Parse and document lifecycle::
 `create_native_comment`, `create_native_processing_instruction`,
 `create_native_declaration`, `create_native_doctype`,
 `create_native_entity_reference`, `create_native_namespace`),
-`free_document` (#134; no-op on GC-managed engines).
+`free_document` (#134; no-op on GC-managed engines), `parse_errors`
+(#147; recover-mode diagnostics — `[]` on clean parses; engines with
+an error channel map it here, e.g. Nokogiri's `doc.errors`).
 
 Tree navigation::
 `children`, `parent`, `next_sibling`, `previous_sibling`, `root`,

@@ -43,6 +43,13 @@ module Moxml
           Document.new(native_doc, ctx)
         end
 
+        # Nokogiri parses with `config.recover` unless strict, so
+        # recoverable syntax errors land on `doc.errors` instead of
+        # raising (issue #147).
+        def parse_errors(native_doc)
+          native_doc.errors.map(&:message)
+        end
+
         # SAX parsing implementation for Nokogiri
         #
         # @param xml [String, IO] XML to parse
