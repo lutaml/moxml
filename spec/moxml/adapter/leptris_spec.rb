@@ -186,16 +186,12 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
 
     it "excludes ATTLIST defaults on plain parse" do
-      skip "requires leptris with no-DTDATTR semantics" unless Moxml::Adapter::Leptris::DTDATTR_SUPPORTED
-
       doc = ctx.parse(dtd_xml)
       expect(doc.at_xpath("//e9")["attr"]).to be_nil
       expect(doc.to_xml).not_to include("attr=")
     end
 
     it "materializes ATTLIST defaults with dtdattr: true" do
-      skip "requires leptris with ParseOptions::DTDATTR" unless Moxml::Adapter::Leptris::DTDATTR_SUPPORTED
-
       doc = ctx.parse(dtd_xml, dtdattr: true)
       expect(doc.at_xpath("//e9")["attr"]).to eq("default")
       expect(doc.to_xml).to include(%(attr="default"))

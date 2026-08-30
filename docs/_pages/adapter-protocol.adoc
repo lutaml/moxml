@@ -86,9 +86,9 @@ eight record fields per node, returning nil falls back to the
 generic wrapper walk. Leptris walks raw C pointers with the batch
 `leptris_node_children` call — no wrappers, no per-node callback.
 
-Constants like `DOC_NODE_SUPPORTED` / `DTDATTR_SUPPORTED` /
-`BULK_FIELD_READS` (Leptris) follow the same idea: one probe
-per engine capability, computed at load.
+Version gates like `PREFIXED_ATTR_PREDICATES_NATIVE` and the
+`MINIMUM_BINDING_VERSION` floor (Leptris) follow the same idea: one
+probe per engine capability, computed at load.
 
 == Return shapes
 

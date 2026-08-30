@@ -85,12 +85,21 @@ RSpec.describe Moxml::Adapter do
         .to include(Moxml::Config.default_adapter)
     end
 
-    it "prefers leptris only when the installed gem supports document construction" do
+    it "prefers leptris only when the installed binding meets the floor" do
       if Moxml::Config.leptris_preferred_available?
         expect(Moxml::Config.runtime_default_adapter).to eq(:leptris)
       else
         expect(Moxml::Config.runtime_default_adapter).not_to eq(:leptris)
       end
+    end
+
+    it "pins the leptris binding floor at 1.9.32 (issue #149)" do
+      skip "leptris not installed" unless described_class.available?(:leptris)
+
+      adapter = described_class.load(:leptris)
+      expect(adapter::MINIMUM_BINDING_VERSION).to eq("1.9.32")
+      expect(Gem::Version.new(Leptris::VERSION))
+        .to be >= Gem::Version.new(adapter::MINIMUM_BINDING_VERSION)
     end
 
     it "OPAL_DEFAULT_ADAPTER is a member of OPAL_AVAILABLE_ADAPTERS" do

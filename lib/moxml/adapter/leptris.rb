@@ -4,11 +4,6 @@ return if RUBY_ENGINE == "opal"
 
 require "stringio"
 require "leptris"
-# leptris-ruby 1.9.0 regression (leptris-ruby#53): the eager ffi load
-# shadows the Leptris::XML autoload manifest, leaving Document/Element
-# unreachable. Loading the manifest explicitly is a no-op when the gem
-# is fixed.
-require "leptris/xml"
 
 module Moxml
   module Adapter
@@ -19,29 +14,14 @@ module Moxml
     # programmatic DOCTYPE, so those live in CustomizedLeptris value
     # objects stored through NativeAttachment.
     class Leptris < Base
-      # libleptris 1.9.7 (leptris-ruby 1.9.26): Document#node exposes
-      # the libxml2-model document node — prolog/epilog parts in
-      # document order. Older bindings keep the flat pre-root PI path.
-      DOC_NODE_SUPPORTED = ::Leptris::XML::Document.method_defined?(:node)
-      # libleptris 1.9.8 (leptris-ruby 1.9.30): plain parse excludes
-      # DTD ATTLIST defaults, matching libxml2/Nokogiri semantics;
-      # ParseOptions::DTDATTR opts in (leptris/leptris#606).
-      DTDATTR_SUPPORTED = ::Leptris::XML::ParseOptions.const_defined?(:DTDATTR)
-
-      # The raw field-read surface for the bulk materializer (issue
-      # #143). Bindings without the full set fall back to the generic
-      # wrapper walk.
-      BULK_FIELD_READS = %i[
-        leptris_node_children leptris_node_get_type
-        leptris_element_name leptris_element_prefix leptris_element_namespace
-        leptris_element_namespace_count leptris_element_namespace_decl_prefix
-        leptris_element_namespace_decl_uri leptris_element_first_attribute
-        leptris_attribute_get_name leptris_attribute_get_value
-        leptris_attribute_next leptris_attribute_namespace_uri
-        leptris_text_node_get_content leptris_cdata_node_get_content
-        leptris_comment_node_get_content leptris_pi_node_get_target
-        leptris_pi_node_get_data
-      ].all? { |fn| ::Leptris::XML::FFI.respond_to?(fn) }
+      # The binding floor (issue #149): 1.9.32 carried the traverse
+      # fix (leptris-ruby#89) and made built documents reflect their
+      # parts immediately (leptris-ruby#91); the document node
+      # (1.9.26), DTDATTR (1.9.8), and the batch child-pointer read
+      # (1.7.0) surfaces predate it. Older bindings are not eligible
+      # for the default (see Config.leptris_preferred_available?) and
+      # the adapter no longer carries accommodation paths for them.
+      MINIMUM_BINDING_VERSION = "1.9.32"
 
       # leptris-ruby#103: prefixed attribute tests inside predicates
       # stopped resolving through the document's in-scope declarations
@@ -115,12 +95,11 @@ module Moxml
           doc
         end
 
-        # nil when DTDATTR is unsupported or not requested — the
-        # binding treats a nil options hash as plain defaults.
+        # nil unless DTDATTR is requested — the binding treats a nil
+        # options hash as plain defaults (defaults exclude ATTLIST
+        # defaults, matching libxml2/Nokogiri semantics).
         def dtdattr_parse_options(options)
-          return nil unless DTDATTR_SUPPORTED && options[:dtdattr] == true
-
-          ::Leptris::XML::ParseOptions.dtdattr
+          options[:dtdattr] == true ? ::Leptris::XML::ParseOptions.dtdattr : nil
         end
 
         def parse_errors(native_doc)

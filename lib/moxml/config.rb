@@ -58,18 +58,20 @@ module Moxml
         OPAL_FALLBACK_ADAPTER
       end
 
-      # True when the leptris gem is installed AND new enough for the
-      # adapter (it needs programmatic document construction, which
-      # released 1.1.x lacks). Memoized: the require probe runs once.
+      # True when the leptris gem is installed AND meets the adapter's
+      # binding floor (issue #149; 1.9.32 — traverse bounding #89,
+      # built-docs parts #91, and every capability surface the adapter
+      # now assumes). Memoized: the probe runs once. Below the floor
+      # the default falls back to Nokogiri rather than driving a
+      # binding the adapter no longer accommodates.
       def leptris_preferred_available?
         return @leptris_preferred_available if defined?(@leptris_preferred_available)
 
         @leptris_preferred_available = begin
           require "leptris"
-          # leptris-ruby 1.9.0 regression (leptris-ruby#53): the XML
-          # autoload manifest is shadowed; load it explicitly.
-          require "leptris/xml"
-          ::Leptris::XML::Document.respond_to?(:create)
+          Moxml::Adapter.load(:leptris)
+          Gem::Version.new(::Leptris::VERSION) >=
+            Gem::Version.new(Moxml::Adapter::Leptris::MINIMUM_BINDING_VERSION)
         rescue LoadError, NameError
           false
         end
