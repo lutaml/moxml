@@ -157,6 +157,15 @@ RSpec.describe Moxml::Adapter::Leptris do
         selfclosing: %(<r><a/><b/><c>t</c><d/></r>),
       }
 
+      # leptris/leptris#636 (binding 1.9.42): child-PI lines and
+      # DOCTYPE internal-subset layout match libxml2.
+      if defined?(described_class::LIBXML2_LAYOUT_PARITY) && described_class::LIBXML2_LAYOUT_PARITY
+        cases[:pi_child] = %(<r><?pi data?><e/></r>)
+        cases[:pi_child_mixed] = %(<r>t<?pi d?><e>x</e>u</r>)
+        cases[:doctype_subset] = %(<?xml version="1.0"?><!DOCTYPE r [<!ELEMENT r (#PCDATA)>]><r>t</r>)
+        cases[:doctype_subset_multi] = %(<?xml version="1.0"?><!DOCTYPE r [<!ELEMENT r (#PCDATA)><!ATTLIST e a CDATA "d">]><r><e/></r>)
+      end
+
       cases.each do |name, source|
         target = Nokogiri::XML(source).to_xml(indent: 2, encoding: "UTF-8")
         output = ctx.parse(source).to_xml(
@@ -164,6 +173,16 @@ RSpec.describe Moxml::Adapter::Leptris do
         )
         expect(output).to eq(target), "byte-parity failed for #{name}"
       end
+    end
+
+    it "round-trips document-level PI mutations through serialization" do
+      # leptris/leptris#612: parse-created document PIs carry doc
+      # linkage — the setters work and the tree round-trips.
+      doc = ctx.parse("<?pi-prolog before?><root/>")
+      pi = doc.children.to_a.first
+      pi.target = "renamed"
+      pi.content = "changed"
+      expect(doc.to_xml).to include("<?renamed changed?>")
     end
 
     it "reports the tracked native for a re-added document PI" do

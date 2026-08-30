@@ -70,7 +70,10 @@ module Moxml
           )
           # Element output always ends with the close tag — but the
           # engine's serializer appends a stray trailing newline when
-          # the element's last text child is non-ASCII.
+          # the element's last text child is non-ASCII (fixed engine
+          # side in 1.9.42; kept for older floor bindings). Note: the
+          # binding's indent_text kwarg is the display-form boolean,
+          # not Nokogiri's indent-unit string — do not forward it.
           xml.sub(/\n+\z/, "")
         end
 
