@@ -43,6 +43,14 @@ module Moxml
         leptris_pi_node_get_data
       ].all? { |fn| ::Leptris::XML::FFI.respond_to?(fn) }
 
+      # leptris-ruby#103: prefixed attribute tests inside predicates
+      # stopped resolving through the document's in-scope declarations
+      # on released 1.9.37–1.9.39; 1.9.40 (engine 1.9.14+) restored
+      # the fallback. Older bindings keep the Ruby-engine routing in
+      # native_expression?.
+      PREFIXED_ATTR_PREDICATES_NATIVE =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.40")
+
       NO_PARSE_ERRORS = [].freeze
       private_constant :NO_PARSE_ERRORS
 
@@ -705,7 +713,7 @@ module Moxml
             ast = XPath::Parser.parse_with_cache(expression)
             next false if ast_contains_type?(ast, :variable)
             next false if uses_xmlns_prefix?(ast)
-            next false if prefixed_attribute_test?(ast)
+            next false if !PREFIXED_ATTR_PREDICATES_NATIVE && prefixed_attribute_test?(ast)
 
             !selects_attribute_results?(ast)
           end
@@ -745,10 +753,11 @@ module Moxml
           end
         end
 
-        # Some released native engines do not match prefixed attribute
-        # tests inside predicates (@p:kind='a'); the Ruby engine does.
-        # An attribute test is a :test whose parent axis is
-        # "attribute"; bare ones (namespace nil) stay native.
+        # Released native engines 1.9.37–1.9.39 do not match prefixed
+        # attribute tests inside predicates (@p:kind='a'); the Ruby
+        # engine does. An attribute test is a :test whose parent axis
+        # is "attribute"; bare ones (namespace nil) stay native.
+        # Retired above PREFIXED_ATTR_PREDICATES_NATIVE (1.9.40+).
         def prefixed_attribute_test?(ast, parent_axis = nil)
           if ast.type == :test && parent_axis == "attribute"
             ns = ast.value[:namespace]
