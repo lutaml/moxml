@@ -13,11 +13,14 @@ with a native XPath 1.0 engine, SAX, and canonicalization.
 
 == Default resolution
 
-Leptris becomes the default when the installed binding supports
-programmatic document construction (`Leptris::XML::Document.create`,
-leptris >= 1.3). Otherwise the default falls back to Nokogiri. Under
-Opal the default is rexml (stock oga requires its C extension and
-libleptris does not build for Opal).
+Leptris becomes the default when the installed binding meets the
+adapter's floor — `Moxml::Adapter::Leptris::MINIMUM_BINDING_VERSION`
+(leptris >= 1.9.32; issue #149): bounded traverse, built documents
+that reflect their parts immediately, and every capability surface
+the adapter assumes. Below the floor the default falls back to
+Nokogiri rather than driving a binding the adapter no longer
+accommodates. Under Opal the default is rexml (stock oga requires
+its C extension and libleptris does not build for Opal).
 
 [source,ruby]
 ----

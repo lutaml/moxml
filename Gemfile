@@ -9,7 +9,7 @@ gemspec
 gem "benchmark"
 gem "benchmark-ips"
 gem "get_process_mem"
-gem "leptris", "~> 1.1"
+gem "leptris", "~> 1.9.32"
 gem "libxml-ruby", "~> 5.0"
 gem "nokogiri", "~> 1.18"
 gem "openssl", "~> 3.0"

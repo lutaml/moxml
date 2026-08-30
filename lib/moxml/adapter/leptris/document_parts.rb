@@ -10,7 +10,7 @@ module Moxml
         # swept too (the context wrapper identity map self-cleans via
         # its size valve).
         DOCUMENT_ATTACHMENT_KEYS = %i[
-          entity_markers doc_pi_nodes declaration doctype
+          entity_markers declaration doctype
           had_source_declaration document_text
         ].freeze
 
@@ -29,62 +29,16 @@ module Moxml
           doctype_wrapper = attachments.get(doc, :doctype)
           children << doctype_wrapper if doctype_wrapper
 
-          if DOC_NODE_SUPPORTED
-            # The libxml2-model document node lists prolog PIs/comments,
-            # the root, and epilog PIs/comments in document order —
-            # the Nokogiri-shaped contract, epilog anchoring included
-            # (issue #130). Built (programmatic) documents are not yet
-            # fully reflected by the node (binding gap: an attached
-            # root does not appear); document_node_children answers
-            # nil there for the legacy parts path.
-            doc_children = document_node_children(doc)
-            if doc_children
-              children.concat(doc_children)
-            else
-              children.concat(document_pi_nodes(doc))
-              children << doc.root if doc.root
-            end
-          else
-            # Legacy path: document-level PIs live outside the element
-            # tree in a flat pre-root list (libleptris < 1.9.7 C
-            # model); epilog anchoring is not representable there.
-            children.concat(document_pi_nodes(doc))
-
-            children << doc.root if doc.root
-          end
+          # The libxml2-model document node lists prolog PIs/comments,
+          # the root, and epilog PIs/comments in document order — the
+          # Nokogiri-shaped contract, epilog anchoring included (issue
+          # #130). Built documents reflect their parts immediately
+          # since leptris-ruby 1.9.32 (leptris-ruby#91).
+          children.concat(doc.children.to_a)
 
           texts = attachments.get(doc, :document_text)
           children.concat(texts) if texts
           children
-        end
-
-        # Document-level PI pseudo-nodes, materialized once from the C
-        # list and cached per document: children and serialization read
-        # the same objects, so wrapper mutations round-trip. Build the
-        # cache BEFORE appending a PI with add_pi, or the C-side
-        # addition would be double-counted.
-        # The document node's children, or nil when the node does not
-        # reflect reality: parsed documents always list the root
-        # element among their children, but programmatically built
-        # ones do not (binding gap) — those keep the legacy parts
-        # path.
-        def document_node_children(doc)
-          doc_children = doc.children.to_a
-          has_root = doc_children.any?(::Leptris::XML::Element)
-          return doc_children if has_root
-          return doc_children if doc.root.nil?
-
-          nil
-        end
-
-        def document_pi_nodes(doc)
-          attachments.get(doc, :doc_pi_nodes) || begin
-            nodes = doc.processing_instructions.map do |(target, data)|
-              CustomizedLeptris::DocumentPI.new(target, data, doc)
-            end
-            attachments.set(doc, :doc_pi_nodes, nodes)
-            nodes
-          end
         end
 
         def add_document_child(doc, child)
@@ -102,15 +56,9 @@ module Moxml
           when ::Leptris::XML::Element
             doc.root = child
           when ::Leptris::XML::ProcessingInstruction
-            document_pi_nodes(doc)
             doc.add_pi(child.target, child.content.to_s)
-            document_pi_nodes(doc) << CustomizedLeptris::DocumentPI.new(
-              child.target, child.content.to_s, doc
-            )
           when CustomizedLeptris::DocumentPI
-            document_pi_nodes(doc)
             doc.add_pi(child.target, child.data)
-            document_pi_nodes(doc) << child
           when ::Leptris::XML::Text
             texts = attachments.get(doc, :document_text) || []
             texts << child
@@ -149,22 +97,10 @@ module Moxml
           native = native_doctype_xml(doc)
           parts << native << "\n" if native
 
-          if DOC_NODE_SUPPORTED
-            # The libxml2-model document node: prolog PIs/comments,
-            # the root, epilog PIs/comments — in document order, so
-            # epilog parts serialize after the root (issue #130).
-            doc_children = document_node_children(doc)
-            if doc_children
-              doc_children.each { |child| parts << raw_serialize(child, options) << "\n" }
-            else
-              document_pi_nodes(doc).each { |pi| parts << pi.to_xml << "\n" }
-              parts << raw_serialize(doc.root, options) << "\n" if doc.root
-            end
-          else
-            document_pi_nodes(doc).each { |pi| parts << pi.to_xml << "\n" }
-
-            parts << raw_serialize(doc.root, options) << "\n" if doc.root
-          end
+          # The libxml2-model document node: prolog PIs/comments, the
+          # root, epilog PIs/comments — in document order, so epilog
+          # parts serialize after the root (issue #130).
+          doc.children.each { |child| parts << raw_serialize(child, options) << "\n" }
 
           texts = attachments.get(doc, :document_text)
           texts&.each { |text| parts << XmlEmitter.escape_text(text.content.to_s) }

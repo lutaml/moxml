@@ -39,8 +39,6 @@ module Moxml
         end
 
         def materialize_fields(native, buffers, &block)
-          return nil unless Leptris::BULK_FIELD_READS
-
           doc = native.is_a?(::Leptris::XML::Document) ? native : native.document
           # Marker-bearing text needs the split pipeline (children-level
           # ER expansion); the bulk path has no marker handling.
