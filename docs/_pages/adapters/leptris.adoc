@@ -62,16 +62,18 @@ implementation over one `leptris_node_traverse` call.
 
 == Known limitations (tracked upstream)
 
-* Tab indentation (`indent_text`) needs a serialize-time parameter in
-  libleptris; post-hoc rewriting would corrupt mixed content.
-* Child PIs serialize inline (engine emits `<r>\n<?pi x?>  <e/>`
-  rather than libxml2's one-PI-per-indented-line layout); safe
-  post-hoc rewriting is impossible in mixed content.
-* DOCTYPE internal subsets serialize inline; libxml2 separates the
-  declarations with newlines.
-* Document-level PIs are read-only natives (`target=`/`data=`/
-  `unlink` rejected); write-through and removal are pending C
-  surface (leptris/leptris#612).
 * A PI preceding the DOCTYPE reorders on serialization — libleptris
   normalizes DOCTYPE-first and the document node does not record its
   relative position.
+* Tab indentation: the binding's `indent_text` is the display-form
+  boolean, not Nokogiri's indent-unit string — the unit ask is
+  leptris-ruby#109. moxml forwards `indent_text:` to Nokogiri
+  meanwhile.
+
+Resolved with leptris-ruby 1.9.42 (leptris/leptris#636/#612): child
+PIs serialize on their own indented lines, DOCTYPE internal subsets
+newline-separate their declarations (moxml re-formats the subset to
+the libxml2 layout), the stray trailing newline after non-ASCII
+ending elements is gone engine-side, and document-level PIs accept
+`target=`/`content=`/removal with full round-trip. The moxml-side
+compat guards remain as no-ops for older floor bindings.

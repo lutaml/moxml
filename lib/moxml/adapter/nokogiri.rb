@@ -429,11 +429,13 @@ module Moxml
             custom_decl = "<?xml #{attrs.join(' ')}?>"
           end
 
-          result = node.to_xml(
+          serialize_kwargs = {
             indent: options[:indent],
             encoding: options[:encoding],
             save_with: save_options,
-          )
+          }
+          serialize_kwargs[:indent_text] = options[:indent_text] if options[:indent_text]
+          result = node.to_xml(**serialize_kwargs)
 
           if custom_decl
             result = "#{custom_decl}\n#{result}"

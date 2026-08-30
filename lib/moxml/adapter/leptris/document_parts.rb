@@ -113,7 +113,70 @@ module Moxml
           return nil unless dt
 
           subset = dt.internal_subset if dt.class.method_defined?(:internal_subset)
+          subset = format_internal_subset(subset) if LIBXML2_LAYOUT_PARITY
           XmlEmitter.doctype_xml(dt.root_name, dt.public_id, dt.system_id, subset)
+        end
+
+        # libxml2's DTD dump layout (leptris/leptris#636): newline
+        # after "[", one after every markup declaration, none after
+        # comments (they glue to both neighbors); an empty subset
+        # drops the brackets. Returns the INNER text for
+        # XmlEmitter.doctype_xml, nil when there is nothing to emit.
+        # The engine reports internal_subset as raw source text, so
+        # the declarations are re-tokenized — quote-aware, since an
+        # attribute default can contain ">".
+        def format_internal_subset(subset)
+          return nil if subset.nil? || subset.empty?
+
+          out = +"\n"
+          pos = 0
+          length = subset.length
+          while pos < length
+            start = subset.index("<", pos)
+            break if start.nil?
+
+            terminator, skip = if subset[start, 4] == "<!--"
+                                 ["-->", 4]
+                               elsif subset[start, 2] == "<?"
+                                 ["?>", 2]
+                               else
+                                 [nil, 0]
+                               end
+            if terminator
+              stop = subset.index(terminator, start + skip)
+              break if stop.nil?
+
+              item_end = stop + terminator.length
+            else
+              item_end = markup_decl_end(subset, start)
+              break if item_end.nil?
+            end
+            out << subset[start...item_end]
+            # Comments carry no trailing newline; declarations do.
+            out << "\n" unless subset[start, 4] == "<!--"
+            pos = item_end
+          end
+          out == "\n" ? nil : out
+        end
+
+        # End index of a markup declaration starting at `start`:
+        # the first ">" outside quotes.
+        def markup_decl_end(subset, start)
+          quote = nil
+          i = start
+          length = subset.length
+          while i < length
+            ch = subset[i]
+            if quote
+              quote = nil if ch == quote
+            elsif ['"', "'"].include?(ch)
+              quote = ch
+            elsif ch == ">"
+              return i + 1
+            end
+            i += 1
+          end
+          nil
         end
 
         def default_declaration_xml(doc, options)

@@ -100,4 +100,9 @@ context.parse(src).to_xml(
 ) == Nokogiri::XML(src).to_xml(indent: 2, encoding: "UTF-8")   # => true
 ----
 
-Known residual divergences (engine-level, tracked upstream): tab indentation needs a serialize-time parameter in libleptris, and a PI preceding the DOCTYPE reorders (the engine normalizes DOCTYPE-first).
+Known residual divergences (engine-level, tracked upstream): a PI
+preceding the DOCTYPE reorders (the engine normalizes DOCTYPE-first),
+and tab indentation waits on the binding exposing an indent-unit
+parameter (leptris-ruby#109) — child-PI lines, DOCTYPE subset
+layout, and the non-ASCII trailing-newline quirk were resolved with
+leptris-ruby 1.9.42.

@@ -31,6 +31,15 @@ module Moxml
       PREFIXED_ATTR_PREDICATES_NATIVE =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.40")
 
+      # leptris/leptris#636 (leptris-ruby 1.9.42): libxml2-compatible
+      # pretty-print — child-PI lines, DOCTYPE internal-subset layout,
+      # no stray trailing newline after non-ASCII text, and the indent
+      # unit (`to_xml`'s indent_text takes the unit string). Older
+      # floor bindings treat indent_text as a display-form boolean, so
+      # the passthrough and the parity pins gate on this.
+      LIBXML2_LAYOUT_PARITY =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.42")
+
       NO_PARSE_ERRORS = [].freeze
       private_constant :NO_PARSE_ERRORS
 
