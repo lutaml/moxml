@@ -161,6 +161,9 @@ module Moxml
 
         # End index of a markup declaration starting at `start`:
         # the first ">" outside quotes.
+        QUOTE_CHARS = ['"', "'"].freeze
+        private_constant :QUOTE_CHARS
+
         def markup_decl_end(subset, start)
           quote = nil
           i = start
@@ -169,7 +172,7 @@ module Moxml
             ch = subset[i]
             if quote
               quote = nil if ch == quote
-            elsif ['"', "'"].include?(ch)
+            elsif QUOTE_CHARS.include?(ch)
               quote = ch
             elsif ch == ">"
               return i + 1
