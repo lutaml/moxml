@@ -40,6 +40,15 @@ module Moxml
       LIBXML2_LAYOUT_PARITY =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.42")
 
+      # leptris-ruby#109 (1.9.45): Element#to_xml takes the
+      # indent-unit string, so moxml's per-child document composition
+      # can carry `indent_text:` through. Text-bearing leaves still
+      # emit spaces until the engine fix (leptris/leptris#658); the
+      # boolean display form stays document-level and is never
+      # forwarded (the element face raises on it).
+      INDENT_UNIT_SUPPORTED =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.45")
+
       NO_PARSE_ERRORS = [].freeze
       private_constant :NO_PARSE_ERRORS
 
@@ -81,7 +90,7 @@ module Moxml
             ::Leptris::XML::Document.parse(
               processed,
               readonly: options[:readonly] == true,
-              options: dtdattr_parse_options(options),
+              options: parse_flags(options),
             )
           rescue ::Leptris::XML::ParseError => e
             # libleptris has no recovery mode that survives unclosed
@@ -104,11 +113,16 @@ module Moxml
           doc
         end
 
-        # nil unless DTDATTR is requested — the binding treats a nil
-        # options hash as plain defaults (defaults exclude ATTLIST
-        # defaults, matching libxml2/Nokogiri semantics).
-        def dtdattr_parse_options(options)
-          options[:dtdattr] == true ? ::Leptris::XML::ParseOptions.dtdattr : nil
+        # nil when no parse flag is requested — the binding treats a
+        # nil options hash as plain defaults (matching libxml2/
+        # Nokogiri semantics: blanks kept, no ATTLIST defaults).
+        # noblanks (issue #153) drops whitespace-only text nodes,
+        # libxml2 XML_PARSE_NOBLANKS parity.
+        def parse_flags(options)
+          flags = 0
+          flags |= ::Leptris::XML::ParseOptions::DTDATTR if options[:dtdattr] == true
+          flags |= ::Leptris::XML::ParseOptions::NOBLANKS if options[:noblanks] == true
+          flags.zero? ? nil : ::Leptris::XML::ParseOptions.new(flags)
         end
 
         def parse_errors(native_doc)

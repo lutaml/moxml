@@ -30,6 +30,11 @@ ctx.config.adapter_name        # => :leptris / :nokogiri / :rexml (Opal)
 
 == Parse options
 
+`noblanks: true`::
+Drop whitespace-only text nodes (libxml2 `XML_PARSE_NOBLANKS`
+parity, issue #153) — the parse shape canon's pretty-printer
+compares against `Nokogiri::XML(xml, &:noblanks)`.
+
 `readonly: true`::
 The binding memoizes every read and refuses mutations — the
 parse-and-read lifecycle for multi-pass consumers (comparison, diff,
@@ -62,13 +67,13 @@ implementation over one `leptris_node_traverse` call.
 
 == Known limitations (tracked upstream)
 
+* Tab indentation honors the indent-unit string on leptris >= 1.9.45
+  (`indent_text:`), byte-identical to Nokogiri on element-only
+  trees; text-bearing leaves still emit spaces until the engine fix
+  (leptris/leptris#658).
 * A PI preceding the DOCTYPE reorders on serialization — libleptris
   normalizes DOCTYPE-first and the document node does not record its
   relative position.
-* Tab indentation: the binding's `indent_text` is the display-form
-  boolean, not Nokogiri's indent-unit string — the unit ask is
-  leptris-ruby#109. moxml forwards `indent_text:` to Nokogiri
-  meanwhile.
 
 Resolved with leptris-ruby 1.9.42 (leptris/leptris#636/#612): child
 PIs serialize on their own indented lines, DOCTYPE internal subsets

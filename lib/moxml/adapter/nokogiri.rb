@@ -26,11 +26,13 @@ module Moxml
               ::Nokogiri::XML::DocumentFragment.parse(processed_xml) do |config|
                 config.strict.nonet
                 config.recover unless options[:strict]
+                config.noblanks if options[:noblanks]
               end
             else
               ::Nokogiri::XML(processed_xml, nil, "UTF-8") do |config|
                 config.strict.nonet
                 config.recover unless options[:strict]
+                config.noblanks if options[:noblanks]
               end
             end
           rescue ::Nokogiri::XML::SyntaxError => e
