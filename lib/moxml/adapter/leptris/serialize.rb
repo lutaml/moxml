@@ -63,11 +63,15 @@ module Moxml
           include_decl = options.fetch(:declaration) do
             options[:no_declaration] ? false : document_has_declaration?(node)
           end
-          xml = node.to_xml(
+          kwargs = {
             indent: options.fetch(:indent, 0),
             no_decl: !include_decl,
             encoding: options[:encoding],
-          )
+          }
+          if INDENT_UNIT_SUPPORTED && options[:indent_text].is_a?(String)
+            kwargs[:indent_text] = options[:indent_text]
+          end
+          xml = node.to_xml(**kwargs)
           # Element output always ends with the close tag — but the
           # engine's serializer appends a stray trailing newline when
           # the element's last text child is non-ASCII (fixed engine

@@ -185,6 +185,33 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(doc.to_xml).to include("<?renamed changed?>")
     end
 
+    it "matches raw Nokogiri with tab units on element-only trees" do
+      skip "requires the indent unit (leptris 1.9.45+)" unless described_class::INDENT_UNIT_SUPPORTED
+
+      source = %(<r><a><b/></a><c><d/><e/></c></r>)
+      target = Nokogiri::XML(source).to_xml(indent: 2, indent_text: "\t", encoding: "UTF-8")
+      output = ctx.parse(source).to_xml(
+        indent: 2, declaration: true, expand_empty: false,
+        encoding: "UTF-8", indent_text: "\t"
+      )
+      expect(output).to eq(target)
+    end
+
+    it "drops space-only text nodes with noblanks and matches Nokogiri (issue #153)" do
+      source = %(<a><t>1</t>    <n/></a>)
+      recipe = {
+        indent: 2, declaration: true, expand_empty: false, encoding: "UTF-8"
+      }
+      target = Nokogiri::XML(source, &:noblanks).to_xml(indent: 2, encoding: "UTF-8")
+
+      doc = ctx.parse(source, noblanks: true)
+      expect(doc.root.children.to_a.select(&:text?)).to be_empty
+      expect(doc.to_xml(recipe)).to eq(target)
+
+      via_nokogiri = Moxml.new(:nokogiri).parse(source, noblanks: true).to_xml(recipe)
+      expect(via_nokogiri).to eq(target)
+    end
+
     it "reports the tracked native for a re-added document PI" do
       doc = ctx.parse("<?pi-src orig?><root/>")
       moved = doc.children.to_a[0]
