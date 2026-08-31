@@ -104,7 +104,12 @@ module Moxml
       node = prepare_node(node)
 
       if node.is_a?(Declaration)
-        # Mark that document now has a declaration
+        # A proper XML document carries at most one declaration
+        # (issue #23).
+        if @has_xml_declaration || adapter.has_declaration?(@native, self)
+          raise Moxml::ValidationError, "Document already has an XML declaration"
+        end
+
         @has_xml_declaration = true
         adapter.add_child(@native, node.native)
       elsif root && !node.is_a?(ProcessingInstruction) && !node.is_a?(Comment) && !node.is_a?(Doctype)

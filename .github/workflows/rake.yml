@@ -53,3 +53,8 @@ jobs:
 
       - name: Run rubocop
         run: bundle exec rubocop
+
+      - name: Run performance gates
+        env:
+          RUN_PERFORMANCE: "1"
+        run: bundle exec rake spec:performance

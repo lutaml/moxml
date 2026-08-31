@@ -13,12 +13,13 @@ RSpec.describe Moxml::Adapter::Oga do
   it_behaves_like "xml adapter"
 
   describe "serialization" do
-    it "does not duplicate XML declarations when declaration nodes repeat" do
+    it "rejects a repeated XML declaration instead of duplicating it (issue #23)" do
       context = Moxml::Context.new(:oga)
       doc = context.create_document
 
       doc.add_child(doc.create_declaration("1.0", "UTF-8"))
-      doc.add_child(doc.create_declaration("1.0", "UTF-8"))
+      expect { doc.add_child(doc.create_declaration("1.0", "UTF-8")) }
+        .to raise_error(Moxml::ValidationError)
       doc.add_child(doc.create_element("root"))
 
       serialized = doc.to_xml

@@ -101,5 +101,11 @@ RSpec.shared_examples "Moxml::Declaration" do
       declaration.remove
       expect(doc.to_xml).not_to include("<?xml")
     end
+
+    it "rejects a second declaration (issue #23)" do
+      doc.add_child(doc.create_declaration("1.0"))
+      expect { doc.add_child(doc.create_declaration("1.0")) }
+        .to raise_error(Moxml::ValidationError, /already has an XML declaration/)
+    end
   end
 end

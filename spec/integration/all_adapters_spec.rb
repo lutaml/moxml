@@ -59,7 +59,15 @@ RSpec.describe "Cross-adapter integration" do
       end
 
       all_shared_examples.each do |shared_example_name|
-        it_behaves_like shared_example_name
+        # The performance battery runs only under RUN_PERFORMANCE /
+        # `rake spec:performance` (issue #45) - tagged at inclusion:
+        # definition-site metadata on the shared group does not
+        # propagate through this indirection.
+        if shared_example_name == "Performance Examples"
+          it_behaves_like shared_example_name, performance: true
+        else
+          it_behaves_like shared_example_name
+        end
       end
     end
   end
