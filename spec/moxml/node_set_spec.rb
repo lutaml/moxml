@@ -36,4 +36,16 @@ RSpec.describe Moxml::NodeSet do
       expect(nodes).to be_empty
     end
   end
+
+  describe "public surface (issue #26)" do
+    it "exposes raw natives only through native_nodes" do
+      children = doc.root.children
+      expect(children.native_nodes).not_to include(a_kind_of(Moxml::Node))
+      expect(children).not_to respond_to(:nodes)
+    end
+
+    it "wraps through the Enumerable surface" do
+      expect(doc.root.children.map(&:class).uniq).to eq([Moxml::Element])
+    end
+  end
 end

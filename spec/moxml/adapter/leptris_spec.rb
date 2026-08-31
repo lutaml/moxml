@@ -185,31 +185,60 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(doc.to_xml).to include("<?renamed changed?>")
     end
 
-    it "matches raw Nokogiri with tab units on element-only trees" do
+    it "matches raw Nokogiri with tab units" do
       skip "requires the indent unit (leptris 1.9.45+)" unless described_class::INDENT_UNIT_SUPPORTED
 
-      source = %(<r><a><b/></a><c><d/><e/></c></r>)
-      target = Nokogiri::XML(source).to_xml(indent: 2, indent_text: "\t", encoding: "UTF-8")
-      output = ctx.parse(source).to_xml(
-        indent: 2, declaration: true, expand_empty: false,
-        encoding: "UTF-8", indent_text: "\t"
-      )
-      expect(output).to eq(target)
+      # Text-bearing children included since the engine fix for
+      # leptris/leptris#658 (leptris 1.9.46). Comment children are
+      # excluded: the binding's element+unit path drops them
+      # (leptris-ruby#115).
+      sources = [
+        %(<r><a><b/></a><c><d/><e/></c></r>),
+        %(<root><child>content</child><empty/></root>),
+        %(<r>text <b>bold</b> tail</r>),
+      ]
+      sources.each do |source|
+        target = Nokogiri::XML(source).to_xml(indent: 1, indent_text: "\t", encoding: "UTF-8")
+        output = ctx.parse(source).to_xml(
+          indent: 1, declaration: true, expand_empty: false,
+          encoding: "UTF-8", indent_text: "\t"
+        )
+        expect(output).to eq(target), "tab parity failed for #{source}"
+      end
     end
 
-    it "drops space-only text nodes with noblanks and matches Nokogiri (issue #153)" do
-      source = %(<a><t>1</t>    <n/></a>)
+    it "drops space-only text nodes with noblanks and matches Nokogiri (issues #153/#156)" do
+      sources = [
+        %(<a><t>1</t>    <n/></a>), # blank filler between tags
+        %(<p> leading</p>),                 # boundary space must survive
+        %(<p><b>b</b> after</p>),           # element-to-text space must survive
+        %(<p>trailing </p>),                # trailing space must survive
+        %(<r>\n  <a>x <b>y</b> z</a>\n  <c/>\n</r>),
+      ]
       recipe = {
         indent: 2, declaration: true, expand_empty: false, encoding: "UTF-8"
       }
-      target = Nokogiri::XML(source, &:noblanks).to_xml(indent: 2, encoding: "UTF-8")
 
-      doc = ctx.parse(source, noblanks: true)
+      sources.each do |source|
+        target = Nokogiri::XML(source, &:noblanks).to_xml(indent: 2, encoding: "UTF-8")
+
+        doc = ctx.parse(source, noblanks: true)
+        expect(doc.to_xml(recipe)).to eq(target), "noblanks parity failed for #{source}"
+
+        via_nokogiri = Moxml.new(:nokogiri).parse(source, noblanks: true).to_xml(recipe)
+        expect(via_nokogiri).to eq(target)
+      end
+    end
+
+    it "leaves no text nodes on a noblanks tree of blank filler" do
+      doc = ctx.parse(%(<a><t>1</t>    <n/></a>), noblanks: true)
       expect(doc.root.children.to_a.select(&:text?)).to be_empty
-      expect(doc.to_xml(recipe)).to eq(target)
+    end
 
-      via_nokogiri = Moxml.new(:nokogiri).parse(source, noblanks: true).to_xml(recipe)
-      expect(via_nokogiri).to eq(target)
+    it "refuses noblanks on readonly parses" do
+      # The strip mutates the tree; readonly freezes it at parse.
+      expect { ctx.parse("<a/>", noblanks: true, readonly: true) }
+        .to raise_error(ArgumentError, /noblanks.*mutable/)
     end
 
     it "reports the tracked native for a re-added document PI" do

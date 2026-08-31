@@ -222,8 +222,9 @@ namespace :spec do
     t.pattern = "spec/examples/**/*_spec.rb"
   end
 
-  desc "Run performance benchmarks"
+  desc "Run performance benchmarks (sets RUN_PERFORMANCE=1)"
   RSpec::Core::RakeTask.new(:performance) do |t|
+    ENV["RUN_PERFORMANCE"] = "1"
     t.pattern = "spec/performance/**/*_spec.rb"
     t.rspec_opts = "--tag performance"
   end
@@ -288,4 +289,4 @@ namespace :opal do
   end
 end
 
-task default: %i[spec rubocop]
+task default: :spec

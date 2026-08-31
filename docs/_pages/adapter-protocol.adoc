@@ -59,8 +59,8 @@ Serialization::
 `serialize(node, options)`. Options: `indent`, `encoding`,
 `declaration`, `no_declaration`, `expand_empty`, `line_ending`,
 `indent_text` (the indent-unit string — Nokogiri and
-leptris >= 1.9.45; leptris text-bearing leaves wait on
-leptris/leptris#658).
+leptris >= 1.9.45; its element unit path
+drops comments — leptris-ruby#115).
 Entity-marker restoration is owned by the wrapper layer
 (`Node#to_xml`), guarded by `entity_bearing?`.
 

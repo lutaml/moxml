@@ -106,6 +106,18 @@ module Moxml
           ctx = _context || Context.new(:leptris)
           doc = Document.new(native_doc, ctx)
 
+          if options[:noblanks]
+            # The engine's DROP_WS_TEXT trims boundary whitespace of
+            # NON-blank text nodes at parse (leptris/leptris#677), so
+            # the flag is never forwarded — blanks drop here instead.
+            if options[:readonly] == true
+              raise ArgumentError,
+                    "noblanks: true requires a mutable document (readonly: true freezes the tree at parse)"
+            end
+
+            strip_blank_text_nodes!(native_doc)
+          end
+
           record_source_declaration(native_doc, processed)
           attachments.set(native_doc, :entity_markers, entity_markers)
           attachments.set(native_doc, :parse_errors, recover_errors) if recover_errors
@@ -116,13 +128,55 @@ module Moxml
         # nil when no parse flag is requested — the binding treats a
         # nil options hash as plain defaults (matching libxml2/
         # Nokogiri semantics: blanks kept, no ATTLIST defaults).
-        # noblanks (issue #153) drops whitespace-only text nodes,
-        # libxml2 XML_PARSE_NOBLANKS parity.
+        # noblanks is deliberately absent: the engine's
+        # LEPTRIS_PARSE_DROP_WS_TEXT trims boundary whitespace of
+        # non-blank text nodes too (leptris/leptris#677), so moxml
+        # implements it itself after parse — see
+        # strip_blank_text_nodes!.
         def parse_flags(options)
           flags = 0
           flags |= ::Leptris::XML::ParseOptions::DTDATTR if options[:dtdattr] == true
-          flags |= ::Leptris::XML::ParseOptions::NOBLANKS if options[:noblanks] == true
           flags.zero? ? nil : ::Leptris::XML::ParseOptions.new(flags)
+        end
+
+        # XML whitespace exactly — \v and \f are not XML space.
+        BLANK_TEXT_RE = /\A[ \t\r\n]*\z/
+
+        # libxml2's XML_PARSE_NOBLANKS semantics (issues #153/#156):
+        # drop WHOLLY-whitespace text nodes; the boundary spaces of
+        # text-bearing nodes stay (mixed content cannot be
+        # re-indented). Raw-pointer walk over the root subtree — the
+        # same batch child-pointer pattern the materializer uses.
+        def strip_blank_text_nodes!(doc)
+          binding_ffi = ::Leptris::XML::FFI
+          root = binding_ffi.leptris_document_root(doc.c_ptr)
+          return unless root && !root.null?
+
+          strip_blanks_under(root, binding_ffi, ::FFI::MemoryPointer.new(:pointer, 64), 64)
+        end
+
+        def strip_blanks_under(ptr, binding_ffi, buf, capacity)
+          count = binding_ffi.leptris_node_children(ptr, buf, capacity)
+          while count == capacity
+            capacity *= 4
+            buf = ::FFI::MemoryPointer.new(:pointer, capacity)
+            count = binding_ffi.leptris_node_children(ptr, buf, capacity)
+          end
+
+          # Snapshot before unlinking or recursing — both reuse the
+          # buffer for the next level.
+          children = buf.read_array_of_pointer(count)
+          children.each do |child|
+            case binding_ffi.leptris_node_get_type(child)
+            when ::Leptris::XML::FFI::NODE_ELEMENT
+              strip_blanks_under(child, binding_ffi, buf, capacity)
+            when ::Leptris::XML::FFI::NODE_TEXT
+              content = binding_ffi.leptris_text_node_get_content(child)
+              next unless content.match?(BLANK_TEXT_RE)
+
+              binding_ffi.check_status(binding_ffi.leptris_node_unlink(child))
+            end
+          end
         end
 
         def parse_errors(native_doc)

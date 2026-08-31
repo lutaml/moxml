@@ -4,13 +4,20 @@ module Moxml
   class NodeSet
     include Enumerable
 
-    attr_reader :nodes, :context
+    attr_reader :context
 
     def initialize(nodes, context, parent_node = nil)
       @nodes = Array(nodes)
       @context = context
       @wrapped = Array.new(@nodes.size)
       @parent_node = parent_node
+    end
+
+    # The raw native nodes — adapter-internal work only (issue #26).
+    # The public surface is wrapper-only: every Enumerable access
+    # goes through #each/#[]/#to_a, which wrap.
+    def native_nodes
+      @nodes
     end
 
     def each
@@ -64,7 +71,7 @@ module Moxml
     end
 
     def +(other)
-      self.class.new(@nodes + other.nodes, @context, @parent_node)
+      self.class.new(@nodes + other.native_nodes, @context, @parent_node)
     end
 
     def <<(node)

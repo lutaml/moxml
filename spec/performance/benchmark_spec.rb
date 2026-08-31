@@ -4,9 +4,13 @@ require "benchmark"
 require "benchmark/ips"
 
 RSpec.shared_examples "Performance Examples" do
-  if ENV["SKIP_BENCHMARKS"]
-    it "skips benchmarks when SKIP_BENCHMARKS is set" do
-      skip "Benchmarks skipped. To run benchmarks, unset SKIP_BENCHMARKS"
+  # Issue #45: benchmarks never run inside the default suites - only
+  # under RUN_PERFORMANCE=1 (the CI perf step and
+  # rake spec:performance). RSpec tag exclusion proved unreliable
+  # through the shared-example indirection, so this is a hard env gate.
+  if ENV["SKIP_BENCHMARKS"] || !ENV["RUN_PERFORMANCE"]
+    it "skips benchmarks unless RUN_PERFORMANCE is set" do
+      skip "Benchmarks run only with RUN_PERFORMANCE=1 (rake spec:performance)"
     end
   else
     let(:context) { Moxml.new }
@@ -41,7 +45,7 @@ RSpec.shared_examples "Performance Examples" do
         }
       end
 
-      it "meets Parser performance threshold" do
+      it "meets Parser performance threshold", :performance do
         result = nil
         report = Benchmark.ips do |x|
           x.config(time: 5, warmup: 2)
@@ -54,7 +58,7 @@ RSpec.shared_examples "Performance Examples" do
         expect(ips).to be >= threshold, message
       end
 
-      it "meets Serializer performance threshold" do
+      it "meets Serializer performance threshold", :performance do
         report = Benchmark.ips do |x|
           x.config(time: 5, warmup: 2)
           x.report("Serializer") { _ = doc.to_xml }
