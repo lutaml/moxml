@@ -243,8 +243,12 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(doc.root.children.to_a.select(&:text?)).to be_empty
     end
 
-    it "refuses noblanks on readonly parses" do
-      # The strip mutates the tree; readonly freezes it at parse.
+    it "refuses noblanks on readonly parses while the strip path is active" do
+      # The strip mutates the tree; readonly freezes it at parse. On
+      # bindings whose engine flag is libxml2-safe (probe), the flag
+      # forwards at parse and no mutability is needed.
+      skip "engine noblanks flag is libxml2-safe — no strip path" if described_class::ENGINE_NOBLANKS_SAFE
+
       expect { ctx.parse("<a/>", noblanks: true, readonly: true) }
         .to raise_error(ArgumentError, /noblanks.*mutable/)
     end

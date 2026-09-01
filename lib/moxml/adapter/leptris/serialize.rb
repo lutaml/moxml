@@ -75,29 +75,34 @@ module Moxml
           # Element output always ends with the close tag — but the
           # engine's serializer appends a stray trailing newline when
           # the element's last text child is non-ASCII (fixed engine
-          # side in 1.9.42; kept for older floor bindings). Note: the
-          # binding's indent_text kwarg is the display-form boolean,
-          # not Nokogiri's indent-unit string — do not forward it.
+          # side in 1.9.42; kept for older floor bindings).
           xml.sub(/\n+\z/, "")
         end
+
+        # A bare ampersand — not starting a named or numeric entity
+        # reference. Some engine builds (observed: the Linux 1.9.50
+        # platform gem) emit text-content ampersands unescaped; the
+        # detection below is a no-op on correct builds.
+        RAW_AMP_RE = /&(?!#{Entity::NAME_PATTERN};|#\d+;|#x[0-9A-Fa-f]+;)/
 
         def normalize_serialization(xml, options)
           # The libxml2-layout serializer (>= 1.9.42) keeps attribute
           # apostrophes literal; older engines escaped them.
           needs_apos = !LIBXML2_LAYOUT_PARITY && xml.include?("&apos;")
           needs_expand = options[:expand_empty] && xml.include?("/>")
-          return xml unless needs_apos || needs_expand
+          needs_amp = xml.include?("&") && xml.match?(RAW_AMP_RE)
+          return xml unless needs_apos || needs_expand || needs_amp
 
           out = +""
           pos = 0
           while pos < xml.length
             opener_at, terminator = next_literal_region(xml, pos)
             if opener_at.nil?
-              out << normalize_markup(xml[pos..], needs_apos, needs_expand)
+              out << normalize_markup(xml[pos..], needs_apos, needs_expand, needs_amp: needs_amp)
               break
             end
 
-            out << normalize_markup(xml[pos...opener_at], needs_apos, needs_expand)
+            out << normalize_markup(xml[pos...opener_at], needs_apos, needs_expand, needs_amp: needs_amp)
             search_from = opener_at + opener_at_offset(terminator)
             close = xml.index(terminator, search_from)
             close_end = close.nil? ? xml.length : close + terminator.length
@@ -129,13 +134,16 @@ module Moxml
           terminator == "-->" ? 4 : 0
         end
 
-        def normalize_markup(markup, needs_apos, needs_expand)
+        def normalize_markup(markup, needs_apos, needs_expand, needs_amp: false)
           markup = markup.gsub("&apos;", "'") if needs_apos
           if needs_expand
             markup = markup.gsub(EMPTY_ELEMENT_RE) do
               "<#{Regexp.last_match(1)}#{Regexp.last_match(2)}></#{Regexp.last_match(1)}>"
             end
           end
+          # Segment-aware: this never sees CDATA/comment/PI content,
+          # where a bare & is literal data.
+          markup = markup.gsub(RAW_AMP_RE, "&amp;") if needs_amp
           markup
         end
       end
