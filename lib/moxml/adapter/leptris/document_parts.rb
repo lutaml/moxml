@@ -76,6 +76,9 @@ module Moxml
         # only walks the root subtree, so declaration, DOCTYPE, PIs and
         # document-level text are assembled around it explicitly.
         def serialize_document(doc, options)
+          fast = fast_document_output(doc, options)
+          return fast if fast
+
           # Nokogiri's document shape: every top-level part is
           # newline-terminated, at any indent — declaration, DOCTYPE,
           # document PIs, the root element, trailing newline after it.
@@ -106,6 +109,69 @@ module Moxml
           texts&.each { |text| parts << XmlEmitter.escape_text(text.content.to_s) }
 
           parts.join
+        end
+
+        # Issue #158: the engine's whole-document serializer is one C
+        # call; the composed path serializes the root through the
+        # element face, which copies the subtree into a fresh document
+        # on every call (~4.5x slower end to end). The engine's output
+        # is byte-identical to the composed one EXCEPT epilog parts
+        # glue directly to the root — so the fast path declines
+        # whenever anything follows the root, any attachment overrides
+        # a part, or the engine's declaration line differs from the
+        # facade's canonical form (checked post-hoc: a source
+        # declaration carrying standalone or another version would
+        # diverge).
+        def fast_document_output(doc, options)
+          return nil unless LIBXML2_LAYOUT_PARITY
+          return nil if attachments.get(doc, :declaration) ||
+            attachments.get(doc, :doctype) ||
+            attachments.get(doc, :document_text) ||
+            attachments.get(doc, :entity_markers)
+
+          include_decl = !options[:no_declaration] && options.fetch(:declaration) do
+            document_has_declaration?(doc)
+          end
+
+          root_seen = false
+          doc.children.each do |child|
+            if child.is_a?(::Leptris::XML::Element)
+              return nil if root_seen
+
+              root_seen = true
+            elsif root_seen
+              # Epilog parts glue directly to the root in the engine's
+              # document output — compose those.
+              return nil
+            end
+          end
+
+          # The engine's subset serializer mangles every declaration
+          # after the first (loses its "<") — moxml's own formatter is
+          # correct, so multi-declaration subsets compose.
+          dt = doc.doctype
+          if dt&.class&.method_defined?(:internal_subset) &&
+              (subset = dt.internal_subset) && subset.scan("<!").size > 1
+            return nil
+          end
+
+          kwargs = {
+            indent: options.fetch(:indent, 0),
+            no_decl: !include_decl,
+            encoding: options[:encoding],
+          }
+          if INDENT_UNIT_SUPPORTED && options[:indent_text].is_a?(String)
+            kwargs[:indent_text] = options[:indent_text]
+          end
+          output = doc.to_xml(**kwargs)
+          return nil if output.nil? || output.empty?
+
+          if include_decl && !output.start_with?(default_declaration_xml(doc, options))
+            return nil
+          end
+
+          output << "\n" unless output.end_with?("\n")
+          output
         end
 
         def native_doctype_xml(doc)
