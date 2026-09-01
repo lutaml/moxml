@@ -23,9 +23,16 @@ module Moxml
     def each
       return to_enum(:each) unless block_given?
 
-      @nodes.each_with_index do |node, i|
-        @wrapped[i] ||= wrap_with_parent(node)
-        yield @wrapped[i]
+      wrapped = @wrapped
+      index = 0
+      @nodes.each do |node|
+        wrapper = wrapped[index]
+        unless wrapper
+          wrapper = wrap_with_parent(node)
+          wrapped[index] = wrapper
+        end
+        yield wrapper
+        index += 1
       end
       self
     end

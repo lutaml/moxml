@@ -339,9 +339,17 @@ module Moxml
 
     TYPES.each do |node_type|
       define_method "#{node_type}?" do
-        adapter.node_type(native) == node_type
+        node_type_cached == node_type
       end
     end
+
+    # The adapter's type probe is an FFI call per invocation; the
+    # type is fixed for a node's lifetime, so the first answer is
+    # memoized on the wrapper.
+    def node_type_cached
+      @node_type_cached ||= adapter.node_type(@native)
+    end
+    private :node_type_cached
 
     # Returns the primary identifier for this node type
     # For Element: the tag name
@@ -392,7 +400,9 @@ module Moxml
     protected
 
     def adapter
-      context.config.adapter
+      # A context's adapter object is fixed for its lifetime; the
+      # chain deref ran on every node access.
+      @adapter ||= context.config.adapter
     end
 
     def self.adapter(context)
