@@ -147,10 +147,11 @@ module Moxml
           end
 
           # The engine's subset serializer mangles every declaration
-          # after the first (loses its "<") — moxml's own formatter is
-          # correct, so multi-declaration subsets compose.
+          # after the first (leptris/leptris#687) — moxml's own
+          # formatter is correct, so those compose until the probe
+          # says the engine is fixed.
           dt = doc.doctype
-          if dt&.class&.method_defined?(:internal_subset) &&
+          if !ENGINE_MULTI_DECL_SUBSET_OK && dt&.class&.method_defined?(:internal_subset) &&
               (subset = dt.internal_subset) && subset.scan("<!").size > 1
             return nil
           end

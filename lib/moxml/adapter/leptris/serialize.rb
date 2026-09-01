@@ -82,7 +82,9 @@ module Moxml
         end
 
         def normalize_serialization(xml, options)
-          needs_apos = xml.include?("&apos;")
+          # The libxml2-layout serializer (>= 1.9.42) keeps attribute
+          # apostrophes literal; older engines escaped them.
+          needs_apos = !LIBXML2_LAYOUT_PARITY && xml.include?("&apos;")
           needs_expand = options[:expand_empty] && xml.include?("/>")
           return xml unless needs_apos || needs_expand
 

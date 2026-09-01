@@ -175,6 +175,14 @@ RSpec.describe Moxml::Adapter::Leptris do
       end
     end
 
+    it "keeps comments in element serialization with tab units (leptris-ruby#115)" do
+      skip "requires the element unit fix (leptris 1.9.50+)" unless described_class::ELEMENT_UNIT_COMMENTS
+
+      doc = ctx.parse(%(<r><a/><!-- c --></r>))
+      expect(doc.root.to_xml(indent: 1, indent_text: "\t"))
+        .to eq("<r>\n\t<a></a>\n\t<!-- c -->\n</r>")
+    end
+
     it "round-trips document-level PI mutations through serialization" do
       # leptris/leptris#612: parse-created document PIs carry doc
       # linkage — the setters work and the tree round-trips.

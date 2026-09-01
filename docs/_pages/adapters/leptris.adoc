@@ -71,9 +71,8 @@ implementation over one `leptris_node_traverse` call.
 
 * Tab indentation honors the indent-unit string on leptris >= 1.9.45
   (`indent_text:`), byte-identical to Nokogiri including
-  text-bearing children since the engine fix (leptris/leptris#658,
-  1.9.46); comment children still diverge on the element unit path
-  (leptris-ruby#115).
+  text-bearing children and comment children alike
+  (leptris/leptris#658 at 1.9.46; leptris-ruby#115 at 1.9.50).
 * A PI preceding the DOCTYPE reorders on serialization — libleptris
   normalizes DOCTYPE-first and the document node does not record its
   relative position.
