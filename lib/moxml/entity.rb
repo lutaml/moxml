@@ -43,6 +43,12 @@ module Moxml
     SERIALIZED_MARKER_RE = /&#xFFFC;&#xFEFF;(#{NAME_PATTERN});/
     STANDARD_ENTITIES = %w[amp lt gt quot apos].freeze
 
+    # One regex pass, no allocations: true when a NON-standard named
+    # entity exists somewhere. Documents carrying only the five
+    # predefined entities (the overwhelmingly common case) skip the
+    # marker gsub's full-buffer copy entirely.
+    NON_STANDARD_ENTITY_RE = /&(?!amp;|lt;|gt;|quot;|apos;)(#{NAME_PATTERN});/
+
     NAMED_DECODE_MAP = {
       "amp" => "&", "lt" => "<", "gt" => ">",
       "quot" => '"', "apos" => "'"
@@ -82,6 +88,10 @@ module Moxml
       # the regex scan and string allocation entirely. The vast
       # majority of XML payloads contain no entity references.
       return [str, false] unless str.include?("&")
+      # Second fast path: only predefined entities — the gsub would
+      # pass every match through unchanged, so skip its full-buffer
+      # copy too.
+      return [str, false] unless str.match?(NON_STANDARD_ENTITY_RE)
 
       marked = false
       processed = str.gsub(NAME_RE) do |match|
