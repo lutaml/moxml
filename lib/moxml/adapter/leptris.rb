@@ -49,6 +49,39 @@ module Moxml
       INDENT_UNIT_SUPPORTED =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.45")
 
+      # leptris-ruby#115 (fixed 1.9.50): the element unit path keeps
+      # child comments.
+      ELEMENT_UNIT_COMMENTS =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.50")
+
+      # leptris/leptris#677: the engine's DROP_WS_TEXT trims boundary
+      # whitespace of non-blank text nodes. Probed at load rather
+      # than version-gated so the C fix is adopted the moment a fixed
+      # binding installs — no moxml release needed. While the probe
+      # fails, noblanks drops blanks moxml-side after parse.
+      ENGINE_NOBLANKS_SAFE = begin
+        doc = ::Leptris::XML::Document.parse(
+          "<r> x</r>", options: ::Leptris::XML::ParseOptions.noblanks
+        )
+        text = doc.root.children.first
+        text.is_a?(::Leptris::XML::Text) && text.content == " x"
+      rescue StandardError
+        false
+      end
+
+      # leptris/leptris#687: the engine's subset serializer mangles
+      # every internal-subset declaration after the first. Probed for
+      # the same reason — once fixed, the whole-document fast path
+      # serves multi-declaration subsets too.
+      ENGINE_MULTI_DECL_SUBSET_OK = begin
+        doc = ::Leptris::XML::Document.parse(
+          %(<?xml version="1.0"?><!DOCTYPE r [<!ELEMENT r (#PCDATA)><!ATTLIST e a CDATA "d">]><r/>),
+        )
+        doc.to_xml.include?("<!ATTLIST")
+      rescue StandardError
+        false
+      end
+
       NO_PARSE_ERRORS = [].freeze
       private_constant :NO_PARSE_ERRORS
 
@@ -106,10 +139,10 @@ module Moxml
           ctx = _context || Context.new(:leptris)
           doc = Document.new(native_doc, ctx)
 
-          if options[:noblanks]
+          if options[:noblanks] && !ENGINE_NOBLANKS_SAFE
             # The engine's DROP_WS_TEXT trims boundary whitespace of
             # NON-blank text nodes at parse (leptris/leptris#677), so
-            # the flag is never forwarded — blanks drop here instead.
+            # the flag is not forwarded — blanks drop here instead.
             if options[:readonly] == true
               raise ArgumentError,
                     "noblanks: true requires a mutable document (readonly: true freezes the tree at parse)"
@@ -128,14 +161,12 @@ module Moxml
         # nil when no parse flag is requested — the binding treats a
         # nil options hash as plain defaults (matching libxml2/
         # Nokogiri semantics: blanks kept, no ATTLIST defaults).
-        # noblanks is deliberately absent: the engine's
-        # LEPTRIS_PARSE_DROP_WS_TEXT trims boundary whitespace of
-        # non-blank text nodes too (leptris/leptris#677), so moxml
-        # implements it itself after parse — see
-        # strip_blank_text_nodes!.
+        # noblanks forwards only once the engine flag is libxml2-safe
+        # (see ENGINE_NOBLANKS_SAFE); otherwise it is moxml-side.
         def parse_flags(options)
           flags = 0
           flags |= ::Leptris::XML::ParseOptions::DTDATTR if options[:dtdattr] == true
+          flags |= ::Leptris::XML::ParseOptions::NOBLANKS if options[:noblanks] == true && ENGINE_NOBLANKS_SAFE
           flags.zero? ? nil : ::Leptris::XML::ParseOptions.new(flags)
         end
 
