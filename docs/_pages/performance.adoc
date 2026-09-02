@@ -33,3 +33,34 @@ doc.xpath('//title')
 root.xpath('./*/title')
 ----
 
+
+=== Run with YJIT
+
+The wrapper layer is Ruby-dispatch-heavy — exactly what YJIT compiles
+well. Enable it for any throughput-sensitive workload (Ruby >= 3.3;
+production-ready since then):
+
+[source,bash]
+----
+RUBY_YJIT_ENABLE=1 ruby your_app.rb   # or: ruby --yjit
+----
+
+Measured against raw engine calls on a 52KB fixture (leptris,
+min-of-N, 100 warm reads): without YJIT the facade adds +23% on tree
+walks and +43% on warm attribute reads; **with YJIT those become
+-12% (faster than the binding's own walk) and +10%**, and `.name`
+reads reach parity. Parse, serialize and duplicate are C-bound
+either way. No semantic surface changes — it is a runtime flag.
+
+Consumers on CRuby 3.3+ (canon's pretty-print pipeline, batch
+conversion) should treat it as the default; moxml's own CI
+performance gates run with YJIT enabled.
+
+=== Prefer bulk paths for per-node conversion
+
+Per-node Ruby iteration pays the wrapper tax per element. When the
+goal is conversion rather than manipulation, the bulk paths move the
+loop into C: `materialize_fields` streams the flattened record
+fields from one C call and measures faster than an equivalent
+raw-Nokogiri DOM walk. See
+link:conversion-apis[Conversion and memory lifecycle APIs].
