@@ -25,8 +25,16 @@ module Moxml
         context.unregister_wrapper(@native)
         @native = new_native
         context.register_wrapper(new_native, self)
+        clear_native_memo!
       end
       self
+    end
+
+    # Wrapper-local memos derived from the native (name, attribute
+    # reads) die with the native they were computed from.
+    def clear_native_memo!
+      @name = nil
+      @attribute_cache = nil
     end
 
     def document
