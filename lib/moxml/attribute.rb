@@ -10,6 +10,7 @@ module Moxml
       # Mutation return contract (Adapter::Base): returns the native
       # to keep tracking — same object for in-place adapters, fresh
       # object for value-object adapters (leptris).
+      context.bump_namespace_scope_generation
       @native = adapter.set_attribute_name(@native, new_name)
     end
 
@@ -32,6 +33,7 @@ module Moxml
     end
 
     def value=(new_value)
+      context.bump_namespace_scope_generation
       adapter.set_attribute_value(@native, new_value)
     end
 

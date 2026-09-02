@@ -3,10 +3,14 @@
 module Moxml
   class Element < Node
     def name
-      adapter.node_name(@native)
+      # The adapter read is an FFI call plus (on several adapters) a
+      # defensive string copy; names only change through name= and
+      # native adoption, both of which clear this.
+      @name ||= adapter.node_name(@native)
     end
 
     def name=(value)
+      @name = nil
       adapter.set_node_name(@native, value)
     end
 
@@ -42,6 +46,7 @@ module Moxml
     # attributes only; prefixed names replace by namespace URI and
     # require a declared prefix. Cache coherence is the resolver's.
     def []=(name, value)
+      context.bump_namespace_scope_generation
       Moxml::AttributeResolver.assign(self, name, normalize_xml_value(value))
     end
 
@@ -49,11 +54,28 @@ module Moxml
     # bare names match only no-namespace attributes; prefixed names
     # resolve through in-scope declarations to expanded names.
     def [](name)
-      Moxml::AttributeResolver.resolve(self, name)&.value
+      cache = attribute_read_cache
+      key = name.to_s
+      unless cache.key?(key)
+        cache[key] = Moxml::AttributeResolver.resolve(self, key)
+      end
+      cache[key]&.value
     end
 
     def attribute(name)
       Moxml::AttributeResolver.resolve(self, name)
+    end
+
+    # Resolution reads the element.s in-scope namespaces, so the
+    # cache rides the context.s namespace-scope generation clock —
+    # every attribute or namespace mutation anywhere bumps it.
+    def attribute_read_cache
+      generation = context.namespace_scope_generation
+      if @attribute_cache_generation != generation
+        @attribute_cache = {}
+        @attribute_cache_generation = generation
+      end
+      @attribute_cache
     end
 
     # Returns attribute value by name (used by XPath engine)
@@ -70,6 +92,7 @@ module Moxml
     end
 
     def remove_attribute(name)
+      context.bump_namespace_scope_generation
       Moxml::AttributeResolver.remove(self, name)
       self
     end
@@ -223,9 +246,13 @@ module Moxml
       children
     end
 
-    # Called by Attribute#remove to invalidate the cached attributes
+    # Called by Attribute#remove and the attribute mutators. Clears
+    # the attribute list and the resolved-read cache, and bumps the
+    # context generation so cross-wrapper reads recompute.
     def invalidate_attribute_cache!
       @attributes = nil
+      @attribute_cache = nil
+      context.bump_namespace_scope_generation
     end
 
     # Clear the namespace caches and bump the context's scope
