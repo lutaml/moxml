@@ -49,6 +49,34 @@ module Moxml
     # marker gsub's full-buffer copy entirely.
     NON_STANDARD_ENTITY_RE = /&(?!amp;|lt;|gt;|quot;|apos;)(#{NAME_PATTERN});/
 
+    # True when a NON-standard named entity exists somewhere (the
+    # gsub would then be needed). The leptris binding's C probe
+    # (leptris-ruby#124) answers in one pass at memcmp speed; it is
+    # resolved lazily because adapters load on demand. Otherwise:
+    # the cheap `&` pre-filter, then the Ruby regex.
+    def nonstandard_entity?(str)
+      probe = c_entity_probe
+      if probe
+        probe.call(str, str.bytesize) == 1
+      else
+        str.include?("&") && str.match?(NON_STANDARD_ENTITY_RE)
+      end
+    end
+
+    def c_entity_probe
+      if @c_entity_probe.nil?
+        @c_entity_probe =
+          if defined?(::Leptris::XML::FFI) &&
+              ::Leptris::XML::FFI.respond_to?(:leptris_str_has_nonstandard_entity)
+            ::Leptris::XML::FFI.method(:leptris_str_has_nonstandard_entity)
+          else
+            false
+          end
+      end
+      @c_entity_probe || nil
+    end
+    module_function :nonstandard_entity?, :c_entity_probe
+
     NAMED_DECODE_MAP = {
       "amp" => "&", "lt" => "<", "gt" => ">",
       "quot" => '"', "apos" => "'"
@@ -87,11 +115,12 @@ module Moxml
       # Fast path: no `&` means no entity references to mark — skip
       # the regex scan and string allocation entirely. The vast
       # majority of XML payloads contain no entity references.
-      return [str, false] unless str.include?("&")
       # Second fast path: only predefined entities — the gsub would
       # pass every match through unchanged, so skip its full-buffer
-      # copy too.
-      return [str, false] unless str.match?(NON_STANDARD_ENTITY_RE)
+      # copy too. When the leptris binding is loaded, its C probe
+      # (leptris-ruby#124) answers in one memcmp-class pass; the
+      # binding loads lazily, so the probe is resolved on first use.
+      return [str, false] unless nonstandard_entity?(str)
 
       marked = false
       processed = str.gsub(NAME_RE) do |match|
