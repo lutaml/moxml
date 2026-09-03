@@ -85,26 +85,37 @@ module Moxml
         # detection below is a no-op on correct builds.
         RAW_AMP_RE = /&(?!#{Entity::NAME_PATTERN};|#\d+;|#x[0-9A-Fa-f]+;)/
 
+        # A raw "<" in text position — the engine intermittently
+        # loses the escape when parsing under allocation pressure
+        # (leptris-ruby#131), so a decoded &#x3c; serializes bare and
+        # reparsing truncates at it. Valid markup NEVER puts "<"
+        # before a non-name, non-delimiter character, so this is
+        # deterministic in markup segments (CDATA is literal and
+        # excluded by the segment walker).
+        RAW_LT_RE = /<(?![A-Za-z_:\/?!])/
+
         def normalize_serialization(xml, options)
           # The libxml2-layout serializer (>= 1.9.42) keeps attribute
           # apostrophes literal; older engines escaped them.
           needs_apos = !LIBXML2_LAYOUT_PARITY && xml.include?("&apos;")
           needs_expand = options[:expand_empty] && xml.include?("/>")
-          # One scan: the bare-ampersand regex fails fast on
-          # ampersand-free output — no include? pre-filter needed.
+          # One scan each: both regexes fail fast on clean output.
           needs_amp = xml.match?(RAW_AMP_RE)
-          return xml unless needs_apos || needs_expand || needs_amp
+          needs_lt = xml.match?(RAW_LT_RE)
+          return xml unless needs_apos || needs_expand || needs_amp || needs_lt
 
           out = +""
           pos = 0
           while pos < xml.length
             opener_at, terminator = next_literal_region(xml, pos)
             if opener_at.nil?
-              out << normalize_markup(xml[pos..], needs_apos, needs_expand, needs_amp: needs_amp)
+              out << normalize_markup(xml[pos..], needs_apos, needs_expand,
+                                      needs_amp: needs_amp, needs_lt: needs_lt)
               break
             end
 
-            out << normalize_markup(xml[pos...opener_at], needs_apos, needs_expand, needs_amp: needs_amp)
+            out << normalize_markup(xml[pos...opener_at], needs_apos, needs_expand,
+                                    needs_amp: needs_amp, needs_lt: needs_lt)
             search_from = opener_at + opener_at_offset(terminator)
             close = xml.index(terminator, search_from)
             close_end = close.nil? ? xml.length : close + terminator.length
@@ -136,7 +147,7 @@ module Moxml
           terminator == "-->" ? 4 : 0
         end
 
-        def normalize_markup(markup, needs_apos, needs_expand, needs_amp: false)
+        def normalize_markup(markup, needs_apos, needs_expand, needs_amp: false, needs_lt: false)
           markup = markup.gsub("&apos;", "'") if needs_apos
           if needs_expand
             markup = markup.gsub(EMPTY_ELEMENT_RE) do
@@ -144,8 +155,9 @@ module Moxml
             end
           end
           # Segment-aware: this never sees CDATA/comment/PI content,
-          # where a bare & is literal data.
+          # where bare & and < are literal data.
           markup = markup.gsub(RAW_AMP_RE, "&amp;") if needs_amp
+          markup = markup.gsub(RAW_LT_RE, "&lt;") if needs_lt
           markup
         end
       end

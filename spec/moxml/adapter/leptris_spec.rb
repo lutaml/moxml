@@ -243,6 +243,36 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(doc.root.children.to_a.select(&:text?)).to be_empty
     end
 
+    it "repairs a raw < in text position (issue #167 / leptris-ruby#131)" do
+      # The engine intermittently drops the escape when parsing under
+      # allocation pressure: a decoded &#x3c; serializes bare and the
+      # output fails to reparse. Valid markup never puts < before a
+      # non-name character, so the damage is deterministically
+      # repairable in markup segments.
+      repaired = described_class.normalize_serialization(
+        %(<?xml version="1.0"?><r><pre>A <\n B</pre></r>\n), {}
+      )
+      expect(repaired).to include("A &lt;")
+      expect(repaired).not_to match("A <")
+    end
+
+    it "keeps a literal < inside CDATA untouched by the repair" do
+      doc = ctx.parse(%(<r><![CDATA[A < B]]></r>))
+      expect(doc.to_xml).to include("<![CDATA[A < B]]>")
+    end
+
+    it "survives parse-under-allocation-pressure without emitting raw < (issue #167)" do
+      xml = "<?xml version=\"1.0\"?><doc>#{%(<s><pre alt="A B">A &#x3c;\n B</pre></s>) * 10}</doc>"
+      30.times do
+        100.times { |j| "pressure#{j}" * 20 }
+        out = ctx.parse(xml, noblanks: true).to_xml(
+          declaration: true, encoding: "UTF-8", indent: 2, expand_empty: false,
+        )
+        expect(out).not_to match("A <"), "raw unescaped < leaked into text"
+        expect(Nokogiri::XML(out, &:strict)).to be_a(Nokogiri::XML::Document)
+      end
+    end
+
     it "refuses noblanks on readonly parses while the strip path is active" do
       # The strip mutates the tree; readonly freezes it at parse. On
       # bindings whose engine flag is libxml2-safe (probe), the flag
