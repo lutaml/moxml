@@ -90,7 +90,9 @@ module Moxml
           # apostrophes literal; older engines escaped them.
           needs_apos = !LIBXML2_LAYOUT_PARITY && xml.include?("&apos;")
           needs_expand = options[:expand_empty] && xml.include?("/>")
-          needs_amp = xml.include?("&") && xml.match?(RAW_AMP_RE)
+          # One scan: the bare-ampersand regex fails fast on
+          # ampersand-free output — no include? pre-filter needed.
+          needs_amp = xml.match?(RAW_AMP_RE)
           return xml unless needs_apos || needs_expand || needs_amp
 
           out = +""
