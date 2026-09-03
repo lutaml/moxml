@@ -170,6 +170,12 @@ module Moxml
         end
 
         def set_namespace(element, ns_or_string)
+          if ns_or_string.nil?
+            element.namespace_name = nil
+            set_attribute(element, "xmlns", "")
+            return element
+          end
+
           element.namespace_name = ns_or_string.to_s
           element
         end

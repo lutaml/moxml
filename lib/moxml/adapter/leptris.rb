@@ -288,6 +288,19 @@ module Moxml
           return set_attribute_namespace(node, namespace) if node.is_a?(::Leptris::XML::Attr)
 
           element = node
+          if namespace.nil?
+            # Nil-clear contract (issue #164): undeclare the default
+            # namespace (xmlns="") and drop any name prefix — the
+            # element then reports no namespace, matching the other
+            # adapters. Elements that carried a PREFIX cannot fully
+            # detach the engine's namespace link (leptris-ruby#132):
+            # the name is unqualified and the undeclaration added, but
+            # the serializer may re-attach the old prefix until the
+            # engine grows a clear entry.
+            element.name = element.name.split(":", 2)[-1] if element.name.include?(":")
+            element.default_namespace = ""
+            return element
+          end
           prefix = namespace.is_a?(String) ? nil : namespace.prefix
           uri = namespace.is_a?(String) ? namespace : namespace.href
           if prefix.nil? || prefix.empty?

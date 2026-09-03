@@ -273,6 +273,25 @@ RSpec.describe Moxml::Adapter::Leptris do
       end
     end
 
+    it "clears the namespace with nil — full contract (issue #164)" do
+      doc = ctx.parse(%(<r xmlns="urn:clear"><c>t</c></r>))
+      child = doc.root.children.first
+      child.namespace = nil
+      expect(child.namespace).to be_nil
+      expect(doc.to_xml).to include(%(<c xmlns="">t</c>))
+      reparsed = ctx.parse(doc.to_xml)
+      expect(reparsed.root.children.first.namespace).to be_nil
+    end
+
+    it "does not raise clearing a namespace from a prefixed element (issue #164)" do
+      # The engine cannot detach a prefix element's namespace link
+      # (leptris-ruby#132); the name is unqualified and the
+      # undeclaration added meanwhile.
+      doc = ctx.parse(%(<r xmlns:p="urn:p"><p:c>t</p:c></r>))
+      child = doc.root.children.first
+      expect { child.namespace = nil }.not_to raise_error
+    end
+
     it "refuses noblanks on readonly parses while the strip path is active" do
       # The strip mutates the tree; readonly freezes it at parse. On
       # bindings whose engine flag is libxml2-safe (probe), the flag
