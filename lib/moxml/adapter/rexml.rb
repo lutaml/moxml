@@ -485,6 +485,14 @@ module Moxml
 
         # add a namespace prefix to the element name AND a namespace definition
         def set_namespace(element, ns)
+          if ns.nil?
+            # Nil-clear contract (issue #164): the XML Namespaces 1.0
+            # undeclaration, plus an unqualified name.
+            element.add_namespace(nil, "") if element.is_a?(::REXML::Element)
+            element.name = element.name.to_s.sub(/\A(?:\w+):/, "")
+            return element
+          end
+
           prefix = ns.name.to_s.empty? ? "xmlns" : ns.name.to_s
           if element.is_a?(::REXML::Element)
             element.add_namespace(prefix,

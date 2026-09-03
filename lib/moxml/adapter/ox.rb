@@ -149,6 +149,12 @@ module Moxml
         def set_namespace(element, ns)
           return element unless element.is_a?(::Ox::Element) || element.is_a?(::Ox::Node)
 
+          if ns.nil?
+            set_attribute(element, "xmlns", "")
+            element.name = element.name.to_s.sub(/\A(?:\w+):/, "")
+            return element
+          end
+
           prefix = ns.prefix
           # attributes don't have attributes but can have a namespace prefix
           if element.is_a?(::Ox::Element)

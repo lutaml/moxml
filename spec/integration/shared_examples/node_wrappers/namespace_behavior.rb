@@ -280,6 +280,12 @@ RSpec.shared_examples "Moxml::Namespace" do
         expect(root.namespace.uri).to eq("http://example.org/1")
         expect(child.namespace.uri).to eq("http://example.org/2")
       end
+
+      it "accepts namespace = nil without raising (issue #164)" do
+        cleared = context.parse(%(<r xmlns="urn:clear"><c>t</c></r>))
+        child = cleared.root.children.first
+        expect { child.namespace = nil }.not_to raise_error
+      end
     end
   end
 end
