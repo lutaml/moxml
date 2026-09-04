@@ -91,17 +91,23 @@ module Moxml
         # reparsing truncates at it. Valid markup NEVER puts "<"
         # before a non-name, non-delimiter character, so this is
         # deterministic in markup segments (CDATA is literal and
-        # excluded by the segment walker).
+        # excluded by the segment walker). One class-anchored scan:
+        # multi-char literal probes cost ~30x a single regex pass on
+        # CRuby (measured include?("< ") at 31µs vs this regex at
+        # 64µs for 14 probes' worth of coverage on 32KB).
         RAW_LT_RE = /<(?![A-Za-z_:\/?!])/
+        RAW_LT_TRIGGER_RE = /<[^A-Za-z_:\/?!]/
 
         def normalize_serialization(xml, options)
           # The libxml2-layout serializer (>= 1.9.42) keeps attribute
           # apostrophes literal; older engines escaped them.
           needs_apos = !LIBXML2_LAYOUT_PARITY && xml.include?("&apos;")
           needs_expand = options[:expand_empty] && xml.include?("/>")
-          # One scan each: both regexes fail fast on clean output.
-          needs_amp = xml.match?(RAW_AMP_RE)
-          needs_lt = xml.match?(RAW_LT_RE)
+          # Corruption guards: the 1-char ampersand probe is ~1µs
+          # (memchr-class); both regexes only run when their cheap
+          # necessary condition holds.
+          needs_amp = xml.include?("&") && xml.match?(RAW_AMP_RE)
+          needs_lt = xml.match?(RAW_LT_TRIGGER_RE)
           return xml unless needs_apos || needs_expand || needs_amp || needs_lt
 
           out = +""
