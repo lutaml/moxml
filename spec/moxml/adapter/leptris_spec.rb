@@ -314,6 +314,109 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
   end
 
+  describe "HTML parsing (leptris/leptris#659)" do
+    before do
+      skip "requires leptris 1.9.80+ (HTML engine mode)" unless described_class::HTML_PARSE_SUPPORTED
+    end
+
+    let(:ctx) { Moxml.new(:leptris) }
+
+    it "synthesizes the html/body structure with lowercased names" do
+      doc = ctx.parse_html(%(<DIV CLASS="x">t</DIV>))
+      expect(doc.root.name).to eq("html")
+      body = doc.root.children.find(&:element?)
+      expect(body.name).to eq("body")
+      div = body.at_xpath(".//div")
+      expect(div["class"]).to eq("x")
+      expect(div.text).to eq("t")
+    end
+
+    it "implies end tags for list items" do
+      doc = ctx.parse_html(%(<ul><li>one<li>two</ul>))
+      expect(doc.xpath("//li").map(&:text)).to eq(%w[one two])
+    end
+
+    it "keeps void elements as empty elements" do
+      doc = ctx.parse_html(%(<br><img src="x.png">))
+      expect(doc.xpath("//br").size).to eq(1)
+      expect(doc.xpath("//img").first["src"]).to eq("x.png")
+    end
+
+    it "decodes HTML named entities into text" do
+      doc = ctx.parse_html(%(<p>caf&eacute; &nbsp;&copy;</p>))
+      expect(doc.at_xpath("//p").text).to eq("caf\u00e9 \u00a0\u00a9")
+    end
+
+    it "materializes boolean attributes" do
+      doc = ctx.parse_html(%(<a href="/x" disabled>t</a>))
+      link = doc.at_xpath("//a")
+      expect(link["href"]).to eq("/x")
+      expect(link["disabled"]).to eq("")
+    end
+
+    it "reads script content as raw text" do
+      doc = ctx.parse_html(%(<script>if (a < b) { x("</div>"); }</script>))
+      expect(doc.at_xpath("//script").text).to include("a < b")
+      expect(doc.at_xpath("//script").text).to include("</div>")
+    end
+
+    it "serializes to well-formed XML that reparses strictly" do
+      doc = ctx.parse_html(%(<p>a &amp; b < c</p><script>y = "</q>";</script>))
+      out = doc.to_xml
+      expect(out).to include("&lt;")
+      reparsed = Nokogiri::XML(out, &:strict)
+      expect(reparsed).to be_a(Nokogiri::XML::Document)
+      expect(reparsed.errors).to be_empty
+    end
+
+    it "round-trips a parsed tree through mutation" do
+      doc = ctx.parse_html(%(<ul><li>a<li>b</ul>))
+      doc.at_xpath("//ul").add_child(doc.create_element("li"))
+      expect(doc.xpath("//li").map(&:name)).to eq(%w[li li li])
+    end
+  end
+
+  describe "lazy xpath result sets" do
+    let(:ctx) { Moxml.new(:leptris) }
+    let(:doc) do
+      ctx.parse(%(<r>#{Array.new(50) { |i| "<li>#{i}</li>" }.join}</r>))
+    end
+
+    it "answers size, first, and indexing without materializing" do
+      set = doc.xpath("//li")
+      expect(set.size).to eq(50)
+      expect(set.first.text).to eq("0")
+      expect(set[10].text).to eq("10")
+      expect(set[-1].text).to eq("49")
+      expect(set.empty?).to be(false)
+    end
+
+    it "enumerates and wraps on demand" do
+      expect(doc.xpath("//li").each.to_a.size).to eq(50)
+      expect(doc.xpath("//li").to_a.map(&:name).uniq).to eq(%w[li])
+    end
+
+    it "keeps the mutating set operations working" do
+      set = doc.xpath("//li")
+      expect((set + set).size).to eq(100)
+      expect(set.uniq_by_native.size).to eq(50)
+      set << doc.create_element("li")
+      expect(set.size).to eq(51)
+      expect(set.last.name).to eq("li")
+    end
+
+    it "slices ranges" do
+      expect(doc.xpath("//li")[0..2].size).to eq(3)
+      expect(doc.xpath("//li")[5...8].map(&:text)).to eq(%w[5 6 7])
+    end
+
+    it "returns scalars and at_xpath firsts unwrapped-set" do
+      expect(doc.xpath("count(//li)")).to eq(50.0)
+      expect(doc.at_xpath("//li").text).to eq("0")
+      expect(doc.at_xpath("//nope")).to be_nil
+    end
+  end
+
   describe "DTD ATTLIST defaults" do
     # libleptris 1.9.8: plain parse excludes ATTLIST defaults,
     # matching libxml2/Nokogiri/REXML; dtdattr: true opts in.

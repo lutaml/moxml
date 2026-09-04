@@ -23,6 +23,11 @@ module Moxml
       # the adapter no longer carries accommodation paths for them.
       MINIMUM_BINDING_VERSION = "1.9.32"
 
+      # leptris_parse_html_string shipped in bindings 1.9.80
+      # (libleptris 1.9.75, engine #659) as Leptris::XML.parse_html.
+      HTML_PARSE_SUPPORTED =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.80")
+
       # leptris-ruby#103: prefixed attribute tests inside predicates
       # stopped resolving through the document's in-scope declarations
       # on released 1.9.37–1.9.39; 1.9.40 (engine 1.9.14+) restored
@@ -156,6 +161,30 @@ module Moxml
           attachments.set(native_doc, :parse_errors, recover_errors) if recover_errors
 
           doc
+        end
+
+        # Tolerant HTML4/5 parsing into the standard DOM (engine
+        # leptris/leptris#659): implied end tags, void elements,
+        # raw-text script/style, case-insensitive lowercased names,
+        # the HTML named-entity table, synthesized html/head/body.
+        # The engine decodes HTML entities directly into text — no
+        # marker pipeline, so the marker split scan is stood down.
+        def parse_html(html, _options = {}, _context = nil)
+          unless HTML_PARSE_SUPPORTED
+            raise Moxml::AdapterError.new(
+              "HTML parsing requires leptris >= 1.9.80 (have #{::Leptris::VERSION})",
+              adapter: name, operation: "parse_html",
+            )
+          end
+
+          html_string = html.is_a?(IO) || html.is_a?(StringIO) ? html.read : html.to_s
+          native_doc = begin
+            ::Leptris::XML.parse_html(html_string)
+          rescue ::Leptris::XML::ParseError => e
+            raise Moxml::ParseError.new(e.message)
+          end
+          attachments.set(native_doc, :entity_markers, false)
+          Document.new(native_doc, _context || Context.new(:leptris))
         end
 
         # nil when no parse flag is requested — the binding treats a
@@ -772,8 +801,10 @@ module Moxml
                    end
           case result
           when ::Leptris::XML::NodeSet
-            nodes = result.to_a
-            first_only ? nodes.first : nodes
+            # The binding's #to_a mints one Ruby wrapper per result
+            # node; hand the native set through so .size/.first stay
+            # native-side (LazyNodeSet holds it unmaterialized).
+            first_only ? result.first : result.extend(Moxml::LazyNodeSet)
           else
             result
           end

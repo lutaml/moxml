@@ -51,6 +51,32 @@ libxml2/Nokogiri/REXML semantics (libleptris >= 1.9.8).
 Raise `Moxml::ParseError` on malformed input instead of returning an
 empty document.
 
+== HTML parsing
+
+`Context#parse_html(html)` (leptris >= 1.9.80; engine
+leptris/leptris/#659) parses tolerant HTML4/5 into the standard XML
+DOM: implied end tags (`<li>a<li>b`), void elements (`<br>`, `<img>`),
+raw-text script/style, case-insensitive lowercased names and
+attributes, minimized/boolean attributes, and the HTML named-entity
+table. `html`/`head`/`body` are synthesized when the input implies
+them (no empty head for headless fragments); tables get no implied
+`tbody`. Malformed input degrades to text — the parse never fails;
+only an entirely empty result raises `Moxml::ParseError`.
+
+[source,ruby]
+----
+doc = Moxml.new(:leptris).parse_html(%(<ul><li>a<li>b</ul>))
+doc.xpath("//li").map(&:text)   # => ["a", "b"]
+----
+
+Serialization is XML-shaped: text content is escaped (`a &lt; b`),
+so script bodies with markup characters round-trip through a strict
+XML reparse. The adapter stands the entity-marker pipeline down for
+HTML parses — the engine decodes HTML entities directly into text.
+
+Adapters without an engine HTML mode (Ox, Oga, REXML, LibXML) raise
+`Moxml::AdapterError`; Nokogiri parses through libxml2's HTML mode.
+
 == Lifecycle
 
 `Document#free` releases the C tree deterministically — batch

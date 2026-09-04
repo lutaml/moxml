@@ -89,6 +89,25 @@ context.parse(dtd_xml)                     # plain: ATTLIST defaults excluded
 context.parse(dtd_xml, dtdattr: true)      # opt-in: attr="default" materialized
 ----
 
+== HTML input — `parse_html`
+
+Web-scraped and HTML-fragment inputs parse tolerantly into the
+standard DOM (leptris >= 1.9.80 via engine #659; Nokogiri via
+libxml2's HTML mode; other adapters raise `Moxml::AdapterError`):
+
+[source,ruby]
+----
+doc = context.parse_html(%(<ul><li>a<li>b</ul>))
+doc.xpath("//li").map(&:text)   # => ["a", "b"]
+----
+
+Implied end tags, void elements, lowercased names, boolean
+attributes, and HTML named entities decode at parse; serialization
+is XML-shaped. See the leptris adapter page for the semantics
+matrix. Entity-laden pages currently parse slower than Nokogiri
+(engine named-entity table — tracked upstream); entity-free pages
+parse ~3.7x faster.
+
 == Pretty-print parity (issue #129)
 
 Through the leptris adapter, byte-identical output to raw Nokogiri:

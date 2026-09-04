@@ -68,6 +68,7 @@ module Moxml
   autoload :Context, "moxml/context"
   autoload :Node, "moxml/node"
   autoload :NodeSet, "moxml/node_set"
+  autoload :LazyNodeSet, "moxml/lazy_node_set"
   autoload :Document, "moxml/document"
   autoload :Element, "moxml/element"
   autoload :Text, "moxml/text"

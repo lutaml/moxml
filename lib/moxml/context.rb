@@ -74,6 +74,15 @@ module Moxml
       doc
     end
 
+    # Tolerant HTML4/5 parsing into the standard DOM: implied end
+    # tags, void elements, case-insensitive lowercased names, the
+    # HTML named-entity table, synthesized html/head/body. Supported
+    # by adapters with an engine HTML mode (leptris >= 1.9.80,
+    # nokogiri); others raise Moxml::AdapterError.
+    def parse_html(html, options = {})
+      config.adapter.parse_html(html, options, self)
+    end
+
     # Parse then flatten in one call — see Moxml::Materializer
     # (issue #132). Yields records; returns an Enumerator when no
     # block is given.

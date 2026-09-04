@@ -29,6 +29,13 @@ whitespace-only text nodes where the engine has the flag
 (#147; recover-mode diagnostics — `[]` on clean parses; engines with
 an error channel map it here, e.g. Nokogiri's `doc.errors`).
 
+HTML mode::
+`parse_html(html, options, context)` — tolerant HTML4/5 parsing into
+the standard DOM, where the engine offers it (leptris >= 1.9.80 via
+engine #659; Nokogiri via libxml2's HTML parser). The base class
+raises `Moxml::AdapterError` — adapters without an HTML mode keep
+that default.
+
 Tree navigation::
 `children`, `parent`, `next_sibling`, `previous_sibling`, `root`,
 `set_root`, `document`, `duplicate_node`. `children` on a document

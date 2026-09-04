@@ -13,6 +13,19 @@ RSpec.describe Moxml::Context do
     end
   end
 
+  describe "#parse_html" do
+    it "delegates to the adapter's HTML mode" do
+      ctx = Moxml.new(:nokogiri)
+      doc = ctx.parse_html(%(<p>x</p>))
+      expect(doc.root.name).to eq("html")
+    end
+
+    it "raises Moxml::AdapterError on adapters without an HTML mode" do
+      ctx = Moxml.new(:ox)
+      expect { ctx.parse_html(%(<p>x</p>)) }.to raise_error(Moxml::AdapterError, /not supported/)
+    end
+  end
+
   describe "#config" do
     it "has a configuration" do
       expect(context.config).to be_a(Moxml::Config)
