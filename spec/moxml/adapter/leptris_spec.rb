@@ -244,6 +244,7 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
 
     it "repairs a raw < in text position (issue #167 / leptris-ruby#131)" do
+      skip "guard stood down on fixed bindings (leptris-ruby#131, 1.9.80+)" unless described_class::Serialize::RAW_LT_GUARD_ACTIVE
       # The engine intermittently drops the escape when parsing under
       # allocation pressure: a decoded &#x3c; serializes bare and the
       # output fails to reparse. Valid markup never puts < before a

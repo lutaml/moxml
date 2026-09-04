@@ -86,17 +86,17 @@ module Moxml
         RAW_AMP_RE = /&(?!#{Entity::NAME_PATTERN};|#\d+;|#x[0-9A-Fa-f]+;)/
 
         # A raw "<" in text position — the engine intermittently
-        # loses the escape when parsing under allocation pressure
-        # (leptris-ruby#131), so a decoded &#x3c; serializes bare and
-        # reparsing truncates at it. Valid markup NEVER puts "<"
-        # before a non-name, non-delimiter character, so this is
-        # deterministic in markup segments (CDATA is literal and
-        # excluded by the segment walker). One class-anchored scan:
-        # multi-char literal probes cost ~30x a single regex pass on
-        # CRuby (measured include?("< ") at 31µs vs this regex at
-        # 64µs for 14 probes' worth of coverage on 32KB).
+        # lost the escape when parsing under allocation pressure
+        # (leptris-ruby#131), so a decoded &#x3c; serialized bare and
+        # reparsing truncated at it. Fixed in leptris 1.9.80 (verified
+        # 0/200 on the churn repro); the guard stays armed below that
+        # version and for any future build that regresses — the
+        # parse-under-pressure spec in leptris_spec fails loudly if a
+        # fixed-version build corrupts while the guard is stood down.
         RAW_LT_RE = /<(?![A-Za-z_:\/?!])/
         RAW_LT_TRIGGER_RE = /<[^A-Za-z_:\/?!]/
+        RAW_LT_GUARD_ACTIVE =
+          Gem::Version.new(::Leptris::VERSION) < Gem::Version.new("1.9.80")
 
         def normalize_serialization(xml, options)
           # The libxml2-layout serializer (>= 1.9.42) keeps attribute
@@ -104,10 +104,10 @@ module Moxml
           needs_apos = !LIBXML2_LAYOUT_PARITY && xml.include?("&apos;")
           needs_expand = options[:expand_empty] && xml.include?("/>")
           # Corruption guards: the 1-char ampersand probe is ~1µs
-          # (memchr-class); both regexes only run when their cheap
-          # necessary condition holds.
+          # (memchr-class); the raw-< scan runs only on builds that
+          # still carry the parse race (leptris-ruby#131).
           needs_amp = xml.include?("&") && xml.match?(RAW_AMP_RE)
-          needs_lt = xml.match?(RAW_LT_TRIGGER_RE)
+          needs_lt = RAW_LT_GUARD_ACTIVE && xml.match?(RAW_LT_TRIGGER_RE)
           return xml unless needs_apos || needs_expand || needs_amp || needs_lt
 
           out = +""
