@@ -131,11 +131,11 @@ module Moxml
       # Handle different result types:
       # - Scalar values (from functions): return directly
       # - NodeSet: already wrapped, return directly
-      # - Array: wrap in NodeSet
+      # - Array / LazyNodeSet: wrap in NodeSet
       case result
       when NodeSet, Float, String, TrueClass, FalseClass, NilClass
         result
-      when Array
+      when Array, LazyNodeSet
         NodeSet.new(result, context)
       else
         # For other types, try to wrap in NodeSet
