@@ -45,6 +45,16 @@ module Moxml
           Document.new(native_doc, ctx)
         end
 
+        # Tolerant HTML parsing through libxml2's HTML mode: implied
+        # html/head/body structure, void elements, lowercased names,
+        # the HTML named-entity table. Recovery is inherent —
+        # malformed input never raises.
+        def parse_html(html, _options = {}, _context = nil)
+          html_string = html.is_a?(IO) || html.is_a?(StringIO) ? html.read : html.to_s
+          native_doc = ::Nokogiri::HTML(html_string)
+          Document.new(native_doc, _context || Context.new(:nokogiri))
+        end
+
         # Nokogiri parses with `config.recover` unless strict, so
         # recoverable syntax errors land on `doc.errors` instead of
         # raising (issue #147).

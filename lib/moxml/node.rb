@@ -127,9 +127,10 @@ module Moxml
 
     def xpath(expression, namespaces = {})
       result = adapter.xpath(@native, expression, namespaces)
-      # Adapter contract: Array<native> | scalar. Scalars (count(),
-      # string-length(), booleans) pass through unwrapped.
-      result.is_a?(Array) ? NodeSet.new(result, context) : result
+      # Adapter contract: Array<native> | LazyNodeSet | scalar.
+      # Scalars (count(), string-length(), booleans) pass through
+      # unwrapped; the set forms wrap lazily.
+      result.is_a?(Array) || result.is_a?(LazyNodeSet) ? NodeSet.new(result, context) : result
     end
 
     # Flattened post-order records for this subtree without

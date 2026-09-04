@@ -6,10 +6,14 @@ module Moxml
 
     attr_reader :context
 
+    # nodes: Array of natives, or an adapter's LazyNodeSet — the
+    # native set is held unmaterialized until an operation needs an
+    # Array (#+, #<<, #delete, Range slices).
     def initialize(nodes, context, parent_node = nil)
-      @nodes = Array(nodes)
+      @nodes = nodes.is_a?(Array) ? nodes : nil
+      @lazy = @nodes ? nil : nodes
       @context = context
-      @wrapped = Array.new(@nodes.size)
+      @wrapped = Array.new(@nodes ? @nodes.size : @lazy.length)
       @parent_node = parent_node
     end
 
@@ -17,7 +21,9 @@ module Moxml
     # The public surface is wrapper-only: every Enumerable access
     # goes through #each/#[]/#to_a, which wrap.
     def native_nodes
-      @nodes
+      return @nodes unless @nodes.nil?
+
+      @nodes = @lazy.to_a
     end
 
     def each
@@ -25,7 +31,7 @@ module Moxml
 
       wrapped = @wrapped
       index = 0
-      @nodes.each do |node|
+      (@nodes || @lazy).each do |node|
         wrapper = wrapped[index]
         unless wrapper
           wrapper = wrap_with_parent(node)
@@ -40,50 +46,52 @@ module Moxml
     def [](index)
       case index
       when Integer
-        actual = index.negative? ? @nodes.size + index : index
-        return nil unless actual >= 0 && actual < @nodes.size
+        actual = index.negative? ? native_size + index : index
+        return nil unless actual >= 0 && actual < native_size
 
-        @wrapped[actual] ||= wrap_with_parent(@nodes[actual])
+        @wrapped[actual] ||= wrap_with_parent((@nodes || @lazy)[actual])
       when Range
-        self.class.new(@nodes[index], @context)
+        self.class.new(native_nodes[index], @context)
       end
     end
 
     def first(n = nil)
       if n.nil?
-        @nodes.empty? ? nil : self[0]
+        native_size.zero? ? nil : self[0]
       else
         n.times.filter_map { |i| self[i] }
       end
     end
 
     def last
-      @nodes.empty? ? nil : self[@nodes.size - 1]
+      native_size.zero? ? nil : self[native_size - 1]
     end
 
     def empty?
-      @nodes.empty?
+      native_size.zero?
     end
 
     def size
-      @nodes.size
+      native_size
     end
     alias length size
 
     def to_a
-      @nodes.each_with_index do |_node, i|
-        @wrapped[i] ||= wrap_with_parent(@nodes[i])
+      i = 0
+      (@nodes || @lazy).each do |node|
+        @wrapped[i] ||= wrap_with_parent(node)
+        i += 1
       end
       @wrapped.compact
     end
 
     def +(other)
-      self.class.new(@nodes + other.native_nodes, @context, @parent_node)
+      self.class.new(native_nodes + other.native_nodes, @context, @parent_node)
     end
 
     def <<(node)
       native_node = node.is_a?(Node) ? node.native : node
-      @nodes << native_node
+      native_nodes << native_node
       @wrapped << nil
       self
     end
@@ -94,7 +102,7 @@ module Moxml
     # which may yield the same native node multiple times
     def uniq_by_native
       seen = {}
-      unique_natives = @nodes.select do |native|
+      unique_natives = native_nodes.select do |native|
         id = native.object_id
         if seen[id]
           false
@@ -109,7 +117,7 @@ module Moxml
     def ==(other)
       self.class == other.class &&
         length == other.length &&
-        @nodes.each_with_index.all? do |_node, index|
+        native_nodes.each_with_index.all? do |_node, index|
           self[index] == other[index]
         end
     end
@@ -127,17 +135,21 @@ module Moxml
     # Accepts both wrapped Moxml nodes and native nodes
     def delete(node)
       native_node = node.is_a?(Node) ? node.native : node
-      idx = @nodes.index(native_node)
+      idx = native_nodes.index(native_node)
       if idx
-        @nodes.delete_at(idx)
+        native_nodes.delete_at(idx)
         @wrapped.delete_at(idx)
       else
-        @nodes.delete(native_node)
+        native_nodes.delete(native_node)
       end
       self
     end
 
     private
+
+    def native_size
+      @nodes ? @nodes.size : @lazy.length
+    end
 
     def wrap_with_parent(native_node)
       wrapped = Moxml::Node.wrap(native_node, @context)

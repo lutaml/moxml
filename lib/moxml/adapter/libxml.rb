@@ -923,12 +923,23 @@ module Moxml
           native.name
         end
 
+        # libxml-ruby 5.x exposes no external/system ID accessor on
+        # the DTD node — the DOCTYPE source text is the only source,
+        # so re-derive from it (same DOCTYPE_RE as the parse path).
         def doctype_external_id(native)
-          native.external_id
+          if native.is_a?(DoctypeWrapper)
+            native.external_id
+          else
+            native.to_s[DOCTYPE_RE, 2]
+          end
         end
 
         def doctype_system_id(native)
-          native.system_id
+          if native.is_a?(DoctypeWrapper)
+            native.system_id
+          else
+            native.to_s[DOCTYPE_RE, 3] || native.to_s[DOCTYPE_RE, 4]
+          end
         end
 
         def xpath(node, expression, namespaces = nil)

@@ -28,6 +28,17 @@ module Moxml
           )
         end
 
+        # Tolerant HTML4/5 parsing into the standard DOM (engine
+        # issue leptris/leptris#659): implied end tags, void elements,
+        # case-insensitive lowercased names, the HTML named-entity
+        # table. Adapters whose engine has an HTML mode override this.
+        def parse_html(_html, _options = {}, _context = nil)
+          raise Moxml::AdapterError.new(
+            "HTML parsing is not supported by the #{name.split('::').last} adapter",
+            adapter: name, operation: "parse_html",
+          )
+        end
+
         def parse(_xml, _options = {}, _context = nil)
           raise Moxml::NotImplementedError.new(
             "parse not implemented",
