@@ -18,6 +18,10 @@ module Moxml
           true
         end
 
+        def native_identity_stable?
+          true
+        end
+
         def parse(xml, options = {}, _context = nil)
           xml = "" if xml.nil?
 

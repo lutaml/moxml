@@ -42,8 +42,19 @@ module Moxml
       raise ValidationError, "XML comment cannot contain double hyphens (--)"
     end
 
+    # Real documents reuse a handful of distinct element names; the
+    # memo turns the per-create regex into a hash probe after the
+    # first sight of a name. Capped — hostile vocabularies fall back
+    # to the regex.
+    VALID_ELEMENT_NAMES = {}.compare_by_identity
+
     def validate_element_name(name)
-      return if name.is_a?(String) && name.match?(/^[a-zA-Z_][\w\-.:]*$/)
+      return if name.is_a?(String) && VALID_ELEMENT_NAMES.key?(name)
+
+      if name.is_a?(String) && name.match?(/^[a-zA-Z_][\w\-.:]*$/)
+        VALID_ELEMENT_NAMES[name] = true if VALID_ELEMENT_NAMES.size < 1024
+        return
+      end
 
       raise ValidationError, "Invalid XML element name: #{name}"
     end

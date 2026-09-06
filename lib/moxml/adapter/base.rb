@@ -192,6 +192,14 @@ namespace_validation_mode: :strict)
           false
         end
 
+        # Whether add_child can keep tracking the same native —
+        # adapters that may recreate the node on attach (libxml's
+        # doc.root=) override to false so the wrapper refresh path
+        # stays armed.
+        def native_identity_stable?
+          false
+        end
+
         # Whether set_attribute with a BARE name behaves as a
         # qualified-name write: replaces only the no-namespace
         # attribute and never touches a namespaced p:<local> sibling.
