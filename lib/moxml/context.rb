@@ -154,6 +154,26 @@ module Moxml
       Builder.new(self).build(&block)
     end
 
+    # Frozen serialization defaults, memoized per context — Node#to_xml
+    # merged these from live config reads on every call (bulk element
+    # serialization pays a hash build + 4 chain derefs per element).
+    def default_serialize_options
+      @default_serialize_options ||= {
+        encoding: config.default_encoding,
+        indent: config.default_indent,
+        line_ending: config.default_line_ending,
+        expand_empty: true,
+      }.freeze
+    end
+
+    # The argless element.to_xml form resolves every option statically
+    # (no declaration for non-document nodes, context defaults for the
+    # rest) — this prebuilt frozen hash makes that path allocation-free.
+    def default_element_serialize_options
+      @default_element_serialize_options ||=
+        default_serialize_options.merge(no_declaration: true).freeze
+    end
+
     private
 
     def build_entity_registry

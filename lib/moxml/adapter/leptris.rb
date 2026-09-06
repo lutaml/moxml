@@ -28,6 +28,17 @@ module Moxml
       HTML_PARSE_SUPPORTED =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.80")
 
+      # Bumped whenever a document's :entity_markers flag is written
+      # (parse, parse_html, entity-reference mint) so wrapper-level
+      # entity_bearing? memos invalidate.
+      def self.serialize_generation
+        @serialize_generation ||= 0
+      end
+
+      def self.bump_serialize_generation
+        @serialize_generation = serialize_generation + 1
+      end
+
       # leptris-ruby#103: prefixed attribute tests inside predicates
       # stopped resolving through the document's in-scope declarations
       # on released 1.9.37–1.9.39; 1.9.40 (engine 1.9.14+) restored
@@ -158,6 +169,7 @@ module Moxml
 
           record_source_declaration(native_doc, processed)
           attachments.set(native_doc, :entity_markers, entity_markers)
+          bump_serialize_generation
           attachments.set(native_doc, :parse_errors, recover_errors) if recover_errors
 
           doc
@@ -184,6 +196,7 @@ module Moxml
             raise Moxml::ParseError.new(e.message)
           end
           attachments.set(native_doc, :entity_markers, false)
+          bump_serialize_generation
           Document.new(native_doc, _context || Context.new(:leptris))
         end
 
@@ -590,6 +603,7 @@ module Moxml
               marker = parent.document.create_text_node("#{Entity::MARKER}#{child.name};")
               parent.add_child(marker)
               attachments.set(parent.document, :entity_markers, true)
+              bump_serialize_generation
               return child
             end
             child = parent.document.create_text_node(child) if child.is_a?(String)
