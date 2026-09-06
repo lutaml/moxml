@@ -91,6 +91,20 @@ module Moxml
         return value
       end
 
+      # Fast path: every adapter's set_attribute writes by qualified
+      # name, and XML cannot namespace an unprefixed attribute — so
+      # a bare-name set replaces only the no-namespace attribute and
+      # can never touch a namespaced p:<local> sibling. The full
+      # expanded-name resolve (wrap every attribute, resolve each
+      # prefix against in-scope namespaces) is only needed for
+      # prefixed names; it dominated programmatic-builder attribute
+      # writes.
+      if !name.include?(":") && adapter.bare_set_qname_safe?
+        adapter.set_attribute(element.native, name, value)
+        element.invalidate_attribute_cache!
+        return value
+      end
+
       existing = resolve(element, name)
       if existing
         existing.value = value

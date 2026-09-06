@@ -192,6 +192,15 @@ namespace_validation_mode: :strict)
           false
         end
 
+        # Whether set_attribute with a BARE name behaves as a
+        # qualified-name write: replaces only the no-namespace
+        # attribute and never touches a namespaced p:<local> sibling.
+        # Verified per engine; oga's repeated bare writes diverge, so
+        # it stays false there and assign keeps the full resolve.
+        def bare_set_qname_safe?
+          false
+        end
+
         # Generation of adapter-level state that cached serialize
         # decisions depend on (leptris: the entity-marker document
         # flag). Bumping invalidates wrapper-level memos; adapters

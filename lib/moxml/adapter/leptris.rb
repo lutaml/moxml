@@ -124,6 +124,10 @@ module Moxml
           doc.root = element
         end
 
+        def bare_set_qname_safe?
+          true
+        end
+
         def parse(xml, options = {}, _context = nil)
           xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
           # The marker flag rides preprocess's own `&` scan — no
