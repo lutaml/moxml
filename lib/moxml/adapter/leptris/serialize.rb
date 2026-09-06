@@ -40,6 +40,15 @@ module Moxml
           xml
         end
 
+        # Element-face trailing-newline strip: engine fix landed in
+        # 1.9.42; armed only on older floor bindings.
+        TRAILING_NL_STRIP_ACTIVE =
+          Gem::Version.new(::Leptris::VERSION) < Gem::Version.new("1.9.42")
+
+        # The binding's element face with all-default options — the
+        # frozen splat keeps the hot argless path allocation-free.
+        ELEMENT_DEFAULT_KWARGS = { indent: 0, no_decl: true, encoding: nil }.freeze
+
         def raw_serialize(node, options)
           # CDATA must precede Text in this chain: CDATA < Text in the
           # binding, so a Text branch first would swallow CDATA nodes.
@@ -60,23 +69,31 @@ module Moxml
             return serialize_document(node, options)
           end
 
-          include_decl = options.fetch(:declaration) do
-            options[:no_declaration] ? false : document_has_declaration?(node)
-          end
-          kwargs = {
-            indent: options.fetch(:indent, 0),
-            no_decl: !include_decl,
-            encoding: options[:encoding],
-          }
-          if INDENT_UNIT_SUPPORTED && options[:indent_text].is_a?(String)
-            kwargs[:indent_text] = options[:indent_text]
-          end
-          xml = node.to_xml(**kwargs)
-          # Element output always ends with the close tag — but the
-          # engine's serializer appends a stray trailing newline when
-          # the element's last text child is non-ASCII (fixed engine
-          # side in 1.9.42; kept for older floor bindings).
-          xml.sub(/\n+\z/, "")
+          # Element serialization never emits a declaration — the C
+          # element serializer ignores the flag (verified
+          # byte-identical); skipping the declaration fetch avoids a
+          # document attachment walk per element serialize. Likewise
+          # an unset encoding serializes UTF-8 — byte-identical to an
+          # explicit "UTF-8" — and the binding then reuses its shared
+          # DEFAULT_OPTIONS instead of rebuilding an options struct
+          # per call; the wrapper force-tags the string either way.
+          indent = options.fetch(:indent, 0)
+          encoding = options[:encoding] == "UTF-8" ? nil : options[:encoding]
+          xml = if indent.zero? && encoding.nil?
+                  node.to_xml(**ELEMENT_DEFAULT_KWARGS)
+                else
+                  kwargs = { indent: indent, no_decl: true, encoding: encoding }
+                  if INDENT_UNIT_SUPPORTED && options[:indent_text].is_a?(String)
+                    kwargs[:indent_text] = options[:indent_text]
+                  end
+                  node.to_xml(**kwargs)
+                end
+          # Element output always ends with the close tag — but older
+          # engines append a stray trailing newline when the element's
+          # last text child is non-ASCII (fixed engine side in
+          # 1.9.42). The strip stays armed only below that version —
+          # a regex sub per element serialize is measurable in bulk.
+          TRAILING_NL_STRIP_ACTIVE ? xml.sub(/\n+\z/, "") : xml
         end
 
         # A bare ampersand — not starting a named or numeric entity

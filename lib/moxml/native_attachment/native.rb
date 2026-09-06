@@ -25,8 +25,13 @@ module Moxml
         @monitor = Monitor.new
       end
 
+      # Reads are lock-free: MRI Hash#[] is atomic under the GVL, and
+      # the only mid-write race (set assigns the inner hash before its
+      # key) resolves to a miss — the same answer as "not set yet",
+      # which every reader treats conservatively. This method sits on
+      # per-element hot paths (entity_bearing? on every serialize).
       def get(native, key)
-        @monitor.synchronize { @data[native.object_id]&.[](key) }
+        @data[native.object_id]&.[](key)
       end
 
       def set(native, key, value)
@@ -39,7 +44,8 @@ module Moxml
       end
 
       def key?(native, key)
-        @monitor.synchronize { @data[native.object_id]&.key?(key) || false }
+        h = @data[native.object_id]
+        !h.nil? && h.key?(key)
       end
 
       def delete(native, key)

@@ -192,6 +192,14 @@ namespace_validation_mode: :strict)
           false
         end
 
+        # Generation of adapter-level state that cached serialize
+        # decisions depend on (leptris: the entity-marker document
+        # flag). Bumping invalidates wrapper-level memos; adapters
+        # whose answers are static keep the constant zero.
+        def serialize_generation
+          0
+        end
+
         # Whether the subtree at native can contain entity markers.
         # Marker-tracking adapters override this so the post-serialize
         # restore can skip its full-output scans on marker-free

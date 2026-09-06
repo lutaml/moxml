@@ -69,6 +69,19 @@ retention beyond the binding's own constant one-document cache —
 and no identity loss, which the previous 65,536-entry wholesale
 clear traded away when it fired.
 
+=== Element serialization
+
+Bulk `element.to_xml` (per-element, no options) was wrapper-tax
+bound — the raw engine serializes 3x faster than Nokogiri but the
+Ruby option/guard layers spent 4.6x the C call's cost per element.
+The argless path is now allocation-free (frozen prebuilt defaults),
+the element face skips the declaration fetch, UTF-8 requests ride
+the binding's shared default options, the trailing-newline strip is
+version-gated (engine fixed in 1.9.42), and `entity_bearing?` memoizes
+against an adapter generation counter. Measured per element:
+3-child **0.74x -> 1.0x** (parity — fixed guard tax on tiny output),
+21-child **1.7x**; document-level serialize stays 2.4x.
+
 === Lazy result sets
 
 `xpath` results and `children` node sets allocate wrapper slots on

@@ -35,6 +35,7 @@ module Moxml
     def clear_native_memo!
       @name = nil
       @attribute_cache = nil
+      @entity_bearing_gen = nil
     end
 
     def document
@@ -113,16 +114,35 @@ module Moxml
       # Determine if we should include XML declaration
       # For Document nodes: check native then wrapper, unless explicitly overridden
       # For other nodes: default to no declaration unless explicitly set
-      serialize_options = default_options.merge(options)
-      serialize_options[:no_declaration] = !should_include_declaration?(options)
+      serialize_options = if options.empty? && !is_a?(Document)
+                            context.default_element_serialize_options
+                          else
+                            merged = context.default_serialize_options.merge(options)
+                            merged[:no_declaration] = !should_include_declaration?(options)
+                            merged
+                          end
 
       result = adapter.serialize(@native, serialize_options)
       result = apply_line_ending(result, serialize_options[:line_ending])
 
       # Restore entity markers to named entity references; skipped
       # when the adapter knows the document carries no markers.
-      result = adapter.restore_entities(result) if adapter.entity_bearing?(@native)
+      result = adapter.restore_entities(result) if entity_bearing?
       result
+    end
+
+    # Memoized against the adapter's serialize generation — the
+    # entity-marker flag flips at parse and entity-reference mint,
+    # both adapter-level, and the generation bump is the invalidation
+    # signal. Adapters with static answers (base class) never bump.
+    def entity_bearing?
+      gen = adapter.serialize_generation
+      if @entity_bearing_gen == gen
+        @entity_bearing
+      else
+        @entity_bearing_gen = gen
+        @entity_bearing = adapter.entity_bearing?(@native)
+      end
     end
 
     def xpath(expression, namespaces = {})
@@ -458,19 +478,6 @@ module Moxml
           state: "node_type: #{node.class}",
         )
       end
-    end
-
-    def default_options
-      {
-        encoding: context.config.default_encoding,
-        indent: context.config.default_indent,
-        line_ending: context.config.default_line_ending,
-        # The short format of empty tags in Oga and Nokogiri isn't configurable
-        # Oga: <empty /> (with a space)
-        # Nokogiri: <empty/> (without a space)
-        # The expanded format is enforced to avoid this conflict
-        expand_empty: true,
-      }
     end
 
     def should_include_declaration?(options)
