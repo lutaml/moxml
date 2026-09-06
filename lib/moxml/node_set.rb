@@ -13,7 +13,7 @@ module Moxml
       @nodes = nodes.is_a?(Array) ? nodes : nil
       @lazy = @nodes ? nil : nodes
       @context = context
-      @wrapped = Array.new(@nodes ? @nodes.size : @lazy.length)
+      @wrapped = nil
       @parent_node = parent_node
     end
 
@@ -29,7 +29,7 @@ module Moxml
     def each
       return to_enum(:each) unless block_given?
 
-      wrapped = @wrapped
+      wrapped = wrapped_buffer
       index = 0
       (@nodes || @lazy).each do |node|
         wrapper = wrapped[index]
@@ -49,7 +49,7 @@ module Moxml
         actual = index.negative? ? native_size + index : index
         return nil unless actual >= 0 && actual < native_size
 
-        @wrapped[actual] ||= wrap_with_parent((@nodes || @lazy)[actual])
+        wrapped_buffer[actual] ||= wrap_with_parent((@nodes || @lazy)[actual])
       when Range
         self.class.new(native_nodes[index], @context)
       end
@@ -78,11 +78,12 @@ module Moxml
 
     def to_a
       i = 0
+      wrapped = wrapped_buffer
       (@nodes || @lazy).each do |node|
-        @wrapped[i] ||= wrap_with_parent(node)
+        wrapped[i] ||= wrap_with_parent(node)
         i += 1
       end
-      @wrapped.compact
+      wrapped.compact
     end
 
     def +(other)
@@ -91,8 +92,10 @@ module Moxml
 
     def <<(node)
       native_node = node.is_a?(Node) ? node.native : node
+      # Materialize the buffer first so it allocates at the pre-append
+      # size and stays in lockstep with the natives.
+      wrapped_buffer << nil
       native_nodes << native_node
-      @wrapped << nil
       self
     end
     alias push <<
@@ -138,7 +141,7 @@ module Moxml
       idx = native_nodes.index(native_node)
       if idx
         native_nodes.delete_at(idx)
-        @wrapped.delete_at(idx)
+        wrapped_buffer.delete_at(idx) if @wrapped
       else
         native_nodes.delete(native_node)
       end
@@ -146,6 +149,14 @@ module Moxml
     end
 
     private
+
+    # Allocated on first wrapped access — .size/.empty? consumers of
+    # large result sets never pay for the slot array.
+    def wrapped_buffer
+      return @wrapped unless @wrapped.nil?
+
+      @wrapped = Array.new(native_size)
+    end
 
     def native_size
       @nodes ? @nodes.size : @lazy.length

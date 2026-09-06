@@ -376,6 +376,44 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
   end
 
+  describe "wrapper lifecycle" do
+    it "releases wrappers when documents are dropped (WeakMap registry)" do
+      # The identity map must hold wrappers weakly: parse-and-drop
+      # workloads otherwise pin wrappers, natives, and (via the
+      # binding finalizer never running) the C subtrees.
+      xml = %(<r>#{Array.new(50) { |i| "<e id=\"i#{i}\">x</e>" }.join}</r>)
+      ctx = Moxml.new(:leptris)
+      count = -> {
+        n = 0
+        ObjectSpace.each_object(Moxml::Element) { n += 1 }
+        n
+      }
+      walk = ->(doc) { doc.root.children.to_a }
+
+      GC.start
+      before = count.call
+      20.times do
+        doc = ctx.parse(xml)
+        walk.(doc)
+        nil
+      end
+      5.times { GC.start }
+
+      # The binding retains a constant one-document wrapper set of
+      # its own; moxml must not retain beyond a couple of dropped
+      # documents' worth (was: all 20 pinned under the strong map).
+      expect(count.call - before).to be < 2 * 51
+    end
+
+    it "keeps wrapper identity while a document is alive" do
+      ctx = Moxml.new(:leptris)
+      doc = ctx.parse(%(<r><a/></r>))
+      expect(doc.root.children.first).to equal(doc.root.children.first)
+      GC.start
+      expect(doc.root.children.first).to equal(doc.root.children.first)
+    end
+  end
+
   describe "lazy xpath result sets" do
     let(:ctx) { Moxml.new(:leptris) }
     let(:doc) do
