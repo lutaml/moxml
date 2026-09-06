@@ -82,6 +82,26 @@ against an adapter generation counter. Measured per element:
 3-child **0.74x -> 1.0x** (parity — fixed guard tax on tiny output),
 21-child **1.7x**; document-level serialize stays 2.4x.
 
+=== Held-document footprint
+
+Four lifecycles, measured (RSS, isolated processes; leptris 1.9.80
+vs Nokogiri/libxml2):
+
+| lifecycle | moxml(leptris) | nokogiri | |
+|---|---|---|---|
+| bare tree (parse+hold, unaccessed) | **203 B/node** | 408 B/node | engine tree 2.0x smaller |
+| parse + walk + drop | leak-free (weak registry) | — | `#free` for deterministic release |
+| peak transient, 3.6MB doc (parse+pretty-print) | +48.8MB | +55.6MB | **0.88x smaller peak** |
+| held + walked (37KB doc) | 1186 kB/doc | 754 kB/doc | 1.57x larger — binding wrapper layer |
+
+The one regression is held-and-walked: the binding's per-node Ruby
+wrappers (element 80 B + a dedicated 88 B `FFI::Pointer` + cache
+slot ≈ 170+ B/node) outweigh even the C tree; upstream
+leptris-ruby#147 tracks it with a TypedData fix path. Guidance for
+held workloads: keep documents you will not re-traverse in the
+parse-and-read lifecycle (`readonly:`, `#free`), and prefer
+`materialize` for one-shot conversion.
+
 === Lazy result sets
 
 `xpath` results and `children` node sets allocate wrapper slots on
