@@ -404,9 +404,11 @@ module Moxml
 
         def xpath(node, expression, namespaces = nil)
           result = node.xpath(expression, namespaces)
-          # Adapter contract: Array<native> | scalar (count(),
-          # string-length(), boolean functions return scalars).
-          result.is_a?(Enumerable) ? result.to_a : result
+          # Adapter contract: Array<native> | LazyNodeSet | scalar
+          # (count(), string-length(), boolean functions return
+          # scalars). The native node-set passes through lazily —
+          # to_a would materialize every result wrapper up front.
+          result.is_a?(Enumerable) ? result.extend(Moxml::LazyNodeSet) : result
         rescue ::Nokogiri::XML::XPath::SyntaxError => e
           raise Moxml::XPathError.new(
             e.message,
