@@ -16,6 +16,10 @@ module Moxml
           true
         end
 
+        def native_identity_stable?
+          true
+        end
+
         def set_root(doc, element)
           doc.root = element
         end

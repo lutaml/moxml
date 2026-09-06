@@ -65,9 +65,12 @@ module Moxml
     def add_child(node)
       node = prepare_node(node)
       adapter.add_child(@native, node.native)
-      # Refresh native in case adapter changed identity (e.g., LibXML doc.root=)
-      refreshed = adapter.actual_native(node.native, @native)
-      node.refresh_native!(refreshed) if refreshed && refreshed != node.native
+      # Refresh native in case adapter changed identity (e.g., LibXML
+      # doc.root=); stable-identity adapters skip the round trip.
+      unless adapter.native_identity_stable?
+        refreshed = adapter.actual_native(node.native, @native)
+        node.refresh_native!(refreshed) if refreshed && refreshed != node.native
+      end
       node.parent_node = self
       # The adopted subtree's in-scope namespaces changed
       node.invalidate_namespace_cache!

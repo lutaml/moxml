@@ -19,6 +19,10 @@ module Moxml
           true
         end
 
+        def native_identity_stable?
+          true
+        end
+
         def set_root(doc, element)
           existing_root = root(doc)
           element.parent = doc if element.is_a?(::Ox::Node)

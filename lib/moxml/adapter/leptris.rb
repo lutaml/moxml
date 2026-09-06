@@ -28,6 +28,28 @@ module Moxml
       HTML_PARSE_SUPPORTED =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.80")
 
+      # Native C14N delegation probe: the engine's C14N must
+      # byte-match the Ruby reference (ported from canon) on a
+      # namespace-sorting + attributes + comments shape before
+      # Moxml::C14n hands the default path to it. The engine
+      # currently emits namespace declarations in document order
+      # instead of lexicographic (filed leptris/leptris#881); the
+      # probe auto-adopts the native path once a fixed build lands —
+      # no moxml release needed.
+      NATIVE_C14N_BYTE_SAFE = begin
+        probe_xml = %(<?xml version="1.0"?><doc xmlns:p="urn:p" xmlns="urn:d" b="2" a="1"><e p:x="v" z="w">t &amp; u</e><!-- c --></doc>)
+        native_doc = ::Leptris::XML::Document.parse(probe_xml)
+        native = native_doc.root.canonicalize(
+          ::Leptris::XML::FFI::C14N_1_0, nil,
+          mode: ::Leptris::XML::FFI::C14N_MODE_CANONICAL
+        )
+        wrapper = Moxml::Document.new(native_doc, Moxml::Context.new(:leptris))
+        reference = Moxml::C14n::Inclusive10.new.canonicalize(wrapper.root)
+        native == reference
+      rescue StandardError
+        false
+      end
+
       # Bumped whenever a document's :entity_markers flag is written
       # (parse, parse_html, entity-reference mint) so wrapper-level
       # entity_bearing? memos invalidate.
@@ -125,6 +147,10 @@ module Moxml
         end
 
         def bare_set_qname_safe?
+          true
+        end
+
+        def native_identity_stable?
           true
         end
 

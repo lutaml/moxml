@@ -376,6 +376,20 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
   end
 
+  describe "C14n native delegation" do
+    it "matches the Ruby reference byte-for-byte on the default path" do
+      # Whether the NATIVE_C14N_BYTE_SAFE probe is armed (fixed
+      # engine builds delegate to the C canonicalizer) or not, the
+      # default-path output must equal the Ruby reference — this is
+      # the safety net that lets the probe auto-adopt future builds.
+      xml = %(<?xml version="1.0"?><doc xmlns:p="urn:p" xmlns="urn:d" b="2" a="1"><e p:x="v" z="w">t &amp; u</e><!-- c --></doc>)
+      ctx = Moxml.new(:leptris)
+      root = ctx.parse(xml).root
+      expect(Moxml::C14n.canonicalize(root))
+        .to eq(Moxml::C14n::Inclusive10.new.canonicalize(root))
+    end
+  end
+
   describe "wrapper lifecycle" do
     it "releases wrappers when documents are dropped (WeakMap registry)" do
       # The identity map must hold wrappers weakly: parse-and-drop

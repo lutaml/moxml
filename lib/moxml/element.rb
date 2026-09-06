@@ -46,7 +46,9 @@ module Moxml
     # attributes only; prefixed names replace by namespace URI and
     # require a declared prefix. Cache coherence is the resolver's.
     def []=(name, value)
-      context.bump_namespace_scope_generation
+      # Every assign path (native set or value=) ends in
+      # invalidate_attribute_cache!, which bumps the generation —
+      # a leading bump here was one per write.
       Moxml::AttributeResolver.assign(self, name, normalize_xml_value(value))
     end
 
@@ -92,7 +94,8 @@ module Moxml
     end
 
     def remove_attribute(name)
-      context.bump_namespace_scope_generation
+      # Both remove paths end in invalidate_attribute_cache!, which
+      # bumps the generation.
       Moxml::AttributeResolver.remove(self, name)
       self
     end
