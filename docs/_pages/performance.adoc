@@ -102,6 +102,25 @@ held workloads: keep documents you will not re-traverse in the
 parse-and-read lifecycle (`readonly:`, `#free`), and prefer
 `materialize` for one-shot conversion.
 
+=== Programmatic construction
+
+Building documents node-by-node is the one surface where the C
+engine's lead does not carry through: each create/attach/attribute
+write crosses the FFI seam, and Nokogiri's C-extension calls are
+cheaper per crossing. Measured end to end:
+
+| builder shape | interp | YJIT |
+|---|---|---|
+| node churn (1052 tiny nodes — worst case) | 0.40x | 0.78x |
+| payload-realistic (attrs + long text) | 0.58x | **~1.0x (parity)** |
+
+Run builders with YJIT (`RUBY_YJIT_ENABLE=1`, see above): it
+compiles moxml's wrapper layer away (-47% on the churn shape) while
+leaving Nokogiri's thin C layer unchanged. The remaining churn-shape
+gap is the binding's own floor — even a zero-overhead wrapper
+measures 0.90x under YJIT (leptris-ruby#149 tracks it, with a
+batch-create proposal to collapse the crossings).
+
 === Lazy result sets
 
 `xpath` results and `children` node sets allocate wrapper slots on
