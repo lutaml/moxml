@@ -37,9 +37,9 @@ module Moxml
       # default is opt-in.
       return if @config&.adapter&.wrappers_recyclable? == false
 
-      unless WEAK_WRAPPERS
-        @wrappers.clear if @wrappers.size >= 65_536
-      end
+      # The strong fallback (Opal) needs the wholesale-clear valve;
+      # the WeakMap registry is self-cleaning.
+      @wrappers.clear if @wrappers.is_a?(Hash) && @wrappers.size >= 65_536
       @wrappers[native] = wrapper
     end
 
