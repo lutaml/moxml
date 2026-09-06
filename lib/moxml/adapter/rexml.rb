@@ -14,6 +14,10 @@ module Moxml
           @attachments ||= Moxml::NativeAttachment.new
         end
 
+        def bare_set_qname_safe?
+          true
+        end
+
         def parse(xml, options = {}, _context = nil)
           xml = "" if xml.nil?
 

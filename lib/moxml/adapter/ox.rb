@@ -15,6 +15,10 @@ module Moxml
           @attachments ||= Moxml::NativeAttachment.new
         end
 
+        def bare_set_qname_safe?
+          true
+        end
+
         def set_root(doc, element)
           existing_root = root(doc)
           element.parent = doc if element.is_a?(::Ox::Node)
