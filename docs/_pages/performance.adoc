@@ -56,6 +56,27 @@ Consumers on CRuby 3.3+ (canon's pretty-print pipeline, batch
 conversion) should treat it as the default; moxml's own CI
 performance gates run with YJIT enabled.
 
+=== Wrapper retention — the identity map is weak
+
+`Context` keeps a native→wrapper identity map so repeated traversals
+hand back the same wrapper. Since 0.5.31 it is an
+`ObjectSpace::WeakMap`: entries die with their native, so
+parse-and-drop workloads release wrappers, natives, and (once the
+binding's finalizer runs) the C subtrees. Measured walking and
+dropping 220 documents (~600 elements each) with one long-lived
+Context: **+1.9MB RSS growth vs +41MB before**, zero wrapper
+retention beyond the binding's own constant one-document cache —
+and no identity loss, which the previous 65,536-entry wholesale
+clear traded away when it fired.
+
+=== Lazy result sets
+
+`xpath` results and `children` node sets allocate wrapper slots on
+first access, not at construction — `.size`/`.empty?`/`.first` on a
+1000-node result no longer allocate the 1000-slot wrapper array
+(that path also skips the binding's per-node wrapper materialization
+entirely; see `LazyNodeSet` under the leptris adapter).
+
 === Prefer bulk paths for per-node conversion
 
 Per-node Ruby iteration pays the wrapper tax per element. When the

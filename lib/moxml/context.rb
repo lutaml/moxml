@@ -2,6 +2,10 @@
 
 module Moxml
   class Context
+    # Opal's default runtime excludes ObjectSpace entirely; the weak
+    # registry needs WeakMap, so the strong Hash (with its
+    # wholesale-clear valve) covers that platform.
+    WEAK_WRAPPERS = !defined?(ObjectSpace::WeakMap).nil?
     attr_reader :config
 
     def initialize(adapter = nil)
@@ -14,7 +18,12 @@ module Moxml
       # the same wrapper instead of allocating a fresh one per
       # access. Keyed by object identity; re-keyed by
       # Node#refresh_native! when an adapter swaps a native.
-      @wrappers = {}.compare_by_identity
+      # WeakMap where available: entries die with their native —
+      # parse-and-drop workloads release wrappers, natives, and (via
+      # the binding's finalizer) the C subtrees, instead of pinning
+      # up to the old 65,536 wholesale-clear valve which also
+      # destroyed identity for live wrappers when it fired.
+      @wrappers = WEAK_WRAPPERS ? ObjectSpace::WeakMap.new : {}.compare_by_identity
     end
 
     def wrapper_for(native)
@@ -22,18 +31,26 @@ module Moxml
     end
 
     def register_wrapper(native, wrapper)
-      # Safety valve + adapter opt-in. Adapters whose natives are
-      # recreated per access (libxml mints fresh Ruby objects for the
-      # same C node) opt out so the map does not accumulate dead
-      # entries; the default is opt-in.
+      # Adapter opt-in. Adapters whose natives are recreated per
+      # access (libxml mints fresh Ruby objects for the same C node)
+      # opt out so the map does not accumulate dead entries; the
+      # default is opt-in.
       return if @config&.adapter&.wrappers_recyclable? == false
 
-      @wrappers.clear if @wrappers.size >= 65_536
+      unless WEAK_WRAPPERS
+        @wrappers.clear if @wrappers.size >= 65_536
+      end
       @wrappers[native] = wrapper
     end
 
+    # WeakMap has no delete — a nil value tombstones the entry (reads
+    # as a miss) and dies with the native like any other.
     def unregister_wrapper(native)
-      @wrappers.delete(native)
+      if WEAK_WRAPPERS
+        @wrappers[native] = nil
+      else
+        @wrappers.delete(native)
+      end
     end
 
     def namespace_scope_generation
