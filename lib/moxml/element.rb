@@ -56,8 +56,17 @@ module Moxml
     # bare names match only no-namespace attributes; prefixed names
     # resolve through in-scope declarations to expanded names.
     def [](name)
-      cache = attribute_read_cache
       key = name.to_s
+      # Bare names on qualified-name engines: one adapter call with
+      # the adapter's own marker restoration (bare_attr_value). The
+      # resolver's expanded-name semantics only pay for prefixed
+      # names, where resolution is real work.
+      adapter = self.adapter
+      if !key.include?(":") && adapter.bare_get_qname_safe?
+        return adapter.bare_attr_value(@native, key)
+      end
+
+      cache = attribute_read_cache
       unless cache.key?(key)
         cache[key] = Moxml::AttributeResolver.resolve(self, key)
       end

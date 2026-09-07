@@ -150,6 +150,23 @@ module Moxml
           true
         end
 
+        def bare_get_qname_safe?
+          true
+        end
+
+        # Fast bare-name read: the binding call plus marker
+        # restoration when the document carries them (entity-free
+        # documents — the common case — skip the scan; parentless
+        # iterparse elements are never bearing).
+        def bare_attr_value(element, name)
+          value = element[name.to_s]
+          if value.is_a?(String) && entity_bearing?(element)
+            restore_entities(value)
+          else
+            value
+          end
+        end
+
         def native_identity_stable?
           true
         end
