@@ -154,6 +154,14 @@ module Moxml
           true
         end
 
+        # Expanded-name (URI + local) attribute VALUE lookup on the
+        # engine — the same match rule as the resolver (xmlns
+        # declarations invisible, no-namespace never matches a
+        # prefixed name), without materializing the attribute list.
+        def expanded_attr_value(element, uri, local)
+          element.attribute_ns(uri, local)
+        end
+
         # Fast bare-name read: the binding call plus marker
         # restoration when the document carries them (entity-free
         # documents — the common case — skip the scan; parentless

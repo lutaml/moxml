@@ -29,6 +29,27 @@ module Moxml
     module_function
 
     # @return [Moxml::Attribute, nil] the matching attribute wrapper
+    # Value-only prefixed resolution for Element#[]: prefix
+    # resolution is the resolver's real work; the match step goes to
+    # the engine's expanded-name lookup where the adapter offers it,
+    # skipping the attribute-list materialization and per-attr URI
+    # probes. Bare names take Element#'s adapter fast path instead.
+    def resolve_value(element, name)
+      prefix, local = name.split(":", 2)
+      return nil if prefix == "xmlns"
+
+      uri = prefix_uri(element, prefix)
+      return nil if uri.nil?
+
+      adapter = element.context.config.adapter
+      if adapter.is_a?(Moxml::Adapter::Leptris)
+        return adapter.expanded_attr_value(element.native, uri, local)
+      end
+
+      attr = resolve(element, name)
+      attr&.value
+    end
+
     def resolve(element, name)
       name = name.to_s
       if name.include?(":")
