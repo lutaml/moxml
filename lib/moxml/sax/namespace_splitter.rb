@@ -12,22 +12,31 @@ module Moxml
       # @yieldparam value [Object] raw attribute/namespace value
       # @yieldreturn [Object] transformed value to store
       # @return [Array(Hash, Hash)] [regular_attrs, namespaces]
+      # Shared for the overwhelmingly common no-declaration element:
+      # one Hash allocation per start_element event saved. Frozen —
+      # event hashes are read-only data, not scratch.
+      EMPTY_NAMESPACES = {}.freeze
+
       def split_attributes_and_namespaces(attributes)
         attrs = {}
-        ns = {}
+        ns = nil
 
         each_attribute(attributes) do |name, value|
           name_s = name.to_s
-          v = block_given? ? yield(value) : value
-          if name_s == "xmlns" || name_s.start_with?("xmlns:")
-            prefix = name_s == "xmlns" ? nil : name_s.sub("xmlns:", "")
-            ns[prefix] = v
+          if name_s.start_with?("xmlns")
+            if name_s == "xmlns"
+              (ns ||= {})[nil] = block_given? ? yield(value) : value
+            elsif name_s.bytesize > 5 && name_s.getbyte(5) == 58 # ":"
+              (ns ||= {})[name_s[6..]] = block_given? ? yield(value) : value
+            else
+              attrs[name_s] = block_given? ? yield(value) : value
+            end
           else
-            attrs[name_s] = v
+            attrs[name_s] = block_given? ? yield(value) : value
           end
         end
 
-        [attrs, ns]
+        [attrs, ns || EMPTY_NAMESPACES]
       end
 
       private
