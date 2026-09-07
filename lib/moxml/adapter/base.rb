@@ -28,6 +28,24 @@ module Moxml
           )
         end
 
+        # Streaming incremental parse (leptris engine): yields each
+        # completed element while the parse runs, releasing prior
+        # subtrees — memory bounded by the largest subtree, not the
+        # document. Adapters without an engine iterator raise.
+        def iterparse(_xml, _mode = :top_level, _context = nil)
+          raise Moxml::AdapterError.new(
+            "Streaming iteration is not supported by the #{name.split('::').last} adapter",
+            adapter: name, operation: "iterparse",
+          )
+        end
+
+        def iterparse_file(_path, _mode = :top_level, _context = nil)
+          raise Moxml::AdapterError.new(
+            "Streaming file iteration is not supported by the #{name.split('::').last} adapter",
+            adapter: name, operation: "iterparse_file",
+          )
+        end
+
         # Tolerant HTML4/5 parsing into the standard DOM (engine
         # issue leptris/leptris#659): implied end tags, void elements,
         # case-insensitive lowercased names, the HTML named-entity

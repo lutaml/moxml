@@ -77,6 +77,33 @@ HTML parses — the engine decodes HTML entities directly into text.
 Adapters without an engine HTML mode (Ox, Oga, REXML, LibXML) raise
 `Moxml::AdapterError`; Nokogiri parses through libxml2's HTML mode.
 
+== Streaming iteration — `iterparse`
+
+`Context#iterparse(xml, mode:)` / `iterparse_file(path, mode:)`
+expose the engine's incremental parser (libleptris v1.6, #586):
+completed elements yield while parsing, prior subtrees release, and
+memory stays bounded by the largest subtree — `iterparse_file`
+streams the file C-side. `:top_level` yields the root's children;
+`:full_document` yields every element in completion (post-order)
+order.
+
+Measured on a 21MB / 108k-element file: **+20MB peak RSS** (full
+parse: +169MB; Nokogiri Reader: +62MB), bare iteration 194ms
+(Nokogiri Reader: 179ms).
+
+The yielded elements are parentless (`#document` nil) and valid
+only inside the block — the subtree is released when the iterator
+advances. Adapters without an engine iterator raise
+`Moxml::AdapterError`.
+
+[source,ruby]
+----
+Moxml.new(:leptris).iterparse_file("huge.xml") do |record|
+  process(record.at_attrs, record.children.map(&:text))
+end
+----
+
+== Lifecycle
 == Lifecycle
 
 `Document#free` releases the C tree deterministically — batch

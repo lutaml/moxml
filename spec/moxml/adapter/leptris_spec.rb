@@ -376,6 +376,51 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
   end
 
+  describe "iterparse streaming" do
+    let(:ctx) { Moxml.new(:leptris) }
+    let(:xml) do
+      %(<catalog>) + Array.new(3) { |i| %(<record id="r#{i}"><field name="f">v#{i} &amp; x</field></record>) }.join + %(</catalog>)
+    end
+
+    it "yields completed top-level children with readable attributes" do
+      seen = []
+      ctx.iterparse(xml) { |e| seen << [e.name, e["id"]] }
+      expect(seen).to eq([["record", "r0"], ["record", "r1"], ["record", "r2"]])
+    end
+
+    it "full_document yields every element in completion order" do
+      seen = []
+      ctx.iterparse(xml, mode: :full_document) { |e| seen << e.name }
+      expect(seen).to eq(%w[field record field record field record catalog])
+    end
+
+    it "reads children, text, and serializes inside the block" do
+      outs = []
+      ctx.iterparse(xml) do |e|
+        outs << [e.children.first["name"], e.children.first.text,
+                 Nokogiri::XML(e.to_xml, &:strict).root["id"]]
+      end
+      expect(outs.map(&:first)).to all(eq("f"))
+      expect(outs.map { |row| row[1] }).to all(match(/v\d & x/))
+      expect(outs.map { |row| row[2] }).to eq(%w[r0 r1 r2])
+    end
+
+    it "streams from a file" do
+      require "tmpdir"
+      Dir.mktmpdir do |dir|
+        path = File.join(dir, "doc.xml")
+        File.write(path, xml)
+        seen = []
+        ctx.iterparse_file(path) { |e| seen << e["id"] }
+        expect(seen).to eq(%w[r0 r1 r2])
+      end
+    end
+
+    it "requires a block" do
+      expect { ctx.iterparse(xml) }.to raise_error(ArgumentError, /block/)
+    end
+  end
+
   describe "C14n native delegation" do
     it "matches the Ruby reference byte-for-byte on the default path" do
       # Whether the NATIVE_C14N_BYTE_SAFE probe is armed (fixed

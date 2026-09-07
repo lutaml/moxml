@@ -211,6 +211,28 @@ module Moxml
         # the HTML named-entity table, synthesized html/head/body.
         # The engine decodes HTML entities directly into text — no
         # marker pipeline, so the marker split scan is stood down.
+        # Incremental parse (libleptris v1.6/#586): yields completed
+        # elements as the parse runs; each prior subtree is released.
+        # Yielded elements are parentless (document nil) and valid
+        # only inside the block — the wrapper mirrors that lifetime.
+        def iterparse(xml, mode = :top_level, _context = nil, &block)
+          raise ArgumentError, "iterparse requires a block" unless block
+
+          ctx = _context || Context.new(:leptris)
+          ::Leptris::XML::Iterparse.parse(xml, mode: mode) do |element|
+            block.call(Node.wrap(element, ctx))
+          end
+        end
+
+        def iterparse_file(path, mode = :top_level, _context = nil, &block)
+          raise ArgumentError, "iterparse_file requires a block" unless block
+
+          ctx = _context || Context.new(:leptris)
+          ::Leptris::XML::Iterparse.parse_file(path, mode: mode) do |element|
+            block.call(Node.wrap(element, ctx))
+          end
+        end
+
         def parse_html(html, _options = {}, _context = nil)
           unless HTML_PARSE_SUPPORTED
             raise Moxml::AdapterError.new(
@@ -527,7 +549,8 @@ module Moxml
             # dominates cold children cost. Cross-document moves of
             # marker-bearing text into an entity-free document degrade
             # to literal text.
-            return natives if attachments.get(node.document, :entity_markers) == false
+            return natives if node.document.nil? ||
+                             attachments.get(node.document, :entity_markers) == false
 
             split_entity_markers(natives, node)
           end
