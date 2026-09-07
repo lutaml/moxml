@@ -416,6 +416,16 @@ RSpec.describe Moxml::Adapter::Leptris do
       end
     end
 
+    it "answers subqueries on yielded elements via the Ruby engine" do
+      # Parentless elements have no document handle for the compiled
+      # native eval — the gate must route them, not crash.
+      seen = []
+      ctx.iterparse(xml) do |e|
+        seen << [e.at_xpath(".//field")["name"], e.xpath("count(.//field)")]
+      end
+      expect(seen).to eq([["f", 1.0]] * 3)
+    end
+
     it "requires a block" do
       expect { ctx.iterparse(xml) }.to raise_error(ArgumentError, /block/)
     end

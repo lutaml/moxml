@@ -908,6 +908,10 @@ module Moxml
         end
 
         def native_context_node?(node)
+          # Parentless elements (iterparse yields) have no document
+          # handle for the compiled eval — the Ruby engine owns them.
+          return false if node.is_a?(::Leptris::XML::Element) && node.document.nil?
+
           node.is_a?(::Leptris::XML::Document) ||
             node.is_a?(::Leptris::XML::Element)
         end
