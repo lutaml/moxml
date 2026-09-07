@@ -68,9 +68,13 @@ module Moxml
 
       cache = attribute_read_cache
       unless cache.key?(key)
-        cache[key] = Moxml::AttributeResolver.resolve(self, key)
+        cache[key] = if key.include?(":")
+                       Moxml::AttributeResolver.resolve_value(self, key)
+                     else
+                       Moxml::AttributeResolver.resolve(self, key)&.value
+                     end
       end
-      cache[key]&.value
+      cache[key]
     end
 
     def attribute(name)
