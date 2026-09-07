@@ -100,6 +100,20 @@ module Moxml
       config.adapter.parse_html(html, options, self)
     end
 
+    # Streaming incremental parse (leptris): yields each completed
+    # element while parsing — :top_level yields the root's children,
+    # :full_document every element in completion (post-order) order.
+    # Memory stays bounded by the largest subtree, not the document
+    # (iterparse_file streams the file C-side). Yielded elements are
+    # parentless and valid only inside the block.
+    def iterparse(xml, mode: :top_level, &block)
+      config.adapter.iterparse(xml, mode, self, &block)
+    end
+
+    def iterparse_file(path, mode: :top_level, &block)
+      config.adapter.iterparse_file(path, mode, self, &block)
+    end
+
     # Parse then flatten in one call — see Moxml::Materializer
     # (issue #132). Yields records; returns an Enumerator when no
     # block is given.

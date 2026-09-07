@@ -15,8 +15,11 @@ module Moxml
              CustomizedLeptris::DocumentPI
             true
           else
+            # Parentless elements come only from Iterparse —
+            # engine parsed, outside the marker pipeline: never
+            # bearing.
             doc = native.document
-            doc.nil? || attachments.get(doc, :entity_markers) != false
+            doc.nil? ? false : attachments.get(doc, :entity_markers) != false
           end
         end
 
