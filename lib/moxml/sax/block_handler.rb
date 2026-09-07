@@ -139,24 +139,28 @@ module Moxml
         @handlers[:start_document]&.call
       end
 
+      # The per-event hash lookup fires for every node in the
+      # document; the DSL is fixed after construction, so the
+      # resolved block memoizes into an ivar on first fire (nil
+      # short-circuits the same way &. does).
       # @private
       def on_end_document
-        @handlers[:end_document]&.call
+        (@end_document_block ||= @handlers[:end_document])&.call
       end
 
       # @private
       def on_start_element(name, attributes = {}, namespaces = {})
-        @handlers[:start_element]&.call(name, attributes, namespaces)
+        (@start_element_block ||= @handlers[:start_element])&.call(name, attributes, namespaces)
       end
 
       # @private
       def on_end_element(name)
-        @handlers[:end_element]&.call(name)
+        (@end_element_block ||= @handlers[:end_element])&.call(name)
       end
 
       # @private
       def on_characters(text)
-        @handlers[:characters]&.call(text)
+        (@characters_block ||= @handlers[:characters])&.call(text)
       end
 
       # @private
