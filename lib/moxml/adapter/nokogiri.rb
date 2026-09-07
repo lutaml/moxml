@@ -16,6 +16,36 @@ module Moxml
           true
         end
 
+        # Qualified-name reads are clean on this engine (verified by
+        # the expanded-name specs); markers restore in-line when the
+        # parse recorded them.
+        def bare_get_qname_safe?
+          true
+        end
+
+        # Fast bare-name read for Element#[]: the native call plus,
+        # only when the parse recorded entity markers, their
+        # restoration (the resolver path's other real semantic).
+        # The marker flag is constant per document — a WeakMap on
+        # the adapter beats the per-read document fetch + attachment
+        # hash chain.
+        def doc_entity_markers?(doc)
+          cache = (@doc_markers ||= ObjectSpace::WeakMap.new)
+          cached = cache[doc]
+          return cached unless cached.nil?
+
+          cache[doc] = attachments.get(doc, :entity_markers) == true
+        end
+
+        def bare_attr_value(element, name)
+          value = element[name.to_s]
+          if value.is_a?(String) && doc_entity_markers?(element.document)
+            restore_entities(value)
+          else
+            value
+          end
+        end
+
         def native_identity_stable?
           true
         end
@@ -25,7 +55,7 @@ module Moxml
         end
 
         def parse(xml, options = {}, _context = nil)
-          processed_xml = preprocess_entities(xml)
+          processed_xml, entity_markers = Entity.preprocess_with_marker_flag(xml)
 
           # preprocess_entities always returns UTF-8, so tell Nokogiri to
           # parse as UTF-8 regardless of any original encoding option.
@@ -50,6 +80,7 @@ module Moxml
 
           # Use provided context if available, otherwise create new one
           ctx = _context || Context.new(:nokogiri)
+          attachments.set(native_doc, :entity_markers, entity_markers)
           Document.new(native_doc, ctx)
         end
 
