@@ -113,6 +113,35 @@ module Moxml
       self
     end
 
+    # Append a raw XML fragment's top-level nodes as children.
+    #
+    # Bulk construction rides the engine's parser instead of
+    # per-node create/attach calls — measured 2.0x faster than
+    # per-node building through the same adapter, and faster than
+    # per-node building on Nokogiri (the parse is C; the per-node
+    # path pays an FFI crossing per node).
+    #
+    # The fragment must be namespace-self-contained (declarations
+    # inside it ride along with the moved subtrees; prefixes relying
+    # on THIS element's scope must be spelled out in the fragment)
+    # and well-formed as the content of a single wrapper element —
+    # declarations and doctypes raise ParseError.
+    #
+    # @return [Moxml::Element] self
+    def append_xml(fragment)
+      if context.config.adapter_name == :ox
+        raise Moxml::AdapterError.new(
+          "append_xml is not supported by the Ox adapter (its customized node wrappers do not survive cross-document attachment)",
+          adapter: "Ox", operation: "append_xml",
+        )
+      end
+
+      wrapper = context.parse("<m>#{fragment}</m>")
+      children = wrapper.root.children.to_a
+      children.each { |child| add_child(child) }
+      self
+    end
+
     def add_namespace(prefix, uri)
       adapter.create_namespace(@native, prefix, uri,
                                namespace_validation_mode: context.config.namespace_validation_mode)

@@ -140,4 +140,29 @@ RSpec.describe Moxml::Element do
       end
     end
   end
+
+  describe "#append_xml" do
+    it "appends a fragment's top-level nodes with entities round-tripped" do
+      %w[leptris nokogiri oga rexml].each do |adapter|
+        ctx = Moxml.new(adapter.to_sym)
+        doc = ctx.parse(%(<root/>))
+        result = doc.root.append_xml(%(<a x="1">t1 &amp; u</a><b/>tail))
+        expect(result).to equal(doc.root)
+        out = doc.to_xml
+        expect(out).to include(%(<a x="1">t1 &amp; u</a>))
+        expect(out).to include("<b></b>")
+        expect(out).to include("tail")
+      end
+    end
+
+    it "raises AdapterError on the ox adapter" do
+      doc = Moxml.new(:ox).parse(%(<root/>))
+      expect { doc.root.append_xml(%(<a/>)) }.to raise_error(Moxml::AdapterError, /Ox/)
+    end
+
+    it "raises ParseError for non-well-formed fragments" do
+      doc = Moxml.new(:leptris).parse(%(<root/>))
+      expect { doc.root.append_xml(%(<a><b></a>)) }.to raise_error(Moxml::ParseError)
+    end
+  end
 end
