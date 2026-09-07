@@ -220,7 +220,7 @@ module Moxml
 
           ctx = _context || Context.new(:leptris)
           ::Leptris::XML::Iterparse.parse(xml, mode: mode) do |element|
-            block.call(Node.wrap(element, ctx))
+            yield(Node.wrap(element, ctx))
           end
         end
 
@@ -229,7 +229,7 @@ module Moxml
 
           ctx = _context || Context.new(:leptris)
           ::Leptris::XML::Iterparse.parse_file(path, mode: mode) do |element|
-            block.call(Node.wrap(element, ctx))
+            yield(Node.wrap(element, ctx))
           end
         end
 
@@ -550,7 +550,7 @@ module Moxml
             # marker-bearing text into an entity-free document degrade
             # to literal text.
             return natives if node.document.nil? ||
-                             attachments.get(node.document, :entity_markers) == false
+              attachments.get(node.document, :entity_markers) == false
 
             split_entity_markers(natives, node)
           end
