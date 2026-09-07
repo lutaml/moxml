@@ -379,7 +379,7 @@ RSpec.describe Moxml::Adapter::Leptris do
   describe "iterparse streaming" do
     let(:ctx) { Moxml.new(:leptris) }
     let(:xml) do
-      %(<catalog>) + Array.new(3) { |i| %(<record id="r#{i}"><field name="f">v#{i} &amp; x</field></record>) }.join + %(</catalog>)
+      %(<catalog>#{Array.new(3) { |i| %(<record id="r#{i}"><field name="f">v#{i} &amp; x</field></record>) }.join}</catalog>)
     end
 
     it "yields completed top-level children with readable attributes" do
