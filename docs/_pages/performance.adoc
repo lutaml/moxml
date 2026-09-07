@@ -121,6 +121,24 @@ gap is the binding's own floor — even a zero-overhead wrapper
 measures 0.90x under YJIT (leptris-ruby#149 tracks it, with a
 batch-create proposal to collapse the crossings).
 
+=== Bulk construction — `append_xml`
+
+`element.append_xml(fragment)` appends a raw fragment's top-level
+nodes by parsing it and attaching the subtrees — the engine's C
+parser does the node construction in one crossing instead of an FFI
+round trip per create/attach/attribute call:
+
+| 300-node subtree | time | vs per-node |
+|---|---|---|
+| per-node build (leptris) | 2065µs | — |
+| **append_xml (leptris)** | **1019µs** | **2.0x** |
+| per-node build (nokogiri) | 1746µs | append_xml is 1.7x faster |
+
+The fragment must be namespace-self-contained and well-formed as
+the content of one wrapper element. Supported on leptris, nokogiri,
+oga, and rexml; the Ox adapter raises (its customized node wrappers
+do not survive cross-document attachment).
+
 === Lazy result sets
 
 `xpath` results and `children` node sets allocate wrapper slots on
