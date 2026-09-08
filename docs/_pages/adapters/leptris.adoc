@@ -74,6 +74,10 @@ so script bodies with markup characters round-trip through a strict
 XML reparse. The adapter stands the entity-marker pipeline down for
 HTML parses — the engine decodes HTML entities directly into text.
 
+Measured on 1.9.105 (named-entity decoding fixed, engine #848):
+parse 2.5-3.5x, serialize 4.1x, xpath 6-29x faster than Nokogiri —
+uniformly, including entity-laden pages.
+
 Adapters without an engine HTML mode (Ox, Oga, REXML, LibXML) raise
 `Moxml::AdapterError`; Nokogiri parses through libxml2's HTML mode.
 
@@ -93,7 +97,8 @@ parse: +169MB; Nokogiri Reader: +62MB), bare iteration 194ms
 
 The yielded elements are parentless (`#document` nil) and valid
 only inside the block — the subtree is released when the iterator
-advances. Adapters without an engine iterator raise
+advances. Since binding 1.9.105, access after the iteration raises
+`UseAfterFreeError` instead of crashing (leptris-ruby#152). Adapters without an engine iterator raise
 `Moxml::AdapterError`.
 
 [source,ruby]
