@@ -28,6 +28,12 @@ module Moxml
       HTML_PARSE_SUPPORTED =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.80")
 
+      # Attribute-node xpath results carry proper wrappers since
+      # 1.9.105 (leptris-ruby#153: ResultAttr with name/value);
+      # before that the native gate routed them to the Ruby engine.
+      ATTR_RESULT_NATIVE =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.105")
+
       # Native C14N delegation probe: the engine's C14N must
       # byte-match the Ruby reference (ported from canon) on a
       # namespace-sorting + attributes + comments shape before
@@ -512,7 +518,7 @@ module Moxml
           when ::Leptris::XML::Element then :element
           when ::Leptris::XML::CDATA then :cdata
           when ::Leptris::XML::Text, CustomizedLeptris::TextSegment then :text
-          when ::Leptris::XML::Attr then :attribute
+          when ::Leptris::XML::Attr, ::Leptris::XML::ResultAttr then :attribute
           when ::Leptris::XML::Comment then :comment
           when ::Leptris::XML::ProcessingInstruction, CustomizedLeptris::DocumentPI then :processing_instruction
           when ::Leptris::XML::Document then :document
@@ -941,6 +947,12 @@ module Moxml
             next false if ast_contains_type?(ast, :variable)
             next false if uses_xmlns_prefix?(ast)
             next false if !PREFIXED_ATTR_PREDICATES_NATIVE && prefixed_attribute_test?(ast)
+
+            # Attribute-node results are native since 1.9.105
+            # (leptris-ruby#153: ResultAttr wrappers with name/value);
+            # older bindings returned generic Node wrappers whose
+            # #name raised, so the Ruby engine owned them.
+            next true if selects_attribute_results?(ast) && ATTR_RESULT_NATIVE
 
             !selects_attribute_results?(ast)
           end
