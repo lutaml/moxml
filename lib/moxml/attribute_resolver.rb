@@ -42,7 +42,11 @@ module Moxml
       return nil if uri.nil?
 
       adapter = element.context.config.adapter
-      if adapter.is_a?(Moxml::Adapter::Leptris)
+      # The leptris adapter class only exists once that optional gem's
+      # adapter has been loaded; Moxml::Adapter.loaded? must gate every
+      # mention of the constant (see its definition).
+      if Moxml::Adapter.loaded?(:leptris) &&
+          adapter.is_a?(Moxml::Adapter::Leptris)
         return adapter.expanded_attr_value(element.native, uri, local)
       end
 

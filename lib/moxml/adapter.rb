@@ -44,6 +44,34 @@ module Moxml
         platform_adapters.include?(name.to_sym)
       end
 
+      # True only when the named adapter's class is already loaded in
+      # this process — and never as a side effect of asking.
+      #
+      # Core code branches on the leptris adapter for native fast paths
+      # (AttributeResolver#resolve_value, C14n.native_inclusive10), but
+      # the leptris gem is optional and its adapter class is required on
+      # demand by .load. Naming Moxml::Adapter::Leptris unguarded there
+      # raises NameError under every other adapter.
+      #
+      # Neither `defined?` nor a bare `const_defined?` is a correct
+      # guard here:
+      #
+      # - both answer "yes" for a *registered but unloaded* autoload, so
+      #   should a concrete adapter ever join the autoload list above,
+      #   the guard would pass and the very next constant read would
+      #   pull in the optional gem — the exact thing being prevented;
+      # - `const_defined?` with the default inherit=true also reaches
+      #   Object, so it answers "yes" for the gem's own top-level
+      #   ::Leptris even when the adapter class does not exist.
+      #
+      # `autoload?` returns the pending path until the file is really
+      # loaded and nil afterwards, so the pair below is exact. Not
+      # memoized: an adapter may be loaded at any point in the process.
+      def loaded?(name)
+        const_name = const_name_for(name)
+        const_defined?(const_name, false) && autoload?(const_name).nil?
+      end
+
       def platform_adapters
         RUBY_ENGINE == "opal" ? OPAL_AVAILABLE_ADAPTERS : AVAILABLE_ADAPTERS
       end

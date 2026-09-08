@@ -63,7 +63,11 @@ module Moxml
       return nil unless algorithm_shape_inclusive10?(node_or_xml)
 
       adapter = node_or_xml.context.config.adapter
-      return nil unless adapter == Moxml::Adapter::Leptris &&
+      # The leptris adapter class only exists once that optional gem's
+      # adapter has been loaded; Moxml::Adapter.loaded? must gate every
+      # mention of the constant (see its definition).
+      return nil unless Moxml::Adapter.loaded?(:leptris) &&
+        adapter == Moxml::Adapter::Leptris &&
         Moxml::Adapter::Leptris::NATIVE_C14N_BYTE_SAFE
 
       node_or_xml.native.canonicalize(
