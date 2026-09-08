@@ -52,10 +52,15 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(doc.xpath("//item[@p:kind='a']").map { |n| n["id"] }).to eq(["1"])
     end
 
-    it "falls back to the Ruby engine for attribute-node results" do
+    it "evaluates attribute-node queries with proper wrappers" do
+      # Native since 1.9.105 (leptris-ruby#153: ResultAttr with
+      # name/value); earlier bindings returned generic nodes whose
+      # #name raised, so the Ruby engine owned them.
+      skip "requires native attr results (leptris 1.9.105+)" unless described_class::ATTR_RESULT_NATIVE
       attrs = doc.xpath("//item/@id")
       expect(attrs.map(&:name)).to eq(%w[id id])
       expect(attrs.map(&:value)).to eq(%w[1 2])
+      expect(attrs.first).to be_a(Moxml::Attribute)
     end
 
     it "evaluates element-context queries on the native engine" do
