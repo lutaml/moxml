@@ -15,72 +15,138 @@ Ox is the fastest XML parser available for Ruby, providing excellent performance
 * Maximum parsing speed
 * Simple document structures
 * Memory-constrained environments
-* When XPath usage is minimal
 
-== Specific adapter limitations
+== XPath
 
-=== Ox adapter
+Since v0.2.0 the Ox adapter runs XPath through Moxml's pure-Ruby XPath
+1.0 engine (`lib/moxml/xpath/`), the same engine HeadedOx uses. The
+earlier "XPath-to-`locate()`" translator — which silently dropped
+predicates it could not express — has been deleted, together with the
+limitations it imposed.
 
-==== XPath limitations
-
-The Ox adapter uses a custom "XPath-to-locate" translation engine.
-
-The following XPath features are NOT supported:
-
-* Attribute value predicates: `//book[@id='123']` ❌
-* Logical operators: `//book[@id and @title]` ❌
-* Position predicates: `//book[1]`, `//book[last()]` ❌
-* Text predicates: `//book[text()='Title']` ❌
-* Namespace queries: `//ns:element` ❌
-* Parent axis: `//child/..` ❌
-* Sibling axes: `following-sibling::*` ❌
-* XPath functions: `count()`, `concat()`, etc. ❌
-
-*Workaround:* Use Ruby enumerable methods after basic queries:
+Predicates, functions, operators and namespace-prefixed names all work
+and agree with Nokogiri:
 
 [source,ruby]
 ----
-# Instead of: doc.xpath("//book[@id='123']")
-# Use:
-doc.xpath("//book").find { |book| book["id"] == "123" }
+doc = Moxml.new(:ox).parse(xml)
+
+doc.xpath("//book[@id='123']")                 # attribute value predicate
+doc.xpath("//book[@id and @title]")            # logical operators
+doc.xpath("//book[1]")                         # position predicate
+doc.xpath("//book[last()]")                    # last()
+doc.xpath("//title[.='Ruby Book']")            # string-value predicate
+doc.xpath("//ns:element", "ns" => "urn:x")     # namespace-prefixed name
+doc.xpath("//ns:element/@ns:attr", "ns" => "urn:x")
+doc.xpath("//child/..")                        # parent axis
+doc.xpath("//child/following-sibling::*")      # sibling axes
+doc.xpath("count(//book)")                     # => Float
+doc.xpath("concat('a-', //book/@id)")          # => String
+doc.xpath("//book[price < 50 div 2]")          # arithmetic in predicates
+doc.xpath("//book/@*")                         # attribute wildcard
 ----
 
-IMPORTANT: For complete XPath 1.0 specification with zero limitations today, use
-Nokogiri or Oga adapters.
+Scalar-returning expressions return Ruby scalars rather than node sets:
+`count()` and `string-length()` return a `Float`, `concat()` and
+`normalize-space()` return a `String`, `boolean()` and `starts-with()`
+return `true`/`false`.
 
-==== Element Ordering in Round-Trip Tests
+=== Axes
 
-[IMPORTANT]
-.Round-trip tests for Ox are experimental
---
-Ox round-trip tests (`nokogiri-ox` CI job) are **experimental** because Ox lacks full XML
-conformance:
+Ten of the thirteen XPath axes are implemented: `child`, `self`,
+`parent`, `ancestor`, `ancestor-or-self`, `descendant`,
+`descendant-or-self`, `following-sibling`, `preceding-sibling` and
+`attribute`.
 
-* **Namespace support**: Ox does not properly handle namespaced elements in XPath queries
-* **XPath limitations**: Uses `locate()` instead of standard XPath; no attribute value
-  predicates, no logical operators, no position predicates
-* **Element ordering**: Ox produces elements in a different order than Nokogiri/Oga for
-  certain complex fixtures
+`following`, `preceding` and `namespace` are not implemented. Using one
+raises `Moxml::XPathError` ("XPath axis ... is not supported by this
+engine") rather than returning a wrong result.
 
-For production use with complex XML, prefer Nokogiri or Oga adapters.
---
+*Workaround:* `following::x` and `preceding::x` can usually be rewritten
+in terms of the sibling and ancestor axes, or replaced by a document-wide
+query plus a Ruby filter. For the `namespace` axis, use `namespace-uri()`
+and `local-name()`, which are implemented.
 
-The Ox adapter produces elements in a different order than other adapters for certain
-fixtures with complex nested structures. In round-trip tests, this causes the
-`elements_with_attributes` array length comparison to fail, even though the semantic
-equivalence check (double round-trip) passes.
+=== Known limitations
 
-Known affected fixtures:
+The following are engine behaviours, not Ox parser behaviours; they apply
+equally to the link:headed-ox[HeadedOx adapter], which inherits its XPath
+from this adapter.
 
-* `niso-jats/element_citation.xml`
-* `niso-jats/pnas_sample.xml`
-* `metanorma/collection1nested.xml`
+Absolute location paths are resolved from the context node::
+An expression beginning with `/` or `//` is evaluated against the node it
+is invoked on instead of the document root. From a document node this is
+indistinguishable from correct behaviour, so ordinary
+`doc.xpath("//book")` queries are unaffected. It matters in two places:
+inside a predicate, where the context node is the node being tested, and
+when `#xpath` is called on an element.
++
+[source,ruby]
+----
+book = doc.at_xpath("//book")
 
-This is a known limitation tracked in the round-trip test suite via
-`KNOWN_ELEMENT_ORDERING_ISSUES`. The `elements_with_attributes` comparison is
-automatically skipped for these Ox adapter pairs.
+book.xpath("//title")               # subtree only; Nokogiri returns the whole document
+book.xpath("/library/book")         # => empty
+doc.xpath("//book[count(//book)=2]") # => empty; the inner //book sees one subtree
+----
++
+*Workaround:* anchor element-relative queries explicitly with `.//` or a
+relative step (`book.xpath(".//title")` agrees with Nokogiri), and hoist
+document-wide sub-expressions out of predicates into Ruby.
+
+`text()` nodes have an empty string-value::
+A `text()` step returns the right nodes, but converting one to a string
+yields `""`, so comparisons against a text node are always false.
++
+[source,ruby]
+----
+doc.xpath("//title[text()='Ruby Book']")  # => empty
+doc.xpath("string(//title[1]/text())")    # => ""
+doc.xpath("//title[text()]")              # => works (existence only)
+----
++
+*Workaround:* use the node's string-value instead of its text child —
+`//title[.='Ruby Book']` and `string(//title[1])` both return the
+expected result.
+
+Reverse axes yield nearest-first::
+`ancestor::` and `ancestor-or-self::` return nodes in reverse document
+order (nearest ancestor first). Nokogiri and LibXML return the same nodes
+in document order. Node identity and set size match; only the order
+differs.
+
+An unprefixed name matches an element in a default namespace::
+`//plain` matches `<plain>` under `xmlns="urn:x"`, where Nokogiri and
+LibXML return nothing. REXML behaves the same way as Ox here. Qualify the
+name (`//d:plain` with `d` bound to the URI) when the stricter reading is
+wanted.
+
+IMPORTANT: For an XPath 1.0 implementation with none of the above
+deviations, use the Nokogiri or LibXML adapters, which query through
+libxml2's native XPath.
+
+=== Round-trip tests
+
+Ox round-trip tests run in the `nokogiri-ox` CI job, which is still
+labelled experimental in `.github/workflows/round-trip.yml`.
+
+Earlier releases skipped the `elements_with_attributes` comparison for
+adapter pairs involving `niso-jats/element_citation.xml` and
+`metanorma/collection1nested.xml`, where Ox emitted elements in a
+different order, and for the Nokogiri/REXML pair on
+`niso-jats/pnas_sample.xml`. That skip list —
+`KNOWN_ELEMENT_ORDERING_ISSUES` in `spec/consistency/round_trip_spec.rb`
+— is now empty, and the Nokogiri × Ox round-trip suite passes over every
+fixture with no comparison skipped:
+
+[source,bash]
+----
+MOXML_ROUNDTRIP_ADAPTERS=nokogiri,ox bundle exec rspec \
+  spec/consistency/round_trip_spec.rb --tag round_trip
+----
 
 See also:
 
-* link:headed-ox[HeadedOx adapter] - Ox with full XPath support
+* link:headed-ox[HeadedOx adapter] - the historical name for Ox parsing
+  plus this XPath engine
 * link:../compatibility[Adapter compatibility matrix]

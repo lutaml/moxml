@@ -13,12 +13,29 @@ comprehensive pure Ruby XPath 1.0 engine.
 
 HeadedOx provides full XPath 1.0 functionality through a pure Ruby XPath engine
 layered on top of Ox's fast C parser, allowing comprehensive XPath queries
-unhampered by the `locate()` method of the default Ox implementation.
+unhampered by the narrow subset Ox's own `locate()` method covers.
 
 NOTE: Trivia: the "Headed Ox" implementation allows the Ox to head in the right
 direction to find the desired nodes through its comprehensive XPath layer.
 
 NOTE: The HeadedOx adapter is added in v0.2.0.
+
+[IMPORTANT]
+.HeadedOx and Ox are the same XPath implementation
+--
+Since v0.2.0 the link:ox[Ox adapter] routes XPath through this same pure
+Ruby engine, and `Moxml::Adapter::HeadedOx` subclasses
+`Moxml::Adapter::Ox` without overriding `xpath` or `at_xpath`. The two
+adapters therefore return identical results for every XPath expression;
+HeadedOx remains as the historical name for the combination and reports
+its own capability hash.
+
+Everything this page says about XPath applies equally to `:ox`, including
+the engine limitations listed under
+link:ox[the Ox adapter's known limitations] — the unimplemented
+`following`, `preceding` and `namespace` axes, absolute paths resolved
+from the context node, and the empty string-value of `text()` nodes.
+--
 
 For complete architectural details and implementation guide, see
 link:docs/headed-ox.adoc[HeadedOx Documentation].
@@ -42,7 +59,8 @@ Nokogiri or Oga adapters.
 === Features
 
 * Fast XML parsing (Ox C extension) - Same speed as standard Ox
-* 6 of 13 XPath axes (46% - covers 80% of common usage patterns)
+* 10 of 13 XPath axes (`following`, `preceding` and `namespace` are not
+  implemented and raise `Moxml::XPathError`)
 * Complex XPath predicates with numeric/string/boolean expressions
 * Basic namespace-aware XPath queries (Ox namespace limitations apply)
 * Expression compilation and caching (1000-entry LRU cache)
@@ -80,15 +98,17 @@ top of Ox's fast C parser:
 
 === Known limitations
 
-The following 16 test failures represent architectural boundaries in the Ox gem,
-not bugs in HeadedOx:
+The following represent architectural boundaries in the Ox gem, not bugs in
+HeadedOx:
 
-* ✗ Attribute wildcard syntax (`@*`) - Ox API limitation
 * ✗ Namespace introspection methods - Ox doesn't expose namespace data
 * ✗ Parent node setter - Ox C struct immutability
 * ✗ CDATA end marker escaping - Complex nested `]]>` sequences
 * ✗ Complex namespace inheritance - Ox parses but doesn't track
 * ✗ Namespaced attribute access - `element["ns:attr"]` pattern
+
+Attribute wildcard syntax (`@*`) was previously listed here; it is
+implemented and returns the same attribute nodes as Nokogiri.
 
 IMPORTANT: **These are Ox limitations, not HeadedOx bugs.**
 
@@ -102,10 +122,10 @@ See link:docs/HEADED_OX_LIMITATIONS.md[HEADED_OX_LIMITATIONS.md] for:
 
 === When to Use HeadedOx
 
-You can use HeadedOx instead of Ox for all XML parsing needs, except when
-certain advanced XPath features are required.
+HeadedOx and Ox now behave identically, so this section is equally a guide to
+choosing either of them over the other adapters.
 
-* Need fast parsing + comprehensive XPath beyond Ox's `locate()`
+* Need fast parsing plus comprehensive XPath
 * XPath functions are critical (count, sum, contains, substring, etc.)
 * Complex predicates required (`[@price < average]`, `[position() = last()]`)
 * Prefer pure Ruby XPath for debugging and customization
@@ -115,7 +135,11 @@ certain advanced XPath features are required.
 
 When not to use HeadedOx:
 
-* Need all 13 XPath axes (especially ancestor, sibling, following/preceding)
+* Need the `following`, `preceding` or `namespace` axes (the other ten are
+  implemented)
+* Need absolute (`/`, `//`) paths inside predicates, or `//` evaluated from
+  an element rather than the document — see
+  link:ox[the Ox adapter's known limitations]
 * Advanced namespace operations required (introspection, complex inheritance)
 * Complex DOM modifications needed (parent node mutation)
 * CDATA escaping for nested markers is critical
@@ -139,12 +163,13 @@ All XPath 1.0 standard functions fully implemented and tested:
 String (10), Numeric (6), Boolean (4), Node (4), Position (2), Special (1)
 
 | Axes
-| 6/13 axes (46%)
+| 10/13 axes
 |
-✓ Implemented: child, self, parent, descendant, descendant-or-self (//), attribute (@)
+✓ Implemented: child, self, parent, ancestor, ancestor-or-self, descendant,
+descendant-or-self (//), following-sibling, preceding-sibling, attribute (@)
 
-✗ Missing: ancestor, sibling families, following/preceding families, namespace
-Coverage: 80% of real-world XPath usage patterns
+✗ Missing: following, preceding, namespace — these raise
+`Moxml::XPathError` rather than returning a wrong result
 
 | Operators
 | ✅
