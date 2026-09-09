@@ -11,6 +11,52 @@ RSpec.describe Moxml::Adapter::Ox do
 
   it_behaves_like "xml adapter"
 
+  describe "parse tuning (ox_skip / ox_mode)" do
+    let(:xml) { '<a xml:space="preserve">  spaced  </a>' }
+
+    it "defaults to :skip_none so whitespace runs survive" do
+      expect(Moxml.new(:ox).parse(xml).root.text).to eq("  spaced  ")
+    end
+
+    it "honours Config::OX_DEFAULT_SKIP as the default" do
+      expect(Moxml::Config::OX_DEFAULT_SKIP).to eq(:skip_none)
+      expect(Moxml::Config::OX_DEFAULT_MODE).to eq(:generic)
+    end
+
+    it "accepts a per-parse ox_skip override" do
+      result = Moxml.new(:ox).parse(xml, ox_skip: :skip_white)
+
+      expect(result.root.text).to eq(" spaced ")
+    end
+
+    it "accepts a context-level ox_skip default" do
+      context = Moxml.new(:ox)
+      context.config.ox_skip = :skip_white
+
+      expect(context.parse(xml).root.text).to eq(" spaced ")
+    end
+
+    it "lets a per-parse ox_skip override the context default" do
+      context = Moxml.new(:ox)
+      context.config.ox_skip = :skip_white
+
+      expect(context.parse(xml, ox_skip: :skip_none).root.text)
+        .to eq("  spaced  ")
+    end
+
+    it "passes ox_mode through to Ox" do
+      # :generic is the only mode yielding the node tree the adapter walks;
+      # other modes are the caller's to choose, and fail loudly.
+      expect { Moxml.new(:ox).parse(xml, ox_mode: :hash) }
+        .to raise_error(StandardError)
+    end
+
+    it "surfaces an invalid ox_skip as a parse error naming the valid modes" do
+      expect { Moxml.new(:ox).parse(xml, ox_skip: :nonsense) }
+        .to raise_error(Moxml::ParseError, /skip_none/)
+    end
+  end
+
   describe "node_type" do
     it "returns :namespace for CustomizedOx::Namespace nodes" do
       element = described_class.create_native_element("test")
