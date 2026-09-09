@@ -41,11 +41,16 @@ module Moxml
           native_doc = begin
             # Ox.parse takes no options and so inherits Ox's default
             # skip mode, :skip_white, which collapses whitespace runs in
-            # text content and defeats xml:space="preserve". Ox.load with
-            # mode: :generic returns the same Document/Element shapes while
-            # letting us ask for :skip_none.
-            result = ::Ox.load(processed_xml, mode: :generic,
-                                              skip: :skip_none)
+            # text content and defeats xml:space="preserve". Ox.load takes
+            # both knobs, so they are parameterised here: :ox_skip and
+            # :ox_mode on the parse options, defaulting to Config's
+            # :skip_none / :generic. A context supplies them through
+            # Context#default_options, which per-parse options override.
+            result = ::Ox.load(
+              processed_xml,
+              mode: options.fetch(:ox_mode, Moxml::Config::OX_DEFAULT_MODE),
+              skip: options.fetch(:ox_skip, Moxml::Config::OX_DEFAULT_SKIP),
+            )
 
             # result can be either Document or Element
             if result.is_a?(::Ox::Document)

@@ -17,6 +17,46 @@ Ox is the fastest XML parser available for Ruby, providing excellent performance
 * Memory-constrained environments
 * When XPath usage is minimal
 
+== Parse options
+
+`ox_skip:`::
+Ox's whitespace skip mode, passed straight through to `Ox.load`.
+Defaults to `:skip_none` (`Moxml::Config::OX_DEFAULT_SKIP`) so that
+whitespace runs in text content survive and `xml:space="preserve"` is
+honoured. Ox's own default, `:skip_white`, collapses them. Ox accepts
+`:skip_none`, `:skip_return`, `:skip_white` and `:skip_off`, and
+rejects anything else.
+
+`ox_mode:`::
+Ox's parse mode, passed straight through to `Ox.load`. Defaults to
+`:generic` (`Moxml::Config::OX_DEFAULT_MODE`), the mode that yields the
+`Ox::Document` / `Ox::Element` tree the adapter walks. `:hash` and
+`:object` return something else and will fail; they are exposed for
+callers who want them.
+
+Both are settable per parse or as a context default, with the per-parse
+value winning:
+
+[source,ruby]
+----
+# default: whitespace preserved
+Moxml.new(:ox).parse('<a xml:space="preserve">  s  </a>').root.text
+# => "  s  "
+
+# per-parse override
+Moxml.new(:ox).parse(xml, ox_skip: :skip_white).root.text
+# => " s "
+
+# context-level default
+context = Moxml.new(:ox)
+context.config.ox_skip = :skip_white
+context.parse(xml).root.text              # => " s "
+context.parse(xml, ox_skip: :skip_none).root.text  # => "  s  "
+----
+
+NOTE: The HeadedOx adapter subclasses Ox and honours both options
+identically.
+
 == Specific adapter limitations
 
 === Ox adapter

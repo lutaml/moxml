@@ -210,6 +210,8 @@ module Moxml
         encoding: config.default_encoding,
         strict: config.strict_parsing,
         indent: config.default_indent,
+        ox_skip: config.ox_skip,
+        ox_mode: config.ox_mode,
       }
     end
   end

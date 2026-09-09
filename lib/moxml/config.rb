@@ -93,6 +93,21 @@ module Moxml
     # - :strict — only restore DTD-declared entities (falls back to lenient until DTD parsing is implemented)
     ENTITY_RESTORATION_MODES = %i[strict lenient].freeze
 
+    # Ox parse tuning, consumed by the Ox and HeadedOx adapters.
+    #
+    # OX_DEFAULT_SKIP is :skip_none so that whitespace runs in text
+    # content survive and xml:space="preserve" is honoured. Ox's own
+    # default, :skip_white, collapses them. Ox validates the value and
+    # accepts :skip_none, :skip_return, :skip_white or :skip_off.
+    #
+    # OX_DEFAULT_MODE is :generic, the only mode that yields the
+    # Ox::Document / Ox::Element tree the adapter walks. Other modes are
+    # available to callers who want them: :hash returns a Hash and
+    # :object raises, so both defeat the adapter's node handling. That
+    # is the caller's choice to make.
+    OX_DEFAULT_SKIP = :skip_none
+    OX_DEFAULT_MODE = :generic
+
     attr_reader :adapter_name, :default_line_ending
     attr_accessor :strict_parsing,
                   :default_encoding,
@@ -102,7 +117,9 @@ module Moxml
                   :entity_load_mode,
                   :entity_provider,
                   :namespace_validation_mode,
-                  :entity_restoration_mode
+                  :entity_restoration_mode,
+                  :ox_skip,
+                  :ox_mode
 
     def default_line_ending=(value)
       unless VALID_LINE_ENDINGS.include?(value)
@@ -127,6 +144,8 @@ module Moxml
       @entity_provider = nil
       @namespace_validation_mode = :strict
       @entity_restoration_mode = :lenient
+      @ox_skip = OX_DEFAULT_SKIP
+      @ox_mode = OX_DEFAULT_MODE
     end
 
     def adapter=(name)
