@@ -242,6 +242,22 @@ RSpec.shared_examples "Moxml Edge Cases" do
       expect(children[2]).to be_a(Moxml::Text)
       expect(children[2].content).to eq("  ")
     end
+
+    # Regression: the Ox adapter used to parse via ::Ox.parse, which takes no
+    # options and so inherited Ox's default :skip_white, collapsing whitespace
+    # runs in text content. HeadedOx subclasses Ox and inherited the same bug.
+    # Every adapter must round-trip xml:space="preserve" content verbatim.
+    it "preserves whitespace runs in xml:space=\"preserve\" content" do
+      doc = context.parse('<a xml:space="preserve">  spaced  </a>')
+
+      expect(doc.root.text).to eq("  spaced  ")
+    end
+
+    it "preserves interior whitespace runs in text content" do
+      doc = context.parse("<a>one  two   three</a>")
+
+      expect(doc.root.text).to eq("one  two   three")
+    end
   end
 
   describe "document structure edge cases" do

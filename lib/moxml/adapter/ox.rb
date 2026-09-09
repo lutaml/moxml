@@ -39,7 +39,13 @@ module Moxml
         def parse(xml, options = {}, _context = nil)
           processed_xml = preprocess_entities(xml)
           native_doc = begin
-            result = ::Ox.parse(processed_xml)
+            # Ox.parse takes no options and so inherits Ox's default
+            # skip mode, :skip_white, which collapses whitespace runs in
+            # text content and defeats xml:space="preserve". Ox.load with
+            # mode: :generic returns the same Document/Element shapes while
+            # letting us ask for :skip_none.
+            result = ::Ox.load(processed_xml, mode: :generic,
+                                              skip: :skip_none)
 
             # result can be either Document or Element
             if result.is_a?(::Ox::Document)
