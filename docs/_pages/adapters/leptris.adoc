@@ -92,8 +92,11 @@ streams the file C-side. `:top_level` yields the root's children;
 order.
 
 Measured on a 21MB / 108k-element file: **+20MB peak RSS** (full
-parse: +169MB; Nokogiri Reader: +62MB), bare iteration 194ms
-(Nokogiri Reader: 179ms).
+parse: +169MB; Nokogiri Reader: +62MB), bare iteration ~97ms on
+leptris >= 1.9.105 (Nokogiri Reader: 179ms) — ~1.8x faster at a
+third of the memory. Attribute reads on yielded elements improved
+~16x on current builds (the parentless-read cost filed in
+leptris-ruby#152 is fixed).
 
 The yielded elements are parentless (`#document` nil) and valid
 only inside the block — the subtree is released when the iterator
