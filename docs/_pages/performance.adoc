@@ -69,6 +69,43 @@ retention beyond the binding's own constant one-document cache —
 and no identity loss, which the previous 65,536-entry wholesale
 clear traded away when it fired.
 
+=== Measuring moxml — methodology and traps
+
+Every number in this page follows the same discipline; contributors
+benchmarking moxml should too. The traps below all produced wrong
+conclusions at least once.
+
+*Timing:*
+
+- min-of-N (>= 10 samples) around loops, never single-shot averages;
+  `Process.clock_gettime(Process::CLOCK_MONOTONIC)`; `GC.start`
+  before each round.
+- Time LOOPS, not single calls: single sub-microsecond operations
+  read as 0 on some clocks (macOS CLOCK_MONOTONIC granularity).
+- Gate on load average — shared machines under build load (load 30+)
+  swing identical runs 2x. Wait for a calm window (< 5).
+- One heavy benchmark at a time; concurrent suites and benchmarks
+  have crashed this machine.
+- dup benchmarks must free each copy — native trees accumulate
+  otherwise and the numbers degrade monotonically (that drift is a
+  leak signal, not noise).
+
+*Allocation counts (GC.stat(:total_allocated_objects)) are
+load-immune — use them when the machine is busy:*
+
+- WARM THE PATH FIRST: the first call through any code path pays
+  autoloads (adapter, xpath engine, serialize modules — dozens of
+  classes and regexps). A cold first run charges those to whichever
+  variant ran first and fabricates "superadditive" overhead.
+- Keep the fixture shape identical across compared cells: parent
+  vs leaf elements allocate differently in every engine.
+- Negative deltas are impossible — if you see one, the harness is
+  broken, not the code.
+
+*Correctness under load:* race repros and corruption checks need
+hundreds of iterations — spot checks of 30 have missed 5-30% races
+on this codebase.
+
 === leptris 1.9.105 numbers (reference table)
 
 XML parse 2.4-2.8x, document serialize 2.4x, element queries 32x,
