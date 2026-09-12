@@ -153,8 +153,8 @@ module Moxml
           # apostrophes literal; older engines escaped them.
           needs_apos = !LIBXML2_LAYOUT_PARITY && xml.include?("&apos;")
           needs_expand = options[:expand_empty] &&
-                         !options[:__expand_handled_natively] &&
-                         xml.include?("/>")
+            !options[:__expand_handled_natively] &&
+            xml.include?("/>")
           # Corruption guards: the 1-char ampersand probe is ~1µs
           # (memchr-class); the raw-< scan runs only on builds that
           # still carry the parse race (leptris-ruby#131).
