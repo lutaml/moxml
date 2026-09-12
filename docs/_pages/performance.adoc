@@ -111,9 +111,9 @@ on this codebase.
 XML parse 2.4-2.8x, document serialize 2.4x, element queries 32x,
 attribute-node queries 1.4x (native since 1.9.105), HTML parse
 2.5-3.5x including entity-laden pages (engine #848 fixed), HTML
-serialize 4.1x, streaming iteration 145ms/21MB at +21MB RSS, C14n
-native delegation armed pending attribute-order conformance (engine
-#919).
+serialize 4.1x, streaming iteration ~97ms/21MB at +21MB RSS (~1.8x Nokogiri
+Reader), C14n 1.0 native on leptris >= 1.9.121 (engine #919 fixed)
+at 1.8x+ Nokogiri through the full document path.
 
 === Element serialization
 
