@@ -33,7 +33,13 @@ module Moxml
           # Entity restoration belongs to the wrapper layer
           # (Node#to_xml runs adapter.restore_entities for every
           # adapter); doing it here scanned the output a second time.
-          xml = normalize_serialization(raw_serialize(node, options), options)
+          xml = if native_expand?(node, options)
+                  opts = options.dup
+                  opts[:__expand_handled_natively] = true
+                  normalize_serialization(raw_serialize(node, opts), opts)
+                else
+                  normalize_serialization(raw_serialize(node, options), options)
+                end
           # The binding's FFI strings come back binary-tagged; the
           # engine encoded the bytes per this option, so tag them.
           xml.force_encoding(options[:encoding]) if options[:encoding]
@@ -47,7 +53,32 @@ module Moxml
 
         # The binding's element face with all-default options — the
         # frozen splat keeps the hot argless path allocation-free.
+        # Native expand-empty (engine #882, libleptris 1.9.95,
+        # bindings 1.9.144): empty elements emit <a></a> through a
+        # C-side ext entry — the Ruby full-output regex rewrite and
+        # its "/>" probe scan drop out of the element path. The
+        # document face does not expose the option yet; documents
+        # keep the Ruby pass.
+        EXPAND_EMPTY_NATIVE =
+          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.144")
+
         ELEMENT_DEFAULT_KWARGS = { indent: 0, no_decl: true, encoding: nil }.freeze
+        ELEMENT_EXPAND_KWARGS =
+          if EXPAND_EMPTY_NATIVE
+            { indent: 0, no_decl: true, encoding: nil, expand_empty: true }.freeze
+          else
+            ELEMENT_DEFAULT_KWARGS
+          end.freeze
+
+        # Elements (not documents) with expand_empty and NO
+        # indent-unit string: the C ext entry handles expansion. The
+        # element unit serializer does not take the flag — those keep
+        # the Ruby pass.
+        def native_expand?(node, options)
+          EXPAND_EMPTY_NATIVE && options[:expand_empty] &&
+            !node.is_a?(::Leptris::XML::Document) &&
+            !options[:indent_text].is_a?(String)
+        end
 
         def raw_serialize(node, options)
           # CDATA must precede Text in this chain: CDATA < Text in the
@@ -79,10 +110,12 @@ module Moxml
           # per call; the wrapper force-tags the string either way.
           indent = options.fetch(:indent, 0)
           encoding = options[:encoding] == "UTF-8" ? nil : options[:encoding]
+          native_expand = native_expand?(node, options)
           xml = if indent.zero? && encoding.nil?
-                  node.to_xml(**ELEMENT_DEFAULT_KWARGS)
+                  node.to_xml(**(native_expand ? ELEMENT_EXPAND_KWARGS : ELEMENT_DEFAULT_KWARGS))
                 else
                   kwargs = { indent: indent, no_decl: true, encoding: encoding }
+                  kwargs[:expand_empty] = true if native_expand
                   if INDENT_UNIT_SUPPORTED && options[:indent_text].is_a?(String)
                     kwargs[:indent_text] = options[:indent_text]
                   end
@@ -119,7 +152,9 @@ module Moxml
           # The libxml2-layout serializer (>= 1.9.42) keeps attribute
           # apostrophes literal; older engines escaped them.
           needs_apos = !LIBXML2_LAYOUT_PARITY && xml.include?("&apos;")
-          needs_expand = options[:expand_empty] && xml.include?("/>")
+          needs_expand = options[:expand_empty] &&
+                         !options[:__expand_handled_natively] &&
+                         xml.include?("/>")
           # Corruption guards: the 1-char ampersand probe is ~1µs
           # (memchr-class); the raw-< scan runs only on builds that
           # still carry the parse race (leptris-ruby#131).
