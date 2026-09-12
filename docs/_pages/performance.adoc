@@ -115,6 +115,11 @@ serialize 4.1x, streaming iteration ~97ms/21MB at +21MB RSS (~1.8x Nokogiri
 Reader), C14n 1.0 native on leptris >= 1.9.121 (engine #919 fixed)
 at 1.8x+ Nokogiri through the full document path.
 
+SAX (calm-machine, verified): the raw binding parses 1.19x faster
+than Nokogiri; through moxml's unified handler the API contract
+(per-event attribute Hash + namespace separation) nets 0.74x interp
+/ 0.93x YJIT.
+
 === Element serialization
 
 Bulk `element.to_xml` (per-element, no options) was wrapper-tax
