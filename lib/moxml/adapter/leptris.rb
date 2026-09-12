@@ -42,18 +42,26 @@ module Moxml
       # instead of lexicographic (filed leptris/leptris#881); the
       # probe auto-adopts the native path once a fixed build lands —
       # no moxml release needed.
-      NATIVE_C14N_BYTE_SAFE = begin
-        probe_xml = %(<?xml version="1.0"?><doc xmlns:p="urn:p" xmlns="urn:d" b="2" a="1"><e p:x="v" z="w">t &amp; u</e><!-- c --></doc>)
-        native_doc = ::Leptris::XML::Document.parse(probe_xml)
-        native = native_doc.root.canonicalize(
-          ::Leptris::XML::FFI::C14N_1_0, nil,
-          mode: ::Leptris::XML::FFI::C14N_MODE_CANONICAL
-        )
-        wrapper = Moxml::Document.new(native_doc, Moxml::Context.new(:leptris))
-        reference = Moxml::C14n::Inclusive10.new.canonicalize(wrapper.root)
-        native == reference
-      rescue StandardError
-        false
+      # Lazy, not load-time: the probe exercises the wrapper layer
+      # (Document/serialize/C14n), which is circular while THIS
+      # adapter file is still loading — the load-time form rescued
+      # to false on every build and masked a landed engine fix.
+      def self.native_c14n_byte_safe?
+        return @native_c14n_byte_safe unless @native_c14n_byte_safe.nil?
+
+        @native_c14n_byte_safe = begin
+          probe_xml = %(<?xml version="1.0"?><doc xmlns:p="urn:p" xmlns="urn:d" b="2" a="1"><e p:x="v" z="w">t &amp; u</e><!-- c --></doc>)
+          native_doc = ::Leptris::XML::Document.parse(probe_xml)
+          native = native_doc.root.canonicalize(
+            ::Leptris::XML::FFI::C14N_1_0, nil,
+            mode: ::Leptris::XML::FFI::C14N_MODE_CANONICAL
+          )
+          wrapper = Moxml::Document.new(native_doc, Moxml::Context.new(:leptris))
+          reference = Moxml::C14n::Inclusive10.new.canonicalize(wrapper.root)
+          native == reference
+        rescue StandardError
+          false
+        end
       end
 
       # Bumped whenever a document's :entity_markers flag is written
