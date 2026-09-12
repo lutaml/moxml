@@ -374,6 +374,37 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(reparsed.errors).to be_empty
     end
 
+    it "preserves foreign content (SVG/MathML) in HTML documents" do
+      doc = ctx.parse_html(%(<p>a</p><svg viewBox="0 0 1 1"><circle r="1"/></svg><math><mi>a</mi></math>))
+      body = doc.root.children.find(&:element?)
+      names = body.children.select(&:element?).map(&:name)
+      expect(names).to include("svg", "math")
+      expect(body.at_xpath(".//circle")["r"]).to eq("1")
+      expect(body.at_xpath(".//mi").text).to eq("a")
+    end
+
+    it "preserves foreignObject content Nokogiri drops (name lowercased)" do
+      # WHATWG keeps foreign-content camelCase (foreignObject,
+      # viewBox); the engine currently lowercases like it does HTML
+      # names, but preserves the subtree — Nokogiri drops it
+      # entirely. Pins current behavior; engine conformance note
+      # filed for the adjust-tables.
+      doc = ctx.parse_html(%(<svg><foreignObject><p>x</p></foreignObject></svg>))
+      out = doc.to_xml
+      expect(out).to include("<foreignobject>")
+      expect(out).to include("<p>x</p>")
+    end
+
+    it "round-trips an HTML doctype with external identifiers" do
+      doc = ctx.parse_html(%(<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "x.dtd"><p>a</p>))
+      expect(doc.to_xml).to include(%(<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "x.dtd">))
+    end
+
+    it "preserves template element placement" do
+      doc = ctx.parse_html(%(<div><template><p>t</p></template></div>))
+      expect(doc.at_xpath("//template/p")&.text).to eq("t")
+    end
+
     it "round-trips a parsed tree through mutation" do
       doc = ctx.parse_html(%(<ul><li>a<li>b</ul>))
       doc.at_xpath("//ul").add_child(doc.create_element("li"))

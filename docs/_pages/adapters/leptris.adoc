@@ -74,9 +74,16 @@ so script bodies with markup characters round-trip through a strict
 XML reparse. The adapter stands the entity-marker pipeline down for
 HTML parses — the engine decodes HTML entities directly into text.
 
-Measured on 1.9.105 (named-entity decoding fixed, engine #848):
+Measured on 1.9.105+ (named-entity decoding fixed, engine #848):
 parse 2.5-3.5x, serialize 4.1x, xpath 6-29x faster than Nokogiri —
 uniformly, including entity-laden pages.
+
+Since 1.9.118/1.9.121 the engine also handles WHATWG foreign
+content — embedded SVG and MathML in HTML parse into the tree
+(preserving `foreignObject` subtrees that Nokogiri drops), the
+source HTML doctype round-trips, and `template`/`colgroup` place
+correctly. Foreign-content camelCase names are currently
+lowercased (engine conformance note leptris/leptris#1013).
 
 Adapters without an engine HTML mode (Ox, Oga, REXML, LibXML) raise
 `Moxml::AdapterError`; Nokogiri parses through libxml2's HTML mode.
