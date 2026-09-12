@@ -64,7 +64,7 @@ module Moxml
 
       adapter = node_or_xml.context.config.adapter
       return nil unless adapter == Moxml::Adapter::Leptris &&
-        Moxml::Adapter::Leptris::NATIVE_C14N_BYTE_SAFE
+        Moxml::Adapter::Leptris.native_c14n_byte_safe?
 
       node_or_xml.native.canonicalize(
         ::Leptris::XML::FFI::C14N_1_0, nil,
