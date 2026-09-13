@@ -217,7 +217,10 @@ module Moxml
 
     def text
       val = adapter.text_content(@native)
-      adapter.restore_entities(val)
+      # Entity-free documents (the common case) skip the marker
+      # restore scans entirely — the per-wrapper entity_bearing?
+      # memo rides the adapter's serialize generation.
+      entity_bearing? ? adapter.restore_entities(val) : val
     end
 
     alias content text
