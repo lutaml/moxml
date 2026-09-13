@@ -128,8 +128,7 @@ module Moxml
         end
 
         def create_text(content, owner_doc: nil)
-          # Ox freezes the content, so we need to dup it
-          create_native_text(normalize_xml_value(content).dup, owner_doc)
+          create_native_text(normalize_xml_value(content), owner_doc)
         end
 
         def create_cdata(content, owner_doc: nil)

@@ -108,11 +108,14 @@ on this codebase.
 
 *More traps, paid for in this codebase:*
 
-- Keyword arguments on hot paths allocate a Hash per call on Ruby
-  3.x — `Node.wrap` priming wrapper state via kwargs cost +1
-  allocation per minted wrapper (exactly +601 on a 100-element
-  mixed bench, every adapter). Positional optional arguments do
-  not allocate; prefer them on mint/construction paths.
+- Optional keyword arguments do NOT allocate on Ruby 3.4 (measured
+  0.000 allocs/call with one and two optional kwargs) — do not
+  "optimize" them into positional arguments expecting an allocation
+  win. An earlier version of this page claimed otherwise: a +601
+  allocation delta attributed to kwargs was actually the write-path
+  cache clears allocating a fresh Hash per write (+500), bundled
+  into the same change as a kwargs edit. The general lesson:
+  attribute allocation deltas per-change, never per-bundle.
 - Engines free attribute natives on removal — reading any native
   property after `remove_attribute_native` is a use-after-free.
   The crash only surfaced mid-suite under GC churn (standalone
@@ -227,8 +230,10 @@ generation; `xmlns` writes keep the global bump.
 
 | path | before | after |
 | Attribute write (`[]=`) | 822ns | 758ns (-8%) |
-| Cold walk (parse + wrapper mint, 752 nodes) | 811µs | 720µs (-11%) |
+| Cold walk (parse + wrapper mint, 752 nodes) | 811µs | 699µs (-14%) |
 | Mixed build+read (nokogiri) | 1355µs / 5267 allocs | 1283µs / 5267 allocs |
+| `Element#text` read | 422ns | 346ns (-18%) |
+| `create_text` allocations | 6/node | 5/node |
 
 Allocations unchanged (the invalidation clears are nil-writes; the
 read cache materializes lazily). The remaining cold-walk gap is
