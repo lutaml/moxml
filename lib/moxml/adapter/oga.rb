@@ -307,6 +307,11 @@ module Moxml
           current
         end
 
+        def parse_fragment(xml, _context = nil)
+          doc = parse("<m>#{xml}</m>").native
+          children(root(doc))
+        end
+
         def root(document)
           document.children.find { |node| node.is_a?(::Oga::XML::Element) }
         end

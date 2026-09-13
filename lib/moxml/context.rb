@@ -106,6 +106,18 @@ module Moxml
     # Memory stays bounded by the largest subtree, not the document
     # (iterparse_file streams the file C-side). Yielded elements are
     # parentless and valid only inside the block.
+    # Parse an XML fragment: returns its top-level nodes as an
+    # Array of wrappers, uniformly across adapters (issue #188 —
+    # fragment: true was Nokogiri-only). Engines without a fragment
+    # node type parse inside a synthetic root; the fragment's nodes
+    # are the result either way.
+    def parse_fragment(xml)
+      adapter = config.adapter
+      adapter.parse_fragment(xml, self).map do |native|
+        Moxml::Node.wrap(native, self)
+      end
+    end
+
     def iterparse(xml, mode: :top_level, &block)
       config.adapter.iterparse(xml, mode, self, &block)
     end

@@ -258,6 +258,11 @@ module Moxml
           node.document
         end
 
+        def parse_fragment(xml, _context = nil)
+          doc = parse("<m>#{xml}</m>").native
+          children(root(doc))
+        end
+
         def root(document)
           document.root
         end

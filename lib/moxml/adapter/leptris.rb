@@ -254,6 +254,15 @@ module Moxml
         # elements as the parse runs; each prior subtree is released.
         # Yielded elements are parentless (document nil) and valid
         # only inside the block — the wrapper mirrors that lifetime.
+        # Wrapper-parse: the synthetic root's children are the
+        # fragment's top-level nodes (the append_xml / inner_xml=
+        # trick). Children come through the normal children path so
+        # entity-marker splitting applies.
+        def parse_fragment(xml, _context = nil)
+          doc = parse("<m>#{xml}</m>")
+          children(doc.native.root)
+        end
+
         def iterparse(xml, mode = :top_level, _context = nil, &block)
           raise ArgumentError, "iterparse requires a block" unless block
 

@@ -244,6 +244,14 @@ namespace :benchmark do
     ENV.delete("SKIP_BENCHMARKS")
     sh "bundle exec rspec spec/performance/xpath_benchmark_spec.rb"
   end
+  # Consumer-pipeline leg (issue #198): nested document walked into
+  # typed objects — median time + GC.stat allocation deltas, where
+  # engine-level numbers hide wrapper overhead. PIPELINE_ADAPTER and
+  # PIPELINE_REPS env-overridable.
+  desc "Consumer-pipeline benchmark (typed-object walk, issue #198)"
+  task :pipeline do
+    sh "ruby", "benchmark/pipeline_bench.rb"
+  end
 
   desc "Generate adapter benchmark report"
   task :report do
