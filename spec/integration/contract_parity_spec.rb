@@ -63,6 +63,22 @@
       end
     end
 
+    describe "namespaces contract (issue #198 comment)" do
+      it "returns the in-scope map including ancestor declarations" do
+        doc = ctx.parse(%(<root xmlns:p="urn:p" xmlns="urn:d"><p:c plain="1"/></root>))
+        child = doc.root.children.first
+        map = child.namespaces.map { |n| [n.prefix, n.uri.to_s] }
+        expect(map).to contain_exactly(["p", "urn:p"], [nil, "urn:d"])
+      end
+
+      it "namespace_definitions stays the element's own declarations" do
+        doc = ctx.parse(%(<root xmlns:p="urn:p"><p:c/></root>))
+        child = doc.root.children.first
+        expect(child.namespace_definitions).to be_empty
+        expect(doc.root.namespace_definitions.map(&:prefix)).to eq(["p"])
+      end
+    end
+
     describe "attribute channel semantics" do
       it "reads and writes bare and prefixed attributes" do
         doc = ctx.parse(%(<r xmlns:p="urn:p"><e a="1" p:b="2"/></r>))

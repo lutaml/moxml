@@ -134,7 +134,10 @@ RSpec.shared_examples "Moxml::Namespace" do
         child.add_namespace("dc", "http://purl.org/dc/elements/1.1/")
         root.add_child(child)
 
-        ns_defs = child.namespaces
+        # Own declarations (the #namespaces name moved to the
+        # in-scope Nokogiri contract — issue #198; this assertion
+        # pins own-declarations, which is what it always meant).
+        ns_defs = child.namespace_definitions
         prefixes = ns_defs.map(&:prefix)
 
         expect(prefixes).to contain_exactly("dc")

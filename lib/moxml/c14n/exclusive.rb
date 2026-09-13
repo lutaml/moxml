@@ -139,7 +139,7 @@ module Moxml
 
       def bindings_declared_on(element)
         bindings = {}
-        element.namespaces.each do |ns|
+        element.namespace_definitions.each do |ns|
           prefix = ns.prefix
           prefix = "" if prefix.nil? || prefix == "xmlns"
           bindings[prefix] = ns.uri
