@@ -106,6 +106,23 @@ load-immune — use them when the machine is busy:*
 hundreds of iterations — spot checks of 30 have missed 5-30% races
 on this codebase.
 
+*More traps, paid for in this codebase:*
+
+- Keyword arguments on hot paths allocate a Hash per call on Ruby
+  3.x — `Node.wrap` priming wrapper state via kwargs cost +1
+  allocation per minted wrapper (exactly +601 on a 100-element
+  mixed bench, every adapter). Positional optional arguments do
+  not allocate; prefer them on mint/construction paths.
+- Engines free attribute natives on removal — reading any native
+  property after `remove_attribute_native` is a use-after-free.
+  The crash only surfaced mid-suite under GC churn (standalone
+  repros passed); read names BEFORE the removal call.
+- Scope invalidation to what the mutation can affect: a
+  non-xmlns attribute write cannot change namespace scope, so it
+  must not bump the document-wide scope generation (which evicts
+  every wrapper's caches). +5-8% on write-heavy mixed workloads,
+  and bulk builds stop thrashing every reader's cache.
+
 === leptris 1.9.105 numbers (reference table)
 
 XML parse 2.4-2.8x, document serialize 2.4x, element queries 32x,
@@ -197,6 +214,26 @@ first access, not at construction — `.size`/`.empty?`/`.first` on a
 1000-node result no longer allocate the 1000-slot wrapper array
 (that path also skips the binding's per-node wrapper materialization
 entirely; see `LazyNodeSet` under the leptris adapter).
+
+=== Mint priming and scoped invalidation
+
+`Node.wrap` resolves the adapter and node type once and primes both
+onto the wrapper (positional constructor arguments) — a fresh
+wrapper previously re-paid the context hop and the type probe on
+its first access. Attribute writes that cannot change namespace
+scope (bare and non-`xmlns` prefixed names) invalidate the
+element's caches locally instead of bumping the document-wide scope
+generation; `xmlns` writes keep the global bump.
+
+| path | before | after |
+| Attribute write (`[]=`) | 822ns | 758ns (-8%) |
+| Cold walk (parse + wrapper mint, 752 nodes) | 811µs | 720µs (-11%) |
+| Mixed build+read (nokogiri) | 1355µs / 5267 allocs | 1283µs / 5267 allocs |
+
+Allocations unchanged (the invalidation clears are nil-writes; the
+read cache materializes lazily). The remaining cold-walk gap is
+binding-side (its per-node Ruby wrapper construction) — tracked
+upstream as the TypedData work.
 
 === Prefer bulk paths for per-node conversion
 

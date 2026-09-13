@@ -41,7 +41,7 @@ module Moxml
       uri = prefix_uri(element, prefix)
       return nil if uri.nil?
 
-      adapter = element.context.config.adapter
+      adapter = element.adapter
       if adapter.is_a?(Moxml::Adapter::Leptris)
         return adapter.expanded_attr_value(element.native, uri, local)
       end
@@ -105,7 +105,7 @@ module Moxml
     # @return [String] the assigned value
     def assign(element, name, value)
       name = name.to_s
-      adapter = element.context.config.adapter
+      adapter = element.adapter
       if name == "xmlns" || name.start_with?("xmlns:")
         adapter.set_attribute(element.native, name, value)
         element.invalidate_attribute_cache!
@@ -122,7 +122,7 @@ module Moxml
       # writes.
       if !name.include?(":") && adapter.bare_set_qname_safe?
         adapter.set_attribute(element.native, name, value)
-        element.invalidate_attribute_cache!
+        element.invalidate_local_attribute_cache!
         return value
       end
 
@@ -133,7 +133,7 @@ module Moxml
       end
 
       adapter.set_attribute(element.native, name, value)
-      element.invalidate_attribute_cache!
+      element.invalidate_local_attribute_cache!
       value
     end
 
@@ -143,7 +143,7 @@ module Moxml
     # @return [Moxml::Attribute, nil] the removed attribute
     def remove(element, name)
       name = name.to_s
-      adapter = element.context.config.adapter
+      adapter = element.adapter
       if name == "xmlns" || name.start_with?("xmlns:")
         adapter.remove_attribute(element.native, name)
         element.invalidate_attribute_cache!
@@ -154,7 +154,7 @@ module Moxml
       return nil unless attr
 
       adapter.remove_attribute_native(attr.native)
-      element.invalidate_attribute_cache!
+      element.invalidate_local_attribute_cache!
       attr
     end
 

@@ -12,10 +12,16 @@ module Moxml
 
     attr_reader :native, :context
 
-    def initialize(native, context)
+    # adapter/node_type are primed by Node.wrap, which resolves both
+    # before choosing the wrapper class — a fresh wrapper would
+    # otherwise pay the context hop and the type probe again on its
+    # first access.
+    def initialize(native, context, adapter = nil, node_type = nil)
       @context = context
       @native = native
       @parent_node = nil
+      @adapter = adapter
+      @node_type_cached = node_type
     end
 
     # Update native reference after identity-changing operations
@@ -430,10 +436,12 @@ module Moxml
       cached = context.wrapper_for(node)
       return cached if cached
 
-      type = adapter(context).node_type(node)
+      adapter = adapter(context)
+      type = adapter.node_type(node)
       klass = node_type_map[type] || self
 
-      klass.new(node, context).tap { |wrapper| context.register_wrapper(node, wrapper) }
+      klass.new(node, context, adapter, type)
+        .tap { |wrapper| context.register_wrapper(node, wrapper) }
     end
 
     # Internal: Set the parent node for cache invalidation tracking.
@@ -441,13 +449,13 @@ module Moxml
     # relationships. Public to allow cross-class usage within Moxml internals.
     attr_writer :parent_node
 
-    protected
-
     def adapter
       # A context's adapter object is fixed for its lifetime; the
       # chain deref ran on every node access.
       @adapter ||= context.config.adapter
     end
+
+    protected
 
     def self.adapter(context)
       context.config.adapter
