@@ -116,6 +116,12 @@ module Moxml
           )
         end
 
+        # Backends without a native subtree digest answer nil —
+        # the wrapper contract Node#digest gates on (issue #173).
+        def digest(*)
+          nil
+        end
+
         def create_element(name, owner_doc: nil)
           validate_element_name(name)
           create_native_element(name, owner_doc)

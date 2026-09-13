@@ -349,6 +349,18 @@ module Moxml
       adapter.line_number(@native)
     end
 
+    # Content-defined Merkle digest of this subtree (issue #173,
+    # companion to leptris#869): a u64 Integer where the backend
+    # computes one, nil everywhere else. Consumers gate on nil and
+    # fall back to walking. Equal digests imply subtree equivalence
+    # under the flag set; unequal digests imply nothing (descend).
+    # +drop_ws_text+ skips whitespace-only text nodes.
+    #
+    # @return [Integer, nil]
+    def digest(drop_ws_text: false)
+      adapter.digest(@native, drop_ws_text: drop_ws_text)
+    end
+
     def outer_xml
       to_xml
     end

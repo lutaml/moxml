@@ -79,6 +79,17 @@
       end
     end
 
+    describe "subtree digest channel (issue #173)" do
+      it "answers an Integer on digest-capable backends, nil elsewhere" do
+        doc = ctx.parse(%(<r><a x="1">t</a></r>))
+        digest = doc.root.digest
+        expect(digest).to be_nil.or be_a(Integer)
+        # Where non-nil, it is deterministic within the backend
+        doc2 = ctx.parse(%(<r><a x="1">t</a></r>))
+        expect(doc2.root.digest).to eq(digest) unless digest.nil?
+      end
+    end
+
     describe "attribute channel semantics" do
       it "reads and writes bare and prefixed attributes" do
         doc = ctx.parse(%(<r xmlns:p="urn:p"><e a="1" p:b="2"/></r>))

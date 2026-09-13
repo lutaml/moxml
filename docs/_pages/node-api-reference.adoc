@@ -114,6 +114,32 @@ node.namespace?        # Is it a namespace?
 node.document          # Get owning document
 ----
 
+== Subtree digest
+
+`Node#digest` exposes the backend's content-defined Merkle hash of a
+subtree when one exists — currently only the leptris adapter
+(libleptris >= 1.9.99, leptris#869):
+
+[source,ruby]
+----
+node.digest                       # => Integer (u64) or nil
+node.digest(drop_ws_text: true)   # skip whitespace-only text nodes
+----
+
+Contract:
+
+* `nil` means "no digest support" (every other adapter) — consumers
+  gate on nil and fall back to walking.
+* Equal digests imply subtree equivalence under the flag set;
+  unequal digests imply nothing (descend and compare).
+* The hash covers element prefix + resolved namespace URI + local
+  name, attributes sorted by (URI, local) and first-wins
+  deduplicated, and children in document order. No addresses
+  participate, so identical trees hash equal across parses and
+  processes.
+* Nodes without a backing engine node (documents, attributes,
+  synthetic declarations) answer nil.
+
 
 See also:
 

@@ -34,6 +34,12 @@ module Moxml
       ATTR_RESULT_NATIVE =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.105")
 
+      # leptris_node_digest shipped in bindings 1.9.99 (libleptris
+      # 1.9.99, engine #869): on-demand Merkle subtree hash, zero
+      # cost when unused. Below it, Node#digest answers nil.
+      DIGEST_SUPPORTED =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.99")
+
       # Native C14N delegation probe: the engine's C14N must
       # byte-match the Ruby reference (ported from canon) on a
       # namespace-sorting + attributes + comments shape before
@@ -544,6 +550,18 @@ module Moxml
           when CustomizedLeptris::EntityReference then :entity_reference
           else :unknown
           end
+        end
+
+        # Subtree digest over the binding node (issue #173). Only
+        # binding Nodes carry a C node handle: the synthetic
+        # wrappers (declarations, doctypes, entity markers) and the
+        # lightweight Attr triples answer nil.
+        def digest(node, drop_ws_text: false)
+          return nil unless DIGEST_SUPPORTED
+          return nil unless node.is_a?(::Leptris::XML::Node) &&
+            !node.is_a?(::Leptris::XML::ResultAttr)
+
+          node.digest(drop_ws: drop_ws_text)
         end
 
         def node_name(node)
