@@ -91,6 +91,11 @@ the context's wrapper identity map opts out.
 Whether the subtree can contain entity markers; gates the
 post-serialize restore scan.
 
+`digest(node, drop_ws_text:)`::
+The backend's content-defined subtree Merkle hash where one exists
+(leptris >= 1.9.99, engine #869); nil everywhere else. `Node#digest`
+gates on nil — consumers fall back to walking.
+
 `bulk_materialize?`::
 Whether the adapter offers a bulk path for `Moxml::Materializer`;
 `materialize_fields` fills the reused flat buffers and yields the

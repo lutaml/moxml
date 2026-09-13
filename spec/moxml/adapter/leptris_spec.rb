@@ -634,4 +634,57 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(doc.at_xpath("//a").children.to_a.map(&:class)).to include(Moxml::EntityReference)
     end
   end
+
+  describe "subtree digest (issue #173, leptris#869)" do
+    let(:ctx) { Moxml.new(:leptris) }
+
+    it "answers equal integers for identical subtrees parsed separately" do
+      xml = %(<r xmlns:p="urn:p"><a x="1" p:y="2">t</a><b><c/></b></r>)
+      d1 = ctx.parse(xml)
+      d2 = ctx.parse(xml)
+      expect(d1.root.digest).to be_a(Integer)
+      expect(d1.root.digest).to eq(d2.root.digest)
+    end
+
+    it "answers unequal integers when content differs" do
+      d1 = ctx.parse(%(<r><a x="1"/></r>))
+      d2 = ctx.parse(%(<r><a x="2"/></r>))
+      expect(d1.root.digest).not_to eq(d2.root.digest)
+    end
+
+    it "skips whitespace-only text with drop_ws_text" do
+      spaced = ctx.parse(%(<r>\n  <a/>\n</r>))
+      tight = ctx.parse(%(<r><a/></r>))
+      expect(spaced.root.digest).not_to eq(tight.root.digest)
+      expect(spaced.root.digest(drop_ws_text: true))
+        .to eq(tight.root.digest(drop_ws_text: true))
+    end
+
+    it "hashes the prefix as well as the resolved namespace" do
+      same = ctx.parse(%(<r xmlns:p="urn:p"><p:a/></r>))
+      mirror = ctx.parse(%(<r xmlns:p="urn:p"><p:a/></r>))
+      renamed = ctx.parse(%(<r xmlns:q="urn:p"><q:a/></r>))
+      other_uri = ctx.parse(%(<r xmlns:p="urn:z"><p:a/></r>))
+      base = same.root.digest
+      expect(mirror.root.digest).to eq(base)
+      # prefix participates (leptris#869: hash(prefix, URI, local))
+      expect(renamed.root.digest).not_to eq(base)
+      expect(other_uri.root.digest).not_to eq(base)
+    end
+
+    it "answers nil for nodes without a C handle" do
+      doc = ctx.parse(%(<r a="1"><!-- c --><p/><?p instr?></r>))
+      expect(doc.digest).to be_nil
+      expect(doc.root.attributes.first.digest).to be_nil
+      doc.children.select(&:declaration?).each do |decl|
+        expect(decl.digest).to be_nil
+      end
+      # comments and PIs hash in C
+      kinds = doc.root.children.map { |n| [n.class, n.digest] }
+      comment = kinds.find { |n, _| n == Moxml::Comment }
+      pi = kinds.find { |n, _| n == Moxml::ProcessingInstruction }
+      expect(comment[1]).to be_a(Integer)
+      expect(pi[1]).to be_a(Integer)
+    end
+  end
 end
