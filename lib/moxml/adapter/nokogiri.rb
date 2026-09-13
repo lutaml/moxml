@@ -39,21 +39,10 @@ module Moxml
         # The marker flag is constant per document — a WeakMap on
         # the adapter beats the per-read document fetch + attachment
         # hash chain.
-        def doc_entity_markers?(doc)
-          cache = (@doc_markers ||= ObjectSpace::WeakMap.new)
-          cached = cache[doc]
-          return cached unless cached.nil?
-
-          cache[doc] = attachments.get(doc, :entity_markers) == true
-        end
-
+        # Raw qualified-name read; the entity-restore decision is
+        # the wrapper's (Element#[] rides its generation memo).
         def bare_attr_value(element, name)
-          value = element[name.to_s]
-          if value.is_a?(String) && doc_entity_markers?(element.document)
-            restore_entities(value)
-          else
-            value
-          end
+          element[name.to_s]
         end
 
         def native_identity_stable?
