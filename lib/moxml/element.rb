@@ -86,7 +86,11 @@ module Moxml
     # every attribute or namespace mutation anywhere bumps it.
     def attribute_read_cache
       generation = context.namespace_scope_generation
-      if @attribute_cache_generation != generation
+      # @attribute_cache.nil? covers the local invalidation clears —
+      # a value or list change without a scope bump (see
+      # invalidate_local_attribute_cache!) — so writes never allocate
+      # a replacement hash; the next read materializes one lazily.
+      if @attribute_cache.nil? || @attribute_cache_generation != generation
         @attribute_cache = {}
         @attribute_cache_generation = generation
       end
@@ -307,9 +311,25 @@ module Moxml
       children
     end
 
-    # Called by Attribute#remove and the attribute mutators. Clears
-    # the attribute list and the resolved-read cache, and bumps the
-    # context generation so cross-wrapper reads recompute.
+    # Attribute mutations that cannot change namespace scope (bare
+    # and non-xmlns prefixed names) invalidate locally: the
+    # resolved-read cache alone for value writes, the wrapper list
+    # too when the attribute set changes. No context generation
+    # bump — that would evict every wrapper's caches document-wide
+    # on each write of a bulk build.
+    def invalidate_attribute_value_cache!
+      @attribute_cache = nil
+    end
+
+    def invalidate_local_attribute_cache!
+      @attributes = nil
+      @attribute_cache = nil
+    end
+
+    # Called by the namespace-scoped attribute paths (xmlns writes
+    # and removals) and Attribute#name=. Clears the attribute list
+    # and the resolved-read cache, and bumps the context generation
+    # so cross-wrapper reads recompute.
     def invalidate_attribute_cache!
       @attributes = nil
       @attribute_cache = nil

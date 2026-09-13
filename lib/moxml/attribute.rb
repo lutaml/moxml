@@ -2,8 +2,11 @@
 
 module Moxml
   class Attribute < Node
+    # Immutable between name= writes (which clear it via
+    # clear_native_memo!), unlike element names that can change via
+    # native adoption; the memo removes an adapter read per access.
     def name
-      adapter.attribute_name(@native)
+      @name ||= adapter.attribute_name(@native)
     end
 
     def name=(new_name)
@@ -11,6 +14,7 @@ module Moxml
       # to keep tracking — same object for in-place adapters, fresh
       # object for value-object adapters (leptris).
       context.bump_namespace_scope_generation
+      @name = nil
       @native = adapter.set_attribute_name(@native, new_name)
     end
 
@@ -33,7 +37,13 @@ module Moxml
     end
 
     def value=(new_value)
-      context.bump_namespace_scope_generation
+      name = self.name
+      if name == "xmlns" || name.start_with?("xmlns:")
+        # Declaration rewrite — namespace scope changed
+        context.bump_namespace_scope_generation
+      else
+        @parent_node&.invalidate_attribute_value_cache!
+      end
       adapter.set_attribute_value(@native, new_value)
     end
 
@@ -59,9 +69,17 @@ module Moxml
     end
 
     def remove
+      # The name must be read before the removal — engines free the
+      # attribute native, and post-removal reads are use-after-free.
+      name = self.name
+      declaration = name == "xmlns" || name.start_with?("xmlns:")
       adapter.remove_attribute_native(@native)
       if @parent_node.is_a?(Moxml::Element)
-        @parent_node.invalidate_attribute_cache!
+        if declaration
+          @parent_node.invalidate_attribute_cache!
+        else
+          @parent_node.invalidate_local_attribute_cache!
+        end
       end
       self
     end

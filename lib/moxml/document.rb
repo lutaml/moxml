@@ -4,7 +4,7 @@ module Moxml
   class Document < Node
     attr_accessor :has_xml_declaration
 
-    def initialize(native, context)
+    def initialize(native, context, adapter = nil, node_type = nil)
       super
       @has_xml_declaration = false
     end

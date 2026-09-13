@@ -100,6 +100,24 @@
         expect(e["a"]).to eq("changed")
         expect(e["p:b"]).to eq("2")
       end
+
+      # Writes invalidate locally (no document-wide scope bump); a
+      # sibling's resolved reads must survive interleaved writes.
+      it "keeps sibling read caches coherent across interleaved writes" do
+        doc = ctx.parse(%(<r><a x="1"/><b x="2"/></r>))
+        first, second = doc.root.children.to_a
+        expect(first["x"]).to eq("1")
+        expect(second["x"]).to eq("2")
+        first["x"] = "one"
+        first["y"] = "fresh"
+        expect(second["x"]).to eq("2")
+        expect(first["x"]).to eq("one")
+        expect(first["y"]).to eq("fresh")
+        second["x"] = "two"
+        expect(first["x"]).to eq("one")
+        expect(first["y"]).to eq("fresh")
+        expect(second["x"]).to eq("two")
+      end
     end
   end
 end
