@@ -186,13 +186,12 @@ module Moxml
         # restoration when the document carries them (entity-free
         # documents — the common case — skip the scan; parentless
         # iterparse elements are never bearing).
+        # Raw qualified-name read; the entity-restore decision is
+        # the wrapper's (Element#[] rides its generation memo — the
+        # document-plus-attachment probe here cost more than the
+        # read itself).
         def bare_attr_value(element, name)
-          value = element[name.to_s]
-          if value.is_a?(String) && entity_bearing?(element)
-            restore_entities(value)
-          else
-            value
-          end
+          element[name.to_s]
         end
 
         def native_identity_stable?
