@@ -23,6 +23,16 @@ module Moxml
           true
         end
 
+        # Nokogiri has a real fragment node type — its children ARE
+        # the fragment's top-level nodes.
+        def parse_fragment(xml, _context = nil)
+          processed = Entity.preprocess_entities(xml)
+          ::Nokogiri::XML::DocumentFragment.parse(processed) do |config|
+            config.strict.nonet
+            config.recover
+          end.children.to_a
+        end
+
         # Fast bare-name read for Element#[]: the native call plus,
         # only when the parse recorded entity markers, their
         # restoration (the resolver path's other real semantic).

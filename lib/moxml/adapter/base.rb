@@ -28,6 +28,24 @@ module Moxml
           )
         end
 
+        # Uniform fragment parsing: returns the fragment's top-level
+        # nodes as native objects. Engines without a fragment node
+        # type (everything but Nokogiri) get the wrapper-parse
+        # shape — the same trick Element#append_xml and #inner_xml=
+        # use — with a synthetic root whose children are the
+        # fragment's top-level nodes.
+        def root(_document)
+          raise Moxml::NotImplementedError.new(
+            "root not implemented", feature: "root", adapter: name
+          )
+        end
+
+        def parse_fragment(xml, _context = nil)
+          doc = parse("<m>#{xml}</m>")
+          root = root(doc)
+          root ? children(root) : []
+        end
+
         # Streaming incremental parse (leptris engine): yields each
         # completed element while the parse runs, releasing prior
         # subtrees — memory bounded by the largest subtree, not the

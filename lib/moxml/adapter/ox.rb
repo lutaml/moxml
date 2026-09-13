@@ -330,6 +330,12 @@ module Moxml
           current
         end
 
+        def parse_fragment(xml, _context = nil)
+          doc = parse("<m>#{xml}</m>").native
+          synthetic = doc.nodes.find { |node| node.is_a?(::Ox::Element) }
+          children(synthetic)
+        end
+
         def root(document)
           document.nodes&.find { |node| node.is_a?(::Ox::Element) }
         end
@@ -357,7 +363,14 @@ module Moxml
             # Ox converts all values to strings
             remove_attribute(element, name)
           else
-            element.attributes[name.to_s] = value
+            key = name.to_s
+            attrs = element.attributes
+            # Ox parses attributes under Symbol keys; a naive
+            # string-keyed write would ADD a second entry instead
+            # of replacing (the parity suite caught reads returning
+            # the stale symbol-keyed value after a write).
+            attrs.delete(key.to_sym)
+            attrs[key] = value
           end
 
           ::Moxml::Adapter::CustomizedOx::Attribute.new(
