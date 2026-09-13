@@ -64,6 +64,14 @@ module Moxml
             texts << child
             attachments.set(doc, :document_text, texts)
             child
+          when ::Leptris::XML::Comment
+            # The tree model supports document comments (they parse
+            # and serialize, libleptris 1.9.3 #578) but the engine
+            # has no add entry yet (leptris/leptris#1032).
+            raise Moxml::NotImplementedError.new(
+              "Adding document-level comments requires an engine entry (leptris/leptris#1032)",
+              feature: "add_document_child", adapter: "Leptris",
+            )
           else
             raise Moxml::DocumentStructureError.new(
               "Unsupported document child: #{child.class}",
