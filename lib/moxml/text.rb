@@ -4,7 +4,7 @@ module Moxml
   class Text < Node
     def content
       text = raw_content
-      adapter.restore_entities(text)
+      entity_bearing? ? adapter.restore_entities(text) : text
     end
 
     # Returns raw content without entity marker restoration.
