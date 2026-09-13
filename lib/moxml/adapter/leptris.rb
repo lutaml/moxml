@@ -594,19 +594,10 @@ module Moxml
         end
 
         def children(node)
+          # Frequency-ordered: elements dominate every walk and paid
+          # ten failed compares to reach the else arm.
           case node
-          when ::Leptris::XML::Document
-            assemble_document_children(node)
-          when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
-               CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment,
-               CustomizedLeptris::DocumentPI,
-               # Terminal node kinds pay an FFI round trip for an empty
-               # list; unfiltered recursions visit every text node.
-               ::Leptris::XML::Text, ::Leptris::XML::Comment,
-               ::Leptris::XML::CDATA, ::Leptris::XML::ProcessingInstruction,
-               ::Leptris::XML::Attr
-            []
-          else
+          when ::Leptris::XML::Element
             natives = node.children.to_a
             # Parse records whether the preprocessed source held any
             # entity markers, and the ER builder path flips the flag
@@ -619,6 +610,19 @@ module Moxml
               attachments.get(node.document, :entity_markers) == false
 
             split_entity_markers(natives, node)
+          when ::Leptris::XML::Document
+            assemble_document_children(node)
+          when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
+               CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment,
+               CustomizedLeptris::DocumentPI,
+               # Terminal node kinds pay an FFI round trip for an empty
+               # list; unfiltered recursions visit every text node.
+               ::Leptris::XML::Text, ::Leptris::XML::Comment,
+               ::Leptris::XML::CDATA, ::Leptris::XML::ProcessingInstruction,
+               ::Leptris::XML::Attr
+            []
+          else
+            node.children.to_a
           end
         end
 
@@ -793,13 +797,18 @@ module Moxml
         end
 
         def text_content(node)
+          # Frequency-ordered: elements dominate reads; they paid
+          # three failed compares to reach the else arm. The
+          # duplicated branch bodies are the point.
           case node
+          when ::Leptris::XML::Element, ::Leptris::XML::Text
+            node.content.to_s
           when ::Leptris::XML::Document then node.root ? node.root.content : ""
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
                CustomizedLeptris::EntityReference
             ""
           when CustomizedLeptris::TextSegment then node.content
-          else node.content.to_s
+          else node.content.to_s # rubocop:disable Lint/DuplicateBranch
           end
         end
 

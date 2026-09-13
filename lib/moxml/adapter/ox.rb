@@ -94,8 +94,11 @@ module Moxml
           ::Ox::Element.new(name)
         end
 
+        # Ox stores the Ruby string object itself as the node value —
+        # without the copy, later caller mutations would write through
+        # into the document (ownership shield; see set_text_content).
         def create_native_text(content, _owner_doc = nil)
-          content
+          content.dup
         end
 
         def create_native_entity_reference(name)
@@ -582,9 +585,11 @@ module Moxml
         end
 
         def set_text_content(node, content)
+          # Copy on the same ownership contract as create_native_text
+          content = content.to_s.dup
           case node
-          when String then node.replace(content.to_s)
-          when ::Ox::Element then node.replace_text(content.to_s)
+          when String then node.replace(content)
+          when ::Ox::Element then node.replace_text(content)
           else
             node.value = content.to_s
           end
