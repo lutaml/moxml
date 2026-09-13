@@ -180,12 +180,25 @@ module Moxml
       invalidate_namespace_cache!
     end
 
+    # All namespaces IN SCOPE for this element — its own
+    # declarations plus everything inherited from ancestors —
+    # matching the Nokogiri #namespaces contract consumers port
+    # against (issue #198: this returned only own declarations,
+    # losing ancestor scope under every backend).
     def namespaces
-      @namespaces ||= adapter.namespace_definitions(@native).map do |ns|
+      in_scope_namespaces
+    end
+
+    # The element's OWN namespace declarations only (not
+    # inherited). C14n's visibly-utilized calculation and the
+    # materializer's declaration pairs want exactly this shape.
+    def namespace_definitions
+      return @namespace_definitions unless @namespace_definitions.nil?
+
+      @namespace_definitions = adapter.namespace_definitions(@native).map do |ns|
         Namespace.new(ns, context)
       end
     end
-    alias namespace_definitions namespaces
 
     # The element's OWN namespace declarations as [prefix, uri]
     # pairs (nil prefix = default namespace) — not the inherited
@@ -308,6 +321,7 @@ module Moxml
     # any children cache — recomputes on next read.
     def invalidate_namespace_cache!
       @namespaces = nil
+      @namespace_definitions = nil
       @in_scope_namespaces = nil
       context.bump_namespace_scope_generation
     end

@@ -615,7 +615,11 @@ module Moxml
         end
 
         def namespace_prefix(namespace)
-          namespace.prefix
+          # Ox spells the default namespace's prefix "xmlns"; the
+          # wrapper contract is nil there (parity with the other
+          # adapters' in-scope maps).
+          prefix = namespace.prefix
+          prefix == "xmlns" ? nil : prefix
         end
 
         def namespace_uri(namespace)
