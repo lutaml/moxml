@@ -234,6 +234,7 @@ generation; `xmlns` writes keep the global bump.
 | Mixed build+read (nokogiri) | 1355µs / 5267 allocs | 1283µs / 5267 allocs |
 | `Element#text` read | 422ns | 346ns (-18%) |
 | `create_text` allocations | 6/node | 5/node |
+| Bare attribute read `[]` | 714ns | 513ns (-28%) |
 
 Allocations unchanged (the invalidation clears are nil-writes; the
 read cache materializes lazily). The remaining cold-walk gap is
