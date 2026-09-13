@@ -26,7 +26,16 @@ module Moxml
 
     def value
       val = @native.value.to_s
-      adapter.restore_entities(val)
+      # Same guard as Element#text: entity-free documents skip the
+      # marker restore scans. The memo rides the owning element's
+      # (attr natives have no entity probe); a detached attribute
+      # wrapper falls back to the unconditional restore.
+      parent = @parent_node
+      if parent.nil? || parent.entity_bearing?
+        adapter.restore_entities(val)
+      else
+        val
+      end
     end
 
     alias content value
