@@ -63,7 +63,16 @@ module Moxml
       # names, where resolution is real work.
       adapter = self.adapter
       if !key.include?(":") && adapter.bare_get_qname_safe?
-        return adapter.bare_attr_value(@native, key)
+        # The entity-restore decision rides the wrapper's generation
+        # memo (as Element#text) — the adapter-level probe walks to
+        # the document and the attachment store on every read, which
+        # dominated the fast path.
+        value = adapter.bare_attr_value(@native, key)
+        if value.is_a?(String) && entity_bearing?
+          return adapter.restore_entities(value)
+        end
+
+        value
       end
 
       cache = attribute_read_cache
@@ -249,7 +258,7 @@ module Moxml
 
     def inner_text
       text = raw_inner_text
-      adapter.restore_entities(text)
+      entity_bearing? ? adapter.restore_entities(text) : text
     end
 
     # Returns inner text without entity marker restoration.
