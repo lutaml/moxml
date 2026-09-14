@@ -8,7 +8,16 @@ module Moxml
         # the ER builder path flips it, and the split/restore scans
         # consult it. Customized natives only exist as split products
         # of marker-bearing text, so they always report true.
-        def entity_bearing?(native)
+        # doc is the binding document when the wrapper could resolve
+        # it through its parent chain; the C climb is the fallback.
+        def entity_bearing?(native, doc = nil)
+          if NATIVE_READ_LAYER && native.is_a?(::Leptris::XML::NativeNode)
+            doc ||= doc_for(native)
+            return false if doc.nil?
+
+            return attachments.get(doc, :entity_markers) != false
+          end
+
           case native
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
              CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment,

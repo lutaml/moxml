@@ -188,7 +188,7 @@ module Moxml
           end
         end
 
-        def children(node)
+        def children(node, **_entity_bearing)
           return [] unless node.is_a?(::REXML::Parent)
 
           # Return all children preserving whitespace text nodes

@@ -30,6 +30,7 @@ module Moxml
         EMPTY_ELEMENT_RE = %r{<([A-Za-z_][\w.:-]*+)((?:"[^"]*+"|'[^']*+'|[^<>"'/]++)*+)/>}
 
         def serialize(node, options = {})
+          node = to_binding(node) if NATIVE_READ_LAYER
           # Entity restoration belongs to the wrapper layer
           # (Node#to_xml runs adapter.restore_entities for every
           # adapter); doing it here scanned the output a second time.

@@ -54,7 +54,10 @@ module Moxml
 
     def children
       @children ||= begin
-        natives = adapter.children(@native)
+        # The wrapper's entity memo decides the marker split; the
+        # adapter would otherwise re-derive it per call (a C parent
+        # climb on the native layer).
+        natives = adapter.children(@native, entity_bearing: entity_bearing?)
         natives = natives.map { adapter.patch_node(_1, @native) } if adapter.patches_children?
         NodeSet.new(natives, context, self)
       end
@@ -150,8 +153,22 @@ module Moxml
         @entity_bearing
       else
         @entity_bearing_gen = gen
-        @entity_bearing = adapter.entity_bearing?(@native)
+        @entity_bearing = adapter.entity_bearing?(@native, document_native_for_markers)
       end
+    end
+
+    # Binding document through the wrapper parent chain — pure Ruby
+    # attr reads; the native-layer fallback climbs C parents per
+    # call (the doc_for walk was the largest wrapper-layer cost on
+    # the consumer pipeline after the native adoption).
+    def document_native_for_markers
+      node = self
+      while node
+        return node.native if node.document?
+
+        node = node.parent_node
+      end
+      nil
     end
 
     def xpath(expression, namespaces = {})
@@ -384,7 +401,11 @@ module Moxml
     end
 
     def ==(other)
-      self.class == other.class && @native == other.native
+      # Native equality goes through the adapter: engines with a
+      # native read layer hand out two wrapper classes over one C
+      # node, and raw native == is false across that seam.
+      self.class == other.class &&
+        adapter.same_node?(@native, other.native)
     end
 
     TYPES.each do |node_type|
@@ -447,7 +468,7 @@ module Moxml
     # Internal: Set the parent node for cache invalidation tracking.
     # Called by NodeSet, Document, Element when establishing parent-child
     # relationships. Public to allow cross-class usage within Moxml internals.
-    attr_writer :parent_node
+    attr_accessor :parent_node
 
     def adapter
       # A context's adapter object is fixed for its lifetime; the

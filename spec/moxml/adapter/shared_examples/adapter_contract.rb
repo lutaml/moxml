@@ -79,22 +79,20 @@ RSpec.shared_examples "xml adapter" do
       first = children[0]
       second = children[1]
 
-      expect(described_class.next_sibling(first)).to eq(second)
-      expect(described_class.previous_sibling(second)).to eq(first)
+      expect(described_class.same_node?(described_class.next_sibling(first), second)).to be(true)
+      expect(described_class.same_node?(described_class.previous_sibling(second), first)).to be(true)
     end
 
     it "adds child" do
       element = described_class.create_element("new")
       described_class.add_child(root, element)
-      expect(described_class.children(root).last).to eq(element)
+      expect(described_class.same_node?(described_class.children(root).last, element)).to be(true)
     end
 
     it "adds text child" do
       described_class.add_child(root, "text")
-      # a workaround for Rexml until we convert tests to work with Moxml wrappers
       last_child = described_class.children(root).last
-      last_text = last_child.respond_to?(:text) ? last_child.text : last_child.to_s
-      expect(last_text).to eq("text")
+      expect(described_class.text_content(last_child)).to eq("text")
     end
   end
 

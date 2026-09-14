@@ -312,7 +312,7 @@ module Moxml
           # Native documents are read-only, do nothing for them
         end
 
-        def children(node)
+        def children(node, **_entity_bearing)
           native_node = unpatch_node(node)
           return [] unless native_node
 
