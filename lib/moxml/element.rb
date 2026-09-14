@@ -112,8 +112,11 @@ module Moxml
     end
 
     def attributes
+      # Primed like Node.wrap: the adapter and type are known at
+      # mint, so the first name/value/attribute? access skips the
+      # context hop and the adapter's type probe.
       @attributes ||= adapter.attributes(@native).map do |attr|
-        a = Attribute.new(attr, context)
+        a = Attribute.new(attr, context, adapter, :attribute)
         a.parent_node = self
         a
       end
