@@ -167,13 +167,16 @@ module Moxml
           end
 
           prefix = ns.prefix
-          # attributes don't have attributes but can have a namespace prefix
-          if element.is_a?(::Ox::Element)
-            set_attribute(element, ns.expanded_prefix,
-                          ns.uri)
+          # Local part only — a qname create_element leaves
+          # "p:c" and re-joining would double the prefix (#208).
+          local = element.name.to_s.split(":", 2)[-1]
+          element.name = prefix.nil? || prefix.empty? ? local : "#{prefix}:#{local}"
+          # Declare only when the element is already in a tree and the
+          # prefix is not already bound — detached create+namespace=
+          # + attach under a declaring parent must not re-emit xmlns:p.
+          if element.is_a?(::Ox::Element) && element.parent
+            set_attribute(element, ns.expanded_prefix, ns.uri)
           end
-          element.name = [prefix,
-                          element.name.delete_prefix("xmlns:")].compact.join(":")
           element
         end
 

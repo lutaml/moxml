@@ -63,6 +63,19 @@
       end
     end
 
+    describe "qname create + namespace assignment (issue #208)" do
+      it "does not double the prefix when the name is already qualified" do
+        doc = ctx.parse(%(<r xmlns:p="urn:p"/>))
+        el = doc.create_element("p:c")
+        ns = doc.root.in_scope_namespaces.find { |n| n.prefix == "p" }
+        el.namespace = ns
+        doc.root.add_child(el)
+        out = doc.to_xml
+        expect(out).to include("p:c")
+        expect(out).not_to include("p:p:c")
+      end
+    end
+
     describe "namespaces contract (issue #198 comment)" do
       it "returns the in-scope map including ancestor declarations" do
         doc = ctx.parse(%(<root xmlns:p="urn:p" xmlns="urn:d"><p:c plain="1"/></root>))

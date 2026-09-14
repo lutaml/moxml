@@ -172,10 +172,19 @@ module Moxml
         def set_namespace(element, ns_or_string)
           if ns_or_string.nil?
             element.namespace_name = nil
+            # Drop any name prefix so the element is truly unqualified
+            if element.respond_to?(:name=) && element.name.to_s.include?(":")
+              element.name = element.name.split(":", 2)[-1]
+            end
             set_attribute(element, "xmlns", "")
             return element
           end
 
+          # Local part only before binding — qname create + namespace=
+          # would otherwise serialize p:p:c (issue #208).
+          if element.respond_to?(:name=) && element.name.to_s.include?(":")
+            element.name = element.name.split(":", 2)[-1]
+          end
           element.namespace_name = ns_or_string.to_s
           element
         end
