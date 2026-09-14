@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "ffi"
+
 return if RUBY_ENGINE == "opal"
 
 require "stringio"
@@ -39,6 +41,80 @@ module Moxml
       # cost when unused. Below it, Node#digest answers nil.
       DIGEST_SUPPORTED =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.99")
+
+      # Opt-in native read layer (leptris-ruby#185, bindings >= 1.9.162.6):
+      # TypedData node wrappers with C-bound hot reads and bulk
+      # children construction. Minted from #root downward; the C
+      # tree is shared with the binding, so writes made through the
+      # bridged binding nodes are visible to native reads. Installs
+      # without the compiled bundle (ruby-platform gem) simply stay
+      # on the binding path.
+      begin
+        require "leptris/xml/native_layer"
+      rescue LoadError, StandardError
+        nil
+      end
+      NATIVE_READ_LAYER =
+        defined?(::Leptris::XML::NativeNode) &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.162.6")
+
+      if NATIVE_READ_LAYER
+        # root NativeNode -> binding document (recorded at #root mint;
+        # NativeNode exposes no document accessor).
+        @native_doc_roots = ObjectSpace::WeakMap.new
+
+        class << self
+          def record_native_doc(root_native, doc)
+            @native_doc_roots[root_native] = doc
+          end
+
+          # Protocol-level node equality: one engine can hand out
+          # two wrapper classes over the same C node (native layer +
+          # binding), so raw == is not identity across the seam.
+          def same_node?(one, other)
+            return true if one.equal?(other)
+
+            if NATIVE_READ_LAYER
+              native_one = one.is_a?(::Leptris::XML::NativeNode)
+              native_other = other.is_a?(::Leptris::XML::NativeNode)
+              if native_one || native_other
+                address_one = native_one ? one.address : one.c_ptr.address
+                address_other = native_other ? other.address : other.c_ptr.address
+                return address_one == address_other
+              end
+            end
+
+            one == other
+          end
+
+          # Binding node for any native: identity for binding nodes,
+          # a Node.wrap over the shared C pointer for NativeNodes.
+          def to_binding(node)
+            return node unless NATIVE_READ_LAYER &&
+              node.is_a?(::Leptris::XML::NativeNode)
+
+            doc = doc_for(node)
+            ptr = ::FFI::Pointer.new(node.address)
+            return ::Leptris::XML::Node.wrap(ptr, doc) if doc
+
+            ::Leptris::XML::Node.wrap(ptr, nil)
+          end
+
+          # Binding document for a NativeNode subtree: climb parents
+          # to the root (C-bound reads) and look the doc up in the
+          # root registry. Detached subtrees answer nil.
+          def doc_for(node)
+            current = node
+            current = current.parent while current&.parent
+            @native_doc_roots[current]
+          end
+        end
+      end
+
+      # Binding node for any native: identity for binding nodes, a
+      # Node.wrap over the shared C pointer for NativeNodes (used by
+      # the write/serialize/namespace paths the native layer does
+      # not carry).
 
       # Native C14N delegation probe: the engine's C14N must
       # byte-match the Ruby reference (ported from canon) on a
@@ -191,7 +267,14 @@ module Moxml
         # document-plus-attachment probe here cost more than the
         # read itself).
         def bare_attr_value(element, name)
-          element[name.to_s]
+          value = element[name.to_s]
+          if NATIVE_READ_LAYER &&
+              element.is_a?(::Leptris::XML::NativeNode) &&
+              value.is_a?(String)
+            return value.dup.force_encoding(Encoding::UTF_8)
+          end
+
+          value
         end
 
         def native_identity_stable?
@@ -428,10 +511,12 @@ module Moxml
         end
 
         def create_native_namespace(element, prefix, uri)
+          element = to_binding(element) if NATIVE_READ_LAYER
           element.add_namespace_definition(prefix, uri)
         end
 
         def set_namespace(node, namespace)
+          node = to_binding(node) if NATIVE_READ_LAYER
           return set_attribute_namespace(node, namespace) if node.is_a?(::Leptris::XML::Attr)
 
           element = node
@@ -498,6 +583,8 @@ module Moxml
         end
 
         def namespace(node)
+          node = to_binding(node) if NATIVE_READ_LAYER
+
           # The binding resolves Attr#namespace to the declaration but
           # without the prefix; when the qualified name carries one,
           # prefer the in-scope declaration that binds it so wrappers
@@ -549,6 +636,16 @@ module Moxml
         end
 
         def node_type(node)
+          if NATIVE_READ_LAYER &&
+              node.is_a?(::Leptris::XML::NativeNode)
+            type = node.node_type
+            # The native layer spells PIs :pi; the wrapper contract
+            # (node_type_map) says :processing_instruction.
+            return :processing_instruction if type == :pi
+
+            return type
+          end
+
           # Frequency-ordered: elements and text dominate every real
           # document, and Node.wrap dispatches here once per cold
           # wrap. CDATA must precede Text (CDATA < Text in the
@@ -574,6 +671,9 @@ module Moxml
         # lightweight Attr triples answer nil.
         def digest(node, drop_ws_text: false)
           return nil unless DIGEST_SUPPORTED
+          if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
+            return to_binding(node).digest(drop_ws: drop_ws_text)
+          end
           return nil unless node.is_a?(::Leptris::XML::Node) &&
             !node.is_a?(::Leptris::XML::ResultAttr)
 
@@ -584,10 +684,19 @@ module Moxml
           return node.root_name if node.is_a?(::Leptris::XML::DocType)
           return node.target if node.is_a?(CustomizedLeptris::DocumentPI)
 
+          if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
+            # Native strings arrive ASCII-8BIT; PIs expose no name
+            # through the native layer.
+            return to_binding(node).target.to_s if node.node_type == :pi
+
+            return node.name.dup.force_encoding(Encoding::UTF_8)
+          end
+
           node.name.to_s.dup.force_encoding("UTF-8")
         end
 
         def set_node_name(node, name)
+          node = to_binding(node) if NATIVE_READ_LAYER
           case node
           when ::Leptris::XML::ProcessingInstruction, CustomizedLeptris::DocumentPI then node.target = name
           else node.name = name
@@ -595,6 +704,7 @@ module Moxml
         end
 
         def duplicate_node(node)
+          node = to_binding(node) if NATIVE_READ_LAYER
           case node
           when CustomizedLeptris::Declaration
             CustomizedLeptris::Declaration.new(node.version, node.encoding, node.standalone)
@@ -609,7 +719,17 @@ module Moxml
           end
         end
 
-        def children(node)
+        def children(node, entity_bearing: false)
+          if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
+            # Bulk C children. Entity-marker documents fall back to
+            # the binding path (the marker split materializes
+            # TextSegments); clean documents take the bulk win. The
+            # wrapper's memo supplies the flag — deriving it here
+            # costs a C parent climb per call.
+            return node.children.to_a unless entity_bearing
+
+            node = to_binding(node)
+          end
           # Frequency-ordered: elements dominate every walk and paid
           # ten failed compares to reach the else arm.
           case node
@@ -643,6 +763,16 @@ module Moxml
         end
 
         def parent(node)
+          if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
+            parent = node.parent
+            return parent if parent
+
+            doc = doc_for(node)
+            return doc if doc&.root && doc.root.c_ptr.address == node.address
+
+            return nil
+          end
+
           # Frequency-ordered: elements dominate navigation and paid
           # three failed compares to reach the else arm.
           case node
@@ -664,14 +794,30 @@ module Moxml
         end
 
         def next_sibling(node)
+          return node.next_sibling if NATIVE_READ_LAYER &&
+            node.is_a?(::Leptris::XML::NativeNode)
+
           node.next_sibling if node.is_a?(::Leptris::XML::Node)
         end
 
         def previous_sibling(node)
+          if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
+            # The native layer exposes next_sibling only; walk the
+            # (bulk-cached) sibling list for the predecessor.
+            siblings = node.parent&.children
+            index = siblings&.index(node)
+            return siblings[index - 1] if index&.positive?
+
+            return nil
+          end
+
           node.previous_sibling if node.is_a?(::Leptris::XML::Node)
         end
 
         def document(node)
+          return doc_for(node) if NATIVE_READ_LAYER &&
+            node.is_a?(::Leptris::XML::NativeNode)
+
           case node
           when ::Leptris::XML::Document then node
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype then node.parent_doc
@@ -680,7 +826,15 @@ module Moxml
         end
 
         def root(document)
-          document.root
+          r = document.root
+          return nil if r.nil?
+
+          if NATIVE_READ_LAYER
+            native = document.native_node
+            record_native_doc(native, document)
+            return native
+          end
+          r
         end
 
         def line_number(node)
@@ -691,6 +845,7 @@ module Moxml
         end
 
         def attributes(element)
+          element = to_binding(element)
           element.attribute_nodes
         end
 
@@ -707,6 +862,7 @@ module Moxml
         end
 
         def set_attribute(element, name, value)
+          element = to_binding(element) if NATIVE_READ_LAYER
           element[name.to_s] = value.to_s
         end
 
@@ -726,14 +882,17 @@ module Moxml
         end
 
         def get_attribute(element, name)
+          element = to_binding(element)
           element.attribute_nodes.find { |attr| attr.name == name.to_s }
         end
 
         def get_attribute_value(element, name)
+          element = to_binding(element)
           element[name.to_s]
         end
 
         def remove_attribute(element, name)
+          element = to_binding(element)
           element.remove_attribute(name.to_s)
         end
 
@@ -743,6 +902,10 @@ module Moxml
         end
 
         def add_child(parent, child)
+          if NATIVE_READ_LAYER
+            parent = to_binding(parent)
+            child = to_binding(child)
+          end
           case parent
           when ::Leptris::XML::Document then add_document_child(parent, child)
           else
@@ -759,6 +922,7 @@ module Moxml
         end
 
         def add_previous_sibling(node, new_node)
+          node = to_binding(node) if NATIVE_READ_LAYER
           # A PI inserted before the root lives at document level in
           # libleptris's model, not in the element tree.
           if new_node.is_a?(::Leptris::XML::ProcessingInstruction) &&
@@ -770,10 +934,12 @@ module Moxml
         end
 
         def add_next_sibling(node, new_node)
+          node = to_binding(node) if NATIVE_READ_LAYER
           node.add_next_sibling(new_node)
         end
 
         def remove(node)
+          node = to_binding(node) if NATIVE_READ_LAYER
           case node
           when CustomizedLeptris::Declaration
             remove_declaration(node.parent_doc) if node.parent_doc
@@ -793,6 +959,10 @@ module Moxml
         end
 
         def replace(node, new_node)
+          if NATIVE_READ_LAYER
+            node = to_binding(node)
+            new_node = to_binding(new_node)
+          end
           return node.replace(new_node) if node.is_a?(::Leptris::XML::Element)
 
           # libleptris only offers element-anchored insertion, so a
@@ -817,10 +987,18 @@ module Moxml
         end
 
         def replace_children(node, new_children)
+          if NATIVE_READ_LAYER
+            node = to_binding(node)
+            new_children = new_children.map { |child| to_binding(child) }
+          end
           node.children = new_children
         end
 
         def text_content(node)
+          if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
+            return node.content.dup.force_encoding(Encoding::UTF_8)
+          end
+
           # Frequency-ordered: elements dominate reads; they paid
           # three failed compares to reach the else arm. The
           # duplicated branch bodies are the point.
@@ -837,6 +1015,7 @@ module Moxml
         end
 
         def inner_text(node)
+          node = to_binding(node) if NATIVE_READ_LAYER
           # moxml semantic: direct text children only — no descendant
           # text (that is #text), no comments. Entity references
           # contribute their serialized form.
@@ -851,6 +1030,7 @@ module Moxml
         end
 
         def set_text_content(node, content)
+          node = to_binding(node) if NATIVE_READ_LAYER
           case node
           when ::Leptris::XML::Document
             node.root&.content = content.to_s
@@ -899,6 +1079,7 @@ module Moxml
         end
 
         def namespace_definitions(element)
+          element = to_binding(element) if NATIVE_READ_LAYER
           element.namespace_definitions
         end
 
@@ -929,6 +1110,7 @@ module Moxml
         NATIVE_GATE_CACHE = XPath::Cache.new(100)
 
         def xpath(node, expression, namespaces = {})
+          node = to_binding(node) if NATIVE_READ_LAYER
           native = native_xpath(node, expression, namespaces)
           return native unless native.nil?
 

@@ -253,6 +253,30 @@ read cache materializes lazily). The remaining cold-walk gap is
 binding-side (its per-node Ruby wrapper construction) — tracked
 upstream as the TypedData work.
 
+=== Native read layer (leptris >= 1.9.162.6)
+
+The leptris adapter adopts the binding's opt-in native read layer
+(leptris-ruby#185): TypedData node wrappers with C-bound hot reads
+and bulk children construction — one wrapper-cache round-trip for a
+whole child list, zero per-node FFI. Element natives minted from
+`#root` and `children` are native-layer nodes; the C tree is shared
+with the binding, so writes made through the bridged binding nodes
+(a `to_binding` wrap over the same pointer) are visible to native
+reads. Engines without the layer, or ruby-platform installs without
+the compiled bundle, stay on the binding path unchanged.
+
+| path | binding path | native layer |
+| Consumer pipeline (parse + typed walk) | 6112µs (0.50x nokogiri) | **3380µs (1.00-1.04x)** |
+| Pipeline allocations | 13564 | **9813 (0.69x nokogiri)** |
+| Cold walk (parse + mint) | 738µs | **509µs** |
+| Raw walk (binding vs native, upstream's fixture) | 64.3µs/doc | 22.8µs/doc |
+
+Entity-marker documents fall back to the binding children path (the
+marker split materializes TextSegments); the wrapper's
+`entity_bearing?` memo decides, so the check costs no per-call
+climb. `Node#==` and the adapter protocol's `same_node?` compare
+C-node addresses — two wrapper classes over one node compare equal.
+
 === Prefer bulk paths for per-node conversion
 
 Per-node Ruby iteration pays the wrapper tax per element. When the

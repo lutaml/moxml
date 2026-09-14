@@ -66,7 +66,7 @@ module Moxml
       return nil unless adapter == Moxml::Adapter::Leptris &&
         Moxml::Adapter::Leptris.native_c14n_byte_safe?
 
-      node_or_xml.native.canonicalize(
+      Moxml::Adapter::Leptris.to_binding(node_or_xml.native).canonicalize(
         ::Leptris::XML::FFI::C14N_1_0, nil,
         mode: ::Leptris::XML::FFI::C14N_MODE_CANONICAL
       )

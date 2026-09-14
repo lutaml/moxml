@@ -248,7 +248,7 @@ module Moxml
           node.name = name
         end
 
-        def children(node)
+        def children(node, **_entity_bearing)
           node.children
         end
 

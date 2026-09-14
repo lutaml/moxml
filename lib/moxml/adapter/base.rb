@@ -116,6 +116,13 @@ module Moxml
           )
         end
 
+        # Protocol-level native equality; engines with more than one
+        # wrapper class over one C node override (leptris native
+        # read layer). Shared adapter examples compare through this.
+        def same_node?(one, other)
+          one == other
+        end
+
         # Backends without a native subtree digest answer nil —
         # the wrapper contract Node#digest gates on (issue #173).
         def digest(*)
@@ -272,7 +279,7 @@ namespace_validation_mode: :strict)
         # Marker-tracking adapters override this so the post-serialize
         # restore can skip its full-output scans on marker-free
         # documents; the default stays conservative.
-        def entity_bearing?(_native)
+        def entity_bearing?(_native, _doc = nil)
           true
         end
 

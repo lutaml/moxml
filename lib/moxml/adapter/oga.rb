@@ -232,7 +232,7 @@ module Moxml
           node.name = name
         end
 
-        def children(node)
+        def children(node, **_entity_bearing)
           all_children = []
 
           if node.is_a?(::Oga::XML::Document)
