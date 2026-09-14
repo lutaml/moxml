@@ -106,7 +106,11 @@ module Moxml
     def assign(element, name, value)
       name = name.to_s
       adapter = element.adapter
-      if name == "xmlns" || name.start_with?("xmlns:")
+      # One probe covers both spellings ("xmlns" and "xmlns:*"); a
+      # plain attribute literally starting with "xmlns" would only
+      # over-invalidate (global bump instead of local) — a no-op
+      # for correctness.
+      if name.start_with?("xmlns")
         adapter.set_attribute(element.native, name, value)
         element.invalidate_attribute_cache!
         return value
@@ -144,7 +148,7 @@ module Moxml
     def remove(element, name)
       name = name.to_s
       adapter = element.adapter
-      if name == "xmlns" || name.start_with?("xmlns:")
+      if name.start_with?("xmlns")
         adapter.remove_attribute(element.native, name)
         element.invalidate_attribute_cache!
         return nil
