@@ -62,7 +62,10 @@ module Moxml
       # resolver's expanded-name semantics only pay for prefixed
       # names, where resolution is real work.
       adapter = self.adapter
-      if !key.include?(":") && adapter.bare_get_qname_safe?
+      # Capability memo: the adapter predicate is a per-read
+      # dispatch for a lifetime constant.
+      if !key.include?(":") &&
+          ((@bare_qname_safe ||= adapter.bare_get_qname_safe?) == true)
         # The entity-restore decision rides the wrapper's generation
         # memo (as Element#text) — the adapter-level probe walks to
         # the document and the attachment store on every read, which
