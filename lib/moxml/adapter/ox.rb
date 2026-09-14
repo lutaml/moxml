@@ -300,9 +300,13 @@ module Moxml
 
           result = node.nodes || []
           # Ox doesn't set parent references during parsing.
-          # Set them here so parent/sibling navigation works.
+          # Set them here so parent/sibling navigation works. The
+          # != node guard skips the write for already-linked (or
+          # stale-parented) children — steady-state access pays one
+          # comparison instead of a mutation per child.
           result.each do |child|
-            child.parent = node if child.is_a?(::Ox::Element)
+            child.parent = node if child.is_a?(::Ox::Element) &&
+              child.parent != node
           end
           result
         end

@@ -24,6 +24,13 @@ module Moxml
       # up to the old 65,536 wholesale-clear valve which also
       # destroyed identity for live wrappers when it fired.
       @wrappers = WEAK_WRAPPERS ? ObjectSpace::WeakMap.new : {}.compare_by_identity
+      # Static per context (the registry flavor never changes).
+      @wrappers_strong = !WEAK_WRAPPERS
+      # Resolved on first registration — the adapter-resolution
+      # chain ran per mint and the decision never changes for a
+      # context's adapter (re-configuring an adapter mid-context is
+      # unsupported: minted wrappers already carry the old one).
+      @register_wrappers = nil
     end
 
     def wrapper_for(native)
@@ -31,15 +38,19 @@ module Moxml
     end
 
     def register_wrapper(native, wrapper)
-      # Adapter opt-in. Adapters whose natives are recreated per
-      # access (libxml mints fresh Ruby objects for the same C node)
-      # opt out so the map does not accumulate dead entries; the
-      # default is opt-in.
-      return if @config&.adapter&.wrappers_recyclable? == false
+      # Adapter opt-in, resolved once (see initialize): adapters
+      # whose natives are recreated per access (libxml mints fresh
+      # Ruby objects for the same C node) opt out so the map does
+      # not accumulate dead entries; the default is opt-in.
+      if @register_wrappers.nil?
+        @register_wrappers =
+          @config&.adapter&.wrappers_recyclable? != false
+      end
+      return unless @register_wrappers
 
       # The strong fallback (Opal) needs the wholesale-clear valve;
       # the WeakMap registry is self-cleaning.
-      @wrappers.clear if @wrappers.is_a?(Hash) && @wrappers.size >= 65_536
+      @wrappers.clear if @wrappers_strong && @wrappers.size >= 65_536
       @wrappers[native] = wrapper
     end
 
