@@ -232,10 +232,20 @@ generation; `xmlns` writes keep the global bump.
 | Attribute write (`[]=`) | 822ns | 758ns (-8%) |
 | Cold walk (parse + wrapper mint, 752 nodes) | 811µs | 699µs (-14%) |
 | Mixed build+read (nokogiri) | 1355µs / 5267 allocs | 1283µs / 5267 allocs |
-| `Element#text` read | 422ns | 346ns (-18%) |
+| `Element#text` read | 422ns | 249ns |
 | `create_text` allocations | 6/node | 5/node |
-| Bare attribute read `[]` | 714ns | 513ns (-28%) |
-| Consumer pipeline (parse + typed walk) | 6112µs (0.50x) | 4915µs (0.67x) |
+| Bare attribute read `[]` | 714ns | 385ns |
+| Consumer pipeline (parse + typed walk) | 6112µs (0.50x) | 3536µs (1.07x) |
+
+The 1.9.163.2 round added: UTF-8 native strings (the per-read
+dup+force_encoding retag dropped — 3000 allocations per pipeline
+run), the serialize generation as an attr_reader (the entity guard
+consults it on every read), and a per-wrapper capability memo for
+the bare-qname predicate. Reads sit at ~0.5x of raw Nokogiri with
+the binding floor (`NativeNode#[]` 110ns, `#content` 85ns)
+accounting for the budget's remainder — the 2x-per-operation ask
+for reads, writes, and create+append is filed with the floor table
+as leptris-ruby#204.
 
 The pipeline jump has two causes: leptris 1.9.157-1.9.162 (inline
 attribute values, TLS hoist, inline edge encoding, O(this-document)

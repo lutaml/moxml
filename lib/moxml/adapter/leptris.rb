@@ -58,6 +58,13 @@ module Moxml
         defined?(::Leptris::XML::NativeNode) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.162.6")
 
+      # 1.9.163.2's native layer returns UTF-8, unfrozen strings
+      # (1.9.162.x answered ASCII-8BIT — the reads retagged with a
+      # dup+force_encoding per call).
+      NATIVE_STRINGS_UTF8 =
+        defined?(::Leptris::XML::NativeNode) &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.2")
+
       # 1.9.163.2 moved the native bulk children into C
       # (Native.bulk_children) and fixed the 512 truncation
       # (leptris-ruby#202). The 162.6-163.1 window carries the
@@ -160,12 +167,15 @@ module Moxml
       # Bumped whenever a document's :entity_markers flag is written
       # (parse, parse_html, entity-reference mint) so wrapper-level
       # entity_bearing? memos invalidate.
-      def self.serialize_generation
-        @serialize_generation ||= 0
+      # attr_reader beats the ||= memo on every guarded read (the
+      # entity guard consults this per bare read / text read).
+      class << self
+        attr_reader :serialize_generation
       end
+      @serialize_generation = 0
 
       def self.bump_serialize_generation
-        @serialize_generation = serialize_generation + 1
+        @serialize_generation += 1
       end
 
       # leptris-ruby#103: prefixed attribute tests inside predicates
@@ -279,7 +289,7 @@ module Moxml
         # read itself).
         def bare_attr_value(element, name)
           value = element[name.to_s]
-          if NATIVE_READ_LAYER &&
+          if !NATIVE_STRINGS_UTF8 && NATIVE_READ_LAYER &&
               element.is_a?(::Leptris::XML::NativeNode) &&
               value.is_a?(String)
             return value.dup.force_encoding(Encoding::UTF_8)
@@ -703,11 +713,12 @@ module Moxml
           return node.target if node.is_a?(CustomizedLeptris::DocumentPI)
 
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
-            # Native strings arrive ASCII-8BIT; PIs expose no name
-            # through the native layer.
+            # PIs expose no name through the native layer.
             return to_binding(node).target.to_s if node.node_type == :pi
 
-            return node.name.dup.force_encoding(Encoding::UTF_8)
+            return node.name if NATIVE_STRINGS_UTF8
+
+            node.name.dup.force_encoding(Encoding::UTF_8)
           end
 
           node.name.to_s.dup.force_encoding("UTF-8")
@@ -1109,6 +1120,8 @@ module Moxml
 
         def text_content(node)
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
+            return node.content if NATIVE_STRINGS_UTF8
+
             return node.content.dup.force_encoding(Encoding::UTF_8)
           end
 
