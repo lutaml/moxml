@@ -235,6 +235,18 @@ generation; `xmlns` writes keep the global bump.
 | `Element#text` read | 422ns | 346ns (-18%) |
 | `create_text` allocations | 6/node | 5/node |
 | Bare attribute read `[]` | 714ns | 513ns (-28%) |
+| Consumer pipeline (parse + typed walk) | 6112µs (0.50x) | 4915µs (0.67x) |
+
+The pipeline jump has two causes: leptris 1.9.157-1.9.162 (inline
+attribute values, TLS hoist, inline edge encoding, O(this-document)
+free, create+append -24%) and the restoration of the bare-read
+early return — a style edit in #205 dropped the `return`, and every
+entity-free bare read fell through into the full resolver (correct
+values, double the work; 15276µs on the same fixture). The parity
+suite now pins zero attribute-list materializations for bare reads
+on fast-path adapters — silent fall-throughs of this shape are
+exactly what allocation counts and materialization counters catch
+when wall-clock is noisy.
 
 Allocations unchanged (the invalidation clears are nil-writes; the
 read cache materializes lazily). The remaining cold-walk gap is
