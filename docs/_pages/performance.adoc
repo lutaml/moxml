@@ -277,6 +277,19 @@ marker split materializes TextSegments); the wrapper's
 climb. `Node#==` and the adapter protocol's `same_node?` compare
 C-node addresses — two wrapper classes over one node compare equal.
 
+The 1.9.162.6–163.1 bindings truncate bulk children at 512
+(leptris-ruby#202): moxml fetches with its own count-then-copy
+scratch there. 1.9.163.2 moved the bulk into C and fixed the
+truncation — newer bindings use their C path (version-memoized,
+cheaper than a per-call count+copy).
+
+The native *builder* factories (native_create_element/text) are
+deliberately not adopted: native mutations do not advance the
+binding's document version, so the binding's memoized reads over
+the same tree go stale, and attaching the created natives pays a
+per-node `to_binding` bridge that costs more than the factory
+saves (create+attach measured 5816 -> 7697ns vs nokogiri 1750).
+
 === Prefer bulk paths for per-node conversion
 
 Per-node Ruby iteration pays the wrapper tax per element. When the

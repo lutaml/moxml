@@ -58,16 +58,20 @@ module Moxml
         defined?(::Leptris::XML::NativeNode) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.162.6")
 
-      # The binding's scratch-buffer growth truncates bulk children
-      # at 512 on 1.9.163.x (leptris-ruby#202) — the engine copies
-      # any buffer size correctly and its count query is exact, so
-      # moxml fetches with its own grow-to-fit scratch (correct on
-      # every binding version; the binding's own Node#children is
-      # not trusted for large lists).
+      # 1.9.163.2 moved the native bulk children into C
+      # (Native.bulk_children) and fixed the 512 truncation
+      # (leptris-ruby#202). The 162.6-163.1 window carries the
+      # binding-side truncation, so moxml fetches with its own
+      # count-then-copy scratch there; newer bindings use their
+      # C bulk path (version-memoized, cheaper than a per-call
+      # count+copy).
+      NATIVE_BULK_FIXED =
+        defined?(::Leptris::XML::NativeNode) &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.2")
 
       if NATIVE_READ_LAYER
-        # root NativeNode -> binding document (recorded at #root mint;
-        # NativeNode exposes no document accessor).
+        # root NativeNode -> binding document (recorded at #root
+        # mint; the native layer exposes no document accessor).
         @native_doc_roots = ObjectSpace::WeakMap.new
 
         class << self
@@ -455,6 +459,13 @@ module Moxml
           ::Leptris::XML::Document.create
         end
 
+        # The native builder factories (native_create_element/text)
+        # are deliberately NOT adopted: native mutations do not
+        # advance the binding's document version, so the binding's
+        # memoized reads over the same tree go stale; attaching the
+        # created natives also pays a per-node to_binding bridge
+        # that costs more than the factory saves (create+attach
+        # measured 5816 -> 7697ns vs nokogiri 1750).
         def create_native_element(name, owner_doc = nil)
           (owner_doc || create_document).create_element(name.to_s)
         end
@@ -734,7 +745,11 @@ module Moxml
             # TextSegment reconstruction reads binding text nodes;
             # the wrapper's memo supplies the flag, so deriving it
             # here costs no C parent climb per call.
-            natives = bulk_native_children(node)
+            natives = if NATIVE_BULK_FIXED
+                        node.children.to_a
+                      else
+                        bulk_native_children(node)
+                      end
             return natives unless entity_bearing
 
             # Entity-marker documents: bridge for the marker split
@@ -810,6 +825,21 @@ module Moxml
           end
         end
 
+        # Fallback for natives without a registered document: walk
+        # first_child/next_sibling at the FFI level and wrap binding
+        # nodes over the raw pointers.
+        def sibling_walk_children(node)
+          ptr = ::FFI::Pointer.new(node.address)
+          first = ::Leptris::XML::FFI.leptris_node_first_child(ptr)
+          children = []
+          current = first
+          until current.null?
+            children << ::Leptris::XML::Node.wrap(current, nil)
+            current = ::Leptris::XML::FFI.leptris_node_next_sibling(current)
+          end
+          children
+        end
+
         # The binding-node twin of bulk_native_children (identity via
         # the binding's wrap cache).
         def bulk_binding_children(node)
@@ -832,7 +862,12 @@ module Moxml
           return [] if copied.zero?
 
           doc = doc_for(node)
-          return to_binding(node).children.to_a if doc.nil?
+          if doc.nil?
+            # Unregistered native (adapter-level use outside #root):
+            # the 163.2 binding's bulk needs a document, so walk
+            # siblings instead of crashing through a doc-less wrap.
+            return sibling_walk_children(node)
+          end
 
           # Share the layer's per-document identity cache (keyed by
           # node address): NativeNode.from alone mints fresh objects
