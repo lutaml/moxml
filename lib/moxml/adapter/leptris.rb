@@ -58,6 +58,12 @@ module Moxml
         defined?(::Leptris::XML::NativeNode) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.162.6")
 
+      # The 1.9.162.x native layer truncates bulk children at 512
+      # (silent data loss — leptris-ruby#202). A full batch is
+      # ambiguous (exactly-512 lists exist), so it falls back to the
+      # binding path for correctness.
+      NATIVE_CHILDREN_CAP = 512
+
       if NATIVE_READ_LAYER
         # root NativeNode -> binding document (recorded at #root mint;
         # NativeNode exposes no document accessor).
@@ -725,8 +731,12 @@ module Moxml
             # the binding path (the marker split materializes
             # TextSegments); clean documents take the bulk win. The
             # wrapper's memo supplies the flag — deriving it here
-            # costs a C parent climb per call.
-            return node.children.to_a unless entity_bearing
+            # costs a C parent climb per call. A full batch (512)
+            # also falls back: the native layer truncates there.
+            unless entity_bearing
+              natives = node.children.to_a
+              return natives unless natives.size == NATIVE_CHILDREN_CAP
+            end
 
             node = to_binding(node)
           end
@@ -801,16 +811,11 @@ module Moxml
         end
 
         def previous_sibling(node)
-          if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
-            # The native layer exposes next_sibling only; walk the
-            # (bulk-cached) sibling list for the predecessor.
-            siblings = node.parent&.children
-            index = siblings&.index(node)
-            return siblings[index - 1] if index&.positive?
-
-            return nil
-          end
-
+          # Bridged, not the native sibling walk: the native layer
+          # exposes next_sibling only, and its children batch
+          # truncates at 512 — the predecessor beyond that would be
+          # wrong.
+          node = to_binding(node)
           node.previous_sibling if node.is_a?(::Leptris::XML::Node)
         end
 
