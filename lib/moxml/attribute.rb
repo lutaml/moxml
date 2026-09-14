@@ -77,6 +77,14 @@ module Moxml
       native_elem && Moxml::Node.wrap(native_elem, context)
     end
 
+    # The wrapper's parent tracking is authoritative for attributes
+    # (set at materialization by Element#attributes): the generic
+    # adapter read raises on engines whose Attr natives expose no
+    # #parent (leptris), and the tracked value needs no wrap.
+    def parent
+      @parent_node
+    end
+
     def remove
       # The name must be read before the removal — engines free the
       # attribute native, and post-removal reads are use-after-free.

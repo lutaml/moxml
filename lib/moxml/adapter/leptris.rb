@@ -626,16 +626,24 @@ module Moxml
         end
 
         def parent(node)
+          # Frequency-ordered: elements dominate navigation and paid
+          # three failed compares to reach the else arm.
           case node
+          when ::Leptris::XML::Element then root_parent(node)
           when ::Leptris::XML::Document then nil
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
                CustomizedLeptris::DocumentPI then node.parent_doc
           when CustomizedLeptris::TextSegment, CustomizedLeptris::EntityReference then node.parent
-          else
-            # The binding reports the root element as parentless; the
-            # moxml contract roots at the document.
-            node.parent || (node.document&.root == node ? node.document : nil)
+          # Same body as the Element arm by design (frequency
+          # ordering); the generic kinds are cold.
+          else root_parent(node) # rubocop:disable Lint/DuplicateBranch
           end
+        end
+
+        # The binding reports the root element as parentless; the
+        # moxml contract roots at the document.
+        def root_parent(node)
+          node.parent || (node.document&.root == node ? node.document : nil)
         end
 
         def next_sibling(node)
