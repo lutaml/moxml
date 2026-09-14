@@ -63,6 +63,34 @@
       end
     end
 
+    describe "bare-read fast path (regression: #205 dropped the return)" do
+      it "answers bare reads without materializing the attribute list" do
+        doc = ctx.parse(%(<r><e a="1" b="2"/></r>))
+        e = doc.root.children.first
+
+        materializations = 0
+        e.singleton_class.class_eval do
+          orig = instance_method(:attributes)
+          define_method(:attributes) do
+            materializations += 1
+            orig.bind_call(self)
+          end
+        end
+
+        expect(e["a"]).to eq("1")
+        expect(e["b"]).to eq("2")
+        expect(e["a"]).to eq("1")
+        # Fast-path adapters (nokogiri, leptris) must not materialize;
+        # the resolver adapters answer from the materialized list and
+        # the read cache — one list walk per element per generation.
+        if ctx.config.adapter.bare_get_qname_safe?
+          expect(materializations).to eq(0)
+        else
+          expect(materializations).to be > 0
+        end
+      end
+    end
+
     describe "qname create + namespace assignment (issue #208)" do
       it "does not double the prefix when the name is already qualified" do
         doc = ctx.parse(%(<r xmlns:p="urn:p"/>))

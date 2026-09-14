@@ -68,11 +68,9 @@ module Moxml
         # the document and the attachment store on every read, which
         # dominated the fast path.
         value = adapter.bare_attr_value(@native, key)
-        if value.is_a?(String) && entity_bearing?
-          return adapter.restore_entities(value)
-        end
+        return adapter.restore_entities(value) if value.is_a?(String) && entity_bearing?
 
-        value
+        return value
       end
 
       cache = attribute_read_cache
