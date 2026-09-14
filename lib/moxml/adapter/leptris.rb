@@ -58,11 +58,12 @@ module Moxml
         defined?(::Leptris::XML::NativeNode) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.162.6")
 
-      # The 1.9.162.x native layer truncates bulk children at 512
-      # (silent data loss — leptris-ruby#202). A full batch is
-      # ambiguous (exactly-512 lists exist), so it falls back to the
-      # binding path for correctness.
-      NATIVE_CHILDREN_CAP = 512
+      # The binding's scratch-buffer growth truncates bulk children
+      # at 512 on 1.9.163.x (leptris-ruby#202) — the engine copies
+      # any buffer size correctly and its count query is exact, so
+      # moxml fetches with its own grow-to-fit scratch (correct on
+      # every binding version; the binding's own Node#children is
+      # not trusted for large lists).
 
       if NATIVE_READ_LAYER
         # root NativeNode -> binding document (recorded at #root mint;
@@ -727,24 +728,36 @@ module Moxml
 
         def children(node, entity_bearing: false)
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
-            # Bulk C children. Entity-marker documents fall back to
-            # the binding path (the marker split materializes
-            # TextSegments); clean documents take the bulk win. The
-            # wrapper's memo supplies the flag — deriving it here
-            # costs a C parent climb per call. A full batch (512)
-            # also falls back: the native layer truncates there.
-            unless entity_bearing
-              natives = node.children.to_a
-              return natives unless natives.size == NATIVE_CHILDREN_CAP
+            # Bulk C children through moxml's own scratch (see
+            # NATIVE_READ_LAYER note above). Entity-marker documents
+            # bridge each child for the marker split — the
+            # TextSegment reconstruction reads binding text nodes;
+            # the wrapper's memo supplies the flag, so deriving it
+            # here costs no C parent climb per call.
+            natives = bulk_native_children(node)
+            return natives unless entity_bearing
+
+            # Entity-marker documents: bridge for the marker split
+            # (TextSegment reconstruction reads binding text nodes).
+            doc = doc_for(node)
+            bound_children = natives.map { |child| to_binding(child) }
+            if doc && attachments.get(doc, :entity_markers) == false
+              return bound_children
             end
 
-            node = to_binding(node)
+            return split_entity_markers(bound_children, to_binding(node))
           end
           # Frequency-ordered: elements dominate every walk and paid
           # ten failed compares to reach the else arm.
           case node
           when ::Leptris::XML::Element
             natives = node.children.to_a
+            if NATIVE_READ_LAYER && natives.size == 512
+              # Binding scratch truncation (leptris-ruby#202): a
+              # full batch is ambiguous — refetch through moxml's
+              # own buffers to be sure.
+              natives = bulk_binding_children(node)
+            end
             # Parse records whether the preprocessed source held any
             # entity markers, and the ER builder path flips the flag
             # when it mints one. A false flag lets traversal skip the
@@ -795,6 +808,66 @@ module Moxml
           # ordering); the generic kinds are cold.
           else root_parent(node) # rubocop:disable Lint/DuplicateBranch
           end
+        end
+
+        # The binding-node twin of bulk_native_children (identity via
+        # the binding's wrap cache).
+        def bulk_binding_children(node)
+          copied, pointers = bulk_child_buffers(node.c_ptr)
+          return node.children.to_a if copied.zero?
+
+          doc = node.document
+          Array.new(copied) do |i|
+            ::Leptris::XML::Node.wrap(pointers.get_pointer(i * 8), doc)
+          end
+        end
+
+        # Bulk child fetch with moxml's own grow-to-fit thread-local
+        # scratch: count first (exact), size the buffers to it, wrap
+        # each pointer as a native-layer node. Correct on every
+        # binding version — the binding's own scratch truncates at
+        # 512 on 1.9.163.x (leptris-ruby#202).
+        def bulk_native_children(node)
+          copied, pointers = bulk_child_buffers(::FFI::Pointer.new(node.address))
+          return [] if copied.zero?
+
+          doc = doc_for(node)
+          return to_binding(node).children.to_a if doc.nil?
+
+          # Share the layer's per-document identity cache (keyed by
+          # node address): NativeNode.from alone mints fresh objects
+          # per call on 1.9.163.x, which would fork moxml wrappers.
+          cache = doc.native_cache
+          Array.new(copied) do |i|
+            child_ptr = pointers.get_pointer(i * 8)
+            cache[child_ptr.address] ||=
+              ::Leptris::XML::NativeNode.from(doc, child_ptr)
+          end
+        end
+
+        # Shared count-then-copy fetch over moxml's grow-to-fit
+        # thread-local scratch — the layer above the binding's
+        # (buggy on 1.9.163.x) own buffers. Returns [copied, pointers].
+        def bulk_child_buffers(ptr)
+          total = ::Leptris::XML::FFI.leptris_node_children_ex(ptr, nil, nil, 0)
+          return [0, nil] if total.zero?
+
+          scratch = (Thread.current[:moxml_leptris_children] ||= {})
+          pointers = scratch[:pointers]
+          if pointers.nil? || pointers.size / 8 < total
+            pointers&.free
+            pointers = scratch[:pointers] =
+              ::FFI::MemoryPointer.new(:pointer, total)
+          end
+          kinds = scratch[:kinds]
+          if kinds.nil? || kinds.size / 4 < total
+            kinds&.free
+            kinds = scratch[:kinds] = ::FFI::MemoryPointer.new(:int, total)
+          end
+          copied = ::Leptris::XML::FFI.leptris_node_children_ex(
+            ptr, pointers, kinds, total
+          )
+          [copied, pointers]
         end
 
         # The binding reports the root element as parentless; the
