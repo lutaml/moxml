@@ -200,6 +200,14 @@ module Moxml
         end
 
         def set_namespace(element, ns)
+          # Strip any existing name prefix before binding: create_element
+          # with a qname ("p:c") leaves name="p:c", and Nokogiri's
+          # bare namespace= then serializes p: + p:c → p:p:c (issue
+          # #208). Local-name-only + namespace= is the correct shape;
+          # consumers that pass the qname get the same result.
+          if ns && element.respond_to?(:name=) && element.name.to_s.include?(":")
+            element.name = element.name.split(":", 2)[-1]
+          end
           element.namespace = ns
           element
         end

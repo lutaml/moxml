@@ -456,8 +456,25 @@ module Moxml
             # never applies to a prefixed name.
             element.name = element.name.split(":", 2)[-1] if element.name.include?(":")
           else
-            element.add_namespace_definition(prefix, uri.to_s)
-            element.name = "#{prefix}:#{element.name.split(':', 2)[-1]}"
+            # Name is the local part re-prefixed (a qname create leaves
+            # "p:c"; re-joining without the split would double —
+            # issue #208). Declare only when the prefix is not already
+            # in scope: under a parent that binds p, a bare name set
+            # is enough (leptris resolves through ancestors). Detached
+            # elements still get the declaration so a standalone
+            # serialize stays well-formed.
+            local = element.name.split(":", 2)[-1]
+            element.name = "#{prefix}:#{local}"
+            already = resolve_prefix_ns(element, prefix)
+            needs_decl = already.nil? || already.href.to_s != uri.to_s
+            # Detached elements that will be attached under a declaring
+            # parent must not carry their own declaration — that is
+            # the create_element(qname) + namespace= + attach order
+            # (issue #208). Standalone serialize of a still-detached
+            # namespaced element is the add_namespace caller's job.
+            if needs_decl && !element.parent.nil?
+              element.add_namespace_definition(prefix, uri.to_s)
+            end
           end
           element
         end

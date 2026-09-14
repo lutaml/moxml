@@ -514,7 +514,10 @@ module Moxml
           # Renames the node in place (works for elements and
           # attributes alike); the caller keeps tracking the same
           # native.
-          element.name = "#{prefix}:#{element.name}"
+          # Local part only — a qname create_element leaves "p:c"
+          # and prefixing it again would double (issue #208).
+          local = element.name.to_s.split(":", 2)[-1]
+          element.name = "#{prefix}:#{local}"
           element
         end
 
