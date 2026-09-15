@@ -68,7 +68,7 @@ module Moxml
           end
 
           ctx = _context || Context.new(context_adapter_name)
-          Document.new(native_doc, ctx)
+          Wrappers::Document.new(native_doc, ctx)
         end
 
         # SAX parsing implementation for Ox

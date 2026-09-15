@@ -152,7 +152,7 @@ module Moxml
           # any new parse-time logic only has to be added to this one
           # path; the restoration walk is just one of potentially several
           # post-processing steps and doesn't fork the construction.
-          doc = Document.new(native_doc, ctx)
+          doc = Wrappers::Document.new(native_doc, ctx)
           Entity::Restorer.new(doc).run if ctx.config.restore_entities
           doc
         end

@@ -85,6 +85,24 @@ module Moxml
         defined?(::Leptris::XML::NativeNode) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.5")
 
+      # Identity mode (#230 stage 2): the contract modules extended
+      # onto natives shadow the C surface (Element#[] over
+      # NativeNode#[]), so the adapter's native fast paths speak to
+      # the native layer through these bound entries — bind_call is
+      # the same C dispatch without the shadow lookup.
+      if NATIVE_READ_LAYER
+        NN = ::Leptris::XML::NativeNode
+        NN_ATTRIBUTE = NN.instance_method(:attribute)
+        NN_NAME = NN.instance_method(:name)
+        NN_PARENT = NN.instance_method(:parent)
+        NN_NEXT_SIBLING = NN.instance_method(:next_sibling)
+        NN_CONTENT = NN.instance_method(:content)
+        NN_CHILDREN = NN.instance_method(:children)
+        NN_NODE_TYPE = NN.instance_method(:node_type)
+        NN_DOCUMENT = NN.instance_method(:document)
+        NN_ADD_CHILD = NN.instance_method(:add_child)
+      end
+
       # 1.9.163.2 moved the native bulk children into C
       # (Native.bulk_children) and fixed the 512 truncation
       # (leptris-ruby#202). The 162.6-163.1 window carries the
@@ -136,6 +154,28 @@ module Moxml
         @native_doc_roots = ObjectSpace::WeakMap.new
 
         class << self
+          # Extend-in-place mint (#230 stage 2): a TypedData native
+          # carries the contract modules on itself — the wrapper layer's
+          # 3-4 Ruby frames collapse to the module call over the C
+          # method. @native is self; every adapter method that accepts
+          # a native already handles NativeNode receivers.
+          # Extend-in-place mint (#230 stage 2): disabled by
+          # measurement. Extending TypedData natives with the
+          # contract modules works correctly (full battery + lm
+          # 5422/0 under identity mode) but each extend allocates a
+          # singleton plus per-module iclasses — the consumer
+          # pipeline regressed 4017us -> 16350us with 6x the
+          # allocations on a 900-node walk. The per-read frame
+          # savings (~50ns) cannot repay that mint cost. Revisit
+          # when the binding grows klass-injection
+          # (NativeNode.from(doc, ptr, klass:) minting the
+          # contract-carrying subclass in C) — asked upstream in the
+          # #230 thread. Wrappers mint through the Wrappers:: shells
+          # meanwhile.
+          def wrap_native(_node, _type, _context)
+            nil
+          end
+
           def record_native_doc(root_native, doc)
             @native_doc_roots[root_native] = doc
           end
@@ -165,7 +205,7 @@ module Moxml
           def doc_for(node)
             # The 1.9.163.5 native layer exposes the owning document
             # directly; the root climb serves older bindings.
-            return node.document if NATIVE_MUTATIONS_COHERENT
+            return NN_DOCUMENT.bind_call(node) if NATIVE_MUTATIONS_COHERENT
 
             current = node
             current = current.parent while current&.parent
@@ -201,7 +241,7 @@ module Moxml
             ::Leptris::XML::FFI::C14N_1_0, nil,
             mode: ::Leptris::XML::FFI::C14N_MODE_CANONICAL
           )
-          wrapper = Moxml::Document.new(native_doc, Moxml::Context.new(:leptris))
+          wrapper = Moxml::Wrappers::Document.new(native_doc, Moxml::Context.new(:leptris))
           reference = Moxml::C14n::Inclusive10.new.canonicalize(wrapper.root)
           native == reference
         rescue StandardError
@@ -333,7 +373,14 @@ module Moxml
         # document-plus-attachment probe here cost more than the
         # read itself).
         def bare_attr_value(element, name)
-          value = element[name.to_s]
+          # Exact-name C read: bare names target no-namespace
+          # attributes (the documented contract — a bare "y" never
+          # resolves a "p:y" sibling).
+          value = if NATIVE_READ_LAYER && element.is_a?(NN)
+                    NN_ATTRIBUTE.bind_call(element, name.to_s)
+                  else
+                    element[name.to_s]
+                  end
           if !NATIVE_STRINGS_UTF8 && NATIVE_READ_LAYER &&
               element.is_a?(::Leptris::XML::NativeNode) &&
               value.is_a?(String)
@@ -376,7 +423,7 @@ module Moxml
             create_document
           end
           ctx = _context || Context.new(:leptris)
-          doc = Document.new(native_doc, ctx)
+          doc = Wrappers::Document.new(native_doc, ctx)
 
           if options[:noblanks] && !ENGINE_NOBLANKS_SAFE
             # The engine's DROP_WS_TEXT trims boundary whitespace of
@@ -451,7 +498,7 @@ module Moxml
           end
           attachments.set(native_doc, :entity_markers, false)
           bump_serialize_generation
-          Document.new(native_doc, _context || Context.new(:leptris))
+          Wrappers::Document.new(native_doc, _context || Context.new(:leptris))
         end
 
         # nil when no parse flag is requested — the binding treats a
@@ -711,13 +758,15 @@ module Moxml
         end
 
         def processing_instruction_target(node)
+          return to_binding(node).target if NATIVE_READ_LAYER && node.is_a?(NN)
+
           node.target
         end
 
         def node_type(node)
           if NATIVE_READ_LAYER &&
               node.is_a?(::Leptris::XML::NativeNode)
-            type = node.node_type
+            type = NN_NODE_TYPE.bind_call(node)
             # The native layer spells PIs :pi; the wrapper contract
             # (node_type_map) says :processing_instruction.
             return :processing_instruction if type == :pi
@@ -765,11 +814,12 @@ module Moxml
 
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
             # PIs expose no name through the native layer.
-            return to_binding(node).target.to_s if node.node_type == :pi
+            return to_binding(node).target.to_s if NN_NODE_TYPE.bind_call(node) == :pi
 
-            return node.name if NATIVE_STRINGS_UTF8
+            name = NN_NAME.bind_call(node)
+            return name if NATIVE_STRINGS_UTF8
 
-            node.name.dup.force_encoding(Encoding::UTF_8)
+            name.dup.force_encoding(Encoding::UTF_8)
           end
 
           node.name.to_s.dup.force_encoding("UTF-8")
@@ -808,7 +858,7 @@ module Moxml
             # the wrapper's memo supplies the flag, so deriving it
             # here costs no C parent climb per call.
             natives = if NATIVE_BULK_FIXED
-                        node.children.to_a
+                        NN_CHILDREN.bind_call(node).to_a
                       else
                         bulk_native_children(node)
                       end
@@ -864,7 +914,7 @@ module Moxml
 
         def parent(node)
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
-            parent = node.parent
+            parent = NN_PARENT.bind_call(node)
             return parent if parent
 
             doc = doc_for(node)
@@ -987,7 +1037,7 @@ module Moxml
         end
 
         def next_sibling(node)
-          return node.next_sibling if NATIVE_READ_LAYER &&
+          return NN_NEXT_SIBLING.bind_call(node) if NATIVE_READ_LAYER &&
             node.is_a?(::Leptris::XML::NativeNode)
 
           node.next_sibling if node.is_a?(::Leptris::XML::Node)
@@ -1114,6 +1164,12 @@ module Moxml
               bump_serialize_generation
               return child
             end
+            if NATIVE_MUTATIONS_COHERENT && parent.is_a?(NN) && child.is_a?(NN)
+              doc = NN_DOCUMENT.bind_call(parent)
+              child = doc.create_text_node(child) if child.is_a?(String)
+              return NN_ADD_CHILD.bind_call(parent, child)
+            end
+
             child = parent.document.create_text_node(child) if child.is_a?(String)
             parent.add_child(child)
           end
@@ -1200,9 +1256,10 @@ module Moxml
 
         def text_content(node)
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
-            return node.content if NATIVE_STRINGS_UTF8
+            content = NN_CONTENT.bind_call(node)
+            return content if NATIVE_STRINGS_UTF8
 
-            return node.content.dup.force_encoding(Encoding::UTF_8)
+            content.dup.force_encoding(Encoding::UTF_8)
           end
 
           # Frequency-ordered: elements dominate reads; they paid
@@ -1246,26 +1303,35 @@ module Moxml
         end
 
         def cdata_content(node)
+          return NN_CONTENT.bind_call(node) if NATIVE_READ_LAYER && node.is_a?(NN)
+
           node.content
         end
 
         def set_cdata_content(node, content)
+          node = to_binding(node) if NATIVE_READ_LAYER
           node.content = content.to_s
         end
 
         def comment_content(node)
+          return NN_CONTENT.bind_call(node) if NATIVE_READ_LAYER && node.is_a?(NN)
+
           node.content
         end
 
         def set_comment_content(node, content)
+          node = to_binding(node) if NATIVE_READ_LAYER
           node.content = content.to_s
         end
 
         def processing_instruction_content(node)
+          return NN_CONTENT.bind_call(node) if NATIVE_READ_LAYER && node.is_a?(NN)
+
           node.content
         end
 
         def set_processing_instruction_content(node, content)
+          node = to_binding(node) if NATIVE_READ_LAYER
           node.data = content.to_s
         end
 

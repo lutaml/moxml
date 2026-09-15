@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Moxml
-  class Text < Node
+  module Text
+    include Node
+
     def content
       text = raw_content
       entity_bearing? ? adapter.restore_entities(text) : text

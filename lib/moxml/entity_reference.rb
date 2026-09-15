@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Moxml
-  class EntityReference < Node
+  module EntityReference
+    include Node
+
     def content
       ""
     end

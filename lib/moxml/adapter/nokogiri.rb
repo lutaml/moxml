@@ -80,7 +80,7 @@ module Moxml
           # Use provided context if available, otherwise create new one
           ctx = _context || Context.new(:nokogiri)
           attachments.set(native_doc, :entity_markers, entity_markers)
-          Document.new(native_doc, ctx)
+          Wrappers::Document.new(native_doc, ctx)
         end
 
         # Tolerant HTML parsing through libxml2's HTML mode: implied
@@ -90,7 +90,7 @@ module Moxml
         def parse_html(html, _options = {}, _context = nil)
           html_string = html.is_a?(IO) || html.is_a?(StringIO) ? html.read : html.to_s
           native_doc = ::Nokogiri::HTML(html_string)
-          Document.new(native_doc, _context || Context.new(:nokogiri))
+          Wrappers::Document.new(native_doc, _context || Context.new(:nokogiri))
         end
 
         # Nokogiri parses with `config.recover` unless strict, so

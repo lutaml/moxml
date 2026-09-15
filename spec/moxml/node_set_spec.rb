@@ -45,7 +45,7 @@ RSpec.describe Moxml::NodeSet do
     end
 
     it "wraps through the Enumerable surface" do
-      expect(doc.root.children.map(&:class).uniq).to eq([Moxml::Element])
+      expect(doc.root.children.map { |c| c.is_a?(Moxml::Element) }.uniq).to eq([true])
     end
   end
 end

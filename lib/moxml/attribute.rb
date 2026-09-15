@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Moxml
-  class Attribute < Node
+  module Attribute
+    include Node
+
     # Immutable between name= writes (which clear it via
     # clear_native_memo!), unlike element names that can change via
     # native adoption; the memo removes an adapter read per access.
@@ -64,7 +66,7 @@ module Moxml
 
     def namespace
       ns = adapter.namespace(@native)
-      ns && Namespace.new(ns, context)
+      ns && Wrappers::Namespace.new(ns, context)
     end
 
     def namespace=(ns)

@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Moxml
-  class Document < Node
+  module Document
+    include Node
+
     attr_accessor :has_xml_declaration
 
     def initialize(native, context, adapter = nil, node_type = nil)
@@ -61,30 +63,30 @@ module Moxml
     end
 
     def create_element(name)
-      Element.new(adapter.create_element(name, owner_doc: @native), context)
+      Wrappers::Element.new(adapter.create_element(name, owner_doc: @native), context)
     end
 
     def create_text(content)
-      Text.new(adapter.create_text(content, owner_doc: @native), context)
+      Wrappers::Text.new(adapter.create_text(content, owner_doc: @native), context)
     end
 
     def create_cdata(content)
-      Cdata.new(adapter.create_cdata(content, owner_doc: @native), context)
+      Wrappers::Cdata.new(adapter.create_cdata(content, owner_doc: @native), context)
     end
 
     def create_comment(content)
-      Comment.new(adapter.create_comment(content, owner_doc: @native), context)
+      Wrappers::Comment.new(adapter.create_comment(content, owner_doc: @native), context)
     end
 
     def create_doctype(name, external_id, system_id)
-      Doctype.new(
+      Wrappers::Doctype.new(
         adapter.create_doctype(name, external_id, system_id),
         context,
       )
     end
 
     def create_processing_instruction(target, content)
-      ProcessingInstruction.new(
+      Wrappers::ProcessingInstruction.new(
         adapter.create_processing_instruction(target, content),
         context,
       )
@@ -93,11 +95,11 @@ module Moxml
     def create_declaration(version = "1.0", encoding = "UTF-8",
                            standalone = nil)
       decl = adapter.create_declaration(version, encoding, standalone)
-      Declaration.new(decl, context)
+      Wrappers::Declaration.new(decl, context)
     end
 
     def create_entity_reference(name)
-      EntityReference.new(adapter.create_entity_reference(name), context)
+      Wrappers::EntityReference.new(adapter.create_entity_reference(name), context)
     end
 
     def add_child(node)

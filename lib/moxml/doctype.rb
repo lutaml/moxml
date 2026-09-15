@@ -13,7 +13,9 @@ module Moxml
   #   Most adapters do not currently implement these methods. If you need DOCTYPE
   #   information, consider using adapter-specific methods or parsing the serialized
   #   XML manually.
-  class Doctype < Node
+  module Doctype
+    include Node
+
     # Returns the DOCTYPE name (root element name)
     #
     # @return [String, nil] the DOCTYPE name

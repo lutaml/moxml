@@ -20,15 +20,22 @@ module Moxml
     # otherwise pay the context hop and the type probe again on its
     # first access.
     def initialize(native, context, adapter = nil, node_type = nil)
+      prime_contract(native, context, adapter, node_type)
+    end
+
+    # Update native reference after identity-changing operations
+    # (e.g., LibXML doc.root= creates a new Ruby wrapper)
+    # Contract priming shared by the constructor and the extend-in-place
+    # mint (#230): an extended native IS its own @native.
+    def prime_contract(native, context, adapter = nil, node_type = nil)
       @context = context
       @native = native
       @parent_node = nil
       @adapter = adapter
       @node_type_cached = node_type
+      self
     end
 
-    # Update native reference after identity-changing operations
-    # (e.g., LibXML doc.root= creates a new Ruby wrapper)
     def refresh_native!(new_native)
       unless new_native.equal?(@native)
         context.unregister_wrapper(@native)
@@ -48,7 +55,7 @@ module Moxml
     end
 
     def document
-      Document.wrap(adapter.document(@native), context)
+      Moxml::Node.wrap(adapter.document(@native), context)
     end
 
     def parent
@@ -255,7 +262,7 @@ module Moxml
       return nil unless element?
 
       ns = adapter.namespace(@native)
-      ns && Namespace.new(ns, context)
+      ns && Wrappers::Namespace.new(ns, context)
     end
 
     # Returns all namespace definitions on this node
@@ -264,7 +271,7 @@ module Moxml
       return [] unless element?
 
       adapter.namespace_definitions(@native).map do |ns|
-        Namespace.new(ns, context)
+        Wrappers::Namespace.new(ns, context)
       end
     end
 
@@ -414,7 +421,7 @@ module Moxml
       # Native equality goes through the adapter: engines with a
       # native read layer hand out two wrapper classes over one C
       # node, and raw native == is false across that seam.
-      self.class == other.class &&
+      other.is_a?(Moxml::Node) &&
         adapter.same_node?(@native, other.native)
     end
 
@@ -486,7 +493,7 @@ module Moxml
 
     def prepare_node(node)
       case node
-      when String then Text.new(adapter.create_text(node), context)
+      when String then Moxml::Node.wrap(adapter.create_text(node), context)
       when Node then node
       else
         raise Moxml::DocumentStructureError.new(
@@ -512,11 +519,35 @@ module Moxml
     end
   end
 
-  class Node
+  module Node
     include NodeBehavior
 
+    # Instantiation shells per type — the contract constants
+    # (Element, Text, ...) are modules since issue #230, so wrappers
+    # mint through Wrappers::*.
     def self.node_type_map
       @node_type_map ||= {
+        element: Wrappers::Element,
+        text: Wrappers::Text,
+        cdata: Wrappers::Cdata,
+        comment: Wrappers::Comment,
+        processing_instruction: Wrappers::ProcessingInstruction,
+        document: Wrappers::Document,
+        declaration: Wrappers::Declaration,
+        doctype: Wrappers::Doctype,
+        attribute: Wrappers::Attribute,
+        entity_reference: Wrappers::EntityReference,
+      }.freeze
+    end
+
+    # The contract module for a type — what an in-place extended
+    # native carries instead of a wrapper shell.
+    def self.contract_module(type)
+      contract_modules[type]
+    end
+
+    def self.contract_modules
+      @contract_modules ||= {
         element: Element,
         text: Text,
         cdata: Cdata,
@@ -538,8 +569,17 @@ module Moxml
 
       adapter = adapter(context)
       type = adapter.node_type(node)
-      klass = node_type_map[type] || self
 
+      # Extend-in-place (issue #230): adapters whose natives can
+      # carry the contract modules directly (leptris TypedData) mint
+      # the native itself as the wrapper — @native is self.
+      if (extended = adapter.wrap_native(node, type, context))
+        extended.prime_contract(node, context, adapter, type)
+        context.register_wrapper(node, extended)
+        return extended
+      end
+
+      klass = node_type_map[type] || Wrappers::Node
       klass.new(node, context, adapter, type)
         .tap { |wrapper| context.register_wrapper(node, wrapper) }
     end

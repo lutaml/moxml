@@ -77,7 +77,7 @@ module Moxml
     end
 
     def create_document(native_doc = nil)
-      Document.new(config.adapter.create_document(native_doc), self)
+      Wrappers::Document.new(config.adapter.create_document(native_doc), self)
     end
 
     def parse(xml, options = {})

@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Moxml
-  class ProcessingInstruction < Node
+  module ProcessingInstruction
+    include Node
+
     def target
       adapter.processing_instruction_target(@native)
     end

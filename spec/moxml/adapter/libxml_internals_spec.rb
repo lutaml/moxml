@@ -113,7 +113,7 @@ RSpec.describe Moxml::Adapter::Libxml do
       doc = context.parse("<root><a/><b/></root>")
       a = doc.root.children.first
       b = doc.root.children.last
-      eref = Moxml::EntityReference.new(
+      eref = Moxml::Wrappers::EntityReference.new(
         adapter.create_native_entity_reference("amp"), context
       )
       a.add_child(eref)
@@ -125,7 +125,7 @@ RSpec.describe Moxml::Adapter::Libxml do
     it "returns [refs, sequence] when both are registered for the element" do
       doc = context.parse("<root><a>text</a></root>")
       a = doc.root.children.first
-      eref = Moxml::EntityReference.new(
+      eref = Moxml::Wrappers::EntityReference.new(
         adapter.create_native_entity_reference("amp"), context
       )
       a.add_child(eref)
@@ -144,7 +144,7 @@ RSpec.describe Moxml::Adapter::Libxml do
     it "preserves normal child indentation when entity refs are present" do
       doc = context.parse("<root><a><b/></a></root>")
       a = doc.root.children.first
-      eref = Moxml::EntityReference.new(
+      eref = Moxml::Wrappers::EntityReference.new(
         adapter.create_native_entity_reference("amp"), context
       )
       a.add_child(eref)

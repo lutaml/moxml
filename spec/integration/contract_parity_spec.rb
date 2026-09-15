@@ -22,9 +22,8 @@
     describe "fragment parsing (issue #188)" do
       it "returns the fragment's top-level nodes uniformly" do
         nodes = ctx.parse_fragment(%(<a x="1">t1</a><b/>tail))
-        expect(nodes.map(&:class)).to eq(
-          [Moxml::Element, Moxml::Element, Moxml::Text],
-        )
+        expect(nodes.map(&:element?)).to eq([true, true, false])
+        expect(nodes.map(&:text?)).to eq([false, false, true])
         expect(nodes[0]["x"]).to eq("1")
         expect(nodes[0].text).to eq("t1")
         expect(nodes[2].content).to eq("tail")
