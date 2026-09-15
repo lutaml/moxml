@@ -635,6 +635,18 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
   end
 
+  describe "to_binding is defined regardless of the native layer (issue #217)" do
+    it "is the identity for binding nodes" do
+      ctx = Moxml.new(:leptris)
+      doc = ctx.parse(%(<r><a x="1"><b/></a></r>))
+      element = described_class.to_binding(doc.native.root)
+      expect(element).to equal(doc.native.root)
+      # every bridged entry point answers on binding natives
+      expect(doc.root.children.first.attributes.length).to eq(1)
+      expect(doc.root.children.first["x"]).to eq("1")
+    end
+  end
+
   describe "materialize through the wrapper (issue #213)" do
     it "materializes a native-layer root without NoMethodError" do
       ctx = Moxml.new(:leptris)

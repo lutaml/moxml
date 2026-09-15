@@ -76,6 +76,27 @@ module Moxml
         defined?(::Leptris::XML::NativeNode) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.2")
 
+      # Defined unconditionally: the body self-guards, and call
+      # sites must never depend on the layer having loaded
+      # (issue #217 — binding-only installs crashed on the
+      # unguarded bridges).
+      class << self
+        # Binding node for any native: identity for binding nodes
+        # (and on installs without the native layer — the constant
+        # check short-circuits), a Node.wrap over the shared C
+        # pointer for NativeNodes.
+        def to_binding(node)
+          return node unless NATIVE_READ_LAYER &&
+            node.is_a?(::Leptris::XML::NativeNode)
+
+          doc = doc_for(node)
+          ptr = ::FFI::Pointer.new(node.address)
+          return ::Leptris::XML::Node.wrap(ptr, doc) if doc
+
+          ::Leptris::XML::Node.wrap(ptr, nil)
+        end
+      end
+
       if NATIVE_READ_LAYER
         # root NativeNode -> binding document (recorded at #root
         # mint; the native layer exposes no document accessor).
@@ -103,19 +124,6 @@ module Moxml
             end
 
             one == other
-          end
-
-          # Binding node for any native: identity for binding nodes,
-          # a Node.wrap over the shared C pointer for NativeNodes.
-          def to_binding(node)
-            return node unless NATIVE_READ_LAYER &&
-              node.is_a?(::Leptris::XML::NativeNode)
-
-            doc = doc_for(node)
-            ptr = ::FFI::Pointer.new(node.address)
-            return ::Leptris::XML::Node.wrap(ptr, doc) if doc
-
-            ::Leptris::XML::Node.wrap(ptr, nil)
           end
 
           # Binding document for a NativeNode subtree: climb parents
