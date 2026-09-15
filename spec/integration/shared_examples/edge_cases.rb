@@ -157,6 +157,13 @@ RSpec.shared_examples "Moxml Edge Cases" do
     end
   end
 
+  describe "text content whitespace preservation" do
+    it "preserves whitespace runs inside text content (xml:space, issue #189)" do
+      doc = context.parse(%(<r xml:space="preserve"><t>  spaced  </t></r>))
+      expect(doc.root.children.first.text).to eq("  spaced  ")
+    end
+  end
+
   describe "whitespace text node preservation" do
     # Ox/HeadedOx do not generate whitespace-only text nodes in their parser,
     # so these tests only apply to adapters that do (Nokogiri, OGA, REXML, LibXML)

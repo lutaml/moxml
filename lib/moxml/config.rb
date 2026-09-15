@@ -93,6 +93,18 @@ module Moxml
     # - :strict — only restore DTD-declared entities (falls back to lenient until DTD parsing is implemented)
     ENTITY_RESTORATION_MODES = %i[strict lenient].freeze
 
+    # Ox whitespace policy (issue #189): ::Ox.parse hardcodes
+    # skip: :skip_white, which collapses whitespace runs inside text
+    # content — xml:space="preserve" documents round-trip mangled.
+    # The adapter parses with ::Ox.load instead; these defaults keep
+    # every character of text content (inter-element indentation is
+    # dropped by Ox's generic mode under every skip setting, so the
+    # child lists stay identical to the old parse).
+    OX_DEFAULT_SKIP = :skip_none
+    OX_DEFAULT_MODE = :generic
+    OX_VALID_SKIPS = %i[skip_none skip_white skip_off].freeze
+    OX_VALID_MODES = %i[generic hash object].freeze
+
     attr_reader :adapter_name, :default_line_ending
     attr_accessor :strict_parsing,
                   :default_encoding,
@@ -102,7 +114,27 @@ module Moxml
                   :entity_load_mode,
                   :entity_provider,
                   :namespace_validation_mode,
-                  :entity_restoration_mode
+                  :entity_restoration_mode,
+                  :ox_skip,
+                  :ox_mode
+
+    def ox_skip=(value)
+      unless OX_VALID_SKIPS.include?(value)
+        raise ArgumentError,
+              "Invalid ox_skip: #{value.inspect}. Must be one of #{OX_VALID_SKIPS.inspect}"
+      end
+
+      @ox_skip = value
+    end
+
+    def ox_mode=(value)
+      unless OX_VALID_MODES.include?(value)
+        raise ArgumentError,
+              "Invalid ox_mode: #{value.inspect}. Must be one of #{OX_VALID_MODES.inspect}"
+      end
+
+      @ox_mode = value
+    end
 
     def default_line_ending=(value)
       unless VALID_LINE_ENDINGS.include?(value)
@@ -118,6 +150,12 @@ module Moxml
                    default_encoding = nil)
       self.adapter = adapter_name || Config.default.adapter_name
       @strict_parsing = strict_parsing || Config.default.strict_parsing
+      # Constant-initialized (not Config.default fallback): the
+      # default Config constructs via Config.default — a fallback
+      # read there recurses. Global-default propagation for these
+      # knobs is not part of the contract; per-context is (#189).
+      @ox_skip = OX_DEFAULT_SKIP
+      @ox_mode = OX_DEFAULT_MODE
       @default_encoding = default_encoding || Config.default.default_encoding
       @default_indent = 2
       @default_line_ending = LINE_ENDING_LF

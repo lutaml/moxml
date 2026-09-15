@@ -68,5 +68,46 @@ RSpec.describe Moxml::Adapter::Ox do
       count = described_class.xpath(doc, "count(//child)")
       expect(count).to eq(2)
     end
+
+    describe "parse whitespace policy" do
+      it "preserves whitespace runs inside text content by default (issue #189)" do
+        doc = described_class.parse(%(<r xml:space="preserve"><t>  spaced  </t></r>))
+        expect(doc.root.children.first.text).to eq("  spaced  ")
+      end
+
+      it "collapses runs with a per-parse ox_skip: :skip_white" do
+        doc = described_class.parse(%(<r><t>  spaced  </t></r>), ox_skip: :skip_white)
+        expect(doc.root.children.first.text).to eq(" spaced ")
+      end
+
+      it "honors a context default set once on the config" do
+        context = Moxml.new(:ox) { |c| c.ox_skip = :skip_white }
+        doc = context.parse(%(<r><t>  s  </t></r>))
+        expect(doc.root.children.first.text).to eq(" s ")
+      end
+
+      it "lets a per-parse option beat the context default" do
+        context = Moxml.new(:ox) { |c| c.ox_skip = :skip_white }
+        doc = context.parse(%(<r><t>  s  </t></r>), ox_skip: :skip_none)
+        expect(doc.root.children.first.text).to eq("  s  ")
+      end
+
+      it "fails loudly on ox_mode: :hash (the adapter walks a tree, not a Hash)" do
+        expect { described_class.parse("<r><t> x </t></r>", ox_mode: :hash) }
+          .to raise_error(RuntimeError, /must be a String or Ox::Node/)
+      end
+
+      it "surfaces an invalid ox_skip as Moxml::ParseError" do
+        expect { described_class.parse("<r/>", ox_skip: :bogus) }
+          .to raise_error(Moxml::ParseError)
+      end
+
+      it "validates Config ox_skip/ox_mode assignments" do
+        expect { Moxml::Config.new.ox_skip = :bogus }
+          .to raise_error(ArgumentError, /Invalid ox_skip/)
+        expect { Moxml::Config.new.ox_mode = :bogus }
+          .to raise_error(ArgumentError, /Invalid ox_mode/)
+      end
+    end
   end
 end
