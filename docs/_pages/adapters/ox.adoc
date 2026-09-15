@@ -17,6 +17,21 @@ Ox is the fastest XML parser available for Ruby, providing excellent performance
 * Memory-constrained environments
 * When XPath usage is minimal
 
+=== Parse options (issue #189)
+
+The adapter parses with `Ox.load` (not `Ox.parse`, which hardcodes `skip: :skip_white` and collapses whitespace runs inside text content). Two knobs flow through the parse options:
+
+* `ox_skip` (default `Moxml::Config::OX_DEFAULT_SKIP`, `:skip_none`) — Ox's whitespace policy. `:skip_none` keeps every character of text content, so `xml:space="preserve"` documents round-trip intact; `:skip_white` restores the collapsing behavior. Inter-element indentation is dropped by Ox's generic mode under every skip setting, so child lists are identical either way.
+* `ox_mode` (default `:generic`) — Ox's load mode. Only `:generic` yields the tree the adapter walks; `:hash` and `:object` fail loudly rather than corrupt.
+
+Set the policy once per context or per parse:
+
+[source,ruby]
+----
+ctx = Moxml.new(:ox) { |c| c.ox_skip = :skip_white }  # context default
+doc = ctx.parse(xml, ox_skip: :skip_none)              # per-parse wins
+----
+
 == Specific adapter limitations
 
 === Ox adapter

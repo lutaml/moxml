@@ -39,7 +39,15 @@ module Moxml
         def parse(xml, options = {}, _context = nil)
           processed_xml = preprocess_entities(xml)
           native_doc = begin
-            result = ::Ox.parse(processed_xml)
+            # ::Ox.parse has arity 1 and hardcodes skip: :skip_white;
+            # ::Ox.load takes the policy (issue #189). Both knobs flow
+            # from Config through Context#default_options; the fetch
+            # defaults keep direct adapter calls context-free.
+            result = ::Ox.load(
+              processed_xml,
+              skip: options.fetch(:ox_skip, Moxml::Config::OX_DEFAULT_SKIP),
+              mode: options.fetch(:ox_mode, Moxml::Config::OX_DEFAULT_MODE),
+            )
 
             # result can be either Document or Element
             if result.is_a?(::Ox::Document)
