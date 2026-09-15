@@ -164,10 +164,18 @@ module Moxml
             return nil
           end
 
+          # Passing encoding when it equals the document's own is a
+          # no-op conversion the serializer still pays (~20% of a
+          # 31KB document serialize); nil skips it. Byte-equality of
+          # both forms verified on 1.9.163.2 — gate to those builds.
+          encoding = options[:encoding]
+          if NATIVE_STRINGS_UTF8 && encoding.to_s.casecmp?("UTF-8")
+            encoding = nil
+          end
           kwargs = {
             indent: options.fetch(:indent, 0),
             no_decl: !include_decl,
-            encoding: options[:encoding],
+            encoding: encoding,
           }
           if INDENT_UNIT_SUPPORTED && options[:indent_text].is_a?(String)
             kwargs[:indent_text] = options[:indent_text]
