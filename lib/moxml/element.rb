@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 module Moxml
-  class Element < Node
+  # Instance behavior for Moxml::Element, extracted so the leptris
+  # adapter can extend natives with it in place (issue #230); the
+  # class remains the consumer-facing contract.
+  module ElementBehavior
     def name
       # The adapter read is an FFI call plus (on several adapters) a
       # defensive string copy; names only change through name= and
@@ -358,5 +361,9 @@ module Moxml
       @in_scope_namespaces = nil
       context.bump_namespace_scope_generation
     end
+  end
+
+  class Element < Node
+    include ElementBehavior
   end
 end
