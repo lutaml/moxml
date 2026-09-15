@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Moxml
-  class Comment < Node
+  module Comment
+    include Node
+
     def content
       adapter.comment_content(@native)
     end

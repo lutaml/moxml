@@ -120,7 +120,7 @@ module Moxml
       # mint, so the first name/value/attribute? access skips the
       # context hop and the adapter's type probe.
       @attributes ||= adapter.attributes(@native).map do |attr|
-        a = Attribute.new(attr, context, adapter, :attribute)
+        a = Wrappers::Attribute.new(attr, context, adapter, :attribute)
         a.parent_node = self
         a
       end
@@ -182,7 +182,7 @@ module Moxml
     # it's NOT the same as namespaces.first
     def namespace
       ns = adapter.namespace(@native)
-      ns && Namespace.new(ns, context)
+      ns && Wrappers::Namespace.new(ns, context)
     end
 
     # add the prefix to the element name
@@ -216,7 +216,7 @@ module Moxml
       return @namespace_definitions unless @namespace_definitions.nil?
 
       @namespace_definitions = adapter.namespace_definitions(@native).map do |ns|
-        Namespace.new(ns, context)
+        Wrappers::Namespace.new(ns, context)
       end
     end
 
@@ -225,7 +225,7 @@ module Moxml
     # scope. The shape materialize records carry (issue #138).
     def declared_namespaces
       adapter.namespace_definitions(@native).map do |ns|
-        wrapper = Namespace.new(ns, context)
+        wrapper = Wrappers::Namespace.new(ns, context)
         [wrapper.prefix, wrapper.uri]
       end
     end
@@ -236,7 +236,7 @@ module Moxml
       generation = context.namespace_scope_generation
       if @in_scope_namespaces.nil? || @in_scope_generation != generation
         @in_scope_namespaces = adapter.in_scope_namespaces(@native).map do |ns|
-          Namespace.new(ns, context)
+          Wrappers::Namespace.new(ns, context)
         end
         @in_scope_generation = generation
       end
@@ -363,7 +363,8 @@ module Moxml
     end
   end
 
-  class Element < Node
+  module Element
+    include Node
     include ElementBehavior
   end
 end

@@ -93,10 +93,14 @@ RSpec.describe Moxml::Adapter::Leptris do
       doc = ctx.parse('<?xml version="1.0"?><?pi-prolog before?><root/><?pi-epilog after?><!-- tail -->')
       kids = doc.children.to_a
 
-      expect(kids.map(&:class)).to eq(
-        [Moxml::ProcessingInstruction, Moxml::Element,
-         Moxml::ProcessingInstruction, Moxml::Comment],
-      )
+      shape = kids.map do |k|
+        if k.processing_instruction?
+          :pi
+        else
+          k.element? ? :element : :comment
+        end
+      end
+      expect(shape).to eq(%i[pi element pi comment])
       expect(kids.select(&:processing_instruction?).map(&:target)).to eq(%w[pi-prolog pi-epilog])
       expect(kids[0].content).to eq("before")
       expect(doc.to_xml.index("pi-epilog")).to be > doc.to_xml.index("</root>")
@@ -606,14 +610,15 @@ RSpec.describe Moxml::Adapter::Leptris do
     it "skips the marker split for entity-free documents" do
       doc = ctx.parse("<root>\n  <a>text</a>\n  <b/>\n</root>")
       kids = doc.root.children.to_a
-      expect(kids.map(&:class)).to eq([Moxml::Text, Moxml::Element, Moxml::Text, Moxml::Element, Moxml::Text])
+      shape = kids.map { |k| k.text? ? :text : :element }
+      expect(shape).to eq(%i[text element text element text])
       expect(described_class.entity_bearing?(doc.root.native)).to be(false)
     end
 
     it "splits markers when the source carries entities" do
       doc = ctx.parse("<root><a>pre&nbsp;post</a></root>")
       kids = doc.at_xpath("//a").children.to_a
-      expect(kids.map(&:class)).to include(Moxml::EntityReference)
+      expect(kids.map { |k| k.is_a?(Moxml::EntityReference) }).to include(true)
       expect(described_class.entity_bearing?(doc.root.native)).to be(true)
     end
 
@@ -631,7 +636,7 @@ RSpec.describe Moxml::Adapter::Leptris do
       er = doc.create_entity_reference("nbsp")
       doc.at_xpath("//a").add_child(er)
       expect(described_class.entity_bearing?(doc.root.native)).to be(true)
-      expect(doc.at_xpath("//a").children.to_a.map(&:class)).to include(Moxml::EntityReference)
+      expect(doc.at_xpath("//a").children.to_a.map { |k| k.is_a?(Moxml::EntityReference) }).to include(true)
     end
   end
 
@@ -702,11 +707,11 @@ RSpec.describe Moxml::Adapter::Leptris do
         expect(decl.digest).to be_nil
       end
       # comments and PIs hash in C
-      kinds = doc.root.children.map { |n| [n.class, n.digest] }
-      comment = kinds.find { |n, _| n == Moxml::Comment }
-      pi = kinds.find { |n, _| n == Moxml::ProcessingInstruction }
-      expect(comment[1]).to be_a(Integer)
-      expect(pi[1]).to be_a(Integer)
+      kinds = doc.root.children.map { |n| [n.is_a?(Moxml::Comment), n.is_a?(Moxml::ProcessingInstruction), n.digest] }
+      comment = kinds.find { |c, _, _| c }
+      pi = kinds.find { |_, p, _| p }
+      expect(comment[2]).to be_a(Integer)
+      expect(pi[2]).to be_a(Integer)
     end
   end
 end

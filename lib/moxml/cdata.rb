@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Moxml
-  class Cdata < Node
+  module Cdata
+    include Node
+
     def content
       adapter.cdata_content(@native)
     end

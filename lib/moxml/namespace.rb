@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Moxml
-  class Namespace < Node
+  module Namespace
+    include Node
+
     def prefix
       adapter.namespace_prefix(@native)
     end

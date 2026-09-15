@@ -76,12 +76,12 @@ RSpec.shared_examples "Entity Reference Whitespace Preservation" do
       end
 
       children = doc.root.children
-      types = children.map(&:class)
+      types = children.map(&:entity_reference?)
 
       expect(types).to eq([
-                            Moxml::EntityReference,
-                            Moxml::Text,
-                            Moxml::EntityReference,
+                            true,
+                            false,
+                            true,
                           ])
       expect(children[1].content).to eq(" ")
     end

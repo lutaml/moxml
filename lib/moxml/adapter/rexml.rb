@@ -49,7 +49,7 @@ module Moxml
           end
 
           ctx = _context || Context.new(:rexml)
-          doc = Document.new(native_doc, ctx)
+          doc = Wrappers::Document.new(native_doc, ctx)
           Entity::Restorer.new(doc).run if ctx.config.restore_entities
           doc
         end

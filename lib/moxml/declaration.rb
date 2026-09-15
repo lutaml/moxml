@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 module Moxml
-  class Declaration < Node
+  module Declaration
+    include Node
+
     ALLOWED_VERSIONS = ["1.0", "1.1"].freeze
     ALLOWED_STANDALONE = %w[yes no].freeze
     ALLOWED_ATTRIBUTES = %w[version encoding standalone].freeze

@@ -133,6 +133,14 @@ module Moxml
         # Protocol-level native equality; engines with more than one
         # wrapper class over one C node override (leptris native
         # read layer). Shared adapter examples compare through this.
+        # Extend-in-place capability (#230): an adapter whose native
+        # objects can carry the contract modules directly returns the
+        # extended native here (its @native is itself); the default
+        # mints a wrapper shell.
+        def wrap_native(_node, _type, _context)
+          nil
+        end
+
         def same_node?(one, other)
           one == other
         end

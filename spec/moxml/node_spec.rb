@@ -84,7 +84,7 @@ RSpec.describe Moxml::Node do
 
   describe "#content" do
     it "returns empty string on base Node" do
-      expect(described_class.new(nil, context).content).to eq("")
+      expect(Moxml::Wrappers::Node.new(nil, context).content).to eq("")
     end
 
     it "returns text on Element" do
