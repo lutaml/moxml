@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 module Moxml
-  class Node
+  # Instance behavior for Moxml::Node, extracted so the leptris
+  # adapter can extend natives with it in place (issue #230); the
+  # class remains the consumer-facing contract and the wrap factory.
+  module NodeBehavior
     include XmlUtils
     include Enumerable
 
@@ -441,37 +444,6 @@ module Moxml
       nil
     end
 
-    # Registry mapping node type symbols to wrapper classes.
-    # Built lazily to avoid load-order issues with subclasses.
-    def self.node_type_map
-      @node_type_map ||= {
-        element: Element,
-        text: Text,
-        cdata: Cdata,
-        comment: Comment,
-        processing_instruction: ProcessingInstruction,
-        document: Document,
-        declaration: Declaration,
-        doctype: Doctype,
-        attribute: Attribute,
-        entity_reference: EntityReference,
-      }.freeze
-    end
-
-    def self.wrap(node, context)
-      return nil if node.nil?
-
-      cached = context.wrapper_for(node)
-      return cached if cached
-
-      adapter = adapter(context)
-      type = adapter.node_type(node)
-      klass = node_type_map[type] || self
-
-      klass.new(node, context, adapter, type)
-        .tap { |wrapper| context.register_wrapper(node, wrapper) }
-    end
-
     # Internal: Set the parent node for cache invalidation tracking.
     # Called by NodeSet, Document, Element when establishing parent-child
     # relationships. Public to allow cross-class usage within Moxml internals.
@@ -485,12 +457,6 @@ module Moxml
 
     protected
 
-    def self.adapter(context)
-      context.config.adapter
-    end
-
-    # Invalidate cached children. Called by mutation methods
-    # and by Element attribute/namespace caches.
     def invalidate_children_cache!
       @children = nil
     end
@@ -544,5 +510,45 @@ module Moxml
 
       xml.gsub(/\r?\n/, line_ending)
     end
+  end
+
+  class Node
+    include NodeBehavior
+
+    def self.node_type_map
+      @node_type_map ||= {
+        element: Element,
+        text: Text,
+        cdata: Cdata,
+        comment: Comment,
+        processing_instruction: ProcessingInstruction,
+        document: Document,
+        declaration: Declaration,
+        doctype: Doctype,
+        attribute: Attribute,
+        entity_reference: EntityReference,
+      }.freeze
+    end
+
+    def self.wrap(node, context)
+      return nil if node.nil?
+
+      cached = context.wrapper_for(node)
+      return cached if cached
+
+      adapter = adapter(context)
+      type = adapter.node_type(node)
+      klass = node_type_map[type] || self
+
+      klass.new(node, context, adapter, type)
+        .tap { |wrapper| context.register_wrapper(node, wrapper) }
+    end
+
+    def self.adapter(context)
+      context.config.adapter
+    end
+
+    # Invalidate cached children. Called by mutation methods
+    # and by Element attribute/namespace caches.
   end
 end
