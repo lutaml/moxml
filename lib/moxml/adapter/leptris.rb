@@ -65,6 +65,15 @@ module Moxml
         defined?(::Leptris::XML::NativeNode) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.2")
 
+      # 1.9.163.5 (leptris-ruby#204/#208): native mutations are
+      # version-coherent with the binding (both surfaces' memos
+      # drop on mutation) — the builder factories and native
+      # add_child are adoptable end-to-end; NativeNode grew a
+      # document accessor and line numbers.
+      NATIVE_MUTATIONS_COHERENT =
+        defined?(::Leptris::XML::NativeNode) &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.5")
+
       # 1.9.163.2 moved the native bulk children into C
       # (Native.bulk_children) and fixed the 512 truncation
       # (leptris-ruby#202). The 162.6-163.1 window carries the
@@ -130,6 +139,10 @@ module Moxml
           # to the root (C-bound reads) and look the doc up in the
           # root registry. Detached subtrees answer nil.
           def doc_for(node)
+            # The 1.9.163.5 native layer exposes the owning document
+            # directly; the root climb serves older bindings.
+            return node.document if NATIVE_MUTATIONS_COHERENT
+
             current = node
             current = current.parent while current&.parent
             @native_doc_roots[current]
@@ -477,18 +490,24 @@ module Moxml
           ::Leptris::XML::Document.create
         end
 
-        # The native builder factories (native_create_element/text)
-        # are deliberately NOT adopted: native mutations do not
-        # advance the binding's document version, so the binding's
-        # memoized reads over the same tree go stale; attaching the
-        # created natives also pays a per-node to_binding bridge
-        # that costs more than the factory saves (create+attach
-        # measured 5816 -> 7697ns vs nokogiri 1750).
+        # Native builder factories: one C call and a TypedData wrap.
+        # Adopted from 1.9.163.5, where native mutations became
+        # version-coherent (leptris-ruby#204/#208) — the earlier
+        # rejection (stale binding memos + per-attach bridge cost)
+        # no longer applies: add_child carries a native fast path.
         def create_native_element(name, owner_doc = nil)
+          if NATIVE_MUTATIONS_COHERENT && owner_doc
+            return owner_doc.native_create_element(name.to_s)
+          end
+
           (owner_doc || create_document).create_element(name.to_s)
         end
 
         def create_native_text(content, owner_doc = nil)
+          if NATIVE_MUTATIONS_COHERENT && owner_doc
+            return owner_doc.native_create_text(content)
+          end
+
           (owner_doc || create_document).create_text_node(content)
         end
 
@@ -986,6 +1005,11 @@ module Moxml
         end
 
         def line_number(node)
+          if NATIVE_MUTATIONS_COHERENT &&
+              node.is_a?(::Leptris::XML::NativeNode)
+            line = node.line
+            return line.nil? || line.zero? ? nil : line
+          end
           return nil unless node.is_a?(::Leptris::XML::Node)
 
           line = node.line
@@ -1050,7 +1074,9 @@ module Moxml
         end
 
         def add_child(parent, child)
-          if NATIVE_READ_LAYER
+          if NATIVE_READ_LAYER && !(NATIVE_MUTATIONS_COHERENT &&
+                   parent.is_a?(::Leptris::XML::NativeNode) &&
+                   child.is_a?(::Leptris::XML::NativeNode))
             parent = to_binding(parent)
             child = to_binding(child)
           end
@@ -1070,7 +1096,10 @@ module Moxml
         end
 
         def add_previous_sibling(node, new_node)
-          node = to_binding(node) if NATIVE_READ_LAYER
+          if NATIVE_READ_LAYER
+            node = to_binding(node)
+            new_node = to_binding(new_node)
+          end
           # A PI inserted before the root lives at document level in
           # libleptris's model, not in the element tree.
           if new_node.is_a?(::Leptris::XML::ProcessingInstruction) &&
@@ -1082,7 +1111,10 @@ module Moxml
         end
 
         def add_next_sibling(node, new_node)
-          node = to_binding(node) if NATIVE_READ_LAYER
+          if NATIVE_READ_LAYER
+            node = to_binding(node)
+            new_node = to_binding(new_node)
+          end
           node.add_next_sibling(new_node)
         end
 

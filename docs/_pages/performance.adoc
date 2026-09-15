@@ -293,12 +293,19 @@ scratch there. 1.9.163.2 moved the bulk into C and fixed the
 truncation — newer bindings use their C path (version-memoized,
 cheaper than a per-call count+copy).
 
-The native *builder* factories (native_create_element/text) are
-deliberately not adopted: native mutations do not advance the
-binding's document version, so the binding's memoized reads over
-the same tree go stale, and attaching the created natives pays a
-per-node `to_binding` bridge that costs more than the factory
-saves (create+attach measured 5816 -> 7697ns vs nokogiri 1750).
+The native builder factories (native_create_element/text) are
+adopted from 1.9.163.5, where native mutations became
+version-coherent with the binding (leptris-ruby#204/#208 — both
+surfaces' memos drop on mutation). The earlier rejection — stale
+binding memos plus a per-attach `to_binding` bridge costing more
+than the factory saved (5816 -> 7697ns vs nokogiri 1750) — no
+longer applies: `add_child` carries a both-native fast path with
+no bridge, and `doc_for` reads the 1.9.163.5 `NativeNode#document`
+accessor instead of the parent climb. create ×2 + attach:
+**4846 -> 2333ns (0.30x -> 0.78x of raw nokogiri)**. Attribute
+writes on native nodes still bridge (the native layer has no
+`[]=`), and the native `attributes` hash (name → String) does not
+fit the attribute-node contract — enumeration stays bridged.
 
 Serialize (document, 30KB): passing `encoding: "UTF-8"` when it
 equals the document's own ran a conversion pass for byte-identical
