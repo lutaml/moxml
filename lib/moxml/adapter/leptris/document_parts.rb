@@ -139,27 +139,43 @@ module Moxml
         # facade's canonical form (checked post-hoc: a source
         # declaration carrying standalone or another version would
         # diverge).
+        # 1.9.174 attached leptris_document_first_child (libleptris
+        # 1.9.174): pointer probe for the single-child document
+        # shape without wrapping the child chain.
+        DOCUMENT_CHILD_PTRS =
+          ::Leptris::XML::FFI.respond_to?(:leptris_document_first_child)
+
         def fast_document_output(doc, options)
           return nil unless LIBXML2_LAYOUT_PARITY
-          return nil if attachments.get(doc, :declaration) ||
-            attachments.get(doc, :doctype) ||
-            attachments.get(doc, :document_text) ||
-            attachments.get(doc, :entity_markers)
+          return nil unless attachments.none_set?(
+            doc, %i[declaration doctype document_text entity_markers]
+          )
 
           include_decl = !options[:no_declaration] && options.fetch(:declaration) do
             document_has_declaration?(doc)
           end
 
-          root_seen = false
-          doc.children.each do |child|
-            if child.is_a?(::Leptris::XML::Element)
-              return nil if root_seen
+          # Exactly one document child — the root — is the common
+          # parsed shape; pointer probes decide it without wrapping
+          # the child chain. Anything else (prolog/epilog parts,
+          # multi-root) falls back to the scan.
+          root = doc.root
+          single_child = DOCUMENT_CHILD_PTRS && root &&
+            ::Leptris::XML::FFI.leptris_document_first_child(doc.c_ptr)
+              .address == root.c_ptr.address &&
+            root.next_sibling.nil?
+          unless single_child
+            root_seen = false
+            doc.children.each do |child|
+              if child.is_a?(::Leptris::XML::Element)
+                return nil if root_seen
 
-              root_seen = true
-            elsif root_seen
-              # Epilog parts glue directly to the root in the engine's
-              # document output — compose those.
-              return nil
+                root_seen = true
+              elsif root_seen
+                # Epilog parts glue directly to the root in the engine's
+                # document output — compose those.
+                return nil
+              end
             end
           end
 

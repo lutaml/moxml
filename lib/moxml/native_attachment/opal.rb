@@ -13,6 +13,10 @@ module Moxml
         native.instance_variable_set(attachment_ivar_name(key), value)
       end
 
+      def none_set?(native, keys)
+        keys.none? { |key| native.instance_variable_defined?(attachment_ivar_name(key)) }
+      end
+
       def key?(native, key)
         native.instance_variable_defined?(attachment_ivar_name(key))
       end

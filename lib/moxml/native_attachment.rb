@@ -20,6 +20,12 @@ module Moxml
       @backend.get(native, key)
     end
 
+    # One probe for "none of these keys are set" — the document
+    # serialize gate asks about four keys per call.
+    def none_set?(native, keys)
+      @backend.none_set?(native, keys)
+    end
+
     def set(native, key, value)
       @backend.set(native, key, value)
     end
