@@ -42,6 +42,17 @@ module Moxml
       DIGEST_SUPPORTED =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.99")
 
+      # 1.9.163.7 added the XPath seams (TODO.perf/15+16):
+      # Searchable#at_xpath materializes nodeset entry 0 and frees
+      # the handle in one C dispatch — no NodeSet container, no
+      # AutoPointer (2.8x on repeat at_xpath) — and
+      # CompiledXPath#eval_ptrs runs the compiled handle against
+      # raw pointers, skipping the per-call EvaluationContext
+      # (~2us on every multi-result query).
+      NATIVE_XPATH_SEAMS =
+        defined?(::Leptris::XML::Native) &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.7")
+
       # Opt-in native read layer (leptris-ruby#185, bindings >= 1.9.162.6):
       # TypedData node wrappers with C-bound hot reads and bulk
       # children construction. Minted from #root downward; the C
@@ -1303,6 +1314,9 @@ module Moxml
         # cached AST three times per xpath call cost ~23% of repeated
         # selective queries, so the boolean caches beside it.
         NATIVE_GATE_CACHE = XPath::Cache.new(100)
+        # Root-context queries alone take the parent-axis guard; the
+        # AST walk is per-expression, so the verdict caches too.
+        PARENT_AXIS_CACHE = XPath::Cache.new(100)
 
         def xpath(node, expression, namespaces = {})
           node = to_binding(node) if NATIVE_READ_LAYER
@@ -1323,6 +1337,14 @@ module Moxml
         # @return [Array, Object, nil] native results, or nil when the
         #   query must run on the Ruby engine
         def native_xpath(node, expression, namespaces, first_only: false)
+          # Canonical natives (the #219 unification) are bare TypedData
+          # wrappers — no Searchable methods, no document handle for
+          # the gates below. The memoized bridge recovers the binding
+          # identity; without it every element-context query fell to
+          # the Ruby engine (a silent native-path loss since #219).
+          if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
+            node = to_binding(node)
+          end
           return nil unless native_context_node?(node)
           return nil unless native_expression?(expression)
           # The binding reports the root element parentless while moxml
@@ -1330,27 +1352,70 @@ module Moxml
           # root element keep the Ruby engine.
           if node.is_a?(::Leptris::XML::Element) &&
               node.document&.root.equal?(node) &&
-              expression_uses_parent_axis?(expression)
+              PARENT_AXIS_CACHE.get_or_set(expression) do
+                expression_uses_parent_axis?(expression)
+              end
             return nil
           end
 
           compiled = NATIVE_XPATH_CACHE.get_or_set(expression) do
             ::Leptris::XML::XPath.compile(expression)
           end
-          result = if namespaces && !namespaces.empty?
-                     compiled.eval(node, namespaces)
+          document = node.is_a?(::Leptris::XML::Document) ? node : node.document
+
+          if namespaces && !namespaces.empty?
+            # Namespace-bound evaluation has no raw-pointer entry —
+            # Searchable resolves the ns set for both result shapes.
+            result = if first_only
+                       node.at_xpath(expression, namespaces)
+                     else
+                       compiled.eval(node, namespaces)
+                     end
+            return case result
+                   when ::Leptris::XML::NodeSet
+                     first_only ? result.first : result.extend(Moxml::LazyNodeSet)
                    else
-                     compiled.eval(node)
+                     result
                    end
-          case result
-          when ::Leptris::XML::NodeSet
-            # The binding's #to_a mints one Ruby wrapper per result
-            # node; hand the native set through so .size/.first stay
-            # native-side (LazyNodeSet holds it unmaterialized).
-            first_only ? result.first : result.extend(Moxml::LazyNodeSet)
-          else
-            result
           end
+
+          unless NATIVE_XPATH_SEAMS
+            result = compiled.eval(node)
+            return case result
+                   when ::Leptris::XML::NodeSet
+                     first_only ? result.first : result.extend(Moxml::LazyNodeSet)
+                   else
+                     result
+                   end
+          end
+
+          # eval_ptrs against raw pointers — the per-call
+          # EvaluationContext that #eval builds costs ~2us of Ruby
+          # on every query (leptris-ruby TODO.perf/15).
+          doc_ptr = node.is_a?(::Leptris::XML::Document) ? node.c_ptr : document.c_ptr
+          context_ptr = node.is_a?(::Leptris::XML::Document) ? nil : node.c_ptr
+          result_ptr = compiled.eval_ptrs(doc_ptr, context_ptr)
+          return nil if result_ptr.null?
+
+          if first_only
+            # The single-result seam: nodeset entry 0 materializes
+            # and frees in one C dispatch — no NodeSet container, no
+            # AutoPointer (leptris-ruby TODO.perf/16). The module
+            # object back means a scalar, whose wrap (and free)
+            # stays with wrap_xpath_first_result.
+            return ::Leptris::XML::Searchable.wrap_xpath_first_result(
+              document, result_ptr
+            )
+          end
+
+          # The binding's #to_a mints one Ruby wrapper per result
+          # node; hand the native set through so .size/.first stay
+          # native-side (LazyNodeSet holds it unmaterialized).
+          # Scalars pass through unwrapped-and-unextended.
+          result = ::Leptris::XML::Searchable.wrap_xpath_result(
+            document, result_ptr
+          )
+          result.is_a?(::Leptris::XML::NodeSet) ? result.extend(Moxml::LazyNodeSet) : result
         rescue ::Leptris::XML::XPathError
           # Not supported by the native engine — the Ruby engine is a
           # full XPath 1.0 implementation, including Moxml's syntax
