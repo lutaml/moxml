@@ -43,6 +43,13 @@ module Moxml
         end
       end
 
+      def none_set?(native, keys)
+        h = @data[native.object_id]
+        return true if h.nil?
+
+        keys.none? { |key| h.key?(key) }
+      end
+
       def key?(native, key)
         h = @data[native.object_id]
         !h.nil? && h.key?(key)
