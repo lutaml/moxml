@@ -140,6 +140,7 @@ module Moxml
         end
 
         def set_root(doc, element)
+          doc.delete_element(doc.root) if doc.root
           doc.add_element(element)
         end
 
