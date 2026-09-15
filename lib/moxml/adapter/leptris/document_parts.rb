@@ -38,6 +38,15 @@ module Moxml
 
           texts = attachments.get(doc, :document_text)
           children.concat(texts) if texts
+
+          # Canonicalize through the doc's address-keyed native
+          # cache: #root mints a NativeNode for the document
+          # element, and an uncanonicalized list would hand the
+          # binding twin instead — two wrappers over one node, and
+          # equal?-based exclusion (canon's document-element skip)
+          # silently breaks (issue #219). Mint-on-miss converges
+          # both accessors on the same native object.
+          children.map! { |child| canonical_native(doc, child) } if NATIVE_READ_LAYER
           children
         end
 

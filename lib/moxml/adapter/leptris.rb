@@ -851,6 +851,19 @@ module Moxml
           children
         end
 
+        # Native twin for a binding node through the document's
+        # address-keyed native cache — minting on miss so every
+        # accessor converges on one native per node (issue #219).
+        # Binding natives (Attribute/Attr, synthetic wrappers) and
+        # docless nodes pass through unchanged.
+        def canonical_native(doc, node)
+          return node unless node.is_a?(::Leptris::XML::Element)
+
+          cache = doc.native_cache
+          cache[node.c_ptr.address] ||=
+            ::Leptris::XML::NativeNode.from(doc, node.c_ptr)
+        end
+
         # The binding-node twin of bulk_native_children (identity via
         # the binding's wrap cache).
         def bulk_binding_children(node)
@@ -954,7 +967,10 @@ module Moxml
           return nil if r.nil?
 
           if NATIVE_READ_LAYER
-            native = document.native_node
+            # Through the same address-keyed cache as the children
+            # path: NativeNode.from alone mints a fresh object per
+            # call on 1.9.163.x, splitting the wrappers (issue #219).
+            native = canonical_native(document, r)
             record_native_doc(native, document)
             return native
           end

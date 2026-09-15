@@ -91,6 +91,16 @@
       end
     end
 
+    describe "document-element wrapper unification (issue #219)" do
+      it "hands the same wrapper from #root and #children in both call orders" do
+        doc = ctx.parse(%(<catalog><book/></catalog>))
+        expect(doc.root).to equal(doc.children.grep(Moxml::Element).first)
+
+        doc2 = ctx.parse(%(<catalog><book/></catalog>))
+        expect(doc2.children.grep(Moxml::Element).first).to equal(doc2.root)
+      end
+    end
+
     describe "qname create + namespace assignment (issue #208)" do
       it "does not double the prefix when the name is already qualified" do
         doc = ctx.parse(%(<r xmlns:p="urn:p"/>))
