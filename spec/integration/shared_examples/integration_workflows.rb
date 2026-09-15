@@ -143,4 +143,38 @@ RSpec.shared_examples "Moxml Integration" do
       )
     end
   end
+
+  describe "document root assignment" do
+    it "attaches a factory-created element as the root and serializes" do
+      doc = context.create_document
+      root = doc.create_element("root")
+      root["id"] = "1"
+      child = doc.create_element("child")
+      child.text = "data"
+      root.add_child(child)
+
+      doc.root = root
+
+      expect(doc.root.name).to eq("root")
+      expect(doc.root["id"]).to eq("1")
+      expect(doc.root.parent).to eq(doc)
+      expect(doc.to_xml).to include("<root id=\"1\">", "<child>data</child>")
+
+      reparsed = context.parse(doc.to_xml)
+      expect(reparsed.root["id"]).to eq("1")
+      expect(reparsed.at_xpath("//child").text).to eq("data")
+    end
+
+    it "replaces an existing root" do
+      doc = context.parse("<old><nested/></old>")
+      replacement = doc.create_element("new")
+      replacement.add_child("text")
+
+      doc.root = replacement
+
+      expect(doc.root.name).to eq("new")
+      expect(doc.to_xml).to include("<new>text</new>")
+      expect(doc.to_xml).not_to include("old")
+    end
+  end
 end

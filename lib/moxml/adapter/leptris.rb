@@ -89,7 +89,17 @@ module Moxml
       # sites must never depend on the layer having loaded
       # (issue #217 — binding-only installs crashed on the
       # unguarded bridges).
+      # Class-body level: a bare @ivar inside `class << self` lands
+      # on the singleton's singleton, invisible to the methods at
+      # call time (same shape as @native_doc_roots below).
+      @binding_of = ObjectSpace::WeakMap.new
+
       class << self
+        # native -> bridged binding node. The bridge object is
+        # identity-stable for the native's lifetime (the binding's
+        # per-document wrap cache), so repeat bridges — the write
+        # loop on a factory-created element, re-accessed attribute
+        # lists — skip the document resolution and pointer wrap.
         # Binding node for any native: identity for binding nodes
         # (and on installs without the native layer — the constant
         # check short-circuits), a Node.wrap over the shared C
@@ -98,11 +108,14 @@ module Moxml
           return node unless NATIVE_READ_LAYER &&
             node.is_a?(::Leptris::XML::NativeNode)
 
+          bridged = @binding_of[node]
+          return bridged if bridged
+
           doc = doc_for(node)
           ptr = ::FFI::Pointer.new(node.address)
-          return ::Leptris::XML::Node.wrap(ptr, doc) if doc
-
-          ::Leptris::XML::Node.wrap(ptr, nil)
+          bridged = ::Leptris::XML::Node.wrap(ptr, doc)
+          @binding_of[node] = bridged unless bridged.nil?
+          bridged
         end
       end
 
@@ -281,7 +294,7 @@ module Moxml
         end
 
         def set_root(doc, element)
-          doc.root = element
+          to_binding(doc).root = to_binding(element)
         end
 
         def bare_set_qname_safe?
