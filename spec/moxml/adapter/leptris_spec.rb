@@ -635,6 +635,16 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
   end
 
+  describe "materialize through the wrapper (issue #213)" do
+    it "materializes a native-layer root without NoMethodError" do
+      ctx = Moxml.new(:leptris)
+      doc = ctx.parse(%(<r><a x="1">t1</a><b><c y="2">t2</c></b></r>))
+      count = 0
+      doc.root.materialize_fields { |*_record| count += 1 }
+      expect(count).to be > 0
+    end
+  end
+
   describe "subtree digest (issue #173, leptris#869)" do
     let(:ctx) { Moxml.new(:leptris) }
 

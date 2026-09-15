@@ -39,16 +39,26 @@ module Moxml
         end
 
         def materialize_fields(native, buffers, &block)
-          doc = native.is_a?(::Leptris::XML::Document) ? native : native.document
-          # Marker-bearing text needs the split pipeline (children-level
-          # ER expansion); the bulk path has no marker handling.
-          return nil if doc.nil? || attachments.get(doc, :entity_markers)
+          if NATIVE_READ_LAYER && native.is_a?(::Leptris::XML::NativeNode)
+            # The native read layer mints NativeNodes from #root and
+            # #children; they expose address, not document/c_ptr
+            # (issue #213 — the wrapper-level materialize path).
+            doc = doc_for(native)
+            return nil if doc.nil? || attachments.get(doc, :entity_markers)
 
-          root_ptr = if native.is_a?(::Leptris::XML::Document)
-                       doc.root&.c_ptr
-                     else
-                       native.c_ptr
-                     end
+            root_ptr = ::FFI::Pointer.new(native.address)
+          else
+            doc = native.is_a?(::Leptris::XML::Document) ? native : native.document
+            # Marker-bearing text needs the split pipeline (children-level
+            # ER expansion); the bulk path has no marker handling.
+            return nil if doc.nil? || attachments.get(doc, :entity_markers)
+
+            root_ptr = if native.is_a?(::Leptris::XML::Document)
+                         doc.root&.c_ptr
+                       else
+                         native.c_ptr
+                       end
+          end
           return nil unless root_ptr
 
           walk_fields(root_ptr, 0, buffers,
