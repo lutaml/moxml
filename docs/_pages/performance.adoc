@@ -300,6 +300,17 @@ the same tree go stale, and attaching the created natives pays a
 per-node `to_binding` bridge that costs more than the factory
 saves (create+attach measured 5816 -> 7697ns vs nokogiri 1750).
 
+Serialize (document, 30KB): passing `encoding: "UTF-8"` when it
+equals the document's own ran a conversion pass for byte-identical
+output (~21µs, skipped on 1.9.163.2+); the legacy
+unescaped-ampersand probe (Linux 1.9.50 platform gem) stood down
+below 1.9.60. 175 -> 149µs (~1.6x raw nokogiri). The dominant
+remaining overhead is CRuby itself: a two-byte
+`String#include?("/>")` costs ~34µs on 31KB — no memchr fast path
+exists for multi-byte needles, and `match?` is slower still. A C
+containment probe or a document-face `expand_empty` option would
+close it (leptris-ruby#204, ask 4).
+
 === Prefer bulk paths for per-node conversion
 
 Per-node Ruby iteration pays the wrapper tax per element. When the

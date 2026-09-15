@@ -135,6 +135,13 @@ module Moxml
         # platform gem) emit text-content ampersands unescaped; the
         # detection below is a no-op on correct builds.
         RAW_AMP_RE = /&(?!#{Entity::NAME_PATTERN};|#\d+;|#x[0-9A-Fa-f]+;)/
+        # The unescaped-ampersand emission was observed on the Linux
+        # 1.9.50 platform gem; correct builds make the probe a
+        # no-op that still pays its scan (~2µs per document
+        # serialize). Stand it down on modern engines — the
+        # consistency round-trips fail loudly on any regression.
+        RAW_AMP_GUARD_ACTIVE =
+          Gem::Version.new(::Leptris::VERSION) < Gem::Version.new("1.9.60")
 
         # A raw "<" in text position — the engine intermittently
         # lost the escape when parsing under allocation pressure
@@ -159,7 +166,8 @@ module Moxml
           # Corruption guards: the 1-char ampersand probe is ~1µs
           # (memchr-class); the raw-< scan runs only on builds that
           # still carry the parse race (leptris-ruby#131).
-          needs_amp = xml.include?("&") && xml.match?(RAW_AMP_RE)
+          needs_amp = RAW_AMP_GUARD_ACTIVE &&
+            xml.include?("&") && xml.match?(RAW_AMP_RE)
           needs_lt = RAW_LT_GUARD_ACTIVE && xml.match?(RAW_LT_TRIGGER_RE)
           return xml unless needs_apos || needs_expand || needs_amp || needs_lt
 
