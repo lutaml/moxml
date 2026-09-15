@@ -56,8 +56,15 @@ module Moxml
       @children ||= begin
         # The wrapper's entity memo decides the marker split; the
         # adapter would otherwise re-derive it per call (a C parent
-        # climb on the native layer).
-        natives = adapter.children(@native, entity_bearing: entity_bearing?)
+        # climb on the native layer). The kwarg rides along only
+        # for adapters that accept it — downstream overrides with
+        # the pre-0.5.36 one-argument signature raise ArgumentError
+        # otherwise (issue #218).
+        natives = if adapter.children_accepts_entity_flag?
+                    adapter.children(@native, entity_bearing: entity_bearing?)
+                  else
+                    adapter.children(@native)
+                  end
         natives = natives.map { adapter.patch_node(_1, @native) } if adapter.patches_children?
         NodeSet.new(natives, context, self)
       end

@@ -116,6 +116,20 @@ module Moxml
           )
         end
 
+        # Whether this adapter's #children accepts the
+        # entity_bearing: keyword (the built-ins do; downstream
+        # overrides may keep the pre-0.5.36 one-argument signature —
+        # issue #218). Reflected once per adapter class.
+        def children_accepts_entity_flag?
+          return @children_accepts_entity_flag unless @children_accepts_entity_flag.nil?
+
+          kinds = %i[key keyrest keyreq]
+          @children_accepts_entity_flag =
+            method(:children).parameters.any? do |kind, _name|
+              kinds.include?(kind)
+            end
+        end
+
         # Protocol-level native equality; engines with more than one
         # wrapper class over one C node override (leptris native
         # read layer). Shared adapter examples compare through this.
