@@ -213,9 +213,9 @@ namespace_validation_mode: :strict)
           create_native_namespace(element, prefix, uri)
         end
 
-        def create_entity_reference(name)
+        def create_entity_reference(name, owner_doc = nil)
           validate_entity_reference_name(name)
-          create_native_entity_reference(name)
+          create_native_entity_reference(name, owner_doc)
         end
 
         # Mutation return contract: protocol methods that may change

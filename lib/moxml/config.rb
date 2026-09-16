@@ -24,6 +24,13 @@ module Moxml
     # - :optional - Try to load, continue silently if unavailable
     # - :disabled - Don't load entities, use empty registry
     # - :custom - Use custom entity provider via entity_provider callback
+    # Entity-reference preservation mode (leptris-ruby#212 / upstream
+    # #1094): :expand (default) keeps the shipped behavior (entities
+    # expanded at parse, marker-driven round-trip); :keep enables
+    # first-class EntityReference nodes and skips the marker machinery
+    # when the binding supports it (leptris >= 1.9.177).
+    ENTITY_MODES = %i[expand keep].freeze
+
     ENTITY_LOAD_MODES = %i[required optional disabled custom].freeze
 
     class << self
@@ -115,6 +122,7 @@ module Moxml
                   :entity_provider,
                   :namespace_validation_mode,
                   :entity_restoration_mode,
+                  :entity_mode,
                   :ox_skip,
                   :ox_mode
 
@@ -165,6 +173,7 @@ module Moxml
       @entity_provider = nil
       @namespace_validation_mode = :strict
       @entity_restoration_mode = :lenient
+      @entity_mode = :expand
     end
 
     def adapter=(name)
@@ -210,6 +219,16 @@ module Moxml
       end
 
       @namespace_validation_mode = mode
+    end
+
+    def entity_mode=(mode)
+      mode = mode.to_sym
+      unless ENTITY_MODES.include?(mode)
+        raise ArgumentError,
+              "Invalid entity_mode: #{mode.inspect}. Must be one of: #{ENTITY_MODES.join(', ')}"
+      end
+
+      @entity_mode = mode
     end
 
     def entity_restoration_mode=(mode)

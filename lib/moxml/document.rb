@@ -99,7 +99,8 @@ module Moxml
     end
 
     def create_entity_reference(name)
-      Wrappers::EntityReference.new(adapter.create_entity_reference(name), context)
+      native = adapter.create_entity_reference(name, @native)
+      Wrappers::EntityReference.new(native, context)
     end
 
     def add_child(node)

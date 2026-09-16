@@ -103,7 +103,7 @@ module Moxml
           text
         end
 
-        def create_native_entity_reference(name)
+        def create_native_entity_reference(name, _owner_doc = nil)
           text = ::Oga::XML::Text.new
           text.text = "#{Entity::MARKER}#{name};"
           attachments.set(text, :entity_name, name)
