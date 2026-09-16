@@ -172,7 +172,7 @@ module Moxml
           )
         end
 
-        def create_native_entity_reference(name)
+        def create_native_entity_reference(name, _owner_doc = nil)
           ::Nokogiri::XML::EntityReference.new(create_document, name)
         end
 

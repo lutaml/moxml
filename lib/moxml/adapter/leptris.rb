@@ -103,6 +103,14 @@ module Moxml
         NN_ADD_CHILD = NN.instance_method(:add_child)
       end
 
+      # Entity-reference preservation (leptris-ruby#212 / upstream
+      # #1094): 1.9.177 ships ParseOptions.keep_entity_refs plus
+      # first-class EntityReference nodes — the marker machinery
+      # becomes bypassable when the Context's entity_mode is :keep.
+      NATIVE_ENTITY_REFS =
+        defined?(::Leptris::XML::EntityReference) &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.177")
+
       # 1.9.163.2 moved the native bulk children into C
       # (Native.bulk_children) and fixed the 512 truncation
       # (leptris-ruby#202). The 162.6-163.1 window carries the
@@ -493,7 +501,15 @@ module Moxml
           xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
           # The marker flag rides preprocess's own `&` scan — no
           # second full-buffer probe (issue #132 parse-side note).
-          processed, entity_markers = Entity.preprocess_with_marker_flag(xml_string)
+          entity_mode_keep =
+            NATIVE_ENTITY_REFS &&
+            (_context&.config&.entity_mode == :keep || options[:keep_entity_refs] == true)
+          processed, entity_markers =
+            if entity_mode_keep
+              [xml_string, false]
+            else
+              Entity.preprocess_with_marker_flag(xml_string)
+            end
 
           # readonly: true (issue #133): the binding memoizes reads and
           # refuses mutations — the parse-and-read lifecycle for
@@ -504,7 +520,7 @@ module Moxml
             ::Leptris::XML::Document.parse(
               processed,
               readonly: options[:readonly] == true,
-              options: parse_flags(options),
+              options: parse_flags(options, context: _context),
             )
           rescue ::Leptris::XML::ParseError => e
             # libleptris has no recovery mode that survives unclosed
@@ -534,6 +550,7 @@ module Moxml
 
           record_source_declaration(native_doc, processed)
           attachments.set(native_doc, :entity_markers, entity_markers)
+          attachments.set(native_doc, :keep_entity_refs, entity_mode_keep)
           bump_serialize_generation
           attachments.set(native_doc, :parse_errors, recover_errors) if recover_errors
 
@@ -601,9 +618,12 @@ module Moxml
         # Nokogiri semantics: blanks kept, no ATTLIST defaults).
         # noblanks forwards only once the engine flag is libxml2-safe
         # (see ENGINE_NOBLANKS_SAFE); otherwise it is moxml-side.
-        def parse_flags(options)
+        def parse_flags(options, context: nil)
           flags = 0
           flags |= ::Leptris::XML::ParseOptions::DTDATTR if options[:dtdattr] == true
+          flags |= ::Leptris::XML::ParseOptions::KEEP_ENTITY_REFS if NATIVE_ENTITY_REFS &&
+            (context&.config&.entity_mode == :keep ||
+             options[:keep_entity_refs] == true)
           flags |= ::Leptris::XML::ParseOptions::NOBLANKS if options[:noblanks] == true && ENGINE_NOBLANKS_SAFE
           flags.zero? ? nil : ::Leptris::XML::ParseOptions.new(flags)
         end
@@ -698,11 +718,18 @@ module Moxml
           CustomizedLeptris::Declaration.new(version, encoding, standalone)
         end
 
-        def create_native_entity_reference(name)
+        def create_native_entity_reference(name, owner_doc = nil)
+          if NATIVE_ENTITY_REFS && owner_doc
+            return owner_doc.create_entity_reference(name.to_s)
+          end
+
           CustomizedLeptris::EntityReference.new(name)
         end
 
         def entity_reference_name(node)
+          return node.name if NATIVE_ENTITY_REFS &&
+            node.is_a?(::Leptris::XML::EntityReference)
+
           node.name if node.is_a?(CustomizedLeptris::EntityReference)
         end
 
@@ -884,6 +911,7 @@ module Moxml
           when ::Leptris::XML::DocType, CustomizedLeptris::Doctype then :doctype
           when CustomizedLeptris::Declaration then :declaration
           when CustomizedLeptris::EntityReference then :entity_reference
+          when ::Leptris::XML::EntityReference then :entity_reference if NATIVE_ENTITY_REFS
           else :unknown
           end
         end
@@ -945,6 +973,11 @@ module Moxml
         end
 
         def children(node, entity_bearing: false)
+          if NATIVE_ENTITY_REFS &&
+              native_keep_entity_refs?(node)
+            return to_binding(node).children.to_a
+          end
+
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
             # Bulk C children through moxml's own scratch (see
             # NATIVE_READ_LAYER note above). Entity-marker documents
@@ -1005,6 +1038,13 @@ module Moxml
           else
             node.children.to_a
           end
+        end
+
+        def native_keep_entity_refs?(node)
+          return false unless node.is_a?(::Leptris::XML::NativeNode)
+
+          doc = NN_DOCUMENT.bind_call(node)
+          attachments.get(doc, :keep_entity_refs) == true
         end
 
         def parent(node)

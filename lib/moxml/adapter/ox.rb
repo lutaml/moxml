@@ -109,7 +109,7 @@ module Moxml
           content.dup
         end
 
-        def create_native_entity_reference(name)
+        def create_native_entity_reference(name, _owner_doc = nil)
           ::Moxml::Adapter::CustomizedOx::EntityReference.new(name)
         end
 

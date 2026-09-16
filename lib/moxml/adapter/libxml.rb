@@ -198,7 +198,7 @@ module Moxml
           CustomizedLibxml::Text.new(native)
         end
 
-        def create_native_entity_reference(name)
+        def create_native_entity_reference(name, _owner_doc = nil)
           CustomizedLibxml::EntityReference.new(name)
         end
 

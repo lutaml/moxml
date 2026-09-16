@@ -629,14 +629,46 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(doc.at_xpath("//a").to_xml).to eq("<a>text</a>")
     end
 
-    it "flips the flag when the builder mints an entity reference" do
-      doc = ctx.parse("<root><a/></root>")
-      expect(described_class.entity_bearing?(doc.root.native)).to be(false)
+    it "validates entity_mode" do
+      config = Moxml::Config.new(:leptris)
+      config.entity_mode = :keep
 
-      er = doc.create_entity_reference("nbsp")
-      doc.at_xpath("//a").add_child(er)
-      expect(described_class.entity_bearing?(doc.root.native)).to be(true)
-      expect(doc.at_xpath("//a").children.to_a.map { |k| k.is_a?(Moxml::EntityReference) }).to include(true)
+      expect(config.entity_mode).to eq(:keep)
+      expect { config.entity_mode = :invalid }.to raise_error(ArgumentError)
+    end
+
+    it "uses first-class entity references when requested on supported bindings" do
+      skip "requires leptris 1.9.177" unless described_class::NATIVE_ENTITY_REFS
+
+      keep_ctx = Moxml.new(:leptris) { |config| config.entity_mode = :keep }
+      doc = keep_ctx.parse("<root><a>pre &amp; middle &lt; post</a></root>")
+      children = doc.at_xpath("//a").children.to_a
+
+      expect(children.map(&:content)).to eq(["pre ", "", " middle ", "", " post"])
+      expect(children[1]).to be_a(Moxml::EntityReference)
+      expect(children[1].name).to eq("amp")
+      expect(children[3].name).to eq("lt")
+      expect(doc.to_xml).to include("pre &amp; middle &lt; post")
+    end
+
+    it "creates a first-class entity reference on supported bindings" do
+      skip "requires leptris 1.9.177" unless described_class::NATIVE_ENTITY_REFS
+
+      keep_ctx = Moxml.new(:leptris) { |config| config.entity_mode = :keep }
+      doc = keep_ctx.parse("<root><a/></root>")
+      reference = doc.create_entity_reference("copy")
+      doc.at_xpath("//a").add_child(reference)
+
+      expect(reference).to be_a(Moxml::EntityReference)
+      expect(reference.name).to eq("copy")
+      expect(doc.to_xml).to include("&copy;")
+    end
+
+    it "keeps expansion as the default entity mode" do
+      doc = Moxml.new(:leptris).parse("<root>a &amp; b</root>")
+
+      expect(doc.root.children.first).to be_a(Moxml::Text)
+      expect(doc.root.children.first.content).to eq("a & b")
     end
   end
 

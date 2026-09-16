@@ -103,7 +103,7 @@ module Moxml
           ::REXML::Text.new(content.to_s, true, nil)
         end
 
-        def create_native_entity_reference(name)
+        def create_native_entity_reference(name, _owner_doc = nil)
           ::Moxml::Adapter::CustomizedRexml::EntityReference.new(name)
         end
 
