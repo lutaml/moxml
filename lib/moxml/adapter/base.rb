@@ -141,6 +141,14 @@ module Moxml
           nil
         end
 
+        # Subtree walk capability: an adapter with a C-side pre-order
+        # traversal (leptris >= 1.9.174.6 visit) walks descendants in
+        # one dispatch; nil keeps the recursive children walk. Self
+        # is not yielded (each_node semantics).
+        def walk_descendants(_native, _context)
+          nil
+        end
+
         def same_node?(one, other)
           one == other
         end

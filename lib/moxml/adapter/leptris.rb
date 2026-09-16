@@ -176,6 +176,26 @@ module Moxml
             nil
           end
 
+          NATIVE_C_WALK =
+            defined?(::Leptris::XML::NativeNode) &&
+            Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.174.6")
+
+          # One C visit walk (TODO.perf/27: post-order/abort state in
+          # the C callback, rb_yield direct — no FFI closure per
+          # node) instead of per-level children walks. Pre-order via
+          # entering; depth 0 is the receiver and stays unyielded.
+          def walk_descendants(native, context)
+            return nil unless NATIVE_C_WALK
+
+            root = to_binding(native)
+            return nil unless root.is_a?(::Leptris::XML::Element) ||
+              root.is_a?(::Leptris::XML::Document)
+
+            root.visit do |node, entering, depth|
+              yield Moxml::Node.wrap(node, context) if entering && depth.positive?
+            end
+          end
+
           def record_native_doc(root_native, doc)
             @native_doc_roots[root_native] = doc
           end
