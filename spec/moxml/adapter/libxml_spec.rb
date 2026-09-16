@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
 begin
-  require "libxml"
+  require "libxml-ruby"
 rescue LoadError
-  # LibXML gem not available - skip all specs in this file
-  return
+  begin
+    require "libxml"
+  rescue LoadError
+    # LibXML gem not available - skip all specs in this file
+    return
+  end
 end
 
 require "moxml/adapter/libxml"

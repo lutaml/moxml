@@ -2,7 +2,7 @@
 
 return if RUBY_ENGINE == "opal"
 
-require "libxml"
+require "libxml-ruby"
 
 module Moxml
   module Adapter

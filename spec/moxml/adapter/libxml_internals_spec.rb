@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 begin
-  require "libxml"
+  require "libxml-ruby" rescue (require "libxml")
 rescue LoadError
   return
 end
