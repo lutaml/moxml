@@ -278,6 +278,19 @@ module Moxml
     # Recursively yield all descendant nodes
     # Used by XPath descendant-or-self and descendant axes
     def each_node(&block)
+      unless block
+        # Eager materialization: the leptris C-side walk rb_yields
+        # from the C callback and segfaults across fiber-suspended
+        # enumerator frames, so the no-block form never enters it.
+        nodes = []
+        each_node { |node| nodes << node }
+        return nodes.each
+      end
+
+      # Adapters with a C-side subtree walk take it in one
+      # dispatch; the recursive children walk stays the fallback.
+      return if adapter.walk_descendants(@native, context, &block)
+
       children.each do |child|
         yield child
         child.each_node(&block)
