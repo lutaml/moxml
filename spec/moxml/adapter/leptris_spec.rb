@@ -694,6 +694,25 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
   end
 
+  describe "source_position (leptris 1.9.181+, upstream #1124)" do
+    let(:ctx) { Moxml.new(:leptris) }
+
+    it "answers engine source positions for parsed nodes" do
+      skip "requires leptris 1.9.181" unless described_class::NATIVE_SOURCE_POSITION
+
+      doc = ctx.parse("<root>\n  <child>text</child>\n</root>")
+      expect(doc.root.source_position).to include(line: 1)
+      expect(doc.root.source_position).to be_a(Hash)
+    end
+
+    it "answers nil below the gate and on other adapters" do
+      expect(Moxml::Adapter::Base.source_position(nil)).to be_nil
+      expect(Moxml::Adapter::Nokogiri.source_position(nil)).to be_nil
+      noko = Moxml.new(:nokogiri).parse("<root><a/></root>")
+      expect(noko.root.children.first.source_position).to be_nil
+    end
+  end
+
   describe "subtree digest (issue #173, leptris#869)" do
     let(:ctx) { Moxml.new(:leptris) }
 

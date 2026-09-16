@@ -103,6 +103,12 @@ module Moxml
         NN_ADD_CHILD = NN.instance_method(:add_child)
       end
 
+      # 1.9.181 (lockstep): Node#source_position — {line, col_start,
+      # col_end} from the engine's source-position API (upstream
+      # #1124); created nodes report zeros.
+      NATIVE_SOURCE_POSITION =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.181")
+
       # Entity-reference preservation (leptris-ruby#212 / upstream
       # #1094): 1.9.177 ships ParseOptions.keep_entity_refs plus
       # first-class EntityReference nodes — the marker machinery
@@ -1236,6 +1242,12 @@ module Moxml
             return native
           end
           r
+        end
+
+        def source_position(node)
+          return nil unless NATIVE_SOURCE_POSITION
+
+          to_binding(node).source_position
         end
 
         def line_number(node)
