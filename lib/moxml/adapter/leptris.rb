@@ -973,7 +973,12 @@ module Moxml
         end
 
         def children(node, entity_bearing: false)
-          if NATIVE_ENTITY_REFS &&
+          # NATIVE_READ_LAYER gates the whole keep-path: it consults
+          # NN_DOCUMENT (defined only with the native layer), and
+          # native-less installs answer through the binding case
+          # branch below, whose children already carry first-class
+          # EntityReference nodes (issue #240).
+          if NATIVE_READ_LAYER && NATIVE_ENTITY_REFS &&
               native_keep_entity_refs?(node)
             return to_binding(node).children.to_a
           end
@@ -1041,7 +1046,8 @@ module Moxml
         end
 
         def native_keep_entity_refs?(node)
-          return false unless node.is_a?(::Leptris::XML::NativeNode)
+          return false unless NATIVE_READ_LAYER &&
+            node.is_a?(::Leptris::XML::NativeNode)
 
           doc = NN_DOCUMENT.bind_call(node)
           attachments.get(doc, :keep_entity_refs) == true
