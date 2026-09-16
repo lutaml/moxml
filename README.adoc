@@ -51,8 +51,55 @@ Leptris:: https://github.com/leptris/leptris[Leptris], a pure-C99 XML 1.0
 parser with a W3C-conformant XPath 1.0 engine, consumed through the
 https://github.com/leptris/leptris-ruby[leptris-ruby] FFI binding
 (precompiled platform gems — no compilation at install). Fastest on
-every measured operation; requires leptris >= 1.2 for programmatic
-document construction.
+every measured operation; requires leptris >= 1.9.32 (see version table below).
+
+=== Underlying library versions
+
+Moxml declares no runtime gem dependencies: you bundle the adapter
+gem(s) you want. Each adapter carries the version floor it is built
+and tested against — older versions are untested and the leptris
+adapter refuses to load below its floor.
+
+[cols="2,3,5"]
+|===
+|Adapter |Acceptable versions |Notes
+
+|REXML
+|Ruby-bundled (Ruby >= 3.0)
+|Always available; no gem to manage.
+
+|Nokogiri
+|>= 1.18
+|Tested against the 1.18 line.
+
+|Ox
+|>= 2.14
+|Tested against the 2.14 line.
+
+|Oga
+|3.4 / 3.5
+|The moxml repository vendors an Opal-compatible fork of oga 3.4
+for development and CI. Oga 4.x is not yet validated against
+moxml's customized generator and decoder overrides.
+
+|LibXML (libxml-ruby)
+|>= 5.0
+|6.x works and is the installed default on Ruby >= 3.2 (libxml-ruby
+6.0 itself requires Ruby >= 3.2); Ruby 3.1 resolves 5.x.
+
+|Leptris (leptris-ruby)
+|>= 1.9.32
+|Hard floor — `MINIMUM_BINDING_VERSION`; older bindings do not load.
+Newer bindings unlock more native surface automatically:
+1.9.163.7+ single-result XPath seams, 1.9.174.4+ C-minted identity
+wrappers, 1.9.174.6+ one-dispatch subtree walks, 1.9.177+ first-class
+entity references (`entity_mode: :keep`). The release notes carry the
+current recommendation.
+|===
+
+NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.174`, `nokogiri ~> 1.18`,
+`ox ~> 2.14`, `libxml-ruby >= 5.0`, and the vendored oga fork — the CI
+matrix tests exactly those floors.
 
 ==== Default adapter selection
 
@@ -61,7 +108,7 @@ the runtime environment:
 
 . If running on Opal (`RUBY_ENGINE == "opal"`), Oga is used (pure Ruby, no C extensions)
 . Otherwise, if the installed leptris gem supports programmatic document
-  construction (`Leptris::XML::Document.create`, leptris >= 1.2), Leptris is used
+  construction (`Leptris::XML::Document.create`, leptris >= 1.9.32), Leptris is used
 . Otherwise, Moxml detects already-loaded XML libraries in this order:
   .. Nokogiri
   .. Ox
@@ -72,7 +119,7 @@ the runtime environment:
 ----
 # Automatic detection — picks the best available adapter
 ctx = Moxml.new
-ctx.config.adapter_name  # => :leptris (leptris >= 1.2), :nokogiri otherwise, :oga on Opal
+ctx.config.adapter_name  # => :leptris (leptris >= 1.9.32), :nokogiri otherwise, :oga on Opal
 
 # Explicit override — always takes precedence
 ctx = Moxml.new(:ox)
