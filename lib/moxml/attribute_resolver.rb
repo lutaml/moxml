@@ -42,9 +42,7 @@ module Moxml
       return nil if uri.nil?
 
       adapter = element.adapter
-      if adapter.is_a?(Moxml::Adapter::Leptris)
-        return adapter.expanded_attr_value(element.native, uri, local)
-      end
+      return adapter.expanded_attr_value(element.native, uri, local) if adapter.expanded_attr_reads?
 
       attr = resolve(element, name)
       attr&.value

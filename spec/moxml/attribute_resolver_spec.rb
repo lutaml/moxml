@@ -105,4 +105,22 @@ RSpec.describe Moxml::AttributeResolver do
              )).to be(false)
     end
   end
+
+  describe ".resolve_value capability dispatch (issue #242)" do
+    it "answers prefixed values through the adapter capability, not class identity" do
+      doc = Moxml.new(:nokogiri).parse(
+        '<w:f xmlns:w="urn:w"><w:n w:val="Arial"/></w:f>',
+      )
+      node = doc.root.children.first
+
+      expect(Moxml::Adapter::Base.expanded_attr_reads?).to be(false)
+      expect(Moxml::Adapter::Nokogiri.expanded_attr_reads?).to be(false)
+      expect(node["w:val"]).to eq("Arial")
+    end
+
+    it "keeps native c14n delegation behind the adapter protocol" do
+      expect(Moxml::Adapter::Base.native_inclusive10(nil)).to be_nil
+      expect(Moxml::Adapter::Nokogiri.native_inclusive10(nil)).to be_nil
+    end
+  end
 end

@@ -463,8 +463,27 @@ module Moxml
         # engine — the same match rule as the resolver (xmlns
         # declarations invisible, no-namespace never matches a
         # prefixed name), without materializing the attribute list.
+        def expanded_attr_reads?
+          true
+        end
+
+        def native_inclusive10(native)
+          return nil unless native_c14n_byte_safe?
+
+          to_binding(native).canonicalize(
+            ::Leptris::XML::FFI::C14N_1_0, nil,
+            mode: ::Leptris::XML::FFI::C14N_MODE_CANONICAL
+          )
+        end
+
         def expanded_attr_value(element, uri, local)
-          element.attribute_ns(uri, local)
+          # Bridge first: identity-mode wrappers hand a NativeNode
+          # (no attribute_ns); binding elements pass through as-is.
+          # The class-receiver is_a? this method replaced was always
+          # false — element.adapter IS the adapter class — so the
+          # branch sat dead since identity mode and the binding-only
+          # assumption went unnoticed (issue #242).
+          to_binding(element).attribute_ns(uri, local)
         end
 
         # Fast bare-name read: the binding call plus marker

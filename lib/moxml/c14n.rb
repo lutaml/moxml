@@ -62,14 +62,7 @@ module Moxml
       return nil if with_comments || !inclusive_namespaces.empty?
       return nil unless algorithm_shape_inclusive10?(node_or_xml)
 
-      adapter = node_or_xml.context.config.adapter
-      return nil unless adapter == Moxml::Adapter::Leptris &&
-        Moxml::Adapter::Leptris.native_c14n_byte_safe?
-
-      Moxml::Adapter::Leptris.to_binding(node_or_xml.native).canonicalize(
-        ::Leptris::XML::FFI::C14N_1_0, nil,
-        mode: ::Leptris::XML::FFI::C14N_MODE_CANONICAL
-      )
+      node_or_xml.context.config.adapter.native_inclusive10(node_or_xml.native)
     end
 
     def self.algorithm_shape_inclusive10?(node_or_xml)
