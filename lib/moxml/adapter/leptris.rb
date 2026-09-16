@@ -159,21 +159,96 @@ module Moxml
           # 3-4 Ruby frames collapse to the module call over the C
           # method. @native is self; every adapter method that accepts
           # a native already handles NativeNode receivers.
-          # Extend-in-place mint (#230 stage 2): disabled by
-          # measurement. Extending TypedData natives with the
-          # contract modules works correctly (full battery + lm
-          # 5422/0 under identity mode) but each extend allocates a
-          # singleton plus per-module iclasses — the consumer
-          # pipeline regressed 4017us -> 16350us with 6x the
-          # allocations on a 900-node walk. The per-read frame
-          # savings (~50ns) cannot repay that mint cost. Revisit
-          # when the binding grows klass-injection
-          # (NativeNode.from(doc, ptr, klass:) minting the
-          # contract-carrying subclass in C) — asked upstream in the
-          # #230 thread. Wrappers mint through the Wrappers:: shells
-          # meanwhile.
-          def wrap_native(_node, _type, _context)
-            nil
+          # Identity mode v2 (#230): wrapper classes SUBCLASS the
+          # TypedData native and include the contract modules, and
+          # NativeNode.from honors its receiver (klass-injection,
+          # 1.9.174.4+): the C wrap mints our class directly — no
+          # Ruby-level extend (the v1 extend mint regressed the
+          # pipeline 4x; this is the same TypedData wrap the base
+          # mint pays). @native is self; the adapter's C-surface
+          # bind_calls accept these receivers (they are NativeNode
+          # instances). The hot bare reads super into the C methods
+          # (exact-name = the bare-name contract).
+          module Identity
+            ELEMENT = Class.new(::Leptris::XML::NativeNode) do
+              include ::Moxml::Node
+              include ::Moxml::Element
+            end
+            TEXT = Class.new(::Leptris::XML::NativeNode) do
+              include ::Moxml::Node
+              include ::Moxml::Text
+            end
+            CDATA = Class.new(::Leptris::XML::NativeNode) do
+              include ::Moxml::Node
+              include ::Moxml::Cdata
+            end
+            COMMENT = Class.new(::Leptris::XML::NativeNode) do
+              include ::Moxml::Node
+              include ::Moxml::Comment
+            end
+            PROCESSING_INSTRUCTION = Class.new(::Leptris::XML::NativeNode) do
+              include ::Moxml::Node
+              include ::Moxml::ProcessingInstruction
+            end
+
+            TYPES = {
+              element: ELEMENT,
+              text: TEXT,
+              cdata: CDATA,
+              comment: COMMENT,
+              processing_instruction: PROCESSING_INSTRUCTION,
+            }.freeze
+
+            module Reads
+              # The C methods sit BELOW the contract modules in the
+              # ancestry (NativeNode is the superclass), so super
+              # from here would run the contract implementation and
+              # ADD frames. bind_call reaches the C surface
+              # directly; prefixed names take the contract path.
+              ELEMENT_CONTRACT_READ =
+                ::Moxml::ElementBehavior.instance_method(:[])
+
+              def [](key)
+                if key.is_a?(String) && !key.include?(":")
+                  value = NN_ATTRIBUTE.bind_call(self, key)
+                  return value unless value.is_a?(String) && entity_bearing?
+
+                  return ::Moxml::Adapter::Leptris.restore_entities(value)
+                end
+
+                ELEMENT_CONTRACT_READ.bind_call(self, key)
+              end
+
+              def text
+                value = NN_CONTENT.bind_call(self)
+                value.is_a?(String) && entity_bearing? ? ::Moxml::Adapter::Leptris.restore_entities(value) : value
+              end
+            end
+            ELEMENT.include(Reads)
+            TEXT.include(Reads)
+          end
+
+          NATIVE_IDENTITY =
+            NATIVE_MUTATIONS_COHERENT &&
+            Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.174.4")
+
+          def wrap_native(node, type, _context)
+            return nil unless NATIVE_IDENTITY &&
+              node.is_a?(::Leptris::XML::NativeNode)
+
+            # from() registers in the shared address-keyed native
+            # cache, so later canonical/bulk mints hand OUR instance
+            # back — a native already carrying the contract IS the
+            # wrapper; minting again would loop per access.
+            return node if node.is_a?(::Moxml::Node)
+
+            klass = Identity::TYPES[type]
+            return nil unless klass
+
+            doc = doc_for(node)
+            return nil unless doc
+
+            klass.from(doc, node)
           end
 
           NATIVE_C_WALK =
