@@ -402,6 +402,14 @@ module Moxml
       adapter.line_number(@native)
     end
 
+    # {line, col_start, col_end} where the engine exposes source
+    # positions (leptris 1.9.181+); nil elsewhere. Created nodes
+    # answer zeros upstream — distinguishable from nil by callers
+    # that care.
+    def source_position
+      adapter.source_position(@native)
+    end
+
     # Content-defined Merkle digest of this subtree (issue #173,
     # companion to leptris#869): a u64 Integer where the backend
     # computes one, nil everywhere else. Consumers gate on nil and

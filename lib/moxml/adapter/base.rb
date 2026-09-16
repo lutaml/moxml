@@ -164,6 +164,14 @@ module Moxml
           nil
         end
 
+        # Source position {line, col_start, col_end} for a node where
+        # the engine exposes it (leptris 1.9.181+ source_position);
+        # nil elsewhere and for nodes without a position (created
+        # nodes answer zeros upstream — pass those through as-is).
+        def source_position(_native)
+          nil
+        end
+
         # Subtree walk capability: an adapter with a C-side pre-order
         # traversal (leptris >= 1.9.174.6 visit) walks descendants in
         # one dispatch; nil keeps the recursive children walk. Self
