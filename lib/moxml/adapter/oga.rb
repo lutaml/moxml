@@ -561,9 +561,10 @@ module Moxml
           )
         end
 
-        # Whether this oga build honors the indent option (newer
-        # releases do; the capability probe keeps the indentation
-        # spec pending-or-live across both).
+        # Whether this adapter's oga serialization honors the
+        # indent option (the customized generator currently does
+        # not; the probe keeps the indentation spec pending-or-live
+        # per environment).
         def indents_output?
           return @indents_output unless @indents_output.nil?
 
