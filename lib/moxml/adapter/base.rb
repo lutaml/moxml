@@ -141,6 +141,29 @@ module Moxml
           nil
         end
 
+        # Prefixed-attribute value fast path: adapters whose engine
+        # resolves expanded-name (uri, local) lookups natively answer
+        # the value here; others fall back to the resolver's
+        # attribute-list match. Capability probe, not a class
+        # identity check — Moxml::Adapter::Leptris is only defined
+        # once that adapter loads (issue #242).
+        def expanded_attr_reads?
+          false
+        end
+
+        def expanded_attr_value(_element, _uri, _local)
+          nil
+        end
+
+        # Engine-side inclusive C14N delegation: adapters whose
+        # engine canonicalizes byte-identically to the Ruby reference
+        # answer the String here; others (and unsupported shapes)
+        # return nil and the Ruby reference runs. Capability probe —
+        # same reasoning as expanded_attr_reads? (issue #242).
+        def native_inclusive10(_native)
+          nil
+        end
+
         # Subtree walk capability: an adapter with a C-side pre-order
         # traversal (leptris >= 1.9.174.6 visit) walks descendants in
         # one dispatch; nil keeps the recursive children walk. Self
