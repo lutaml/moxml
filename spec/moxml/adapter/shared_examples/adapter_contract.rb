@@ -334,7 +334,8 @@ RSpec.shared_examples "xml adapter" do
     end
 
     it "respects indentation settings" do
-      if described_class.name.include?("Oga")
+      if described_class.name.include?("Oga") &&
+          !described_class.indents_output?
         pending("Oga does not support indentation settings")
       end
       if described_class.name.include?("Libxml")

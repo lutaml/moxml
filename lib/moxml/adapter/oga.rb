@@ -561,6 +561,20 @@ module Moxml
           )
         end
 
+        # Whether this oga build honors the indent option (newer
+        # releases do; the capability probe keeps the indentation
+        # spec pending-or-live across both).
+        def indents_output?
+          return @indents_output unless @indents_output.nil?
+
+          probe = ::Oga::XML::Document.new
+          el = ::Oga::XML::Element.new(name: "r")
+          el.children << ::Oga::XML::Text.new(text: "t")
+          probe.children << el
+          @indents_output = serialize(probe, indent: 2).include?("
+  ")
+        end
+
         def serialize(node, options = {})
           serialize_without_entity_processing(node, options)
         end
