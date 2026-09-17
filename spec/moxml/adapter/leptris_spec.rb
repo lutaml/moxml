@@ -672,6 +672,39 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
   end
 
+  describe "adapter seams from the relaton migration (issue #245)" do
+    let(:ctx) { Moxml.new(:leptris) }
+
+    it "keeps parse_fragment nodes' owning document alive" do
+      nodes = ctx.parse_fragment("<em>x</em>")
+      element = nodes.first
+      expect(element.parent_node).not_to be_nil
+      GC.start
+      GC.start
+      expect(element.name).to eq("em")
+      expect(element.text).to eq("x")
+      document = element.document
+      expect(document.children.first.name).to eq("m")
+      expect(document.children.first.children.first.name).to eq("em")
+    end
+
+    it "inserts siblings after a text node" do
+      doc = ctx.parse("<root><p>a<!--c1-->b</p></root>")
+      paragraph = doc.root.children.first
+      cursor = paragraph.children.first
+      cursor.add_next_sibling(doc.create_text("Z"))
+      expect(paragraph.to_xml).to eq("<p>aZ<!--c1-->b</p>")
+    end
+
+    it "inserts siblings before a text node" do
+      doc = ctx.parse("<root><p><!--c1-->ab</p></root>")
+      paragraph = doc.root.children.first
+      cursor = paragraph.children.last
+      cursor.add_previous_sibling(doc.create_text("Y"))
+      expect(paragraph.to_xml).to eq("<p><!--c1-->Yab</p>")
+    end
+  end
+
   describe "to_binding is defined regardless of the native layer (issue #217)" do
     it "is the identity for binding nodes" do
       ctx = Moxml.new(:leptris)
