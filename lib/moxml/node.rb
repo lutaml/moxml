@@ -593,10 +593,16 @@ module Moxml
 
       # Extend-in-place (issue #230): adapters whose natives can
       # carry the contract modules directly (leptris TypedData) mint
-      # the native itself as the wrapper — @native is self.
+      # the native itself as the wrapper — @native is self. The
+      # minted wrapper primes with ITSELF (not the input native):
+      # adapter calls then receive the contract-bearing receiver,
+      # which klass-propagating reads (#246) dispatch on — and the
+      # input native keeps its registration so later wraps of the
+      # same base object hit the cache instead of re-minting.
       if (extended = adapter.wrap_native(node, type, context))
-        extended.prime_contract(node, context, adapter, type)
+        extended.prime_contract(extended, context, adapter, type)
         context.register_wrapper(node, extended)
+        context.register_wrapper(extended, extended) unless extended.equal?(node)
         return extended
       end
 
