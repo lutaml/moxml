@@ -598,7 +598,21 @@ module Moxml
         # entity-marker splitting applies.
         def parse_fragment(xml, _context = nil)
           doc = parse("<m>#{xml}</m>")
-          children(doc.native.root)
+          # Lifetime seam (#245): the fragment's natives live in the
+          # parse document's C tree, and the binding Document is the
+          # sole owner with a GC finalizer. The parent_node chain
+          # (fragment -> synthetic <m> -> Document wrapper) keeps the
+          # owning wrappers strongly reachable from every returned
+          # node; the wrappers are minted HERE and returned as-is —
+          # re-wrapping at the caller would race the context map's
+          # weak values and silently drop the chain.
+          root_wrapper = doc.root
+          root_wrapper.parent_node = doc
+          children(root_wrapper.native).map do |child|
+            wrapped = Node.wrap(child, doc.context)
+            wrapped.parent_node = root_wrapper
+            wrapped
+          end
         end
 
         def iterparse(xml, mode = :top_level, _context = nil, &block)
@@ -794,6 +808,10 @@ module Moxml
 
           element = node
           if namespace.nil?
+            # Supported un-prefix (#245, relaton migration): rename
+            # the node to its local part (name = local) — the
+            # serializer re-attaches the old prefix after namespace=
+            # nil on prefixed elements until leptris-ruby#244 lands.
             # Nil-clear contract (issue #164): undeclare the default
             # namespace (xmlns="") and drop any name prefix — the
             # element then reports no namespace, matching the other
@@ -1359,7 +1377,17 @@ module Moxml
             node.document.add_pi(new_node.target, new_node.content.to_s)
             return new_node
           end
-          node.add_previous_sibling(new_node)
+          return node.add_previous_sibling(new_node) if node.is_a?(::Leptris::XML::Element)
+
+          # Non-element receivers: raw-FFI anchor (issue #245, same
+          # shape as add_next_sibling).
+          adopt_for_sibling_insert(new_node, node)
+          ::Leptris::XML::FFI.check_status(
+            ::Leptris::XML::FFI.leptris_element_insert_before(
+              node.c_ptr, new_node.c_ptr
+            ),
+          )
+          new_node
         end
 
         def add_next_sibling(node, new_node)
@@ -1367,7 +1395,31 @@ module Moxml
             node = to_binding(node)
             new_node = to_binding(new_node)
           end
-          node.add_next_sibling(new_node)
+          return node.add_next_sibling(new_node) if node.is_a?(::Leptris::XML::Element)
+
+          # Non-element receivers (Text/Comment/CDATA): the binding's
+          # method is Element-only, but the C insert anchors on any
+          # node — route through the FFI entry directly, keeping the
+          # binding's namespace-lift adoption for element inserts
+          # (issue #245).
+          adopt_for_sibling_insert(new_node, node)
+          ::Leptris::XML::FFI.check_status(
+            ::Leptris::XML::FFI.leptris_element_insert_after(
+              node.c_ptr, new_node.c_ptr
+            ),
+          )
+          new_node
+        end
+
+        # The binding's add_*_ sibling methods lift an adopted
+        # element's namespace declarations into the target scope;
+        # the raw-FFI path above must preserve that.
+        def adopt_for_sibling_insert(new_node, anchor)
+          return unless new_node.is_a?(::Leptris::XML::Element)
+          return if ::Leptris::XML::Element.skip_adoption_lift?(new_node)
+
+          scope = anchor.parent.is_a?(::Leptris::XML::Element) ? anchor.parent.namespaces : {}
+          ::Leptris::XML::Element.lift_namespaces_for_adoption(new_node, scope)
         end
 
         def remove(node)

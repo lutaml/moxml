@@ -124,8 +124,11 @@ module Moxml
     # are the result either way.
     def parse_fragment(xml)
       adapter = config.adapter
-      adapter.parse_fragment(xml, self).map do |native|
-        Moxml::Node.wrap(native, self)
+      adapter.parse_fragment(xml, self).map do |node|
+        # Adapters that tie a parent_node lifetime chain (#245)
+        # return wrapped nodes — pass them through untouched;
+        # re-wrapping would race the weak wrapper map.
+        node.is_a?(Moxml::Node) ? node : Moxml::Node.wrap(node, self)
       end
     end
 
