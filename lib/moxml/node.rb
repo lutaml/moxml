@@ -164,28 +164,16 @@ module Moxml
     # entity-marker flag flips at parse and entity-reference mint,
     # both adapter-level, and the generation bump is the invalidation
     # signal. Adapters with static answers (base class) never bump.
+    # The adapter resolves the owning document itself (doc_for is a
+    # single C read on the native layer); wrappers no longer climb.
     def entity_bearing?
       gen = adapter.serialize_generation
       if @entity_bearing_gen == gen
         @entity_bearing
       else
         @entity_bearing_gen = gen
-        @entity_bearing = adapter.entity_bearing?(@native, document_native_for_markers)
+        @entity_bearing = adapter.entity_bearing?(@native)
       end
-    end
-
-    # Binding document through the wrapper parent chain — pure Ruby
-    # attr reads; the native-layer fallback climbs C parents per
-    # call (the doc_for walk was the largest wrapper-layer cost on
-    # the consumer pipeline after the native adoption).
-    def document_native_for_markers
-      node = self
-      while node
-        return node.native if node.document?
-
-        node = node.parent_node
-      end
-      nil
     end
 
     def xpath(expression, namespaces = {})
