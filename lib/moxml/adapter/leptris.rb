@@ -222,10 +222,30 @@ module Moxml
               ELEMENT_CONTRACT_READ =
                 ::Moxml::ElementBehavior.instance_method(:[])
 
+              # Marker presence is a DOCUMENT fact, but the wrapper
+              # memo re-derives it per node (the per-read machinery
+              # was ~a quarter of the consumer walk). Doc-level
+              # WeakMap, generation-stamped into one Integer
+              # (immediates make safe weak values): one C document
+              # read plus one map hit per bare read. Entries die
+              # with their documents; a stale generation re-derives.
+              ENTITY_DOC_MEMO = ::ObjectSpace::WeakMap.new
+
+              def doc_entity_bearing?
+                doc = NN_DOCUMENT.bind_call(self)
+                memo = ENTITY_DOC_MEMO[doc]
+                gen = ::Moxml::Adapter::Leptris.serialize_generation
+                return memo.allbits?(1) if memo && (memo >> 1) == gen
+
+                bearing = ::Moxml::Adapter::Leptris.entity_bearing?(self)
+                ENTITY_DOC_MEMO[doc] = (gen << 1) | (bearing ? 1 : 0)
+                bearing
+              end
+
               def [](key)
                 if key.is_a?(String) && !key.include?(":")
                   value = NN_ATTRIBUTE.bind_call(self, key)
-                  return value unless value.is_a?(String) && entity_bearing?
+                  return value unless value.is_a?(String) && doc_entity_bearing?
 
                   return ::Moxml::Adapter::Leptris.restore_entities(value)
                 end
@@ -235,7 +255,7 @@ module Moxml
 
               def text
                 value = NN_CONTENT.bind_call(self)
-                value.is_a?(String) && entity_bearing? ? ::Moxml::Adapter::Leptris.restore_entities(value) : value
+                value.is_a?(String) && doc_entity_bearing? ? ::Moxml::Adapter::Leptris.restore_entities(value) : value
               end
             end
             ELEMENT.include(Reads)
