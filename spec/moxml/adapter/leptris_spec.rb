@@ -798,4 +798,32 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(pi[2]).to be_a(Integer)
     end
   end
+
+  describe "klass-propagating children" do
+    let(:ctx) { Moxml.new(:leptris) }
+
+    it "mints contract-bearing children in C" do
+      skip "requires klass-propagating reads (leptris 1.9.193.2+)" unless described_class.singleton_class.const_get(:NATIVE_KLASS_CHILDREN)
+
+      doc = ctx.parse(%(<r><e a="1"/>t</r>))
+      kids = doc.root.children
+      expect(kids.first).to be_a(Moxml::Element)
+      expect(kids.last).to be_a(Moxml::Text)
+      expect(kids.first["a"]).to eq("1")
+      expect(kids.last.text).to eq("t")
+      # The C mint IS the wrapper — @native is self, no re-mint.
+      expect(kids.first.native).to equal(kids.first)
+    end
+
+    it "keeps identity across access paths" do
+      skip "requires klass-propagating reads (leptris 1.9.193.2+)" unless described_class.singleton_class.const_get(:NATIVE_KLASS_CHILDREN)
+
+      doc = ctx.parse(%(<r><a/>t</r>))
+      first = doc.root.children.first
+      expect(doc.root.element_children.first).to equal(first)
+      expect(first.parent.children.first).to equal(first)
+      expect(first.next_sibling.text).to eq("t")
+      expect(first.next_sibling.parent).to eq(doc.root)
+    end
+  end
 end

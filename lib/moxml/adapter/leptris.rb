@@ -246,6 +246,31 @@ module Moxml
             NATIVE_MUTATIONS_COHERENT &&
             Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.174.4")
 
+          # leptris-ruby#246 klass-propagating reads: the read
+          # family (children/element_children/next_sibling/parent)
+          # mints the mapped subclass per kind, so children arrive
+          # already carrying the contract — wrap_native's is_a?
+          # guard short-circuits and the per-visit from() mint
+          # (the second allocation of the pair) drops out. Kind
+          # order is the C layer's node-type ints: element, text,
+          # comment, cdata, pi.
+          NATIVE_KLASS_CHILDREN =
+            NATIVE_IDENTITY &&
+            Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.193.2")
+
+          if NATIVE_KLASS_CHILDREN
+            kind_classes = [
+              Identity::ELEMENT,
+              Identity::TEXT,
+              Identity::COMMENT,
+              Identity::CDATA,
+              Identity::PROCESSING_INSTRUCTION,
+            ]
+            kind_classes.each do |klass|
+              klass.install_child_klasses(kind_classes)
+            end
+          end
+
           def wrap_native(node, type, _context)
             return nil unless NATIVE_IDENTITY &&
               node.is_a?(::Leptris::XML::NativeNode)
