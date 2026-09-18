@@ -117,7 +117,11 @@ nokogiri_run
 
 struct_us = nil
 struct_allocs = nil
-if Gem::Version.new(Leptris::VERSION) >= Gem::Version.new("1.9.197.1")
+struct_us = nil
+struct_allocs = nil
+c_face = Moxml::Adapter::Leptris.const_defined?(:NATIVE_PLAN_STRUCTS) &&
+  Moxml::Adapter::Leptris::NATIVE_PLAN_STRUCTS
+if c_face
   struct_us, struct_allocs = bench { struct_run }
 end
 plan_us,  plan_allocs  = bench { plan_run }
@@ -136,5 +140,12 @@ puts format("nokogiri (parse+walk)       %<t>8.0f us  %<a>7d allocs",
             t: nk_us, a: nk_allocs)
 puts format("plan/nokogiri %<r>.2fx (ceiling 1.50x for the CI lock)",
             r: plan_us / nk_us)
+if struct_us
+  puts format("struct/nokogiri %<r>.2fx (ceiling 1.50x for the CI lock)",
+              r: struct_us / nk_us)
+end
 
-exit(1) if ENV["LEPTRIS_BENCH_LOCK"] && plan_us > nk_us * 1.5
+if ENV["LEPTRIS_BENCH_LOCK"]
+  exit(1) if plan_us > nk_us * 1.5
+  exit(1) if struct_us && struct_us > nk_us * 1.5
+end
