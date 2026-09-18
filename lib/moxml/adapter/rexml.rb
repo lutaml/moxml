@@ -694,6 +694,24 @@ module Moxml
           )
           formatter.write(node, output)
         end
+
+        # Plan row stream (Moxml::Plan contract): pre-order element
+        # rows over REXML's Ruby node objects.
+        def plan_rows(native)
+          root = native.is_a?(::REXML::Document) ? native.root : native
+          return nil unless root
+
+          walk = lambda do |el, depth|
+            attrs = []
+            el.attributes.each { |k, v| attrs << k << v }
+            yield(el.name, attrs, el.text, depth)
+            el.elements.each { |c| walk.call(c, depth + 1) }
+          end
+          walk.call(root, 0)
+          true
+        end
+
+        public :plan_rows
       end
     end
 

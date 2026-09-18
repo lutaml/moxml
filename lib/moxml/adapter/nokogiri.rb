@@ -516,6 +516,25 @@ module Moxml
           attachments.set(native_doc, :xml_decl, nil)
         end
 
+        # Plan row stream (Moxml::Plan contract): pre-order element
+        # rows |name, attrs_pairs, first-text, depth| straight off
+        # the libxml2-backed nodes — no wrapper minting.
+        def plan_rows(native)
+          root = native.is_a?(::Nokogiri::XML::Document) ? native.root : native
+          return nil unless root
+
+          walk = lambda do |el, depth|
+            attrs = []
+            el.attribute_nodes.each { |a| attrs << a.name << a.value }
+            first_text = nil
+            el.children.each { |c| first_text ||= c.content if c.text? }
+            yield(el.name, attrs, first_text, depth)
+            el.element_children.each { |c| walk.call(c, depth + 1) }
+          end
+          walk.call(root, 0)
+          true
+        end
+
         private
 
         def build_declaration_attrs(version, encoding, standalone)
@@ -533,6 +552,10 @@ module Moxml
             hsh.merge(attr_name => value)
           end
         end
+
+        # Plan row stream (Moxml::Plan contract): pre-order element
+        # rows |name, attrs_pairs, first-text, depth| straight off
+        # the libxml2-backed nodes — no wrapper minting.
       end
 
       # Bridge between Nokogiri SAX and Moxml SAX

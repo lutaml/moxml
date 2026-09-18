@@ -253,6 +253,16 @@ namespace :benchmark do
     sh "ruby", "benchmark/pipeline_bench.rb"
   end
 
+  # Plan-bench regression lock (#249 follow-up): Moxml::Plan vs the
+  # wrapper walk vs raw nokogiri on the consumer shape. With
+  # LEPTRIS_BENCH_LOCK=1 (CI) it exits 1 when plan time exceeds
+  # 1.5x raw nokogiri — the "raw-nokogiri CPU parity" regression
+  # tripwire.
+  desc "Plan materialization benchmark with raw-nokogiri parity lock"
+  task :plan do
+    sh "bundle exec ruby benchmark/plan_bench.rb"
+  end
+
   desc "Generate adapter benchmark report"
   task :report do
     ruby "benchmarks/generate_report.rb"

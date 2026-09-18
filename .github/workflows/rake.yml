@@ -59,3 +59,8 @@ jobs:
           RUN_PERFORMANCE: "1"
           RUBY_YJIT_ENABLE: "1"
         run: bundle exec rake spec:performance
+
+      - name: Plan parity lock (plan vs raw-nokogiri CPU)
+        env:
+          LEPTRIS_BENCH_LOCK: "1"
+        run: bundle exec rake benchmark:plan
