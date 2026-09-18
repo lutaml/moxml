@@ -213,49 +213,84 @@ module Moxml
               processing_instruction: PROCESSING_INSTRUCTION,
             }.freeze
 
-            module Reads
-              # The C methods sit BELOW the contract modules in the
-              # ancestry (NativeNode is the superclass), so super
-              # from here would run the contract implementation and
-              # ADD frames. bind_call reaches the C surface
-              # directly; prefixed names take the contract path.
-              ELEMENT_CONTRACT_READ =
-                ::Moxml::ElementBehavior.instance_method(:[])
+            # Hot-read face selection: bindings >= 1.9.194.1 carry
+            # unshadowed aliases (attr_read/text_read) that plain
+            # dispatch reaches at method-cache cost — beats
+            # UnboundMethod#bind_call (~86ns) on every bare read.
+            ELEMENT_CONTRACT_READ =
+              ::Moxml::ElementBehavior.instance_method(:[])
 
-              # Marker presence is a DOCUMENT fact, but the wrapper
-              # memo re-derives it per node (the per-read machinery
-              # was ~a quarter of the consumer walk). Doc-level
-              # WeakMap, generation-stamped into one Integer
-              # (immediates make safe weak values): one C document
-              # read plus one map hit per bare read. Entries die
-              # with their documents; a stale generation re-derives.
-              ENTITY_DOC_MEMO = ::ObjectSpace::WeakMap.new
+            NATIVE_HOT_ALIASES =
+              Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.194.1")
 
-              def doc_entity_bearing?
-                doc = NN_DOCUMENT.bind_call(self)
-                memo = ENTITY_DOC_MEMO[doc]
-                gen = ::Moxml::Adapter::Leptris.serialize_generation
-                return memo.allbits?(1) if memo && (memo >> 1) == gen
+            # Doc-level entity-marker memo shared by both hot-read
+            # faces (one WeakMap, generation-stamped Integer values).
+            ENTITY_DOC_MEMO = ::ObjectSpace::WeakMap.new
 
-                bearing = ::Moxml::Adapter::Leptris.entity_bearing?(self)
-                ENTITY_DOC_MEMO[doc] = (gen << 1) | (bearing ? 1 : 0)
-                bearing
-              end
+            if NATIVE_HOT_ALIASES
+              module Reads
+                # Marker presence is a DOCUMENT fact, but the wrapper
+                # memo re-derives it per node (the per-read machinery
+                # was ~a quarter of the consumer walk). Doc-level
+                # WeakMap, generation-stamped into one Integer
+                # (immediates make safe weak values): one C document
+                # read plus one map hit per bare read. Entries die
+                # with their documents; a stale generation re-derives.
+                def doc_entity_bearing?
+                  doc = NN_DOCUMENT.bind_call(self)
+                  memo = ENTITY_DOC_MEMO[doc]
+                  gen = ::Moxml::Adapter::Leptris.serialize_generation
+                  return memo.allbits?(1) if memo && (memo >> 1) == gen
 
-              def [](key)
-                if key.is_a?(String) && !key.include?(":")
-                  value = NN_ATTRIBUTE.bind_call(self, key)
-                  return value unless value.is_a?(String) && doc_entity_bearing?
-
-                  return ::Moxml::Adapter::Leptris.restore_entities(value)
+                  bearing = ::Moxml::Adapter::Leptris.entity_bearing?(self)
+                  ENTITY_DOC_MEMO[doc] = (gen << 1) | (bearing ? 1 : 0)
+                  bearing
                 end
 
-                ELEMENT_CONTRACT_READ.bind_call(self, key)
-              end
+                def [](key)
+                  if key.is_a?(String) && !key.include?(":")
+                    value = attr_read(key)
+                    return value unless value.is_a?(String) && doc_entity_bearing?
 
-              def text
-                value = NN_CONTENT.bind_call(self)
-                value.is_a?(String) && doc_entity_bearing? ? ::Moxml::Adapter::Leptris.restore_entities(value) : value
+                    return ::Moxml::Adapter::Leptris.restore_entities(value)
+                  end
+
+                  ELEMENT_CONTRACT_READ.bind_call(self, key)
+                end
+
+                def text
+                  value = text_read
+                  value.is_a?(String) && doc_entity_bearing? ? ::Moxml::Adapter::Leptris.restore_entities(value) : value
+                end
+              end
+            else
+              module Reads
+                def doc_entity_bearing?
+                  doc = NN_DOCUMENT.bind_call(self)
+                  memo = ENTITY_DOC_MEMO[doc]
+                  gen = ::Moxml::Adapter::Leptris.serialize_generation
+                  return memo.allbits?(1) if memo && (memo >> 1) == gen
+
+                  bearing = ::Moxml::Adapter::Leptris.entity_bearing?(self)
+                  ENTITY_DOC_MEMO[doc] = (gen << 1) | (bearing ? 1 : 0)
+                  bearing
+                end
+
+                def [](key)
+                  if key.is_a?(String) && !key.include?(":")
+                    value = NN_ATTRIBUTE.bind_call(self, key)
+                    return value unless value.is_a?(String) && doc_entity_bearing?
+
+                    return ::Moxml::Adapter::Leptris.restore_entities(value)
+                  end
+
+                  ELEMENT_CONTRACT_READ.bind_call(self, key)
+                end
+
+                def text
+                  value = NN_CONTENT.bind_call(self)
+                  value.is_a?(String) && doc_entity_bearing? ? ::Moxml::Adapter::Leptris.restore_entities(value) : value
+                end
               end
             end
             ELEMENT.include(Reads)
