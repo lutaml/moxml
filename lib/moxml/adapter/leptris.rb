@@ -493,6 +493,50 @@ module Moxml
       extend Markers
       extend Materialize
 
+      # Plan row stream (Moxml::Plan): the engine's one-pass C
+      # snapshot is pre-order with the first text child on the row —
+      # exactly the plan's shape, with no wrapper minting at all.
+      # Marker-bearing documents stay on the generic path (the bulk
+      # stream has no marker split).
+      NATIVE_PLAN_ROWS =
+        NATIVE_READ_LAYER &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.193.4")
+
+      def self.plan_rows(native)
+        return nil unless NATIVE_READ_LAYER
+
+        doc = if native.is_a?(::Leptris::XML::Document)
+                native
+              else
+                doc_for(native)
+              end
+        return nil if doc.nil? || attachments.get(doc, :entity_markers)
+
+        root_binding = if native.is_a?(::Leptris::XML::Document)
+                         doc.root
+                       else
+                         to_binding(native)
+                       end
+        return nil unless root_binding
+
+        rows = if NATIVE_PLAN_ROWS
+                 ::Leptris::XML::Native.snapshot_rows(doc,
+                                                      root_binding.c_address)
+               else
+                 doc.snapshot(root_binding)
+               end
+        rows.each do |row|
+          if row.is_a?(::Array)
+            yield(row[0], row[1], row[2], row[3])
+          else
+            next unless row[:kind] == "element"
+
+            yield(row[:name], row[:attrs].flatten, row[:text], row[:depth])
+          end
+        end
+        true
+      end
+
       class << self
         def attachments
           @attachments ||= Moxml::NativeAttachment.new

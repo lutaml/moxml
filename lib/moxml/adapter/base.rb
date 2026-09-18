@@ -358,6 +358,15 @@ namespace_validation_mode: :strict)
           nil
         end
 
+        # Plan row stream (Moxml::Plan): yields |name, attrs_pairs
+        # (flat [k, v, ...]), first-text, depth| per element in
+        # document order (pre-order). Returns true when the adapter
+        # provided the stream; nil/false lets the plan run its
+        # generic wrapper walk.
+        def plan_rows(_native)
+          nil
+        end
+
         # Deterministic native-memory release for adapters backed by
         # C trees (issue #134). GC-managed engines no-op; released
         # documents raise the engine's use-after-free error on
