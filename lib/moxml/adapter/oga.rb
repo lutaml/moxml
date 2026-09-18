@@ -643,6 +643,34 @@ module Moxml
 
           ::Moxml::Adapter::CustomizedOga::XmlGenerator.new(node).to_xml
         end
+
+        # Plan row stream (Moxml::Plan contract): pre-order element
+        # rows over Oga's Ruby node objects.
+        def plan_rows(native)
+          root = if native.is_a?(::Oga::XML::Document)
+                   native.children.find { |c| c.is_a?(::Oga::XML::Element) }
+                 else
+                   native
+                 end
+          return nil unless root.is_a?(::Oga::XML::Element)
+
+          walk = lambda do |el, depth|
+            attrs = []
+            el.attributes.each { |a| attrs << a.name << a.value }
+            first_text = nil
+            el.children.each do |c|
+              first_text ||= c.text if c.is_a?(::Oga::XML::Text)
+            end
+            yield(el.name, attrs, first_text, depth)
+            el.children.each do |c|
+              walk.call(c, depth + 1) if c.is_a?(::Oga::XML::Element)
+            end
+          end
+          walk.call(root, 0)
+          true
+        end
+
+        public :plan_rows
       end
 
       # Bridge between a parsed Oga DOM and Moxml SAX events.

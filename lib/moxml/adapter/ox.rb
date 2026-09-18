@@ -955,6 +955,35 @@ module Moxml
           output << "</#{elem.name}>"
           output
         end
+
+        # Plan row stream (Moxml::Plan contract): pre-order element
+        # rows over Ox's Ruby node objects.
+        def plan_rows(native)
+          root = if native.is_a?(::Ox::Document)
+                   nodes = native.nodes.grep(::Ox::Element)
+                   nodes.first
+                 else
+                   native
+                 end
+          return nil unless root.is_a?(::Ox::Element)
+
+          walk = lambda do |el, depth|
+            attrs = []
+            (el.attributes || {}).each { |k, v| attrs << k.to_s << v.to_s }
+            first_text = nil
+            (el.nodes || []).each do |c|
+              first_text ||= c if c.is_a?(::String)
+            end
+            yield(el.name.to_s, attrs, first_text, depth)
+            (el.nodes || []).each do |c|
+              walk.call(c, depth + 1) if c.is_a?(::Ox::Element)
+            end
+          end
+          walk.call(root, 0)
+          true
+        end
+
+        public :plan_rows
       end
     end
 

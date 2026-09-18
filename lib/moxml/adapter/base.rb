@@ -358,11 +358,15 @@ namespace_validation_mode: :strict)
           nil
         end
 
-        # Plan row stream (Moxml::Plan): yields |name, attrs_pairs
-        # (flat [k, v, ...]), first-text, depth| per element in
-        # document order (pre-order). Returns true when the adapter
-        # provided the stream; nil/false lets the plan run its
-        # generic wrapper walk.
+        # Plan row stream (Moxml::Plan) — ADAPTER CONTRACT. Yields
+        # |name, attrs_pairs (flat [k, v, ...]), first-text, depth|
+        # per element in document order (pre-order); first-text is
+        # the element's first text child or nil. Adapters implement
+        # this natively off their engine nodes (nokogiri, ox, oga,
+        # rexml, libxml, leptris do) — Moxml::Plan executes entirely
+        # on these rows with no wrapper materialization. This default
+        # returns nil, which makes Moxml::Plan fall back to the
+        # generic wrapper walk — correct but slow; last resort only.
         def plan_rows(_native)
           nil
         end

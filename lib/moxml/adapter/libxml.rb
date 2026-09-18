@@ -1312,6 +1312,38 @@ module Moxml
             dst[attr_name] = attr.value
           end
         end
+
+        # Plan row stream (Moxml::Plan contract): pre-order element
+        # rows straight off the LibXML nodes — no wrapper minting.
+        def plan_rows(native)
+          root = if native.is_a?(::LibXML::XML::Document)
+                   r = native.root
+                   return nil unless r
+
+                   r
+                 else
+                   native
+                 end
+
+          walk = lambda do |el, depth|
+            attrs = []
+            el.attributes.each do |attr|
+              attrs << attr.name << attr.value
+            end
+            first_text = nil
+            el.children.each do |c|
+              first_text ||= c.content if c.text?
+            end
+            yield(el.name, attrs, first_text, depth)
+            el.children.each do |c|
+              walk.call(c, depth + 1) if c.element?
+            end
+          end
+          walk.call(root, 0)
+          true
+        end
+
+        public :plan_rows
       end
 
       # Bridge between LibXML SAX and Moxml SAX
