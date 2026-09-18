@@ -371,6 +371,16 @@ namespace_validation_mode: :strict)
           nil
         end
 
+        # Struct-plan executor (Moxml::StructPlan): +spec+ compiles
+        # the consumer's shape as {name => [Struct class, attrs
+        # Hash (name => slot Symbol), text slot, children slot]}.
+        # Returns the array of top-level minted structs, or nil when
+        # the adapter has no C executor (the StructPlan then runs
+        # its Moxml::Plan fallback over plan_rows).
+        def plan_structs(_native, _spec)
+          nil
+        end
+
         # Deterministic native-memory release for adapters backed by
         # C trees (issue #134). GC-managed engines no-op; released
         # documents raise the engine's use-after-free error on

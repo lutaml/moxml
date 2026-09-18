@@ -94,6 +94,7 @@ module Moxml
   autoload :XmlEmitter, "moxml/xml_emitter"
   autoload :Materializer, "moxml/materializer"
   autoload :Plan, "moxml/plan"
+  autoload :StructPlan, "moxml/struct_plan"
   autoload :Adapter, "moxml/adapter"
   autoload :XPath, "moxml/xpath"
   autoload :SAX, "moxml/sax"
