@@ -115,8 +115,8 @@ struct_run
 wrapper_run
 nokogiri_run
 
-struct_us = nil
-struct_allocs = nil
+nil
+nil
 struct_us = nil
 struct_allocs = nil
 c_face = Moxml::Adapter::Leptris.const_defined?(:NATIVE_PLAN_STRUCTS) &&
