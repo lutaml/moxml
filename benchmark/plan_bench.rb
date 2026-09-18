@@ -23,6 +23,11 @@ XML = parts.join
 
 CTX = Moxml.new(:leptris)
 
+STRUCT_PLAN = Moxml::StructPlan.new do
+  element "record", Record, attrs: { "id" => :id, "kind" => :kind }, children: :fields
+  element "field", Field, attrs: { "name" => :name, "unit" => :unit }, text: :value
+end
+
 PLAN = Moxml::Plan.new do
   on("record") { |attrs, _t, fields| Record.new(attrs["id"], attrs["kind"], fields) }
   on("field")  { |attrs, text, _k| Field.new(attrs["name"], attrs["unit"], text) }
@@ -30,6 +35,13 @@ end
 
 def plan_run
   records = PLAN.parse(XML, CTX)
+  raise "shape" unless records.size == 150 && records[7].fields[3].value == "value 7.3"
+
+  records
+end
+
+def struct_run
+  records = STRUCT_PLAN.parse(XML, CTX)
   raise "shape" unless records.size == 150 && records[7].fields[3].value == "value 7.3"
 
   records
@@ -99,13 +111,23 @@ end
 
 # warm
 plan_run
+struct_run
 wrapper_run
 nokogiri_run
 
+struct_us = nil
+struct_allocs = nil
+if Gem::Version.new(Leptris::VERSION) >= Gem::Version.new("1.9.197.1")
+  struct_us, struct_allocs = bench { struct_run }
+end
 plan_us,  plan_allocs  = bench { plan_run }
 wrap_us,  wrap_allocs  = bench { wrapper_run }
 nk_us,    nk_allocs    = bench { nokogiri_run }
 
+if struct_us
+  puts format("struct   (parse+materialize) %<t>8.0f us  %<a>7d allocs",
+              t: struct_us, a: struct_allocs)
+end
 puts format("plan     (parse+materialize) %<t>8.0f us  %<a>7d allocs",
             t: plan_us, a: plan_allocs)
 puts format("wrapper  (parse+walk)       %<t>8.0f us  %<a>7d allocs",

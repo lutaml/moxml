@@ -537,6 +537,32 @@ module Moxml
         NATIVE_READ_LAYER &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.193.4")
 
+      # leptris-ruby#266 (binding 1.9.197.1): Native.plan_structs —
+      # the C struct executor behind Moxml::StructPlan.
+      NATIVE_PLAN_STRUCTS =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.197.1")
+
+      def self.plan_structs(native, spec)
+        return nil unless NATIVE_PLAN_STRUCTS
+
+        doc = if native.is_a?(::Leptris::XML::Document)
+                native
+              else
+                doc_for(native)
+              end
+        return nil if doc.nil? || attachments.get(doc, :entity_markers)
+
+        root_binding = if native.is_a?(::Leptris::XML::Document)
+                         doc.root
+                       else
+                         to_binding(native)
+                       end
+        return nil unless root_binding
+
+        ::Leptris::XML::Native.plan_structs(doc, root_binding.c_address,
+                                            spec)
+      end
+
       def self.plan_rows(native)
         return nil unless NATIVE_READ_LAYER
 
