@@ -57,7 +57,8 @@ RSpec.describe Moxml::StructPlan do
 
   it "runs the C executor on leptris (not the fallback)" do
     skip "binding lacks the C face (lockstep without it, e.g. 1.9.199.0)" unless
-      Moxml::Adapter::Leptris.singleton_class.const_get(:NATIVE_PLAN_STRUCTS)
+      Moxml::Adapter::Leptris.const_defined?(:NATIVE_PLAN_STRUCTS) &&
+      Moxml::Adapter::Leptris::NATIVE_PLAN_STRUCTS
 
     with_adapter(:leptris) do |ctx|
       doc = ctx.parse(xml)
