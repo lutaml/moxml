@@ -538,9 +538,14 @@ module Moxml
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.193.4")
 
       # leptris-ruby#266 (binding 1.9.197.1): Native.plan_structs —
-      # the C struct executor behind Moxml::StructPlan.
+      # the C struct executor behind Moxml::StructPlan. The probe
+      # guards the version gate: a numerically newer lockstep can
+      # publish without the face (1.9.199.0 shipped without it),
+      # and the gate alone would NoMethodError.
       NATIVE_PLAN_STRUCTS =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.197.1")
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.197.1") &&
+        (!defined?(::Leptris::XML::Native) ||
+         ::Leptris::XML::Native.respond_to?(:plan_structs))
 
       def self.plan_structs(native, spec)
         return nil unless NATIVE_PLAN_STRUCTS
