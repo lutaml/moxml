@@ -554,6 +554,16 @@ module Moxml
         (!defined?(::Leptris::XML::Native) ||
          ::Leptris::XML::Native.respond_to?(:plan_structs))
 
+      # leptris-ruby#275 (binding 1.9.204, the remove half of the
+      # document-level surfaces): remove_pi, clear_declaration,
+      # remove_doctype complete the set-only creation entries.
+      # Attached DOCTYPEs materialize as native nodes, document-PI
+      # removal works, and declaration state mirrors through.
+      NATIVE_DOC_PARTS =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.204.0") &&
+        ::Leptris::XML::Document.method_defined?(:remove_doctype) &&
+        ::Leptris::XML::Document.method_defined?(:clear_declaration)
+
       def self.plan_structs(native, spec)
         return nil unless NATIVE_PLAN_STRUCTS
 
@@ -957,6 +967,9 @@ module Moxml
         def remove_declaration(native_doc)
           attachments.delete(native_doc, :declaration)
           attachments.delete(native_doc, :had_source_declaration)
+          if NATIVE_DOC_PARTS && native_doc.is_a?(::Leptris::XML::Document)
+            native_doc.clear_declaration
+          end
         end
 
         def create_native_namespace(element, prefix, uri)
@@ -1499,6 +1512,15 @@ module Moxml
           attr
         end
 
+        def actual_native(child_native, parent_native)
+          if NATIVE_DOC_PARTS && child_native.is_a?(CustomizedLeptris::Doctype) &&
+              parent_native.is_a?(::Leptris::XML::Document)
+            attached = attachments.get(parent_native, :doctype)
+            return attached if attached.is_a?(::Leptris::XML::DocType)
+          end
+          child_native
+        end
+
         def add_child(parent, child)
           if NATIVE_READ_LAYER && !(NATIVE_MUTATIONS_COHERENT &&
                    parent.is_a?(::Leptris::XML::NativeNode) &&
@@ -1591,14 +1613,33 @@ module Moxml
             remove_declaration(node.parent_doc) if node.parent_doc
           when CustomizedLeptris::Doctype
             attachments.delete(node.parent_doc, :doctype) if node.parent_doc
+          when ::Leptris::XML::DocType
+            if NATIVE_DOC_PARTS
+              doc = node.document || doc_for(node)
+              if doc
+                doc.remove_doctype
+                attachments.delete(doc, :doctype)
+              end
+            end
           when CustomizedLeptris::EntityReference
             marker_text_for(node.parent, node.name)&.unlink
           when CustomizedLeptris::DocumentPI
-            raise Moxml::NotImplementedError.new(
-              "libleptris has no document-level PI removal",
-              adapter: :leptris,
-              feature: :remove,
-            )
+            if NATIVE_DOC_PARTS && node.parent_doc
+              pis = node.parent_doc.processing_instructions
+              index = pis.index do |target, data|
+                target == node.target && data == node.data
+              end
+              if index
+                node.parent_doc.remove_pi(index)
+                node.parent_doc = nil
+              end
+            else
+              raise Moxml::NotImplementedError.new(
+                "libleptris has no document-level PI removal",
+                adapter: :leptris,
+                feature: :remove,
+              )
+            end
           else
             node.unlink
           end
