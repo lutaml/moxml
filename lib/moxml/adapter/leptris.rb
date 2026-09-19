@@ -12,9 +12,12 @@ module Moxml
     # Adapter over the leptris FFI binding (libleptris C library).
     #
     # libleptris provides DOM parsing, a native XPath 1.0 engine, SAX,
-    # and serialization. It has no first-class XML declaration or
-    # programmatic DOCTYPE, so those live in CustomizedLeptris value
-    # objects stored through NativeAttachment.
+    # and serialization. Its document-level creation surfaces exist
+    # (set_doctype 1.9.176/#212, declaration setters #1094) but are
+    # SET-ONLY — no unset for declaration, DOCTYPE, or document PIs —
+    # while the moxml facade contract makes those parts removable
+    # nodes. CustomizedLeptris value objects therefore remain the
+    # lifecycle record, attached through NativeAttachment.
     class Leptris < Base
       # The binding floor (issue #149): 1.9.32 carried the traverse
       # fix (leptris-ruby#89) and made built documents reflect their

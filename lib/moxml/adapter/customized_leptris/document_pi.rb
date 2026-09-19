@@ -9,7 +9,8 @@ module Moxml
       # the root), reachable through Document#processing_instructions
       # as [target, data] pairs. This pseudo-native gives the pairs a
       # node identity so the moxml contract can list them as document
-      # children.
+      # children (and answer mutations: creation routes native via
+      # add_pi; removal has no engine entry).
       class DocumentPI
         attr_accessor :target, :data, :parent_doc
         alias content data

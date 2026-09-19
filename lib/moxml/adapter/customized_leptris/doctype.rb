@@ -3,9 +3,11 @@
 module Moxml
   module Adapter
     module CustomizedLeptris
-      # Wrapper for a programmatic DOCTYPE. libleptris only parses
-      # DOCTYPEs from source; it has no API to create one, so Moxml
-      # stores this value object in the document's attachments.
+      # Wrapper for a programmatic DOCTYPE. libleptris can create
+      # one (Document#set_doctype, 1.9.176 / #212) but cannot unset
+      # it, and the facade contract makes DOCTYPEs removable nodes —
+      # so Moxml keeps this value object as the lifecycle record in
+      # the document's attachments.
       class Doctype
         attr_accessor :name, :external_id, :system_id, :parent_doc
 
