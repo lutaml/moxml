@@ -3,7 +3,7 @@
 module Moxml
   # Struct-compiled materialization — the fully compiled grammar:
   # declare the document shape once as STRUCTS; adapters with a C
-  # executor (leptris 1.9.197.1+) mint the typed objects directly
+  # executor (leptris 1.9.201.1+, the varargs-mint fix) mint the typed
   # with zero Ruby frames per element; everything else falls back to
   # an equivalent Moxml::Plan over the row stream (spec-pinned
   # equal).

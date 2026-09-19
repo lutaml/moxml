@@ -537,13 +537,17 @@ module Moxml
         NATIVE_READ_LAYER &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.193.4")
 
-      # leptris-ruby#266 (binding 1.9.197.1): Native.plan_structs —
-      # the C struct executor behind Moxml::StructPlan. The probe
-      # guards the version gate: a numerically newer lockstep can
-      # publish without the face (1.9.199.0 shipped without it),
-      # and the gate alone would NoMethodError.
+      # leptris-ruby#272 (binding 1.9.201.1): Native.plan_structs —
+      # the C struct executor behind Moxml::StructPlan. The floor
+      # is the varargs-mint fix: 1.9.197.1–1.9.201.0 seed unmapped
+      # struct members with garbage (GC aborts, corrupted data);
+      # StructPlan falls back to its spec-pinned Moxml::Plan path
+      # below the fix. The probe guards the version gate: a
+      # numerically newer lockstep can publish without the face
+      # (1.9.199.0 shipped without it), and the gate alone would
+      # NoMethodError.
       NATIVE_PLAN_STRUCTS =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.197.1") &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.201.1") &&
         (!defined?(::Leptris::XML::Native) ||
          ::Leptris::XML::Native.respond_to?(:plan_structs))
 

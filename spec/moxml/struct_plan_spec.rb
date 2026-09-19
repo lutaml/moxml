@@ -3,7 +3,7 @@
 require "spec_helper"
 
 # Moxml::StructPlan: the fully compiled grammar — struct slots
-# declared once, minted in C on leptris (1.9.197.1+) and via the
+# declared once, minted in C on leptris (1.9.201.1+) and via the
 # plan fallback everywhere else. Results must be identical to
 # Moxml::Plan.
 SRecord = Struct.new(:id, :kind, :fields)
