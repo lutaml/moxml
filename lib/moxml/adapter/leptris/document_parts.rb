@@ -23,11 +23,13 @@ module Moxml
         def assemble_document_children(doc)
           children = []
 
-          native_doctype = doc.doctype
-          children << native_doctype if native_doctype
-
-          doctype_wrapper = attachments.get(doc, :doctype)
-          children << doctype_wrapper if doctype_wrapper
+          # Attached DOCTYPEs (NATIVE_DOC_PARTS) list the STORED
+          # native — the same object the attaching wrapper was
+          # refreshed onto — so wrapper identity holds; doc.doctype
+          # mints a fresh DocType per call and would fork wrappers.
+          doctype_native = attachments.get(doc, :doctype)
+          doctype_native = doc.doctype unless doctype_native.is_a?(::Leptris::XML::DocType)
+          children << doctype_native if doctype_native
 
           # The libxml2-model document node lists prolog PIs/comments,
           # the root, and epilog PIs/comments in document order — the
@@ -55,10 +57,25 @@ module Moxml
           when CustomizedLeptris::Declaration
             child.parent_doc = doc
             attachments.set(doc, :declaration, child)
+            mirror_declaration_native(doc, child) if NATIVE_DOC_PARTS
           when CustomizedLeptris::Doctype
+            if NATIVE_DOC_PARTS
+              dt = doc.set_doctype(child.name,
+                                   public_id: child.external_id,
+                                   system_id: child.system_id)
+              attachments.set(doc, :doctype, dt)
+              return dt
+            end
             child.parent_doc = doc
             attachments.set(doc, :doctype, child)
           when ::Leptris::XML::DocType
+            if NATIVE_DOC_PARTS
+              dt = doc.set_doctype(child.root_name,
+                                   public_id: child.public_id,
+                                   system_id: child.system_id)
+              attachments.set(doc, :doctype, dt)
+              return dt
+            end
             raise Moxml::DocumentStructureError.new(
               "libleptris does not support attaching a native DocType to a document",
             )
@@ -112,7 +129,7 @@ module Moxml
           end
 
           doctype = attachments.get(doc, :doctype)
-          parts << doctype.to_xml << "\n" if doctype
+          parts << doctype.to_xml << "\n" if doctype.is_a?(CustomizedLeptris::Doctype)
 
           native = native_doctype_xml(doc)
           parts << native << "\n" if native
@@ -302,6 +319,40 @@ module Moxml
           return true if attachments.get(native, :declaration)
 
           attachments.get(native, :had_source_declaration) ? true : false
+        end
+
+        # Write a created declaration through to the engine's
+        # document state (setters, libleptris 1.9.176 / #1094) so
+        # native reads and serialization see the same truth the
+        # facade does. Removal clears it (clear_declaration).
+        def mirror_declaration_native(doc, child)
+          # The engine setters reject empty values; the facade's
+          # minimal declarations may carry them (serializer formats
+          # what it gets). Mirror only non-empty parts — the wrapper
+          # remains the record for what the facade shows.
+          unless child.version.to_s.empty?
+            ::Leptris::XML::FFI.check_status(
+              ::Leptris::XML::FFI.leptris_document_set_version(
+                doc.c_ptr, child.version.to_s
+              ),
+            )
+          end
+          unless child.encoding.to_s.empty?
+            ::Leptris::XML::FFI.check_status(
+              ::Leptris::XML::FFI.leptris_document_set_encoding(
+                doc.c_ptr, child.encoding.to_s
+              ),
+            )
+          end
+          case child.standalone.to_s
+          when "yes" then sa = 1
+          when "no" then sa = 0
+          end
+          ::Leptris::XML::FFI.check_status(
+            ::Leptris::XML::FFI.leptris_document_set_standalone(
+              doc.c_ptr, sa || -1
+            ),
+          )
         end
 
         def marker_text_for(parent, name)
