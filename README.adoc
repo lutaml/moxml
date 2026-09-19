@@ -51,7 +51,10 @@ Leptris:: https://github.com/leptris/leptris[Leptris], a pure-C99 XML 1.0
 parser with a W3C-conformant XPath 1.0 engine, consumed through the
 https://github.com/leptris/leptris-ruby[leptris-ruby] FFI binding
 (precompiled platform gems — no compilation at install). Fastest on
-every measured operation; requires leptris >= 1.9.32 (see version table below).
+every measured bulk operation — parse, XPath, serialization, SAX, and
+the compiled Moxml::Plan / Moxml::StructPlan materialization paths
+(StructPlan runs 2.3-2.6x raw Nokogiri on the benchmark shape);
+requires leptris >= 1.9.32 (see version table below).
 
 === Underlying library versions
 
@@ -93,8 +96,13 @@ moxml's customized generator and decoder overrides.
 Newer bindings unlock more native surface automatically:
 1.9.163.7+ single-result XPath seams, 1.9.174.4+ C-minted identity
 wrappers, 1.9.174.6+ one-dispatch subtree walks, 1.9.177+ first-class
-entity references (`entity_mode: :keep`). The release notes carry the
-current recommendation.
+entity references (`entity_mode: :keep`), 1.9.193.4+ native plan rows
+(`Moxml::Plan`), 1.9.194.1+ hot-read aliases, 1.9.201.1+ the C struct
+executor (`Moxml::StructPlan`; the floor is the varargs-mint fix),
+1.9.204+ native document-level parts (created DOCTYPEs as native
+nodes, document-PI removal, declaration clear). Current
+recommendation: 1.9.208+ (carries the iterparse all-nil fix,
+leptris/leptris#1242).
 |===
 
 NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.174`, `nokogiri ~> 1.18`,
