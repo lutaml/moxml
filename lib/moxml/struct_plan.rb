@@ -37,10 +37,19 @@ module Moxml
     end
 
     # The compiled spec the C executor consumes:
-    # {name => [klass, attrs, text slot, children slot]}.
+    # {name => [klass, attrs, text slot, children slot]}. Slots
+    # resolve to member INDICES once — the C executor's Integer
+    # key path then writes by index, skipping the per-write member
+    # name scan.
     def compile
       @elements.each_with_object({}) do |(name, el), spec|
-        spec[name] = [el.klass, el.attrs, el.text, el.children]
+        members = el.klass.members
+        spec[name] = [
+          el.klass,
+          el.attrs.each_with_object({}) { |(a, slot), h| h[a] = members.index(slot) || slot },
+          members.index(el.text) || el.text,
+          members.index(el.children) || el.children,
+        ]
       end
     end
 
