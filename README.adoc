@@ -91,8 +91,10 @@ moxml's customized generator and decoder overrides.
 6.0 itself requires Ruby >= 3.2); Ruby 3.1 resolves 5.x.
 
 |Leptris (leptris-ruby)
-|>= 1.9.32
+|>= 1.9.194.1
 |Hard floor — `MINIMUM_BINDING_VERSION`; older bindings do not load.
+Raised from 1.9.32 (2026-09-20): every known consumer resolves a
+modern binding, and the sub-1.9.194 accommodation paths are deleted.
 Newer bindings unlock more native surface automatically:
 1.9.163.7+ single-result XPath seams, 1.9.174.4+ C-minted identity
 wrappers, 1.9.174.6+ one-dispatch subtree walks, 1.9.177+ first-class
