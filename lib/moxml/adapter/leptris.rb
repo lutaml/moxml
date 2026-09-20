@@ -1460,6 +1460,14 @@ module Moxml
           element.attribute_nodes
         end
 
+        # One C crossing per element on bindings >= 1.9.208.1
+        # (leptris-ruby#278): interned names, fresh values, zero
+        # Attr objects. The binding's own fallback keeps older
+        # bindings correct through each_attribute.
+        def attribute_pairs(element)
+          to_binding(element).attribute_pairs
+        end
+
         def attribute_element(attr)
           attr.element
         end

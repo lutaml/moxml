@@ -115,6 +115,17 @@ module Moxml
       self[attr_name]
     end
 
+    # Read-only [name, value] pairs in document order, duplicates
+    # included — no Attribute node wrappers. The walk-hot shape for
+    # consumers that only read name/value (leptris-ruby#278): on
+    # leptris >= 1.9.208.1 this answers in one C crossing with zero
+    # per-attribute objects. Names may be shared frozen strings —
+    # dup before mutating. Mutation and per-attribute namespace
+    # resolution stay on #attributes.
+    def attribute_pairs
+      adapter.attribute_pairs(@native)
+    end
+
     def attributes
       # Primed like Node.wrap: the adapter and type are known at
       # mint, so the first name/value/attribute? access skips the

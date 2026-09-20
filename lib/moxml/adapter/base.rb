@@ -358,6 +358,20 @@ namespace_validation_mode: :strict)
           nil
         end
 
+        # Read-only attribute listing as [name, value] pairs
+        # (Moxml::Element#attribute_pairs) — document order,
+        # duplicates included, no Attribute node wrappers. The
+        # walk-hot shape for consumers that only read name/value;
+        # mutation and per-attribute namespace resolution stay on
+        # #attributes. This default derives from #attributes;
+        # adapters with a bulk face override (leptris answers in
+        # one C crossing — leptris-ruby#278).
+        def attribute_pairs(element)
+          attributes(element).map do |attr|
+            [attribute_name(attr), attr.value.to_s]
+          end
+        end
+
         # Plan row stream (Moxml::Plan) — ADAPTER CONTRACT. Yields
         # |name, attrs_pairs (flat [k, v, ...]), first-text, depth|
         # per element in document order (pre-order); first-text is
