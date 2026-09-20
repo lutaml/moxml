@@ -26,18 +26,17 @@ module Moxml
       # (1.7.0) surfaces predate it. Older bindings are not eligible
       # for the default (see Config.leptris_preferred_available?) and
       # the adapter no longer carries accommodation paths for them.
-      MINIMUM_BINDING_VERSION = "1.9.32"
+      # Raised 1.9.32 -> 1.9.194.1 (2026-09-20): every known consumer
+      # resolves a modern binding (canon itself pins ~> 1.9.193), and
+      # the sub-1.9.194 accommodation paths are deleted.
+      MINIMUM_BINDING_VERSION = "1.9.194.1"
 
       # leptris_parse_html_string shipped in bindings 1.9.80
       # (libleptris 1.9.75, engine #659) as Leptris::XML.parse_html.
-      HTML_PARSE_SUPPORTED =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.80")
-
       # Attribute-node xpath results carry proper wrappers since
       # 1.9.105 (leptris-ruby#153: ResultAttr with name/value);
       # before that the native gate routed them to the Ruby engine.
-      ATTR_RESULT_NATIVE =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.105")
+      ATTR_RESULT_NATIVE = true
 
       # leptris_node_digest shipped in bindings 1.9.99 (libleptris
       # 1.9.99, engine #869): on-demand Merkle subtree hash, zero
@@ -223,77 +222,46 @@ module Moxml
             ELEMENT_CONTRACT_READ =
               ::Moxml::ElementBehavior.instance_method(:[])
 
-            NATIVE_HOT_ALIASES =
-              Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.194.1")
-
-            # Doc-level entity-marker memo shared by both hot-read
-            # faces (one WeakMap, generation-stamped Integer values).
+            # Bindings >= 1.9.194.1 (the floor) carry unshadowed
+            # aliases; the UnboundMethod#bind_call face for older
+            # shapes is deleted.
+            # Doc-level entity-marker memo (one WeakMap,
+            # generation-stamped Integer values).
             ENTITY_DOC_MEMO = ::ObjectSpace::WeakMap.new
 
-            if NATIVE_HOT_ALIASES
-              module Reads
-                # Marker presence is a DOCUMENT fact, but the wrapper
-                # memo re-derives it per node (the per-read machinery
-                # was ~a quarter of the consumer walk). Doc-level
-                # WeakMap, generation-stamped into one Integer
-                # (immediates make safe weak values): one C document
-                # read plus one map hit per bare read. Entries die
-                # with their documents; a stale generation re-derives.
-                def doc_entity_bearing?
-                  doc = NN_DOCUMENT.bind_call(self)
-                  memo = ENTITY_DOC_MEMO[doc]
-                  gen = ::Moxml::Adapter::Leptris.serialize_generation
-                  return memo.allbits?(1) if memo && (memo >> 1) == gen
+            module Reads
+              # Marker presence is a DOCUMENT fact, but the wrapper
+              # memo re-derives it per node (the per-read machinery
+              # was ~a quarter of the consumer walk). Doc-level
+              # WeakMap, generation-stamped into one Integer
+              # (immediates make safe weak values): one C document
+              # read plus one map hit per bare read. Entries die
+              # with their documents; a stale generation re-derives.
+              def doc_entity_bearing?
+                doc = NN_DOCUMENT.bind_call(self)
+                memo = ENTITY_DOC_MEMO[doc]
+                gen = ::Moxml::Adapter::Leptris.serialize_generation
+                return memo.allbits?(1) if memo && (memo >> 1) == gen
 
-                  bearing = ::Moxml::Adapter::Leptris.entity_bearing?(self)
-                  ENTITY_DOC_MEMO[doc] = (gen << 1) | (bearing ? 1 : 0)
-                  bearing
-                end
-
-                def [](key)
-                  if key.is_a?(String) && !key.include?(":")
-                    value = attr_read(key)
-                    return value unless value.is_a?(String) && doc_entity_bearing?
-
-                    return ::Moxml::Adapter::Leptris.restore_entities(value)
-                  end
-
-                  ELEMENT_CONTRACT_READ.bind_call(self, key)
-                end
-
-                def text
-                  value = text_read
-                  value.is_a?(String) && doc_entity_bearing? ? ::Moxml::Adapter::Leptris.restore_entities(value) : value
-                end
+                bearing = ::Moxml::Adapter::Leptris.entity_bearing?(self)
+                ENTITY_DOC_MEMO[doc] = (gen << 1) | (bearing ? 1 : 0)
+                bearing
               end
-            else
-              module Reads
-                def doc_entity_bearing?
-                  doc = NN_DOCUMENT.bind_call(self)
-                  memo = ENTITY_DOC_MEMO[doc]
-                  gen = ::Moxml::Adapter::Leptris.serialize_generation
-                  return memo.allbits?(1) if memo && (memo >> 1) == gen
 
-                  bearing = ::Moxml::Adapter::Leptris.entity_bearing?(self)
-                  ENTITY_DOC_MEMO[doc] = (gen << 1) | (bearing ? 1 : 0)
-                  bearing
+              def [](key)
+                if key.is_a?(String) && !key.include?(":")
+                  value = attr_read(key)
+                  return value unless value.is_a?(String) && doc_entity_bearing?
+
+                  return ::Moxml::Adapter::Leptris.restore_entities(value)
                 end
 
-                def [](key)
-                  if key.is_a?(String) && !key.include?(":")
-                    value = NN_ATTRIBUTE.bind_call(self, key)
-                    return value unless value.is_a?(String) && doc_entity_bearing?
+                ELEMENT_CONTRACT_READ.bind_call(self, key)
+              end
 
-                    return ::Moxml::Adapter::Leptris.restore_entities(value)
-                  end
-
-                  ELEMENT_CONTRACT_READ.bind_call(self, key)
-                end
-
-                def text
-                  value = NN_CONTENT.bind_call(self)
-                  value.is_a?(String) && doc_entity_bearing? ? ::Moxml::Adapter::Leptris.restore_entities(value) : value
-                end
+              def text
+                value = text_read
+                value.is_a?(String) && doc_entity_bearing? ? ::Moxml::Adapter::Leptris.restore_entities(value) : value
               end
             end
             ELEMENT.include(Reads)
@@ -536,9 +504,7 @@ module Moxml
       # exactly the plan's shape, with no wrapper minting at all.
       # Marker-bearing documents stay on the generic path (the bulk
       # stream has no marker split).
-      NATIVE_PLAN_ROWS =
-        NATIVE_READ_LAYER &&
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.193.4")
+      NATIVE_PLAN_ROWS = true
 
       # leptris-ruby#272 (binding 1.9.201.1): Native.plan_structs —
       # the C struct executor behind Moxml::StructPlan. The floor
@@ -602,20 +568,10 @@ module Moxml
                        end
         return nil unless root_binding
 
-        rows = if NATIVE_PLAN_ROWS
-                 ::Leptris::XML::Native.snapshot_rows(doc,
-                                                      root_binding.c_address)
-               else
-                 doc.snapshot(root_binding)
-               end
+        rows = ::Leptris::XML::Native.snapshot_rows(doc,
+                                                    root_binding.c_address)
         rows.each do |row|
-          if row.is_a?(::Array)
-            yield(row[0], row[1], row[2], row[3])
-          else
-            next unless row[:kind] == "element"
-
-            yield(row[:name], row[:attrs].flatten, row[:text], row[:depth])
-          end
+          yield(row[0], row[1], row[2], row[3])
         end
         true
       end
@@ -806,13 +762,6 @@ module Moxml
         end
 
         def parse_html(html, _options = {}, _context = nil)
-          unless HTML_PARSE_SUPPORTED
-            raise Moxml::AdapterError.new(
-              "HTML parsing requires leptris >= 1.9.80 (have #{::Leptris::VERSION})",
-              adapter: name, operation: "parse_html",
-            )
-          end
-
           html_string = html.is_a?(IO) || html.is_a?(StringIO) ? html.read : html.to_s
           native_doc = begin
             ::Leptris::XML.parse_html(html_string)

@@ -324,10 +324,8 @@ RSpec.describe Moxml::Adapter::Leptris do
   end
 
   describe "HTML parsing (leptris/leptris#659)" do
-    before do
-      skip "requires leptris 1.9.80+ (HTML engine mode)" unless described_class::HTML_PARSE_SUPPORTED
-    end
-
+    # leptris >= 1.9.80 is below the binding floor (1.9.194.1) —
+    # the HTML engine mode is always present.
     let(:ctx) { Moxml.new(:leptris) }
 
     it "synthesizes the html/body structure with lowercased names" do
