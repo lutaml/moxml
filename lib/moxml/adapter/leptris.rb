@@ -525,6 +525,14 @@ module Moxml
       # remove_doctype complete the set-only creation entries.
       # Attached DOCTYPEs materialize as native nodes, document-PI
       # removal works, and declaration state mirrors through.
+      # The typed executor face (leptris-ruby: typed plan scalars —
+      # [slot, tag] spec entries cast in C, no Ruby String for
+      # numeric/boolean slots). Capability-probed, not
+      # version-gated.
+      NATIVE_PLAN_TYPED =
+        !defined?(::Leptris::XML::Native) ||
+        ::Leptris::XML::Native.respond_to?(:plan_structs_typed?)
+
       NATIVE_DOC_PARTS =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.204.0") &&
         ::Leptris::XML::Document.method_defined?(:remove_doctype) &&
