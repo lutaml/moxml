@@ -31,6 +31,13 @@ module Moxml
     # member slots; +text+ and +children+ name the member slots
     # receiving the first text child and the matched children array.
     # Returns self so registrations chain.
+    #
+    # Typed scalars (binding with the typed executor — probe
+    # Moxml::Adapter::Leptris::NATIVE_PLAN_TYPED): slot values may
+    # be [slot, type] pairs — type one of :integer, :float,
+    # :boolean (attrs and text). The executor casts in C with no
+    # Ruby String materialized; unparseable input degrades to the
+    # raw String (lenient). :boolean accepts t/1/y/Y as true.
     def element(name, klass, attrs: {}, text: nil, children: nil)
       @elements[name] = Element.new(klass, attrs, text, children)
       self
@@ -41,16 +48,37 @@ module Moxml
     # resolve to member INDICES once — the C executor's Integer
     # key path then writes by index, skipping the per-write member
     # name scan.
+    TYPE_TAGS = { integer: 1, float: 2, boolean: 3 }.freeze
+
     def compile
+      typed = Moxml::Adapter::Leptris::NATIVE_PLAN_TYPED
       @elements.each_with_object({}) do |(name, el), spec|
         members = el.klass.members
         spec[name] = [
           el.klass,
-          el.attrs.each_with_object({}) { |(a, slot), h| h[a] = members.index(slot) || slot },
-          members.index(el.text) || el.text,
+          el.attrs.each_with_object({}) do |(a, slot), h|
+            h[a] = compile_slot(slot, members, typed)
+          end,
+          compile_slot(el.text, members, typed),
           members.index(el.children) || el.children,
         ]
       end
+    end
+
+    # Resolve a slot to the executor's wire form: the member index
+    # (or the raw symbol for unknown slots), wrapped as
+    # [slot, tag] when a type is declared and the binding's
+    # executor is typed. Without the face, types degrade to
+    # strings.
+    def compile_slot(slot, members, typed)
+      if slot.is_a?(Array)
+        inner, type = slot
+        tag = TYPE_TAGS[type] || 0
+        resolved = members.index(inner) || inner
+        return typed && tag != 0 ? [resolved, tag] : resolved
+      end
+
+      members.index(slot) || slot
     end
 
     def parse(xml, context)
