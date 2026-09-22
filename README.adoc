@@ -103,8 +103,9 @@ entity references (`entity_mode: :keep`), 1.9.193.4+ native plan rows
 executor (`Moxml::StructPlan`; the floor is the varargs-mint fix),
 1.9.204+ native document-level parts (created DOCTYPEs as native
 nodes, document-PI removal, declaration clear). Current
-recommendation: 1.9.208+ (carries the iterparse all-nil fix,
-leptris/leptris#1242).
+recommendation: 1.9.216+ (the plan-ABI train: bound plan rows,
+typed scalars, the #1242 iterparse fix; the engine's 1.9.217+
+borrowed-text-run wins ride in automatically).
 |===
 
 NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.174`, `nokogiri ~> 1.18`,
