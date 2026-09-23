@@ -645,6 +645,42 @@ root.add_child(title)
 puts doc.to_xml(indent: 2)
 ----
 
+=== Fast paths and diagnostics
+
+Read-only attribute listing without Attribute node objects — the
+walk-hot shape when only names and values are needed (leptris
+answers in one C crossing; document order, duplicates included):
+
+[source,ruby]
+----
+element.attribute_pairs.each do |name, value|
+  # names are shared frozen strings; dup before mutating
+end
+----
+
+Typed struct members on `Moxml::StructPlan` — the executor casts
+in C with no intermediate String (unparseable input degrades to
+the raw String):
+
+[source,ruby]
+----
+plan = Moxml::StructPlan.new do
+  element "item", Item,
+          attrs: { "price" => [:price, :float], "qty" => [:qty, :integer] },
+          text: [:label, :integer]
+end
+----
+
+Recover-class parse diagnostics (duplicate-attribute events and
+siblings) on adapters with the surface; `[]` elsewhere. Read
+while the document is alive:
+
+[source,ruby]
+----
+doc.parse_diagnostics
+# => [{ kind: :recover, message: "Attribute a redefined" }]
+----
+
 == Real-world examples
 
 Practical, runnable examples demonstrating Moxml usage in common scenarios are
