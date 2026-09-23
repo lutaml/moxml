@@ -332,7 +332,9 @@ module Moxml
               root.is_a?(::Leptris::XML::Document)
 
             root.visit do |node, entering, depth|
-              yield Moxml::Node.wrap(node, context) if entering && depth.positive?
+              if entering && depth.positive?
+                yield Moxml::Node.wrap_with(node, context, self)
+              end
             end
           end
 
@@ -1060,7 +1062,22 @@ module Moxml
           node.target
         end
 
+        # Walk-minted binding nodes carry the engine's kind int in
+        # @node_type (the visit callback primes it); one ivar read
+        # replaces the class-case chain on the per-wrap hot path.
+        VISIT_NODE_TYPES = %i[element text comment cdata
+                              processing_instruction doctype].freeze
+
         def node_type(node)
+          if node.is_a?(::Leptris::XML::Node) &&
+              node.instance_variable_defined?(:@node_type)
+            kind = node.instance_variable_get(:@node_type)
+            if kind.is_a?(Integer)
+              mapped = VISIT_NODE_TYPES[kind]
+              return mapped if mapped
+            end
+          end
+
           if NATIVE_READ_LAYER &&
               node.is_a?(::Leptris::XML::NativeNode)
             type = NN_NODE_TYPE.bind_call(node)
