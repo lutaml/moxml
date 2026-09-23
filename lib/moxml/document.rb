@@ -58,6 +58,16 @@ module Moxml
     # reports the fatal error that emptied it; Nokogiri reports its
     # recover-mode syntax errors; engines without an error channel
     # answer [].
+    # Recover-class diagnostics the engine recorded during this
+    # document's parse (issue #271): duplicate-attribute
+    # recoveries and siblings, as [{ kind:, message: }] in record
+    # order. Read while the document is alive — the engine owns
+    # the list. [] when the parse was clean or the adapter has no
+    # diagnostic surface.
+    def parse_diagnostics
+      adapter.parse_diagnostics(@native)
+    end
+
     def parse_errors
       adapter.parse_errors(@native)
     end
