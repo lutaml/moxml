@@ -38,9 +38,20 @@ module Moxml
 
     def refresh_native!(new_native)
       unless new_native.equal?(@native)
-        context.unregister_wrapper(@native)
+        # Cache-stable binding nodes carry the wrapper in an ivar
+        # (see Node.wrap_with) — re-point it there; other natives
+        # ride the context map.
+        if @native.instance_variable_defined?(:@moxml_wrapper)
+          @native.instance_variable_set(:@moxml_wrapper, nil)
+        else
+          context.unregister_wrapper(@native)
+        end
         @native = new_native
-        context.register_wrapper(new_native, self)
+        if new_native.instance_variable_defined?(:@c_address)
+          new_native.instance_variable_set(:@moxml_wrapper, self)
+        else
+          context.register_wrapper(new_native, self)
+        end
         clear_native_memo!
       end
       self
@@ -580,7 +591,17 @@ module Moxml
     def self.wrap_with(node, context, adapter)
       return nil if node.nil?
 
-      cached = context.wrapper_for(node)
+      # Cache-stable binding nodes carry their wrapper directly
+      # (#312): the binding's document-owned cache hands the SAME
+      # node object for the engine node's whole lifetime, so an
+      # ivar is the identity map — one ivar read beats the WeakMap
+      # round trip, and the wrapper dies with the node (document
+      # scope) exactly like the binding's own wrappers.
+      cached = if node.instance_variable_defined?(:@moxml_wrapper)
+                 node.instance_variable_get(:@moxml_wrapper)
+               else
+                 context.wrapper_for(node)
+               end
       return cached if cached
 
       type = adapter.node_type(node)
@@ -601,8 +622,13 @@ module Moxml
       end
 
       klass = node_type_map[type] || Wrappers::Node
-      klass.new(node, context, adapter, type)
-        .tap { |wrapper| context.register_wrapper(node, wrapper) }
+      wrapper = klass.new(node, context, adapter, type)
+      if node.instance_variable_defined?(:@c_address)
+        node.instance_variable_set(:@moxml_wrapper, wrapper)
+      else
+        context.register_wrapper(node, wrapper)
+      end
+      wrapper
     end
 
     def self.adapter(context)
