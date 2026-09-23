@@ -403,6 +403,18 @@ namespace_validation_mode: :strict)
           nil
         end
 
+        # Parse diagnostics (issue #271): recover-class events the
+        # engine recorded during the parse — duplicate-attribute
+        # recoveries and siblings — as [{ kind:, message: }] in
+        # record order, [] for a clean parse. Reads must happen
+        # while the native document is alive (the engine owns the
+        # list); adapters without the surface answer []. Distinct
+        # from #parse_errors (the strict-parse failure channel):
+        # diagnostics describe RECOVERED documents.
+        def parse_diagnostics(_native_doc)
+          []
+        end
+
         # Recover-mode parse diagnostics (issue #147): the error
         # messages the engine recorded while parsing, [] when the
         # parse was clean. Engines with a native recover channel

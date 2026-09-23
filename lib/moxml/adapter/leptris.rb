@@ -333,9 +333,37 @@ module Moxml
 
             root.visit do |node, entering, depth|
               if entering && depth.positive?
-                yield Moxml::Node.wrap_with(node, context, self)
+                yield wrap_binding_node(node, context)
               end
             end
+          end
+
+          # Fast mint for walk-yielded binding nodes (#312): one
+          # class-keyed hash answers wrapper class AND type — the
+          # generic wrap path's node_type probe, wrap_native detour,
+          # type map, and tap all drop out. Identity rides the
+          # @moxml_wrapper ivar (cache-stable nodes, #270).
+          BINDING_FAST_WRAP = {
+            ::Leptris::XML::Element => [Moxml::Wrappers::Element, :element],
+            ::Leptris::XML::Text => [Moxml::Wrappers::Text, :text],
+            ::Leptris::XML::CDATA => [Moxml::Wrappers::Cdata, :cdata],
+            ::Leptris::XML::Comment => [Moxml::Wrappers::Comment, :comment],
+            ::Leptris::XML::ProcessingInstruction =>
+              [Moxml::Wrappers::ProcessingInstruction, :processing_instruction],
+          }.freeze
+
+          def wrap_binding_node(node, context)
+            if node.instance_variable_defined?(:@moxml_wrapper)
+              cached = node.instance_variable_get(:@moxml_wrapper)
+              return cached if cached
+            end
+
+            entry = BINDING_FAST_WRAP[node.class]
+            return nil unless entry
+
+            wrapper = entry[0].new(node, context, self, entry[1])
+            node.instance_variable_set(:@moxml_wrapper, wrapper)
+            wrapper
           end
 
           def record_native_doc(root_native, doc)
@@ -840,6 +868,39 @@ module Moxml
 
         def parse_errors(native_doc)
           attachments.get(native_doc, :parse_errors) || NO_PARSE_ERRORS
+        end
+
+        # leptris#1200 recover diagnostics (binding FFI >= the
+        # 1.9.206 surface adoption; probed, not version-gated —
+        # lockstep trains have shipped gems without faces).
+        DIAG_KINDS = %i[
+          invalid not_allowed_anywhere not_allowed_here
+          not_allowed_yet incomplete missing_required_attr
+          attr_not_allowed attr_value_invalid
+          char_content_invalid recover
+        ].freeze
+
+        def parse_diagnostics(native_doc)
+          ffi = ::Leptris::XML::FFI
+          return [] unless native_doc.is_a?(::Leptris::XML::Document) &&
+            ffi.respond_to?(:leptris_document_parse_diag_count)
+
+          doc = native_doc.c_ptr
+          count = ffi.leptris_document_parse_diag_count(doc)
+          return [] if count.zero?
+
+          kind_ptr = ::FFI::MemoryPointer.new(:int)
+          diagnostics = []
+          count.times do |i|
+            buffer = ::FFI::MemoryPointer.new(512)
+            next unless ffi.leptris_document_parse_diag(
+              doc, i, kind_ptr, buffer, 512
+            ) == 1
+
+            kind = DIAG_KINDS[kind_ptr.read_int] || :unknown
+            diagnostics << { kind: kind, message: buffer.read_string }
+          end
+          diagnostics
         end
 
         def create_document(_native_doc = nil)
