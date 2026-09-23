@@ -294,6 +294,18 @@ module Moxml
           element[name.to_s] = value.to_s
         end
 
+        # Cross-adapter parity for Document#parse_diagnostics
+        # (#271): Nokogiri's doc.errors already carries recover-
+        # mode entries; mapped into the same { kind:, message: }
+        # shape. Kind is :error — Nokogiri does not classify.
+        def parse_diagnostics(native_doc)
+          return [] unless native_doc.respond_to?(:errors)
+
+          native_doc.errors.map do |e|
+            { kind: :error, message: e.message.to_s }
+          end
+        end
+
         def attributes(element)
           # attribute_nodes, not attributes.values: the attributes Hash
           # is keyed by local name, so xmi:type and type collide and

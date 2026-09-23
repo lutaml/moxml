@@ -40,4 +40,16 @@ RSpec.describe Moxml::Document do
   rescue StandardError, LoadError
     skip "rexml adapter unavailable"
   end
+
+  it "maps nokogiri doc.errors into the same shape" do
+    ctx = Moxml.new(:nokogiri)
+    doc = ctx.parse(%(<r a="1" a="2"/>), recover: true) ||
+      ctx.parse(%(<r a="1" a="2"/>))
+    diags = doc.parse_diagnostics
+    expect(diags).not_to be_empty
+    expect(diags.first[:kind]).to eq(:error)
+    expect(diags.first[:message]).to be_a(String)
+  rescue StandardError, LoadError
+    skip "nokogiri adapter unavailable"
+  end
 end

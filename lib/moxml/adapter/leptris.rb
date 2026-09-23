@@ -353,10 +353,8 @@ module Moxml
           }.freeze
 
           def wrap_binding_node(node, context)
-            if node.instance_variable_defined?(:@moxml_wrapper)
-              cached = node.instance_variable_get(:@moxml_wrapper)
-              return cached if cached
-            end
+            cached = node.instance_variable_get(:@moxml_wrapper)
+            return cached if cached
 
             entry = BINDING_FAST_WRAP[node.class]
             return nil unless entry
