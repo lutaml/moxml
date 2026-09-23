@@ -571,12 +571,18 @@ module Moxml
     end
 
     def self.wrap(node, context)
+      wrap_with(node, context, adapter(context))
+    end
+
+    # The wrap path with the adapter already resolved — walk entry
+    # points know the adapter (it is self); one config-chain hop
+    # saved per wrapped node.
+    def self.wrap_with(node, context, adapter)
       return nil if node.nil?
 
       cached = context.wrapper_for(node)
       return cached if cached
 
-      adapter = adapter(context)
       type = adapter.node_type(node)
 
       # Extend-in-place (issue #230): adapters whose natives can
