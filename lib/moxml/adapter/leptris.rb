@@ -333,37 +333,9 @@ module Moxml
 
             root.visit do |node, entering, depth|
               if entering && depth.positive?
-                yield wrap_binding_node(node, context)
+                yield Moxml::Node.wrap_with(node, context, self)
               end
             end
-          end
-
-          # Fast mint for walk-yielded binding nodes (#312): one
-          # class-keyed hash answers wrapper class AND type — the
-          # generic wrap path's node_type probe, wrap_native detour,
-          # type map, and tap all drop out. Identity rides the
-          # @moxml_wrapper ivar (cache-stable nodes, #270).
-          BINDING_FAST_WRAP = {
-            ::Leptris::XML::Element => [Moxml::Wrappers::Element, :element],
-            ::Leptris::XML::Text => [Moxml::Wrappers::Text, :text],
-            ::Leptris::XML::CDATA => [Moxml::Wrappers::Cdata, :cdata],
-            ::Leptris::XML::Comment => [Moxml::Wrappers::Comment, :comment],
-            ::Leptris::XML::ProcessingInstruction =>
-              [Moxml::Wrappers::ProcessingInstruction, :processing_instruction],
-          }.freeze
-
-          def wrap_binding_node(node, context)
-            if node.instance_variable_defined?(:@moxml_wrapper)
-              cached = node.instance_variable_get(:@moxml_wrapper)
-              return cached if cached
-            end
-
-            entry = BINDING_FAST_WRAP[node.class]
-            return nil unless entry
-
-            wrapper = entry[0].new(node, context, self, entry[1])
-            node.instance_variable_set(:@moxml_wrapper, wrapper)
-            wrapper
           end
 
           def record_native_doc(root_native, doc)
