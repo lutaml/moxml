@@ -295,16 +295,24 @@ def normalize_type_attribute(name, value)
   end
 end
 
-def test_element_content(element)
-  return nil unless element
+def test_element_content(node)
+  return nil unless node
+
+  # :text_content holds a Text node (from //text()) — Text#text now
+  # returns real content on every adapter, so this branch actually
+  # fires. Text nodes have no name/attributes/children.
+  unless node.is_a?(Moxml::Element)
+    return { name: nil, attributes: {}, text: node.text.to_s.strip,
+             namespace: nil, children_count: 0, xpath: [] }
+  end
 
   {
-    name: element.name,
-    attributes: universal_attributes(element),
-    text: element.text.to_s.strip,
-    namespace: element.namespace&.uri,
-    children_count: element.children.size,
-    xpath: element.xpath("//*"),
+    name: node.name,
+    attributes: universal_attributes(node),
+    text: node.text.to_s.strip,
+    namespace: node.namespace&.uri,
+    children_count: node.children.size,
+    xpath: node.xpath("//*"),
   }
 end
 
