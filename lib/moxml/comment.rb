@@ -13,5 +13,10 @@ module Moxml
       adapter.validate_comment_content(text)
       adapter.set_comment_content(@native, text)
     end
+
+    # See Moxml::Text#text — Node#text's base is "" for non-elements.
+    def text
+      content
+    end
   end
 end

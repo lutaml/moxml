@@ -21,5 +21,13 @@ module Moxml
     def to_s
       content
     end
+
+    # Node#text's base returns "" for non-element nodes; a text
+    # node's text IS its content (leptris's Reads layer already
+    # answered content here — the wrapper contract now matches on
+    # every adapter).
+    def text
+      content
+    end
   end
 end

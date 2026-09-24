@@ -14,6 +14,23 @@ RSpec.describe Moxml::Text do
     end
   end
 
+  describe "#text" do
+    it "matches content on a text node" do
+      text = doc.root.children.first
+      expect(text.text).to eq("plain text")
+    end
+
+    it "is consistent across adapters" do
+      Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
+        ctx = Moxml.new(adapter_name)
+        d = ctx.parse("<root>hello world</root>")
+        text = d.root.children.first
+        expect(text.text).to eq("hello world"),
+                             "Text#text for #{adapter_name} adapter"
+      end
+    end
+  end
+
   describe "#to_xml" do
     it "returns XML representation" do
       text = doc.root.children.first
