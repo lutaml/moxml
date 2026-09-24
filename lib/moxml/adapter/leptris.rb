@@ -1488,6 +1488,31 @@ module Moxml
           line.zero? ? nil : line
         end
 
+        # Single-crossing construction (#312/#1344 consumer face):
+        # create + attach under parent + all attributes in ONE
+        # Ruby->C call (create_child is create+attach; the attr
+        # loop is C->C dlsym). Requires parent binding + the face;
+        # callers fall back to create_element + set_attribute +
+        # add_child when absent.
+        def create_element_with_attrs(parent, name, attrs)
+          binding_parent = to_binding(parent)
+          doc = binding_parent.document or return nil
+          return nil unless ::Leptris::XML::Native.respond_to?(:create_element_with_attrs)
+
+          flat = attrs.flatten
+          addr = ::Leptris::XML::Native.create_element_with_attrs(
+            doc.c_address, binding_parent.c_address, name.to_s, flat)
+          return nil if addr.nil? || addr.zero?
+
+          # The binding's own wrap produces the proper binding
+          # Element (kind class, @c_address, @document); canonical
+          # convergence (#219) hands every accessor — children
+          # included — the SAME native, so the wrapper identity
+          # holds across later traversals.
+          canonical_native(doc,
+            ::Leptris::XML::Node.wrap(::FFI::Pointer.new(addr), doc))
+        end
+
         def attributes(element)
           element = to_binding(element)
           element.attribute_nodes

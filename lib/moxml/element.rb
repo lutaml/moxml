@@ -126,6 +126,28 @@ module Moxml
       adapter.attribute_pairs(@native)
     end
 
+    # Create an element with attributes and attach it under this
+    # element — ONE construction on adapters with the bulk face
+    # (leptris, #312/#1344 consumer face): create + attach + all
+    # attributes in a single Ruby->C crossing. Returns the child
+    # wrapper. Equivalent to create_element + attribute writes +
+    # add_child, minus two crossings and the intermediate churn.
+    def add_element(name, attrs = {})
+      native_child = adapter.create_element_with_attrs(
+        @native, name, attrs
+      )
+      child = if native_child
+                type = adapter.node_type(native_child)
+                Moxml::Node.wrap_with(native_child, context, adapter)
+              else
+                fallback = create_element(name)
+                attrs.each { |k, v| fallback[k] = v.to_s }
+                add_child(fallback)
+                fallback
+              end
+      child
+    end
+
     def attributes
       # Primed like Node.wrap: the adapter and type are known at
       # mint, so the first name/value/attribute? access skips the
