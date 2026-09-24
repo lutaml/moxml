@@ -136,16 +136,17 @@ module Moxml
       native_child = adapter.create_element_with_attrs(
         @native, name, attrs
       )
-      child = if native_child
-                type = adapter.node_type(native_child)
-                Moxml::Node.wrap_with(native_child, context, adapter)
-              else
-                fallback = create_element(name)
-                attrs.each { |k, v| fallback[k] = v.to_s }
-                add_child(fallback)
-                fallback
-              end
-      child
+      if native_child
+        adapter.node_type(native_child)
+        Moxml::Node.wrap_with(native_child, context, adapter)
+      else
+        fallback = Moxml::Node.wrap_with(
+          adapter.create_element(name), context, adapter
+        )
+        attrs.each { |k, v| fallback[k] = v.to_s }
+        add_child(fallback)
+        fallback
+      end
     end
 
     def attributes

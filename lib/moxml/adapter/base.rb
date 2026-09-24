@@ -358,6 +358,16 @@ namespace_validation_mode: :strict)
           nil
         end
 
+        # Single-crossing construction contract
+        # (Moxml::Element#add_element): create + attach under parent
+        # + all attributes in one call, returning the new native
+        # element. This default has no bulk face — nil sends the
+        # caller down the portable create_element + add_child path;
+        # adapters with the face override (leptris — #312/#1344).
+        def create_element_with_attrs(_parent, _name, _attrs)
+          nil
+        end
+
         # Read-only attribute listing as [name, value] pairs
         # (Moxml::Element#attribute_pairs) — document order,
         # duplicates included, no Attribute node wrappers. The
