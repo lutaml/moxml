@@ -1501,7 +1501,8 @@ module Moxml
 
           flat = attrs.flatten
           addr = ::Leptris::XML::Native.create_element_with_attrs(
-            doc.c_address, binding_parent.c_address, name.to_s, flat)
+            doc.c_address, binding_parent.c_address, name.to_s, flat
+          )
           return nil if addr.nil? || addr.zero?
 
           # The binding's own wrap produces the proper binding
@@ -1510,7 +1511,7 @@ module Moxml
           # included — the SAME native, so the wrapper identity
           # holds across later traversals.
           canonical_native(doc,
-            ::Leptris::XML::Node.wrap(::FFI::Pointer.new(addr), doc))
+                           ::Leptris::XML::Node.wrap(::FFI::Pointer.new(addr), doc))
         end
 
         def attributes(element)
