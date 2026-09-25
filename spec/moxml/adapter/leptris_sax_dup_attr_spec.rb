@@ -22,7 +22,7 @@ module SaxDupAttrHandlers
       @errors << error.message
     end
 
-    def on_start_element(name, _attrs = {}, _namespaces = {})
+    def on_start_element(_name, _attrs = {}, _namespaces = {})
       @elements += 1
     end
   end
@@ -36,7 +36,7 @@ RSpec.describe "SAX duplicate-attribute error surfacing" do
 
   it "surfaces the redefined-attribute error through sax_parse" do
     if defined?(Leptris::XML::SAX::Records) &&
-       !Leptris::XML::SAX::Records.open(dup_xml).nil?
+        !Leptris::XML::SAX::Records.open(dup_xml).nil?
       skip "engine < 1.9.242 — the drain claims dup-attr documents " \
            "(leptris#1374)"
     end
