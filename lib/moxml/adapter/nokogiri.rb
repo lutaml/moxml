@@ -30,6 +30,7 @@ module Moxml
           ::Nokogiri::XML::DocumentFragment.parse(processed) do |config|
             config.strict.nonet
             config.recover
+            config.huge
           end.children.to_a
         end
 
@@ -64,12 +65,18 @@ module Moxml
                 config.strict.nonet
                 config.recover unless options[:strict]
                 config.noblanks if options[:noblanks]
+                config.huge
               end
             else
               ::Nokogiri::XML(processed_xml, nil, "UTF-8") do |config|
                 config.strict.nonet
                 config.recover unless options[:strict]
                 config.noblanks if options[:noblanks]
+                # XML_PARSE_HUGE: lifts libxml2's arbitrary limits —
+                # text nodes > 10MB are silently TRUNCATED at 10MB in
+                # recover mode, so large documents lose data without
+                # it (users parse >10MB XML).
+                config.huge
               end
             end
           rescue ::Nokogiri::XML::SyntaxError => e
@@ -89,7 +96,9 @@ module Moxml
         # malformed input never raises.
         def parse_html(html, _options = {}, _context = nil)
           html_string = html.is_a?(IO) || html.is_a?(StringIO) ? html.read : html.to_s
-          native_doc = ::Nokogiri::HTML(html_string)
+          native_doc = ::Nokogiri::HTML(html_string) do |config|
+            config.huge
+          end
           Wrappers::Document.new(native_doc, _context || Context.new(:nokogiri))
         end
 
