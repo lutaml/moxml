@@ -36,4 +36,22 @@ RSpec.describe Moxml::Adapter::Nokogiri do
       expect(doc.parse_errors).to all(be_a(String))
     end
   end
+
+  # libxml2 truncates text nodes over XML_MAX_TEXT_LENGTH (10MB) —
+  # silently in recover mode — unless XML_PARSE_HUGE is set. The
+  # adapter always passes huge so large documents keep their data.
+  describe "XML_PARSE_HUGE (large documents)" do
+    let(:ctx) { Moxml.new(:nokogiri) }
+    let(:huge_xml) { "<r>#{'x' * 10_000_001}</r>" }
+
+    it "keeps text nodes over 10MB intact in recover mode" do
+      doc = ctx.parse(huge_xml, strict: false)
+      expect(doc.root.children.first.text.length).to eq(10_000_001)
+    end
+
+    it "keeps text nodes over 10MB intact in strict mode" do
+      doc = ctx.parse(huge_xml)
+      expect(doc.root.children.first.text.length).to eq(10_000_001)
+    end
+  end
 end
