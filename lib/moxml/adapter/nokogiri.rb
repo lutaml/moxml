@@ -96,9 +96,7 @@ module Moxml
         # malformed input never raises.
         def parse_html(html, _options = {}, _context = nil)
           html_string = html.is_a?(IO) || html.is_a?(StringIO) ? html.read : html.to_s
-          native_doc = ::Nokogiri::HTML(html_string) do |config|
-            config.huge
-          end
+          native_doc = ::Nokogiri::HTML(html_string, &:huge)
           Wrappers::Document.new(native_doc, _context || Context.new(:nokogiri))
         end
 
