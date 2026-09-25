@@ -15,9 +15,10 @@ require "spec_helper"
 #   ox              - text/cdata conform; attrs raw; &#13;
 #                     over-normalized to \n (upstream)
 #   oga             - preserves raw CR everywhere (upstream)
-#   leptris         - fixed in engine 1.9.238 (leptris#1355,
-#                     leptris-ruby#326); skipped below until that
-#                     binding release rides.
+#   leptris         - fixed in engine 1.9.240 (leptris#1355,
+#                     leptris-ruby#326); skipped below until the
+#                     binding release vending that engine rides
+#                     (gate: binding 1.9.240).
 RSpec.describe "XML line-ending normalization" do
   ADAPTERS = %i[leptris nokogiri ox oga rexml libxml].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
@@ -32,7 +33,7 @@ RSpec.describe "XML line-ending normalization" do
     return true unless name == :leptris
 
     defined?(Leptris::VERSION) &&
-      Gem::Version.new(Leptris::VERSION) >= Gem::Version.new("1.9.238")
+      Gem::Version.new(Leptris::VERSION) >= Gem::Version.new("1.9.240")
   end
 
   it "normalizes CRLF and lone CR to LF in text content" do
