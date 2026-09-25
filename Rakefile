@@ -263,6 +263,14 @@ namespace :benchmark do
     sh "bundle exec ruby benchmark/plan_bench.rb"
   end
 
+  # SAX bench row (leptris#1298 / #279): the bulk record drain vs
+  # the callback Recorder. With LEPTRIS_BENCH_LOCK=1 (CI) it exits 1
+  # unless records-walk allocations stay under half the recorder's.
+  desc "SAX parse benchmark: record drain vs callback recorder"
+  task :sax do
+    sh "bundle exec ruby benchmark/sax_bench.rb"
+  end
+
   desc "Generate adapter benchmark report"
   task :report do
     ruby "benchmarks/generate_report.rb"
