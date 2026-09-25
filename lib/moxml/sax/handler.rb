@@ -108,6 +108,21 @@ module Moxml
       def on_warning(message)
         # Override in subclass if needed
       end
+
+      # Bulk SAX record surface (leptris#1298, leptris adapter only).
+      # On bindings with the drain the adapter hands the WHOLE
+      # document as a Leptris::XML::SAX::Records table — one crossing,
+      # no per-event marshaling; hot loops walk the records and
+      # materialize only what they consume (this default answers
+      # :unhandled, and the adapter replays the classic callback
+      # stream from the table instead — the events are identical).
+      #
+      # @param table [Leptris::XML::SAX::Records] record table, valid
+      #   only during the call
+      # @return [Object] anything but :unhandled claims the table
+      def on_sax_records(_table)
+        :unhandled
+      end
     end
   end
 end

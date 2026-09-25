@@ -130,6 +130,15 @@ module Moxml
         defined?(::Leptris::XML::NativeNode) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.2")
 
+      # Bulk SAX record drain (leptris#1298): leptris_sax_records_parse
+      # + Leptris::XML::SAX::Records — one crossing per document,
+      # handlers replay or walk the table. Ships in the binding ride
+      # 1.9.240.0 (1.9.239.0 predates the walker — the gate must name
+      # the carrying release, not the engine surface). Dev floor pins
+      # ~> 1.9.238; older bindings take the callback Parser below.
+      NATIVE_SAX_RECORDS =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.240")
+
       # Defined unconditionally: the body self-guards, and call
       # sites must never depend on the layer having loaded
       # (issue #217 — binding-only installs crashed on the
@@ -522,6 +531,7 @@ module Moxml
       autoload :Materialize, "moxml/adapter/leptris/materialize"
       autoload :Serialize, "moxml/adapter/leptris/serialize"
       autoload :LeptrisSAXBridge, "moxml/adapter/leptris/sax_bridge"
+      autoload :SaxRecordReplay, "moxml/adapter/leptris/sax_record_replay"
       extend Serialize
       extend DocumentParts
       extend Markers
@@ -2115,7 +2125,25 @@ module Moxml
         def sax_parse(xml, handler)
           bridge = LeptrisSAXBridge.new(handler)
           xml_string = xml.is_a?(IO) || xml.is_a?(::StringIO) ? xml.read : xml.to_s
-          ::Leptris::XML::SAX::Parser.new(bridge).parse(xml_string)
+          # Bulk record drain (leptris#1298, NATIVE_SAX_RECORDS):
+          # one crossing per document. The handler decides the shape
+          # polymorphically — Handler#on_sax_records answers
+          # :unhandled, so classic handlers get the exact callback
+          # stream replayed from the table; hot loops override and
+          # walk the records (nil table = outside the drain subset
+          # or pre-1.9.238 binding — callback path).
+          table = NATIVE_SAX_RECORDS ? ::Leptris::XML::SAX::Records.open(xml_string) : nil
+          if table
+            begin
+              return if handler.on_sax_records(table) != :unhandled
+
+              SaxRecordReplay.new(bridge).run(table)
+            ensure
+              table.free
+            end
+          else
+            ::Leptris::XML::SAX::Parser.new(bridge).parse(xml_string)
+          end
         rescue ::Leptris::XML::ParseError, ::Leptris::XML::Error => e
           handler.on_error(Moxml::ParseError.new(e.message))
         end
