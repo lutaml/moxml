@@ -8,12 +8,7 @@ require "spec_helper"
 # bindings whose drain claims dup-containing documents (engine <
 # 1.9.242 — leptris#1374), the drain swallows the error; those
 # bindings skip this spec until the ride lands.
-RSpec.describe "SAX duplicate-attribute error surfacing" do
-  let(:context) { Moxml.new(:leptris) }
-  let(:dup_xml) do
-    '<body lang="en" xml:lang="en" xml:lang="en"><div>x</div></body>'
-  end
-
+module SaxDupAttrHandlers
   class ErrorCollector < Moxml::SAX::Handler
     attr_reader :errors, :elements
 
@@ -31,6 +26,13 @@ RSpec.describe "SAX duplicate-attribute error surfacing" do
       @elements += 1
     end
   end
+end
+
+RSpec.describe "SAX duplicate-attribute error surfacing" do
+  let(:context) { Moxml.new(:leptris) }
+  let(:dup_xml) do
+    '<body lang="en" xml:lang="en" xml:lang="en"><div>x</div></body>'
+  end
 
   it "surfaces the redefined-attribute error through sax_parse" do
     if defined?(Leptris::XML::SAX::Records) &&
@@ -39,7 +41,7 @@ RSpec.describe "SAX duplicate-attribute error surfacing" do
            "(leptris#1374)"
     end
 
-    handler = ErrorCollector.new
+    handler = SaxDupAttrHandlers::ErrorCollector.new
     context.sax_parse(dup_xml, handler)
 
     expect(handler.errors.join).to include("xml:lang redefined")
