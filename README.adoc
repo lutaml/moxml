@@ -681,6 +681,66 @@ doc.parse_diagnostics
 # => [{ kind: :recover, message: "Attribute a redefined" }]
 ----
 
+=== Hot-loop SAX consumption (bulk record drain)
+
+On the leptris adapter (binding >= 1.9.240), `sax_parse` drains the
+whole document in ONE crossing into a record table. Handlers that
+override `on_sax_records` walk the records directly and materialize
+only the strings they consume — allocations drop from the callback
+path's ~15/element to the consumer-chosen floor (~1/element for a
+name-materializing walker):
+
+[source,ruby]
+----
+class RecordDriver < Moxml::SAX::Handler
+  def initialize(builder)
+    super()
+    @builder = builder
+  end
+
+  def on_sax_records(table)
+    idx_stack = []
+    name_stack = []
+    i = 0
+    while i < table.count
+      # a parent mismatch is the exact close boundary; end events
+      # reconstruct from the records' parent indices
+      while !idx_stack.empty? && table.parent(i) != idx_stack.last
+        idx_stack.pop
+        @builder.end_element(name_stack.pop)
+      end
+      if table.kind(i).zero? # element
+        name = table.view(i)
+        attrs = []
+        k = table.attr_first(i)
+        last = k + table.attr_count_of(i)
+        while k < last
+          v = table.attr_value(k)
+          attrs << [table.attr_name(k),
+                    table.attr_value_has_ws?(k) ? v.tr("\t\n\r", " ") : v]
+          k += 1
+        end
+        @builder.start_element(name, attrs)
+        idx_stack << i
+        name_stack << name
+      else # text
+        @builder.characters(table.view(i))
+      end
+      i += 1
+    end
+    @builder.end_element(name_stack.pop) until name_stack.empty?
+    :claimed # claimed the table — no callback replay
+  end
+end
+----
+
+Measured on the 2 x 226-element bench shape (`rake benchmark:sax`):
+callback recorder 6,835 allocs / 1,735µs; default replay 6,353 /
+1,991µs; record-driven builder 3,638 / 1,248µs; counting walk 482 /
+778µs. Documents outside the drain's subset (comments, PIs, CDATA,
+DOCTYPE, xmlns, entities) fall back to the callback path
+transparently.
+
 == Real-world examples
 
 Practical, runnable examples demonstrating Moxml usage in common scenarios are
