@@ -25,9 +25,8 @@ module Moxml
     # Node#text's base returns "" for non-element nodes; a text
     # node's text IS its content (leptris's Reads layer already
     # answered content here — the wrapper contract now matches on
-    # every adapter).
-    def text
-      content
-    end
+    # every adapter). Aliased, not delegated: text rides the
+    # walk-hot read path (moxml#336) and pays one frame, not two.
+    alias_method :text, :content
   end
 end

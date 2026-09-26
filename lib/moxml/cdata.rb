@@ -13,8 +13,6 @@ module Moxml
     end
 
     # See Moxml::Text#text — Node#text's base is "" for non-elements.
-    def text
-      content
-    end
+    alias_method :text, :content
   end
 end
