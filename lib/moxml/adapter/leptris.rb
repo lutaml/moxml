@@ -132,12 +132,15 @@ module Moxml
 
       # Bulk SAX record drain (leptris#1298): leptris_sax_records_parse
       # + Leptris::XML::SAX::Records — one crossing per document,
-      # handlers replay or walk the table. Ships in the binding ride
-      # 1.9.240.0 (1.9.239.0 predates the walker — the gate must name
-      # the carrying release, not the engine surface). Dev floor pins
-      # ~> 1.9.238; older bindings take the callback Parser below.
+      # handlers replay or walk the table. Ships in binding 1.9.242.0:
+      # 1.9.240/241 carry the drain WITHOUT the duplicate-attribute
+      # bail (moxml#281 — the record table has no error channel, so a
+      # fatal dup-attr document parses with on_error never firing),
+      # so the gate names the first release where the drain is
+      # CORRECT, not merely present. Dev floor pins ~> 1.9.238;
+      # older bindings take the callback Parser below.
       NATIVE_SAX_RECORDS =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.240")
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.242")
 
       # Defined unconditionally: the body self-guards, and call
       # sites must never depend on the layer having loaded

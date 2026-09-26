@@ -102,8 +102,13 @@ entity references (`entity_mode: :keep`), 1.9.193.4+ native plan rows
 (`Moxml::Plan`), 1.9.194.1+ hot-read aliases, 1.9.201.1+ the C struct
 executor (`Moxml::StructPlan`; the floor is the varargs-mint fix),
 1.9.204+ native document-level parts (created DOCTYPEs as native
-nodes, document-PI removal, declaration clear). Current
-recommendation: 1.9.228+ (the #318 text-set fix train; carries
+nodes, document-PI removal, declaration clear), 1.9.240+ the bulk
+SAX record drain (`Handler#on_sax_records`) — and 1.9.242+ is
+REQUIRED for that drain to be CORRECT: 1.9.240/241 drain documents
+containing duplicate attributes without surfacing the fatal error
+(moxml#281), so the drain arms only on 1.9.242+, where such
+documents fall back to the callback path and the error fires.
+Current recommendation: 1.9.242+ (the record-drain train; carries
 the plan-ABI surface — bound plan rows, typed scalars, fused
 Descriptor#materialize — plus the 1.9.217+ borrowed-text-run and
 1.9.221+ memory wins).
