@@ -41,6 +41,53 @@ module SaxBenchHandlers
       :claimed
     end
   end
+
+  # The builder-protocol shape (canon's comparison driver): walk the
+  # records but materialize the full event payload — name, attr
+  # name/value pairs, text — exactly what the callback protocol
+  # delivers, minus the recorder's double marshaling and the Hash.
+  class RecordBuilderHandler < Moxml::SAX::Handler
+    attr_reader :events
+
+    def initialize
+      super
+      @events = 0
+    end
+
+    def on_sax_records(table)
+      idx_stack = []
+      name_stack = []
+      i = 0
+      count = table.count
+      while i < count
+        while !idx_stack.empty? && table.parent(i) != idx_stack.last
+          idx_stack.pop
+          name_stack.pop
+          @events += 1
+        end
+        if table.kind(i).zero?
+          name = table.view(i)
+          k = table.attr_first(i)
+          last = k + table.attr_count_of(i)
+          while k < last
+            table.attr_name(k)
+            v = table.attr_value(k)
+            v = v.tr("\t\n\r", " ") if table.attr_value_has_ws?(k)
+            @events += 1
+            k += 1
+          end
+          idx_stack << i
+          name_stack << name
+        else
+          table.view(i)
+          @events += 1
+        end
+        i += 1
+      end
+      @events += name_stack.size
+      :claimed
+    end
+  end
 end
 
 CTX = Moxml.new(:leptris).freeze # rubocop:disable Lint/ConstantDefinitionInBlock
@@ -68,6 +115,8 @@ handler = SaxBenchHandlers::NullHandler.new
 3.times { DOCS.each { |doc| Leptris::XML::SAX::Parser.new(BRIDGE.new(handler)).parse(doc) } }
 walker = SaxBenchHandlers::RecordWalkHandler.new
 3.times { DOCS.each { |doc| Moxml::Adapter::Leptris.sax_parse(doc, walker) } }
+builder = SaxBenchHandlers::RecordBuilderHandler.new
+3.times { DOCS.each { |doc| Moxml::Adapter::Leptris.sax_parse(doc, builder) } }
 
 recorder_allocs = allocations do
   DOCS.each { |doc| Leptris::XML::SAX::Parser.new(BRIDGE.new(handler)).parse(doc) }
@@ -78,13 +127,18 @@ end
 walk_allocs = allocations do
   DOCS.each { |doc| Moxml::Adapter::Leptris.sax_parse(doc, walker) }
 end
+builder_allocs = allocations do
+  DOCS.each { |doc| Moxml::Adapter::Leptris.sax_parse(doc, builder) }
+end
 
 replay_time = cpu_micros { 5.times { DOCS.each { |doc| Moxml::Adapter::Leptris.sax_parse(doc, handler) } } }
 recorder_time = cpu_micros { 5.times { DOCS.each { |doc| Leptris::XML::SAX::Parser.new(BRIDGE.new(handler)).parse(doc) } } }
 walk_time = cpu_micros { 5.times { DOCS.each { |doc| Moxml::Adapter::Leptris.sax_parse(doc, walker) } } }
+builder_time = cpu_micros { 5.times { DOCS.each { |doc| Moxml::Adapter::Leptris.sax_parse(doc, builder) } } }
 
 puts format("recorder           %<allocs>6d allocs  %<time>6dµs", allocs: recorder_allocs, time: recorder_time / 5)
 puts format("drain replay       %<allocs>6d allocs  %<time>6dµs", allocs: replay_allocs, time: replay_time / 5)
+puts format("drain builder-walk %<allocs>6d allocs  %<time>6dµs", allocs: builder_allocs, time: builder_time / 5)
 puts format("drain records-walk %<allocs>6d allocs  %<time>6dµs", allocs: walk_allocs, time: walk_time / 5)
 puts "(#{walker.elements} elements walked cumulatively; 452 per rep)"
 
