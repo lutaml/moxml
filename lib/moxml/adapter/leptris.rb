@@ -235,28 +235,22 @@ module Moxml
               ::Moxml::ElementBehavior.instance_method(:[])
 
             # Bindings >= 1.9.194.1 (the floor) carry unshadowed
-            # aliases; the UnboundMethod#bind_call face for older
-            # shapes is deleted.
-            # Doc-level entity-marker memo (one WeakMap,
-            # generation-stamped Integer values).
-            ENTITY_DOC_MEMO = ::ObjectSpace::WeakMap.new
 
             module Reads
-              # Marker presence is a DOCUMENT fact, but the wrapper
-              # memo re-derives it per node (the per-read machinery
-              # was ~a quarter of the consumer walk). Doc-level
-              # WeakMap, generation-stamped into one Integer
-              # (immediates make safe weak values): one C document
-              # read plus one map hit per bare read. Entries die
-              # with their documents; a stale generation re-derives.
+              # Marker presence is a DOCUMENT fact, memoized per
+              # wrapper: one Integer stamp ivar (generation << 1 |
+              # bearing) — an ivar read + compare per bare read,
+              # versus the old doc-WeakMap hit which cost a bind_call
+              # plus a map lookup, more than the attribute read
+              # itself. A stale generation re-derives; stamps die
+              # with their wrappers (wrapper lifetime = doc scope).
               def doc_entity_bearing?
-                doc = NN_DOCUMENT.bind_call(self)
-                memo = ENTITY_DOC_MEMO[doc]
+                stamp = @doc_entity_stamp
                 gen = ::Moxml::Adapter::Leptris.serialize_generation
-                return memo.allbits?(1) if memo && (memo >> 1) == gen
+                return stamp.allbits?(1) if stamp && (stamp >> 1) == gen
 
                 bearing = ::Moxml::Adapter::Leptris.entity_bearing?(self)
-                ENTITY_DOC_MEMO[doc] = (gen << 1) | (bearing ? 1 : 0)
+                @doc_entity_stamp = (gen << 1) | (bearing ? 1 : 0)
                 bearing
               end
 
