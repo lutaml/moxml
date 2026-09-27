@@ -137,7 +137,6 @@ module Moxml
         @native, name, attrs
       )
       if native_child
-        adapter.node_type(native_child)
         Moxml::Node.wrap_with(native_child, context, adapter)
       else
         fallback = Moxml::Node.wrap_with(
