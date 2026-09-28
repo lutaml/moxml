@@ -16,5 +16,10 @@ module Moxml
 
     # See Moxml::Text#text — Node#text's base is "" for non-elements.
     alias_method :text, :content
+
+    # Nokogiri-compatible DOM name.
+    def name
+      "comment"
+    end
   end
 end

@@ -8,6 +8,12 @@ module Moxml
       adapter.processing_instruction_target(@native)
     end
 
+    # A PI's DOM name is its target (Nokogiri semantics); defined
+    # after target so the alias resolves at module load.
+    def name
+      target
+    end
+
     def target=(new_target)
       adapter.set_node_name(@native, new_target.to_s)
     end
