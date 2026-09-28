@@ -184,6 +184,12 @@ module Moxml
           one == other
         end
 
+        # Owner element native for an attribute native, where the
+        # engine exposes it (nil elsewhere).
+        def attribute_element(_attribute)
+          nil
+        end
+
         # Backends without a native subtree digest answer nil —
         # the wrapper contract Node#digest gates on (issue #173).
         def digest(*)

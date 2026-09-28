@@ -75,6 +75,23 @@ module Moxml
       Inclusive10.new.canonicalize(node_or_xml, with_comments: with_comments)
     end
 
+    # Canonicalize an XPath-selected subset of the document (spec §3).
+    # The node-set is whatever the expression matches (elements,
+    # attributes, text): matched elements render with their
+    # namespaces, attributes and descendants; matched attributes
+    # render on their owner element alone. Enveloped-signature flows
+    # use this to digest the document minus the Signature element
+    # without deep-copying.
+    def self.canonicalize_subset(node_or_xml, xpath, with_comments: false)
+      source = node_or_xml.is_a?(String) ? ::Moxml.parse(node_or_xml) : node_or_xml
+      root = DataModel.from_node(source)
+      adapter = source.context.config.adapter
+      matched = source.xpath(xpath).to_a
+      paths = matched.filter_map { |wrapper| DataModel.path_key_for(wrapper, source, adapter) }
+      DataModel.mark_subset_paths(root, paths)
+      Processor.new(with_comments: with_comments).process(root)
+    end
+
     def self.canonicalize_inclusive11(node_or_xml, with_comments: false)
       Inclusive11.new.canonicalize(node_or_xml, with_comments: with_comments)
     end

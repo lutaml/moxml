@@ -1638,7 +1638,13 @@ module Moxml
         end
 
         def attribute_element(attr)
-          attr.element
+          # XPath results mint ResultAttr (parent-backed); document
+          # attributes are binding Attr (element-backed).
+          if attr.is_a?(::Leptris::XML::ResultAttr)
+            attr.parent
+          else
+            attr.element
+          end
         end
 
         def attribute_name(attr)

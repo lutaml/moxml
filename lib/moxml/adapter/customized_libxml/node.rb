@@ -26,12 +26,17 @@ module Moxml
           @native = fresh
         end
 
-        # Compare wrappers based on their native nodes
+        # Compare wrappers based on their native nodes. Either side
+        # may arrive double-wrapped (a Customized node stored as
+        # another wrapper's native); LibXML's eql? raises on the
+        # class mismatch, so unwrap both before comparing.
         def ==(other)
           return false unless other
 
-          other_native = other.is_a?(self.class) ? other.native : other
-          @native == other_native
+          mine = @native.is_a?(CustomizedLibxml::Node) ? @native.native : @native
+          theirs = other.is_a?(self.class) ? other.native : other
+          theirs = theirs.native while theirs.is_a?(CustomizedLibxml::Node)
+          mine == theirs
         end
 
         alias eql? ==
