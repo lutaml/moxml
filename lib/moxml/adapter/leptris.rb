@@ -286,6 +286,18 @@ module Moxml
           # (the second allocation of the pair) drops out. Kind
           # order is the C layer's node-type ints: element, text,
           # comment, cdata, pi.
+          # C-side wrapper mint (leptris-ruby#340, bindings >= 1.9.255.2):
+          # Document#register_wrapper_klasses makes the binding's walk
+          # cache mint the registered consumer classes, and
+          # create_element_with_attrs_wrapped mints the wrapper in the
+          # same construction crossing. moxml registers the Identity
+          # classes — walked and built nodes arrive already carrying the
+          # contract, and the Ruby shell mint drops out entirely
+          # (moxml#288: the entire remaining walk/build gap).
+          NATIVE_C_MINT =
+            NATIVE_IDENTITY &&
+            Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.255.2")
+
           NATIVE_KLASS_CHILDREN =
             NATIVE_IDENTITY &&
             Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.193.2")
@@ -349,6 +361,15 @@ module Moxml
           # generic wrap path's node_type probe, wrap_native detour,
           # type map, and tap all drop out. Identity rides the
           # @moxml_wrapper ivar (cache-stable nodes, #270).
+          IDENTITY_WALK_TYPE = {
+            Identity::ELEMENT => :element,
+            Identity::TEXT => :text,
+            Identity::CDATA => :cdata,
+            Identity::COMMENT => :comment,
+            Identity::PROCESSING_INSTRUCTION =>
+              :processing_instruction,
+          }.freeze
+
           BINDING_FAST_WRAP = {
             ::Leptris::XML::Element => [Moxml::Wrappers::Element, :element],
             ::Leptris::XML::Text => [Moxml::Wrappers::Text, :text],
@@ -361,6 +382,19 @@ module Moxml
           def wrap_binding_node(node, context)
             cached = node.instance_variable_get(:@moxml_wrapper)
             return cached if cached
+
+            # C-mint (#340): registered walks mint the Identity
+            # classes, which already carry the contract — the node
+            # IS the wrapper. Prime in place with a self-marker
+            # (never a shell, never the WeakMap round trip).
+            if NATIVE_C_MINT && node.is_a?(::Moxml::Node)
+              type = IDENTITY_WALK_TYPE[node.class]
+              return nil unless type
+
+              node.prime_contract(node, context, self, type)
+              node.instance_variable_set(:@moxml_wrapper, node)
+              return node
+            end
 
             entry = BINDING_FAST_WRAP[node.class]
             return nil unless entry
@@ -729,6 +763,7 @@ module Moxml
             recover_errors = [e.message]
             create_document
           end
+          register_mint_klasses!(native_doc)
           ctx = _context || Context.new(:leptris)
           doc = Wrappers::Document.new(native_doc, ctx)
 
@@ -909,7 +944,28 @@ module Moxml
         end
 
         def create_document(_native_doc = nil)
-          ::Leptris::XML::Document.create
+          register_mint_klasses!(::Leptris::XML::Document.create)
+        end
+
+        # Register the Identity classes as the document's walk- and
+        # construction-mint classes (NATIVE_C_MINT, leptris-ruby#340):
+        # kind order matches install_child_klasses — element, text,
+        # comment, cdata, pi. Parsed documents register right after
+        # the binding mint. Unregistered bindings (older floors, the
+        # C-mint off) are unchanged — the shell path stays.
+        MINT_KIND_CLASSES = [
+          Identity::ELEMENT,
+          Identity::TEXT,
+          Identity::COMMENT,
+          Identity::CDATA,
+          Identity::PROCESSING_INSTRUCTION,
+        ].freeze
+
+        def register_mint_klasses!(binding_doc)
+          return binding_doc unless NATIVE_C_MINT && binding_doc
+
+          binding_doc.register_wrapper_klasses(MINT_KIND_CLASSES)
+          binding_doc
         end
 
         # Native builder factories: one C call and a TypedData wrap.
@@ -1507,6 +1563,20 @@ module Moxml
           return nil unless ::Leptris::XML::Native.respond_to?(:create_element_with_attrs)
 
           flat = attrs.flatten
+          # C-mint (#340): on registered documents the wrapped face
+          # mints the wrapper IN the construction crossing — the
+          # registered Identity class arrives contract-carrying, no
+          # separate Node.wrap and no canonical convergence pass.
+          if NATIVE_C_MINT &&
+              ::Leptris::XML::Native.respond_to?(:create_element_with_attrs_wrapped)
+            minted = ::Leptris::XML::Native.create_element_with_attrs_wrapped(
+              doc, binding_parent.c_address, name.to_s, flat
+            )
+            return minted unless minted.nil?
+
+            return nil
+          end
+
           addr = ::Leptris::XML::Native.create_element_with_attrs(
             doc.c_address, binding_parent.c_address, name.to_s, flat
           )
