@@ -421,7 +421,10 @@ module Moxml
         end
 
         def attribute_element(attr)
-          attr&.parent
+          # Customized nodes wrap raw LibXML nodes one level deep;
+          # callers of this face expect the raw native.
+          parent = attr&.parent
+          parent.is_a?(::Moxml::Adapter::CustomizedLibxml::Node) ? parent.native : parent
         end
 
         def attribute_namespace(attr)
