@@ -28,5 +28,10 @@ module Moxml
     # every adapter). Aliased, not delegated: text rides the
     # walk-hot read path (moxml#336) and pays one frame, not two.
     alias_method :text, :content
+
+    # Nokogiri-compatible DOM name: text nodes are named "text".
+    def name
+      "text"
+    end
   end
 end
