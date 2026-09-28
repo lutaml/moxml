@@ -278,6 +278,9 @@ module Moxml
           result = []
           element.attributes.each_attribute do |attr|
             next if attr.prefix.to_s.start_with?("xmlns")
+            # REXML yields the default declaration with an empty prefix
+            # and name "xmlns"; treat it like any other declaration.
+            next if attr.name == "xmlns" && attr.prefix.to_s.empty?
 
             result << attr
           end

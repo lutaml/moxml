@@ -1140,9 +1140,14 @@ module Moxml
               (prefix = node.prefix || prefix_part(node.name))
             resolved = resolve_prefix_ns(node.element, prefix)
             return resolved if resolved
+            # The xml prefix is reserved (Namespaces in XML 1.0 §2.10):
+            # bound to its URI on every element, never in
+            # namespace_definitions, so the scope walk always misses.
+            return implicit_xml_namespace(node) if prefix == "xml"
           end
 
           ns = node.namespace
+          return implicit_xml_namespace(node) if reserved_xml_uri?(ns)
           return ns unless ns.nil?
 
           # Set-side namespaces (created attributes, renamed elements)
@@ -1172,6 +1177,30 @@ module Moxml
             current = current.parent
           end
           nil
+        end
+
+        # The binding reports an attribute's namespace as a bare URI
+        # String; when no prefix can be recovered from the qualified
+        # name, the reserved xml binding must still answer for xml:*
+        # attributes.
+        RESERVED_XML_URI = "http://www.w3.org/XML/1998/namespace"
+
+        def reserved_xml_uri?(namespace)
+          case namespace
+          when ::Leptris::XML::Namespace
+            namespace.prefix.to_s.empty? && namespace.href == RESERVED_XML_URI
+          when String
+            namespace == RESERVED_XML_URI
+          else
+            false
+          end
+        end
+
+        def implicit_xml_namespace(node)
+          owner = node.is_a?(::Leptris::XML::Attr) ? node.element : node
+          return nil unless owner.is_a?(::Leptris::XML::Element)
+
+          ::Leptris::XML::Namespace.new(owner, RESERVED_XML_URI, prefix: "xml")
         end
 
         def prefix_part(name)
@@ -1889,7 +1918,14 @@ module Moxml
         end
 
         def comment_content(node)
-          return NN_CONTENT.bind_call(node) if NATIVE_READ_LAYER && node.is_a?(NN)
+          if NATIVE_READ_LAYER && node.is_a?(NN)
+            content = NN_CONTENT.bind_call(node)
+            # NativeNode#content answers nil for comment-kind nodes
+            # (leptris-ruby#313); the shared-pointer bridge has it.
+            return to_binding(node).content if content.nil?
+
+            return content
+          end
 
           node.content
         end
