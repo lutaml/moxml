@@ -33,17 +33,25 @@ module Moxml
         root = Nodes::RootNode.new
 
         if document.root
-          root.add_child(build_element_node(document.root))
-          # Iterate ALL document children — not just the root element.
-          # This captures PIs and comments that appear outside the
-          # document element, which are part of the canonical form.
+          # Document-level children (PIs and comments outside the
+          # document element) are part of the canonical form and must
+          # keep document order — a leading PI canonicalizes before the
+          # root element (spec §2.1; the native engines emit it there
+          # too). The document element is the first element child: some
+          # adapters mint fresh wrappers per children call, so wrapper
+          # identity cannot locate it.
+          seen_root = false
           document.children.each do |child|
-            next if child.equal?(document.root)
-            next if child.is_a?(::Moxml::Element)
+            if child.is_a?(::Moxml::Element)
+              next if seen_root
+
+              seen_root = true
+            end
 
             built = build_node(child)
             root.add_child(built) if built
           end
+          root.add_child(build_element_node(document.root)) unless seen_root
         end
 
         root
@@ -52,7 +60,9 @@ module Moxml
       def self.build_node(moxml_node)
         case moxml_node
         when ::Moxml::Element then build_element_node(moxml_node)
-        when ::Moxml::Text then build_text_node(moxml_node)
+        # CDATA sections are character data to canonicalization: their
+        # content is emitted as escaped text (spec §3.1 "text nodes").
+        when ::Moxml::Text, ::Moxml::Cdata then build_text_node(moxml_node)
         when ::Moxml::Comment then build_comment_node(moxml_node)
         when ::Moxml::ProcessingInstruction then build_pi_node(moxml_node)
         end
@@ -94,12 +104,21 @@ module Moxml
       def self.build_attribute_nodes(moxml_element, element)
         moxml_element.attributes.each do |attr|
           ns = attr.namespace
+          # The xml prefix is reserved: any attribute bound to the XML
+          # namespace URI renders (and sorts) as prefix "xml" regardless
+          # of how the adapter reports it (spec §2.3 attribute-axis key).
+          prefix = ns&.prefix
+          uri = ns&.uri
+          if prefix == "xml" || uri == XML_URI
+            prefix = "xml"
+            uri = XML_URI
+          end
           element.add_attribute(
             Nodes::AttributeNode.new(
               name: attr.name,
               value: attr.value,
-              namespace_uri: ns&.uri,
-              prefix: ns&.prefix,
+              namespace_uri: uri,
+              prefix: prefix,
             ),
           )
         end

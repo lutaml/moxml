@@ -50,6 +50,35 @@ module Moxml
           true
         end
 
+        # libxml2-native inclusive C14N: delegated for the default
+        # shape (Inclusive 1.0, no comments, no InclusiveNamespaces
+        # prefix list) when the probe below proves libxml2's output
+        # byte-identical to the Ruby reference (ported from canon).
+        # Every other combination keeps the Ruby engine.
+        # Lazy, not load-time: the probe exercises the wrapper layer
+        # (Document/C14n), which is circular while THIS adapter file
+        # is still loading.
+        def native_inclusive10(native)
+          return nil unless native_c14n_byte_safe?
+
+          native.canonicalize(::Nokogiri::XML::XML_C14N_1_0)
+        end
+
+        def native_c14n_byte_safe?
+          return @native_c14n_byte_safe unless @native_c14n_byte_safe.nil?
+
+          @native_c14n_byte_safe = begin
+            probe_xml = %(<?xml version="1.0"?><doc xmlns:p="urn:p" xmlns="urn:d" b="2" a="1"><e p:x="v" z="w">t &amp; u</e><!-- c --></doc>)
+            native_doc = ::Nokogiri::XML(probe_xml) { |c| c.strict.nonet }
+            native = native_doc.root.canonicalize(::Nokogiri::XML::XML_C14N_1_0)
+            wrapper = Wrappers::Document.new(native_doc, Context.new(:nokogiri))
+            reference = Moxml::C14n::Inclusive10.new.canonicalize(wrapper.root)
+            native == reference
+          rescue StandardError
+            false
+          end
+        end
+
         def set_root(doc, element)
           doc.root = element
         end

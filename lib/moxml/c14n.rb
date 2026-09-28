@@ -39,7 +39,7 @@ module Moxml
     #   :exclusive10  Exclusive C14N 1.0 (W3C REC-xml-exc-c14n-20020718)
     def self.canonicalize(node_or_xml, with_comments: false,
                           algorithm: :inclusive10, inclusive_namespaces: [])
-      if (native = native_inclusive10(node_or_xml, with_comments,
+      if (native = native_inclusive10(node_or_xml, algorithm, with_comments,
                                       inclusive_namespaces))
         return native
       end
@@ -52,13 +52,15 @@ module Moxml
     end
 
     # The leptris engine canonicalizes in C — 23x the Ruby reference.
-    # Delegated only for the exact default shape (Inclusive 1.0, no
-    # comments, no InclusiveNamespace prefix list) on wrappers whose
-    # adapter passed the NATIVE_C14N_BYTE_SAFE load probe; every
+    # Delegated only for the exact default shape (Inclusive 1.0
+    # algorithm, no comments, no InclusiveNamespace prefix list) on
+    # wrappers whose adapter passed the byte-safety probe; every
     # other combination keeps the Ruby engine (node-set subsets,
     # xml:base fixup, exclusive, 1.1 stay on the ported
     # implementation regardless).
-    def self.native_inclusive10(node_or_xml, with_comments, inclusive_namespaces)
+    def self.native_inclusive10(node_or_xml, algorithm, with_comments,
+                                inclusive_namespaces)
+      return nil unless algorithm.nil? || algorithm == :inclusive10
       return nil if with_comments || !inclusive_namespaces.empty?
       return nil unless algorithm_shape_inclusive10?(node_or_xml)
 
