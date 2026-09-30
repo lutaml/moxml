@@ -237,7 +237,9 @@ module Moxml
       # included element renders with its namespaces, attributes and
       # DIRECT character data, but child ELEMENTS render only if
       # matched too — an unmatched Signature subtree stays out even
-      # though its ancestors are matched.
+      # though its ancestors are matched. Comments and PIs render
+      # only when the expression itself selects them (spec §3: the
+      # node-set is literal).
       def self.mark_subset_paths(root_node, paths)
         mark_all(root_node, false)
         paths.each do |path|
@@ -249,7 +251,7 @@ module Moxml
             node.namespace_nodes.each { |ns| ns.in_node_set = true }
             node.attribute_nodes.each { |attr| attr.in_node_set = true }
             node.children.each do |child|
-              child.in_node_set = true unless child.is_a?(Nodes::ElementNode)
+              child.in_node_set = true if child.is_a?(Nodes::TextNode)
             end
           else
             node.in_node_set = true

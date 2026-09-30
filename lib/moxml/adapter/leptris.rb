@@ -1942,7 +1942,14 @@ module Moxml
         end
 
         def processing_instruction_content(node)
-          return NN_CONTENT.bind_call(node) if NATIVE_READ_LAYER && node.is_a?(NN)
+          if NATIVE_READ_LAYER && node.is_a?(NN)
+            content = NN_CONTENT.bind_call(node)
+            # NativeNode#content answers nil for PI-kind nodes too
+            # (leptris-ruby#344 covers comments); bridge for the data.
+            return to_binding(node).content if content.nil?
+
+            return content
+          end
 
           node.content
         end
