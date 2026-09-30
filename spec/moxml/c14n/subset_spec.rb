@@ -31,12 +31,21 @@ CORPUS = [
 ].freeze
 
 COMMENTS_CASE = [
-  "with_comments keeps matched comments only",
+  "with_comments renders explicitly selected comments only",
+  %(<a><!-- keep --><b><!-- in --><c/></b></a>), "//b | //comment()",
+  %(<!-- keep -->\n<b><!-- in --></b>)
+].freeze
+
+COMMENTS_EXCLUDED_CASE = [
+  "unselected comments stay out",
   %(<a><!-- keep --><b><!-- in --><c/></b></a>), "//b",
-  %(<b><!-- in --></b>)
+  %(<b></b>)
 ].freeze
 
 COMMENTS_PADDING_LOSS = %i[ox headed_ox].freeze
+# rexml's adapter xpath does not return comment()/text() node results
+# (pre-existing capability gap, same family for both axes).
+COMMENT_SELECTION_GAP = %i[rexml].freeze
 
 RSpec.describe "Moxml::C14n subset canonicalization" do
   # Node-set semantics follow the enveloped-signature interop
@@ -63,14 +72,24 @@ RSpec.describe "Moxml::C14n subset canonicalization" do
         end
 
         # ox/headed_ox strip comment content padding at the parse
-        # layer (pre-existing, same family as their PI content loss).
-        unless COMMENTS_PADDING_LOSS.include?(adapter_name)
+        # layer (pre-existing, same family as their PI content loss);
+        # only the rendered-comment case depends on it. rexml's
+        # comment() selection gap also only affects this case.
+        unless COMMENTS_PADDING_LOSS.include?(adapter_name) ||
+            COMMENT_SELECTION_GAP.include?(adapter_name)
           it COMMENTS_CASE[0] do
             doc = ctx.parse(COMMENTS_CASE[1])
             expect(Moxml::C14n.canonicalize_subset(doc, COMMENTS_CASE[2],
                                                    with_comments: true))
               .to eq(COMMENTS_CASE[3])
           end
+        end
+
+        it COMMENTS_EXCLUDED_CASE[0] do
+          doc = ctx.parse(COMMENTS_EXCLUDED_CASE[1])
+          expect(Moxml::C14n.canonicalize_subset(doc, COMMENTS_EXCLUDED_CASE[2],
+                                                 with_comments: true))
+            .to eq(COMMENTS_EXCLUDED_CASE[3])
         end
       end
     end
