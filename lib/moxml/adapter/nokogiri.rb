@@ -59,6 +59,7 @@ module Moxml
         # (Document/C14n), which is circular while THIS adapter file
         # is still loading.
         def native_inclusive10(native)
+          return nil if native.nil?
           return nil unless native_c14n_byte_safe?
 
           native.canonicalize(::Nokogiri::XML::XML_C14N_1_0)

@@ -2,6 +2,10 @@
 
 require "spec_helper"
 
+# The per-item target class for the typed plan: Struct gives the
+# accessors StructPlan assigns the cast slots to.
+TypedItem = Struct.new(:price, :qty, :ok, :label)
+
 # Typed plan scalars (leptris plan ABI, #1269a consumer face):
 # [slot, type] declarations cast in C — Integer/Float/TrueClass/
 # FalseClass members with no Ruby String materialized; unparseable

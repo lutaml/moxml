@@ -856,6 +856,17 @@ module Moxml
         # Nokogiri semantics: blanks kept, no ATTLIST defaults).
         # noblanks forwards only once the engine flag is libxml2-safe
         # (see ENGINE_NOBLANKS_SAFE); otherwise it is moxml-side.
+        #
+        # The SKIP_ bookkeeping opt-outs (leptris-ruby#352, engine
+        # 1.9.272): duplicate attributes admit silently (first wins,
+        # no recover diagnostic) and source columns degrade (lines
+        # still resolve). Caller opt-in only — never defaults. The
+        # constant probe is the dependency-boundary check (the gem
+        # is zero-dep; user-resolved binding versions predate them).
+        NATIVE_PARSE_SKIPS =
+          ::Leptris::XML::ParseOptions.const_defined?(:SKIP_DUP_DETECTION) &&
+          ::Leptris::XML::ParseOptions.const_defined?(:SKIP_SOURCE_POSITIONS)
+
         def parse_flags(options, context: nil)
           flags = 0
           flags |= ::Leptris::XML::ParseOptions::DTDATTR if options[:dtdattr] == true
@@ -863,6 +874,11 @@ module Moxml
             (context&.config&.entity_mode == :keep ||
              options[:keep_entity_refs] == true)
           flags |= ::Leptris::XML::ParseOptions::NOBLANKS if options[:noblanks] == true && ENGINE_NOBLANKS_SAFE
+          if NATIVE_PARSE_SKIPS
+            po = ::Leptris::XML::ParseOptions
+            flags |= po::SKIP_DUP_DETECTION if options[:skip_dup_detection] == true
+            flags |= po::SKIP_SOURCE_POSITIONS if options[:skip_source_positions] == true
+          end
           flags.zero? ? nil : ::Leptris::XML::ParseOptions.new(flags)
         end
 
