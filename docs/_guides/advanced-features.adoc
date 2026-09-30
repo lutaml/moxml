@@ -80,6 +80,24 @@ adapter = element.context.config.adapter
 element = Moxml::Element.new(native_node, context)
 ----
 
+=== Parse bookkeeping opt-outs (leptris)
+
+Data-pipeline parses that never read diagnostics or source positions can
+skip that bookkeeping. Both are opt-in per call; the default parse is
+byte-identical either way.
+
+[source,ruby]
+----
+# Duplicate attributes admit silently: queries answer first-wins, but
+# the duplicate stays in the tree, so the serialized form can carry it.
+doc = Moxml.new.parse(xml, skip_dup_detection: true)
+
+# Source columns degrade; lines still resolve.
+doc = Moxml.new.parse(xml, skip_source_positions: true)
+----
+
+Without the flags, a duplicate attribute records a recover diagnostic in
+`doc.parse_diagnostics` and parses with the first value.
 
 See also:
 
