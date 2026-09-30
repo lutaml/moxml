@@ -25,12 +25,12 @@ module Moxml
         def parse(xml, options = {}, _context = nil)
           xml = "" if xml.nil?
 
-          # Handle frozen strings by creating a mutable copy
-          processed_xml = if xml.frozen?
-                            xml.dup.force_encoding("UTF-8").encode("UTF-8")
-                          else
-                            xml.force_encoding("UTF-8").encode("UTF-8")
-                          end
+          # Transcode from the input's own encoding tag; encode returns
+          # a fresh string (or self, already UTF-8) — the caller's
+          # buffer is never retagged in place. The old non-frozen
+          # branch force_encoding!-mutated the CALLER's string,
+          # corrupting it (invalid UTF-8 tag) for every later parse.
+          processed_xml = xml.encode("UTF-8")
 
           # Preprocess entities to avoid double-escaping on output
           processed_xml = preprocess_entities(processed_xml)
