@@ -112,6 +112,7 @@ module Moxml
             else
               xml.encode("UTF-8")
             end
+      str = rewrite_declared_encoding(str)
       # Fast path: no `&` means no entity references to mark — skip
       # the regex scan and string allocation entirely. The vast
       # majority of XML payloads contain no entity references.
@@ -137,6 +138,24 @@ module Moxml
 
     def preprocess_entities(xml)
       preprocess_with_marker_flag(xml)[0]
+    end
+
+    # Engines honor the DECLARED encoding and re-decode the bytes they
+    # are handed — moxml always feeds UTF-8 (see the normalization
+    # above), so a declaration naming another encoding must be
+    # rewritten to match, or the already-transcoded bytes decode a
+    # second time into mojibake ("café" -> "cafÃ©"). The anchored match
+    # fails on the first two bytes for documents without a declaration.
+    DECLARED_ENCODING_RE = /\A(<\?xml[^>]*?encoding=)['"][^'"]*['"]/
+    private_constant :DECLARED_ENCODING_RE
+
+    def rewrite_declared_encoding(str)
+      # The passthrough contract (Entity spec: plain text returns the
+      # SAME object) requires no allocation when no declaration names
+      # another encoding — both gates are allocation-free.
+      return str unless str.start_with?("<?xml") && str.include?("encoding=")
+
+      str.sub(DECLARED_ENCODING_RE) { "#{Regexp.last_match(1)}\"UTF-8\"" }
     end
 
     # Resolve numeric (&#NN; / &#xNN;) and the five standard named
