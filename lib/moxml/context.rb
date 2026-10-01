@@ -14,8 +14,8 @@ module Moxml
     # MRI < 3.4 takes the strong identity-Hash fallback (the Opal
     # shape, with the 65,536 valve in register_wrapper).
     WEAK_WRAPPERS = !defined?(ObjectSpace::WeakMap).nil? &&
-                    !(RUBY_ENGINE == "ruby" &&
-                      Gem::Version.new(RUBY_VERSION) < Gem::Version.new("3.4"))
+      !(RUBY_ENGINE == "ruby" &&
+        Gem::Version.new(RUBY_VERSION) < Gem::Version.new("3.4"))
     attr_reader :config
 
     def initialize(adapter = nil)
