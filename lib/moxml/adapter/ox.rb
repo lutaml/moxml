@@ -779,41 +779,52 @@ module Moxml
           if node.is_a?(::Ox::Element) && (doc = document(node))
             return true if attachments.get(doc, :has_entity_refs)
             return true if attachments.get(doc, :has_cdata_end_markers)
+            return true if attachments.get(doc, :has_patched_text)
             return false if attachments.key?(doc, :has_entity_refs) &&
-              attachments.key?(doc, :has_cdata_end_markers)
+              attachments.key?(doc, :has_cdata_end_markers) &&
+              attachments.key?(doc, :has_patched_text)
 
             scan_root = doc
           end
 
           # One merged tree scan instead of two; flags cache on the
           # document either way.
-          has_er, has_cdata = tree_scan_custom_needs(scan_root)
+          has_er, has_cdata, has_patched = tree_scan_custom_needs(scan_root)
           if scan_root.is_a?(::Ox::Document)
             attachments.set(scan_root, :has_entity_refs, has_er)
             attachments.set(scan_root, :has_cdata_end_markers, has_cdata)
+            attachments.set(scan_root, :has_patched_text, has_patched)
           end
 
-          has_er || has_cdata
+          has_er || has_cdata || has_patched
         end
 
-        # Single walk collecting both custom-serialize triggers.
+        # Single walk collecting the custom-serialize triggers.
         def tree_scan_custom_needs(node)
           has_er = false
           has_cdata = false
+          # Text enumeration hands out CustomizedOx::Text wrappers
+          # (node.rb patches String children so they can carry a
+          # parent); dup/append of an enumerated wrapper plants the
+          # subclass instance in the raw tree, and ::Ox.dump rejects
+          # classes it does not know (moxml#301).
+          has_patched = false
           stack = [node]
           until stack.empty?
             current = stack.pop
             case current
             when ::Moxml::Adapter::CustomizedOx::EntityReference
               has_er = true
+            when ::Moxml::Adapter::CustomizedOx::Text
+              has_patched = true
             when ::Ox::CData
               has_cdata = true if current.value&.include?("]]>")
             when ::Ox::Element, ::Ox::Document
               current.nodes&.each { |child| stack << child }
             end
-            return [true, has_cdata] if has_er
+            return [true, has_cdata, has_patched] if has_er
           end
-          [has_er, has_cdata]
+          [has_er, has_cdata, has_patched]
         end
 
         def has_declaration?(native_doc, _wrapper)
