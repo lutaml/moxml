@@ -218,7 +218,7 @@ module Moxml
         # resolves the autoload differently); keep in sync with
         # Moxml::XSLT::SUPPORTED_ADAPTERS.
         XSLT_UNSUPPORTED_MESSAGE =
-          "XSLT requires an engine; supported adapters: nokogiri, leptris".freeze
+          "XSLT requires an engine; supported adapters: nokogiri, leptris"
 
         # Owner element native for an attribute native, where the
         # engine exposes it (nil elsewhere).
