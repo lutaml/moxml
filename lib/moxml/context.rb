@@ -5,7 +5,17 @@ module Moxml
     # Opal's default runtime excludes ObjectSpace entirely; the weak
     # registry needs WeakMap, so the strong Hash (with its
     # wholesale-clear valve) covers that platform.
-    WEAK_WRAPPERS = !defined?(ObjectSpace::WeakMap).nil?
+    # MRI 3.3's ObjectSpace::WeakMap has a mark-time hazard: a
+    # dangling VALUE in the weak table is dereferenced during
+    # incremental-GC marking (SIGSEGV in wmap_mark_weak_table_i —
+    # lutaml/moxml#303, reproduced with the leptris adapter on the
+    # xmi suite; 100% crash rate 1.9.261-1.9.282, clean with these
+    # registries strong). Ruby 3.4 rewrote WeakMap and is safe.
+    # MRI < 3.4 takes the strong identity-Hash fallback (the Opal
+    # shape, with the 65,536 valve in register_wrapper).
+    WEAK_WRAPPERS = !defined?(ObjectSpace::WeakMap).nil? &&
+                    !(RUBY_ENGINE == "ruby" &&
+                      Gem::Version.new(RUBY_VERSION) < Gem::Version.new("3.4"))
     attr_reader :config
 
     def initialize(adapter = nil)
