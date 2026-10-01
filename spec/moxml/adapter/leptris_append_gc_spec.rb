@@ -49,4 +49,18 @@ RSpec.describe "leptris cross-document append under GC pressure" do
       expect(out).to include("<annex")
     end
   end
+
+  # moxml#308: the pin list must dedup by identity — one source
+  # document's children attach node-by-node, and without dedup the
+  # list grows linearly with append count (GB-scale malloc on
+  # large-document hydration; OOM at 43-75M slots).
+  it "pins each adopted document once regardless of append count" do
+    target = ctx.parse("<r/>")
+    frag = ctx.parse("<m>#{Array.new(300) { |i| "<c#{i}>x</c#{i}>" }.join}</m>")
+    frag.root.children.each { |c| target.root.add_child(c) }
+
+    docs = ctx.config.adapter.attachments.get(target.native.document, :adopted_docs)
+    expect(docs.size).to eq(1)
+    expect(target.root.to_xml).to include("<c299")
+  end
 end
