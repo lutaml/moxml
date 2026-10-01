@@ -509,7 +509,16 @@ RSpec.describe Moxml::Adapter::Leptris do
       # The binding retains a constant one-document wrapper set of
       # its own; moxml must not retain beyond a couple of dropped
       # documents' worth (was: all 20 pinned under the strong map).
-      expect(count.call - before).to be < 2 * 51
+      if Moxml::Context::WEAK_WRAPPERS
+        expect(count.call - before).to be < 2 * 51
+      else
+        # MRI < 3.4 strong registry (moxml#303): entries are bounded
+        # by the to_binding valve instead of weakly released — no
+        # unbounded pinning, but dropped documents stay until the
+        # clear. Assert the bound, not weak-release semantics.
+        cap = Moxml::Adapter::Leptris::BINDING_OF_CAP
+        expect(count.call - before).to be <= cap
+      end
     end
 
     it "keeps wrapper identity while a document is alive" do
