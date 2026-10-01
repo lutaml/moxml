@@ -1793,8 +1793,14 @@ module Moxml
           parent_doc = parent.is_a?(NN) ? NN_DOCUMENT.bind_call(parent) : parent.document
           return if parent_doc.nil? || child_doc.equal?(parent_doc)
 
+          # moxml#308: one source document's children attach
+          # node-by-node — dedup by identity or the pin list grows
+          # linearly with append count (GB-scale malloc on
+          # large-document hydration). Distinct owners stay few.
           owner = child_doc.is_a?(NN) ? to_binding(child_doc) : child_doc
           docs = attachments.get(parent_doc, :adopted_docs) || []
+          return if docs.include?(owner)
+
           docs << owner
           attachments.set(parent_doc, :adopted_docs, docs)
         end
