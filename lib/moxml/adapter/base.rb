@@ -214,10 +214,11 @@ module Moxml
           raise Moxml::NotImplementedError, XSLT_UNSUPPORTED_MESSAGE
         end
 
-        XSLT_UNSUPPORTED_MESSAGE = ::Kernel.format(
-          "XSLT requires an engine; supported adapters: %s",
-          Moxml::XSLT::SUPPORTED_ADAPTERS.join(", "),
-        ).freeze
+        # Plain string: no Moxml::XSLT reference at load time (Opal
+        # resolves the autoload differently); keep in sync with
+        # Moxml::XSLT::SUPPORTED_ADAPTERS.
+        XSLT_UNSUPPORTED_MESSAGE =
+          "XSLT requires an engine; supported adapters: nokogiri, leptris".freeze
 
         # Owner element native for an attribute native, where the
         # engine exposes it (nil elsewhere).
