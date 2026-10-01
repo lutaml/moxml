@@ -110,4 +110,34 @@ RSpec.describe Moxml::Adapter::Ox do
       end
     end
   end
+
+  # moxml#301: text enumeration hands out CustomizedOx::Text
+  # (String children are patched so they can carry a parent); dup or
+  # append of an enumerated wrapper plants the subclass instance in
+  # the raw tree, and ::Ox.dump rejects classes it does not know.
+  # The custom-serialize gate must trip on it (has_patched_text).
+  describe "duped and appended text nodes serialize" do
+    let(:ctx) { Moxml.new(:ox) }
+
+    it "round-trips a duped text appended to a parsed tree" do
+      doc = ctx.parse(%(<r><a>t</a></r>))
+      doc.root.add_child(doc.root.children[0].children[0].dup)
+      expect(doc.to_xml).to eq(%(<r><a>t</a>t</r>))
+    end
+
+    it "round-trips an enumerated text moved into a built document" do
+      src = ctx.parse(%(<r>x</r>))
+      built = ctx.create_document
+      root = built.create_element("r")
+      built.root = root
+      root.add_child(src.root.children[0].dup)
+      expect(built.to_xml).to eq("<r>x</r>")
+    end
+
+    it "round-trips a cloned text appended deep" do
+      doc = ctx.parse(%(<r><a>keep</a></r>))
+      doc.root.children[0].add_child(doc.root.children[0].children[0].clone)
+      expect(doc.to_xml).to eq(%(<r><a>keepkeep</a></r>))
+    end
+  end
 end
