@@ -100,6 +100,7 @@ module Moxml
   autoload :SAX, "moxml/sax"
   autoload :Signature, "moxml/signature"
   autoload :C14n, "moxml/c14n"
+  autoload :XSLT, "moxml/xslt"
 
   # Error hierarchy — each subclass autoloads from the same file
   autoload :Error, "moxml/error"
@@ -111,4 +112,5 @@ module Moxml
   autoload :EntityDataError, "moxml/error"
   autoload :XPathError, "moxml/error"
   autoload :AdapterError, "moxml/error"
+  autoload :XsltError, "moxml/error"
 end
