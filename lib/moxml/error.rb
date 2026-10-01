@@ -144,4 +144,7 @@ module Moxml
       msg
     end
   end
+
+  # Error raised when XSLT compilation or transformation fails
+  class XsltError < Error; end
 end

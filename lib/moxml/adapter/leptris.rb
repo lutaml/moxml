@@ -142,6 +142,12 @@ module Moxml
       NATIVE_SAX_RECORDS =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.242")
 
+      # XSLT 1.0/2.0/3.0 through the engine's compiled-stylesheet
+      # faces (Moxml::XSLT contract). Top-level parameters are not
+      # threaded through the faces yet (leptris-ruby#360) — non-empty
+      # params raise Moxml::XsltError.
+      XSLT_SUPPORTED = true
+
       # Defined unconditionally: the body self-guards, and call
       # sites must never depend on the layer having loaded
       # (issue #217 — binding-only installs crashed on the
@@ -459,6 +465,36 @@ module Moxml
       # (Document/serialize/C14n), which is circular while THIS
       # adapter file is still loading — the load-time form rescued
       # to false on every build and masked a landed engine fix.
+      # --- XSLT (Moxml::XSLT contract, engine faces) ---
+
+      def self.xslt_compile(sheet_source)
+        ::Leptris::XML::XSLT.parse(sheet_source)
+      rescue ::Leptris::XML::XPathError => e
+        raise Moxml::XsltError, "stylesheet compile failed: #{e.message}"
+      end
+
+      def self.xslt_apply_document(sheet, document_native, params)
+        assert_xslt_no_params(params)
+        sheet.apply_to(document_native)
+      rescue ::Leptris::XML::XPathError => e
+        raise Moxml::XsltError, "transform failed: #{e.message}"
+      end
+
+      def self.xslt_apply_string(sheet, document_native, params)
+        assert_xslt_no_params(params)
+        sheet.serialize(document_native)
+      rescue ::Leptris::XML::XPathError => e
+        raise Moxml::XsltError, "transform failed: #{e.message}"
+      end
+
+      def self.assert_xslt_no_params(params)
+        return if params.nil? || params.empty?
+
+        raise Moxml::XsltError,
+              "XSLT params are not threaded by the leptris engine yet " \
+              "(leptris-ruby#360); pass an empty params hash"
+      end
+
       def self.native_c14n_byte_safe?
         return @native_c14n_byte_safe unless @native_c14n_byte_safe.nil?
 

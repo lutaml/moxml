@@ -5,6 +5,11 @@ module Moxml
     class Base
       # include XmlUtils
 
+      # Whether this adapter ships an XSLT engine (nokogiri/libxslt
+      # and leptris do). Class-body level so the capability probe is
+      # a plain constant read from outside.
+      XSLT_SUPPORTED = false
+
       class << self
         include XmlUtils
 
@@ -183,6 +188,36 @@ module Moxml
         def same_node?(one, other)
           one == other
         end
+
+        # XSLT transformation. Only engines with an XSLT processor
+        # implement the trio below (currently nokogiri/libxslt and
+        # leptris; leptris covering XSLT 2.0/3.0 per its engine) and
+        # declare XSLT_SUPPORTED = true at class-body level. Base
+        # raises so unsupported adapters fail fast at the seam.
+
+        # Compile a stylesheet source string into an engine handle.
+        # @raise [Moxml::XsltError] on a malformed stylesheet
+        def xslt_compile(_sheet_source)
+          raise Moxml::NotImplementedError, XSLT_UNSUPPORTED_MESSAGE
+        end
+
+        # Apply a compiled stylesheet; returns the engine's result
+        # document, or nil when the output method cannot produce one
+        # (text). @params is the flat quoted name/value list.
+        def xslt_apply_document(_sheet, _document_native, _params)
+          raise Moxml::NotImplementedError, XSLT_UNSUPPORTED_MESSAGE
+        end
+
+        # Apply a compiled stylesheet and serialize in one call —
+        # fragments and text output survive.
+        def xslt_apply_string(_sheet, _document_native, _params)
+          raise Moxml::NotImplementedError, XSLT_UNSUPPORTED_MESSAGE
+        end
+
+        XSLT_UNSUPPORTED_MESSAGE = ::Kernel.format(
+          "XSLT requires an engine; supported adapters: %s",
+          Moxml::XSLT::SUPPORTED_ADAPTERS.join(", "),
+        ).freeze
 
         # Owner element native for an attribute native, where the
         # engine exposes it (nil elsewhere).

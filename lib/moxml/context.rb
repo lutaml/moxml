@@ -111,6 +111,26 @@ module Moxml
       config.adapter.parse_html(html, options, self)
     end
 
+    # Compile an XSLT stylesheet with this context's adapter
+    # (implementation-agnostic; nokogiri/libxslt and leptris ship
+    # engines, leptris covering XSLT 2.0/3.0 per its engine). Apply
+    # the returned Stylesheet to documents parsed by this context.
+    #
+    # @param stylesheet [String, Moxml::Document] the stylesheet
+    #   source; documents from other adapters serialize through their
+    #   own adapter first
+    # @return [Moxml::XSLT::Stylesheet]
+    # @raise [Moxml::NotImplementedError] on adapters without an engine
+    # @raise [Moxml::XsltError] on a malformed stylesheet
+    def xslt(stylesheet)
+      source = case stylesheet
+               when Moxml::Document then stylesheet.to_xml
+               else stylesheet.to_s
+               end
+      sheet = config.adapter.xslt_compile(source)
+      Moxml::XSLT::Stylesheet.new(sheet, self)
+    end
+
     # Streaming incremental parse (leptris): yields each completed
     # element while parsing — :top_level yields the root's children,
     # :full_document every element in completion (post-order) order.

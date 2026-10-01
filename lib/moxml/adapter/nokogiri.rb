@@ -7,6 +7,9 @@ require "nokogiri"
 module Moxml
   module Adapter
     class Nokogiri < Base
+      # libxslt-backed XSLT 1.0 (Moxml::XSLT contract).
+      XSLT_SUPPORTED = true
+
       class << self
         def attachments
           @attachments ||= Moxml::NativeAttachment.new
@@ -48,6 +51,32 @@ module Moxml
 
         def native_identity_stable?
           true
+        end
+
+        # --- XSLT (Moxml::XSLT contract, libxslt-backed) ---
+
+        def xslt_compile(sheet_source)
+          ::Nokogiri::XSLT.parse(sheet_source)
+        rescue ::RuntimeError => e
+          # Nokogiri raises bare RuntimeError for compilation errors.
+          raise Moxml::XsltError, "stylesheet compile failed: #{e.message}"
+        end
+
+        def xslt_apply_document(sheet, document_native, params)
+          sheet.transform(document_native, params)
+        rescue ::RuntimeError => e
+          raise Moxml::XsltError, "transform failed: #{e.message}"
+        end
+
+        def xslt_apply_string(sheet, document_native, params)
+          # libxslt always yields a document; the string face is its
+          # serialization AS_XML (compact — the default to_xml would
+          # re-indent and diverge from engines that serialize without
+          # formatting).
+          result = xslt_apply_document(sheet, document_native, params)
+          result.to_xml(
+            save_with: ::Nokogiri::XML::Node::SaveOptions::AS_XML,
+          )
         end
 
         # libxml2-native inclusive C14N: delegated for the default

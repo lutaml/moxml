@@ -103,3 +103,37 @@ See also:
 
 * link:../pages/compatibility[Adapter compatibility]
 * link:../pages/adapters/[Individual adapter documentation]
+
+=== XSLT transformation (nokogiri, leptris)
+
+Compile-once, apply-many transformations through an implementation-agnostic
+interface. Engines: nokogiri (libxslt, XSLT 1.0) and leptris (XSLT 1.0-3.0
+per its engine). Adapters without an engine raise
+`Moxml::NotImplementedError` at compile; `Moxml::XSLT.supported?(context)`
+answers without raising.
+
+[source,ruby]
+----
+ctx = Moxml.new(:leptris)
+sheet = ctx.xslt(<<~XSL)
+  <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+    <xsl:template match="/"><out><xsl:value-of select="count(//item)"/></out></xsl:template>
+  </xsl:stylesheet>
+XSL
+
+result = sheet.apply_to(doc)          # Moxml::Document (same adapter)
+text   = sheet.apply_to_string(doc)   # String — fragments and text output
+----
+
+`apply_to` raises `Moxml::XsltError` when the output method cannot produce
+XML (method="text"); `apply_to_string` carries non-XML output. Documents
+parsed by another adapter serialize through their own adapter and re-parse
+into the engine. Top-level parameters are part of the contract
+(`params: { "name" => "value" }`); leptris does not thread them yet
+(leptris-ruby#360) and raises `Moxml::XsltError` when non-empty params are
+passed.
+
+See also:
+
+* link:../pages/compatibility[Adapter compatibility]
+* link:../pages/adapters/[Individual adapter documentation]
