@@ -1774,6 +1774,31 @@ module Moxml
           child_native
         end
 
+        # moxml#304: a cross-document attach makes the target's tree
+        # point into the child's owning document; when that document is
+        # collected its arena dies and the subtree vanishes (empty
+        # output, nameless element pairs — silent, GC-dependent). Pin
+        # the owning document on the target's document so the arena
+        # outlives every attached subtree.
+        def pin_foreign_owner_document(parent, child)
+          return unless child.is_a?(NN) || child.is_a?(::Leptris::XML::Node)
+
+          # Two document fetches + identity compare on the same-document
+          # hot path (every builder add_child); the WeakMap bridge and
+          # the pin only pay when the child actually comes from another
+          # document.
+          child_doc = child.is_a?(NN) ? NN_DOCUMENT.bind_call(child) : child.document
+          return if child_doc.nil?
+
+          parent_doc = parent.is_a?(NN) ? NN_DOCUMENT.bind_call(parent) : parent.document
+          return if parent_doc.nil? || child_doc.equal?(parent_doc)
+
+          owner = child_doc.is_a?(NN) ? to_binding(child_doc) : child_doc
+          docs = attachments.get(parent_doc, :adopted_docs) || []
+          docs << owner
+          attachments.set(parent_doc, :adopted_docs, docs)
+        end
+
         def add_child(parent, child)
           if NATIVE_READ_LAYER && !(NATIVE_MUTATIONS_COHERENT &&
                    parent.is_a?(::Leptris::XML::NativeNode) &&
@@ -1781,6 +1806,7 @@ module Moxml
             parent = to_binding(parent)
             child = to_binding(child)
           end
+          pin_foreign_owner_document(parent, child)
           case parent
           when ::Leptris::XML::Document then add_document_child(parent, child)
           else
