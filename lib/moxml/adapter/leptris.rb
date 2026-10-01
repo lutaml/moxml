@@ -149,14 +149,17 @@ module Moxml
       # Class-body level: a bare @ivar inside `class << self` lands
       # on the singleton's singleton, invisible to the methods at
       # call time (same shape as @native_doc_roots below).
-      @binding_of = Context::WEAK_WRAPPERS ? ObjectSpace::WeakMap.new
-                           : {}.compare_by_identity      # Strong-mode valve (MRI < 3.4 only): the registry is
+      @binding_of = if Context::WEAK_WRAPPERS
+                      ObjectSpace::WeakMap.new
+                    else
+                      {}.compare_by_identity
+                    end
+      # Strong-mode valve (MRI < 3.4 only): the registry is
       # class-level and per-node, so a hard bound keeps parse-heavy
       # processes flat. A clear re-bridges on the next to_binding —
       # identity loss is the same trade the 65,536 context valve
       # made before the weak registry replaced it.
       BINDING_OF_CAP = 8_192
-
 
       class << self
         # native -> bridged binding node. The bridge object is
@@ -187,10 +190,13 @@ module Moxml
       if NATIVE_READ_LAYER
         # root NativeNode -> binding document (recorded at #root
         # mint; the native layer exposes no document accessor).
-        @native_doc_roots = Context::WEAK_WRAPPERS ? ObjectSpace::WeakMap.new
-                             : {}.compare_by_identity      # Same strong-mode valve, keyed per document root (tiny).
-      NATIVE_DOC_ROOTS_CAP = 1_024
-
+        @native_doc_roots = if Context::WEAK_WRAPPERS
+                              ObjectSpace::WeakMap.new
+                            else
+                              {}.compare_by_identity
+                            end
+        # Same strong-mode valve, keyed per document root (tiny).
+        NATIVE_DOC_ROOTS_CAP = 1_024
 
         class << self
           # Extend-in-place mint (#230 stage 2): a TypedData native
