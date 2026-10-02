@@ -118,6 +118,9 @@ module Moxml
       "document"
     end
 
+    # Nokogiri-compatible: renaming a document node is a no-op
+    def name=(_value); end
+
     def add_child(node)
       node = prepare_node(node)
 
