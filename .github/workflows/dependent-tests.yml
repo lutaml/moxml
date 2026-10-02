@@ -13,6 +13,13 @@ on:
   repository_dispatch:
     types: [ release-passed ]
 
+# One live run per workflow+event+ref: a superseded push to the
+# same PR/branch cancels its predecessors instead of queueing
+# behind them (the runner queue otherwise stacks generations).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   rake:
     uses: metanorma/ci/.github/workflows/dependent-rake.yml@main
