@@ -85,6 +85,11 @@ module Moxml
     end
     alias length size
 
+    # Nokogiri-compatible: serialize the set's members in order.
+    def to_xml(options = {})
+      map { |n| n.to_xml(options) }.join
+    end
+
     # Nokogiri-compatible: Array#flatten and multiple-assignment
     # treat a NodeSet as its wrapped-element array via to_ary.
     def to_ary
