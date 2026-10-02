@@ -261,6 +261,12 @@ module Moxml
       to_xml
     end
 
+    # Nokogiri-compatible: to_str yields the text content (their C
+    # node_to_str; standoc does x.content = x.to_str on <script>).
+    def to_str
+      text
+    end
+
     # Memoized against the adapter's serialize generation — the
     # entity-marker flag flips at parse and entity-reference mint,
     # both adapter-level, and the generation bump is the invalidation
