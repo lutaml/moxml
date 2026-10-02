@@ -6,6 +6,13 @@ on:
     tags: [ v* ]
   pull_request:
 
+# One live run per workflow+event+ref: a superseded push to the
+# same PR/branch cancels its predecessors instead of queueing
+# behind them (the runner queue otherwise stacks generations).
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
