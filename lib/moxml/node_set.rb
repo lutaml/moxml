@@ -85,6 +85,12 @@ module Moxml
     end
     alias length size
 
+    # Nokogiri-compatible: Array#flatten and multiple-assignment
+    # treat a NodeSet as its wrapped-element array via to_ary.
+    def to_ary
+      to_a
+    end
+
     def to_a
       i = 0
       wrapped = wrapped_buffer
