@@ -527,6 +527,19 @@ module Moxml
       "/#{segments.join('/')}"
     end
 
+    # The XPath node-test spelling for this non-element node.
+    def path_type_test
+      if text? || cdata?
+        "text()"
+      elsif comment?
+        "comment()"
+      elsif processing_instruction?
+        "processing-instruction()"
+      else
+        name.to_s
+      end
+    end
+
     # Returns the 1-based line number where this node appears in the
     # source XML, or nil when the underlying adapter does not track
     # source positions.
@@ -632,18 +645,6 @@ module Moxml
     private
 
 
-    # The XPath node-test spelling for this non-element node.
-    def path_type_test
-      if text? || cdata?
-        "text()"
-      elsif comment?
-        "comment()"
-      elsif processing_instruction?
-        "processing-instruction()"
-      else
-        name.to_s
-      end
-    end
 
     # XPath segment for a node: elements use their qualified name,
     # other node kinds their XPath type test (text(), comment(), ...).
