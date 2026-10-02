@@ -123,15 +123,9 @@ module Moxml
     end
 
     # Nokogiri-compatible append sugar: node << appends. Strings
-    # parse as fragments (sibling_operand's convention — plain text
-    # parses to a text node, markup to nodes, multiple roots all
-    # append) rather than becoming literal text via add_child.
+    # parse as fragments (markup, not literal text).
     def <<(node)
-      if node.is_a?(String)
-        context.parse_fragment(node).each { |child| add_child(child) }
-      else
-        add_child(node)
-      end
+      add_child(node)
       self
     end
 
@@ -158,10 +152,56 @@ module Moxml
       # Nokogiri semantics: a String operand is MARKUP, parsed and
       # appended (cleanup code inserts "<bibliography/>" style
       # strings); the adapter path would mint a literal text node.
+      # Metanorma's Nokogiri returns the new children as a NodeSet
+      # for markup (misc.add_child("<UnitsML/>").first idiom), self
+      # for nodes.
       if node.is_a?(String)
-        context.parse_fragment(node).each { |child| add_child(child) }
-        return self
+        nodes = context.parse_fragment(node).to_a
+        nodes.each { |child| attach_child(child) }
+        return NodeSet.new(nodes.map(&:native), context)
       end
+      attach_child(node)
+      self
+    end
+
+    def add_previous_sibling(node)
+      # String operands insert every fragment root; returns the new
+      # nodes as a NodeSet (metanorma idiom: sect.add_next_sibling(
+      # "<bibliography/>").first).
+      if node.is_a?(String)
+        nodes = context.parse_fragment(node).to_a
+        nodes.each { |n| attach_previous_sibling(n) }
+        return NodeSet.new(nodes.map(&:native), context)
+      end
+      attach_previous_sibling(node)
+      self
+    end
+
+    # Nokogiri-compatible assignment forms: node.next = / node.previous =.
+    # String operands are parsed as XML fragments, like Nokogiri.
+    def next=(node)
+      add_next_sibling(node)
+    end
+
+    def previous=(node)
+      add_previous_sibling(node)
+    end
+
+    def add_next_sibling(node)
+      if node.is_a?(String)
+        nodes = context.parse_fragment(node).to_a
+        anchor = self
+        nodes.each do |n|
+          attach_next_sibling_to(anchor, n)
+          anchor = n
+        end
+        return NodeSet.new(nodes.map(&:native), context)
+      end
+      attach_next_sibling_to(self, node)
+      self
+    end
+
+    def attach_child(node)
       context.bump_children_generation
       node = prepare_node(node)
       adapter.add_child(@native, node.native)
@@ -178,9 +218,9 @@ module Moxml
       self
     end
 
-    def add_previous_sibling(node)
+    def attach_previous_sibling(node)
       context.bump_children_generation
-      node = prepare_node(sibling_operand(node))
+      node = prepare_node(node)
       adapter.add_previous_sibling(@native, node.native)
       # Invalidate the parent's memoized children list. The wrapper-side
       # @parent_node link is only set when this node was yielded through a
@@ -191,28 +231,12 @@ module Moxml
       self
     end
 
-    # Nokogiri-compatible assignment forms: node.next = / node.previous =.
-    # String operands are parsed as XML fragments, like Nokogiri.
-    def next=(node)
-      add_next_sibling(sibling_operand(node))
-    end
-
-    def previous=(node)
-      add_previous_sibling(sibling_operand(node))
-    end
-
-    def sibling_operand(node)
-      return node unless node.is_a?(String)
-
-      context.parse_fragment(node).first
-    end
-
-    def add_next_sibling(node)
+    def attach_next_sibling_to(anchor, node)
       context.bump_children_generation
-      node = prepare_node(sibling_operand(node))
-      adapter.add_next_sibling(@native, node.native)
-      parent&.invalidate_children_cache!
-      invalidate_parent_children_cache!
+      node = prepare_node(node)
+      adapter.add_next_sibling(anchor.native, node.native)
+      anchor.parent&.invalidate_children_cache!
+      anchor.invalidate_parent_children_cache!
       self
     end
 
