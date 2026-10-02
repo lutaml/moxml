@@ -131,10 +131,16 @@ module Moxml
         def children_accepts_entity_flag?
           return @children_accepts_entity_flag unless @children_accepts_entity_flag.nil?
 
+          # Opal's Method#parameters carries no reflection data: it
+          # returns a bare JS undefined, which answers no method call
+          # (not even nil?), so it is matched with `case`, whose
+          # Module#=== tolerates it. Without the data the keyword is
+          # assumed: every built-in adapter's #children accepts it.
           kinds = %i[key keyrest keyreq]
           @children_accepts_entity_flag =
-            method(:children).parameters.any? do |kind, _name|
-              kinds.include?(kind)
+            case (params = method(:children).parameters)
+            when Array then params.any? { |kind, _name| kinds.include?(kind) }
+            else true
             end
         end
 
