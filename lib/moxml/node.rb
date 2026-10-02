@@ -131,6 +131,13 @@ module Moxml
       self
     end
 
+    # Nokogiri-compatible: reparent — node.parent = new_parent moves
+    # this node (removing it from its current tree) under the target.
+    def parent=(new_parent)
+      remove
+      new_parent.add_child(self)
+    end
+
     def add_child(node)
       context.bump_children_generation
       node = prepare_node(node)

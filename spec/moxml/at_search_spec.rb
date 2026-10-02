@@ -197,3 +197,13 @@ RSpec.describe "Node#next_element/previous_element" do
     expect(doc.at("//b").previous_element.name).to eq("a")
   end
 end
+
+RSpec.describe "Node#parent= reparenting" do
+  it "moves a node under a new parent" do
+    doc = Moxml.parse("<r><from><p/></from><to/></r>")
+    p_node = doc.at("//p")
+    p_node.parent = doc.at("//to")
+    expect(doc.at("//to/p")).not_to be_nil
+    expect(doc.at("//from/p")).to be_nil
+  end
+end
