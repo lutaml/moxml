@@ -298,3 +298,13 @@ RSpec.describe "Node#next/previous readers" do
     expect(doc.at("//b").previous.previous.name).to eq("a")
   end
 end
+
+RSpec.describe "Node#path for non-element nodes" do
+  it "builds type-test segments" do
+    doc = Moxml.parse("<r><p>a<!--c--></p><p>b</p></r>")
+    expect(doc.at("//p").path).to eq("/r/p[1]")
+    texts = doc.xpath("//p/text()")
+    expect(texts[0].path).to eq("/r/p[1]/text()")
+    expect(doc.xpath("//p/comment()").first.path).to eq("/r/p[1]/comment()")
+  end
+end
