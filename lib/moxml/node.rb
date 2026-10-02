@@ -104,6 +104,10 @@ module Moxml
       Moxml::Node.wrap(adapter.previous_sibling(@native), context)
     end
 
+    # Nokogiri-compatible reader spellings.
+    alias next next_sibling
+    alias previous previous_sibling
+
     # Nokogiri-compatible: nearest sibling elements, skipping text and
     # comment nodes.
     def next_element
