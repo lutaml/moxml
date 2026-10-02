@@ -189,6 +189,7 @@ module Moxml
                   raise ArgumentError, "children= accepts String, Node, or Array"
                 end
       adapter.replace_children(@native, natives)
+      @text = nil
       context.bump_children_generation
       invalidate_children_cache!
     end
@@ -329,16 +330,27 @@ module Moxml
     end
 
     def text
-      val = adapter.text_content(@native)
-      # Entity-free documents (the common case) skip the marker
-      # restore scans entirely — the per-wrapper entity_bearing?
-      # memo rides the adapter's serialize generation.
-      entity_bearing? ? adapter.restore_entities(val) : val
+      # Generation-gated memo: engines allocate a fresh String per read
+      # (Nokogiri node.text), and hydration walks re-read the same
+      # wrappers — Element#text was a top string allocation site in
+      # large-document metanorma compiles. Text only changes through
+      # this wrapper's writers (text=/children=), all of which clear
+      # the memo.
+      @text = nil if @text_gen != context.children_generation
+      @text_gen = context.children_generation
+      @text ||= begin
+        val = adapter.text_content(@native)
+        # Entity-free documents (the common case) skip the marker
+        # restore scans entirely — the per-wrapper entity_bearing?
+        # memo rides the adapter's serialize generation.
+        entity_bearing? ? adapter.restore_entities(val) : val
+      end
     end
 
     alias content text
 
     def text=(content)
+      @text = nil
       adapter.set_text_content(@native, normalize_xml_value(content))
       invalidate_children_cache!
     end
