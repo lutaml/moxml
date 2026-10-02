@@ -331,6 +331,7 @@ module Moxml
     end
 
     alias content text
+    alias content= text=
 
     def text=(content)
       adapter.set_text_content(@native, normalize_xml_value(content))
