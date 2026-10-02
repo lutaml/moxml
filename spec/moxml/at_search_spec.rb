@@ -250,3 +250,11 @@ RSpec.describe "Element#replace + re-attach under the replacement" do
     expect(doc.at("//t/a/text()").text).to eq("x")
   end
 end
+
+RSpec.describe "Node/NodeSet#to_s interpolation" do
+  it "serializes instead of Object#to_s" do
+    doc = Moxml.parse("<r><a>x</a><b/></r>")
+    expect("#{doc.at('//a')}").to eq("<a>x</a>")
+    expect("#{doc.root.children}").to eq("<a>x</a><b/>")
+  end
+end

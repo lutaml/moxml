@@ -255,6 +255,12 @@ module Moxml
       result
     end
 
+    # Nokogiri-compatible: string interpolation of a node serializes
+    # it ("#{node}" in cleanup code), not Object#to_s.
+    def to_s
+      to_xml
+    end
+
     # Memoized against the adapter's serialize generation — the
     # entity-marker flag flips at parse and entity-reference mint,
     # both adapter-level, and the generation bump is the invalidation

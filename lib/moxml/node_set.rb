@@ -90,6 +90,12 @@ module Moxml
       map { |n| n.to_xml(options) }.join
     end
 
+    # Nokogiri-compatible: string interpolation of a NodeSet
+    # serializes it ("#{nodes}" in cleanup code), not Object#to_s.
+    def to_s
+      to_xml
+    end
+
     # Nokogiri-compatible: Array#flatten and multiple-assignment
     # treat a NodeSet as its wrapped-element array via to_ary.
     def to_ary
