@@ -631,6 +631,20 @@ module Moxml
 
     private
 
+
+    # The XPath node-test spelling for this non-element node.
+    def path_type_test
+      if text? || cdata?
+        "text()"
+      elsif comment?
+        "comment()"
+      elsif processing_instruction?
+        "processing-instruction()"
+      else
+        name.to_s
+      end
+    end
+
     # XPath segment for a node: elements use their qualified name,
     # other node kinds their XPath type test (text(), comment(), ...).
     # A positional predicate is emitted only when same-kind siblings
@@ -652,18 +666,6 @@ module Moxml
       "#{name}[#{same_kind.find_index(node) + 1}]"
     end
 
-    # The XPath node-test spelling for this non-element node.
-    def path_type_test
-      if text? || cdata?
-        "text()"
-      elsif comment?
-        "comment()"
-      elsif processing_instruction?
-        "processing-instruction()"
-      else
-        name.to_s
-      end
-    end
 
     def prepare_node(node)
       case node
