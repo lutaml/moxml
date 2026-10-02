@@ -355,3 +355,15 @@ RSpec.describe "default_namespace= idempotence" do
     expect(math.to_xml).to eq(%(<math xmlns="urn:m"/>))
   end
 end
+
+RSpec.describe "xpath with namespace bindings" do
+  it "prefixed star and name tests honor the namespace URI" do
+    doc = Moxml.parse(%(<r><bibdata/><m:title xmlns="urn:x"/></r>))
+    hits = doc.root.xpath(".//m:*", "m" => "urn:unitsml")
+    expect(hits.map(&:name)).to eq([])
+    named = doc.root.at_xpath(".//m:title", "m" => "urn:x")
+    expect(named&.name).to eq("title")
+    none = doc.root.at_xpath(".//m:title", "m" => "urn:unitsml")
+    expect(none).to be_nil
+  end
+end

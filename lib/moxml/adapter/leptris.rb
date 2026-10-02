@@ -2205,6 +2205,12 @@ module Moxml
           end
           return nil unless native_context_node?(node)
           return nil unless native_expression?(expression)
+          # The leptris engine mishandles namespace-prefixed node
+          # tests: "m:*" matches elements in ANY namespace and
+          # "m:name" matches none, regardless of the binding. Route
+          # namespace-bound queries to the Ruby engine until the
+          # engine grows correct prefix resolution.
+          return nil if namespaces && !namespaces.empty?
           # The binding reports the root element parentless while moxml
           # roots it at the document, so parent-axis queries from the
           # root element keep the Ruby engine.
