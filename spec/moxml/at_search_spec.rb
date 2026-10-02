@@ -188,3 +188,12 @@ RSpec.describe "Node#ancestors(selector)" do
     expect(p_node.ancestors.map(&:name)).to include("td", "tr", "table")
   end
 end
+
+RSpec.describe "Node#next_element/previous_element" do
+  it "skips interleaved text nodes" do
+    doc = Moxml.parse("<r><a/>text<b/></r>")
+    a = doc.at("//a")
+    expect(a.next_element.name).to eq("b")
+    expect(doc.at("//b").previous_element.name).to eq("a")
+  end
+end
