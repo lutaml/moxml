@@ -318,6 +318,10 @@ module Moxml
           node.children
         end
 
+        def element_children(node)
+          node.element_children
+        end
+
         def adjacent_to_entity_reference?(node)
           node.previous_sibling.is_a?(::Nokogiri::XML::EntityReference) ||
             node.next_sibling.is_a?(::Nokogiri::XML::EntityReference)

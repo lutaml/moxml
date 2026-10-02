@@ -154,6 +154,14 @@ module Moxml
           node
         end
 
+        # Element-only children: adapters whose engine carries the
+        # face override (leptris C filter, nokogiri native); the
+        # default type-filters the native child list so non-element
+        # wrappers never mint on element-only traversals.
+        def element_children(node)
+          children(node).select { |child| node_type(child) == :element }
+        end
+
         # Prefixed-attribute value fast path: adapters whose engine
         # resolves expanded-name (uri, local) lookups natively answer
         # the value here; others fall back to the resolver's

@@ -104,10 +104,16 @@ module Moxml
       Moxml::Node.wrap(adapter.previous_sibling(@native), context)
     end
 
-    # Nokogiri-compatible append sugar: node << appends (String
-    # operands become text nodes via add_child's existing coercion).
+    # Nokogiri-compatible append sugar: node << appends. Strings
+    # parse as fragments (sibling_operand's convention — plain text
+    # parses to a text node, markup to nodes, multiple roots all
+    # append) rather than becoming literal text via add_child.
     def <<(node)
-      add_child(node)
+      if node.is_a?(String)
+        context.parse_fragment(node).each { |child| add_child(child) }
+      else
+        add_child(node)
+      end
       self
     end
 
