@@ -292,9 +292,9 @@ RSpec.describe "Node#next/previous readers" do
   it "return adjacent siblings" do
     doc = Moxml.parse("<r><a/>mid<b/></r>")
     a = doc.at("//a")
-    expect(a.next.name).to eq("__text__")
+    expect(a.next.name).to eq("text")
     expect(a.next.next.name).to eq("b")
-    expect(doc.at("//b").previous.name).to eq("__text__")
+    expect(doc.at("//b").previous.name).to eq("text")
     expect(doc.at("//b").previous.previous.name).to eq("a")
   end
 end
