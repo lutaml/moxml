@@ -206,6 +206,12 @@ module Moxml
     end
 
     def remove
+      # Nokogiri parity: unlinking an already-detached node is a
+      # no-op returning self. Re-attach idioms like
+      # `t << n.replace(x).remove` (standoc term cleanup) detach with
+      # #replace and rely on this; leptris would raise "Not found".
+      return self if parent.nil?
+
       context.bump_children_generation
       invalidate_parent_children_cache!
       adapter.remove(@native)

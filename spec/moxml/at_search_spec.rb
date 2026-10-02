@@ -223,3 +223,17 @@ RSpec.describe "Node#add_first_child" do
     Moxml.parse("<r/>").root.add_first_child("<x/>")
   end
 end
+
+RSpec.describe "Node#remove on a detached node" do
+  it "is a no-op returning self (Nokogiri parity)" do
+    doc = Moxml.parse("<r><p><c/></p><t/></r>")
+    p_node = doc.at("//p")
+    t = doc.create_element("d")
+    p_node.replace(t)
+    expect(p_node.parent).to be_nil
+    expect(p_node.remove).to equal(p_node)
+    t << p_node
+    expect(t.children.map(&:name)).to eq(%w[p])
+    expect(doc.at("//t/d/p/c")).not_to be_nil
+  end
+end
