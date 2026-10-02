@@ -330,3 +330,28 @@ RSpec.describe "String operands are markup, not literal text" do
     expect(doc.at("//r/c")).not_to be_nil
   end
 end
+
+RSpec.describe "Markup-string insertion returns a NodeSet of new nodes" do
+  it "add_child / add_next_sibling return the new nodes; nodes return self" do
+    doc = Moxml.parse("<r><a/></r>")
+    a = doc.at("//a")
+    kids = a.add_child("<c1/><c2/>")
+    expect(kids).to be_a(Moxml::NodeSet)
+    expect(kids.map(&:name)).to eq(%w[c1 c2])
+    sibs = a.add_next_sibling("<n1/><n2/>")
+    expect(sibs.map(&:name)).to eq(%w[n1 n2])
+    expect(doc.root.children.map(&:name)).to eq(%w[a c1 c2 n1 n2])
+    prev = a.add_previous_sibling("<p1/><p2/>")
+    expect(doc.root.children.map(&:name)).to eq(%w[p1 p2 a c1 c2 n1 n2])
+    expect(a.add_child(doc.at("//p1"))).to equal(a)
+  end
+end
+
+RSpec.describe "default_namespace= idempotence" do
+  it "does not duplicate an identical in-scope default namespace" do
+    doc = Moxml.parse(%(<r xmlns="urn:x"><math xmlns="urn:m"/></r>))
+    math = doc.at("//math")
+    math.default_namespace = "urn:m"
+    expect(math.to_xml).to eq(%(<math xmlns="urn:m"/>))
+  end
+end
