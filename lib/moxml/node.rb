@@ -155,6 +155,13 @@ module Moxml
     end
 
     def add_child(node)
+      # Nokogiri semantics: a String operand is MARKUP, parsed and
+      # appended (cleanup code inserts "<bibliography/>" style
+      # strings); the adapter path would mint a literal text node.
+      if node.is_a?(String)
+        context.parse_fragment(node).each { |child| add_child(child) }
+        return self
+      end
       context.bump_children_generation
       node = prepare_node(node)
       adapter.add_child(@native, node.native)
@@ -173,7 +180,7 @@ module Moxml
 
     def add_previous_sibling(node)
       context.bump_children_generation
-      node = prepare_node(node)
+      node = prepare_node(sibling_operand(node))
       adapter.add_previous_sibling(@native, node.native)
       # Invalidate the parent's memoized children list. The wrapper-side
       # @parent_node link is only set when this node was yielded through a
@@ -202,7 +209,7 @@ module Moxml
 
     def add_next_sibling(node)
       context.bump_children_generation
-      node = prepare_node(node)
+      node = prepare_node(sibling_operand(node))
       adapter.add_next_sibling(@native, node.native)
       parent&.invalidate_children_cache!
       invalidate_parent_children_cache!
