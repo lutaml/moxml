@@ -118,6 +118,11 @@ module Moxml
     def add_previous_sibling(node)
       node = prepare_node(node)
       adapter.add_previous_sibling(@native, node.native)
+      # Invalidate the parent's memoized children list. The wrapper-side
+      # @parent_node link is only set when this node was yielded through a
+      # parent-aware NodeSet; nodes obtained via at()/xpath() carry no such
+      # link, so resolve the parent wrapper from the adapter instead.
+      parent&.invalidate_children_cache!
       invalidate_parent_children_cache!
       self
     end
@@ -141,6 +146,7 @@ module Moxml
     def add_next_sibling(node)
       node = prepare_node(node)
       adapter.add_next_sibling(@native, node.native)
+      parent&.invalidate_children_cache!
       invalidate_parent_children_cache!
       self
     end
