@@ -113,6 +113,11 @@ module Moxml
       Wrappers::EntityReference.new(native, context)
     end
 
+    # Nokogiri-compatible: Document#name returns "document"
+    def name
+      "document"
+    end
+
     def add_child(node)
       node = prepare_node(node)
 
