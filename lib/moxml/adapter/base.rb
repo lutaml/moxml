@@ -402,6 +402,13 @@ namespace_validation_mode: :strict)
           true
         end
 
+        # Serialization of the node's children (Element#inner_xml).
+        # Built over the children/serialize contract; adapters with a
+        # native inner-serialization face may override.
+        def inner_xml(node)
+          children(node).map { |child| serialize(child) }.join
+        end
+
         # Whether the engine offers a bulk materialization path for
         # Materializer (issue #132). When true, the adapter gets
         # #materialize_fields(native, buffers, &block) — fill the
