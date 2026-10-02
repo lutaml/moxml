@@ -215,6 +215,32 @@ module Moxml
                        context)
     end
 
+    # Nokogiri-compatible sugar: at/search/at_css/css. Nokogiri's
+    # at/search auto-detect XPath vs CSS; the XPath-first fallback
+    # covers the dominant caller shape (XPath expression strings)
+    # while css/at_css serve stylesheet-style selectors.
+    def at(expression, namespaces = {})
+      at_css_or_xpath(expression, namespaces)
+    end
+
+    def search(expression, namespaces = {})
+      xpath(expression, namespaces)
+    end
+
+    def css(expression)
+      raise Moxml::NotImplementedError,
+            "CSS selectors are not supported; use search with XPath"
+    end
+
+    def at_css(expression)
+      raise Moxml::NotImplementedError,
+            "CSS selectors are not supported; use at with XPath"
+    end
+
+    def at_css_or_xpath(expression, namespaces = {})
+      at_xpath(expression, namespaces)
+    end
+
     # Convenience find methods (aliases for xpath methods)
     def find(xpath_expression, namespaces = {})
       at_xpath(xpath_expression, namespaces)
