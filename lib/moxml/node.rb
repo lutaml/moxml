@@ -174,6 +174,7 @@ module Moxml
     def invalidate_namespace_cache!; end
 
     def replace(node)
+      context.bump_children_generation
       node = prepare_node(node)
       invalidate_parent_children_cache!
       adapter.replace(@native, node.native)
