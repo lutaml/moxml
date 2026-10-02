@@ -318,3 +318,15 @@ RSpec.describe "Document#root= with a foreign root" do
     expect(doc.root.namespace_uri.to_s).to eq("urn:x")
   end
 end
+
+RSpec.describe "String operands are markup, not literal text" do
+  it "add_child / add_next_sibling / add_previous_sibling parse strings" do
+    doc = Moxml.parse("<r><a/></r>")
+    a = doc.at("//a")
+    a.add_child("<c/>")
+    a.add_next_sibling("<d/>")
+    a.add_previous_sibling("<b/>")
+    expect(doc.root.children.map(&:name)).to eq(%w[b a c d])
+    expect(doc.at("//r/c")).not_to be_nil
+  end
+end
