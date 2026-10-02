@@ -5,8 +5,14 @@ module Moxml
     include Node
 
     def content
-      text = raw_content
-      entity_bearing? ? adapter.restore_entities(text) : text
+      # Engines allocate a fresh String per read (Nokogiri
+      # node.text); hydration walks re-read the same text wrappers —
+      # this read was the single largest string allocation site in
+      # large-document metanorma compiles. Cleared by content=.
+      @content ||= begin
+        text = raw_content
+        entity_bearing? ? adapter.restore_entities(text) : text
+      end
     end
 
     # Returns raw content without entity marker restoration.
@@ -15,6 +21,7 @@ module Moxml
     end
 
     def content=(text)
+      @content = nil
       adapter.set_text_content(@native, normalize_xml_value(text))
     end
 
