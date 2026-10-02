@@ -514,10 +514,29 @@ module Moxml
       NATIVE_XSLT_PARAMS =
         NATIVE_READ_LAYER &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.290.0") &&
-        ::Leptris::XML::XSLT.instance_method(:apply_to).parameters.size > 1
+        ::Leptris::XML::XSLT::Stylesheet.instance_method(:apply_to)
+          .parameters.size > 1
+
+      # The seam contract passes the libxslt flat quoted array; the
+      # binding wants the raw name => value hash (leptris#1478
+      # matches nokogiri's quoted-string semantics internally).
+      def self.flat_params_to_hash(params)
+        return params if params.is_a?(Hash)
+        return {} if params.nil? || params.empty?
+
+        params.each_slice(2).to_h { |name, value| [name, unquote_param(value)] }
+      end
+
+      def self.unquote_param(value)
+        str = value.to_s
+        str.start_with?("'") && str.end_with?("'") && str.length >= 2 ? str[1..-2] : str
+      end
 
       def self.xslt_apply_document(sheet, document_native, params)
-        return sheet.apply_to(document_native, params: params) if NATIVE_XSLT_PARAMS
+        if NATIVE_XSLT_PARAMS
+          return sheet.apply_to(document_native,
+                                params: flat_params_to_hash(params))
+        end
 
         assert_xslt_no_params(params)
         sheet.apply_to(document_native)
@@ -526,7 +545,10 @@ module Moxml
       end
 
       def self.xslt_apply_string(sheet, document_native, params)
-        return sheet.serialize(document_native, params: params) if NATIVE_XSLT_PARAMS
+        if NATIVE_XSLT_PARAMS
+          return sheet.serialize(document_native,
+                                 params: flat_params_to_hash(params))
+        end
 
         assert_xslt_no_params(params)
         sheet.serialize(document_native)
@@ -2043,7 +2065,7 @@ module Moxml
             # One crossing to clear, one to append N (leptris-ruby#366's
             # bulk face; the old path paid an append crossing per child).
             ::Leptris::XML::FFI.check_status(
-              ::Leptris::XML::FFI.leptris_element_remove_children(node.c_ptr)
+              ::Leptris::XML::FFI.leptris_element_remove_children(node.c_ptr),
             )
             return node.append_children(new_children)
           end
