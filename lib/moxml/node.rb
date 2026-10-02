@@ -388,7 +388,15 @@ module Moxml
     # the document node.
     #
     # @return [NodeSet] ancestors ordered nearest-first
-    def ancestors
+    # Nokogiri-compatible: an element-name argument filters the set.
+    def ancestors(selector = nil)
+      all = _ancestors_all
+      return all unless selector
+
+      all.select { |a| a.respond_to?(:name) && a.name == selector.to_s }
+    end
+
+    def _ancestors_all
       return NodeSet.new([], context) if document?
 
       natives = []
