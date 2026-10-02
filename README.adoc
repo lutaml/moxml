@@ -1283,7 +1283,8 @@ reproduce:
 [source,shell]
 ----
 # One-time setup: install ragel + ruby-ll so the forks' gitignored
-# generated lexer/parser sources can be produced.
+# generated lexer/parser sources can be produced. ruby-ll must be
+# installed outside the bundle: vendor:prepare runs it unbundled.
 gem install ruby-ll --no-document
 # (Install ragel via your package manager, e.g. apt-get install ragel
 #  or brew install ragel.)
