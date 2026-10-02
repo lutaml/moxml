@@ -164,6 +164,15 @@ module Moxml
       remove_attribute(name)
     end
 
+    # Nokogiri-compatible: element children only
+    def elements
+      children.select { |c| c.is_a?(Moxml::Element) }
+    end
+
+    def element_children
+      elements
+    end
+
     # Nokogiri-compatible: children= replaces the entire child list
     def children=(node_or_text)
       natives = case node_or_text
