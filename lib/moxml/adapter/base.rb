@@ -47,8 +47,11 @@ module Moxml
 
         def parse_fragment(xml, _context = nil)
           doc = parse("<m>#{xml}</m>")
-          root = root(doc)
-          root ? children(root) : []
+          # doc.root is a wrapper (adapter root overrides answer
+          # patched/unpatched natives indifferently); children() and
+          # every adapter below expect natives.
+          root_node = doc.root
+          root_node ? children(root_node.native) : []
         end
 
         # Streaming incremental parse (leptris engine): yields each

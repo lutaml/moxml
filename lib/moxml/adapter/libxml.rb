@@ -1099,8 +1099,9 @@ module Moxml
             target_doc = doc || (element.is_a?(::LibXML::XML::Node) ? element.doc : nil)
 
             if target_doc
-              # Use deep import to ensure all descendants are included
-              imported = target_doc.import(child, true)
+              # libxml-ruby 6.0 dropped import's deep flag; the import
+              # walks the subtree either way.
+              imported = target_doc.import(child)
               element << imported
             else
               # No target document - create a deep copy of the node instead
