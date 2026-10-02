@@ -104,3 +104,18 @@ RSpec.describe "Element#delete attribute removal" do
     expect(doc.root["id"]).to eq("x")
   end
 end
+
+RSpec.describe "Element#children=" do
+  it "replaces all children with a string" do
+    doc = Moxml.parse("<r><old/>text</r>")
+    doc.root.children = "<a/><b/>"
+    expect(doc.root.children.map(&:name)).to eq(%w[a b])
+  end
+
+  it "replaces with a node" do
+    doc = Moxml.parse("<r><old/></r>")
+    node = Moxml.parse("<x/>").root
+    doc.root.children = node
+    expect(doc.root.children.map(&:name)).to eq(%w[x])
+  end
+end
