@@ -268,3 +268,11 @@ RSpec.describe "Element#default_namespace=" do
     expect(math.to_xml).to include('xmlns="http://www.w3.org/1998/Math/MathML"')
   end
 end
+
+RSpec.describe "Node#to_str" do
+  it "yields the text content" do
+    doc = Moxml.parse("<r><s>a<b>c</b>d</s></r>")
+    expect(doc.at("//s").to_str).to eq("acd")
+    expect(doc.at("//b").to_str).to eq("c")
+  end
+end
