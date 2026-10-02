@@ -1966,7 +1966,19 @@ module Moxml
             node = to_binding(node)
             new_node = to_binding(new_node)
           end
-          return node.replace(new_node) if node.is_a?(::Leptris::XML::Element)
+          if node.is_a?(::Leptris::XML::Element)
+            # NOT Element#replace: it detaches via
+            # leptris_element_remove_child, which leaves the replaced
+            # node's sibling links pointing into the live tree. A later
+            # append of that node splices the stale run under the new
+            # parent, and when the run contains the append target the
+            # tree cycles (standoc term cleanup does
+            # t << n.replace(t2)). Insert + unlink instead: the unlink
+            # path clears the sibling links.
+            node.add_next_sibling(new_node)
+            node.unlink
+            return new_node
+          end
 
           # libleptris only offers element-anchored insertion, so a
           # content node (text/comment/CDATA/PI) is replaced by

@@ -237,3 +237,16 @@ RSpec.describe "Node#remove on a detached node" do
     expect(doc.at("//t/d/p/c")).not_to be_nil
   end
 end
+
+RSpec.describe "Element#replace + re-attach under the replacement" do
+  it "does not cycle the tree (leptris stale-run splice)" do
+    doc = Moxml.parse("<r><a>x</a><b/></r>")
+    a = doc.at("//a")
+    t = doc.create_element("t")
+    a.replace(t)
+    t << a
+    expect(doc.root.children.map(&:name)).to eq(%w[t b])
+    expect(t.children.map(&:name)).to eq(%w[a])
+    expect(doc.at("//t/a/text()").text).to eq("x")
+  end
+end
