@@ -163,3 +163,11 @@ RSpec.describe "Nokogiri-compatible node sugar" do
     end
   end
 end
+
+RSpec.describe "NodeSet#- difference" do
+  it "removes nodes present in the other set" do
+    doc = Moxml.parse("<r><a/><b/><c/></r>")
+    diff = doc.search("//xmlns:*") - doc.search("//xmlns:a")
+    expect(diff.map(&:name).sort).to eq(%w[b c])
+  end
+end
