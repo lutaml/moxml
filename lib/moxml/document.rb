@@ -17,7 +17,10 @@ module Moxml
 
     def root=(element)
       owner = element.is_a?(Node) && element.document
-      if owner && !owner.equal?(self) && element.context.equal?(context)
+      # The document face can answer non-Document objects for floating
+      # elements on some adapters (ox) — only a real foreign Document
+      # counts as a cross-document root.
+      if owner.is_a?(Document) && !owner.equal?(self) && element.context.equal?(context)
         # libleptris refuses a root owned by another document (the
         # engine's set_root ownership check), while Nokogiri adopts.
         # Cross-document CHILD attaches are supported, so build the
