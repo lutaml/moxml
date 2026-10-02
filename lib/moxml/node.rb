@@ -104,6 +104,13 @@ module Moxml
       Moxml::Node.wrap(adapter.previous_sibling(@native), context)
     end
 
+    # Nokogiri-compatible append sugar: node << appends (String
+    # operands become text nodes via add_child's existing coercion).
+    def <<(node)
+      add_child(node)
+      self
+    end
+
     def add_child(node)
       context.bump_children_generation
       node = prepare_node(node)
