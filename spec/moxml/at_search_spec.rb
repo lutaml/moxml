@@ -383,6 +383,7 @@ RSpec.describe "Nokogiri-compatible node sugar" do
       expect(doc.root.inner_xml).to eq("<a>x</a><b/>")
     end
   end
+
   describe "Node#remove after replace with a parent link" do
     it "is a no-op, not an engine error (stale wrapper parent link)" do
       doc = Moxml.parse("<r><term><p>a</p><note>n</note></term></r>")
