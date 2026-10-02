@@ -241,6 +241,16 @@ module Moxml
       at_xpath(expression, namespaces)
     end
 
+    # Nokogiri-compatible depth-first traversal: yields self, then
+    # children recursively (document-order visitor).
+    def traverse(&block)
+      return to_enum(:traverse) unless block
+
+      yield self
+      children.each { |child| child.traverse(&block) }
+      self
+    end
+
     # Convenience find methods (aliases for xpath methods)
     def find(xpath_expression, namespaces = {})
       at_xpath(xpath_expression, namespaces)

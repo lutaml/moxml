@@ -34,3 +34,12 @@ RSpec.describe "Nokogiri-compatible at/search sugar" do
     expect(item.at("xmlns:name").text).to eq("two")
   end
 end
+
+RSpec.describe "Node#traverse" do
+  it "yields depth-first in document order" do
+    doc = Moxml.parse("<r><a><b/></a><c/></r>")
+    names = []
+    doc.traverse { |n| names << n.name if n.respond_to?(:name) }
+    expect(names.first(4)).to eq(%w[r a b c])
+  end
+end
