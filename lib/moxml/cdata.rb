@@ -19,5 +19,8 @@ module Moxml
     def name
       "#cdata-section"
     end
+
+    # Nokogiri-compatible: renaming non-element nodes is a no-op
+    def name=(_value); end
   end
 end
