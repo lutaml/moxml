@@ -6,6 +6,15 @@ module Moxml
 
     attr_reader :context
 
+    # Nokogiri-compatible set difference: nodes in this set absent
+    # from the other, identity-compared on natives.
+    def -(other)
+      other_ids = {}
+      other.native_nodes.each { |n| other_ids[n.object_id] = true }
+      remaining = native_nodes.reject { |n| other_ids.key?(n.object_id) }
+      self.class.new(remaining, @context, @parent_node)
+    end
+
     # nodes: Array of natives, or an adapter's LazyNodeSet — the
     # native set is held unmaterialized until an operation needs an
     # Array (#+, #<<, #delete, Range slices).
