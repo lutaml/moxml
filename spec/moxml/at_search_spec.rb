@@ -214,3 +214,12 @@ RSpec.describe "NodeSet#to_xml" do
     expect(doc.root.children.to_xml).to eq("<a>x</a>tail")
   end
 end
+
+RSpec.describe "Node#add_first_child" do
+  it "inserts before existing children and handles empty parents" do
+    doc = Moxml.parse("<r><b/></r>")
+    doc.root.add_first_child("<a/>")
+    expect(doc.root.children.map(&:name)).to eq(%w[a b])
+    Moxml.parse("<r/>").root.add_first_child("<x/>")
+  end
+end
