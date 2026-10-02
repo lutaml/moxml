@@ -88,13 +88,17 @@ namespace :vendor do
        "#{ruby_ll}/lib/ll/parser.rll"],
     ]
 
-    generators.each do |cmd, output, source|
-      if File.exist?(output) && File.mtime(output) >= File.mtime(source)
-        next
-      end
+    # Under bundle exec, ruby-ll resolves to the vendored opal-ruby-ll
+    # binstub, which needs the not-yet-compiled libll.
+    Bundler.with_unbundled_env do
+      generators.each do |cmd, output, source|
+        if File.exist?(output) && File.mtime(output) >= File.mtime(source)
+          next
+        end
 
-      FileUtils.mkdir_p(File.dirname(output))
-      sh cmd
+        FileUtils.mkdir_p(File.dirname(output))
+        sh cmd
+      end
     end
   end
 
