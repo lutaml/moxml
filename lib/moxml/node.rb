@@ -74,6 +74,11 @@ module Moxml
     end
 
     def children
+      # Generation-checked memo: mutations bump the context counter, so
+      # this self-invalidates even when the same logical node is served
+      # by multiple wrapper representations (native vs binding duality).
+      @children = nil if @children_gen != context.children_generation
+      @children_gen = context.children_generation
       @children ||= begin
         # The wrapper's entity memo decides the marker split; the
         # adapter would otherwise re-derive it per call (a C parent
@@ -100,6 +105,7 @@ module Moxml
     end
 
     def add_child(node)
+      context.bump_children_generation
       node = prepare_node(node)
       adapter.add_child(@native, node.native)
       # Refresh native in case adapter changed identity (e.g., LibXML
@@ -116,6 +122,7 @@ module Moxml
     end
 
     def add_previous_sibling(node)
+      context.bump_children_generation
       node = prepare_node(node)
       adapter.add_previous_sibling(@native, node.native)
       # Invalidate the parent's memoized children list. The wrapper-side
@@ -144,6 +151,7 @@ module Moxml
     end
 
     def add_next_sibling(node)
+      context.bump_children_generation
       node = prepare_node(node)
       adapter.add_next_sibling(@native, node.native)
       parent&.invalidate_children_cache!
@@ -152,6 +160,7 @@ module Moxml
     end
 
     def remove
+      context.bump_children_generation
       invalidate_parent_children_cache!
       adapter.remove(@native)
       invalidate_children_cache!

@@ -64,3 +64,14 @@ RSpec.describe "sibling inserts invalidate the parent children cache" do
     expect(doc.at("//x")).not_to be_nil
   end
 end
+
+RSpec.describe "children memo invalidation via generation" do
+  it "duality-proof: insert visible through a wrapper that memoized earlier" do
+    ctx = Moxml.new(:leptris)
+    doc = ctx.parse("<r><a/>\n<b/></r>")
+    doc.root.children.map(&:name)            # memoize on the root wrapper
+    a = doc.at("//a")                        # possibly a different wrapper instance
+    a.next = "<x/>"
+    expect(doc.root.children.map(&:name)).to eq(%w[a text x text b])
+  end
+end
