@@ -892,9 +892,21 @@ module Moxml
         end
       end
 
-      # Union: | (pipe)
-      def on_pipe(ast, input)
-        left, right = ast.children
+      # Union: | (pipe). Unions are N-ARY — the parser flattens
+      # a|b|c into one union node — and may nest (parenthesized
+      # groups become union children). Every member's nodes flow
+      # through the block when one is given (nested unions), else
+      # into one result NodeSet (#315: the old two-children
+      # destructure silently dropped every branch after the second).
+      def on_pipe(ast, input, &block)
+        if block
+          code = nil
+          ast.children.each do |child|
+            fragment = process(child, input, &block)
+            code = code ? code.followed_by(fragment) : fragment
+          end
+          return code
+        end
 
         union = unique_literal(:union)
         context_var = context_literal
@@ -903,22 +915,13 @@ module Moxml
         nodeset_class = const_ref("Moxml", "NodeSet")
         empty_array = Ruby::Node.new(:array, [])
 
-        # Expressions such as "a | b | c"
-        if left.type == :pipe
-          union.assign(process(left, input))
-            .followed_by(process(right, input) { |node| union << node })
-            .followed_by(union)
-        # Expressions such as "a | b"
-        else
-          nodeset_new = Ruby::Node.new(:send,
-                                       [nodeset_class, "new", empty_array,
-                                        context_var])
-
-          union.assign(nodeset_new)
-            .followed_by(process(left, input) { |node| union << node })
-            .followed_by(process(right, input) { |node| union << node })
-            .followed_by(union)
+        code = union.assign(Ruby::Node.new(:send,
+                                           [nodeset_class, "new", empty_array,
+                                            context_var]))
+        ast.children.each do |child|
+          code = code.followed_by(process(child, input) { |node| union << node })
         end
+        code.followed_by(union)
       end
 
       # Variable: $variable

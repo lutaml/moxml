@@ -2219,7 +2219,16 @@ module Moxml
             node = to_binding(node)
           end
           return nil unless native_context_node?(node)
-          return nil unless native_expression?(expression)
+          # Hash-bound xmlns rides native on probing bindings
+          # (leptris resolves the reserved prefix from the hash);
+          # empty mappings (xmlns="") select no-namespace elements
+          # and stay on the Ruby engine — the C pairs-set rejects
+          # empty URIs. Everything else keeps the expression-keyed
+          # gate.
+          return nil unless (namespaces.is_a?(Hash) &&
+                             namespaces["xmlns"].to_s.length.positive? &&
+                             xmlns_native?) ||
+            native_expression?(expression)
           # The leptris engine mishandles namespace-prefixed node
           # tests: "m:*" matches elements in ANY namespace and
           # "m:name" matches none, regardless of the binding. Route
@@ -2361,6 +2370,28 @@ module Moxml
         # xmlns:name is a nokogiri-compat convention addressing
         # elements in the default namespace; only the Ruby engine
         # implements it.
+        # One-time capability probe: does the binding's native engine
+        # resolve the reserved xmlns prefix from the namespace hash?
+        # Memoized class-level — the answer never changes for an
+        # install. Only hash-bound xmlns queries may ride native
+        # (the gate below is expression-keyed and cannot see the
+        # call's namespaces); unbound xmlns stays on the Ruby engine,
+        # whose reserved-prefix branch matches default-namespace
+        # elements.
+        def xmlns_native?
+          return @xmlns_native unless @xmlns_native.nil?
+
+          @xmlns_native = begin
+            probe = parse('<r xmlns="urn:p"><a>1</a></r>', {}, nil)
+            raw = to_binding(probe.root.native)
+            res = raw.xpath("./xmlns:a", { "xmlns" => "urn:p" })
+            list = res.respond_to?(:to_a) ? res.to_a : [res].compact
+            list.size == 1 && list.first.text.to_s == "1"
+          rescue StandardError
+            false
+          end
+        end
+
         def uses_xmlns_prefix?(ast)
           return true if ast.type == :test && ast.value[:namespace] == "xmlns"
 
