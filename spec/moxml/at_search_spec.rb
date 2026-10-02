@@ -367,3 +367,10 @@ RSpec.describe "xpath with namespace bindings" do
     expect(none).to be_nil
   end
 end
+
+RSpec.describe "Element#inner_xml" do
+  it "serializes the children" do
+    doc = Moxml.parse("<r><a>x</a><b/></r>")
+    expect(doc.root.inner_xml).to eq("<a>x</a><b/>")
+  end
+end
