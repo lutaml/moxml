@@ -159,6 +159,11 @@ module Moxml
       end
     end
 
+    # Nokogiri-compatible: delete(name) removes the attribute
+    def delete(name)
+      remove_attribute(name)
+    end
+
     def remove_attribute(name)
       # Both remove paths end in invalidate_attribute_cache!, which
       # bumps the generation.

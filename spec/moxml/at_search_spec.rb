@@ -95,3 +95,12 @@ RSpec.describe "Node#<< append sugar" do
     expect(text_parent.text).to eq("hello")
   end
 end
+
+RSpec.describe "Element#delete attribute removal" do
+  it "removes an attribute by name" do
+    doc = Moxml.parse("<r annex='yes' id='x'/>")
+    doc.root.delete("annex")
+    expect(doc.root["annex"]).to be_nil
+    expect(doc.root["id"]).to eq("x")
+  end
+end
