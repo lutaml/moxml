@@ -515,17 +515,8 @@ module Moxml
     # elements share the same qualified name, keeping paths minimal.
     #
     # @return [String] XPath expression
-    # @raise [Moxml::NotImplementedError] for node types other than
-    #   element and document
     def path
       return "/" if document?
-
-      unless element?
-        raise Moxml::NotImplementedError.new(
-          "path is only supported for element and document nodes",
-          feature: "path",
-        )
-      end
 
       segments = []
       current = self
@@ -640,19 +631,38 @@ module Moxml
 
     private
 
-    # XPath segment for an element: the qualified name, plus a positional
-    # predicate only when same-named element siblings make it ambiguous.
-    def path_segment_for(element)
-      name = element.name
-      parent = element.parent
+    # XPath segment for a node: elements use their qualified name,
+    # other node kinds their XPath type test (text(), comment(), ...).
+    # A positional predicate is emitted only when same-kind siblings
+    # make the segment ambiguous.
+    def path_segment_for(node)
+      name = node.element? ? node.name : node.path_type_test
+      parent = node.parent
       return name unless parent
 
-      same_name = parent.children.select do |child|
-        child.element? && child.name == name
+      same_kind = parent.children.select do |child|
+        if node.element?
+          child.element? && child.name == name
+        else
+          !child.element? && child.path_type_test == name
+        end
       end
-      return name if same_name.size == 1
+      return name if same_kind.size == 1
 
-      "#{name}[#{same_name.find_index(element) + 1}]"
+      "#{name}[#{same_kind.find_index(node) + 1}]"
+    end
+
+    # The XPath node-test spelling for this non-element node.
+    def path_type_test
+      if text? || cdata?
+        "text()"
+      elsif comment?
+        "comment()"
+      elsif processing_instruction?
+        "processing-instruction()"
+      else
+        name.to_s
+      end
     end
 
     def prepare_node(node)
