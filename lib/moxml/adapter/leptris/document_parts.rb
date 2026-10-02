@@ -48,7 +48,7 @@ module Moxml
           # equal?-based exclusion (canon's document-element skip)
           # silently breaks (issue #219). Mint-on-miss converges
           # both accessors on the same native object.
-          children.map! { |child| canonical_native(doc, child) } if NATIVE_READ_LAYER
+          children.map! { |child| native_twin(doc, child) } if NATIVE_READ_LAYER
           children
         end
 

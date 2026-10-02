@@ -146,6 +146,14 @@ module Moxml
           nil
         end
 
+        # Canonical node identity: adapters carrying more than one
+        # Ruby representation over one C node answer the representation
+        # the tree walk mints, so every wrap path resolves one wrapper
+        # per logical node (moxml#311). Default: the node is canonical.
+        def canonical_native(node)
+          node
+        end
+
         # Prefixed-attribute value fast path: adapters whose engine
         # resolves expanded-name (uri, local) lookups natively answer
         # the value here; others fall back to the resolver's

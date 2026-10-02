@@ -659,6 +659,13 @@ module Moxml
     def self.wrap_with(node, context, adapter)
       return nil if node.nil?
 
+      # One C node may have several Ruby representations (leptris
+      # native/binding duality, moxml#311); every wrap resolves to
+      # the canonical one so memo holders share one invalidation
+      # chain. A hit-only lookup: a memoized holder implies a prior
+      # walk, which is what populates the canonical map.
+      node = adapter.canonical_native(node)
+
       # Cache-stable binding nodes carry their wrapper directly
       # (#312): the binding's document-owned cache hands the SAME
       # node object for the engine node's whole lifetime, so an

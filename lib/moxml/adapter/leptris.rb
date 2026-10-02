@@ -1511,7 +1511,7 @@ module Moxml
         # accessor converges on one native per node (issue #219).
         # Binding natives (Attribute/Attr, synthetic wrappers) and
         # docless nodes pass through unchanged.
-        def canonical_native(doc, node)
+        def native_twin(doc, node)
           return node unless node.is_a?(::Leptris::XML::Element)
 
           cache = doc.native_cache
@@ -1625,7 +1625,7 @@ module Moxml
             # Through the same address-keyed cache as the children
             # path: NativeNode.from alone mints a fresh object per
             # call on 1.9.163.x, splitting the wrappers (issue #219).
-            native = canonical_native(document, r)
+            native = native_twin(document, r)
             record_native_doc(native, document)
             return native
           end
@@ -1686,8 +1686,8 @@ module Moxml
           # convergence (#219) hands every accessor — children
           # included — the SAME native, so the wrapper identity
           # holds across later traversals.
-          canonical_native(doc,
-                           ::Leptris::XML::Node.wrap(::FFI::Pointer.new(addr), doc))
+          native_twin(doc,
+                      ::Leptris::XML::Node.wrap(::FFI::Pointer.new(addr), doc))
         end
 
         def attributes(element)
@@ -1839,6 +1839,7 @@ module Moxml
             node = to_binding(node)
             new_node = to_binding(new_node)
           end
+          pin_foreign_owner_document(node, new_node)
           # A PI inserted before the root lives at document level in
           # libleptris's model, not in the element tree.
           if new_node.is_a?(::Leptris::XML::ProcessingInstruction) &&
@@ -1864,6 +1865,7 @@ module Moxml
             node = to_binding(node)
             new_node = to_binding(new_node)
           end
+          pin_foreign_owner_document(node, new_node)
           return node.add_next_sibling(new_node) if node.is_a?(::Leptris::XML::Element)
 
           # Non-element receivers (Text/Comment/CDATA): the binding's
@@ -2118,6 +2120,29 @@ module Moxml
           engine_xpath(node, expression, namespaces)
         end
 
+        # Canonical node identity (moxml#311): the native layer and
+        # the binding layer hold separate Ruby objects over one C
+        # node, and only the native cache carries the tree-walk
+        # identity the @parent_node invalidation chain rides on.
+        # Resolve binding-layer nodes (xpath results, engine results)
+        # to the walked instance when one exists — a memoized
+        # children holder implies a prior walk, so a cache miss means
+        # no holder exists and the binding node is safe as-is.
+        def canonical_native(node)
+          return node unless NATIVE_READ_LAYER
+          return node if node.is_a?(::Leptris::XML::NativeNode)
+          return node unless node.is_a?(::Leptris::XML::Node)
+
+          doc = node.document
+          return node if doc.nil?
+
+          # Only a contract-carrying hit is the walked canonical —
+          # plain NN twins (entity references, #219 miss-mints) have
+          # no Identity class and keep the binding representation.
+          hit = doc.native_cache[node.c_ptr.address]
+          hit.is_a?(::Moxml::Node) ? hit : node
+        end
+
         def at_xpath(node, expression, namespaces = {})
           native = native_xpath(node, expression, namespaces, first_only: true)
           return native unless native.nil?
@@ -2194,7 +2219,8 @@ module Moxml
             # and frees in one C dispatch — no NodeSet container, no
             # AutoPointer (leptris-ruby TODO.perf/16). The module
             # object back means a scalar, whose wrap (and free)
-            # stays with wrap_xpath_first_result.
+            # stays with wrap_xpath_first_result. Identity resolution
+            # happens at the at_xpath boundary (bridge_xpath_node).
             return ::Leptris::XML::Searchable.wrap_xpath_first_result(
               document, result_ptr
             )
