@@ -16,6 +16,27 @@ module Moxml
     end
 
     def root=(element)
+      owner = element.is_a?(Node) && element.document
+      if owner && !owner.equal?(self) && element.context.equal?(context)
+        # libleptris refuses a root owned by another document (the
+        # engine's set_root ownership check), while Nokogiri adopts.
+        # Cross-document CHILD attaches are supported, so build the
+        # root here, mirror its declarations and attributes, and
+        # splice the foreign subtree child-by-child — each attach
+        # rides adapter add_child, which pins the owner document
+        # against GC (issue #304).
+        new_root = create_element(element.name)
+        element.attribute_pairs.each { |k, v| new_root[k] = v }
+        element.declared_namespaces.each do |prefix, uri|
+          new_root.add_namespace(prefix, uri)
+        end
+        adapter.set_root(@native, new_root.native)
+        new_root.parent_node = self
+        element.children.to_a.each { |child| new_root.add_child(child) }
+        context.bump_children_generation
+        invalidate_children_cache!
+        return
+      end
       adapter.set_root(@native, element.native)
       element.parent_node = self
       invalidate_children_cache!

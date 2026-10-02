@@ -308,3 +308,13 @@ RSpec.describe "Node#path for non-element nodes" do
     expect(doc.xpath("//p/comment()").first.path).to eq("/r/p[1]/comment()")
   end
 end
+
+RSpec.describe "Document#root= with a foreign root" do
+  it "adopts the subtree from another document" do
+    doc = Moxml.parse("<old><x/></old>")
+    other = Moxml.parse(%(<r xmlns="urn:x" a="1"><p>hi<b>t</b></p></r>))
+    doc.root = other.root
+    expect(doc.to_xml).to eq(%(<r xmlns="urn:x" a="1"><p>hi<b>t</b></p></r>))
+    expect(doc.root.namespace_uri.to_s).to eq("urn:x")
+  end
+end
