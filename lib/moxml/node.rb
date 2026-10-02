@@ -254,6 +254,11 @@ module Moxml
       context.bump_children_generation
       invalidate_parent_children_cache!
       adapter.remove(@native)
+      # The wrapper-side parent link dies with the attach — leaving it
+      # stale makes a later #remove's guard trust a parent that no
+      # longer exists and push an already-detached node into the
+      # engine (leptris: "Not found").
+      @parent_node = nil
       invalidate_children_cache!
       # The detached subtree left its declaring ancestors behind
       invalidate_namespace_cache!
@@ -269,6 +274,9 @@ module Moxml
       node = prepare_node(node)
       invalidate_parent_children_cache!
       adapter.replace(@native, node.native)
+      # Self is detached by the replace — drop the stale parent link
+      # (see #remove).
+      @parent_node = nil
       invalidate_children_cache!
       self
     end

@@ -384,3 +384,16 @@ RSpec.describe "Nokogiri-compatible node sugar" do
     end
   end
 end
+
+RSpec.describe "Node#remove after replace with a parent link" do
+  it "is a no-op, not an engine error (stale wrapper parent link)" do
+    doc = Moxml.parse("<r><term><p>a</p><note>n</note></term></r>")
+    # children walks are parent-aware: the wrapper carries @parent_node
+    p_node = doc.at("//term").children.find { |c| c.name == "p" }
+    t = doc.create_element("definition")
+    p_node.replace(t)
+    expect { t << p_node.remove }.not_to raise_error
+    expect(doc.at("//term/definition/p")).not_to be_nil
+    expect(doc.at("//term/definition/p").text).to eq("a")
+  end
+end
