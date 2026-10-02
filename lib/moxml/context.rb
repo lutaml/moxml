@@ -74,6 +74,18 @@ module Moxml
       end
     end
 
+    # Children-memo generation: bumped by every tree mutation so
+    # per-wrapper children memos can self-invalidate even when the
+    # same logical node is reachable through multiple wrapper
+    # representations (native vs binding duality).
+    def children_generation
+      @children_generation ||= 0
+    end
+
+    def bump_children_generation
+      @children_generation = children_generation + 1
+    end
+
     def namespace_scope_generation
       @namespace_scope_generation
     end
