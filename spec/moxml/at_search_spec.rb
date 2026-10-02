@@ -55,3 +55,12 @@ RSpec.describe "Node#next=/previous=" do
     expect(doc.root.children.map(&:name).compact).to eq(%w[a x y b])
   end
 end
+
+RSpec.describe "sibling inserts invalidate the parent children cache" do
+  it "next= is visible through parent.children when siblings are text" do
+    doc = Moxml.parse("<r><a/>\n<b/></r>")
+    doc.at("//a").next = "<x/>"
+    expect(doc.root.children.map(&:name)).to eq(%w[a text x text b].map { |n| n == "text" ? "text" : n })
+    expect(doc.at("//x")).not_to be_nil
+  end
+end
