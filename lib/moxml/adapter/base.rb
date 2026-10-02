@@ -131,10 +131,12 @@ module Moxml
         def children_accepts_entity_flag?
           return @children_accepts_entity_flag unless @children_accepts_entity_flag.nil?
 
-          # Opal's Method#parameters carries no reflection data: it
-          # returns a bare JS undefined, which answers no method call
-          # (not even nil?), so it is matched with `case`, whose
-          # Module#=== tolerates it. Without the data the keyword is
+          # Opal records parameter data only when compiling with arity
+          # checking, which is off by default (opal-rspec turns it on, so
+          # the Opal spec run never sees this). Without it
+          # Method#parameters returns a bare JS undefined, which answers no
+          # method call (not even nil?), so it is matched with `case`,
+          # whose Module#=== tolerates it. Without the data the keyword is
           # assumed: every built-in adapter's #children accepts it.
           kinds = %i[key keyrest keyreq]
           @children_accepts_entity_flag =
