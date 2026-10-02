@@ -122,13 +122,20 @@ module Moxml
       self
     end
 
-    # Nokogiri-compatible assignment forms: node.next = / node.previous =
+    # Nokogiri-compatible assignment forms: node.next = / node.previous =.
+    # String operands are parsed as XML fragments, like Nokogiri.
     def next=(node)
-      add_next_sibling(node)
+      add_next_sibling(sibling_operand(node))
     end
 
     def previous=(node)
-      add_previous_sibling(node)
+      add_previous_sibling(sibling_operand(node))
+    end
+
+    def sibling_operand(node)
+      return node unless node.is_a?(String)
+
+      context.parse_fragment(node).first
     end
 
     def add_next_sibling(node)
