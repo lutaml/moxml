@@ -46,5 +46,13 @@ RSpec.describe Moxml::Adapter::Base do
       expect(Moxml::Adapter::Leptris.children_accepts_entity_flag?).to be(true)
       expect(Moxml::Adapter::Nokogiri.children_accepts_entity_flag?).to be(true)
     end
+
+    it "assumes the keyword when Method#parameters returns no data" do
+      adapter = Class.new(Moxml::Adapter::Nokogiri)
+      children = instance_double(Method, parameters: nil)
+      allow(adapter).to receive(:method).with(:children).and_return(children)
+
+      expect(adapter.children_accepts_entity_flag?).to be(true)
+    end
   end
 end
