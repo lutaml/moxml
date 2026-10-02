@@ -43,3 +43,15 @@ RSpec.describe "Node#traverse" do
     expect(names.first(4)).to eq(%w[r a b c])
   end
 end
+
+RSpec.describe "Node#next=/previous=" do
+  it "insert a sibling after/before via assignment" do
+    doc = Moxml.parse("<r><a/><b/></r>")
+    a = doc.at("//a")
+    a.next = "<x/>"
+    expect(doc.root.children.map(&:name).compact).to eq(%w[a x b])
+    b = doc.at("//b")
+    b.previous = "<y/>"
+    expect(doc.root.children.map(&:name).compact).to eq(%w[a x y b])
+  end
+end

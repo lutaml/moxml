@@ -122,6 +122,15 @@ module Moxml
       self
     end
 
+    # Nokogiri-compatible assignment forms: node.next = / node.previous =
+    def next=(node)
+      add_next_sibling(node)
+    end
+
+    def previous=(node)
+      add_previous_sibling(node)
+    end
+
     def add_next_sibling(node)
       node = prepare_node(node)
       adapter.add_next_sibling(@native, node.native)
