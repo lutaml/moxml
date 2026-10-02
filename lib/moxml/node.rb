@@ -140,7 +140,6 @@ module Moxml
     # convention used across metanorma). Strings parse as fragments
     # (the sibling_operand convention).
     def add_first_child(node)
-      node = sibling_operand(node) if node.is_a?(String)
       if first_child
         first_child.add_previous_sibling(node)
       else
