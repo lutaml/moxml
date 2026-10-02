@@ -138,6 +138,18 @@ module Moxml
       new_parent.add_child(self)
     end
 
+    # Insert ahead of the current first child (nokogiri-monkeypatch
+    # convention used across metanorma).
+    def add_first_child(node)
+      if first_child
+        node = prepare_node(node)
+        first_child.add_previous_sibling(node)
+      else
+        add_child(node)
+      end
+      self
+    end
+
     def add_child(node)
       context.bump_children_generation
       node = prepare_node(node)
