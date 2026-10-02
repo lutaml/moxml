@@ -104,6 +104,20 @@ module Moxml
       Moxml::Node.wrap(adapter.previous_sibling(@native), context)
     end
 
+    # Nokogiri-compatible: nearest sibling elements, skipping text and
+    # comment nodes.
+    def next_element
+      s = next_sibling
+      s = s.next_sibling while s && !s.is_a?(Moxml::Element)
+      s
+    end
+
+    def previous_element
+      s = previous_sibling
+      s = s.previous_sibling while s && !s.is_a?(Moxml::Element)
+      s
+    end
+
     # Nokogiri-compatible append sugar: node << appends. Strings
     # parse as fragments (sibling_operand's convention — plain text
     # parses to a text node, markup to nodes, multiple roots all
