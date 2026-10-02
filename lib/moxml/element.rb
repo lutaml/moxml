@@ -269,9 +269,12 @@ module Moxml
 
     # Nokogiri-compatible: bind the element to +uri+ as its DEFAULT
     # namespace — the name drops any prefix and the declaration lands
-    # on this element. Children keep their own bindings.
+    # on this element. Children keep their own bindings. add_namespace
+    # is the primitive: namespace=({nil => uri}) declares the default
+    # namespace twice on leptris.
     def default_namespace=(uri)
-      self.namespace = { nil => uri.to_s }
+      self.name = name.split(":", 2)[-1] if name.to_s.include?(":")
+      add_namespace(nil, uri.to_s)
     end
 
     # All namespaces IN SCOPE for this element — its own
