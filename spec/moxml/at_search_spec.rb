@@ -396,7 +396,6 @@ RSpec.describe "Nokogiri-compatible node sugar" do
       expect(doc.at("//term/definition/p").text).to eq("a")
     end
   end
-end
 
   describe "wrapper read memos" do
     it "Element#text memoizes and invalidates on text=/children=" do
@@ -420,3 +419,15 @@ end
       expect(doc.root["a"]).to eq("2")
     end
   end
+  describe "Text#content memo" do
+    it "memoizes and invalidates on content=" do
+      doc = Moxml.parse("<r>hello</r>")
+      t = doc.root.children.first
+      first = t.content
+      expect(t.content).to equal(first)
+      expect(t.text).to equal(first)
+      t.content = "bye"
+      expect(t.content).to eq("bye")
+    end
+  end
+end
