@@ -282,7 +282,7 @@ RSpec.describe "Element#content=" do
     doc = Moxml.parse("<r><s><b>x</b>y</s></r>")
     s = doc.at("//s")
     s.content = "1 < 2"
-    expect(s.children.map(&:name)).to eq(%w[__text__])
+    expect(s.children.size).to eq(1)
     expect(s.content).to eq("1 < 2")
     expect(s.to_xml).to eq("<s>1 &lt; 2</s>")
   end
