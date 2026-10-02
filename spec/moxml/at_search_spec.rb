@@ -361,23 +361,26 @@ RSpec.describe "Nokogiri-compatible node sugar" do
       expect(math.to_xml).to eq(%(<math xmlns="urn:m"></math>))
     end
   end
-end
 
-RSpec.describe "xpath with namespace bindings" do
-  it "prefixed star and name tests honor the namespace URI" do
-    doc = Moxml.parse(%(<r><bibdata/><m:title xmlns="urn:x"/></r>))
-    hits = doc.root.xpath(".//m:*", "m" => "urn:unitsml")
-    expect(hits.map(&:name)).to eq([])
-    named = doc.root.at_xpath(".//m:title", "m" => "urn:x")
-    expect(named&.name).to eq("title")
-    none = doc.root.at_xpath(".//m:title", "m" => "urn:unitsml")
-    expect(none).to be_nil
+  describe "xpath with namespace bindings" do
+    it "prefixed star and name tests honor the namespace URI" do
+      # m must be DECLARED on the element — a bare m:title with only
+      # a default xmlns is a no-namespace element whose literal name
+      # carries the colon, and no prefix binding can select it.
+      doc = Moxml.parse(%(<r><bibdata/><m:title xmlns:m="urn:x"/></r>))
+      hits = doc.root.xpath(".//m:*", "m" => "urn:unitsml")
+      expect(hits.map(&:name)).to eq([])
+      named = doc.root.at_xpath(".//m:title", "m" => "urn:x")
+      expect(named&.name).to eq("title")
+      none = doc.root.at_xpath(".//m:title", "m" => "urn:unitsml")
+      expect(none).to be_nil
+    end
   end
-end
 
-RSpec.describe "Element#inner_xml" do
-  it "serializes the children" do
-    doc = Moxml.parse("<r><a>x</a><b/></r>")
-    expect(doc.root.inner_xml).to eq("<a>x</a><b/>")
+  describe "Element#inner_xml" do
+    it "serializes the children" do
+      doc = Moxml.parse("<r><a>x</a><b/></r>")
+      expect(doc.root.inner_xml).to eq("<a>x</a><b/>")
+    end
   end
 end
