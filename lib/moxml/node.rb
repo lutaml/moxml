@@ -259,12 +259,12 @@ module Moxml
       xpath(expression, namespaces)
     end
 
-    def css(expression)
+    def css(_expression)
       raise Moxml::NotImplementedError,
             "CSS selectors are not supported; use search with XPath"
     end
 
-    def at_css(expression)
+    def at_css(_expression)
       raise Moxml::NotImplementedError,
             "CSS selectors are not supported; use at with XPath"
     end
