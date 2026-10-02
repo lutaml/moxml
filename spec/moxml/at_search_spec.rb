@@ -207,3 +207,10 @@ RSpec.describe "Node#parent= reparenting" do
     expect(doc.at("//from/p")).to be_nil
   end
 end
+
+RSpec.describe "NodeSet#to_xml" do
+  it "serializes the set's members in order" do
+    doc = Moxml.parse("<r><a>x</a>tail</r>")
+    expect(doc.root.children.to_xml).to eq("<a>x</a>tail")
+  end
+end
