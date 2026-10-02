@@ -271,7 +271,7 @@ module Moxml
     # namespace — the name drops any prefix and the declaration lands
     # on this element. Children keep their own bindings.
     def default_namespace=(uri)
-      namespace=(nil => uri.to_s)
+      self.namespace = { nil => uri.to_s }
     end
 
     # All namespaces IN SCOPE for this element — its own
