@@ -2008,7 +2008,16 @@ module Moxml
               )
             end
           else
-            node.unlink
+            begin
+              node.unlink
+            rescue ::Leptris::XML::Error => e
+              # "Not found" from unlink means the node is already in
+              # no parent list — detached (replace, children=, engine
+              # paths the wrapper layer cannot clear links for).
+              # Nokogiri's unlink is a no-op there; match it instead
+              # of crashing cleanup passes.
+              raise unless e.message.include?("Not found")
+            end
           end
         end
 
