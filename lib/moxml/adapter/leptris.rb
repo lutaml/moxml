@@ -507,7 +507,18 @@ module Moxml
         raise Moxml::XsltError, "stylesheet compile failed: #{e.message}"
       end
 
+      # Bindings >= 1.9.290.0 thread top-level xsl:param overrides
+      # (leptris#1478); older bindings raise the typed error (the
+      # #360 face gap, face-probed so a misrelease degrades instead
+      # of NoMethodError-ing — the 1.9.199.0 lesson).
+      NATIVE_XSLT_PARAMS =
+        NATIVE_READ_LAYER &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.290.0") &&
+        ::Leptris::XML::XSLT.instance_method(:apply_to).parameters.size > 1
+
       def self.xslt_apply_document(sheet, document_native, params)
+        return sheet.apply_to(document_native, params: params) if NATIVE_XSLT_PARAMS
+
         assert_xslt_no_params(params)
         sheet.apply_to(document_native)
       rescue ::Leptris::XML::XPathError => e
@@ -515,6 +526,8 @@ module Moxml
       end
 
       def self.xslt_apply_string(sheet, document_native, params)
+        return sheet.serialize(document_native, params: params) if NATIVE_XSLT_PARAMS
+
         assert_xslt_no_params(params)
         sheet.serialize(document_native)
       rescue ::Leptris::XML::XPathError => e
@@ -525,8 +538,9 @@ module Moxml
         return if params.nil? || params.empty?
 
         raise Moxml::XsltError,
-              "XSLT params are not threaded by the leptris engine yet " \
-              "(leptris-ruby#360); pass an empty params hash"
+              "XSLT params are not threaded by this binding " \
+              "(leptris-ruby#360); upgrade to leptris >= 1.9.290.0 or " \
+              "pass an empty params hash"
       end
 
       def self.native_c14n_byte_safe?
@@ -2016,10 +2030,22 @@ module Moxml
           new_node
         end
 
+        NATIVE_APPEND_CHILDREN =
+          NATIVE_READ_LAYER &&
+          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.290.0")
+
         def replace_children(node, new_children)
           if NATIVE_READ_LAYER
             node = to_binding(node)
             new_children = new_children.map { |child| to_binding(child) }
+          end
+          if NATIVE_APPEND_CHILDREN && !new_children.empty?
+            # One crossing to clear, one to append N (leptris-ruby#366's
+            # bulk face; the old path paid an append crossing per child).
+            ::Leptris::XML::FFI.check_status(
+              ::Leptris::XML::FFI.leptris_element_remove_children(node.c_ptr)
+            )
+            return node.append_children(new_children)
           end
           node.children = new_children
         end

@@ -4,8 +4,9 @@ require "spec_helper"
 
 # The Moxml::XSLT contract: compile once, apply many. Only engines
 # with an XSLT processor implement it (nokogiri/libxslt; leptris
-# covering XSLT 1.0-3.0). leptris does not thread top-level params
-# yet (leptris-ruby#360) — non-empty params raise Moxml::XsltError.
+# covering XSLT 1.0-3.0). Bindings >= 1.9.290.0 thread top-level
+# params (leptris#1478); older bindings raise Moxml::XsltError
+# citing leptris-ruby#360.
 SHEET_COUNT = <<~XSL
   <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:template match="/"><out><xsl:value-of select="count(//i)"/></out></xsl:template>
@@ -77,10 +78,22 @@ RSpec.describe "Moxml::XSLT" do
       expect(sheet.apply_to_string(doc)).to include("plain text result")
     end
 
-    it "raises XsltError on non-empty params (leptris-ruby#360)" do
-      sheet = ctx.xslt(SHEET_COUNT)
-      expect { sheet.apply_to(doc, params: { "n" => "7" }) }
-        .to raise_error(Moxml::XsltError, /params.*#360/)
+    if Gem::Version.new(Leptris::VERSION) >= Gem::Version.new("1.9.290.0")
+      it "threads top-level params (leptris#1478)" do
+        sheet = ctx.xslt(<<~XSL)
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+            <xsl:param name="n" select="'0'"/>
+            <xsl:template match="/"><out><xsl:value-of select="$n"/></out></xsl:template>
+          </xsl:stylesheet>
+        XSL
+        expect(sheet.apply_to_string(doc, params: { "n" => "7" })).to include("7")
+      end
+    else
+      it "raises XsltError on non-empty params (leptris-ruby#360)" do
+        sheet = ctx.xslt(SHEET_COUNT)
+        expect { sheet.apply_to(doc, params: { "n" => "7" }) }
+          .to raise_error(Moxml::XsltError, /params.*#360/)
+      end
     end
 
     it "reports support" do
