@@ -171,3 +171,11 @@ RSpec.describe "NodeSet#- difference" do
     expect(diff.map(&:name).sort).to eq(%w[b c])
   end
 end
+
+RSpec.describe "NodeSet#to_ary" do
+  it "flattens inside arrays" do
+    doc = Moxml.parse("<r><a/><b/></r>")
+    flat = [doc.root, doc.root.elements].flatten
+    expect(flat.map(&:name)).to include("r", "a", "b")
+  end
+end
