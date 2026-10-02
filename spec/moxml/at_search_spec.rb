@@ -397,3 +397,26 @@ RSpec.describe "Nokogiri-compatible node sugar" do
     end
   end
 end
+
+  describe "wrapper read memos" do
+    it "Element#text memoizes and invalidates on text=/children=" do
+      doc = Moxml.parse("<r><a>x<b>y</b>z</a></r>")
+      a = doc.at("//a")
+      first = a.text
+      expect(a.text).to equal(first)
+      a.text = "new"
+      expect(a.text).to eq("new")
+      a.children = "<c>w</c>"
+      expect(a.text).to eq("w")
+    end
+
+    it "Attribute#value memoizes and invalidates on value=" do
+      doc = Moxml.parse(%(<r a="1"/>))
+      attr = doc.root.attributes.first
+      first = attr.value
+      expect(attr.value).to equal(first)
+      attr.value = "2"
+      expect(attr.value).to eq("2")
+      expect(doc.root["a"]).to eq("2")
+    end
+  end

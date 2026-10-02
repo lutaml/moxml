@@ -27,16 +27,21 @@ module Moxml
     end
 
     def value
-      val = @native.value.to_s
-      # Same guard as Element#text: entity-free documents skip the
-      # marker restore scans. The memo rides the owning element's
-      # (attr natives have no entity probe); a detached attribute
-      # wrapper falls back to the unconditional restore.
-      parent = @parent_node
-      if parent.nil? || parent.entity_bearing?
-        adapter.restore_entities(val)
-      else
-        val
+      # Engines allocate a fresh String per read (Nokogiri attr.value);
+      # hydration walks re-read the same wrappers, so the value is
+      # memoized until value= rewrites it.
+      @value ||= begin
+        val = @native.value.to_s
+        # Same guard as Element#text: entity-free documents skip the
+        # marker restore scans. The memo rides the owning element's
+        # (attr natives have no entity probe); a detached attribute
+        # wrapper falls back to the unconditional restore.
+        parent = @parent_node
+        if parent.nil? || parent.entity_bearing?
+          adapter.restore_entities(val)
+        else
+          val
+        end
       end
     end
 
@@ -55,6 +60,7 @@ module Moxml
       else
         @parent_node&.invalidate_attribute_value_cache!
       end
+      @value = nil
       adapter.set_attribute_value(@native, new_value)
     end
 
