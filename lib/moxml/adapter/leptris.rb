@@ -168,6 +168,18 @@ module Moxml
       BINDING_OF_CAP = 8_192
 
       class << self
+        # WeakMap has no #clear — 0.5.100's valve crashed every parse
+        # crossing the cap on 3.4+ (NoMethodError). Replace the
+        # registry wholesale, type-preserving: the WeakMap flavor
+        # stays weak, the strong Hash keeps compare_by_identity.
+        def fresh_node_registry
+          if Context::WEAK_WRAPPERS
+            ObjectSpace::WeakMap.new
+          else
+            {}.compare_by_identity
+          end
+        end
+
         # native -> bridged binding node. The bridge object is
         # identity-stable for the native's lifetime (the binding's
         # per-document wrap cache), so repeat bridges — the write
@@ -187,7 +199,7 @@ module Moxml
           doc = doc_for(node)
           ptr = ::FFI::Pointer.new(node.address)
           bridged = ::Leptris::XML::Node.wrap(ptr, doc)
-          @binding_of.clear if @binding_of.size >= BINDING_OF_CAP
+          @binding_of = fresh_node_registry if @binding_of.size >= BINDING_OF_CAP
           @binding_of[node] = bridged unless bridged.nil?
           bridged
         end
@@ -428,7 +440,7 @@ module Moxml
           end
 
           def record_native_doc(root_native, doc)
-            @native_doc_roots.clear if @native_doc_roots.size >= NATIVE_DOC_ROOTS_CAP
+            @native_doc_roots = fresh_node_registry if @native_doc_roots.size >= NATIVE_DOC_ROOTS_CAP
             @native_doc_roots[root_native] = doc
           end
 
