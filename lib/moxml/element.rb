@@ -164,23 +164,27 @@ module Moxml
       remove_attribute(name)
     end
 
-    # Nokogiri-compatible: element children only
+    # Nokogiri-compatible: element-only children. The adapter seam
+    # filters at the engine level where the binding carries the face
+    # (leptris bulk element children, nokogiri native), so interleaved
+    # text/comment nodes never mint wrappers on hot traversals.
+    # Memo rides the children generation (#310's mutation clock).
     def elements
-      children.select { |c| c.is_a?(Moxml::Element) }
+      @elements = nil if @elements_gen != context.children_generation
+      @elements_gen = context.children_generation
+      @elements ||= NodeSet.new(adapter.element_children(@native), context, self)
     end
-
-    def element_children
-      elements
-    end
+    alias element_children elements
 
     # Nokogiri-compatible: children= replaces the entire child list
-    def children=(node_or_text)
-      natives = case node_or_text
+    def children=(node_or_nodes)
+      natives = case node_or_nodes
                 when String
-                  wrapper = context.parse("<w>#{node_or_text}</w>")
-                  wrapper.root.children.map(&:native)
-                when Moxml::Node then [node_or_text.native]
-                when Array then node_or_text.map(&:native)
+                  wrapper = "_moxml_children_#{Process.pid}_#{object_id}"
+                  context.parse("<#{wrapper}>#{node_or_nodes}</#{wrapper}>")
+                    .root.children.map(&:native)
+                when Moxml::Node then [node_or_nodes.native]
+                when Array, NodeSet then node_or_nodes.map(&:native)
                 else
                   raise ArgumentError, "children= accepts String, Node, or Array"
                 end

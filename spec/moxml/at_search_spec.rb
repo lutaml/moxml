@@ -82,56 +82,84 @@ RSpec.describe "Nokogiri-compatible node sugar" do
       expect(doc.root.children.map(&:name)).to eq(%w[a x text b])
     end
   end
-end
 
-RSpec.describe "Node#<< append sugar" do
-  it "appends nodes and strings" do
-    doc = Moxml.parse("<r/>")
-    doc.root << "<a/>"
-    doc.root << Moxml.parse("<b/>").root
-    expect(doc.root.children.map(&:name)).to eq(%w[a b])
-    text_parent = Moxml.parse("<p/>").root
-    text_parent << "hello"
-    expect(text_parent.text).to eq("hello")
-  end
-end
+  describe "Node#<< append sugar" do
+    it "appends parsed fragments from strings" do
+      doc = Moxml.parse("<r/>")
+      doc.root << "<a/><b/>"
+      expect(doc.root.children.map(&:name)).to eq(%w[a b])
+    end
 
-RSpec.describe "Element#delete attribute removal" do
-  it "removes an attribute by name" do
-    doc = Moxml.parse("<r annex='yes' id='x'/>")
-    doc.root.delete("annex")
-    expect(doc.root["annex"]).to be_nil
-    expect(doc.root["id"]).to eq("x")
-  end
-end
+    it "appends plain text as a text node" do
+      text_parent = Moxml.parse("<p/>").root
+      text_parent << "hello"
+      expect(text_parent.text).to eq("hello")
+    end
 
-RSpec.describe "Element#children=" do
-  it "replaces all children with a string" do
-    doc = Moxml.parse("<r><old/>text</r>")
-    doc.root.children = "<a/><b/>"
-    expect(doc.root.children.map(&:name)).to eq(%w[a b])
+    it "appends nodes" do
+      doc = Moxml.parse("<r/>")
+      doc.root << Moxml.parse("<b/>").root
+      expect(doc.root.children.map(&:name)).to eq(%w[b])
+    end
+
+    it "returns self for chaining" do
+      doc = Moxml.parse("<r/>")
+      expect(doc.root << "<a/>").to be(doc.root)
+    end
   end
 
-  it "replaces with a node" do
-    doc = Moxml.parse("<r><old/></r>")
-    node = Moxml.parse("<x/>").root
-    doc.root.children = node
-    expect(doc.root.children.map(&:name)).to eq(%w[x])
+  describe "Element#delete" do
+    it "removes an attribute by name" do
+      doc = Moxml.parse("<r annex='yes' id='x'/>")
+      doc.root.delete("annex")
+      expect(doc.root["annex"]).to be_nil
+      expect(doc.root["id"]).to eq("x")
+    end
   end
-end
 
-RSpec.describe "Element#elements" do
-  it "returns only element children" do
-    doc = Moxml.parse("<r>text<a/><!-- c --><b/></r>")
-    expect(doc.root.elements.map(&:name)).to eq(%w[a b])
-    expect(doc.root.element_children.map(&:name)).to eq(%w[a b])
+  describe "Element#children=" do
+    it "replaces all children with a string" do
+      doc = Moxml.parse("<r><old/>text</r>")
+      doc.root.children = "<a/><b/>"
+      expect(doc.root.children.map(&:name)).to eq(%w[a b])
+    end
+
+    it "replaces with a node" do
+      doc = Moxml.parse("<r><old/></r>")
+      node = Moxml.parse("<x/>").root
+      doc.root.children = node
+      expect(doc.root.children.map(&:name)).to eq(%w[x])
+    end
+
+    it "replaces with an array of nodes" do
+      doc = Moxml.parse("<r><old/></r>")
+      frag = Moxml.parse("<w><x/><y/></w>").root.children
+      doc.root.children = frag
+      expect(doc.root.children.map(&:name)).to eq(%w[x y])
+    end
+
+    it "invalidates memoized children holders" do
+      doc = Moxml.parse("<r><old/></r>")
+      root = doc.root
+      root.children
+      root.children = "<new/>"
+      expect(root.children.map(&:name)).to eq(%w[new])
+    end
   end
-end
 
-RSpec.describe "Element#elements" do
-  it "returns only element children" do
-    doc = Moxml.parse("<r>text<a/><!-- c --><b/></r>")
-    expect(doc.root.elements.map(&:name)).to eq(%w[a b])
-    expect(doc.root.element_children.map(&:name)).to eq(%w[a b])
+  describe "Element#elements" do
+    it "returns only element children" do
+      doc = Moxml.parse("<r>text<a/><!-- c --><b/></r>")
+      expect(doc.root.elements.map(&:name)).to eq(%w[a b])
+      expect(doc.root.element_children.map(&:name)).to eq(%w[a b])
+    end
+
+    it "stays fresh across mutations" do
+      doc = Moxml.parse("<r><a/></r>")
+      root = doc.root
+      expect(root.elements.map(&:name)).to eq(%w[a])
+      root.add_child(doc.create_element("b"))
+      expect(root.elements.map(&:name)).to eq(%w[a b])
+    end
   end
 end

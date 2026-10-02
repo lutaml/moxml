@@ -100,6 +100,10 @@ module Moxml
         NN_NEXT_SIBLING = NN.instance_method(:next_sibling)
         NN_CONTENT = NN.instance_method(:content)
         NN_CHILDREN = NN.instance_method(:children)
+        # The C element filter — captured because ElementBehavior's
+        # element_children alias shadows the face on Identity natives
+        # (a plain dispatch would recurse into the wrapper method).
+        NN_ELEMENT_CHILDREN = NN.instance_method(:element_children)
         NN_NODE_TYPE = NN.instance_method(:node_type)
         NN_DOCUMENT = NN.instance_method(:document)
         NN_ADD_CHILD = NN.instance_method(:add_child)
@@ -1395,6 +1399,19 @@ module Moxml
           else
             node.dup
           end
+        end
+
+        # Element-only children through the engine-level filter: the
+        # C face mints element-kind natives directly (klass-children),
+        # so interleaved text/comment nodes cost nothing. Entity
+        # markers are text-kind — the element filter excludes them by
+        # construction, no marker split needed.
+        def element_children(node)
+          if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
+            return NN_ELEMENT_CHILDREN.bind_call(node).to_a
+          end
+
+          to_binding(node).element_children
         end
 
         def children(node, entity_bearing: false)
