@@ -179,3 +179,12 @@ RSpec.describe "NodeSet#to_ary" do
     expect(flat.map(&:name)).to include("r", "a", "b")
   end
 end
+
+RSpec.describe "Node#ancestors(selector)" do
+  it "filters ancestors by element name" do
+    doc = Moxml.parse("<r><table><tr><td><p/></td></tr></table></r>")
+    p_node = doc.at("//p")
+    expect(p_node.ancestors("table").map(&:name)).to eq(%w[table])
+    expect(p_node.ancestors.map(&:name)).to include("td", "tr", "table")
+  end
+end
