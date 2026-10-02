@@ -83,3 +83,15 @@ RSpec.describe "Nokogiri-compatible node sugar" do
     end
   end
 end
+
+RSpec.describe "Node#<< append sugar" do
+  it "appends nodes and strings" do
+    doc = Moxml.parse("<r/>")
+    doc.root << "<a/>"
+    doc.root << Moxml.parse("<b/>").root
+    expect(doc.root.children.map(&:name)).to eq(%w[a b])
+    text_parent = Moxml.parse("<p/>").root
+    text_parent << "hello"
+    expect(text_parent.text).to eq("hello")
+  end
+end
