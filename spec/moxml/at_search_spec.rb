@@ -258,3 +258,13 @@ RSpec.describe "Node/NodeSet#to_s interpolation" do
     expect("#{doc.root.children}").to eq("<a>x</a><b/>")
   end
 end
+
+RSpec.describe "Element#default_namespace=" do
+  it "binds the element to the default namespace" do
+    doc = Moxml.parse("<r><math><mi>x</mi></math></r>")
+    math = doc.at("//math")
+    math.default_namespace = "http://www.w3.org/1998/Math/MathML"
+    expect(math.namespace_uri.to_s).to eq("http://www.w3.org/1998/Math/MathML")
+    expect(math.to_xml).to include('xmlns="http://www.w3.org/1998/Math/MathML"')
+  end
+end

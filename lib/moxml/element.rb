@@ -267,6 +267,13 @@ module Moxml
       invalidate_namespace_cache!
     end
 
+    # Nokogiri-compatible: bind the element to +uri+ as its DEFAULT
+    # namespace — the name drops any prefix and the declaration lands
+    # on this element. Children keep their own bindings.
+    def default_namespace=(uri)
+      namespace=(nil => uri.to_s)
+    end
+
     # All namespaces IN SCOPE for this element — its own
     # declarations plus everything inherited from ancestors —
     # matching the Nokogiri #namespaces contract consumers port
