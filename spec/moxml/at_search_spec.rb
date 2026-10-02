@@ -162,160 +162,165 @@ RSpec.describe "Nokogiri-compatible node sugar" do
       expect(root.elements.map(&:name)).to eq(%w[a b])
     end
   end
-end
 
-RSpec.describe "NodeSet#- difference" do
-  it "removes nodes present in the other set" do
-    doc = Moxml.parse("<r><a/><b/><c/></r>")
-    diff = doc.search("//xmlns:*") - doc.search("//xmlns:a")
-    expect(diff.map(&:name).sort).to eq(%w[b c])
+  describe "NodeSet#- difference" do
+    it "removes nodes present in the other set" do
+      doc = Moxml.parse("<r><a/><b/><c/></r>")
+      diff = doc.root.children - doc.search("//a")
+      expect(diff.map(&:name).sort).to eq(%w[b c])
+    end
   end
-end
 
-RSpec.describe "NodeSet#to_ary" do
-  it "flattens inside arrays" do
-    doc = Moxml.parse("<r><a/><b/></r>")
-    flat = [doc.root, doc.root.elements].flatten
-    expect(flat.map(&:name)).to include("r", "a", "b")
+  describe "NodeSet#to_ary" do
+    it "flattens inside arrays" do
+      doc = Moxml.parse("<r><a/><b/></r>")
+      flat = [doc.root, doc.root.elements].flatten
+      expect(flat.map(&:name)).to include("r", "a", "b")
+    end
   end
-end
 
-RSpec.describe "Node#ancestors(selector)" do
-  it "filters ancestors by element name" do
-    doc = Moxml.parse("<r><table><tr><td><p/></td></tr></table></r>")
-    p_node = doc.at("//p")
-    expect(p_node.ancestors("table").map(&:name)).to eq(%w[table])
-    expect(p_node.ancestors.map(&:name)).to include("td", "tr", "table")
+  describe "Node#ancestors(selector)" do
+    it "filters ancestors by element name" do
+      doc = Moxml.parse("<r><table><tr><td><p/></td></tr></table></r>")
+      p_node = doc.at("//p")
+      expect(p_node.ancestors("table").map(&:name)).to eq(%w[table])
+      expect(p_node.ancestors.map(&:name)).to include("td", "tr", "table")
+    end
   end
-end
 
-RSpec.describe "Node#next_element/previous_element" do
-  it "skips interleaved text nodes" do
-    doc = Moxml.parse("<r><a/>text<b/></r>")
-    a = doc.at("//a")
-    expect(a.next_element.name).to eq("b")
-    expect(doc.at("//b").previous_element.name).to eq("a")
+  describe "Node#next_element/previous_element" do
+    it "skips interleaved text nodes" do
+      doc = Moxml.parse("<r><a/>text<b/></r>")
+      a = doc.at("//a")
+      expect(a.next_element.name).to eq("b")
+      expect(doc.at("//b").previous_element.name).to eq("a")
+    end
   end
-end
 
-RSpec.describe "Node#parent= reparenting" do
-  it "moves a node under a new parent" do
-    doc = Moxml.parse("<r><from><p/></from><to/></r>")
-    p_node = doc.at("//p")
-    p_node.parent = doc.at("//to")
-    expect(doc.at("//to/p")).not_to be_nil
-    expect(doc.at("//from/p")).to be_nil
+  describe "Node#parent= reparenting" do
+    it "moves a node under a new parent" do
+      doc = Moxml.parse("<r><from><p/></from><to/></r>")
+      p_node = doc.at("//p")
+      p_node.parent = doc.at("//to")
+      expect(doc.at("//to/p")).not_to be_nil
+      expect(doc.at("//from/p")).to be_nil
+    end
   end
-end
 
-RSpec.describe "NodeSet#to_xml" do
-  it "serializes the set's members in order" do
-    doc = Moxml.parse("<r><a>x</a>tail</r>")
-    expect(doc.root.children.to_xml).to eq("<a>x</a>tail")
+  describe "NodeSet#to_xml" do
+    it "serializes the set's members in order" do
+      doc = Moxml.parse("<r><a>x</a>tail</r>")
+      expect(doc.root.children.to_xml).to eq("<a>x</a>tail")
+    end
   end
-end
 
-RSpec.describe "Node#add_first_child" do
-  it "inserts before existing children and handles empty parents" do
-    doc = Moxml.parse("<r><b/></r>")
-    doc.root.add_first_child("<a/>")
-    expect(doc.root.children.map(&:name)).to eq(%w[a b])
-    Moxml.parse("<r/>").root.add_first_child("<x/>")
+  describe "Node#add_first_child" do
+    it "inserts before existing children and handles empty parents" do
+      doc = Moxml.parse("<r><b/></r>")
+      doc.root.add_first_child("<a/>")
+      expect(doc.root.children.map(&:name)).to eq(%w[a b])
+      Moxml.parse("<r/>").root.add_first_child("<x/>")
+    end
   end
-end
 
-RSpec.describe "Node#remove on a detached node" do
-  it "is a no-op returning self (Nokogiri parity)" do
-    doc = Moxml.parse("<r><p><c/></p><t/></r>")
-    p_node = doc.at("//p")
-    t = doc.create_element("d")
-    p_node.replace(t)
-    expect(p_node.parent).to be_nil
-    expect(p_node.remove).to equal(p_node)
-    t << p_node
-    expect(t.children.map(&:name)).to eq(%w[p])
-    expect(doc.at("//t/d/p/c")).not_to be_nil
+  describe "Node#remove on a detached node" do
+    it "is a no-op returning self (Nokogiri parity)" do
+      doc = Moxml.parse("<r><p><c/></p><t/></r>")
+      p_node = doc.at("//p")
+      t = doc.create_element("d")
+      p_node.replace(t)
+      expect(p_node.parent).to be_nil
+      expect(p_node.remove).to equal(p_node)
+      t << p_node
+      expect(t.children.map(&:name)).to eq(%w[p])
+      expect(doc.at("//d/p/c")).not_to be_nil
+    end
   end
-end
 
-RSpec.describe "Element#replace + re-attach under the replacement" do
-  it "does not cycle the tree (leptris stale-run splice)" do
-    doc = Moxml.parse("<r><a>x</a><b/></r>")
-    a = doc.at("//a")
-    t = doc.create_element("t")
-    a.replace(t)
-    t << a
-    expect(doc.root.children.map(&:name)).to eq(%w[t b])
-    expect(t.children.map(&:name)).to eq(%w[a])
-    expect(doc.at("//t/a/text()").text).to eq("x")
+  describe "Element#replace + re-attach under the replacement" do
+    it "does not cycle the tree (leptris stale-run splice)" do
+      doc = Moxml.parse("<r><a>x</a><b/></r>")
+      a = doc.at("//a")
+      t = doc.create_element("t")
+      a.replace(t)
+      t << a
+      expect(doc.root.children.map(&:name)).to eq(%w[t b])
+      expect(t.children.map(&:name)).to eq(%w[a])
+      expect(doc.at("//t/a/text()").text).to eq("x")
+    end
   end
-end
 
-RSpec.describe "Node/NodeSet#to_s interpolation" do
-  it "serializes instead of Object#to_s" do
-    doc = Moxml.parse("<r><a>x</a><b/></r>")
-    expect("#{doc.at('//a')}").to eq("<a>x</a>")
-    expect("#{doc.root.children}").to eq("<a>x</a><b/>")
+  describe "Node/NodeSet#to_s interpolation" do
+    it "serializes instead of Object#to_s" do
+      doc = Moxml.parse("<r><a>x</a><b/></r>")
+      # rubocop:disable Style/RedundantInterpolation -- the interpolation IS the contract under test
+      node = doc.at("//a")
+      expect("#{node}").to eq("<a>x</a>")
+      children = doc.root.children
+      expect("#{children}").to eq("<a>x</a><b></b>")
+      # rubocop:enable Style/RedundantInterpolation
+    end
   end
-end
 
-RSpec.describe "Element#default_namespace=" do
-  it "binds the element to the default namespace" do
-    doc = Moxml.parse("<r><math><mi>x</mi></math></r>")
-    math = doc.at("//math")
-    math.default_namespace = "http://www.w3.org/1998/Math/MathML"
-    expect(math.namespace_uri.to_s).to eq("http://www.w3.org/1998/Math/MathML")
-    expect(math.to_xml).to include('xmlns="http://www.w3.org/1998/Math/MathML"')
+  describe "Element#default_namespace=" do
+    it "binds the element to the default namespace" do
+      doc = Moxml.parse("<r><math><mi>x</mi></math></r>")
+      math = doc.at("//math")
+      math.default_namespace = "http://www.w3.org/1998/Math/MathML"
+      expect(math.namespace_uri.to_s).to eq("http://www.w3.org/1998/Math/MathML")
+      expect(math.to_xml).to include('xmlns="http://www.w3.org/1998/Math/MathML"')
+    end
   end
-end
 
-RSpec.describe "Node#to_str" do
-  it "yields the text content" do
-    doc = Moxml.parse("<r><s>a<b>c</b>d</s></r>")
-    expect(doc.at("//s").to_str).to eq("acd")
-    expect(doc.at("//b").to_str).to eq("c")
+  describe "Node#to_str" do
+    it "yields the text content" do
+      doc = Moxml.parse("<r><s>a<b>c</b>d</s></r>")
+      expect(doc.at("//s").to_str).to eq("acd")
+      expect(doc.at("//b").to_str).to eq("c")
+    end
   end
-end
 
-RSpec.describe "Element#content=" do
-  it "replaces children with the given text" do
-    doc = Moxml.parse("<r><s><b>x</b>y</s></r>")
-    s = doc.at("//s")
-    s.content = "1 < 2"
-    expect(s.children.size).to eq(1)
-    expect(s.content).to eq("1 < 2")
-    expect(s.to_xml).to eq("<s>1 &lt; 2</s>")
+  describe "Element#content=" do
+    it "replaces children with the given text" do
+      doc = Moxml.parse("<r><s><b>x</b>y</s></r>")
+      s = doc.at("//s")
+      s.content = "1 < 2"
+      expect(s.children.size).to eq(1)
+      expect(s.content).to eq("1 < 2")
+      expect(s.to_xml).to eq("<s>1 &lt; 2</s>")
+    end
   end
-end
 
-RSpec.describe "Node#next/previous readers" do
-  it "return adjacent siblings" do
-    doc = Moxml.parse("<r><a/>mid<b/></r>")
-    a = doc.at("//a")
-    expect(a.next.name).to eq("text")
-    expect(a.next.next.name).to eq("b")
-    expect(doc.at("//b").previous.name).to eq("text")
-    expect(doc.at("//b").previous.previous.name).to eq("a")
+  describe "Node#next/previous readers" do
+    it "return adjacent siblings" do
+      doc = Moxml.parse("<r><a/>mid<b/></r>")
+      a = doc.at("//a")
+      expect(a.next.name).to eq("text")
+      expect(a.next.next.name).to eq("b")
+      expect(doc.at("//b").previous.name).to eq("text")
+      expect(doc.at("//b").previous.previous.name).to eq("a")
+    end
   end
-end
 
-RSpec.describe "Node#path for non-element nodes" do
-  it "builds type-test segments" do
-    doc = Moxml.parse("<r><p>a<!--c--></p><p>b</p></r>")
-    expect(doc.at("//p").path).to eq("/r/p[1]")
-    texts = doc.xpath("//p/text()")
-    expect(texts[0].path).to eq("/r/p[1]/text()")
-    expect(doc.xpath("//p/comment()").first.path).to eq("/r/p[1]/comment()")
+  describe "Node#path for non-element nodes" do
+    it "builds type-test segments" do
+      doc = Moxml.parse("<r><p>a<!--c--></p><p>b</p></r>")
+      expect(doc.at("//p").path).to eq("/r/p[1]")
+      texts = doc.xpath("//p/text()")
+      expect(texts[0].path).to eq("/r/p[1]/text()")
+      expect(doc.xpath("//p/comment()").first.path).to eq("/r/p[1]/comment()")
+    end
   end
-end
 
-RSpec.describe "Document#root= with a foreign root" do
-  it "adopts the subtree from another document" do
-    doc = Moxml.parse("<old><x/></old>")
-    other = Moxml.parse(%(<r xmlns="urn:x" a="1"><p>hi<b>t</b></p></r>))
-    doc.root = other.root
-    expect(doc.to_xml).to eq(%(<r xmlns="urn:x" a="1"><p>hi<b>t</b></p></r>))
-    expect(doc.root.namespace_uri.to_s).to eq("urn:x")
+  describe "Document#root= with a foreign root" do
+    it "adopts the subtree from another document" do
+      doc = Moxml.parse("<old><x/></old>")
+      other = Moxml.parse(%(<r xmlns="urn:x" a="1"><p>hi<b>t</b></p></r>))
+      doc.root = other.root
+      expect(doc.to_xml(indent: 0).strip)
+        .to eq(%(<r xmlns="urn:x" a="1"><p>hi<b>t</b></p></r>))
+      expect(doc.root.namespace_uri.to_s).to eq("urn:x")
+    end
   end
 end
 

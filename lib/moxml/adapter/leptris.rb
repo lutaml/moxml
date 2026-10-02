@@ -1613,10 +1613,25 @@ module Moxml
           [copied, pointers]
         end
 
-        # The binding reports the root element as parentless; the
-        # moxml contract roots at the document.
+        # The binding reports the root element and the document-level
+        # parts as parentless; the moxml contract roots them at the
+        # document. DocType carries no #parent at all (plain
+        # c_ptr+document value object) and a parentless PI is a
+        # document-level one by construction — in-tree parts have
+        # element parents.
         def root_parent(node)
-          node.parent || (node.document&.root == node ? node.document : nil)
+          return node.document if node.is_a?(::Leptris::XML::DocType)
+
+          parent = node.parent
+          return parent if parent
+
+          doc = node.document
+          return nil unless doc
+
+          return doc if doc.root == node ||
+            node.is_a?(::Leptris::XML::ProcessingInstruction)
+
+          nil
         end
 
         def next_sibling(node)

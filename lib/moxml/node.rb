@@ -137,10 +137,11 @@ module Moxml
     end
 
     # Insert ahead of the current first child (nokogiri-monkeypatch
-    # convention used across metanorma).
+    # convention used across metanorma). Strings parse as fragments
+    # (the sibling_operand convention).
     def add_first_child(node)
+      node = sibling_operand(node) if node.is_a?(String)
       if first_child
-        node = prepare_node(node)
         first_child.add_previous_sibling(node)
       else
         add_child(node)
@@ -245,7 +246,11 @@ module Moxml
       # no-op returning self. Re-attach idioms like
       # `t << n.replace(x).remove` (standoc term cleanup) detach with
       # #replace and rely on this; leptris would raise "Not found".
-      return self if parent.nil?
+      # The wrapper-side @parent_node link decides when present
+      # (add_child sets it); the adapter resolution covers
+      # link-less wrappers (at()-resolved nodes), whose parents are
+      # canonical since #313.
+      return self if @parent_node.nil? && parent.nil?
 
       context.bump_children_generation
       invalidate_parent_children_cache!
@@ -479,7 +484,7 @@ module Moxml
       all = _ancestors_all
       return all unless selector
 
-      all.select { |a| a.respond_to?(:name) && a.name == selector.to_s }
+      all.select { |a| a.name == selector.to_s }
     end
 
     def _ancestors_all
@@ -675,8 +680,6 @@ module Moxml
 
     private
 
-
-
     # XPath segment for a node: elements use their qualified name,
     # other node kinds their XPath type test (text(), comment(), ...).
     # A positional predicate is emitted only when same-kind siblings
@@ -697,7 +700,6 @@ module Moxml
 
       "#{name}[#{same_kind.find_index(node) + 1}]"
     end
-
 
     def prepare_node(node)
       case node

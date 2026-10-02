@@ -9,9 +9,9 @@ module Moxml
     # Nokogiri-compatible set difference: nodes in this set absent
     # from the other, identity-compared on natives.
     def -(other)
-      other_ids = {}
-      other.native_nodes.each { |n| other_ids[n.object_id] = true }
-      remaining = native_nodes.reject { |n| other_ids.key?(n.object_id) }
+      excluded = {}.compare_by_identity
+      other.native_nodes.each { |n| excluded[n] = true }
+      remaining = native_nodes.reject { |n| excluded.key?(n) }
       self.class.new(remaining, @context, @parent_node)
     end
 
