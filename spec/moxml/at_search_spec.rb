@@ -119,3 +119,11 @@ RSpec.describe "Element#children=" do
     expect(doc.root.children.map(&:name)).to eq(%w[x])
   end
 end
+
+RSpec.describe "Element#elements" do
+  it "returns only element children" do
+    doc = Moxml.parse("<r>text<a/><!-- c --><b/></r>")
+    expect(doc.root.elements.map(&:name)).to eq(%w[a b])
+    expect(doc.root.element_children.map(&:name)).to eq(%w[a b])
+  end
+end
