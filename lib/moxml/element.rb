@@ -164,6 +164,22 @@ module Moxml
       remove_attribute(name)
     end
 
+    # Nokogiri-compatible: children= replaces the entire child list
+    def children=(node_or_text)
+      natives = case node_or_text
+                when String
+                  wrapper = context.parse("<w>#{node_or_text}</w>")
+                  wrapper.root.children.map(&:native)
+                when Moxml::Node then [node_or_text.native]
+                when Array then node_or_text.map(&:native)
+                else
+                  raise ArgumentError, "children= accepts String, Node, or Array"
+                end
+      adapter.replace_children(@native, natives)
+      context.bump_children_generation
+      invalidate_children_cache!
+    end
+
     def remove_attribute(name)
       # Both remove paths end in invalidate_attribute_cache!, which
       # bumps the generation.
