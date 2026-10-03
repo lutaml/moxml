@@ -29,13 +29,18 @@ module Moxml
     def value
       # Engines allocate a fresh String per read (Nokogiri attr.value);
       # hydration walks re-read the same wrappers, so the value is
-      # memoized until value= rewrites it.
+      # memoized. A held wrapper recomputes when its owner element's
+      # value generation moves (element-side writes bump it locally —
+      # a context-wide bump would evict every wrapper per bulk-build
+      # write). Parentless wrappers (xpath ResultAttrs) are immutable
+      # captures and memo unconditionally.
+      if @parent_node
+        generation = @parent_node.attribute_value_generation
+        @value = nil if @value_gen != generation
+        @value_gen = generation
+      end
       @value ||= begin
         val = @native.value.to_s
-        # Same guard as Element#text: entity-free documents skip the
-        # marker restore scans. The memo rides the owning element's
-        # (attr natives have no entity probe); a detached attribute
-        # wrapper falls back to the unconditional restore.
         parent = @parent_node
         if parent.nil? || parent.entity_bearing?
           adapter.restore_entities(val)
@@ -44,7 +49,6 @@ module Moxml
         end
       end
     end
-
     alias content value
 
     # Returns raw native value without entity marker restoration.

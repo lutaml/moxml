@@ -419,6 +419,7 @@ RSpec.describe "Nokogiri-compatible node sugar" do
       expect(doc.root["a"]).to eq("2")
     end
   end
+
   describe "Text#content memo" do
     it "memoizes and invalidates on content=" do
       doc = Moxml.parse("<r>hello</r>")
