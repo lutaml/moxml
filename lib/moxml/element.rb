@@ -351,6 +351,9 @@ module Moxml
 
     def text=(content)
       @text = nil
+      # A text write replaces the whole child list; the generation
+      # bump also retires @elements/@children memos across wrappers.
+      context.bump_children_generation
       adapter.set_text_content(@native, normalize_xml_value(content))
       invalidate_children_cache!
     end
@@ -375,6 +378,11 @@ module Moxml
     def inner_xml=(xml)
       wrapper = "_moxml_inner_#{Process.pid}_#{object_id}"
       doc = context.parse("<#{wrapper}>#{xml}</#{wrapper}>")
+      @text = nil
+      # Whole-list replacement rides the children generation like
+      # children= does (moxml#310) — text and elements memos across
+      # wrappers recompute on next read.
+      context.bump_children_generation
       adapter.replace_children(@native, doc.root.children.map(&:native))
       invalidate_children_cache!
     end
@@ -427,13 +435,23 @@ module Moxml
     # too when the attribute set changes. No context generation
     # bump — that would evict every wrapper's caches document-wide
     # on each write of a bulk build.
+    # Local counter for held Attribute wrappers: value writes bump it
+    # (no context-wide bump — bulk builds would evict every wrapper's
+    # caches per write), and Attribute#value recomputes when its
+    # owner's counter moves.
+    def attribute_value_generation
+      @attribute_value_generation ||= 0
+    end
+
     def invalidate_attribute_value_cache!
       @attribute_cache = nil
+      @attribute_value_generation = attribute_value_generation + 1
     end
 
     def invalidate_local_attribute_cache!
       @attributes = nil
       @attribute_cache = nil
+      @attribute_value_generation = attribute_value_generation + 1
     end
 
     # Called by the namespace-scoped attribute paths (xmlns writes
