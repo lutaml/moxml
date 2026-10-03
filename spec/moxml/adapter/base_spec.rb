@@ -48,11 +48,17 @@ RSpec.describe Moxml::Adapter::Base do
     end
 
     it "assumes the keyword when Method#parameters returns no data" do
-      adapter = Class.new(Moxml::Adapter::Nokogiri)
-      children = instance_double(Method, parameters: nil)
-      allow(adapter).to receive(:method).with(:children).and_return(children)
-
-      expect(adapter.children_accepts_entity_flag?).to be(true)
+      # Opal without arity checking answers a bare JS undefined for
+      # parameters — not even nil?. Exercise the decision through the
+      # real values the probe can see.
+      probe = described_class.children_params_flag(nil)
+      expect(probe).to be(true)
+      expect(described_class.children_params_flag([%i[req node]])).to be(false)
+      expect(
+        described_class.children_params_flag(
+          [%i[req node], %i[key entity_bearing]],
+        ),
+      ).to be(true)
     end
   end
 end
