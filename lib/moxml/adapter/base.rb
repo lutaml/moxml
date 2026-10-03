@@ -138,12 +138,22 @@ module Moxml
           # method call (not even nil?), so it is matched with `case`,
           # whose Module#=== tolerates it. Without the data the keyword is
           # assumed: every built-in adapter's #children accepts it.
-          kinds = %i[key keyrest keyreq]
           @children_accepts_entity_flag =
-            case (params = method(:children).parameters)
-            when Array then params.any? { |kind, _name| kinds.include?(kind) }
-            else true
-            end
+            children_params_flag(method(:children).parameters)
+        end
+
+        # The decision over a parameters VALUE, so the Opal shape (a
+        # bare JS undefined, matched by `case`) is spec-able with real
+        # values. Without parameter data the keyword is assumed: every
+        # built-in adapter's #children accepts it.
+        KEYWORD_PARAM_KINDS = %i[key keyrest keyreq].freeze
+
+        def children_params_flag(params)
+          case params
+          when Array
+            params.any? { |kind, _| KEYWORD_PARAM_KINDS.include?(kind) }
+          else true
+          end
         end
 
         # Protocol-level native equality; engines with more than one
