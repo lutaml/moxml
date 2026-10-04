@@ -29,6 +29,21 @@ module Moxml
         (owner.is_a?(Document) && owner.root.equal?(element))
       if owner.is_a?(Document) && attached &&
           !owner.equal?(self) && element.context.equal?(context)
+        installed = adapter.adopt_root(@native, element.native)
+        if installed
+          # The engine deep-copies the foreign subtree into this
+          # document's pool (leptris >= 1.9.292, engine #1495) and the
+          # binding memoizes the INSTALLED handle — a fresh pointer.
+          # Re-point the source wrapper so later writes reach the live
+          # tree, and recompute its scope-derived memos.
+          unless installed.equal?(element.native)
+            element.refresh_native!(Moxml::Node.wrap(installed, context).native)
+            element.invalidate_namespace_cache!
+          end
+          context.bump_children_generation
+          invalidate_children_cache!
+          return
+        end
         # libleptris refuses a root owned by another document (the
         # engine's set_root ownership check), while Nokogiri adopts.
         # Cross-document CHILD attaches are supported, so build the

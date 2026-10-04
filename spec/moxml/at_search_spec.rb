@@ -312,6 +312,22 @@ RSpec.describe "Nokogiri-compatible node sugar" do
     end
   end
 
+  describe "Document#root= native adoption re-points the source wrapper" do
+    it "writes through the original wrapper reach the installed tree" do
+      ctx = Moxml.new(:leptris)
+      other = ctx.parse('<r xmlns="urn:x" a="1"><p>hi<b>t</b></p></r>')
+      doc = ctx.create_document
+      src_root = other.root
+      doc.root = src_root
+      # the engine deep-copies; the wrapper now addresses the installed
+      # handle — a later write must serialize into the new document
+      src_root["a"] = "2"
+      expect(doc.to_xml(indent: 0)).to include('a="2"')
+      expect(doc.root["a"]).to eq("2")
+      expect(doc.root.namespace_uri.to_s).to eq("urn:x")
+    end
+  end
+
   describe "Document#root= with a foreign root" do
     it "adopts the subtree from another document" do
       doc = Moxml.parse("<old><x/></old>")

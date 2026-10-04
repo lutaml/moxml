@@ -175,6 +175,14 @@ module Moxml
           node
         end
 
+        # Cross-document root adoption: adapters whose engine deep-copies
+        # a foreign root into the target document natively answer the
+        # installed native here (leptris >= 1.9.292, engine #1495);
+        # nil keeps the Ruby splice.
+        def adopt_root(_doc, _element)
+          nil
+        end
+
         # Element-only children: adapters whose engine carries the
         # face override (leptris C filter, nokogiri native); the
         # default type-filters the native child list so non-element
