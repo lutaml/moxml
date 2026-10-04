@@ -1437,6 +1437,23 @@ module Moxml
           end
         end
 
+        NATIVE_ROOT_ADOPT =
+          NATIVE_READ_LAYER &&
+          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.292.0")
+
+        # The engine deep-copies the foreign subtree into the target
+        # document's pool (leptris#1495) and the binding memoizes the
+        # INSTALLED handle — a fresh pointer distinct from the consumed
+        # source. Answer the installed binding element; callers re-point
+        # wrappers at it.
+        def adopt_root(doc, element)
+          return nil unless NATIVE_ROOT_ADOPT
+
+          binding_doc = to_binding(doc)
+          binding_doc.root = to_binding(element)
+          binding_doc.root
+        end
+
         # Element-only children through the engine-level filter: the
         # C face mints element-kind natives directly (klass-children),
         # so interleaved text/comment nodes cost nothing. Entity
