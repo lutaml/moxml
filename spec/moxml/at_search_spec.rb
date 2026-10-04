@@ -409,6 +409,17 @@ RSpec.describe "Nokogiri-compatible node sugar" do
       expect(a.text).to eq("w")
     end
 
+    it "Element#inner_text memoizes and invalidates on child mutations" do
+      doc = Moxml.parse("<r><a>x<b>y</b>z</a></r>")
+      a = doc.at("//a")
+      first = a.inner_text
+      expect(a.inner_text).to equal(first)
+      a.add_child(doc.create_element("c"))
+      expect(a.inner_text).not_to equal(first)
+      a.text = "plain"
+      expect(a.inner_text).to eq("plain")
+    end
+
     it "Attribute#value memoizes and invalidates on value=" do
       doc = Moxml.parse(%(<r a="1"/>))
       attr = doc.root.attributes.first

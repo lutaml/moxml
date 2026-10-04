@@ -360,9 +360,18 @@ module Moxml
 
     alias content= text=
 
+    # Generation-gated memo (the #321 shape): the native read
+    # allocates a fresh String per call and hydration walks re-read
+    # the same wrappers — 122k births over 10 passes of 2,000
+    # elements before this memo, 5 after. All inner-text writers are
+    # children mutations, which bump the children generation.
     def inner_text
-      text = raw_inner_text
-      entity_bearing? ? adapter.restore_entities(text) : text
+      @inner_text = nil if @inner_text_gen != context.children_generation
+      @inner_text_gen = context.children_generation
+      @inner_text ||= begin
+        text = raw_inner_text
+        entity_bearing? ? adapter.restore_entities(text) : text
+      end
     end
 
     # Returns inner text without entity marker restoration.
