@@ -160,6 +160,9 @@ module Moxml
         nodes.each { |child| attach_child(child) }
         return NodeSet.new(nodes.map(&:native), context)
       end
+      # Nokogiri semantics: appending a NodeSet appends each node
+      return add_child_nodeset(node) if node.is_a?(NodeSet)
+
       attach_child(node)
       self
     end
@@ -173,6 +176,8 @@ module Moxml
         nodes.each { |n| attach_previous_sibling(n) }
         return NodeSet.new(nodes.map(&:native), context)
       end
+      return insert_nodeset(node) { |n| attach_previous_sibling(n) } if node.is_a?(NodeSet)
+
       attach_previous_sibling(node)
       self
     end
@@ -271,6 +276,15 @@ module Moxml
 
     def replace(node)
       context.bump_children_generation
+      # Nokogiri semantics: replacing with a NodeSet replaces with its
+      # nodes in order
+      if node.is_a?(NodeSet)
+        # each node lands immediately before self, after the
+        # previously inserted one, so forward iteration preserves
+        # order
+        node.to_a.each { |n| add_previous_sibling(n) }
+        return remove
+      end
       node = prepare_node(node)
       invalidate_parent_children_cache!
       adapter.replace(@native, node.native)
@@ -706,6 +720,16 @@ module Moxml
       return name if same_kind.size == 1
 
       "#{name}[#{same_kind.find_index(node) + 1}]"
+    end
+
+    def add_child_nodeset(node_set)
+      node_set.each { |n| attach_child(n) }
+      node_set
+    end
+
+    def insert_nodeset(node_set)
+      node_set.each { |n| yield n }
+      node_set
     end
 
     def prepare_node(node)
