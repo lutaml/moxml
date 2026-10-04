@@ -15,6 +15,27 @@ module Moxml
       self.class.new(remaining, @context, @parent_node)
     end
 
+    # Nokogiri-compatible set intersection: nodes present in both
+    # sets, identity-compared on natives, in this set's order.
+    def &(other)
+      included = {}.compare_by_identity
+      other.native_nodes.each { |n| included[n] = true }
+      common = native_nodes.select { |n| included.key?(n) }
+      self.class.new(common, @context, @parent_node)
+    end
+
+    # Nokogiri-compatible set union: this set's nodes followed by the
+    # other's, duplicates removed by native identity.
+    def |(other)
+      seen = {}.compare_by_identity
+      merged = (native_nodes + other.native_nodes).select do |n|
+        next false if seen.key?(n)
+
+        seen[n] = true
+      end
+      self.class.new(merged, @context, @parent_node)
+    end
+
     # nodes: Array of natives, or an adapter's LazyNodeSet — the
     # native set is held unmaterialized until an operation needs an
     # Array (#+, #<<, #delete, Range slices).
