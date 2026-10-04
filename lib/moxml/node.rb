@@ -282,7 +282,7 @@ module Moxml
         # each node lands immediately before self, after the
         # previously inserted one, so forward iteration preserves
         # order
-        node.to_a.each { |n| add_previous_sibling(n) }
+        node.to_a.each { |n| add_previous_sibling(adopt(n)) }
         return remove
       end
       node = prepare_node(node)
@@ -722,13 +722,22 @@ module Moxml
       "#{name}[#{same_kind.find_index(node) + 1}]"
     end
 
+    # Nodes from another document must be adopted before attachment:
+    # the leptris C layer faults on serializing cross-document
+    # pointers. Re-parsing into this document is the adoption.
+    def adopt(node)
+      return node if node.document == document
+
+      context.parse_fragment(node.to_xml).to_a.first || node
+    end
+
     def add_child_nodeset(node_set)
-      node_set.each { |n| attach_child(n) }
+      node_set.each { |n| attach_child(adopt(n)) }
       node_set
     end
 
     def insert_nodeset(node_set)
-      node_set.each { |n| yield n }
+      node_set.each { |n| yield adopt(n) }
       node_set
     end
 
