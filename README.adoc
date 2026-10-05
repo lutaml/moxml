@@ -108,10 +108,15 @@ REQUIRED for that drain to be CORRECT: 1.9.240/241 drain documents
 containing duplicate attributes without surfacing the fatal error
 (moxml#281), so the drain arms only on 1.9.242+, where such
 documents fall back to the callback path and the error fires.
-Current recommendation: 1.9.242+ (the record-drain train; carries
-the plan-ABI surface — bound plan rows, typed scalars, fused
-Descriptor#materialize — plus the 1.9.217+ borrowed-text-run and
-1.9.221+ memory wins).
+1.9.255.2+ C-minted walk/build wrappers (construction identity
+without the Ruby mint); 1.9.273.1+ opt-in parse-skip flags
+(`skip_dup_detection`, `skip_source_positions`); 1.9.290.0+ XSLT
+top-level params threading and the bulk child-list append
+(one crossing for N children); 1.9.292.0+ native cross-document
+root adoption (the engine deep-copies a foreign root in C).
+Current recommendation: 1.9.292+ (the native-adoption train;
+carries the plan-ABI surface, the 1.9.290 XSLT-params and
+bulk-append faces, and the 1.9.292 engine deep-copy root install).
 |===
 
 NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.174`, `nokogiri ~> 1.18`,
@@ -663,7 +668,22 @@ element.attribute_pairs.each do |name, value|
 end
 ----
 
+Wrapper read memos — `Element#text`, `Element#inner_text` and
+`Attribute#value` memoize on the mutation clocks (`#321`): re-read
+walks pay zero string allocation per node (a text write, child
+mutation or attribute write retires the memo; bulk builders keep
+their local-invalidation shape).
+
+Nokogiri-compatible node surface — `<<` (strings parse as markup),
+`Element#delete(name)`, `Element#children=` (whole-list batch
+replacement; one crossing to clear, one to append on leptris),
+`Element#elements`/`element_children` (engine-level element-only
+filtering), plus `next=`/`previous=`, `add_first_child`,
+`parent=`, `ancestors(sel)`, `NodeSet#-`/`to_ary`/`to_xml`,
+`to_s`/`to_str`, `content=` and `default_namespace=`.
+
 Typed struct members on `Moxml::StructPlan` — the executor casts
+
 in C with no intermediate String (unparseable input degrades to
 the raw String):
 
