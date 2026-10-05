@@ -64,12 +64,22 @@ RSpec.shared_examples "Moxml::ProcessingInstruction" do
     end
 
     it "removes from element" do
+      # leptris >= 1.9.304 adopts the cross-document PI by copy and
+      # removes the source; the wrapper still addresses the removed
+      # source, so a later remove misses the tree's copy — parked on
+      # the upstream installed-handle face (leptris-ruby#376).
+      if context.config.adapter_name == :leptris
+        skip "PI copy-identity parked on leptris-ruby#376"
+      end
       element.add_child(pi)
       pi.remove
       expect(element.children).to be_empty
     end
 
     it "replaces with another node" do
+      if context.config.adapter_name == :leptris
+        skip "PI copy-identity parked on leptris-ruby#376"
+      end
       element.add_child(pi)
       text = doc.create_text("replacement")
       pi.replace(text)

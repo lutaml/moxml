@@ -1862,6 +1862,51 @@ module Moxml
           attr
         end
 
+        # Rebuild a cross-document ELEMENT inside the parent's document
+        # through the binding's create faces, recursing over the source
+        # subtree (namespace declarations ride the copy). Returns the
+        # INSTALLED binding element.
+        def structural_adopt(parent_nn, child_nn)
+          doc = NN_DOCUMENT.bind_call(parent_nn)
+          src = to_binding(child_nn)
+          installed = copy_binding_subtree(doc, src)
+          ::Leptris::XML::FFI.check_status(
+            ::Leptris::XML::FFI.leptris_element_append_child(
+              ::FFI::Pointer.new(parent_nn.address), installed.c_ptr
+            ),
+          )
+          installed
+        end
+
+        def copy_binding_subtree(doc, src)
+          sub = doc.create_element(src.name.to_s)
+          (src.respond_to?(:attributes) ? src.attributes : {}).each do |k, v|
+            sub[k.to_s] = v.to_s
+          end
+          src.namespace_definitions.each do |decl|
+            sub.add_namespace_definition(decl.prefix, decl.href)
+          rescue ::Leptris::XML::Error
+            nil
+          end
+          src.children.to_a.each do |c|
+            case c
+            when ::Leptris::XML::Text
+              sub.add_child(doc.create_text_node(c.content.to_s))
+            when ::Leptris::XML::Element
+              sub.add_child(copy_binding_subtree(doc, c))
+            when ::Leptris::XML::CDATA
+              sub.add_child(doc.create_cdata(c.content.to_s))
+            when ::Leptris::XML::Comment
+              sub.add_child(doc.create_comment(c.content.to_s))
+            when ::Leptris::XML::ProcessingInstruction
+              sub.add_child(
+                doc.create_processing_instruction(c.target.to_s, c.content.to_s),
+              )
+            end
+          end
+          sub
+        end
+
         def actual_native(child_native, parent_native)
           if NATIVE_DOC_PARTS && child_native.is_a?(CustomizedLeptris::Doctype) &&
               parent_native.is_a?(::Leptris::XML::Document)
@@ -1921,9 +1966,35 @@ module Moxml
               return child
             end
             if NATIVE_MUTATIONS_COHERENT && parent.is_a?(NN) && child.is_a?(NN)
+              # 1.9.304 (leptris-ruby#376): the plain C add rejects
+              # foreign-pool children (-1) and the adoption seam's
+              # namespace lift crashes on moxml's created shapes.
+              # Rebuild the child in the parent's pool through the
+              # binding's create faces — correct tree; the caller's
+              # wrapper keeps addressing the source original (pointer
+              # identity waits on the upstream installed-handle face).
+              # Non-element kinds keep the plain C add.
+              child_doc = NN_DOCUMENT.bind_call(child)
+              parent_doc = NN_DOCUMENT.bind_call(parent)
+              if child_doc && parent_doc &&
+                  !child_doc.equal?(parent_doc) && child.node_type == :element
+                return structural_adopt(parent, child)
+              end
+
               doc = NN_DOCUMENT.bind_call(parent)
               child = doc.create_text_node(child) if child.is_a?(String)
-              return NN_ADD_CHILD.bind_call(parent, child)
+              # The engine's document resolution can mis-report pool
+              # ownership under spec-order state (the #1242 TLS-memo
+              # family) — an -1 rejection falls back to the structural
+              # adopt for elements rather than raising through the flow.
+              begin
+                return NN_ADD_CHILD.bind_call(parent, child)
+              rescue ::Leptris::XML::Error, ::RuntimeError => e
+                raise unless e.message.include?("append_child failed")
+                raise unless child.node_type == :element
+
+                structural_adopt(parent, child)
+              end
             end
 
             child = parent.document.create_text_node(child) if child.is_a?(String)
