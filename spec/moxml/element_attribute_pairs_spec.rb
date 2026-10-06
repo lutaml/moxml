@@ -39,4 +39,23 @@ RSpec.describe Moxml::Element do
       end
     end
   end
+
+  context "when memoized" do
+    it "returns the same object on repeated reads" do
+      with_adapter(:leptris) do |ctx|
+        root = ctx.parse(xml).root
+        expect(root.attribute_pairs).to equal(root.attribute_pairs)
+      end
+    end
+
+    it "refreshes after a value write" do
+      with_adapter(:leptris) do |ctx|
+        root = ctx.parse(xml).root
+        before = root.attribute_pairs
+        root["id"] = "r9"
+        expect(root.attribute_pairs).not_to equal(before)
+        expect(root.attribute_pairs).to include(["id", "r9"])
+      end
+    end
+  end
 end
