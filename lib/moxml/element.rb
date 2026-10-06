@@ -127,8 +127,8 @@ module Moxml
     # writes bump it (see invalidate_attribute_value_cache!).
     def attribute_pairs
       generation = attribute_value_generation
-      @pairs = nil if @pairs_gen != generation
-      @pairs_gen = generation
+      @attribute_pairs = nil if @attribute_pairs_gen != generation
+      @attribute_pairs_gen = generation
       @attribute_pairs ||= adapter.attribute_pairs(@native)
     end
 
