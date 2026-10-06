@@ -64,24 +64,12 @@ RSpec.shared_examples "Moxml::ProcessingInstruction" do
     end
 
     it "removes from element" do
-      # The PI moves by reference once absorb re-arms (leptris-ruby
-      # #386: absorbed sources crash at exit until the binding fixes
-      # the finalizer); until then leptris adopts cross-pool PIs by
-      # copy and the wrapper addresses the removed source.
-      if context.config.adapter_name == :leptris &&
-          !Moxml::Adapter::Leptris::NATIVE_DOC_ABSORB
-        skip "PI move parked on leptris-ruby#386"
-      end
       element.add_child(pi)
       pi.remove
       expect(element.children).to be_empty
     end
 
     it "replaces with another node" do
-      if context.config.adapter_name == :leptris &&
-          !Moxml::Adapter::Leptris::NATIVE_DOC_ABSORB
-        skip "PI move parked on leptris-ruby#386"
-      end
       element.add_child(pi)
       text = doc.create_text("replacement")
       pi.replace(text)
