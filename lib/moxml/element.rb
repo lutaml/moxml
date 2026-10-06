@@ -122,8 +122,14 @@ module Moxml
     # per-attribute objects. Names may be shared frozen strings —
     # dup before mutating. Mutation and per-attribute namespace
     # resolution stay on #attributes.
+    # One C crossing per read re-allocates the row set (moxml#329);
+    # memoized on the attribute-value clock — element-side value
+    # writes bump it (see invalidate_attribute_value_cache!).
     def attribute_pairs
-      adapter.attribute_pairs(@native)
+      generation = attribute_value_generation
+      @pairs = nil if @pairs_gen != generation
+      @pairs_gen = generation
+      @attribute_pairs ||= adapter.attribute_pairs(@native)
     end
 
     # Create an element with attributes and attach it under this
@@ -248,9 +254,18 @@ module Moxml
     alias add_namespace_definition add_namespace
 
     # it's NOT the same as namespaces.first
+    # Per-read namespace resolution pays an FFI fetch plus a wrapper
+    # mint on every call (moxml#329: a top attribution site in the
+    # fallback-path census). Memoized on the namespace-scope clock —
+    # every scope mutation bumps it (see invalidate_namespace_cache!).
     def namespace
-      ns = adapter.namespace(@native)
-      ns && Wrappers::Namespace.new(ns, context)
+      generation = context.namespace_scope_generation
+      @namespace = nil if @namespace_gen != generation
+      @namespace_gen = generation
+      @namespace ||= begin
+        ns = adapter.namespace(@native)
+        ns && Wrappers::Namespace.new(ns, context)
+      end
     end
 
     # add the prefix to the element name

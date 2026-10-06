@@ -72,7 +72,11 @@ module Moxml
       def group_flat(flat, stride)
         return EMPTY_ATTRIBUTES if flat.empty?
 
-        flat.each_slice(stride).to_a
+        # Direct indexing over each_slice: no enumerator chain per
+        # record (moxml#329's slice-churn row — the enumerator
+        # allocation dominated the sub-array cost on deep trees).
+        count = flat.size / stride
+        Array.new(count) { |i| flat[i * stride, stride] }
       end
     end
 
