@@ -146,22 +146,20 @@ module Moxml
       NATIVE_SAX_RECORDS =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.242")
 
-      # Document#absorb (engine #1548, binding 1.9.311.0): one call
-      # transfers a source document's pool ownership into the
-      # destination, so cross-document attaches of its nodes move by
-      # reference (O(1), no deep copy) instead of rebuilding or
-      # copying at every seam. THE GATE IS KILLED until upstream
-      # fixes leptris-ruby#386: an absorbed source whose handle
-      # survives to process exit aborts in its TypedData finalizer
-      # (dh_free → leptris_document_free → pool double-free), and
-      # the binding's splice paths drop absorbed nodes whose pools
-      # moved through intermediate documents. The machinery below
-      # (absorb_source_document chase + closure, source_absorbed_into?
-      # splice gates, raw-face routing) is complete and spec'd —
-      # re-arm by restoring the version/method_defined conjunct.
-      NATIVE_DOC_ABSORB = false && defined?(::Leptris::XML::Document) &&
+      # Document#absorb (engine #1548): one call transfers a source
+      # document's pool ownership into the destination, so
+      # cross-document attaches of its nodes move by reference (O(1),
+      # no deep copy) instead of rebuilding or copying at every seam.
+      # Floor 1.9.311.3, not .0: the .0 finalizer double-freed pools
+      # whose absorbed sources survived to process exit, and its
+      # splice paths dropped absorbed nodes (both fixed in .3 —
+      # leptris-ruby#386). The method_defined probe pairs with the
+      # version gate (misrelease races — the NATIVE_PLAN_STRUCTS
+      # lesson).
+      NATIVE_DOC_ABSORB =
+        defined?(::Leptris::XML::Document) &&
         ::Leptris::XML::Document.method_defined?(:absorb) &&
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.311.0")
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.311.3")
 
       # XSLT 1.0/2.0/3.0 through the engine's compiled-stylesheet
       # faces (Moxml::XSLT contract). Top-level parameters are not
