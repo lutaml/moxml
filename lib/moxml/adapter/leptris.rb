@@ -2113,7 +2113,7 @@ module Moxml
                 return NN_ADD_CHILD.bind_call(parent, child)
               rescue ::Leptris::XML::Error, ::RuntimeError => e
                 raise unless e.message.include?("append_child failed")
-                raise unless [:element, :text].include?(child.node_type)
+                raise unless %i[element text].include?(child.node_type)
 
                 if child.node_type == :element
                   structural_adopt(parent, child)
