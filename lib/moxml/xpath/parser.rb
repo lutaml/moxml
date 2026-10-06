@@ -451,8 +451,10 @@ module Moxml
         elsif match?(:number)
           value = current_value
           advance
-          # Convert string to actual numeric value
-          numeric_value = value.include?(".") ? value.to_f : value.to_i
+          # Convert string to actual numeric value. Exponent
+          # literals must go through to_f — to_i truncates at the E
+          # ("1E+1" became 1).
+          numeric_value = value.match?(/[.Ee]/) ? value.to_f : value.to_i
           return AST::Node.number(numeric_value)
         elsif match?(:dollar)
           advance
