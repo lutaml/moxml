@@ -155,6 +155,19 @@ module Moxml
 
       private
 
+      # After an E/e: a digit, or a sign followed by a digit. Anything
+      # else leaves the E as part of a name (1o vs 1e ambiguity guard).
+      def lookahead_after_e_is_digit_sign?
+        next_char = @expression[@position + 1]
+        return true if /\d/.match?(next_char)
+
+        if /[+-]/.match?(next_char)
+          return @expression[@position + 2]&.match?(/\d/) || false
+        end
+
+        false
+      end
+
       # Get current character
       #
       # @return [String, nil] Current character or nil if at end
@@ -252,6 +265,22 @@ module Moxml
         if @position < @length && current_char == "."
           value += current_char
           advance
+
+          while @position < @length && current_char =~ /\d/
+            value += current_char
+            advance
+          end
+        end
+
+        # Exponent part (libxml2/nokogiri extension): digits [Ee] [+|-]
+        # digits. Without it, 1E+1 tokenized as 1E followed by + 1 and
+        # predicates raised "Expected ']' after predicate".
+        if @position < @length && current_char =~ /[Ee]/ &&
+            @position + 1 < @length && lookahead_after_e_is_digit_sign?
+          value += current_char
+          advance
+          value += current_char if /[+-]/.match?(current_char)
+          advance if /[+-]/.match?(current_char)
 
           while @position < @length && current_char =~ /\d/
             value += current_char
