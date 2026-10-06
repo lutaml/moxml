@@ -1893,6 +1893,44 @@ module Moxml
           installed
         end
 
+        # moxml#335: the engine's document resolution can mis-report
+        # pool ownership under spec-order state (the #1242 TLS-memo
+        # family), so a plain add can -1 for ANY node kind — not just
+        # elements and text. Elements rebuild structurally (the #376
+        # contract); every other kind carries no cross-document
+        # identity worth preserving, so reconstruct it in the parent's
+        # document through the binding's create faces.
+        def rebuild_foreign_child(parent_nn, child_nn)
+          doc = NN_DOCUMENT.bind_call(parent_nn)
+          rebuilt =
+            case child_nn.node_type
+            when :element
+              return structural_adopt(parent_nn, child_nn)
+            when :text
+              doc.create_text_node(child_nn.text)
+            when :comment
+              doc.create_comment(child_nn.text)
+            when :cdata
+              doc.create_cdata(child_nn.text)
+            when :processing_instruction, :pi
+              doc.create_processing_instruction(
+                child_nn.target, child_nn.content.to_s
+              )
+            else
+              raise Moxml::DocumentStructureError.new(
+                "cannot rebuild a #{child_nn.node_type} node",
+              )
+            end
+          # The raw engine add rejects binding-family children —
+          # append through the FFI face like structural_adopt.
+          ::Leptris::XML::FFI.check_status(
+            ::Leptris::XML::FFI.leptris_element_append_child(
+              ::FFI::Pointer.new(parent_nn.address), rebuilt.c_ptr
+            ),
+          )
+          rebuilt
+        end
+
         def copy_binding_subtree(doc, src)
           sub = doc.create_element(src.name.to_s)
           (src.respond_to?(:attributes) ? src.attributes : {}).each do |k, v|
@@ -2107,24 +2145,15 @@ module Moxml
               child = doc.create_text_node(child) if child.is_a?(String)
               # The engine's document resolution can mis-report pool
               # ownership under spec-order state (the #1242 TLS-memo
-              # family) — an -1 rejection falls back to the structural
-              # adopt for elements rather than raising through the flow.
+              # family) — an -1 rejection rebuilds the child in the
+              # parent's document for every reconstructible kind
+              # (moxml#335), rather than raising through the flow.
               begin
                 return NN_ADD_CHILD.bind_call(parent, child)
               rescue ::Leptris::XML::Error, ::RuntimeError => e
                 raise unless e.message.include?("append_child failed")
-                raise unless %i[element text].include?(child.node_type)
 
-                if child.node_type == :element
-                  structural_adopt(parent, child)
-                else
-                  # A text node carries no cross-document identity worth
-                  # preserving: rebuild it in the parent's document
-                  NN_ADD_CHILD.bind_call(
-                    parent,
-                    doc.create_text_node(child.text),
-                  )
-                end
+                rebuild_foreign_child(parent, child)
               end
             end
 

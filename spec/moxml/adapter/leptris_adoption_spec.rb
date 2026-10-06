@@ -10,6 +10,7 @@ require "spec_helper"
 # names, doc-owned).
 RSpec.describe "leptris cross-document adoption" do
   let(:ctx) { Moxml.new(:leptris) }
+  let(:ad) { Moxml::Adapter::Leptris }
 
   it "add_child lands the adopted copy in the tree" do
     doc = ctx.parse("<r><a/></r>")
@@ -98,6 +99,51 @@ RSpec.describe "leptris cross-document adoption" do
       expect(doc.at("//r/deep")["v"]).to eq("1")
       expect(doc.root.to_xml).not_to include("<mid>")
       expect(mid.root.to_xml).not_to include("<deep")
+    end
+  end
+
+  # moxml#335: the -1 fallback must not re-raise by node kind — the
+  # engine's document resolution can mis-report pool ownership for
+  # ANY child (the #1242 TLS-memo family), and only elements have a
+  # cross-document identity worth a structural rebuild. The helper
+  # is specced directly: the engine failure is CI-only, so forcing
+  # the -1 locally is not reproducible.
+  context "when the add_child -1 rebuild fallback fires" do
+    it "rebuilds comments in the parent's document" do
+      doc = ctx.parse("<r/>")
+      other = ctx.parse("<other><!-- note --></other>")
+      ad.rebuild_foreign_child(doc.root.native, other.root.children.first.native)
+      expect(doc.root.to_xml).to include("<!-- note -->")
+      expect(other.root.to_xml).to include("<!-- note -->")
+    end
+
+    it "rebuilds CDATA in the parent's document" do
+      doc = ctx.parse("<r/>")
+      other = ctx.parse("<other><![CDATA[x < y]]></other>")
+      ad.rebuild_foreign_child(doc.root.native, other.root.children.first.native)
+      expect(doc.root.to_xml).to include("<![CDATA[x < y]]>")
+    end
+
+    it "rebuilds processing instructions in the parent's document" do
+      doc = ctx.parse("<r/>")
+      other = ctx.parse("<other><?tgt data='1'?></other>")
+      ad.rebuild_foreign_child(doc.root.native, other.root.children.first.native)
+      expect(doc.root.to_xml).to include("<?tgt data='1'?>")
+    end
+
+    it "rebuilds text in the parent's document" do
+      doc = ctx.parse("<r/>")
+      other = ctx.parse("<other>t</other>")
+      ad.rebuild_foreign_child(doc.root.native, other.root.children.first.native)
+      expect(doc.root.to_xml).to include(">t<")
+    end
+
+    it "rebuilds elements structurally" do
+      doc = ctx.parse("<r/>")
+      other = ctx.parse("<other><e k='v'>t</e></other>")
+      ad.rebuild_foreign_child(doc.root.native, other.root.children.first.native)
+      expect(doc.at("//r/e")["k"]).to eq("v")
+      expect(doc.at("//r/e").text).to eq("t")
     end
   end
 end
