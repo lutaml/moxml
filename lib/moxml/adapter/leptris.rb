@@ -2113,9 +2113,18 @@ module Moxml
                 return NN_ADD_CHILD.bind_call(parent, child)
               rescue ::Leptris::XML::Error, ::RuntimeError => e
                 raise unless e.message.include?("append_child failed")
-                raise unless child.node_type == :element
+                raise unless [:element, :text].include?(child.node_type)
 
-                structural_adopt(parent, child)
+                if child.node_type == :element
+                  structural_adopt(parent, child)
+                else
+                  # A text node carries no cross-document identity worth
+                  # preserving: rebuild it in the parent's document
+                  NN_ADD_CHILD.bind_call(
+                    parent,
+                    doc.create_text_node(child.text),
+                  )
+                end
               end
             end
 
