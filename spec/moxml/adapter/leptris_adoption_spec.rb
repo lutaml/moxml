@@ -2,13 +2,12 @@
 
 require "spec_helper"
 
-# leptris >= 1.9.304 adopts cross-document children BY COPY
-# (leptris-ruby#1528 — the engine deep-copies at the splice so a
-# scratch document can no longer dangle adopted nodes). The engine's
-# status-returning splices cannot report the installed handle, so
-# wrapper-level pointer identity for the appended node is not
-# restorable yet (filed upstream): these pin the ADOPTION contract —
-# the copy lands in the tree, correct names, doc-owned.
+# Cross-document adoption contract. leptris >= 1.9.311 absorbs the
+# source document's pool into the destination (engine #1548) so
+# attaches move by reference — wrapper identity survives; older
+# bindings deep-copy at the splice (leptris-ruby#1528) and only the
+# ADOPTION shape is pinned (the copy lands in the tree, correct
+# names, doc-owned).
 RSpec.describe "leptris cross-document adoption" do
   let(:ctx) { Moxml.new(:leptris) }
 
@@ -30,5 +29,75 @@ RSpec.describe "leptris cross-document adoption" do
     doc.at("//a").add_next_sibling(child)
     expect(doc.root.children.to_a[1].name).to eq("x")
     expect(doc.at("//r/x")).not_to be_nil
+  end
+
+  context "when the binding offers Document#absorb (>= 1.9.311)" do
+    before do
+      unless Moxml::Adapter::Leptris::NATIVE_DOC_ABSORB
+        skip "binding #{Leptris::VERSION} has no absorb face"
+      end
+    end
+
+    it "moves the child by reference — the wrapper addresses the attached node" do
+      doc = ctx.parse("<r><a/></r>")
+      other = ctx.parse("<other><new/></other>")
+      child = other.root.children.first
+      doc.root.add_child(child)
+      expect(doc.root.children.last).to eq(child)
+      expect(doc.root.to_xml).not_to include("<other")
+      child["probe"] = "1"
+      expect(doc.at("//r/new")["probe"]).to eq("1")
+      expect(child.parent.name).to eq("r")
+    end
+
+    it "keeps the pre-311 adoption behavior for non-element kinds" do
+      # Absorb is scoped to element moves: the binding's splice paths
+      # drop absorbed-source nodes upstream (their absorbed_into?
+      # check is not transitive), so binding-family children keep
+      # the 1.9.304 adoption copy.
+      doc = ctx.parse("<r/>")
+      other = ctx.parse("<other/>")
+      pi = other.create_processing_instruction("xml-stylesheet", 'href="s.xsl"')
+      other.root.add_child(pi)
+      doc.root.add_child(pi)
+      expect(doc.root.to_xml).to include("<?xml-stylesheet")
+    end
+
+    it "keeps the tree alive after the source document is collected" do
+      doc = ctx.parse("<r/>")
+      child = nil
+      3.times do
+        other = ctx.parse("<other><deep><leaf v='1'>t</leaf></deep></other>")
+        child = other.root.children.first
+        doc.root.add_child(child)
+        nil
+        GC.start
+      end
+      expect(doc.at("//r/deep/leaf")["v"]).to eq("1")
+      expect(doc.at("//r/deep/leaf").text).to eq("t")
+      expect(child.name).to eq("deep")
+    end
+
+    it "keeps a living source readable after its pool is absorbed" do
+      doc = ctx.parse("<r/>")
+      other = ctx.parse("<other><x>1</x></other>")
+      doc.root.add_child(other.root.children.first)
+      expect(other.root.name).to eq("other")
+      expect(other.at("//other")).not_to be_nil
+    end
+
+    it "moves elements whose pool was absorbed through an intermediate document" do
+      # scratch → mid (first splice) → doc: the chase takes the pool
+      # from mid; the raw engine add then moves by pool identity.
+      doc = ctx.parse("<r/>")
+      mid = ctx.parse("<mid/>")
+      scratch = ctx.parse("<scratch><deep v='1'>t</deep></scratch>")
+      mid.root.add_child(scratch.root.children.first)
+      expect(mid.root.to_xml).to include("<deep")
+      doc.root.add_child(mid.root.children.first)
+      expect(doc.at("//r/deep")["v"]).to eq("1")
+      expect(doc.root.to_xml).not_to include("<mid>")
+      expect(mid.root.to_xml).not_to include("<deep")
+    end
   end
 end

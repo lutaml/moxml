@@ -146,6 +146,23 @@ module Moxml
       NATIVE_SAX_RECORDS =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.242")
 
+      # Document#absorb (engine #1548, binding 1.9.311.0): one call
+      # transfers a source document's pool ownership into the
+      # destination, so cross-document attaches of its nodes move by
+      # reference (O(1), no deep copy) instead of rebuilding or
+      # copying at every seam. THE GATE IS KILLED until upstream
+      # fixes leptris-ruby#386: an absorbed source whose handle
+      # survives to process exit aborts in its TypedData finalizer
+      # (dh_free → leptris_document_free → pool double-free), and
+      # the binding's splice paths drop absorbed nodes whose pools
+      # moved through intermediate documents. The machinery below
+      # (absorb_source_document chase + closure, source_absorbed_into?
+      # splice gates, raw-face routing) is complete and spec'd —
+      # re-arm by restoring the version/method_defined conjunct.
+      NATIVE_DOC_ABSORB = false && defined?(::Leptris::XML::Document) &&
+        ::Leptris::XML::Document.method_defined?(:absorb) &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.311.0")
+
       # XSLT 1.0/2.0/3.0 through the engine's compiled-stylesheet
       # faces (Moxml::XSLT contract). Top-level parameters are not
       # threaded through the faces yet (leptris-ruby#360) — non-empty
@@ -1921,13 +1938,17 @@ module Moxml
         # collected its arena dies and the subtree vanishes (empty
         # output, nameless element pairs — silent, GC-dependent). Pin
         # the owning document on the target's document so the arena
-        # outlives every attached subtree.
+        # outlives every attached subtree. Absorb (1.9.311) is NOT
+        # taken here: the binding's splice paths are unreliable for
+        # absorbed sources (transitively-stale handles drop nodes), so
+        # only the element moves that route through the raw engine add
+        # (add_child / sibling inserts below) absorb first.
         def pin_foreign_owner_document(parent, child)
           return unless child.is_a?(NN) || child.is_a?(::Leptris::XML::Node)
 
           # Two document fetches + identity compare on the same-document
-          # hot path (every builder add_child); the WeakMap bridge and
-          # the pin only pay when the child actually comes from another
+          # hot path (every builder add_child); the bridge and the
+          # pin only pay when the child actually comes from another
           # document.
           child_doc = child.is_a?(NN) ? NN_DOCUMENT.bind_call(child) : child.document
           return if child_doc.nil?
@@ -1947,7 +1968,103 @@ module Moxml
           attachments.set(parent_doc, :adopted_docs, docs)
         end
 
+        # True when new_node's owning document (or the absorber its
+        # pool moved into) was absorbed into node's document: the pool
+        # is already the destination's, so splices must not take the
+        # adopt/copy paths. The engine re-parents pool ownership but
+        # NOT the node→document handles (they keep answering the
+        # original parse document), so the absorbed-sources set is the
+        # only authority. The binding's splice paths also drop
+        # absorbed-source nodes upstream (their absorbed_into? check
+        # is not transitive) — route absorbed splices through the raw
+        # engine faces.
+        def source_absorbed_into?(node, new_node)
+          return false unless NATIVE_DOC_ABSORB
+
+          node_doc = node.is_a?(NN) ? NN_DOCUMENT.bind_call(node) : node.document
+          new_doc = new_node.is_a?(NN) ? NN_DOCUMENT.bind_call(new_node) : new_node.document
+          return false if node_doc.nil? || new_doc.nil? || node_doc.equal?(new_doc)
+
+          owner = new_doc.is_a?(NN) ? to_binding(new_doc) : new_doc
+          dest = node_doc.is_a?(NN) ? to_binding(node_doc) : node_doc
+          attachments.get(dest, :absorbed_sources)&.include?(owner) || false
+        end
+
+        # 1.9.311 (engine #1548): move semantics for doomed splice
+        # sources. Absorbing the child's document into the target
+        # transfers pool ownership, so every later attach of its nodes
+        # moves by reference instead of copying (the #376 structural
+        # rebuild and its pointer-identity loss disappear; the engine
+        # re-parents node→document so the same-doc gates resolve).
+        # Absorb exactly once per (dest, owner): re-absorbing is an
+        # engine error. On success the source's free becomes
+        # handle-only — the reverse attachment pins the new pool owner
+        # on the source, so a living source can never outlive the
+        # memory its reads still touch.
+        def absorb_source_document(dest, owner)
+          return nil unless NATIVE_DOC_ABSORB
+          return :direct if attachments.get(dest, :absorbed_sources)&.include?(owner)
+
+          # The child's document handle keeps answering its original
+          # parse document even after that document's pool was
+          # absorbed upward — the pool follows the absorber. On a
+          # rejected absorb (already owned elsewhere), chase the
+          # absorber chain and absorb the current pool owner. Returns
+          # :direct on a first-attempt absorb, :chased when the pool
+          # had to be taken from an upstream absorber (the binding's
+          # splice paths drop such nodes — their absorbed_into? checks
+          # are not transitive — so only raw engine faces may follow a
+          # chase), nil when absorb is unavailable/refused.
+          status = :direct
+          candidate = owner
+          while candidate
+            begin
+              dest.absorb(candidate)
+            rescue ::Leptris::XML::Error, ::RuntimeError
+              status = :chased
+              candidate = attachments.get(candidate, :absorbed_by)
+              next
+            end
+            sources = attachments.get(dest, :absorbed_sources) || []
+            sources << candidate
+            sub = attachments.get(candidate, :absorbed_sources)
+            sources.concat(sub) if sub
+            sources << owner unless sources.include?(owner)
+            attachments.set(dest, :absorbed_sources, sources)
+            # Un-pin: a pinned absorbed owner lives until exit and
+            # its finalizer double-frees the transferred pool
+            # (leptris-ruby#386).
+            docs = attachments.get(dest, :adopted_docs)
+            if docs
+              docs.delete(owner)
+              attachments.set(dest, :adopted_docs, docs)
+            end
+            attachments.set(candidate, :absorbed_by, dest)
+            attachments.set(owner, :absorbed_by, dest) unless owner.equal?(candidate)
+            return status
+          end
+          nil
+        end
+
         def add_child(parent, child)
+          # 1.9.311: binding-family children (created PIs, texts...) —
+          # a DIRECT absorb makes the binding add below move the node
+          # by reference. A source already owned elsewhere would need
+          # a chase, and the binding's splice drops chased sources
+          # upstream (its absorbed_into? checks are not transitive) —
+          # those keep the pin + adoption copy. Entity references
+          # keep the marker flow below.
+          if NATIVE_DOC_ABSORB && !child.is_a?(NN) &&
+              child.is_a?(::Leptris::XML::Node) &&
+              !child.is_a?(CustomizedLeptris::EntityReference)
+            child_doc = child.document
+            parent_doc = parent.is_a?(NN) ? NN_DOCUMENT.bind_call(parent) : parent.document
+            if child_doc && parent_doc && !child_doc.equal?(parent_doc)
+              owner = to_binding(child_doc)
+              absorb_source_document(to_binding(parent_doc), owner) if
+                attachments.get(owner, :absorbed_by).nil?
+            end
+          end
           if NATIVE_READ_LAYER && !(NATIVE_MUTATIONS_COHERENT &&
                    parent.is_a?(::Leptris::XML::NativeNode) &&
                    child.is_a?(::Leptris::XML::NativeNode))
@@ -1973,12 +2090,19 @@ module Moxml
               # binding's create faces — correct tree; the caller's
               # wrapper keeps addressing the source original (pointer
               # identity waits on the upstream installed-handle face).
-              # Non-element kinds keep the plain C add.
+              # 1.9.311 (engine #1548): absorb the source document
+              # first and the plain add MOVES the element by reference
+              # (O(1), no copy, no live-set doubling) — the rebuild
+              # only fires when absorb is refused. Non-element kinds
+              # keep the pin + plain C add: the binding's splices drop
+              # absorbed-source nodes upstream.
               child_doc = NN_DOCUMENT.bind_call(child)
               parent_doc = NN_DOCUMENT.bind_call(parent)
               if child_doc && parent_doc &&
                   !child_doc.equal?(parent_doc) && child.node_type == :element
-                return structural_adopt(parent, child)
+                absorb_source_document(to_binding(parent_doc), to_binding(child_doc))
+                return structural_adopt(parent, child) unless
+                  source_absorbed_into?(parent, child)
               end
 
               doc = NN_DOCUMENT.bind_call(parent)
@@ -2015,7 +2139,18 @@ module Moxml
             node.document.add_pi(new_node.target, new_node.content.to_s)
             return new_node
           end
-          return node.add_previous_sibling(new_node) if node.is_a?(::Leptris::XML::Element)
+          # 1.9.311: an absorbed element source moves through the raw
+          # engine faces — the binding's sibling insert drops it.
+          if new_node.is_a?(::Leptris::XML::Element) &&
+              !new_node.is_a?(::Leptris::XML::NativeNode)
+            new_doc = new_node.document
+            node_doc = node.document
+            if new_doc && node_doc && !new_doc.equal?(node_doc)
+              absorb_source_document(node_doc, new_doc)
+            end
+          end
+          return node.add_previous_sibling(new_node) if node.is_a?(::Leptris::XML::Element) &&
+            !source_absorbed_into?(node, new_node)
 
           # Non-element receivers: raw-FFI anchor (issue #245, same
           # shape as add_next_sibling).
@@ -2034,7 +2169,18 @@ module Moxml
             new_node = to_binding(new_node)
           end
           pin_foreign_owner_document(node, new_node)
-          return node.add_next_sibling(new_node) if node.is_a?(::Leptris::XML::Element)
+          # 1.9.311: an absorbed element source moves through the raw
+          # engine faces — the binding's sibling insert drops it.
+          if new_node.is_a?(::Leptris::XML::Element) &&
+              !new_node.is_a?(::Leptris::XML::NativeNode)
+            new_doc = new_node.document
+            node_doc = node.document
+            if new_doc && node_doc && !new_doc.equal?(node_doc)
+              absorb_source_document(node_doc, new_doc)
+            end
+          end
+          return node.add_next_sibling(new_node) if node.is_a?(::Leptris::XML::Element) &&
+            !source_absorbed_into?(node, new_node)
 
           # Non-element receivers (Text/Comment/CDATA): the binding's
           # method is Element-only, but the C insert anchors on any
@@ -2132,6 +2278,10 @@ module Moxml
           # content node (text/comment/CDATA/PI) is replaced by
           # unlinking and re-inserting: after an element sibling when
           # one exists, else appended (end-of-list) to the parent.
+          # Raw engine faces, not the binding add: a parent resolved
+          # through an absorbed source's stale document handle sends
+          # same-pool adds down the adoption path, which drops
+          # non-element kinds (leptris-ruby#376 family).
           parent = node.parent
           unless parent
             raise Moxml::DocumentStructureError.new(
@@ -2142,9 +2292,17 @@ module Moxml
           prev = node.previous_sibling
           node.unlink
           if prev.is_a?(::Leptris::XML::Element)
-            prev.add_next_sibling(new_node)
+            ::Leptris::XML::FFI.check_status(
+              ::Leptris::XML::FFI.leptris_element_insert_after(
+                prev.c_ptr, new_node.c_ptr
+              ),
+            )
           else
-            parent.add_child(new_node)
+            ::Leptris::XML::FFI.check_status(
+              ::Leptris::XML::FFI.leptris_element_append_child(
+                parent.c_ptr, new_node.c_ptr
+              ),
+            )
           end
           new_node
         end
