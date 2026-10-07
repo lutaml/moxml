@@ -37,6 +37,13 @@ module Moxml
     #   :inclusive10  Canonical XML 1.0 (default; W3C REC-xml-c14n-20010315)
     #   :inclusive11  Canonical XML 1.1 (W3C REC-xml-c14n11-20080502)
     #   :exclusive10  Exclusive C14N 1.0 (W3C REC-xml-exc-c14n-20020718)
+    # Testing helper (TODO.c14n/15): do two XML inputs share one
+    # canonical form? Both sides canonicalize inclusively (C14N 1.0,
+    # comments dropped) — the default digest shape.
+    def self.same_canonical_form?(left, right)
+      canonicalize(left) == canonicalize(right)
+    end
+
     def self.canonicalize(node_or_xml, with_comments: false,
                           algorithm: :inclusive10, inclusive_namespaces: [])
       if (native = native_inclusive10(node_or_xml, algorithm, with_comments,

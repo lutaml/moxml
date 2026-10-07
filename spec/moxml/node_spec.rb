@@ -168,6 +168,19 @@ RSpec.describe Moxml::Node do
       end
     end
 
+    it "lists siblings excluding self, in document order" do
+      doc = Moxml.new(:leptris).parse("<r><a/><b/><c/></r>")
+      b = doc.at("//b")
+      siblings = b.siblings
+      expect(siblings).to be_a(Moxml::NodeSet)
+      expect(siblings.map(&:name)).to eq(%w[a c])
+    end
+
+    it "returns an empty sibling set for a rootless node" do
+      doc = Moxml.new(:leptris).parse("<r/>")
+      expect(doc.root.siblings.to_a).to be_empty
+    end
+
     it "locates non-element nodes through typed node tests" do
       text = doc.root.children.first.children.first
       expect(text.path).to end_with("/text()")
