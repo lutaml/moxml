@@ -119,7 +119,7 @@ carries the plan-ABI surface, the 1.9.290 XSLT-params and
 bulk-append faces, and the 1.9.292 engine deep-copy root install).
 |===
 
-NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.174`, `nokogiri ~> 1.18`,
+NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.314` (the tested pair; the gemspec itself has zero runtime dependencies).
 `ox ~> 2.14`, `libxml-ruby >= 5.0`, and the vendored oga fork — the CI
 matrix tests exactly those floors.
 
