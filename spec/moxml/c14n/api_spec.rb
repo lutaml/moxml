@@ -114,4 +114,26 @@ RSpec.describe "Moxml::C14n API" do
         .to eq(%(a&quot;b&#x9;c&#xA;d))
     end
   end
+
+  describe ".same_canonical_form?" do
+    let(:cmp_ctx) { Moxml.new(:leptris) }
+
+    it "is true for documents differing only in canonical form" do
+      a = cmp_ctx.parse('<r xmlns="urn:x"><a k="1">t</a></r>')
+      b = cmp_ctx.parse('<r xmlns="urn:x"><a k="1">t</a></r>')
+      expect(Moxml::C14n.same_canonical_form?(a, b)).to be(true)
+    end
+
+    it "is false across a semantic difference" do
+      a = cmp_ctx.parse('<r xmlns="urn:x"><a k="1">t</a></r>')
+      b = cmp_ctx.parse('<r><a k="1">t</a></r>')
+      expect(Moxml::C14n.same_canonical_form?(a, b)).to be(false)
+    end
+
+    it "accepts raw XML strings" do
+      expect(
+        Moxml::C14n.same_canonical_form?("<r><a/></r>", "<r><a/></r>"),
+      ).to be(true)
+    end
+  end
 end

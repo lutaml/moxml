@@ -565,6 +565,11 @@ module Moxml
       Moxml::Node.wrap(adapter.duplicate_node(@native), context)
     end
 
+    # Deliberately identical to #dup: a deep structural copy is the
+    # only sensible semantics for XML nodes, and a wrapper carries no
+    # frozen state or singleton methods to preserve — so the Ruby
+    # clone/dup distinction has nothing to differ on (see
+    # TODO.refactor/07, accepted alternative).
     alias clone dup
 
     # Returns an XPath expression that uniquely locates this node within
@@ -636,6 +641,16 @@ module Moxml
 
     def after(node)
       add_next_sibling(node)
+    end
+
+    # All sibling nodes excluding self, in document order.
+    def siblings
+      return NodeSet.new([], context) unless parent
+
+      NodeSet.new(
+        parent.children.reject { |c| c.equal?(self) }.map(&:native),
+        context,
+      )
     end
 
     def blank?
