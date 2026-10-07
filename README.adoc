@@ -239,7 +239,7 @@ libleptris has no first-class nodes for them.
 | Feature/Operation | Nokogiri | Oga | REXML | LibXML | Ox | HeadedOx | Leptris
 
 | *Core Operations*
-
+|
 |
 |
 |
@@ -275,9 +275,8 @@ libleptris has no first-class nodes for them.
 | ✅ Full
 
 | *Element Operations*
-
 |
- 
+|
 |
 |
 |
@@ -321,9 +320,8 @@ libleptris has no first-class nodes for them.
 | ✅ Full
 
 | *Namespace Operations*
-
 |
- 
+|
 |
 |
 |
@@ -367,9 +365,8 @@ libleptris has no first-class nodes for them.
 | ✅ Full
 
 | *XPath Queries*
-
 |
- 
+|
 |
 |
 |
@@ -467,9 +464,8 @@ libleptris has no first-class nodes for them.
 | ✅ All 27
 
 | *Special Content*
-
 |
- 
+|
 |
 |
 |
@@ -513,9 +509,8 @@ libleptris has no first-class nodes for them.
 | ⚠️ Value-object sidecar^8^
 
 | *Performance*
-
 |
- 
+|
 |
 |
 |
@@ -658,7 +653,7 @@ puts doc.to_xml(indent: 2)
 === Performance versus nokogiri
 
 CPU-time medians (1,000-record catalog, 20 iterations) through the
-moxml adapter layer on both sides — moxml + leptris 1.9.307 vs
+moxml adapter layer on both sides — moxml + leptris 1.9.314 vs
 moxml + nokogiri:
 
 [cols="2,1,4"]
@@ -666,31 +661,35 @@ moxml + nokogiri:
 |Operation |leptris vs nokogiri |Notes
 
 |parse
-|3.27x
+|3.0x
 |Engine pool-carved parse
 
 |serialize
-|3.38x
+|2.9x
 |
 
 |XPath
-|50x
+|40x
 |Native compiled-eval seams
 
 |walk + read (`.text`, `[]`)
-|1.90x
+|2.0x
 |C klass-mint wrappers + wrapper read memos
 
 |warm re-read
-|2.10x
+|2.1x
 |The memo family — zero string allocation per node
 
 |build (`add_element`)
-|4.24x
+|3.7x
 |C-mint construction + bulk attributes
 
+|build (Builder DSL)
+|2.1x
+|Markup-accumulating face — one crossing per subtree
+
 |attribute pairs
-|1.73x
+|parity
 |One C crossing, no Attribute objects
 |===
 
