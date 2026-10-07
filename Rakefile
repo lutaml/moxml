@@ -190,9 +190,10 @@ namespace :spec do
 
   desc "Run unit tests only"
   RSpec::Core::RakeTask.new(:unit) do |t|
-    # Unit specs live under spec/moxml/ — spec/unit/ has not existed
-    # since the 0.1.x reorganization (the stale pattern ran zero
-    # examples, hiding this leg from the fast gate).
+    # Unit specs live under spec/moxml/ — the stale glob matched
+    # nothing (spec/unit/ holds only the rexml_isolated_test.rb
+    # entity-era investigation artifact), so this leg ran zero
+    # examples and hid the moxml suite from the fast gate.
     t.pattern = "spec/moxml/**/*_spec.rb"
     t.exclude_pattern = "spec/moxml/adapter/**/*_spec.rb"
   end
