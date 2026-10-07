@@ -168,9 +168,10 @@ RSpec.describe Moxml::Node do
       end
     end
 
-    it "raises for node types without a path representation" do
+    it "locates non-element nodes through typed node tests" do
       text = doc.root.children.first.children.first
-      expect { text.path }.to raise_error(Moxml::NotImplementedError, /element and document/)
+      expect(text.path).to end_with("/text()")
+      expect(doc.at_xpath(text.path)).to eq(text)
     end
   end
 

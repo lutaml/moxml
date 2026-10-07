@@ -23,6 +23,10 @@ AllCops:
 # the zero-allocation streaming form (issue #143). One parameter per
 # record key is the interface; a shorter list would need a wrapper
 # object, which is the allocation the API exists to avoid.
+Metrics/BlockLength:
+  Exclude:
+    - 'Rakefile'
+
 Metrics/ParameterLists:
   Exclude:
     - 'lib/moxml/materializer.rb'

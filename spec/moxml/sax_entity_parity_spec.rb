@@ -164,7 +164,11 @@ RSpec.describe "SAX/DOM entity parity" do
         # double-escaping on round-trip.
         doc = ctx.create_document
         el = doc.create_element("doc")
-        el.add_child("a & b")
+        # Programmatically-built: a literal Text node, no markup parse.
+        # (add_child with a String operand is MARKUP since the nokogiri
+        # compat round — a bare "&" is ill-formed there and each
+        # engine recovers differently.)
+        el.add_child(doc.create_text("a & b"))
         doc.add_child(el)
 
         serialized = doc.to_xml.sub(/\A<\?[^>]*\?>\s*/, "").strip
