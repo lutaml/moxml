@@ -161,6 +161,16 @@ module Moxml
         ::Leptris::XML::Document.method_defined?(:absorb) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.311.3")
 
+      # Markup-accumulating builder face (leptris-ruby#374 lever 2,
+      # binding 1.9.313): the DSL accumulates markup in a plain
+      # String and ONE native crossing (parse + attach) flushes the
+      # whole subtree. See Adapter::Base#builder_face.
+      NATIVE_BUILDER =
+        defined?(::Leptris::XML::Builder) &&
+        defined?(::Leptris::XML::Document) &&
+        ::Leptris::XML::Document.method_defined?(:build) &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.313.0")
+
       # XSLT 1.0/2.0/3.0 through the engine's compiled-stylesheet
       # faces (Moxml::XSLT contract). Top-level parameters are not
       # threaded through the faces yet (leptris-ruby#360) — non-empty
@@ -208,6 +218,27 @@ module Moxml
         # (and on installs without the native layer — the constant
         # check short-circuits), a Node.wrap over the shared C
         # pointer for NativeNodes.
+        def builder_face(native_document)
+          return nil unless NATIVE_BUILDER && NATIVE_READ_LAYER
+
+          doc = if native_document.is_a?(NN)
+                  to_binding(native_document)
+                else
+                  native_document
+                end
+          ::Leptris::XML::Builder.new(doc)
+        end
+
+        def mark_entity_markers(native_document)
+          doc = if native_document.is_a?(NN)
+                  to_binding(native_document)
+                else
+                  native_document
+                end
+          attachments.set(doc, :entity_markers, true)
+          bump_serialize_generation
+        end
+
         def to_binding(node)
           return node unless NATIVE_READ_LAYER &&
             node.is_a?(::Leptris::XML::NativeNode)
