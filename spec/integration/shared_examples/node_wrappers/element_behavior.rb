@@ -89,6 +89,25 @@ RSpec.shared_examples "Moxml::Element" do
         expect(element.children.first.name).to eq("child")
         expect(element.children.first.text).to eq("text")
       end
+
+      it "sets inner XML with mixed top-level nodes" do
+        # Structure, not serialization spelling: Ox renders bare
+        # text as <s> nodes and rexml/oga expand empty tags.
+        element.inner_xml = "a<c1/>b<c2 v='1'/>c"
+        kids = element.children
+        expect(
+          kids.map { |c| c.element? ? :element : :content },
+        ).to eq(%i[content element content element content])
+        expect(kids[0].text).to eq("a")
+        expect(kids[2].text).to eq("b")
+        expect(kids[4].text).to eq("c")
+        expect(kids[3]["v"]).to eq("1")
+      end
+
+      it "sets inner XML containing element-like text and entities" do
+        element.inner_xml = "<c>&lt;/element&gt; &amp; &#65;</c>"
+        expect(element.children.first.text).to eq("</element> & A")
+      end
     end
 
     describe "node manipulation" do
