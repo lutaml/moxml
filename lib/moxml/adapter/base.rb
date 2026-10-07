@@ -13,6 +13,18 @@ module Moxml
       class << self
         include XmlUtils
 
+        # Binding-level markup-accumulating builder face
+        # (leptris 1.9.313, #374 lever 2): nil = the adapter has no
+        # face and the Builder takes the per-node tree path.
+        def builder_face(_native_document)
+          nil
+        end
+
+        # A built subtree carried entity references as marker text —
+        # arm the document's marker restoration (the entity
+        # preservation contract).
+        def mark_entity_markers(_native_document); end
+
         def preprocess_entities(xml)
           Entity.preprocess_entities(xml)
         end
