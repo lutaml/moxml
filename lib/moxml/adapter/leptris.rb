@@ -1900,6 +1900,16 @@ module Moxml
         # contract); every other kind carries no cross-document
         # identity worth preserving, so reconstruct it in the parent's
         # document through the binding's create faces.
+        def contains_foreign_child?(parent_nn, children)
+          parent_doc = NN_DOCUMENT.bind_call(parent_nn)
+          return false if parent_doc.nil?
+
+          children.any? do |child|
+            child_doc = NN_DOCUMENT.bind_call(child)
+            child_doc && !child_doc.equal?(parent_doc)
+          end
+        end
+
         def rebuild_foreign_child(parent_nn, child_nn)
           doc = NN_DOCUMENT.bind_call(parent_nn)
           rebuilt =
@@ -2348,6 +2358,32 @@ module Moxml
           Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.290.0")
 
         def replace_children(node, new_children)
+          # Cross-pool children: the binding's bulk face adopts per
+          # node and fails on mixed kinds (inner_xml= with
+          # text+elements died with Memory allocation failed —
+          # pre-existing). Rebuild foreign children in this pool
+          # after the clear — fragment children carry no identity
+          # worth preserving; same-document children keep the plain
+          # add, in order.
+          if NATIVE_MUTATIONS_COHERENT && node.is_a?(NN) &&
+              new_children.all?(NN) &&
+              contains_foreign_child?(node, new_children)
+            ::Leptris::XML::FFI.check_status(
+              ::Leptris::XML::FFI.leptris_element_remove_children(
+                ::FFI::Pointer.new(node.address),
+              ),
+            )
+            node_doc = NN_DOCUMENT.bind_call(node)
+            new_children.each do |child|
+              child_doc = NN_DOCUMENT.bind_call(child)
+              if child_doc && !child_doc.equal?(node_doc)
+                rebuild_foreign_child(node, child)
+              else
+                NN_ADD_CHILD.bind_call(node, child)
+              end
+            end
+            return node
+          end
           if NATIVE_READ_LAYER
             node = to_binding(node)
             new_children = new_children.map { |child| to_binding(child) }

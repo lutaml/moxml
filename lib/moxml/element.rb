@@ -400,14 +400,17 @@ module Moxml
     end
 
     def inner_xml=(xml)
-      wrapper = "_moxml_inner_#{Process.pid}_#{object_id}"
-      doc = context.parse("<#{wrapper}>#{xml}</#{wrapper}>")
+      # Fragment parse, not a wrapper element around interpolated
+      # input (TODO.refactor/03): the fragment face is the same one
+      # add_child(String) uses, so semantics match and no wrapper
+      # name can collide with content.
+      nodes = context.parse_fragment(xml).to_a
       @text = nil
       # Whole-list replacement rides the children generation like
       # children= does (moxml#310) — text and elements memos across
       # wrappers recompute on next read.
       context.bump_children_generation
-      adapter.replace_children(@native, doc.root.children.map(&:native))
+      adapter.replace_children(@native, nodes.map(&:native))
       invalidate_children_cache!
     end
 
