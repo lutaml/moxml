@@ -258,6 +258,20 @@ module Moxml
           raise Moxml::NotImplementedError, XSLT_UNSUPPORTED_MESSAGE
         end
 
+        # XSD validation (moxml XSD contract): engines without a
+        # validator raise; leptris gates on >= 1.9.321.0.
+        XSD_SUPPORTED = false
+
+        def xsd_compile(_schema_source)
+          raise Moxml::NotImplementedError,
+                "XSD validation requires an adapter with an XSD engine"
+        end
+
+        def xsd_validate(_xsd_handle, _native_document)
+          raise Moxml::NotImplementedError,
+                "XSD validation requires an adapter with an XSD engine"
+        end
+
         # Apply a compiled stylesheet; returns the engine's result
         # document, or nil when the output method cannot produce one
         # (text). @params is the flat quoted name/value list.
