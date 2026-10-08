@@ -101,6 +101,7 @@ module Moxml
   autoload :Signature, "moxml/signature"
   autoload :C14n, "moxml/c14n"
   autoload :XSLT, "moxml/xslt"
+  autoload :XSD, "moxml/xsd"
 
   # Error hierarchy — each subclass autoloads from the same file
   autoload :Error, "moxml/error"
