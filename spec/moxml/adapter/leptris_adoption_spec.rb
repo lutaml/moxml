@@ -146,4 +146,46 @@ RSpec.describe "leptris cross-document adoption" do
       expect(doc.at("//r/e").text).to eq("t")
     end
   end
+
+  # moxml#347: the C add_child's foreign-child fallback dispatches
+  # parent.add_child through Ruby — on Identity natives the contract
+  # modules shadow the C method and the dispatch re-enters Moxml's
+  # add_child (SystemStackError). Foreign content kinds rebuild in
+  # the parent's pool; foreign elements absorb/move.
+  context "when adding foreign children (moxml#347)" do
+    let(:fragment_xml) do
+      "<__root__>hello<b attr=\"1\"/>world<!-- note --><?tgt data?><![CDATA[x < y]]></__root__>"
+    end
+
+    it "appends every node kind from a same-context fragment" do
+      doc = ctx.parse("<bibitem/>")
+      frag = ctx.parse(fragment_xml)
+      frag.root.children.each { |c| doc.root.add_child(c) }
+      expect(doc.root.to_xml).to include("<b attr=\"1\">")
+      expect(doc.root.text).to include("hello")
+      expect(doc.root.to_xml).to include("<!-- note -->")
+      expect(doc.root.to_xml).to include("<?tgt data?>")
+      expect(doc.root.to_xml).to include("<![CDATA[x < y]]>")
+    end
+
+    it "appends every node kind across contexts without recursing" do
+      doc = ctx.parse("<bibitem/>")
+      frag = Moxml.new(:leptris).parse(fragment_xml)
+      frag.root.children.each { |c| doc.root.add_child(c) }
+      expect(doc.root.to_xml).to include("<b attr=\"1\">")
+      expect(doc.root.to_xml).to include("<!-- note -->")
+      expect(doc.root.to_xml).to include("<?tgt data?>")
+      expect(doc.root.to_xml).to include("<![CDATA[x < y]]>")
+    end
+
+    it "moves foreign elements by reference (the absorb path stays first)" do
+      doc = ctx.parse("<r><a/></r>")
+      other = Moxml.new(:leptris).parse("<other><new/></other>")
+      child = other.root.children.first
+      doc.root.add_child(child)
+      expect(doc.root.children.last).to eq(child)
+      expect(child["probe"] = "1").to eq("1")
+      expect(doc.at("//r/new")["probe"]).to eq("1")
+    end
+  end
 end

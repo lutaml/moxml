@@ -2220,11 +2220,22 @@ module Moxml
               # absorbed-source nodes upstream.
               child_doc = NN_DOCUMENT.bind_call(child)
               parent_doc = NN_DOCUMENT.bind_call(parent)
-              if child_doc && parent_doc &&
-                  !child_doc.equal?(parent_doc) && child.node_type == :element
-                absorb_source_document(to_binding(parent_doc), to_binding(child_doc))
-                return structural_adopt(parent, child) unless
-                  source_absorbed_into?(parent, child)
+              if child_doc && parent_doc && !child_doc.equal?(parent_doc)
+                if child.node_type == :element
+                  absorb_source_document(to_binding(parent_doc), to_binding(child_doc))
+                  return structural_adopt(parent, child) unless
+                    source_absorbed_into?(parent, child)
+                else
+                  # moxml#347: the C add_child's foreign-child
+                  # fallback dispatches parent.add_child through
+                  # RUBY — on Identity natives the contract modules
+                  # shadow the C method, so that dispatch re-enters
+                  # Moxml's add_child forever. Foreign content kinds
+                  # (text/comment/CDATA/PI) rebuild in the parent's
+                  # pool directly; they carry no cross-document
+                  # identity worth a move.
+                  return rebuild_foreign_child(parent, child)
+                end
               end
 
               doc = NN_DOCUMENT.bind_call(parent)
