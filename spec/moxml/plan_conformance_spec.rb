@@ -77,4 +77,28 @@ RSpec.describe "Moxml::Plan adapter conformance" do
       )
     end
   end
+
+  describe "plan-gate floors (moxml#344)" do
+    let(:gate_ctx) { Moxml.new(:leptris) }
+
+    it "arms both plan faces on engines carrying the #1585/#1586 fixes" do
+      skip "testing engine predates the floor" unless
+        Gem::Version.new(Leptris::VERSION) >= Gem::Version.new("1.9.320.0")
+
+      expect(Moxml::Adapter::Leptris::NATIVE_PLAN_ROWS).to be(true)
+      expect(Moxml::Adapter::Leptris::NATIVE_PLAN_STRUCTS).to be(true)
+    end
+
+    it "captures namespace-qualified wire attributes (leptris#1586)" do
+      skip "plan faces degraded below 1.9.320 (moxml#344)" unless
+        Moxml::Adapter::Leptris::NATIVE_PLAN_ROWS
+
+      plan = Moxml::Plan.new do
+        on("e") { |attrs| @captured = attrs }
+      end
+      plan.parse('<r xmlns:w="urn:w"><e w:name="Aptos"/></r>', gate_ctx)
+      captured = plan.instance_variable_get(:@captured)
+      expect(captured).to include("w:name" => "Aptos")
+    end
+  end
 end
