@@ -144,6 +144,18 @@ module Moxml
     # @return [Moxml::XSLT::Stylesheet]
     # @raise [Moxml::NotImplementedError] on adapters without an engine
     # @raise [Moxml::XsltError] on a malformed stylesheet
+    # Compile an XSD schema for validation (moxml XSD contract).
+    # Returns a Moxml::XSD::Schema; #validate/#valid? take a node or
+    # raw XML string. Adapters without an engine raise
+    # Moxml::NotImplementedError; Moxml::XSD.supported?(self)
+    # answers without raising.
+    #
+    # @raise [Moxml::NotImplementedError] on adapters without a validator
+    def xsd(schema_source)
+      handle = config.adapter.xsd_compile(schema_source.to_s)
+      Moxml::XSD::Schema.new(handle, self)
+    end
+
     def xslt(stylesheet)
       source = case stylesheet
                when Moxml::Document then stylesheet.to_xml

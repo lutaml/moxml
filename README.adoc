@@ -119,7 +119,7 @@ carries the plan-ABI surface, the 1.9.290 XSLT-params and
 bulk-append faces, and the 1.9.292 engine deep-copy root install).
 |===
 
-NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.320` (the tested pair; the gemspec itself has zero runtime dependencies). Consumers of the leptris adapter should run leptris 1.9.320+ — earlier engines carry silent wrong-answer plan-path defects (moxml#344); moxml gates degrade to the always-correct slower paths below it.
+NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.321` (the tested pair; the gemspec itself has zero runtime dependencies). Consumers of the leptris adapter should run leptris 1.9.320+ — earlier engines carry silent wrong-answer plan-path defects (moxml#344); moxml gates degrade to the always-correct slower paths below it.
 `ox ~> 2.14`, `libxml-ruby >= 5.0`, and the vendored oga fork — the CI
 matrix tests exactly those floors.
 

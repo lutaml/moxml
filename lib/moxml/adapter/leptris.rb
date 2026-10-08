@@ -165,6 +165,18 @@ module Moxml
       # binding 1.9.313): the DSL accumulates markup in a plain
       # String and ONE native crossing (parse + attach) flushes the
       # whole subtree. See Adapter::Base#builder_face.
+      # XSD validation (leptris-ruby tier-1, #1075): the binding's
+      # Leptris::XML::XSD faces — >= 1.9.321.0 carries instance
+      # validation with accumulated errors (slices 3-4). Face probe
+      # pairs the gate (misrelease races — NATIVE_PLAN_STRUCTS
+      # lesson).
+      NATIVE_XSD =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.321.0") &&
+        defined?(::Leptris::XML::XSD) &&
+        ::Leptris::XML::FFI.respond_to?(:leptris_xsd_validate)
+
+      XSD_SUPPORTED = NATIVE_XSD
+
       NATIVE_BUILDER =
         defined?(::Leptris::XML::Builder) &&
         defined?(::Leptris::XML::Document) &&
@@ -218,6 +230,27 @@ module Moxml
         # (and on installs without the native layer — the constant
         # check short-circuits), a Node.wrap over the shared C
         # pointer for NativeNodes.
+        def xsd_compile(schema_source)
+          unless XSD_SUPPORTED
+            raise Moxml::NotImplementedError,
+                  "XSD validation requires the leptris 1.9.321+ engine"
+          end
+
+          ::Leptris::XML::XSD.compile(schema_source)
+        end
+
+        def xsd_validate(xsd_handle, native_document)
+          # +xsd_handle+ is the binding's Leptris::XML::XSD::Schema;
+          # validate_errors takes the binding document and returns
+          # the engine's accumulated messages ([] = valid).
+          doc = if native_document.is_a?(::Leptris::XML::Document)
+                  native_document
+                else
+                  to_binding(native_document)
+                end
+          xsd_handle.validate_errors(doc)
+        end
+
         def builder_face(native_document)
           return nil unless NATIVE_BUILDER && NATIVE_READ_LAYER
 
