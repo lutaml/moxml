@@ -725,7 +725,16 @@ module Moxml
       # exactly the plan's shape, with no wrapper minting at all.
       # Marker-bearing documents stay on the generic path (the bulk
       # stream has no marker split).
-      NATIVE_PLAN_ROWS = true
+      # moxml#344: engines 1.9.314-1.9.319 mis-match on the plan
+      # path — child-row exact-URI ns_uri pointed into build
+      # buffers (rows vanish after GC, leptris#1585) and plain
+      # attribute rows did not leniently match namespace-qualified
+      # wire attributes (nil captures, leptris#1586). Both are
+      # SILENT wrong answers, so the gate names the fixed engine:
+      # below 1.9.320.0 the plan faces degrade to the
+      # always-correct generic wrapper walk.
+      NATIVE_PLAN_ROWS =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.320.0")
 
       # leptris-ruby#272 (binding 1.9.201.1): Native.plan_structs —
       # the C struct executor behind Moxml::StructPlan. The floor
@@ -735,9 +744,12 @@ module Moxml
       # below the fix. The probe guards the version gate: a
       # numerically newer lockstep can publish without the face
       # (1.9.199.0 shipped without it), and the gate alone would
-      # NoMethodError.
+      # NoMethodError. Floor also carries moxml#344: 1.9.314-1.9.319
+      # mis-match on the plan path (leptris#1585/#1586, silent nil
+      # captures) — the struct executor degrades to the Ruby Plan
+      # fallback below the fix, same as the varargs-mint floor.
       NATIVE_PLAN_STRUCTS =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.201.1") &&
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.320.0") &&
         (!defined?(::Leptris::XML::Native) ||
          ::Leptris::XML::Native.respond_to?(:plan_structs))
 
@@ -781,7 +793,7 @@ module Moxml
       end
 
       def self.plan_rows(native)
-        return nil unless NATIVE_READ_LAYER
+        return nil unless NATIVE_READ_LAYER && NATIVE_PLAN_ROWS
 
         doc = if native.is_a?(::Leptris::XML::Document)
                 native
