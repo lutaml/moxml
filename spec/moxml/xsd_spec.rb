@@ -101,6 +101,28 @@ RSpec.describe Moxml::XSD do
       end
     end
 
+    it "memoizes the parse for frozen string sources (moxml#350)" do
+      schema = ctx.xsd(schema_text)
+      source = "<note><to>You</to></note>"
+      first = schema.validate(source)
+      parsed = schema.instance_variable_get(:@parsed_source)
+      expect(parsed[0]).to equal(source)
+      3.times { schema.validate(source) }
+      # same source object, one parse — the memo entry is untouched
+      expect(schema.instance_variable_get(:@parsed_source)[1])
+        .to equal(parsed[1])
+      expect(first).to eq([])
+    end
+
+    it "re-parses unfrozen string sources (mutation stays visible)" do
+      schema = ctx.xsd(schema_text)
+      mutable = +"<note><to>You</to></note>"
+      expect(schema.valid?(mutable)).to be(true)
+      mutable.replace("<note><wrong/></note>")
+      expect(schema.valid?(mutable)).to be(false)
+      expect(schema.instance_variable_get(:@parsed_source)).to be_nil
+    end
+
     it "derives XSD_SUPPORTED from the engine face gate" do
       # The capability flag must not outrun the engine faces: a
       # misreleased lockstep (NATIVE_PLAN_STRUCTS lesson) would arm
