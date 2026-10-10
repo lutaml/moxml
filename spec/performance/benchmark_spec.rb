@@ -46,10 +46,10 @@ RSpec.shared_examples "Performance Examples" do
       end
 
       it "meets Parser performance threshold", :performance do
-        result = nil
+        nil
         report = Benchmark.ips do |x|
           x.config(time: 5, warmup: 2)
-          x.report("Parser") { result = context.parse(large_xml) }
+          x.report("Parser") { context.parse(large_xml) }
         end
 
         threshold = thresholds.dig(context.config.adapter_name, :parser) || 1
