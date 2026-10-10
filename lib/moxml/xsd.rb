@@ -57,11 +57,29 @@ module Moxml
       end
 
       # Validate a node or raw XML string. Returns [] when valid.
+      # FROZEN string sources parse once and are memoized for the
+      # schema's lifetime — re-validating the same document is the
+      # hot consumer shape, and a per-call parse costs the full
+      # document pool every time (moxml#350's MB-per-validate
+      # growth). Unfrozen strings re-parse (mutation must be
+      # visible); pass a Moxml::Document to control the parse
+      # yourself.
       def validate(node_or_xml)
         doc = case node_or_xml
               when Moxml::Document then node_or_xml
               when Moxml::Node then node_or_xml.document
-              else @context.parse(node_or_xml.to_s)
+              else
+                cached = @parsed_source
+                if cached && node_or_xml.frozen? &&
+                    cached[0].equal?(node_or_xml)
+                  cached[1]
+                else
+                  parsed = @context.parse(node_or_xml.to_s)
+                  if node_or_xml.frozen?
+                    @parsed_source = [node_or_xml, parsed]
+                  end
+                  parsed
+                end
               end
         @context.config.adapter.xsd_validate(@handle, doc.native)
       end
