@@ -38,6 +38,14 @@ module Moxml
         adapter.const_defined?(:XSD_SUPPORTED) &&
           adapter.const_get(:XSD_SUPPORTED)
       end
+
+      # Lexical validation against the built-in type table (the
+      # "xs:NAME" reference spelling). Raises ArgumentError when the
+      # name is not in the table; NotImplementedError on adapters
+      # without an engine.
+      def builtin_valid?(context, builtin, lexical)
+        context.config.adapter.xsd_builtin_valid?(builtin, lexical)
+      end
     end
 
     # A compiled schema (adapter-owned handle). Validation results
@@ -60,6 +68,35 @@ module Moxml
 
       def valid?(node_or_xml)
         validate(node_or_xml).empty?
+      end
+
+      # Number of top-level schema declarations the compiler
+      # recognized.
+      def declarations
+        @context.config.adapter.xsd_declarations(@handle)
+      end
+
+      # The engine's schema-level compile error, or nil when the
+      # schema compiled cleanly.
+      def compile_error
+        @context.config.adapter.xsd_compile_error(@handle)
+      end
+
+      # Lexical validation of +lexical+ against the schema's user
+      # simpleType +type_name+. Unknown type names raise.
+      def simple_valid?(type_name, lexical)
+        @context.config.adapter.xsd_simple_valid?(
+          @handle, type_name, lexical
+        )
+      end
+
+      # Content-model check for one element's children. +children+
+      # are Moxml nodes (names + effective namespaces are read
+      # engine-side). Unknown element names raise.
+      def content_valid?(element_name, children)
+        @context.config.adapter.xsd_content_valid?(
+          @handle, element_name, children
+        )
       end
     end
   end

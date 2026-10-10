@@ -156,6 +156,14 @@ module Moxml
       Moxml::XSD::Schema.new(handle, self)
     end
 
+    # Compile an XSD schema from a file path — <xs:include href>
+    # resolves relative to the file's directory (the engine
+    # resolves it; reading the file into #xsd would lose that).
+    def xsd_file(path)
+      handle = config.adapter.xsd_compile_file(path.to_s)
+      Moxml::XSD::Schema.new(handle, self)
+    end
+
     def xslt(stylesheet)
       source = case stylesheet
                when Moxml::Document then stylesheet.to_xml

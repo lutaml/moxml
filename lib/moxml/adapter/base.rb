@@ -272,6 +272,30 @@ module Moxml
                 "XSD validation requires an adapter with an XSD engine"
         end
 
+        def xsd_compile_file(_path)
+          raise Moxml::NotImplementedError,
+                "XSD validation requires an adapter with an XSD engine"
+        end
+
+        def xsd_builtin_valid?(_builtin, _lexical)
+          raise Moxml::NotImplementedError,
+                "XSD validation requires an adapter with an XSD engine"
+        end
+
+        def xsd_declarations(_xsd_handle); end
+
+        def xsd_compile_error(_xsd_handle); end
+
+        def xsd_simple_valid?(_xsd_handle, _type_name, _lexical)
+          raise Moxml::NotImplementedError,
+                "XSD validation requires an adapter with an XSD engine"
+        end
+
+        def xsd_content_valid?(_xsd_handle, _element_name, _children)
+          raise Moxml::NotImplementedError,
+                "XSD validation requires an adapter with an XSD engine"
+        end
+
         # Apply a compiled stylesheet; returns the engine's result
         # document, or nil when the output method cannot produce one
         # (text). @params is the flat quoted name/value list.

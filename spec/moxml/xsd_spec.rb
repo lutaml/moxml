@@ -14,9 +14,12 @@ RSpec.describe Moxml::XSD do
         <xs:element name="note" type="t_note"/>
         <xs:complexType name="t_note">
           <xs:sequence>
-            <xs:element name="to" type="xs:string"/>
+            <xs:element name="to" type="t_string"/>
           </xs:sequence>
         </xs:complexType>
+        <xs:simpleType name="t_string">
+          <xs:restriction base="xs:string"/>
+        </xs:simpleType>
       </xs:schema>
     XSD
   end
@@ -53,6 +56,49 @@ RSpec.describe Moxml::XSD do
       expect(schema.valid?(doc.root)).to be(true)
       expect(schema.valid?("<note><to>x</to></note>")).to be(true)
       expect(schema.valid?("<note><wrong/></note>")).to be(false)
+    end
+
+    it "surfaces the lexical, census, and content faces" do
+      schema = ctx.xsd(schema_text)
+      expect(schema.declarations).to be >= 2
+      expect(schema.compile_error).to be_nil
+      expect(schema.simple_valid?("t_string", "abc")).to be(true)
+    end
+
+    it "checks built-in lexical forms" do
+      expect(described_class.builtin_valid?(ctx, "xs:integer", "3")).to be(true)
+      expect(described_class.builtin_valid?(ctx, "xs:integer", "x")).to be(false)
+      expect do
+        described_class.builtin_valid?(ctx, "xs:nope", "3")
+      end.to raise_error(ArgumentError)
+    end
+
+    it "checks content models through moxml nodes" do
+      schema = ctx.xsd(schema_text)
+      doc = ctx.parse("<note><to>You</to></note>")
+      expect(schema.content_valid?("note", [doc.at("//to")])).to be(true)
+      expect(schema.content_valid?("note", [])).to be(false)
+    end
+
+    it "compiles from a file with relative includes" do
+      require "tmpdir"
+      Dir.mktmpdir do |dir|
+        File.write(File.join(dir, "main.xsd"), <<~XSD)
+          <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:include schemaLocation="inc.xsd"/>
+          </xs:schema>
+        XSD
+        File.write(File.join(dir, "inc.xsd"), <<~XSD)
+          <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:element name="note" type="xs:string"/>
+          </xs:schema>
+        XSD
+        schema = ctx.xsd_file(File.join(dir, "main.xsd"))
+        # The include pulled the declaration in (both files' schema
+        # elements census).
+        expect(schema.declarations).to be >= 1
+        expect(schema.valid?("<note>x</note>")).to be(true)
+      end
     end
 
     it "derives XSD_SUPPORTED from the engine face gate" do
