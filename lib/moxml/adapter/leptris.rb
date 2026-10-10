@@ -239,6 +239,44 @@ module Moxml
           ::Leptris::XML::XSD.compile(schema_source)
         end
 
+        def xsd_compile_file(path)
+          unless XSD_SUPPORTED && ::Leptris::XML::XSD.respond_to?(:compile_file)
+            raise Moxml::NotImplementedError,
+                  "XSD validation requires the leptris 1.9.326+ engine"
+          end
+
+          ::Leptris::XML::XSD.compile_file(path)
+        end
+
+        def xsd_builtin_valid?(builtin, lexical)
+          unless XSD_SUPPORTED
+            raise Moxml::NotImplementedError,
+                  "XSD validation requires an adapter with an XSD engine"
+          end
+
+          ::Leptris::XML::XSD.builtin_valid?(builtin, lexical)
+        end
+
+        def xsd_declarations(xsd_handle)
+          xsd_handle.declaration_count
+        end
+
+        def xsd_compile_error(xsd_handle)
+          xsd_handle.error
+        end
+
+        def xsd_simple_valid?(xsd_handle, type_name, lexical)
+          xsd_handle.simple_valid?(type_name, lexical)
+        end
+
+        def xsd_content_valid?(xsd_handle, element_name, children)
+          # The binding reads each child's name + effective
+          # namespace through its own node API — pass the natives.
+          xsd_handle.content_valid?(
+            element_name, children.map(&:native)
+          )
+        end
+
         def xsd_validate(xsd_handle, native_document)
           # +xsd_handle+ is the binding's Leptris::XML::XSD::Schema;
           # validate_errors takes the binding document and returns
