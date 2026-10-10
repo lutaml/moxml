@@ -143,10 +143,10 @@ class MoxmlBenchmarkReport
   end
 
   def benchmark_parse(context, xml)
-    result = nil
+    nil
     Benchmark.ips do |x|
       x.config(time: 2, warmup: 1)
-      x.report("parse") { result = context.parse(xml) }
+      x.report("parse") { context.parse(xml) }
     end.entries.first.ips.round(2)
   rescue StandardError => e
     @errors[context.config.adapter_name] << "Parse error: #{e.message}"
