@@ -184,20 +184,53 @@ module Moxml
 
     # Nokogiri-compatible: children= replaces the entire child list
     def children=(node_or_nodes)
+      source_docs = nil
       natives = case node_or_nodes
                 when String
                   wrapper = "_moxml_children_#{Process.pid}_#{object_id}"
-                  context.parse("<#{wrapper}>#{node_or_nodes}</#{wrapper}>")
-                    .root.children.map(&:native)
-                when Moxml::Node then [node_or_nodes.native]
-                when Array, NodeSet then node_or_nodes.map(&:native)
+                  wrapper_doc = context.parse("<#{wrapper}>#{node_or_nodes}</#{wrapper}>")
+                  # #355: engines that move/copy across documents by
+                  # reference (leptris absorb) leave the attached
+                  # nodes pool-owned by the SOURCE document; the
+                  # wrapper is otherwise unreferenced and its free
+                  # can dangle the attached subtree (windows GC
+                  # timing). Retain it for this element's lifetime.
+                  source_docs = [wrapper_doc]
+                  wrapper_doc.root.children.map(&:native)
+                when Moxml::Node
+                  retain_children_source(node_or_nodes.document)
+                  [node_or_nodes.native]
+                when Array, NodeSet
+                  node_or_nodes.each { |n| retain_children_source(n.document) }
+                  node_or_nodes.map(&:native)
                 else
                   raise ArgumentError, "children= accepts String, Node, or Array"
                 end
       adapter.replace_children(@native, natives)
+      retain_children_source_docs(source_docs) if source_docs
       @text = nil
       context.bump_children_generation
       invalidate_children_cache!
+    end
+
+    # #355: keep every distinct source document whose nodes were
+    # attached here reachable for as long as this element lives —
+    # absorbed/moved pools must not be freed out from under the
+    # tree. Accumulates: a pool absorbed by this document stays
+    # referenced even after later children= calls replace the
+    # nodes that came from it.
+    def retain_children_source(source_doc)
+      retain_children_source_docs([source_doc])
+    end
+
+    def retain_children_source_docs(docs)
+      docs = docs.compact.uniq
+      docs.delete_if { |d| d.equal?(document) }
+      return if docs.empty?
+
+      existing = adapter.attachments.get(@native, :children_source_docs)
+      merged = existing ? (existing + docs).uniq : docs
+      adapter.attachments.set(@native, :children_source_docs, merged)
     end
 
     def remove_attribute(name)
