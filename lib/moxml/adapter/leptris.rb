@@ -279,14 +279,17 @@ module Moxml
 
         def xsd_validate(xsd_handle, native_document)
           # +xsd_handle+ is the binding's Leptris::XML::XSD::Schema;
-          # validate_errors takes the binding document and returns
-          # the engine's accumulated messages ([] = valid).
+          # validate_errors takes the binding document. Entries
+          # normalize to Strings: the moxml contract is []-of-
+          # messages, and the binding may enrich entries into
+          # structured objects (element/line/column —
+          # leptris-ruby#419) without breaking consumers.
           doc = if native_document.is_a?(::Leptris::XML::Document)
                   native_document
                 else
                   to_binding(native_document)
                 end
-          xsd_handle.validate_errors(doc)
+          xsd_handle.validate_errors(doc).map(&:to_s)
         end
 
         def builder_face(native_document)
