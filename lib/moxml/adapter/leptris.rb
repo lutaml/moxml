@@ -1116,7 +1116,7 @@ module Moxml
         def parse_html_fragment(html, context_tag = :body, _context = nil)
           unless HTML_FRAGMENT
             raise Moxml::AdapterError.new(
-              "HTML fragment parsing requires leptris >= 1.9.338.1 " \
+              "HTML fragment parsing requires leptris >= 1.9.338.0 " \
               "(got #{::Leptris::VERSION})",
               adapter: name, operation: "parse_html_fragment",
             )
