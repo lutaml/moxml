@@ -174,6 +174,14 @@ module Moxml
         ::Leptris::XML::Document.instance_method(:to_html)
           .parameters.any? { |_, key| key == :indent }
 
+      # Leptris::HTML.parse_fragment (leptris-ruby#422, engine
+      # in-body drops leptris#1638): the WHATWG fragment semantics
+      # composed over the binding's WHATWG lane. The face probe
+      # gates the ride — older bindings raise a named error.
+      HTML_FRAGMENT =
+        defined?(::Leptris::HTML) &&
+        ::Leptris::HTML.respond_to?(:parse_fragment)
+
       # Markup-accumulating builder face (leptris-ruby#374 lever 2,
       # binding 1.9.313): the DSL accumulates markup in a plain
       # String and ONE native crossing (parse + attach) flushes the
@@ -1090,6 +1098,7 @@ module Moxml
           end
         end
 
+<<<<<<< HEAD
         def serialize_html(node, options = {})
           kwargs = options.slice(:indent, :indent_text).compact
           if kwargs.empty?
@@ -1103,6 +1112,30 @@ module Moxml
             )
           end
           node.to_html(**kwargs)
+=======
+        def parse_html_fragment(html, context_tag = :body, _context = nil)
+          unless HTML_FRAGMENT
+            raise Moxml::AdapterError.new(
+              "HTML fragment parsing requires leptris >= 1.9.338.1 " \
+              "(got #{::Leptris::VERSION})",
+              adapter: name, operation: "parse_html_fragment",
+            )
+          end
+          begin
+            ::Leptris::HTML.parse_fragment(html, context: context_tag)
+          rescue ::ArgumentError => e
+            raise Moxml::AdapterError.new(e.message,
+                                          adapter: name, operation: "parse_html_fragment")
+          end
+        end
+
+        def fragment_children(native_fragment)
+          native_fragment.children
+        end
+
+        def serialize_fragment(native_fragment)
+          native_fragment.to_html
+>>>>>>> e8a18cc (feat: Context#parse_html_fragment — WHATWG fragment parsing (#353))
         end
 
         def parse_html(html, _options = {}, _context = nil)

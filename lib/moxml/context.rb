@@ -133,6 +133,29 @@ module Moxml
       config.adapter.parse_html(html, options, self)
     end
 
+    # WHATWG fragment parse (issue #353): the parsed top-level
+    # nodes with fragment semantics — the context element's
+    # insertion mode governs tree construction (:body default keeps
+    # head-swept elements at fragment top level; the table
+    # contexts take the in-table rules). Returns an
+    # Moxml::HtmlFragment whose #children are the moxml-wrapped
+    # top-level nodes.
+    #
+    # @param html [String, IO] the fragment source
+    # @param context_tag [Symbol] :body (default) or a table
+    #   context (:td, :th, :tr, :tbody, :thead, :tfoot, :caption,
+    #   :colgroup, :table)
+    # @return [Moxml::HtmlFragment]
+    # @raise [Moxml::AdapterError] on adapters without fragment
+    #   support or an unknown context tag
+    def parse_html_fragment(html, context_tag: :body)
+      html_string = html.is_a?(IO) || html.is_a?(StringIO) ? html.read : html.to_s
+      HtmlFragment.new(
+        config.adapter.parse_html_fragment(html_string, context_tag, self),
+        self,
+      )
+    end
+
     # Compile an XSLT stylesheet with this context's adapter
     # (implementation-agnostic; nokogiri/libxslt and leptris ship
     # engines, leptris covering XSLT 2.0/3.0 per its engine). Apply
