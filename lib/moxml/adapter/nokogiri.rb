@@ -159,6 +159,18 @@ module Moxml
           Wrappers::Document.new(native_doc, _context || Context.new(:nokogiri))
         end
 
+        # HTML method pass-through: the engine's own bytes (libxml2
+        # HTML serializer; the HTML5/gumbo serializer ignores indent
+        # kwargs — pass-through parity with direct Nokogiri calls,
+        # which is the byte contract of this adapter's to_html).
+        def serialize_html(node, options = {})
+          kwargs = {}
+          kwargs[:indent] = options[:indent] if options[:indent]
+          kwargs[:indent_text] = options[:indent_text] if options[:indent_text]
+          kwargs[:encoding] = options[:encoding] if options[:encoding]
+          node.to_html(**kwargs)
+        end
+
         # Nokogiri parses with `config.recover` unless strict, so
         # recoverable syntax errors land on `doc.errors` instead of
         # raising (issue #147).
