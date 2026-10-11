@@ -115,6 +115,35 @@ module Moxml
           )
         end
 
+        # WHATWG fragment parsing with a context element (issue
+        # #353, the parse_html_fragment contract): body context by
+        # default; table contexts (td/th/tr/tbody/thead/tfoot/
+        # caption/colgroup/table) where the adapter's engine
+        # carries them. Returns the adapter's native fragment for
+        # HtmlFragment to wrap.
+        def parse_html_fragment(_html, _context_tag = :body, _context = nil)
+          raise Moxml::AdapterError.new(
+            "HTML fragment parsing is not supported by the #{name.split('::').last} adapter",
+            adapter: name, operation: "parse_html_fragment",
+          )
+        end
+
+        # The native fragment's top-level children (native nodes).
+        def fragment_children(_native_fragment)
+          raise Moxml::NotImplementedError.new(
+            "fragment_children not implemented",
+            feature: "fragment_children", adapter: name,
+          )
+        end
+
+        # The native fragment serialized as its children joined.
+        def serialize_fragment(_native_fragment)
+          raise Moxml::NotImplementedError.new(
+            "serialize_fragment not implemented",
+            feature: "serialize_fragment", adapter: name,
+          )
+        end
+
         # Parse XML using SAX (event-driven) parsing
         #
         # SAX parsing provides a memory-efficient way to process XML

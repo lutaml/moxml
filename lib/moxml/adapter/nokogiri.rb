@@ -171,6 +171,28 @@ module Moxml
           node.to_html(**kwargs)
         end
 
+        # WHATWG fragment parse through Nokogiri::HTML5.fragment
+        # (issue #353) — the same tree construction the leptris
+        # lane composes over its WHATWG engine.
+        def parse_html_fragment(html, context_tag = :body, _context = nil)
+          unless context_tag == :body
+            raise Moxml::AdapterError.new(
+              "nokogiri fragment contexts beyond :body are not supported " \
+              "(got #{context_tag.inspect})",
+              adapter: name, operation: "parse_html_fragment",
+            )
+          end
+          ::Nokogiri::HTML5.fragment(html)
+        end
+
+        def fragment_children(native_fragment)
+          native_fragment.children.to_a
+        end
+
+        def serialize_fragment(native_fragment)
+          native_fragment.children.map(&:to_html).join
+        end
+
         # Nokogiri parses with `config.recover` unless strict, so
         # recoverable syntax errors land on `doc.errors` instead of
         # raising (issue #147).
