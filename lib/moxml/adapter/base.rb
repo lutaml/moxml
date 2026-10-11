@@ -84,6 +84,18 @@ module Moxml
           )
         end
 
+        # HTML serialization through the engine's HTML method
+        # (issue #354): void elements slash-less, raw text verbatim,
+        # no declaration. indent:/indent_text: thread the
+        # pretty-print knobs where the adapter's engine carries
+        # them. Adapters without an HTML serializer raise.
+        def serialize_html(_node, _options = {})
+          raise Moxml::AdapterError.new(
+            "HTML serialization is not supported by the #{name.split('::').last} adapter",
+            adapter: name, operation: "serialize_html",
+          )
+        end
+
         # Tolerant HTML4/5 parsing into the standard DOM (engine
         # issue leptris/leptris#659): implied end tags, void elements,
         # case-insensitive lowercased names, the HTML named-entity

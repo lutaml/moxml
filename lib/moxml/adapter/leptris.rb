@@ -161,6 +161,19 @@ module Moxml
         ::Leptris::XML::Document.method_defined?(:absorb) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.311.3")
 
+      # Document#to_html indent kwargs (issue #354, engine
+      # leptris#1637 via leptris-ruby#421): the nested HTML layout
+      # (indent_html ext option — libxml2 format-mode shape). The
+      # parameter probe pairs the version gate: a pre-#421 binding's
+      # to_html takes no kwargs and would raise ArgumentError from
+      # the pass-through.
+      HTML_SERIALIZE_INDENT =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.338.0") &&
+        defined?(::Leptris::XML::Document) &&
+        ::Leptris::XML::Document.method_defined?(:to_html) &&
+        ::Leptris::XML::Document.instance_method(:to_html)
+          .parameters.any? { |_, key| key == :indent }
+
       # Markup-accumulating builder face (leptris-ruby#374 lever 2,
       # binding 1.9.313): the DSL accumulates markup in a plain
       # String and ONE native crossing (parse + attach) flushes the
@@ -1075,6 +1088,21 @@ module Moxml
           ::Leptris::XML::Iterparse.parse_file(path, mode: mode) do |element|
             yield(Node.wrap(element, ctx))
           end
+        end
+
+        def serialize_html(node, options = {})
+          kwargs = options.slice(:indent, :indent_text).compact
+          if kwargs.empty?
+            return node.to_html
+          end
+          unless HTML_SERIALIZE_INDENT
+            raise Moxml::AdapterError.new(
+              "HTML serialization with indent options requires leptris >= 1.9.338.0 " \
+              "(got #{::Leptris::VERSION})",
+              adapter: name, operation: "serialize_html",
+            )
+          end
+          node.to_html(**kwargs)
         end
 
         def parse_html(html, _options = {}, _context = nil)

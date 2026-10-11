@@ -119,6 +119,22 @@ module Moxml
       adapter.parse_errors(@native)
     end
 
+    # HTML serialization (issue #354): documents parsed through
+    # parse_html — and XML documents alike — serialize through the
+    # adapter's HTML method: void elements slash-less, raw text
+    # (script/style) verbatim, no XML declaration.
+    #
+    # indent: N (spaces per level) and indent_text: unit (e.g. "\t")
+    # thread the pretty-print knobs on adapters that carry them
+    # (leptris >= the #354 ride; nokogiri passes them to the
+    # engine). Adapters without the knob raise Moxml::AdapterError.
+    def to_html(options = {})
+      result = adapter.serialize_html(@native, options)
+      apply_line_ending(result,
+                        options.fetch(:line_ending, Config::LINE_ENDING_LF))
+      result
+    end
+
     def create_element(name)
       Wrappers::Element.new(adapter.create_element(name, owner_doc: @native), context)
     end
