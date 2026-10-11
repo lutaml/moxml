@@ -123,6 +123,13 @@ RSpec.describe Moxml::XSD do
       expect(schema.instance_variable_get(:@parsed_source)).to be_nil
     end
 
+    it "normalizes validate entries to strings (moxml contract)" do
+      schema = ctx.xsd(schema_text)
+      errors = schema.validate("<note><wrong/></note>")
+      expect(errors).not_to be_empty
+      expect(errors).to all(be_a(String))
+    end
+
     it "derives XSD_SUPPORTED from the engine face gate" do
       # The capability flag must not outrun the engine faces: a
       # misreleased lockstep (NATIVE_PLAN_STRUCTS lesson) would arm
