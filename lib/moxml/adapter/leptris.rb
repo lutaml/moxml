@@ -1098,7 +1098,6 @@ module Moxml
           end
         end
 
-<<<<<<< HEAD
         def serialize_html(node, options = {})
           kwargs = options.slice(:indent, :indent_text).compact
           if kwargs.empty?
@@ -1112,7 +1111,8 @@ module Moxml
             )
           end
           node.to_html(**kwargs)
-=======
+        end
+
         def parse_html_fragment(html, context_tag = :body, _context = nil)
           unless HTML_FRAGMENT
             raise Moxml::AdapterError.new(
@@ -1135,7 +1135,6 @@ module Moxml
 
         def serialize_fragment(native_fragment)
           native_fragment.to_html
->>>>>>> e8a18cc (feat: Context#parse_html_fragment — WHATWG fragment parsing (#353))
         end
 
         def parse_html(html, _options = {}, _context = nil)
