@@ -65,6 +65,26 @@ RSpec.describe "Moxml::Document#to_html" do
           "<body>\n\t\t<div id=\"a\">\n\t\t\t<p>x</p>",
         )
       end
+
+      it "nests a LAST block child (engine 1.9.341, leptris#1647)" do
+        doc2 = Moxml.new(:leptris).parse_html(
+          "<html><head><title>T</title></head><body>" \
+          "<div id=\"a\"><p>x</p><span>y</span></div></body></html>",
+        )
+        out = doc2.to_html(indent: 2)
+        skip "engine predates leptris#1647" unless out.include?("<body>\n    <div")
+        expect(out).to eq(
+          "<html>\n  " \
+          "<head><title>T</title></head>\n  " \
+          "<body>\n    " \
+          "<div id=\"a\">\n      " \
+          "<p>x</p>\n      " \
+          "<span>y</span>\n    " \
+          "</div>\n  " \
+          "</body>\n" \
+          "</html>",
+        )
+      end
     end
 
     context "when the binding predates the ride" do
