@@ -595,11 +595,24 @@ RSpec.describe Moxml::Adapter::Leptris do
   describe "recover-path parse diagnostics" do
     let(:ctx) { Moxml.new(:leptris) }
 
-    it "records the fatal error on non-strict parses" do
-      doc = ctx.parse("<root><unclosed>", strict: false)
-      expect(doc.root).to be_nil
-      expect(doc.parse_errors).not_to be_empty
-      expect(doc.parse_errors).to all(be_a(String))
+    it "records the fatal error on non-strict parses below the recover floor" do
+      unless Moxml::Adapter::Leptris::RECOVER_MODE
+        doc = ctx.parse("<root><unclosed>", strict: false)
+        expect(doc.root).to be_nil
+        expect(doc.parse_errors).not_to be_empty
+        expect(doc.parse_errors).to all(be_a(String))
+      end
+    end
+
+    it "recovers an unclosed root at the floor (#369)" do
+      if Moxml::Adapter::Leptris::RECOVER_MODE
+        doc = ctx.parse("<root><unclosed>", strict: false)
+        expect(doc.root).not_to be_nil
+        # recovery diagnostics ride parse_errors once leptris-ruby
+        # #1200's DOM face lands; today the recovered tree is the
+        # contract.
+        expect(doc.parse_errors).to eq([])
+      end
     end
 
     it "answers [] on clean parses" do
