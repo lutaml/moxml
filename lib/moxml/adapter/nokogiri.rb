@@ -160,7 +160,20 @@ module Moxml
         # malformed input never raises.
         def parse_html(html, _options = {}, _context = nil)
           html_string = html.is_a?(IO) || html.is_a?(StringIO) ? html.read : html.to_s
+          # #364: preserve-input-only — libxml2's HTML parser
+          # synthesizes an HTML 4.0 doctype when the input has none
+          # (leptris doesn't); dropping the synthesized node keeps
+          # the shared contract doctype-faithful. A doctype before
+          # the root (after optional BOM/xml-decl/whitespace) means
+          # the source had one.
+          had_doctype = html_string.match?(
+            /\A(\xEF\xBB\xBF|\s|<\?xml[^>]*\?>)*<!DOCTYPE/i,
+          )
           native_doc = ::Nokogiri::HTML(html_string, &:huge)
+          if !had_doctype &&
+              (dtd = native_doc.children.find { |n| n.is_a?(::Nokogiri::XML::DTD) })
+            dtd.unlink
+          end
           Wrappers::Document.new(native_doc, _context || Context.new(:nokogiri))
         end
 
