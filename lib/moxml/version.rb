@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module Moxml
-  VERSION = "0.5.129"
+  VERSION = "0.5.130"
 end
