@@ -10,6 +10,11 @@ module Moxml
       # libxslt-backed XSLT 1.0 (Moxml::XSLT contract).
       XSLT_SUPPORTED = true
 
+      # XSD over libxml2 (issue #362.2): structured #362
+      # ValidationError entries — libxml2 carries line/column in
+      # the message ("L:C: SEV: ..."), which the mapping lifts.
+      XSD_SUPPORTED = true
+
       class << self
         def attachments
           @attachments ||= Moxml::NativeAttachment.new
@@ -191,6 +196,57 @@ module Moxml
 
         def serialize_fragment(native_fragment)
           native_fragment.children.map(&:to_html).join
+        end
+
+        def xsd_compile(schema_source)
+          ::Nokogiri::XML::Schema.new(schema_source.to_s)
+        end
+
+        def xsd_compile_file(path)
+          path = path.to_s
+          # libxml2 resolves schemaLocation hrefs against the
+          # process CWD (the reader form carries no base) — chdir
+          # to the file's directory so relative hrefs resolve like
+          # leptris's engine-side base_dir.
+          dir = File.dirname(File.expand_path(path))
+          Dir.chdir(dir) { ::Nokogiri::XML::Schema(File.read(path)) }
+        end
+
+        # Compile failures RAISE from Schema.new; a constructed
+        # handle carries any pooled errors here (empty = none).
+        # Nokogiri/libxml2's schema object does not expose a
+        # declaration census — the base's nil default documents
+        # the capability gap rather than guessing.
+        def xsd_declarations(_xsd_handle)
+          nil
+        end
+
+        def xsd_compile_error(xsd_handle)
+          msgs = xsd_handle.errors.map(&:to_s)
+          msgs.empty? ? nil : msgs.join("; ")
+        end
+
+        def xsd_validate(xsd_handle, native_document)
+          xsd_handle.validate(native_document).map do |entry|
+            line = entry.line
+            line = line.to_i if line.is_a?(String)
+            Moxml::XSD::ValidationError.new(
+              message: strip_libxml2_position(entry.message),
+              line: line&.positive? ? line : nil,
+              column: nil,
+            )
+          end
+        end
+
+        # libxml2's nokogiri face prefixes "L:C: SEVERITY: " onto
+        # the message; the position rides the structured fields.
+        def strip_libxml2_position(message)
+          msg = message.to_s
+          if (m = msg.match(/\A\d+:\d+: (?:ERROR|WARNING|FATAL): (.*)\z/m))
+            m[1]
+          else
+            msg
+          end
         end
 
         # Nokogiri parses with `config.recover` unless strict, so

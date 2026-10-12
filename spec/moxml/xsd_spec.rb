@@ -123,11 +123,14 @@ RSpec.describe Moxml::XSD do
       expect(schema.instance_variable_get(:@parsed_source)).to be_nil
     end
 
-    it "normalizes validate entries to strings (moxml contract)" do
+    it "normalizes validate entries to the #362.2 ValidationError contract" do
       schema = ctx.xsd(schema_text)
       errors = schema.validate("<note><wrong/></note>")
       expect(errors).not_to be_empty
-      expect(errors).to all(be_a(String))
+      expect(errors).to all(be_a(Moxml::XSD::ValidationError))
+      # to_s preserves the plain-string consumer flows.
+      expect(errors.map(&:to_s)).to all(be_a(String))
+      expect(errors.first.message).not_to be_empty
     end
 
     it "derives XSD_SUPPORTED from the engine face gate" do

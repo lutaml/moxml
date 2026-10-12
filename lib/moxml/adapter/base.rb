@@ -327,6 +327,15 @@ module Moxml
 
         def xsd_compile_error(_xsd_handle); end
 
+        # Deterministic drop (#362.3): true when the engine-side
+        # schema was freed NOW, false when the adapter can only
+        # wait for GC (the default — document the capability per
+        # adapter). moxml's Schema#release surfaces this. The name
+        # is the contract (release), not a predicate.
+        def xsd_release(_xsd_handle) # rubocop:disable Naming/PredicateMethod
+          false
+        end
+
         def xsd_simple_valid?(_xsd_handle, _type_name, _lexical)
           raise Moxml::NotImplementedError,
                 "XSD validation requires an adapter with an XSD engine"
