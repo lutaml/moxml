@@ -23,6 +23,18 @@ module Moxml
         CHILDREN_CAPACITY = 64
         private_constant :CHILDREN_CAPACITY
 
+        # #367: HTML-parsed trees carry no namespace declarations,
+        # so the engine's attribute-URI face answers nil for the
+        # RESERVED prefixes too (xml:lang loses its identity). The
+        # wrapper path resolves them from the builtin table
+        # (AttributeResolver) — the bulk stride mirrors that, so
+        # records and wrapper API agree on every tree flavor.
+        RESERVED_ATTR_PREFIX_URIS = {
+          "xml" => "http://www.w3.org/XML/1998/namespace",
+          "xmlns" => "http://www.w3.org/2000/xmlns/",
+        }.freeze
+        private_constant :RESERVED_ATTR_PREFIX_URIS
+
         # Bulk materialization (issues #132/#143): a Ruby-side
         # post-order recursion over RAW C pointers — no binding
         # wrapper per node, no per-node FFI callback, no depth memo
@@ -132,6 +144,7 @@ module Moxml
               # path's resolver semantics (moxml's canonical shape).
               attr_name = attr_name[(colon + 1)..]
               attr_uri = f.leptris_attribute_namespace_uri(attr)
+              attr_uri ||= RESERVED_ATTR_PREFIX_URIS[attr_prefix]
             else
               attr_prefix = nil
               attr_uri = nil
