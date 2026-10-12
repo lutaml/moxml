@@ -84,6 +84,7 @@ module Moxml
   autoload :EntityReference, "moxml/entity_reference"
   autoload :DocumentBuilder, "moxml/document_builder"
   autoload :HtmlFragment, "moxml/html_fragment"
+  autoload :Css, "moxml/css"
   autoload :Builder, "moxml/builder"
   autoload :Entity, "moxml/entity"
   autoload :EntityRegistry, "moxml/entity_registry"

@@ -384,14 +384,25 @@ module Moxml
       xpath(expression, namespaces)
     end
 
-    def css(_expression)
-      raise Moxml::NotImplementedError,
-            "CSS selectors are not supported; use search with XPath"
+    # CSS through the shared Moxml::Css translator (#362.1): the
+    # SAME selector semantics on every adapter — the translation
+    # happens once, inside Moxml, so engines cannot diverge.
+    # NodeSet results document-order (the engines' native order).
+    def css(expression)
+      NodeSet.new(
+        adapter.xpath(@native, Css.to_xpath(expression,
+                                            absolute: document?)),
+        context,
+      )
     end
 
-    def at_css(_expression)
-      raise Moxml::NotImplementedError,
-            "CSS selectors are not supported; use at with XPath"
+    def at_css(expression)
+      Node.wrap(
+        adapter.at_xpath(@native,
+                         Css.to_xpath(expression,
+                                      absolute: document?)),
+        context,
+      )
     end
 
     def at_css_or_xpath(expression, namespaces = {})

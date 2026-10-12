@@ -198,6 +198,15 @@ module Moxml
 
       XSD_SUPPORTED = NATIVE_XSD
 
+      # Schema#release (moxml#362.3, binding 1.9.342+): the
+      # deterministic drop face — disarms the AutoPointer's GC
+      # finalizer and frees now. Face-probed with the version
+      # floor (the NATIVE_DOC_ABSORB pairing).
+      XSD_RELEASE =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.342.0") &&
+        defined?(::Leptris::XML::XSD::Schema) &&
+        ::Leptris::XML::XSD::Schema.method_defined?(:release)
+
       NATIVE_BUILDER =
         defined?(::Leptris::XML::Builder) &&
         defined?(::Leptris::XML::Document) &&
@@ -282,6 +291,12 @@ module Moxml
           xsd_handle.declaration_count
         end
 
+        def xsd_release(xsd_handle)
+          return false unless XSD_RELEASE
+
+          xsd_handle.release
+        end
+
         def xsd_compile_error(xsd_handle)
           xsd_handle.error
         end
@@ -300,17 +315,28 @@ module Moxml
 
         def xsd_validate(xsd_handle, native_document)
           # +xsd_handle+ is the binding's Leptris::XML::XSD::Schema;
-          # validate_errors takes the binding document. Entries
-          # normalize to Strings: the moxml contract is []-of-
-          # messages, and the binding may enrich entries into
-          # structured objects (element/line/column —
-          # leptris-ruby#419) without breaking consumers.
+          # validate_errors takes the binding document. Entries are
+          # the #362.2 ValidationError contract; the engine payload
+          # is message strings today (line/column/path ride
+          # leptris-ruby#419 — the mapping fills them the day the
+          # binding exposes them).
           doc = if native_document.is_a?(::Leptris::XML::Document)
                   native_document
                 else
                   to_binding(native_document)
                 end
-          xsd_handle.validate_errors(doc).map(&:to_s)
+          structured = defined?(::Leptris::XML::XSD::ValidationError)
+          xsd_handle.validate_errors(doc).map do |entry|
+            if structured &&
+                entry.is_a?(::Leptris::XML::XSD::ValidationError)
+              Moxml::XSD::ValidationError.new(
+                message: entry.message, line: entry.line,
+                column: entry.column, path: entry.path
+              )
+            else
+              Moxml::XSD::ValidationError.new(message: entry.to_s)
+            end
+          end
         end
 
         def builder_face(native_document)

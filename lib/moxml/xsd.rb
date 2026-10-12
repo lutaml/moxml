@@ -19,14 +19,45 @@ module Moxml
   #       </xs:schema>
   #     XSD
   #     schema.valid?(doc)     # => true/false
-  #     schema.validate(doc)   # => [] or ["1:0: ...", ...]
+  #     schema.validate(doc)   # => [] or [ValidationError(...)]
   #
   # Adapters without an engine raise Moxml::NotImplementedError at
   # compile; Moxml::XSD.supported?(context) answers without
   # raising. The tier-1 scope is the engine's: documents outside it
   # validate laxly (see the binding's xsd_validate_spec).
   module XSD
-    SUPPORTED_ADAPTERS = %i[leptris].freeze
+    SUPPORTED_ADAPTERS = %i[leptris nokogiri].freeze
+
+    # One validation finding, harmonized across adapters (#362.2):
+    # +message+ always present; +line+ / +column+ when the engine
+    # reports them; +path+ (the element path) when the engine
+    # reports it — nil where the payload lacks the datum rather
+    # than a guessed placeholder. #to_s preserves the plain-string
+    # consumer flows the pre-#362 string contract fed.
+    class ValidationError
+      attr_reader :message, :line, :column, :path
+
+      def initialize(message:, line: nil, column: nil, path: nil)
+        @message = message.to_s
+        @line = line
+        @column = column
+        @path = path
+      end
+
+      def to_s
+        if line
+          "#{line}: #{message}"
+        else
+          message
+        end
+      end
+
+      def ==(other)
+        other.is_a?(ValidationError) &&
+          message == other.message && line == other.line &&
+          column == other.column && path == other.path
+      end
+    end
 
     class << self
       # Whether the context's adapter ships an XSD validator.
@@ -51,6 +82,13 @@ module Moxml
     # A compiled schema (adapter-owned handle). Validation results
     # are the engine's accumulated messages; [] means valid.
     class Schema
+      def check_released!
+        return unless released?
+
+        raise Moxml::AdapterError,
+              "schema released (deterministic drop); compile a new one"
+      end
+
       def initialize(handle, context)
         @handle = handle
         @context = context
@@ -65,6 +103,7 @@ module Moxml
       # visible); pass a Moxml::Document to control the parse
       # yourself.
       def validate(node_or_xml)
+        check_released!
         doc = case node_or_xml
               when Moxml::Document then node_or_xml
               when Moxml::Node then node_or_xml.document
@@ -85,18 +124,35 @@ module Moxml
       end
 
       def valid?(node_or_xml)
+        check_released!
         validate(node_or_xml).empty?
       end
 
       # Number of top-level schema declarations the compiler
       # recognized.
       def declarations
+        check_released!
         @context.config.adapter.xsd_declarations(@handle)
+      end
+
+      # Deterministic drop (#362.3): true when the adapter freed
+      # the engine-side schema NOW; false when the adapter can only
+      # wait for GC (documented per adapter). After a true release
+      # the faces raise AdapterError — the handle is gone.
+      def release
+        dropped = @context.config.adapter.xsd_release(@handle)
+        @released = true if dropped
+        dropped
+      end
+
+      def released?
+        @released == true
       end
 
       # The engine's schema-level compile error, or nil when the
       # schema compiled cleanly.
       def compile_error
+        check_released!
         @context.config.adapter.xsd_compile_error(@handle)
       end
 
