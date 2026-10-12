@@ -1071,6 +1071,17 @@ module Moxml
             recover_errors = [e.message]
             create_document
           end
+          if recover && native_doc.root.nil? && !recover_errors
+            # The recover path answers a rootless document for
+            # input with nothing to recover into (whitespace-only,
+            # declaration-only) — libxml2's recover behaves the
+            # same. Surface WHY on parse_errors so consumers report
+            # it instead of silently holding an empty tree.
+            recover_errors =
+              ["leptris parse recovered no document root " \
+               "(empty or whitespace-only input)"]
+          end
+
           register_mint_klasses!(native_doc)
           ctx = _context || Context.new(:leptris)
           doc = Wrappers::Document.new(native_doc, ctx)
