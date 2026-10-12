@@ -129,15 +129,37 @@ module Moxml
           end
 
           doctype = attachments.get(doc, :doctype)
-          parts << doctype.to_xml << "\n" if doctype.is_a?(CustomizedLeptris::Doctype)
-
-          native = native_doctype_xml(doc)
-          parts << native << "\n" if native
+          if doctype.is_a?(CustomizedLeptris::Doctype)
+            parts << doctype.to_xml << "\n"
+          else
+            # #364: the same DOCTYPE renders ONCE — the attachment
+            # is the parse-time capture; native_doctype_xml re-reads
+            # the engine's own doctype, and both firing doubled the
+            # line (moxml#364's \n\n\n).
+            native = native_doctype_xml(doc)
+            parts << native << "\n" if native
+          end
 
           # The libxml2-model document node: prolog PIs/comments, the
           # root, epilog PIs/comments — in document order, so epilog
           # parts serialize after the root (issue #130).
-          doc.children.each { |child| parts << raw_serialize(child, options) << "\n" }
+          # #364: document-level WHITESPACE-only text is layout
+          # residue (the input's newline after the doctype), not
+          # content — the newline-terminated part shape already
+          # carries the separation; rendering the text node stacked
+          # a second (or third) newline.
+          doc.children.each do |child|
+            # #364: document-level WHITESPACE-only text is layout
+            # residue (the input's newline after the doctype) — the
+            # newline-terminated part shape already carries the
+            # separation. Binding nodes walk here (native children).
+            if child.is_a?(::Leptris::XML::Text) &&
+                child.content.match?(/\A\s*\z/)
+              next
+            end
+
+            parts << raw_serialize(child, options) << "\n"
+          end
 
           texts = attachments.get(doc, :document_text)
           texts&.each { |text| parts << XmlEmitter.escape_text(text.content.to_s) }

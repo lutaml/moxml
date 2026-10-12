@@ -13,20 +13,30 @@ RSpec.describe "Moxml::Document#to_html" do
   end
 
   describe "nokogiri" do
+    # The oracle mirrors the adapter's #364 preserve-input-only
+    # parse: the synthesized HTML 4.0 doctype is dropped the same
+    # way, so pass-through equality stays meaningful.
+    let(:oracle) do
+      d = Nokogiri::HTML(src)
+      if (dtd = d.children.find { |n| n.is_a?(Nokogiri::XML::DTD) })
+        dtd.unlink
+      end
+      d
+    end
     let(:doc) { Moxml.new(:nokogiri).parse_html(src) }
 
     it "serializes the engine's HTML bytes by default" do
-      expect(doc.to_html).to eq(Nokogiri::HTML(src).to_html)
+      expect(doc.to_html).to eq(oracle.to_html)
     end
 
     it "threads indent through to the engine" do
       expect(doc.to_html(indent: 2))
-        .to eq(Nokogiri::HTML(src).to_html(indent: 2))
+        .to eq(oracle.to_html(indent: 2))
     end
 
     it "threads the indent unit through to the engine" do
       expect(doc.to_html(indent: 1, indent_text: "\t"))
-        .to eq(Nokogiri::HTML(src).to_html(indent: 1, indent_text: "\t"))
+        .to eq(oracle.to_html(indent: 1, indent_text: "\t"))
     end
   end
 
