@@ -182,6 +182,18 @@ module Moxml
         defined?(::Leptris::HTML) &&
         ::Leptris::HTML.respond_to?(:parse_fragment)
 
+      # The engine's recovery mode (moxml#369, engine leptris#1660
+      # via binding 1.9.344.0): non-strict parses pass recover:
+      # true and keep the best-effort tree (libxml2
+      # XML_PARSE_RECOVER semantics — mismatched closers close
+      # intermediates, unclosed elements close at EOF) instead of
+      # the rescue-to-empty fallback. The kwarg probe pairs the
+      # floor (a binding without the kwarg cannot arm).
+      RECOVER_MODE =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.344.0") &&
+        ::Leptris::XML::ParseOptions.instance_method(:initialize)
+          .parameters.any? { |_, key| key == :recover }
+
       # Markup-accumulating builder face (leptris-ruby#374 lever 2,
       # binding 1.9.313): the DSL accumulates markup in a plain
       # String and ONE native crossing (parse + attach) flushes the
@@ -1031,20 +1043,31 @@ module Moxml
           # multi-pass consumers (comparison, diff, signature).
           # dtdattr: true opts into DTD ATTLIST default materialization
           # (off by default since libleptris 1.9.8, matching libxml2).
+          # #369: non-strict parses RECOVER on engines that carry
+          # the mode (1.9.344+) — the best-effort tree survives
+          # recoverable structural errors (libxml2
+          # XML_PARSE_RECOVER semantics). Strict callers never
+          # recover: malformed input raises. Direct adapter calls
+          # are caller-owned-options by contract (Context applies
+          # config.strict_parsing; bypassing it means the caller
+          # chose the mode).
+          recover = !options[:strict] && RECOVER_MODE
           native_doc = begin
             ::Leptris::XML::Document.parse(
               processed,
               readonly: options[:readonly] == true,
-              options: parse_flags(options, context: _context),
+              options: parse_flags(options, recover: recover,
+                                            context: _context),
             )
           rescue ::Leptris::XML::ParseError => e
-            # libleptris has no recovery mode that survives unclosed
-            # tags; non-strict callers get an empty document, matching
-            # the Libxml adapter's non-strict behavior. The fatal
-            # error rides the document as parse diagnostics (issue
-            # #147) — otherwise nothing says why it came back empty.
             raise Moxml::ParseError.new(e.message) if options[:strict]
 
+            # Engines below the 1.9.344 recover floor (or the
+            # residual unrecoverable edges, e.g. trailing content
+            # after the root close) have no best-effort tree: the
+            # empty-document fallback stands, with the fatal error
+            # as parse diagnostics (issue #147) — otherwise nothing
+            # says why it came back empty.
             recover_errors = [e.message]
             create_document
           end
@@ -1191,7 +1214,7 @@ module Moxml
           ::Leptris::XML::ParseOptions.const_defined?(:SKIP_DUP_DETECTION) &&
           ::Leptris::XML::ParseOptions.const_defined?(:SKIP_SOURCE_POSITIONS)
 
-        def parse_flags(options, context: nil)
+        def parse_flags(options, recover: false, context: nil)
           flags = 0
           flags |= ::Leptris::XML::ParseOptions::DTDATTR if options[:dtdattr] == true
           flags |= ::Leptris::XML::ParseOptions::KEEP_ENTITY_REFS if NATIVE_ENTITY_REFS &&
@@ -1203,6 +1226,13 @@ module Moxml
             flags |= po::SKIP_DUP_DETECTION if options[:skip_dup_detection] == true
             flags |= po::SKIP_SOURCE_POSITIONS if options[:skip_source_positions] == true
           end
+          if recover
+            # #369: flags and the recover kwarg ride the same
+            # options struct (leptris-ruby's constructor composes
+            # both).
+            return ::Leptris::XML::ParseOptions.new(flags, recover: true)
+          end
+
           flags.zero? ? nil : ::Leptris::XML::ParseOptions.new(flags)
         end
 
