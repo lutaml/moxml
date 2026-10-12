@@ -204,19 +204,34 @@ module Moxml
 
       name, op, value = m.captures
       value = value.to_s.strip
-      value = value[1..-2] if value.match?(/\A(['"]).*\1\z/)
-      value = value.to_s.gsub("'", "\\\\'")
+      # No-backreference unquote (CodeQL rb/polynomial-redos: the
+      # ('(["']).*\1\z shape backtracks polynomially).
+      if value.length > 1 &&
+          ((value.start_with?("'") && value.end_with?("'")) ||
+           (value.start_with?('"') && value.end_with?('"')))
+        value = value[1..-2]
+      end
+      literal = xpath_string_literal(value)
 
       case op
       when nil, "" then "@#{name}"
-      when "=" then "@#{name} = '#{value}'"
-      when "^=" then "starts-with(@#{name}, '#{value}')"
-      when "$=" then "substring(@#{name}, string-length(@#{name}) - string-length('#{value}') + 1) = '#{value}'"
-      when "*=" then "contains(@#{name}, '#{value}')"
-      when "~=" then "contains(concat(' ', normalize-space(@#{name}), ' '), ' #{value} ')"
-      when "|=" then "@#{name} = '#{value}' or starts-with(@#{name}, '#{value}-')"
+      when "=" then "@#{name} = #{literal}"
+      when "^=" then "starts-with(@#{name}, #{literal})"
+      when "$=" then "substring(@#{name}, string-length(@#{name}) - string-length(#{literal}) + 1) = #{literal}"
+      when "*=" then "contains(@#{name}, #{literal})"
+      when "~=" then "contains(concat(' ', normalize-space(@#{name}), ' '), concat(' ', #{literal}, ' '))"
+      when "|=" then "@#{name} = #{literal} or starts-with(@#{name}, concat(#{literal}, '-'))"
       else raise Error, "unsupported attribute operator #{op}"
       end
+    end
+
+    # An XPath 1.0 string literal: values containing apostrophes
+    # cannot escape the delimiter — they go through concat().
+    def xpath_string_literal(value)
+      return "'#{value}'" unless value.include?("'")
+
+      parts = value.split("'", -1).map { |seg| "'#{seg}'" }
+      "concat(#{parts.join(%(, "'", ))})"
     end
 
     def split_top_level(selector)
