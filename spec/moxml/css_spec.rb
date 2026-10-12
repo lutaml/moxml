@@ -48,7 +48,7 @@ RSpec.describe "Moxml CSS selection (#362.1)" do
       expect(xp("[href$='z']", absolute: true)).to include("substring(@href")
       expect(xp("[href*='mid']", absolute: true)).to include("contains(@href, 'mid')")
       expect(xp("[lang|=en]", absolute: true))
-        .to include("starts-with(@lang, 'en-')")
+        .to include("starts-with(@lang, concat('en', '-')")
     end
 
     it "supports positional pseudos" do
