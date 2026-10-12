@@ -199,11 +199,16 @@ module Moxml
     end
 
     def attr_predicate(expr)
-      m = expr.match(/\A\s*([\w:-]+)\s*([~^$*|]?=)?\s*(.*)\z/)
-      raise Error, "bad attribute selector: [#{expr}]" unless m
+      # Linear string parsing — CodeQL rb/polynomial-redos flags
+      # the equivalent greedy regex (optional groups + .*\z
+      # backtrack polynomially on adversarial input).
+      expr = expr.strip
+      name = expr[/\A[\w:-]+/]
+      raise Error, "bad attribute selector: [#{expr}]" unless name
 
-      name, op, value = m.captures
-      value = value.to_s.strip
+      rest = expr[name.length..].to_s.strip
+      op = rest[/\A[~^$*|]?=/]
+      value = (op ? rest[op.length..] : "").to_s.strip
       # No-backreference unquote (CodeQL rb/polynomial-redos: the
       # ('(["']).*\1\z shape backtracks polynomially).
       if value.length > 1 &&
