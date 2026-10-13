@@ -275,8 +275,11 @@ module Moxml
       config.adapter.sax_parse(xml, handler)
     end
 
-    def build(&block)
-      Builder.new(self).build(&block)
+    # strict: (issue #371) flips unknown method_missing calls to
+    # NoMethodError instead of silently creating empty elements —
+    # nil defers to config.builder_strict.
+    def build(strict: nil, &block)
+      Builder.new(self, strict: strict).build(&block)
     end
 
     # Frozen serialization defaults, memoized per context — Node#to_xml
