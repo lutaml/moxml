@@ -7,7 +7,7 @@ module Moxml
     attr_reader :document
     alias_method :doc, :document
 
-    def initialize(context)
+    def initialize(context, strict: nil)
       @context = context
       @current = @document = context.create_document
       @namespaces = {}
@@ -22,12 +22,83 @@ module Moxml
       @face_counts = Hash.new(0)
       @face_deferred = []
       @face_entity_markers = false
+      # #371: strict mode — unknown methods raise instead of
+      # silently becoming empty elements. Per-build override
+      # (Context#build(strict:)), else the context's
+      # config.builder_strict.
+      @strict = strict.nil? ? context.config.builder_strict : strict
+    end
+
+    def strict?
+      @strict == true
+    end
+
+    # The tag-creation face NamespacedTags calls — the private
+    # create_element_node stays private.
+    def create_tag(tag_name, attrs = {}, text_content: nil, block: nil)
+      create_element_node(tag_name, attrs, text_content: text_content,
+                                           block: block, eval_block: false)
     end
 
     def build(&block)
       instance_eval(&block)
       flush_face
       @document
+    end
+
+    # Namespace-scoped tag syntax (#371, Nokogiri's xml["p"].tag
+    # parity): xml["w"].p creates <w:p>. The proxy creates through
+    # the same face as plain method_missing — caller-context
+    # blocks, text/attributes arguments, trailing-underscore
+    # escape — and honors the strict mode.
+    def [](namespace_prefix)
+      raise ArgumentError, "namespace prefix required" if namespace_prefix.nil? || namespace_prefix.to_s.empty?
+
+      NamespacedTags.new(self, namespace_prefix.to_s)
+    end
+
+    # Tag proxy bound to one namespace prefix. method_missing maps
+    # tag names to prefixed element creation; explicit Builder
+    # methods (text, element, ...) stay reachable by holding the
+    # builder — the proxy is tags-only by design.
+    class NamespacedTags
+      def initialize(builder, prefix)
+        @builder = builder
+        @prefix = prefix
+      end
+
+      def [](nested_prefix)
+        NamespacedTags.new(@builder, "#{@prefix}:#{nested_prefix}")
+      end
+
+      def method_missing(method_name, *args, &block)
+        # Trailing-underscore escape, same as plain Builder tags
+        # (type_ → type under the prefix).
+        tag = "#{@prefix}:#{method_name.to_s.chomp('_')}"
+        if @builder.strict?
+          raise NoMethodError,
+                "builder strict mode: unknown tag #{tag.inspect} " \
+                "would have silently created an empty element (#371)"
+        end
+
+        text_content = args.first.is_a?(String) ? args.shift : nil
+        attrs = args.first.is_a?(Hash) ? args.shift : {}
+        unless args.empty?
+          raise ArgumentError,
+                "unexpected arguments for #{tag}: #{args.inspect}"
+        end
+        if text_content && block
+          raise ArgumentError,
+                "#{tag}: cannot combine text content with a block"
+        end
+
+        @builder.create_tag(tag, attrs,
+                            text_content: text_content, block: block)
+      end
+
+      def respond_to_missing?(_method_name, _include_private = false)
+        true
+      end
     end
 
     # Element ops inside a face-accumulated subtree cannot touch the
@@ -138,6 +209,13 @@ module Moxml
     # Supported call shapes: (), (String), (Hash), (String, Hash).
     def method_missing(method_name, *args, &block)
       return super if RESERVED_METHOD_PATTERN.match?(method_name.to_s)
+
+      if @strict
+        raise NoMethodError,
+              "builder strict mode: unknown method #{method_name.inspect} " \
+              "would have silently created an empty <#{method_name}> element " \
+              "(#371); call a Builder method or use the explicit element face"
+      end
 
       text_content = args.first.is_a?(String) ? args.shift : nil
       attrs = args.first.is_a?(Hash) ? args.shift : {}

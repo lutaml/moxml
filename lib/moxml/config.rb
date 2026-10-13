@@ -114,6 +114,7 @@ module Moxml
 
     attr_reader :adapter_name, :default_line_ending
     attr_accessor :strict_parsing,
+                  :builder_strict,
                   :default_encoding,
                   :default_indent,
                   :restore_entities,
@@ -173,6 +174,11 @@ module Moxml
       @entity_provider = nil
       @namespace_validation_mode = :strict
       @entity_restoration_mode = :lenient
+      # #371: Builder method_missing creates elements for unknown
+      # methods (the DSL contract). builder_strict flips that to
+      # raising NoMethodError — external helper calls stop
+      # silently becoming empty elements.
+      @builder_strict = false
       @entity_mode = :expand
     end
 
