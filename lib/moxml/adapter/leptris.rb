@@ -194,6 +194,15 @@ module Moxml
         ::Leptris::XML::ParseOptions.instance_method(:initialize)
           .parameters.any? { |_, key| key == :recover }
 
+      # moxml#375 — the element-attribute snapshot (binding
+      # 1.9.353.0, engine leptris#1689): every attribute's
+      # qualified name and value in ONE crossing, replacing the
+      # per-attribute reads behind ::Leptris::XML::Element
+      # #attribute_pairs.
+      ELEMENT_ATTR_SNAPSHOT =
+        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.353.0") &&
+        ::Leptris::XML::Element.method_defined?(:attributes_snapshot)
+
       # Markup-accumulating builder face (leptris-ruby#374 lever 2,
       # binding 1.9.313): the DSL accumulates markup in a plain
       # String and ONE native crossing (parse + attach) flushes the
@@ -2059,6 +2068,7 @@ module Moxml
         def attribute_pairs(element)
           binding_element = to_binding(element)
           return super unless binding_element.respond_to?(:attribute_pairs)
+          return binding_element.attributes_snapshot.to_a if ELEMENT_ATTR_SNAPSHOT
 
           binding_element.attribute_pairs
         end
