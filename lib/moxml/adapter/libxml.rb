@@ -244,6 +244,9 @@ module Moxml
             return NATIVE_NODE_TYPE_MAP[node.node_type] || :unknown
           end
           return :document if node.is_a?(::LibXML::XML::Document)
+          # Attr is a separate class (not ::Node) — attribute-terminal
+          # XPath results mint as plain Node without this.
+          return :attribute if node.is_a?(::LibXML::XML::Attr)
 
           wrapper_type = WRAPPER_NODE_TYPE_MAP[node.class]
           return wrapper_type if wrapper_type
@@ -948,6 +951,16 @@ module Moxml
         def xpath(node, expression, namespaces = nil)
           native_node = unpatch_node(node)
           return [] unless native_node
+
+          # libxml-ruby's Document#find returns EMPTY for relative
+          # paths (nokogiri/libxml2 evaluate them fine): a relative
+          # expression from the document node is equivalent to the
+          # absolute form — the document's only name-testable child
+          # is the root — so rewrite instead of losing the match.
+          if native_node.is_a?(::LibXML::XML::Document) &&
+              expression.match?(/\A[A-Za-z_*@]/)
+            expression = "/#{expression}"
+          end
 
           # Build namespace context for LibXML
           # LibXML requires ALL prefixes in the XPath to be registered

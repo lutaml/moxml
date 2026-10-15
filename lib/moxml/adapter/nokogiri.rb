@@ -626,7 +626,11 @@ module Moxml
         end
 
         def xpath(node, expression, namespaces = nil)
-          result = node.xpath(expression, namespaces)
+          # An explicit bindings hash — even EMPTY — makes nokogiri
+          # register a prefix context, which disables libxml2's
+          # literal xmlns: default-namespace handling. Only pass the
+          # hash when the caller actually bound something.
+          result = namespaces.nil? || namespaces.empty? ? node.xpath(expression) : node.xpath(expression, namespaces)
           # Adapter contract: Array<native> | LazyNodeSet | scalar
           # (count(), string-length(), boolean functions return
           # scalars). The native node-set passes through lazily —

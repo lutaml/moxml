@@ -604,10 +604,13 @@ module Moxml
         end
 
         def xpath(node, expression, namespaces = {})
+          # XPath.match for every expression: get_elements only
+          # handles simple child-name paths — attribute terminals,
+          # absolute paths and predicates silently degrade there.
           if namespaces && !namespaces.empty?
-            ::REXML::XPath.match(node, expression, namespaces)
+            ::REXML::XPath.match(node, expression, namespaces).to_a
           else
-            node.get_elements(expression).to_a
+            ::REXML::XPath.match(node, expression).to_a
           end
         rescue ::REXML::ParseException => e
           raise Moxml::XPathError.new(
