@@ -156,6 +156,12 @@ module Moxml
               next
             end
 
+            # ruby#459 rides the declaration in Document#children; the
+            # preamble above already emitted it (leptris#1732 — walking
+            # it here duplicates the line, and an empty-answer to_xml
+            # stacks a blank one).
+            next if child.is_a?(::Leptris::XML::Declaration)
+
             parts << raw_serialize(child, options) << "\n"
           end
 
