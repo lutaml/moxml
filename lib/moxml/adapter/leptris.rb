@@ -1639,7 +1639,7 @@ module Moxml
           when ::Leptris::XML::Text, CustomizedLeptris::TextSegment then :text
           when ::Leptris::XML::Attr, ::Leptris::XML::ResultAttr then :attribute
           when ::Leptris::XML::Comment then :comment
-          when ::Leptris::XML::ProcessingInstruction, CustomizedLeptris::DocumentPI then :processing_instruction
+          when ::Leptris::XML::ProcessingInstruction then :processing_instruction
           when ::Leptris::XML::Document then :document
           when ::Leptris::XML::DocType, CustomizedLeptris::Doctype then :doctype
           when CustomizedLeptris::Declaration then :declaration
@@ -1666,7 +1666,6 @@ module Moxml
 
         def node_name(node)
           return node.root_name if node.is_a?(::Leptris::XML::DocType)
-          return node.target if node.is_a?(CustomizedLeptris::DocumentPI)
 
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
             # PIs expose no name through the native layer.
@@ -1684,7 +1683,7 @@ module Moxml
         def set_node_name(node, name)
           node = to_binding(node) if NATIVE_READ_LAYER
           case node
-          when ::Leptris::XML::ProcessingInstruction, CustomizedLeptris::DocumentPI then node.target = name
+          when ::Leptris::XML::ProcessingInstruction then node.target = name
           else node.name = name
           end
         end
@@ -1698,8 +1697,6 @@ module Moxml
             CustomizedLeptris::Doctype.new(node.name, node.external_id, node.system_id)
           when CustomizedLeptris::EntityReference
             CustomizedLeptris::EntityReference.new(node.name)
-          when CustomizedLeptris::DocumentPI
-            CustomizedLeptris::DocumentPI.new(node.target, node.data, node.parent_doc)
           else
             node.dup
           end
@@ -1796,7 +1793,6 @@ module Moxml
             assemble_document_children(node)
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
                CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment,
-               CustomizedLeptris::DocumentPI,
                # Terminal node kinds pay an FFI round trip for an empty
                # list; unfiltered recursions visit every text node.
                ::Leptris::XML::Text, ::Leptris::XML::Comment,
@@ -1832,8 +1828,7 @@ module Moxml
           case node
           when ::Leptris::XML::Element then root_parent(node)
           when ::Leptris::XML::Document then nil
-          when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
-               CustomizedLeptris::DocumentPI then node.parent_doc
+          when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype then node.parent_doc
           when CustomizedLeptris::TextSegment, CustomizedLeptris::EntityReference then node.parent
           # Same body as the Element arm by design (frequency
           # ordering); the generic kinds are cold.
@@ -2535,23 +2530,6 @@ module Moxml
             end
           when CustomizedLeptris::EntityReference
             marker_text_for(node.parent, node.name)&.unlink
-          when CustomizedLeptris::DocumentPI
-            if NATIVE_DOC_PARTS && node.parent_doc
-              pis = node.parent_doc.processing_instructions
-              index = pis.index do |target, data|
-                target == node.target && data == node.data
-              end
-              if index
-                node.parent_doc.remove_pi(index)
-                node.parent_doc = nil
-              end
-            else
-              raise Moxml::NotImplementedError.new(
-                "libleptris has no document-level PI removal",
-                adapter: :leptris,
-                feature: :remove,
-              )
-            end
           else
             begin
               node.unlink

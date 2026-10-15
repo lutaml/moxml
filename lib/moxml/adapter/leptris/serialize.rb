@@ -86,7 +86,7 @@ module Moxml
           # binding, so a Text branch first would swallow CDATA nodes.
           case node
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
-               CustomizedLeptris::EntityReference, CustomizedLeptris::DocumentPI
+               CustomizedLeptris::EntityReference
             return node.to_xml
           when ::Leptris::XML::CDATA
             return XmlEmitter.cdata(node.content)
