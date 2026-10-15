@@ -35,6 +35,56 @@ RSpec.describe Moxml::Adapter::Leptris do
 
   it_behaves_like "xml adapter"
 
+  it "loads and mutates through FFI when the optional native layer is unavailable" do
+    require "open3"
+
+    script = <<~'RUBY'
+      module Kernel
+        alias_method :require_with_optional_native, :require
+        def require(path)
+          raise LoadError, "optional native layer unavailable" if path == "leptris/xml/native_layer"
+          require_with_optional_native(path)
+        end
+      end
+
+      require "leptris"
+      raise "native enabled before Moxml" if defined?(Leptris::XML::NATIVE_FAST)
+      require "moxml"
+      ctx = Moxml.new(:leptris)
+      raise "native enabled after Moxml" if defined?(Leptris::XML::NATIVE_FAST)
+      raise "native read layer enabled" if ctx.config.adapter::NATIVE_READ_LAYER
+
+      doc = ctx.parse('<root xmlns:p="urn:test"><p:item/></root>')
+      source = ctx.create_document
+      element = source.create_element("new")
+      doc.root.add_child(element)
+      element["id"] = "after-append"
+      raise "original handle lost" unless doc.root.children.last == element
+      raise "original write missed tree" unless doc.root.children.last["id"] == "after-append"
+      doc.root.add_element("built", "id" => "attrs")
+      sibling = doc.create_element("sibling")
+      element.add_next_sibling(sibling)
+      sibling.add_previous_sibling(doc.create_element("before"))
+      ctx.config.adapter.mark_entity_markers(doc.native)
+      raise "namespace lost" unless doc.root.at_xpath(".//p:item", "p" => "urn:test")
+      row = Struct.new(:id)
+      plan = Moxml::StructPlan.new { element "new", row, attrs: { "id" => :id } }
+      raise "struct fallback lost mutation" unless plan.materialize(doc.root).first.id == "after-append"
+      GC.start
+      xml = doc.root.to_xml
+      raise "serialization lost mutation" unless xml.include?('id="after-append"') && xml.include?('id="attrs"')
+      raise "native enabled by operation" if defined?(Leptris::XML::NATIVE_FAST)
+      puts "genuine FFI fallback passed"
+    RUBY
+    output, status = Open3.capture2e(
+      { "LEPTRIS_NO_NATIVE" => "1" }, RbConfig.ruby,
+      "-I", $LOAD_PATH.join(File::PATH_SEPARATOR), "-e", script
+    )
+
+    expect(status.success?).to be(true), output
+    expect(output).to include("genuine FFI fallback passed")
+  end
+
   describe "cross-document child identity" do
     before do
       skip "requires safe document absorption (leptris 1.9.311.3+)" unless described_class::NATIVE_DOC_ABSORB

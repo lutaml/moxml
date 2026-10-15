@@ -372,7 +372,7 @@ module Moxml
         end
 
         def mark_entity_markers(native_document)
-          doc = if native_document.is_a?(NN)
+          doc = if NATIVE_READ_LAYER && native_document.is_a?(NN)
                   to_binding(native_document)
                 else
                   native_document
@@ -892,8 +892,8 @@ module Moxml
       # fallback below the fix, same as the varargs-mint floor.
       NATIVE_PLAN_STRUCTS =
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.320.0") &&
-        (!defined?(::Leptris::XML::Native) ||
-         ::Leptris::XML::Native.respond_to?(:plan_structs))
+        NATIVE_READ_LAYER &&
+        ::Leptris::XML::Native.respond_to?(:plan_structs)
 
       # leptris-ruby#275 (binding 1.9.204, the remove half of the
       # document-level surfaces): remove_pi, clear_declaration,
@@ -905,7 +905,7 @@ module Moxml
       # numeric/boolean slots). Capability-probed, not
       # version-gated.
       NATIVE_PLAN_TYPED =
-        !defined?(::Leptris::XML::Native) ||
+        NATIVE_READ_LAYER &&
         ::Leptris::XML::Native.respond_to?(:plan_structs_typed?)
 
       NATIVE_DOC_PARTS =
@@ -1349,10 +1349,10 @@ module Moxml
           Identity::COMMENT,
           Identity::CDATA,
           Identity::PROCESSING_INSTRUCTION,
-        ].freeze
+        ].freeze if NATIVE_READ_LAYER
 
         def register_mint_klasses!(binding_doc)
-          return binding_doc unless NATIVE_C_MINT && binding_doc
+          return binding_doc unless NATIVE_READ_LAYER && NATIVE_C_MINT && binding_doc
 
           binding_doc.register_wrapper_klasses(MINT_KIND_CLASSES)
           binding_doc
@@ -2017,6 +2017,8 @@ module Moxml
         # callers fall back to create_element + set_attribute +
         # add_child when absent.
         def create_element_with_attrs(parent, name, attrs)
+          return nil unless NATIVE_READ_LAYER
+
           binding_parent = to_binding(parent)
           doc = binding_parent.document or return nil
           return nil unless ::Leptris::XML::Native.respond_to?(:create_element_with_attrs)
@@ -2239,23 +2241,23 @@ module Moxml
         # only the element moves that route through the raw engine add
         # (add_child / sibling inserts below) absorb first.
         def pin_foreign_owner_document(parent, child)
-          return unless child.is_a?(NN) || child.is_a?(::Leptris::XML::Node)
+          return unless (NATIVE_READ_LAYER && child.is_a?(NN)) || child.is_a?(::Leptris::XML::Node)
 
           # Two document fetches + identity compare on the same-document
           # hot path (every builder add_child); the bridge and the
           # pin only pay when the child actually comes from another
           # document.
-          child_doc = child.is_a?(NN) ? NN_DOCUMENT.bind_call(child) : child.document
+          child_doc = NATIVE_READ_LAYER && child.is_a?(NN) ? NN_DOCUMENT.bind_call(child) : child.document
           return if child_doc.nil?
 
-          parent_doc = parent.is_a?(NN) ? NN_DOCUMENT.bind_call(parent) : parent.document
+          parent_doc = NATIVE_READ_LAYER && parent.is_a?(NN) ? NN_DOCUMENT.bind_call(parent) : parent.document
           return if parent_doc.nil? || child_doc.equal?(parent_doc)
 
           # moxml#308: one source document's children attach
           # node-by-node — dedup by identity or the pin list grows
           # linearly with append count (GB-scale malloc on
           # large-document hydration). Distinct owners stay few.
-          owner = child_doc.is_a?(NN) ? to_binding(child_doc) : child_doc
+          owner = NATIVE_READ_LAYER && child_doc.is_a?(NN) ? to_binding(child_doc) : child_doc
           docs = attachments.get(parent_doc, :adopted_docs) || []
           return if docs.include?(owner)
 
@@ -2276,12 +2278,12 @@ module Moxml
         def source_absorbed_into?(node, new_node)
           return false unless NATIVE_DOC_ABSORB
 
-          node_doc = node.is_a?(NN) ? NN_DOCUMENT.bind_call(node) : node.document
-          new_doc = new_node.is_a?(NN) ? NN_DOCUMENT.bind_call(new_node) : new_node.document
+          node_doc = NATIVE_READ_LAYER && node.is_a?(NN) ? NN_DOCUMENT.bind_call(node) : node.document
+          new_doc = NATIVE_READ_LAYER && new_node.is_a?(NN) ? NN_DOCUMENT.bind_call(new_node) : new_node.document
           return false if node_doc.nil? || new_doc.nil? || node_doc.equal?(new_doc)
 
-          owner = new_doc.is_a?(NN) ? to_binding(new_doc) : new_doc
-          dest = node_doc.is_a?(NN) ? to_binding(node_doc) : node_doc
+          owner = NATIVE_READ_LAYER && new_doc.is_a?(NN) ? to_binding(new_doc) : new_doc
+          dest = NATIVE_READ_LAYER && node_doc.is_a?(NN) ? to_binding(node_doc) : node_doc
           attachments.get(dest, :absorbed_sources)&.include?(owner) || false
         end
 
@@ -2349,11 +2351,11 @@ module Moxml
           # upstream (its absorbed_into? checks are not transitive) —
           # those keep the pin + adoption copy. Entity references
           # keep the marker flow below.
-          if NATIVE_DOC_ABSORB && !child.is_a?(NN) &&
+          if NATIVE_DOC_ABSORB && !(NATIVE_READ_LAYER && child.is_a?(NN)) &&
               child.is_a?(::Leptris::XML::Node) &&
               !child.is_a?(CustomizedLeptris::EntityReference)
             child_doc = child.document
-            parent_doc = parent.is_a?(NN) ? NN_DOCUMENT.bind_call(parent) : parent.document
+            parent_doc = NATIVE_READ_LAYER && parent.is_a?(NN) ? NN_DOCUMENT.bind_call(parent) : parent.document
             if child_doc && parent_doc && !child_doc.equal?(parent_doc)
               owner = to_binding(child_doc)
               absorb_source_document(to_binding(parent_doc), owner) if
@@ -2448,7 +2450,7 @@ module Moxml
           # 1.9.311: an absorbed element source moves through the raw
           # engine faces — the binding's sibling insert drops it.
           if new_node.is_a?(::Leptris::XML::Element) &&
-              !new_node.is_a?(::Leptris::XML::NativeNode)
+              !(NATIVE_READ_LAYER && new_node.is_a?(::Leptris::XML::NativeNode))
             new_doc = new_node.document
             node_doc = node.document
             if new_doc && node_doc && !new_doc.equal?(node_doc)
@@ -2478,7 +2480,7 @@ module Moxml
           # 1.9.311: an absorbed element source moves through the raw
           # engine faces — the binding's sibling insert drops it.
           if new_node.is_a?(::Leptris::XML::Element) &&
-              !new_node.is_a?(::Leptris::XML::NativeNode)
+              !(NATIVE_READ_LAYER && new_node.is_a?(::Leptris::XML::NativeNode))
             new_doc = new_node.document
             node_doc = node.document
             if new_doc && node_doc && !new_doc.equal?(node_doc)
