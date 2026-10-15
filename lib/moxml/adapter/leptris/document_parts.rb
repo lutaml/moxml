@@ -36,7 +36,13 @@ module Moxml
           # Nokogiri-shaped contract, epilog anchoring included (issue
           # #130). Built documents reflect their parts immediately
           # since leptris-ruby 1.9.32 (leptris-ruby#91).
-          children.concat(doc.children.to_a)
+          # leptris-ruby#459 lists the declaration among the binding
+          # children; the Nokogiri-shaped facade contract never lists
+          # it (the declaration is a preamble part, not a child node)
+          # — filtered at the listing seam.
+          children.concat(
+            doc.children.to_a.grep_v(::Leptris::XML::Declaration),
+          )
 
           texts = attachments.get(doc, :document_text)
           children.concat(texts) if texts
@@ -155,6 +161,13 @@ module Moxml
                 child.content.match?(/\A\s*\z/)
               next
             end
+
+            # leptris-ruby#459 exposes the declaration as a
+            # Document#children entry; the preamble above owns the
+            # emission (a second line here duplicates it — and the
+            # 1.9.360 0-arity Declaration#to_xml raises under the
+            # options-passing call).
+            next if child.is_a?(::Leptris::XML::Declaration)
 
             parts << raw_serialize(child, options) << "\n"
           end
