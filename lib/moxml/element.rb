@@ -233,11 +233,15 @@ module Moxml
       adapter.attachments.set(@native, :children_source_docs, merged)
     end
 
+    # Removes the attribute named by XML-correct resolution — a
+    # qualified name ("p:x"), or a bare name (the no-namespace
+    # attribute, falling back to the single namespaced attribute
+    # carrying that local name when no bare one exists, #378).
+    #
+    # @return [Moxml::Attribute, nil] the removed attribute, nil
+    #   when nothing matched (nokogiri-compatible)
     def remove_attribute(name)
-      # Both remove paths end in invalidate_attribute_cache!, which
-      # bumps the generation.
       Moxml::AttributeResolver.remove(self, name)
-      self
     end
 
     # Append a raw XML fragment's top-level nodes as children.

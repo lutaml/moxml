@@ -142,6 +142,16 @@ module Moxml
     # Remove the attribute named by XML-correct resolution (see
     # #assign for the name semantics).
     #
+    # #378: a bare name that matches no no-namespace attribute falls
+    # back to the SINGLE namespaced attribute carrying that local
+    # name — callers spelling the local part (the name
+    # attribute_nodes-style listings expose) expect removal, and the
+    # silent no-op broke remediation flows. Bare-name resolution
+    # keeps Namespaces 1.0 §5.2 semantics for reads; removal widens
+    # only when unambiguous. Several prefixed spellings sharing the
+    # local name remove nothing — guessing a prefix would corrupt
+    # documents.
+    #
     # @return [Moxml::Attribute, nil] the removed attribute
     def remove(element, name)
       name = name.to_s
@@ -153,11 +163,24 @@ module Moxml
       end
 
       attr = resolve(element, name)
+      attr ||= resolve_unique_local(element, name) unless name.include?(":")
+
       return nil unless attr
 
       adapter.remove_attribute_native(attr.native)
       element.invalidate_local_attribute_cache!
       attr
+    end
+
+    # The single namespaced attribute whose local name matches, or
+    # nil when none or several do (see #remove).
+    def resolve_unique_local(element, local)
+      matches = element.attributes.select do |attr|
+        attr_name = attr.name
+        local_name(attr_name) == local &&
+          !attribute_uri(element, attr, attr_name).nil?
+      end
+      matches.one? ? matches.first : nil
     end
 
     # XPath 1.0 attribute node test, sharing the resolver's
