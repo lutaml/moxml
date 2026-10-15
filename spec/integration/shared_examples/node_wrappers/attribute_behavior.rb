@@ -126,6 +126,41 @@ RSpec.shared_examples "Moxml::Attribute" do
       end
     end
 
+    describe "removing by local name (#378)" do
+      before do
+        element.add_namespace("q", "http://x.org")
+        element["q:type"] = "namespaced"
+        element["type"] = "bare"
+      end
+
+      it "removes the single namespaced attribute carrying that local name" do
+        element.remove_attribute("type")
+        element.remove_attribute("type")
+
+        expect(element["q:type"]).to be_nil
+        expect(element["type"]).to be_nil
+        expect(element.attributes).to be_empty
+      end
+
+      it "returns the removed attribute, nil when nothing matched" do
+        removed = element.remove_attribute("type")
+
+        expect(removed).to be_a(described_class)
+        expect(element["type"]).to be_nil
+        expect(element.remove_attribute("nonexistent")).to be_nil
+      end
+
+      it "removes nothing when several prefixes share the local name" do
+        element.remove_attribute("type")
+        element.add_namespace("other", "http://other.org")
+        element["other:type"] = "second"
+
+        expect(element.remove_attribute("type")).to be_nil
+        expect(element["q:type"]).to eq("namespaced")
+        expect(element["other:type"]).to eq("second")
+      end
+    end
+
     describe "manipulation" do
       before do
         element["test"] = "value"
