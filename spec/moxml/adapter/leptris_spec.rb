@@ -35,6 +35,57 @@ RSpec.describe Moxml::Adapter::Leptris do
 
   it_behaves_like "xml adapter"
 
+  describe "cross-document child identity" do
+    before do
+      skip "requires safe document absorption (leptris 1.9.311.3+)" unless described_class::NATIVE_DOC_ABSORB
+    end
+
+    it "keeps a standalone created element attached to its original handle" do
+      doc = described_class.parse("<root/>").native
+      root = described_class.root(doc)
+      element = described_class.create_element("new")
+
+      described_class.add_child(root, element)
+
+      expect(described_class.same_node?(described_class.children(root).last, element)).to be(true)
+      described_class.set_attribute(element, "id", "after-append")
+      expect(described_class.get_attribute_value(described_class.children(root).last, "id")).to eq("after-append")
+    end
+
+    it "keeps original-wrapper writes and removal after dropping the source reference and running GC" do
+      ctx = Moxml.new(:leptris)
+      doc = ctx.parse("<root/>")
+      source = ctx.create_document
+      element = source.create_element("new")
+      doc.root.add_child(element)
+      source = nil
+      GC.start
+
+      expect(doc.root.children.last).to eq(element)
+      element["id"] = "after-gc"
+      expect(doc.root.children.last["id"]).to eq("after-gc")
+
+      element.remove
+      expect(doc.root.children).to be_empty
+    end
+
+    it "keeps the installed subtree alive after the absorbed source is freed" do
+      ctx = Moxml.new(:leptris)
+      doc = ctx.parse("<root/>")
+      source = ctx.create_document
+      element = source.create_element("new")
+      doc.root.add_child(element)
+      element["id"] = "kept"
+
+      described_class.to_binding(source.native).free
+      GC.start
+
+      expect(doc.root.children.last["id"]).to eq("kept")
+      reparsed = Nokogiri::XML(doc.root.to_xml, &:strict)
+      expect(reparsed.at_xpath("/root/new")["id"]).to eq("kept")
+    end
+  end
+
   describe "native xpath dispatch" do
     let(:ctx) { Moxml.new(:leptris) }
     let(:doc) do
