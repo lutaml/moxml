@@ -20,8 +20,7 @@ module Moxml
 
           case native
           when CustomizedLeptris::Declaration, CustomizedLeptris::Doctype,
-             CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment,
-             CustomizedLeptris::DocumentPI
+             CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment
             true
           else
             # Parentless elements come only from Iterparse —

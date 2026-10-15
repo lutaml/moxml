@@ -83,8 +83,6 @@ module Moxml
             doc.root = child
           when ::Leptris::XML::ProcessingInstruction
             doc.add_pi(child.target, child.content.to_s)
-          when CustomizedLeptris::DocumentPI
-            doc.add_pi(child.target, child.data)
           when ::Leptris::XML::Text
             texts = attachments.get(doc, :document_text) || []
             texts << child
