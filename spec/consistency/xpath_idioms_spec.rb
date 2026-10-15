@@ -1,0 +1,62 @@
+# frozen_string_literal: true
+
+require "spec_helper"
+
+# Cross-adapter XPath idioms that nokogiri consumers rely on:
+#
+# - The literal xmlns: prefix resolves against the default namespace
+#   (the libxml2 quirk that is nokogiri's documented way to match
+#   default-namespaced elements; leptris carries it since engine
+#   1.9.359 / leptris-ruby#469; moxml's own engine always has).
+# - Attribute-terminal steps work in every path position
+#   (leptris-ruby#458's table: //a/@id, //@id, r/a/@id,
+#   //*[f()]/@id — fixed by the engine's VM path work).
+RSpec.describe "XPath idioms across adapters" do
+  let(:default_ns_xml) do
+    '<svgmap xmlns="http://www.example.org/doc"><target href="a"/></svgmap>'
+  end
+  let(:plain_xml) { '<r><a id="x"><b/></a></r>' }
+
+  Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
+    next if adapter_name == :headed_ox # same engine as :ox
+
+    context "with #{adapter_name}" do
+      let(:ctx) { Moxml.new(adapter_name) }
+
+      before do
+        if adapter_name == :leptris &&
+            Gem::Version.new(Leptris::VERSION) < Gem::Version.new("1.9.359.0")
+          skip "binding #{Leptris::VERSION} predates the xmlns: fix (1.9.359)"
+        end
+        if adapter_name == :oga
+          # oga's own Ruby XPath engine has no xmlns: default-ns
+          # support (third-party; explicit bindings work).
+          skip "oga's XPath engine does not implement the xmlns: idiom"
+        end
+      end
+
+      it "matches default-namespaced elements via the xmlns: prefix" do
+        doc = ctx.parse(default_ns_xml)
+        targets = doc.root.xpath("./xmlns:target")
+        expect(targets.length).to eq(1)
+        expect(targets.first.name).to eq("target")
+      end
+
+      it "keeps explicit namespace bindings winning over the idiom" do
+        doc = ctx.parse(default_ns_xml)
+        targets = doc.root.xpath("./xmlns:target", "xmlns" => "urn:bogus")
+        expect(targets).to be_empty
+      end
+
+      it "resolves attribute-terminal steps in every path position" do
+        doc = ctx.parse(plain_xml)
+        expect(doc.xpath("//a/@id").first&.value).to eq("x")
+        expect(doc.xpath("//@id").first&.value).to eq("x")
+        expect(doc.xpath("r/a/@id").first&.value).to eq("x")
+        expect(
+          doc.xpath("//*[local-name()='a']/@id").first&.value,
+        ).to eq("x")
+      end
+    end
+  end
+end
