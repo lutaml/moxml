@@ -13,9 +13,16 @@ module Moxml
     # registries strong). Ruby 3.4 rewrote WeakMap and is safe.
     # MRI < 3.4 takes the strong identity-Hash fallback (the Opal
     # shape, with the 65,536 valve in register_wrapper).
+    # Ruby >= 4.0 joins the strong fallback (ruby#489 / #487 class):
+    # 4.0's GC rework drops the weak wrapper entries mid-hydration —
+    # orphaned Leptris documents, freed pools, segfaults in
+    # leptris_element_get_document and 'Memory allocation failed' on
+    # the adoption walk. The gate reads as a version ALLOWLIST of
+    # WeakMap semantics we have validated, not a floor.
     WEAK_WRAPPERS = !defined?(ObjectSpace::WeakMap).nil? &&
       !(RUBY_ENGINE == "ruby" &&
-        Gem::Version.new(RUBY_VERSION) < Gem::Version.new("3.4"))
+        (Gem::Version.new(RUBY_VERSION) < Gem::Version.new("3.4") ||
+         Gem::Version.new(RUBY_VERSION) >= Gem::Version.new("4.0")))
     attr_reader :config
 
     def initialize(adapter = nil)
