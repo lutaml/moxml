@@ -92,6 +92,29 @@ module Moxml
       def initialize(handle, context)
         @handle = handle
         @context = context
+        assert_adapter_matches_handle!
+      end
+
+      # Issue #384: the handle is an adapter-native object; routing
+      # it through a different adapter's xsd_validate surfaced as a
+      # distant NoMethodError. Fail at the wrap with the mismatch
+      # named.
+      def assert_adapter_matches_handle!
+        adapter = @context.config.adapter
+        return if adapter.xsd_handle_match?(@handle)
+
+        raise Moxml::AdapterError.new(
+          "schema handle mismatch: #{handle_class_name(@handle)} " \
+          "cannot be validated through the " \
+          "#{adapter.respond_to?(:adapter_name) ? adapter.adapter_name : adapter} " \
+          "adapter — compile the schema through the same adapter " \
+          "that will validate it",
+          operation: "xsd_compile",
+        )
+      end
+
+      def handle_class_name(handle)
+        handle.class.name.split("::").last(2).join("::")
       end
 
       # Validate a node or raw XML string. Returns [] when valid.
