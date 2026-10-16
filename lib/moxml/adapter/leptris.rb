@@ -92,8 +92,20 @@ module Moxml
       # NativeNode#[]), so the adapter's native fast paths speak to
       # the native layer through these bound entries — bind_call is
       # the same C dispatch without the shadow lookup.
+      # Always defined: nothing can be an instance of an anonymous
+      # class, so on the FFI-only lane is_a?(NN) is uniformly false
+      # and the ungated native-node conditionals keep their
+      # semantics without the compiled ext.
+      NN = NATIVE_READ_LAYER ? ::Leptris::XML::NativeNode : Class.new
+
+      # The binding's Document.parse gained the strict: kwarg later
+      # than the native layer's default-strict behavior — probe the
+      # face instead of version-gating (the RECOVER_MODE pattern).
+      STRICT_PARSE_KWARG =
+        ::Leptris::XML::Document.method(:parse)
+          .parameters.any? { |_, key| key == :strict }
+
       if NATIVE_READ_LAYER
-        NN = ::Leptris::XML::NativeNode
         NN_ATTRIBUTE = NN.instance_method(:attribute)
         NN_NAME = NN.instance_method(:name)
         NN_PARENT = NN.instance_method(:parent)
@@ -397,6 +409,27 @@ module Moxml
         end
       end
 
+      class << self
+        # These three live OUTSIDE the NATIVE_READ_LAYER gate:
+        # ungated methods (register_mint_klasses!, the
+        # create/register seams) and the specs' singleton const_get
+        # read them, and on the FFI-only lane the gate's Identity
+        # classes do not exist. NATIVE_MUTATIONS_COHERENT is false
+        # without the native layer, so all three evaluate false
+        # there.
+        NATIVE_IDENTITY =
+          NATIVE_MUTATIONS_COHERENT &&
+          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.174.4")
+
+        NATIVE_C_MINT =
+          NATIVE_IDENTITY &&
+          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.255.2")
+
+        NATIVE_KLASS_CHILDREN =
+          NATIVE_IDENTITY &&
+          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.193.2")
+      end
+
       if NATIVE_READ_LAYER
         # root NativeNode -> binding document (recorded at #root
         # mint; the native layer exposes no document accessor).
@@ -501,10 +534,6 @@ module Moxml
             TEXT.include(Reads)
           end
 
-          NATIVE_IDENTITY =
-            NATIVE_MUTATIONS_COHERENT &&
-            Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.174.4")
-
           # leptris-ruby#246 klass-propagating reads: the read
           # family (children/element_children/next_sibling/parent)
           # mints the mapped subclass per kind, so children arrive
@@ -521,14 +550,6 @@ module Moxml
           # classes — walked and built nodes arrive already carrying the
           # contract, and the Ruby shell mint drops out entirely
           # (moxml#288: the entire remaining walk/build gap).
-          NATIVE_C_MINT =
-            NATIVE_IDENTITY &&
-            Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.255.2")
-
-          NATIVE_KLASS_CHILDREN =
-            NATIVE_IDENTITY &&
-            Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.193.2")
-
           if NATIVE_KLASS_CHILDREN
             kind_classes = [
               Identity::ELEMENT,
@@ -1065,6 +1086,10 @@ module Moxml
             ::Leptris::XML::Document.parse(
               processed,
               readonly: options[:readonly] == true,
+              # The FFI fallback lane parses leniently by default —
+              # the strict intent must ride explicitly or strict
+              # callers silently get a best-effort tree.
+              **(options[:strict] && STRICT_PARSE_KWARG ? { strict: true } : {}),
               options: parse_flags(options, recover: recover,
                                             context: _context),
             )
@@ -1343,13 +1368,22 @@ module Moxml
         # comment, cdata, pi. Parsed documents register right after
         # the binding mint. Unregistered bindings (older floors, the
         # C-mint off) are unchanged — the shell path stays.
-        MINT_KIND_CLASSES = [
-          Identity::ELEMENT,
-          Identity::TEXT,
-          Identity::COMMENT,
-          Identity::CDATA,
-          Identity::PROCESSING_INSTRUCTION,
-        ].freeze
+        # Identity lives under the NATIVE_READ_LAYER gate — on the
+        # FFI-only lane (windows, or a binding whose native bundle
+        # fails to load) the constant must not be referenced at load
+        # time. register_mint_klasses! never reads it there
+        # (NATIVE_C_MINT is false).
+        MINT_KIND_CLASSES = if NATIVE_READ_LAYER
+                              [
+                                Identity::ELEMENT,
+                                Identity::TEXT,
+                                Identity::COMMENT,
+                                Identity::CDATA,
+                                Identity::PROCESSING_INSTRUCTION,
+                              ].freeze
+                            else
+                              [].freeze
+                            end
 
         def register_mint_klasses!(binding_doc)
           return binding_doc unless NATIVE_C_MINT && binding_doc
@@ -2349,7 +2383,7 @@ module Moxml
           # upstream (its absorbed_into? checks are not transitive) —
           # those keep the pin + adoption copy. Entity references
           # keep the marker flow below.
-          if NATIVE_DOC_ABSORB && !child.is_a?(NN) &&
+          if NATIVE_READ_LAYER && NATIVE_DOC_ABSORB && !child.is_a?(NN) &&
               child.is_a?(::Leptris::XML::Node) &&
               !child.is_a?(CustomizedLeptris::EntityReference)
             child_doc = child.document
@@ -2447,8 +2481,11 @@ module Moxml
           end
           # 1.9.311: an absorbed element source moves through the raw
           # engine faces — the binding's sibling insert drops it.
-          if new_node.is_a?(::Leptris::XML::Element) &&
-              !new_node.is_a?(::Leptris::XML::NativeNode)
+          # NATIVE_READ_LAYER: the absorb needs the raw engine add to
+          # land the source; on the FFI lane the binding's own insert
+          # handles it and the absorbed-source splice loses the node.
+          if NATIVE_READ_LAYER && new_node.is_a?(::Leptris::XML::Element) &&
+              !new_node.is_a?(NN)
             new_doc = new_node.document
             node_doc = node.document
             if new_doc && node_doc && !new_doc.equal?(node_doc)
@@ -2477,8 +2514,11 @@ module Moxml
           pin_foreign_owner_document(node, new_node)
           # 1.9.311: an absorbed element source moves through the raw
           # engine faces — the binding's sibling insert drops it.
-          if new_node.is_a?(::Leptris::XML::Element) &&
-              !new_node.is_a?(::Leptris::XML::NativeNode)
+          # NATIVE_READ_LAYER: the absorb needs the raw engine add to
+          # land the source; on the FFI lane the binding's own insert
+          # handles it and the absorbed-source splice loses the node.
+          if NATIVE_READ_LAYER && new_node.is_a?(::Leptris::XML::Element) &&
+              !new_node.is_a?(NN)
             new_doc = new_node.document
             node_doc = node.document
             if new_doc && node_doc && !new_doc.equal?(node_doc)
