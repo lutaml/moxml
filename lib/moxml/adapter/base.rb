@@ -303,6 +303,16 @@ module Moxml
         # validator raise; leptris gates on >= 1.9.321.0.
         XSD_SUPPORTED = false
 
+        # Issue #384: schema handles are adapter-native objects — a
+        # handle compiled through one adapter must not dispatch
+        # through another. Adapters with an XSD engine answer their
+        # handle type; the default (no engine) matches nothing, so a
+        # mismatched wrap raises a clear error at construction
+        # instead of a NoMethodError deep in the first validate.
+        def xsd_handle_match?(_handle)
+          false
+        end
+
         def xsd_compile(_schema_source)
           raise Moxml::NotImplementedError,
                 "XSD validation requires an adapter with an XSD engine"

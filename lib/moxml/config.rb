@@ -47,7 +47,23 @@ module Moxml
       def runtime_default_adapter
         return opal_runtime_adapter if RUBY_ENGINE == "opal"
 
-        return PREFERRED_ADAPTER if leptris_preferred_available?
+        preferred = leptris_preferred_available?
+        return PREFERRED_ADAPTER if preferred == true
+
+        # Issue #384: a PRESENT-but-unusable leptris (broken native
+        # bundle, adapter load failure) must not degrade silently —
+        # validation semantics differ per adapter, so the
+        # substitution is announced. A machine without the gem at
+        # all is a normal nokogiri/rexml deployment: no noise.
+        if preferred == :broken
+          Kernel.warn(
+            "moxml: the leptris adapter is installed but unusable " \
+            "(see the preceding error); falling back to " \
+            "#{detect_loaded_adapter || FALLBACK_ADAPTER} — " \
+            "adapter-specific behavior (XSD validation, " \
+            "serialization) will differ",
+          )
+        end
 
         detect_loaded_adapter || FALLBACK_ADAPTER
       end
@@ -74,14 +90,19 @@ module Moxml
       def leptris_preferred_available?
         return @leptris_preferred_available if defined?(@leptris_preferred_available)
 
-        @leptris_preferred_available = begin
-          require "leptris"
-          Moxml::Adapter.load(:leptris)
-          Gem::Version.new(::Leptris::VERSION) >=
-            Gem::Version.new(Moxml::Adapter::Leptris::MINIMUM_BINDING_VERSION)
-        rescue LoadError, NameError
-          false
-        end
+        @leptris_preferred_available =
+          begin
+            require "leptris"
+            Moxml::Adapter.load(:leptris)
+            Gem::Version.new(::Leptris::VERSION) >=
+              Gem::Version.new(Moxml::Adapter::Leptris::MINIMUM_BINDING_VERSION)
+          rescue LoadError
+            # Not installed: a normal deployment shape, silent.
+            false
+          rescue NameError, Moxml::AdapterError
+            # Installed but unusable (adapter load failure): loud.
+            :broken
+          end
       end
 
       def detect_loaded_adapter

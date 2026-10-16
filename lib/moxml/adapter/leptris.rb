@@ -302,6 +302,11 @@ module Moxml
           ::Leptris::XML::XSD.compile(schema_source)
         end
 
+        def xsd_handle_match?(handle)
+          defined?(::Leptris::XML::XSD::Schema) &&
+            handle.is_a?(::Leptris::XML::XSD::Schema)
+        end
+
         def xsd_compile_file(path)
           unless XSD_SUPPORTED && ::Leptris::XML::XSD.respond_to?(:compile_file)
             raise Moxml::NotImplementedError,

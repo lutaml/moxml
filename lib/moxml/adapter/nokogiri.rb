@@ -215,6 +215,10 @@ module Moxml
           ::Nokogiri::XML::Schema.new(schema_source.to_s)
         end
 
+        def xsd_handle_match?(handle)
+          handle.is_a?(::Nokogiri::XML::Schema)
+        end
+
         def xsd_compile_file(path)
           path = path.to_s
           # libxml2 resolves schemaLocation hrefs against the
