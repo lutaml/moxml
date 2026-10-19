@@ -452,6 +452,16 @@ module Moxml
         end
 
         def text_content(node)
+          # Documents are container nodes (issue #400): their text is
+          # the whole tree's text; Oga documents carry no text face
+          # (root_node answers the document itself), so fold the
+          # element children.
+          if node.is_a?(::Oga::XML::Document)
+            return node.children
+                .filter_map { |c| c.text if c.is_a?(::Oga::XML::Element) }
+                .join
+          end
+
           node.text
         end
 
