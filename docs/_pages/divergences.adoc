@@ -1,0 +1,63 @@
+---
+title: Divergences
+nav_order: 4
+---
+
+== Divergence register
+
+Every known cross-adapter divergence from the
+link:../_references/processing-model[processing model] is registered
+here. Contract:
+
+* A divergence is either **fixed**, **loud** (a named raise), or
+  **SPEC'D** (documented here and pinned with a skip in the
+  consistency suite, citing the entry ID).
+* Consistency-suite exemptions must cite a register ID. An
+  undocumented divergence is a bug — report it against this register.
+
+[cols="2,4,6"]
+|===
+| ID | Adapter(s) | Divergence
+
+| D-01
+| oga
+| The `xmlns:` default-namespace XPath idiom is unsupported by oga's
+own engine (explicit bindings work). Pinned in
+`spec/consistency/xpath_idioms_spec.rb`.
+
+| D-02
+| oga
+| Raw CR preserved in text content — §2.11 EOL normalization not
+applied at parse. Pinned in `spec/consistency/eol_normalization_spec.rb`.
+
+| D-03
+| ox, headed_ox
+| `&#13;` character references collapse to LF. Pinned in
+`spec/consistency/eol_normalization_spec.rb`.
+
+| D-04
+| oga
+| The XML declaration surfaces as a `<?xml?>` PI; PI content keeps its
+separator space. Pinned in `spec/moxml/c14n/adapter_delegation_spec.rb`.
+
+| D-05
+| ox, headed_ox
+| PI content dropped at parse. Pinned in
+`spec/moxml/c14n/adapter_delegation_spec.rb`.
+
+| D-06
+| ox, headed_ox
+| Comment content padding stripped at parse. Pinned in
+`spec/moxml/c14n/subset_spec.rb`.
+
+| D-07
+| rexml
+| `text()` node tests return no text nodes (adapter XPath capability
+gap, both axes). Pinned in `spec/moxml/c14n/subset_spec.rb`.
+
+| D-08
+| c14n subsystem
+| Document-level PI/comment rendering not yet implemented (all
+adapters; a subsystem TODO, not an engine divergence). Tracked in
+`TODO.c14n/09-comments-pis-tests.md`.
+|===

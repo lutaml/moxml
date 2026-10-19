@@ -14,6 +14,15 @@ applications. It offers a consistent API that abstracts away the underlying
 XML implementation details while maintaining high performance through
 efficient node mapping and native XPath querying.
 
+Moxml's mission: **make "which XML engine am I running?" a deployment
+decision instead of an API decision.** Libraries write once against a single
+XML processing model; the engine underneath is a configuration choice. Any
+program written against the facade produces the same observable outcome on
+every adapter — performance may vary, semantics may not. The model is
+specified normatively in the
+link:_references/processing-model[Processing Model] document; known engine
+differences are tracked in the link:_pages/divergences[divergence register].
+
 == Key features
 
 * **Unified interface** - Consistent API across different XML libraries
