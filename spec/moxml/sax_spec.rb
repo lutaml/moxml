@@ -413,7 +413,7 @@ RSpec.describe Moxml::SAX do
     it "documents CDATA limitation" do
       # Ox SAX does not have separate CDATA events
       # All CDATA content is delivered as text() events
-      skip "Ox SAX does not support separate CDATA events"
+      skip "D-10: Ox SAX does not support separate CDATA events"
 
       xml_with_cdata = "<root><![CDATA[special content]]></root>"
 
@@ -428,7 +428,7 @@ RSpec.describe Moxml::SAX do
 
     it "documents comment limitation" do
       # Ox SAX does not have separate comment events
-      skip "Ox SAX does not support separate comment events"
+      skip "D-10: Ox SAX does not support separate comment events"
 
       xml_with_comment = "<root><!-- comment --><data>content</data></root>"
 
@@ -443,7 +443,7 @@ RSpec.describe Moxml::SAX do
 
     it "documents processing instruction limitation" do
       # Ox SAX does not have separate PI events
-      skip "Ox SAX does not support separate processing instruction events"
+      skip "D-10: Ox SAX does not support separate processing instruction events"
 
       xml_with_pi = '<?xml-stylesheet type="text/xsl" href="style.xsl"?><root/>'
 
@@ -714,7 +714,7 @@ RSpec.describe Moxml::SAX do
     end
 
     it "handles errors gracefully" do
-      skip "Oga SAX parser may be more lenient with malformed XML"
+      skip "D-11: Oga SAX parser may be more lenient with malformed XML"
 
       invalid_xml = "<book><title>Unclosed"
 
@@ -1024,7 +1024,7 @@ RSpec.describe Moxml::SAX do
 
     it "documents CDATA limitation (inherited from Ox)" do
       # HeadedOx inherits Ox's SAX implementation, which does not have separate CDATA events
-      skip "HeadedOx SAX (inherited from Ox) does not support separate CDATA events"
+      skip "D-10: HeadedOx SAX (inherited from Ox) does not support separate CDATA events"
 
       xml_with_cdata = "<root><![CDATA[special content]]></root>"
 
@@ -1038,7 +1038,7 @@ RSpec.describe Moxml::SAX do
 
     it "documents comment limitation (inherited from Ox)" do
       # HeadedOx inherits Ox's SAX implementation, which does not have separate comment events
-      skip "HeadedOx SAX (inherited from Ox) does not support separate comment events"
+      skip "D-10: HeadedOx SAX (inherited from Ox) does not support separate comment events"
 
       xml_with_comment = "<root><!-- comment --><data>content</data></root>"
 
@@ -1052,7 +1052,7 @@ RSpec.describe Moxml::SAX do
 
     it "documents processing instruction limitation (inherited from Ox)" do
       # HeadedOx inherits Ox's SAX implementation, which does not have separate PI events
-      skip "HeadedOx SAX (inherited from Ox) does not support separate processing instruction events"
+      skip "D-10: HeadedOx SAX (inherited from Ox) does not support separate processing instruction events"
 
       xml_with_pi = '<?xml-stylesheet type="text/xsl" href="style.xsl"?><root/>'
 

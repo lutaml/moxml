@@ -28,7 +28,7 @@ RSpec.describe Moxml::StructPlan do
     end
   end
 
-  ADAPTERS = %i[leptris nokogiri ox oga rexml libxml].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+  STRUCT_PLAN_ADAPTERS = %i[leptris nokogiri ox oga rexml libxml].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
   def with_adapter(name)
     yield Moxml.new(name)
@@ -36,7 +36,7 @@ RSpec.describe Moxml::StructPlan do
     skip "#{name} unavailable"
   end
 
-  ADAPTERS.each do |adapter_name|
+  STRUCT_PLAN_ADAPTERS.each do |adapter_name|
     describe "on #{adapter_name}" do
       it "materializes the same structs as Moxml::Plan" do
         with_adapter(adapter_name) do |ctx|

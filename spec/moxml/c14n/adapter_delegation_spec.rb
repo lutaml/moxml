@@ -58,9 +58,9 @@ RSpec.describe "Moxml::C14n cross-adapter canonicalization" do
 
   describe "document-level nodes keep document order" do
     # oga surfaces the XML declaration as a <?xml?> PI and keeps the
-    # separator space in PI content; ox/headed_ox drop PI content on
-    # parse. Both are pre-existing parse-layer divergences, out of
-    # scope here.
+    # separator space in PI content (D-04); ox/headed_ox drop PI
+    # content on parse (D-05). Both are pre-existing parse-layer
+    # divergences, out of scope here.
     let(:adapters) { Moxml::Adapter::AVAILABLE_ADAPTERS - %i[oga ox headed_ox] }
 
     it "canonicalizes a leading PI before the root element" do

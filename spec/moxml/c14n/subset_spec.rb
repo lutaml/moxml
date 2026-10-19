@@ -63,7 +63,7 @@ RSpec.describe "Moxml::C14n subset canonicalization" do
           next if label == "text selection" && adapter_name == :rexml
 
           # rexml's adapter xpath does not return text nodes for
-          # text() node tests (pre-existing capability gap).
+          # text() node tests (D-07, pre-existing capability gap).
 
           it "canonicalizes #{label}" do
             doc = ctx.parse(xml)
@@ -72,9 +72,9 @@ RSpec.describe "Moxml::C14n subset canonicalization" do
         end
 
         # ox/headed_ox strip comment content padding at the parse
-        # layer (pre-existing, same family as their PI content loss);
-        # only the rendered-comment case depends on it. rexml's
-        # comment() selection gap also only affects this case.
+        # layer (D-06, pre-existing, same family as their PI content
+        # loss); only the rendered-comment case depends on it. rexml's
+        # comment() selection gap (D-07) also only affects this case.
         unless COMMENTS_PADDING_LOSS.include?(adapter_name) ||
             COMMENT_SELECTION_GAP.include?(adapter_name)
           it COMMENTS_CASE[0] do

@@ -4,9 +4,9 @@ require "spec_helper"
 
 RSpec.describe "XML Declaration Preservation" do
   # Test with all available adapters
-  ADAPTERS = %i[nokogiri oga rexml ox libxml headed_ox].freeze
+  DECLARATION_SPECS_ADAPTERS = %i[nokogiri oga rexml ox libxml headed_ox].freeze
 
-  ADAPTERS.each do |adapter_name|
+  DECLARATION_SPECS_ADAPTERS.each do |adapter_name|
     context "with #{adapter_name} adapter" do
       let(:context) { Moxml.new(adapter_name) }
 
