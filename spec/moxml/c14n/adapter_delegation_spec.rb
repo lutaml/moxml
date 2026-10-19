@@ -3,7 +3,7 @@
 require "spec_helper"
 require "moxml/c14n"
 
-CORPUS = {
+C14N_DELEGATION_CORPUS = {
   "cdata content becomes escaped text" => [
     "<doc><![CDATA[a < b]]>tail</doc>",
     "<doc>a &lt; btail</doc>",
@@ -45,7 +45,7 @@ RSpec.describe "Moxml::C14n cross-adapter canonicalization" do
       context "with the #{adapter_name} adapter" do
         let(:ctx) { Moxml.new(adapter_name) }
 
-        CORPUS.each do |label, (input, expected)|
+        C14N_DELEGATION_CORPUS.each do |label, (input, expected)|
           it "canonicalizes #{label}" do
             root = ctx.parse(input).root
             expect(Moxml::C14n.canonicalize_inclusive10(root)).to eq(expected)
