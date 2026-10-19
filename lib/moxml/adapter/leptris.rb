@@ -463,25 +463,72 @@ module Moxml
           # instances). The hot bare reads super into the C methods
           # (exact-name = the bare-name contract).
           module Identity
+            # The C faces are captured before the contract modules
+            # shadow them — alias copies bind at this point, so the
+            # overrides below plain-dispatch the native reads
+            # (leptris-ruby#463 completed the surface: every contract
+            # face is a C method at 50-84ns).
             ELEMENT = Class.new(::Leptris::XML::NativeNode) do
+              alias_method :native_name, :name
               include ::Moxml::Node
               include ::Moxml::Element
+
+              # Memo form kept: a warm read is an ivar hit (~30ns
+              # vs the C call's 84ns); the cold read drops the
+              # adapter round-trip and its PI-check bind_call.
+              def name
+                @name ||= native_name
+              end
             end
             TEXT = Class.new(::Leptris::XML::NativeNode) do
+              alias_method :native_content, :content
               include ::Moxml::Node
               include ::Moxml::Text
+
+              # Text#content's memo + entity restore are the
+              # contract; the backing read drops the adapter
+              # round-trip (dispatch + is_a? + bind_call) for the
+              # C face.
+              def raw_content
+                native_content
+              end
             end
             CDATA = Class.new(::Leptris::XML::NativeNode) do
+              alias_method :native_content, :content
               include ::Moxml::Node
               include ::Moxml::Cdata
+
+              def content
+                native_content
+              end
             end
             COMMENT = Class.new(::Leptris::XML::NativeNode) do
+              alias_method :native_content, :content
               include ::Moxml::Node
               include ::Moxml::Comment
+
+              # The nil bridge stays for floor-admitted bindings
+              # where the native face answers nil for comment-kind
+              # (leptris-ruby#313).
+              def content
+                content = native_content
+                return ::Moxml::Adapter::Leptris.to_binding(self).content if content.nil?
+
+                content
+              end
             end
             PROCESSING_INSTRUCTION = Class.new(::Leptris::XML::NativeNode) do
+              alias_method :native_content, :content
               include ::Moxml::Node
               include ::Moxml::ProcessingInstruction
+
+              # Same nil bridge as Comment (leptris-ruby#344).
+              def content
+                content = native_content
+                return ::Moxml::Adapter::Leptris.to_binding(self).content if content.nil?
+
+                content
+              end
             end
 
             TYPES = {
