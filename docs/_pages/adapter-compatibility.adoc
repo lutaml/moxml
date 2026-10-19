@@ -8,6 +8,13 @@ toc::[]
 
 This document provides detailed compatibility information for all supported XML adapters in Moxml, explaining which features are fully supported, partially supported, or not supported by each adapter.
 
+The authoritative sources for cross-adapter semantics are the
+link:../_references/processing-model[Processing Model] (the normative
+single model every adapter implements) and the
+link:divergences[divergence register] (every known, pinned engine
+difference, D-01..D-12). A capability an adapter cannot deliver raises
+a named error — it never answers a divergent result silently.
+
 == Test suite results
 
 **Overall:** 2,182 examples, 0 failures, 97 pending

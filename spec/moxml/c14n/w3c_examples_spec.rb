@@ -55,7 +55,8 @@ RSpec.describe "Moxml::C14n W3C REC-xml-c14n examples" do
 
       W3C_FULL_FORMS.each_with_index do |(label, xml, expected), idx|
         # ox/headed_ox strip inter-element whitespace, expand &#xD;
-        # and pad comments at parse; oga keeps the PI separator space.
+        # and pad comments at parse (D-05, D-06); oga keeps the PI
+        # separator space (D-04).
         skip_shapes = { ox: [0, CR_SHAPE, PI_SHAPE],
                         headed_ox: [0, CR_SHAPE, PI_SHAPE],
                         oga: [PI_SHAPE] }[adapter_name] || []
@@ -72,6 +73,7 @@ RSpec.describe "Moxml::C14n W3C REC-xml-c14n examples" do
 
   describe "W3C §3 document-subset whitespace" do
     Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
+      # ox/headed_ox strip inter-element whitespace at parse (D-06)
       next if WHITESPACE_SHAPES.include?(adapter_name)
 
       it "renders selected nodes only, whitespace runs in place (#{adapter_name})" do
