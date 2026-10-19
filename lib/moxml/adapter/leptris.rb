@@ -1333,10 +1333,28 @@ module Moxml
           native_fragment.to_html
         end
 
-        def parse_html(html, _options = {}, _context = nil)
+        # leptris#1771's parse-lint (§13.2.5): the binding's parse_html
+        # accepts collect_errors (and mode) and records the error-token
+        # stream into the document's diagnostic channel, which
+        # parse_diagnostics reads. Face-probed — the zero-dep gem lets
+        # consumers resolve bindings predating the kwarg.
+        COLLECT_ERRORS_NATIVE = ::Leptris::XML
+          .method(:parse_html).parameters.any? do |_, key|
+            key == :collect_errors
+          end
+
+        def parse_html(html, options = {}, _context = nil)
           html_string = html.is_a?(IO) || html.is_a?(StringIO) ? html.read : html.to_s
           native_doc = begin
-            ::Leptris::XML.parse_html(html_string)
+            if COLLECT_ERRORS_NATIVE && options[:collect_errors]
+              ::Leptris::XML.parse_html(
+                html_string,
+                mode: options.fetch(:mode, :whatwg),
+                collect_errors: true,
+              )
+            else
+              ::Leptris::XML.parse_html(html_string)
+            end
           rescue ::Leptris::XML::ParseError => e
             raise Moxml::ParseError.new(e.message)
           end
@@ -2830,6 +2848,16 @@ module Moxml
           else
             node.content = content.to_s
           end
+        rescue ::Leptris::XML::Error => e
+          # Detached (parentless) nodes answer the engine's bare
+          # "Invalid argument" (issue #401); created-unattached nodes
+          # work, so only the failing detachment is re-raised, named.
+          raise if node.parent
+
+          raise Moxml::Error,
+                "cannot set text content on a detached (parentless) " \
+                "node — attach it to a document first (issue #401): " \
+                "#{e.message}"
         end
 
         def cdata_content(node)

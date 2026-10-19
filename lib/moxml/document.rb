@@ -73,6 +73,15 @@ module Moxml
       root_element ? Moxml::Node.wrap(root_element, context) : nil
     end
 
+    # Documents are container nodes: #text concatenates descendant
+    # text, Nokogiri's Document#text contract (issue #400) — the base
+    # Node#text answered "" and silently emptied consumers'
+    # content-preservation checks.
+    def text
+      val = adapter.text_content(@native)
+      entity_bearing? ? adapter.restore_entities(val) : val
+    end
+
     # Materialize the root subtree — see Moxml::Materializer.
     def materialize(&block)
       return to_enum(:materialize) unless block

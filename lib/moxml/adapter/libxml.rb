@@ -768,6 +768,11 @@ module Moxml
 
           native_node = unpatch_node(node)
           return nil unless native_node
+          # Documents are container nodes (issue #400): their text is
+          # the root's concatenated descendant text; LibXML::XML::
+          # Document carries no content face of its own.
+          return native_node.root&.content.to_s if
+            native_node.is_a?(::LibXML::XML::Document)
 
           native_node.content
         end
