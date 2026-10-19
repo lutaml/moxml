@@ -9,7 +9,7 @@ ENVELOPED_DOC = %(<env><payload id="p1">data &amp; more</payload>#{SIG}<tail/></
 ENVELOPED_EXCLUDE = '//*[not(ancestor-or-self::*[local-name()="Signature"])]'
 SIGNATURE_XPATH = '//*[local-name()="Signature"]'
 
-CORPUS = [
+C14N_SUBSET_CORPUS = [
   ["apex attraction + text",
    %(<a xml:lang="en"><b id="1"><c>t</c></b><d/></a>), "//b",
    %(<b id="1" xml:lang="en"></b>)],
@@ -59,7 +59,7 @@ RSpec.describe "Moxml::C14n subset canonicalization" do
       context "with the #{adapter_name} adapter" do
         let(:ctx) { Moxml.new(adapter_name) }
 
-        CORPUS.each do |label, xml, xpath, expected|
+        C14N_SUBSET_CORPUS.each do |label, xml, xpath, expected|
           next if label == "text selection" && adapter_name == :rexml
 
           # rexml's adapter xpath does not return text nodes for

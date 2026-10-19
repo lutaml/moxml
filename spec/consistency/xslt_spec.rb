@@ -13,7 +13,7 @@ SUPPORTED = %i[nokogiri leptris].select do |name|
   Moxml::Adapter::AVAILABLE_ADAPTERS.include?(name)
 end.freeze
 
-CORPUS = {
+XSLT_CORPUS = {
   "value-of with count" => [
     <<~XSL,
       <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
@@ -82,7 +82,7 @@ RSpec.describe "Moxml::XSLT cross-engine agreement" do
         output.sub(/\A<\?xml[^>]*\?>\s*/, "")
       end
 
-      CORPUS.each do |label, (sheet_xml, input, expected_re)|
+      XSLT_CORPUS.each do |label, (sheet_xml, input, expected_re)|
         it "transforms #{label}" do
           sheet = ctx.xslt(sheet_xml)
           doc = ctx.parse(input)
@@ -97,7 +97,7 @@ RSpec.describe "Moxml::XSLT cross-engine agreement" do
     return unless SUPPORTED.size == 2
 
     first, second = SUPPORTED.map { |name| Moxml.new(name) }
-    CORPUS.each do |label, (sheet_xml, input, _)|
+    XSLT_CORPUS.each do |label, (sheet_xml, input, _)|
       a = first.xslt(sheet_xml).apply_to_string(first.parse(input))
       b = second.xslt(sheet_xml).apply_to_string(second.parse(input))
       expect(Moxml::C14n.equivalent?(a, b))
