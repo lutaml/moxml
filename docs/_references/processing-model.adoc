@@ -1,0 +1,209 @@
+---
+title: Processing Model
+nav_order: 3
+---
+
+== The processing model (normative)
+
+This document is the **single normative statement of Moxml's XML
+processing model**. Every adapter implements this model; no adapter's
+native semantics leak through it. When implementations disagree, the
+model wins — engines converge to it, never the reverse.
+
+The model's executable form is the consistency suite
+(`spec/consistency/`). Known, unfixable engine differences are
+registered in link:../_pages/divergences[the divergence register] and
+skip with their entry ID — an undocumented divergence is a bug.
+
+=== Status and precedence
+
+1. This document — the model.
+2. `spec/consistency/` — the model pinned as executable expectations.
+3. Adapter implementations and capability gates — representations.
+
+A semantics change amends this document first (see
+`TODO.model/05-model-evolution-protocol.md`).
+
+=== Mission and invariant
+
+Moxml exists to make "which XML engine am I running?" a **deployment
+decision instead of an API decision**. The invariant that enables it:
+any program written against the facade produces the same observable
+outcome on every adapter. The engine is unobservable except through
+declared channels: capability gates (loud raises), registered
+divergences, and performance.
+
+* Performance may vary across engines — semantics may not.
+* Absence of capability is legal (a named raise). Absence of
+  equivalence is not (a different answer).
+
+=== Object model
+
+Node kinds:: `Document`, `Element`, `Attribute`, `Text`, `Comment`,
+`Cdata`, `Declaration`, `Doctype`, `ProcessingInstruction`,
+`Namespace`, `EntityReference`.
+
+Identity:: Parsing and traversal may mint distinct wrapper objects for
+the same underlying node; node identity is a property of the
+underlying tree, not of wrapper object identity. Comparisons use node
+equality semantics, never `equal?` on wrappers.
+
+Ownership:: The `Document` owns the tree's lifetime; nodes are valid
+within it. Deterministic release is available via `Document#free`.
+
+Declarations are state:: `Declaration` (and the doctype token) are
+document *state*, not child nodes: they never appear in `children`
+listings or serialization child walks.
+
+=== Document order and traversal
+
+* `children` lists nodes in document order.
+* Walks (`each_node`, `materialize`) visit depth-first, pre-order.
+* `Document#children` and `#root` never include the declaration;
+  doctype exposure follows the Nokogiri contract.
+* `NodeSet` preserves document order for axis results; unions preserve
+  first-encounter document order.
+
+=== Names and namespaces
+
+* Names are **expanded names**: a name test matches by namespace *URI*,
+  never by prefix spelling.
+* Unprefixed element name tests match **no-namespace** elements only
+  (XPath 1.0). Unprefixed attribute name tests likewise match
+  no-namespace attributes.
+* Reserved prefixes: `xml` is bound to the XML namespace always;
+  `xmlns:` in an expression addresses the **default namespace** (the
+  libxml2 idiom, adopted model-wide).
+* Bindings hashes accept both string and symbol keys; explicit
+  bindings **win** over in-scope document declarations.
+* `Element#name` returns the bare tag name; non-element DOM names are
+  `"text"` / `"comment"`; a PI's name is its target.
+
+=== Access semantics
+
+`text`:: Concatenated descendant text (elements); a text node's own
+content; entity references restored when the document is
+entity-bearing.
+
+`content`:: The node's content per its kind; on text-like nodes, with
+entity-marker restoration; memoized against mutation.
+
+`raw_content`:: The backing text **without** entity restoration.
+
+`[]` / `attributes` / `attribute_pairs`:: `[]` reads an attribute by
+bare name (no-namespace) or prefixed name (resolved by URI);
+values are entity-restored when the document bears markers.
+`attribute_pairs` is the read-only listing ([name, value] pairs,
+document order, duplicates included). `remove_attribute` returns the
+removed attribute or nil — including for namespace-prefixed targets
+with an unambiguous local name.
+
+`remove`/mutation returns:: Mutators return the contract object
+(removed node, new node) — never a silent no-op self.
+
+=== Parsing
+
+* Modes: strict (errors raise) and recover (errors surface via
+  `parse_diagnostics` / `parse_errors`, both `[{kind:, message:}]`).
+* HUGE mode: over-cap text (> 10 MB) parses completely.
+* EOL normalization (XML 1.0 §2.11): CRLF → LF; bare CR → LF in text,
+  CDATA, and parsed content; attribute-value CRLF collapses to one
+  space; `&#xD;` survives as a literal CR.
+* Entity modes: `:expand` (default — built-ins resolved at parse),
+  `:keep` (reference nodes preserved with marker machinery),
+  `:disabled`, `:custom` (provider). Restoration of marker-bearing
+  values is marker-driven and generation-stamped.
+
+=== XPath evaluation
+
+* XPath 1.0 semantics on every adapter. Engines without an evaluator
+  (Ox, HeadedOx; leptris for shapes its engine cannot evaluate) run
+  **moxml's own pure-Ruby engine** — the model's semantics do not
+  depend on the engine shipping one.
+* Document-context **relative name-test paths** resolve laxly —
+  descendant-anchored at the root (`doc.at("a/b")` finds `//a/b`),
+  matching Nokogiri's `Document#at`/`#search`. Axes, node types, `.`
+  and `..` keep strict document context.
+* Declared idioms (pinned in `spec/consistency/xpath_idioms_spec.rb`):
+  `xmlns:` default-namespace matching; attribute terminals in every
+  position (`//a/@id`, `//@id`, `r/a/@id`); symbol- and string-keyed
+  bindings resolve identically.
+
+=== Serialization
+
+[cols="1,3"]
+|===
+| Shape | Contract
+
+| `to_xml`
+| Declaration per configuration; empty elements per `expand_empty`;
+  namespace declarations preserved.
+
+| `to_html`
+| HTML method: void elements unclosed (`<br>`), raw text
+  (script/style) verbatim, no XML declaration, DOCTYPE first.
+
+| `to_xhtml`
+| XML method on HTML trees: void elements self-closed (`<br/>`),
+  non-void elements paired, raw text XML-escaped, no declaration
+  unless asked. Also selected by `to_html(xhtml: true)`.
+
+| Indentation
+| `indent:` (spaces per level) and `indent_text:` (unit string)
+  compose with every shape on capable engines; incapable engines
+  raise `Moxml::AdapterError` — they never silently ignore the knobs.
+
+| Line endings
+| `line_ending:` normalizes output newlines on every shape.
+|===
+
+=== Canonicalization
+
+* Algorithms: Inclusive 1.0, Exclusive 1.0, Inclusive 1.1, plus
+  XPath-driven subset canonicalization (enveloped-signature oracle).
+* Native delegations (leptris engine, libxml2) answer **byte-identical**
+  output to the Ruby reference path (byte-safety probed before
+  engagement).
+* `Moxml::C14n.equivalent?` is the algorithm-aware comparison.
+
+=== XSLT
+
+XSLT 1.0 through engines that ship a processor (libxslt; leptris
+1.0–3.0). Compilation and transform failures raise named
+`Moxml::XsltError`s. Engines without a processor raise
+`Moxml::NotImplementedError` — the face is never silently absent.
+
+=== SAX
+
+* The callback stream (`on_start_element`, `on_characters`, `on_error`,
+  …) is the authoritative event sequence.
+* The record-drain fast path (`on_sax_records`) replays **exactly** the
+  callback stream (spec-pinned equality). Documents whose parse would
+  emit an ERROR event are outside the drainable subset — the drain
+  refuses them so `on_error` retains authority.
+
+=== Materialization
+
+`materialize`, `materialize_fields`, `Plan`, and `StructPlan` produce
+**identical records across all adapters** (conformance spec). Plan name
+matching is global; unmatched subtrees are dropped per the pinned
+semantics.
+
+=== Errors and loud degradation
+
+* `Moxml::Error` hierarchy; `Moxml::XPathError`, `Moxml::XsltError`,
+  `Moxml::AdapterError` (e.g. schema-handle/adapter misroute),
+  `Moxml::NotImplementedError` for unsupported capability contracts.
+* Every gated surface answers the contract or raises the named error —
+  never returns a divergent answer.
+* Adapter degradation is loud: a present-but-unusable preferred adapter
+  warns at configuration and misroutes fail at the wrap, not deep in
+  a call.
+
+=== Performance: a declared, non-semantic channel
+
+Acceleration (native read layers, C minting, record drains, plan
+streams) always lands behind version + face gates and degrades to the
+spec-pinned fallback. Cross-adapter performance variance is sanctioned
+exactly one place: the benchmark parity locks. Semantics never ride a
+gate.

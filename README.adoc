@@ -15,10 +15,28 @@ It offers a consistent API that abstracts away the underlying XML implementation
 details while maintaining high performance through efficient node mapping and
 native XPath querying.
 
+Moxml's mission: **make "which XML engine am I running?" a deployment decision
+instead of an API decision.** Libraries write once against a single XML
+processing model — one object model, one name/namespace resolution model, one
+XPath, one serialization and canonicalization contract — and the engine
+underneath (Nokogiri, Leptris, REXML, Oga, Ox, LibXML) is a configuration
+choice.
+
+The invariant that makes this work: any program written against the facade
+produces the same observable outcome on every adapter. Performance may vary
+across engines — semantics may not. Where an engine cannot deliver a
+capability, it fails loudly (a named error); where an engine genuinely
+diverges, the divergence is registered and pinned — never silent. The model is
+specified normatively in the
+https://lutaml.github.io/moxml/_references/processing-model[Processing Model]
+document, pinned as executable expectations in the consistency suite, and its
+known engine differences are tracked in the
+https://lutaml.github.io/moxml/_pages/divergences[divergence register].
+
 Key features:
 
 * Intuitive, Ruby-idiomatic API for XML manipulation
-* Consistent interface across different XML libraries
+* One processing model, consistently implemented across different XML libraries
 * Efficient node mapping for XPath queries
 * Support for all XML node types and features
 * Easy switching between XML processing engines
