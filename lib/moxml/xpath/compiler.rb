@@ -40,6 +40,7 @@ module Moxml
       # @param namespaces [Hash, nil] Optional namespace prefix mappings
       # @return [Proc] Compiled Proc that accepts a document
       def self.compile_with_cache(ast, namespaces: nil)
+        namespaces = normalize_namespaces(namespaces)
         cache_key = namespaces ? [ast, namespaces] : ast
         CACHE.get_or_set(cache_key) { new(namespaces: namespaces).compile(ast) }
       end
@@ -48,10 +49,22 @@ module Moxml
       #
       # @param namespaces [Hash, nil] Optional namespace prefix mappings
       def initialize(namespaces: nil)
-        @namespaces = namespaces
+        @namespaces = self.class.normalize_namespaces(namespaces)
         @literal_id = 0
         @predicate_nodesets = []
         @predicate_indexes = []
+      end
+
+      # Prefix lookups are string-keyed (the parser yields prefix
+      # strings); symbol-keyed bindings — the common Nokogiri spelling
+      # (`xpath("//cml:molecule", cml: URI)`) — must resolve too, or
+      # the miss falls through to prefix-spelling matching and
+      # namespaced elements never match (issue #395).
+      def self.normalize_namespaces(namespaces)
+        return nil if namespaces.nil?
+        return namespaces unless namespaces.is_a?(Hash)
+
+        namespaces.transform_keys(&:to_s)
       end
 
       # Compiles an XPath AST into a Ruby Proc

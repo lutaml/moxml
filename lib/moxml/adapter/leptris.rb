@@ -2929,6 +2929,7 @@ module Moxml
         PARENT_AXIS_CACHE = XPath::Cache.new(100)
 
         def xpath(node, expression, namespaces = {})
+          namespaces = normalize_xpath_namespaces(namespaces)
           node = to_binding(node) if NATIVE_READ_LAYER
           native = native_xpath(node, expression, namespaces)
           return native unless native.nil?
@@ -2960,11 +2961,22 @@ module Moxml
         end
 
         def at_xpath(node, expression, namespaces = {})
+          namespaces = normalize_xpath_namespaces(namespaces)
           native = native_xpath(node, expression, namespaces, first_only: true)
           return native unless native.nil?
 
           result = engine_xpath(node, expression, namespaces)
           result.is_a?(Array) ? result.first : result
+        end
+
+        # Bindings arrive in both spellings (symbol keys are the
+        # common Nokogiri idiom); every seam below — the "xmlns"
+        # reserved-key check and the native pairs set — is
+        # string-keyed (issue #395).
+        def normalize_xpath_namespaces(namespaces)
+          return namespaces unless namespaces.is_a?(Hash)
+
+          namespaces.transform_keys(&:to_s)
         end
 
         # @return [Array, Object, nil] native results, or nil when the

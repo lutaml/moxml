@@ -11,11 +11,22 @@ require "spec_helper"
 # - Attribute-terminal steps work in every path position
 #   (leptris-ruby#458's table: //a/@id, //@id, r/a/@id,
 #   //*[f()]/@id — fixed by the engine's VM path work).
+CML_NS = "http://www.xml-cml.org/schema"
+ACI_NS = "http://www.xml-cml.org/schema/asciichem"
+
 RSpec.describe "XPath idioms across adapters" do
   let(:default_ns_xml) do
     '<svgmap xmlns="http://www.example.org/doc"><target href="a"/></svgmap>'
   end
   let(:plain_xml) { '<r><a id="x"><b/></a></r>' }
+  let(:cml_xml) do
+    <<~XML
+      <molecule xmlns="#{CML_NS}" xmlns:aci="#{ACI_NS}" id="m1">
+        <atomArray><atom id="a1"/></atomArray>
+        <aci:group multiplicity="2" bracket="paren" atomRefs="a1"/>
+      </molecule>
+    XML
+  end
 
   Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
     next if adapter_name == :headed_ox # same engine as :ox
@@ -54,6 +65,26 @@ RSpec.describe "XPath idioms across adapters" do
         expect(doc.xpath("//@id").first&.value).to eq("x")
         expect(doc.xpath("r/a/@id").first&.value).to eq("x")
         expect(doc.xpath("//*[local-name()='a']/@id").first&.value).to eq("x")
+      end
+
+      # Issue #395: bindings hashes arrive in both key spellings
+      # (symbols are the common Nokogiri idiom); the engines must
+      # resolve both — a symbol-key miss falls through to
+      # prefix-spelling matching and namespaced elements never match.
+      # asciichem's CML group extraction rides exactly this shape.
+      it "resolves symbol-keyed namespace bindings" do
+        doc = ctx.parse(cml_xml)
+        mols = doc.xpath("//cml:molecule", cml: CML_NS)
+        expect(mols.to_a.size).to eq(1)
+
+        groups = mols.first.xpath("./aci:group", aci: ACI_NS)
+        expect(groups.to_a.size).to eq(1)
+        expect(groups.first["multiplicity"]).to eq("2")
+      end
+
+      it "resolves string-keyed namespace bindings identically" do
+        doc = ctx.parse(cml_xml)
+        expect(doc.xpath("//cml:molecule", "cml" => CML_NS).to_a.size).to eq(1)
       end
 
       # moxml#393: a relative name-test path on the DOCUMENT resolves
