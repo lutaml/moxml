@@ -129,7 +129,25 @@ module Moxml
     # (leptris >= the #354 ride; nokogiri passes them to the
     # engine). Adapters without the knob raise Moxml::AdapterError.
     def to_html(options = {})
+      return to_xhtml(options) if options[:xhtml]
+
       result = adapter.serialize_html(@native, options)
+      apply_line_ending(result,
+                        options.fetch(:line_ending, Config::LINE_ENDING_LF))
+      result
+    end
+
+    # XHTML-shaped serialization (issue #390): void elements
+    # self-closed (<br/>), non-void elements paired, raw text
+    # escaped (the XML method's §16.2-compatible escaping), no
+    # declaration unless asked. Composes with the indent knobs.
+    # Also selected by to_html(xhtml: true).
+    #
+    # Byte reference: Nokogiri's FORMAT | AS_XHTML | NO_DECLARATION
+    # save flag; canon pins engine-vs-Nokogiri parity on its display
+    # corpus before flipping its lane.
+    def to_xhtml(options = {})
+      result = adapter.serialize_xhtml(@native, options)
       apply_line_ending(result,
                         options.fetch(:line_ending, Config::LINE_ENDING_LF))
       result

@@ -89,6 +89,15 @@ module Moxml
         # no declaration. indent:/indent_text: thread the
         # pretty-print knobs where the adapter's engine carries
         # them. Adapters without an HTML serializer raise.
+        # XHTML-shaped serialization (issue #390): void elements
+        # self-closed, non-void paired, indent knobs composing.
+        # Adapters with an HTML engine answer this; the default
+        # raises so consumers get a named error, not mangled bytes.
+        def serialize_xhtml(_node, _options = {})
+          raise Moxml::NotImplementedError,
+                "XHTML serialization requires an adapter with an HTML engine"
+        end
+
         def serialize_html(_node, _options = {})
           raise Moxml::AdapterError.new(
             "HTML serialization is not supported by the #{name.split('::').last} adapter",

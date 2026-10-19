@@ -1212,6 +1212,16 @@ module Moxml
           node.to_html(**kwargs)
         end
 
+        # XHTML shape (issue #390): the binding's XML method on an
+        # HTML document — void elements short-form (<br/>), non-void
+        # paired, raw text escaped, no declaration. The indent knobs
+        # thread the #354 machinery.
+        def serialize_xhtml(node, options = {})
+          node.to_xml(no_decl: true, **options.slice(:indent,
+                                                     :indent_text, :encoding)
+                                                     .compact)
+        end
+
         def parse_html_fragment(html, context_tag = :body, _context = nil)
           unless HTML_FRAGMENT
             raise Moxml::AdapterError.new(
