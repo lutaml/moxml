@@ -10,6 +10,17 @@ require "spec_helper"
 RSpec.describe "divergence register linkage" do
   REGISTER_PATH = "docs/_pages/divergences.adoc" # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
   SCAN_GLOBS = %w[spec/consistency/**/*.rb spec/moxml/**/*.rb].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+  NEXT_GATE = [ # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+    /same engine as/, # engine dedup, not a divergence
+    /source_adapter == target_adapter/, # self round-trip
+    /MAX_SIZE/, # size guard
+    /AVAILABLE_ADAPTERS\.include/, # availability filter
+    /skip_shapes/,              # shape routing (IDs cited above)
+    /leptris_fixed\?/,          # version gate
+    /source_elements/,          # data-presence guard
+    /next unless match/,        # scanner-internal guard
+  ].freeze
+
   # Version/availability gates are not divergences: a binding too old
   # or an adapter not installed is a deployment fact, not an
   # engine-vs-model difference at equal versions.
@@ -57,6 +68,29 @@ RSpec.describe "divergence register linkage" do
     expect(offenders).to be_empty,
                          "capability skips must cite a divergence-register " \
                          "ID (D-NN): #{offenders.join('; ')}"
+  end
+
+  it "requires adapter-exempting next-guards to cite a nearby register ID" do
+    offenders = []
+    spec_files.each do |path|
+      next if path.end_with?("divergence_register_spec.rb")
+
+      lines = File.readlines(path)
+      lines.each_with_index do |line, i|
+        next unless line.match?(/^\s*next\s+(if|unless)\s/)
+        next if NEXT_GATE.any? { |re| re.match?(line) }
+        next if line.match?(/D-\d+/)
+
+        context = lines[[i - 4, 0].max...i] + lines[(i + 1)..(i + 4)].to_a
+        next if context.any? { |l| l.match?(/D-\d+/) }
+
+        offenders << "#{path}:#{i + 1} #{line.strip[0, 60]}"
+      end
+    end
+    expect(offenders).to be_empty,
+                         "adapter-exempting next-guards must cite a " \
+                         "divergence-register ID (D-NN) on or above the " \
+                         "line: #{offenders.join('; ')}"
   end
 
   it "cites every register entry from at least one spec" do
