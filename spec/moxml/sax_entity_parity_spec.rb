@@ -32,7 +32,7 @@ module SaxEntityParityFixtures
     end
   end
 
-  ADAPTERS = %i[nokogiri ox oga rexml libxml headed_ox].freeze
+  SAX_ENTITY_PARITY_ADAPTERS = %i[nokogiri ox oga rexml libxml headed_ox].freeze
 
   # Each row: [input XML, decoded attribute value, expected attribute
   # value as it appears in the serialized XML]. The serialized form
@@ -85,7 +85,7 @@ module SaxEntityParityFixtures
 end
 
 RSpec.describe "SAX/DOM entity parity" do
-  SaxEntityParityFixtures::ADAPTERS.each do |adapter|
+  SaxEntityParityFixtures::SAX_ENTITY_PARITY_ADAPTERS.each do |adapter|
     context "with #{adapter} adapter" do
       let(:ctx) { Moxml.new(adapter) }
 
@@ -349,7 +349,7 @@ RSpec.describe "SAX/DOM entity parity" do
 
     SaxEntityParityFixtures::ATTRIBUTE_CASES.each do |label, (xml, _expected, expected_serialized)|
       it "every adapter emits the same attribute form: #{label}" do
-        results = SaxEntityParityFixtures::ADAPTERS.to_h { |a| [a, serialize_via(a, xml)] }
+        results = SaxEntityParityFixtures::SAX_ENTITY_PARITY_ADAPTERS.to_h { |a| [a, serialize_via(a, xml)] }
         results.each do |a, out|
           expect(out).to(
             include(%(x="#{expected_serialized}")),

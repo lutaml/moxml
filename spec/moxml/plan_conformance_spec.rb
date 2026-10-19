@@ -27,10 +27,10 @@ RSpec.describe "Moxml::Plan adapter conformance" do
     end
   end
 
-  ADAPTERS = %i[leptris nokogiri ox oga rexml libxml].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+  PLAN_CONFORMANCE_ADAPTERS = %i[leptris nokogiri ox oga rexml libxml].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
   it "executes on every available adapter" do
-    available = ADAPTERS.select do |a|
+    available = PLAN_CONFORMANCE_ADAPTERS.select do |a|
       ctx = Moxml.new(a)
       ctx.parse(xml)
       true
@@ -63,7 +63,7 @@ RSpec.describe "Moxml::Plan adapter conformance" do
       on("field") { |attrs, text, _| [attrs["name"], text] }
     end
 
-    ADAPTERS.each do |a|
+    PLAN_CONFORMANCE_ADAPTERS.each do |a|
       begin
         ctx = Moxml.new(a)
         ctx.parse(xml)

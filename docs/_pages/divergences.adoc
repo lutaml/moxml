@@ -60,4 +60,31 @@ gap, both axes). Pinned in `spec/moxml/c14n/subset_spec.rb`.
 | Document-level PI/comment rendering not yet implemented (all
 adapters; a subsystem TODO, not an engine divergence). Tracked in
 `TODO.c14n/09-comments-pis-tests.md`.
+
+| D-09
+| oga, ox, headed_ox, libxml, leptris
+| Element-level `to_xml(indent:)` silently ignored (libxml emits a
+partial, unindented newline form). Document-level HTML/XHTML
+indentation is honored on leptris/nokogiri and raises on incapable
+engines. Pinned in
+`spec/moxml/adapter/shared_examples/adapter_contract.rb`.
+
+| D-10
+| ox, headed_ox
+| SAX emits no separate CDATA/comment/processing-instruction events
+(sequences fold into text or are dropped). Pinned in
+`spec/moxml/sax_spec.rb`.
+
+| D-11
+| oga
+| SAX parse is more lenient with malformed input than the model's
+error authority. Pinned in `spec/moxml/sax_spec.rb`.
+
+| D-12
+| ox, headed_ox
+| The XPath translation covers a subset: no positional predicates,
+attribute-value predicates, namespace/default-namespace tests,
+`position()`/`count()`, `text()`, boolean expressions, `child::`/
+`descendant::` axes, or unions. Pinned in
+`spec/moxml/xpath_capabilities_spec.rb` and `spec/moxml/node_spec.rb`.
 |===

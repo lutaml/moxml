@@ -83,7 +83,7 @@ RSpec.describe "XPath Capabilities" do
           programming = doc.xpath("//book[@category='programming']")
           expect(programming.length).to be >= 0 # May not work on all
         rescue Moxml::XPathError
-          skip "Attribute value predicates not supported on #{adapter_name}"
+          skip "D-12: Attribute value predicates not supported on #{adapter_name}"
         end
       end
 
@@ -98,7 +98,7 @@ RSpec.describe "XPath Capabilities" do
           items = doc.xpath("//book:item", namespaces)
           expect(items.length).to be >= 0
         rescue Moxml::XPathError, NoMethodError
-          skip "Namespace XPath not supported on #{adapter_name}"
+          skip "D-12: Namespace XPath not supported on #{adapter_name}"
         end
 
         it "handles default namespaces" do
@@ -108,7 +108,7 @@ RSpec.describe "XPath Capabilities" do
           library = doc.xpath("//lib:library", namespaces)
           expect(library.length).to be >= 0
         rescue Moxml::XPathError, NoMethodError
-          skip "Default namespace XPath not supported on #{adapter_name}"
+          skip "D-12: Default namespace XPath not supported on #{adapter_name}"
         end
       end
 
@@ -118,7 +118,7 @@ RSpec.describe "XPath Capabilities" do
           first_book = doc.xpath("//book[1]")
           expect(first_book.length).to be >= 0
         rescue Moxml::XPathError
-          skip "Position predicates not supported on #{adapter_name}"
+          skip "D-12: Position predicates not supported on #{adapter_name}"
         end
 
         it "supports position() function" do
@@ -126,7 +126,7 @@ RSpec.describe "XPath Capabilities" do
           first_books = doc.xpath("//book[position()=1]")
           expect(first_books.length).to be >= 0
         rescue Moxml::XPathError
-          skip "position() function not supported on #{adapter_name}"
+          skip "D-12: position() function not supported on #{adapter_name}"
         end
       end
 
@@ -135,11 +135,11 @@ RSpec.describe "XPath Capabilities" do
           doc = Moxml.new.parse(simple_xml)
           result = doc.xpath("count(//book)")
           # REXML's XPath has no function support and yields an empty set
-          skip "count() function not supported on #{adapter_name}" if result.is_a?(Moxml::NodeSet)
+          skip "D-12: count() function not supported on #{adapter_name}" if result.is_a?(Moxml::NodeSet)
 
           expect(result).to eq(2)
         rescue Moxml::XPathError, NoMethodError
-          skip "count() function not supported on #{adapter_name}"
+          skip "D-12: count() function not supported on #{adapter_name}"
         end
 
         it "supports text() node selection" do
@@ -147,7 +147,7 @@ RSpec.describe "XPath Capabilities" do
           texts = doc.xpath("//title/text()")
           expect(texts.length).to be >= 0
         rescue Moxml::XPathError
-          skip "text() not supported on #{adapter_name}"
+          skip "D-12: text() not supported on #{adapter_name}"
         end
       end
 
@@ -157,7 +157,7 @@ RSpec.describe "XPath Capabilities" do
           cheap_books = doc.xpath("//book[@id < 2]")
           expect(cheap_books.length).to be >= 0
         rescue Moxml::XPathError
-          skip "Numeric predicates not supported on #{adapter_name}"
+          skip "D-12: Numeric predicates not supported on #{adapter_name}"
         end
 
         it "supports boolean expressions ([cond1 and cond2])" do
@@ -165,7 +165,7 @@ RSpec.describe "XPath Capabilities" do
           result = doc.xpath("//book[@id and @category]")
           expect(result.length).to be >= 0
         rescue Moxml::XPathError
-          skip "Boolean expressions not supported on #{adapter_name}"
+          skip "D-12: Boolean expressions not supported on #{adapter_name}"
         end
       end
 
@@ -175,7 +175,7 @@ RSpec.describe "XPath Capabilities" do
           children = doc.xpath("/library/child::book")
           expect(children.length).to be >= 0
         rescue Moxml::XPathError
-          skip "child:: axis not supported on #{adapter_name}"
+          skip "D-12: child:: axis not supported on #{adapter_name}"
         end
 
         it "supports descendant axis" do
@@ -183,7 +183,7 @@ RSpec.describe "XPath Capabilities" do
           descendants = doc.xpath("//library/descendant::title")
           expect(descendants.length).to be >= 0
         rescue Moxml::XPathError
-          skip "descendant:: axis not supported on #{adapter_name}"
+          skip "D-12: descendant:: axis not supported on #{adapter_name}"
         end
       end
 
@@ -193,7 +193,7 @@ RSpec.describe "XPath Capabilities" do
           items = doc.xpath("//book | //magazine")
           expect(items.length).to be >= 0
         rescue Moxml::XPathError
-          skip "Union operator not supported on #{adapter_name}"
+          skip "D-12: Union operator not supported on #{adapter_name}"
         end
       end
     end

@@ -53,13 +53,13 @@ RSpec.describe "C14N comments and PIs" do
     # PIs, and the DataModel.from_document path drops them. Fixing requires
     # adapter-level work and is tracked separately.
     it "renders PIs outside the document element (KNOWN LIMITATION)" do
-      skip "document-level PI rendering not yet implemented"
+      skip "D-08: document-level PI rendering not yet implemented"
     end
   end
 
   describe "comments at document level" do
     it "renders document-level comments when with_comments: true (KNOWN LIMITATION)" do
-      skip "document-level comment rendering not yet implemented"
+      skip "D-08: document-level comment rendering not yet implemented"
     end
   end
 end

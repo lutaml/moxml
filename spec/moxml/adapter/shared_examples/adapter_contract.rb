@@ -343,13 +343,13 @@ RSpec.shared_examples "xml adapter" do
     it "respects indentation settings" do
       if described_class.name.include?("Oga") &&
           !described_class.indents_output?
-        pending("Oga does not support indentation settings")
+        pending("D-09: Oga does not support indentation settings")
       end
       if described_class.name.include?("Libxml")
-        skip("LibXML serialization does not support indentation (documented limitation)")
+        skip("D-09: LibXML serialization does not support indentation (documented limitation)")
       end
       if described_class.name.include?("Ox")
-        skip("Ox does not support indentation settings (documented limitation)")
+        skip("D-09: Ox does not support indentation settings (documented limitation)")
       end
 
       unindented = described_class.serialize(doc, indent: 0)

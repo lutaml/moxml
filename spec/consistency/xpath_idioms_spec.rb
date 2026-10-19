@@ -42,7 +42,7 @@ RSpec.describe "XPath idioms across adapters" do
         if adapter_name == :oga
           # oga's own Ruby XPath engine has no xmlns: default-ns
           # support (third-party; explicit bindings work).
-          skip "oga's XPath engine does not implement the xmlns: idiom"
+          skip "D-01: oga's XPath engine does not implement the xmlns: idiom"
         end
       end
 

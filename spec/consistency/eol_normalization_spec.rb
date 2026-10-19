@@ -20,7 +20,7 @@ require "spec_helper"
 #                     binding release vending that engine rides
 #                     (gate: binding 1.9.240).
 RSpec.describe "XML line-ending normalization" do
-  ADAPTERS = %i[leptris nokogiri ox oga rexml libxml].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+  EOL_NORMALIZATION_ADAPTERS = %i[leptris nokogiri ox oga rexml libxml].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
   def with_adapter(name)
     ctx = Moxml.new(name)
@@ -37,10 +37,10 @@ RSpec.describe "XML line-ending normalization" do
   end
 
   it "normalizes CRLF and lone CR to LF in text content" do
-    ADAPTERS.each do |name|
+    EOL_NORMALIZATION_ADAPTERS.each do |name|
       next unless leptris_fixed?(name)
 
-      skip "oga preserves raw CR (upstream)" if name == :oga
+      skip "D-02: oga preserves raw CR (upstream)" if name == :oga
 
       with_adapter(name) do |ctx|
         text = ctx.parse("<r>a\r\nb\rc</r>").root.children.first
@@ -50,10 +50,10 @@ RSpec.describe "XML line-ending normalization" do
   end
 
   it "normalizes EOL inside CDATA content" do
-    ADAPTERS.each do |name|
+    EOL_NORMALIZATION_ADAPTERS.each do |name|
       next unless leptris_fixed?(name)
 
-      skip "oga preserves raw CR (upstream)" if name == :oga
+      skip "D-02: oga preserves raw CR (upstream)" if name == :oga
 
       with_adapter(name) do |ctx|
         cdata = ctx.parse("<r><![CDATA[a\r\nb]]></r>").root.children.first
@@ -63,11 +63,11 @@ RSpec.describe "XML line-ending normalization" do
   end
 
   it "preserves CR from character references" do
-    ADAPTERS.each do |name|
+    EOL_NORMALIZATION_ADAPTERS.each do |name|
       next unless leptris_fixed?(name)
 
-      skip "ox collapses &#13; to LF (upstream)" if name == :ox
-      skip "oga preserves raw CR (upstream)" if name == :oga
+      skip "D-03: ox collapses &#13; to LF (upstream)" if name == :ox
+      skip "D-02: oga preserves raw CR (upstream)" if name == :oga
 
       with_adapter(name) do |ctx|
         text = ctx.parse("<r>a&#13;b</r>").root.children.first

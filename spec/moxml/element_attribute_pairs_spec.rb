@@ -12,7 +12,7 @@ RSpec.describe Moxml::Element do
     '<catalog><record id="r0" kind="k0"><field name="f0" unit="u0">v</field></record></catalog>'
   end
 
-  ADAPTERS = %i[leptris nokogiri ox oga rexml libxml].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+  ELEMENT_ATTRIBUTE_PAIRS_ADAPTERS = %i[leptris nokogiri ox oga rexml libxml].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
   def with_adapter(name)
     ctx = Moxml.new(name)
@@ -22,7 +22,7 @@ RSpec.describe Moxml::Element do
   end
 
   it "matches the node path on every available adapter" do
-    results = ADAPTERS.filter_map do |name|
+    results = ELEMENT_ATTRIBUTE_PAIRS_ADAPTERS.filter_map do |name|
       with_adapter(name) do |ctx|
         root = ctx.parse(xml).root
         [name, root.attribute_pairs]

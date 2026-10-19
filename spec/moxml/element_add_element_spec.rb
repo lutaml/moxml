@@ -9,7 +9,7 @@ require "spec_helper"
 # the contract: a missing base default NoMethodErrors on non-face
 # adapters, a broken fallback loses attributes or the attach.
 RSpec.describe Moxml::Element do
-  ADAPTERS = %i[leptris nokogiri ox oga rexml libxml].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+  ELEMENT_ADD_ELEMENT_ADAPTERS = %i[leptris nokogiri ox oga rexml libxml].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
   def with_adapter(name)
     ctx = Moxml.new(name)
@@ -19,7 +19,7 @@ RSpec.describe Moxml::Element do
   end
 
   it "attaches a child with all attributes on every available adapter" do
-    ADAPTERS.each do |name|
+    ELEMENT_ADD_ELEMENT_ADAPTERS.each do |name|
       with_adapter(name) do |ctx|
         doc = ctx.parse("<catalog/>")
         root = doc.root
@@ -35,7 +35,7 @@ RSpec.describe Moxml::Element do
   end
 
   it "nests under a non-root element with empty attrs" do
-    ADAPTERS.each do |name|
+    ELEMENT_ADD_ELEMENT_ADAPTERS.each do |name|
       with_adapter(name) do |ctx|
         doc = ctx.parse("<catalog><record/></catalog>")
         record = doc.root.children.first

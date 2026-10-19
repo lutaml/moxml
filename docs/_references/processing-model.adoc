@@ -149,9 +149,11 @@ with an unambiguous local name.
   unless asked. Also selected by `to_html(xhtml: true)`.
 
 | Indentation
-| `indent:` (spaces per level) and `indent_text:` (unit string)
-  compose with every shape on capable engines; incapable engines
-  raise `Moxml::AdapterError` — they never silently ignore the knobs.
+| Document-level `to_html`/`to_xhtml` indentation composes with the
+  `indent:`/`indent_text:` knobs and raises `Moxml::AdapterError` on
+  incapable engines. Element-level `to_xml(indent:)` is honored on
+  nokogiri/rexml; other engines currently ignore it — registered as
+  link:../_pages/divergences[D-09], not silently blessed.
 
 | Line endings
 | `line_ending:` normalizes output newlines on every shape.
