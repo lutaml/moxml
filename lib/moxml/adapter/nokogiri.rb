@@ -189,6 +189,22 @@ module Moxml
           node.to_html(**kwargs)
         end
 
+        # Nokogiri's AS_XHTML save flag is the byte reference for the
+        # XHTML shape (issue #390): FORMAT layout, self-closed voids,
+        # no declaration.
+        def serialize_xhtml(node, options = {})
+          save_with = ::Nokogiri::XML::Node::SaveOptions::FORMAT |
+            ::Nokogiri::XML::Node::SaveOptions::AS_XHTML |
+            ::Nokogiri::XML::Node::SaveOptions::NO_DECLARATION
+          io = StringIO.new
+          kwargs = { save_with: save_with }
+          kwargs[:indent] = options[:indent] if options[:indent]
+          kwargs[:indent_text] = options[:indent_text] if options[:indent_text]
+          kwargs[:encoding] = options[:encoding] if options[:encoding]
+          node.write_to(io, **kwargs)
+          io.string
+        end
+
         # WHATWG fragment parse through Nokogiri::HTML5.fragment
         # (issue #353) — the same tree construction the leptris
         # lane composes over its WHATWG engine.
