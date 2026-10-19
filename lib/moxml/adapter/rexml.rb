@@ -607,6 +607,11 @@ module Moxml
           # XPath.match for every expression: get_elements only
           # handles simple child-name paths — attribute terminals,
           # absolute paths and predicates silently degrade there.
+          # REXML resolves prefixes by string spelling — symbol-keyed
+          # bindings (the common Nokogiri idiom) must normalize or
+          # namespaced elements never match (issue #395).
+          namespaces = namespaces.transform_keys(&:to_s) if
+            namespaces.is_a?(Hash)
           if namespaces && !namespaces.empty?
             ::REXML::XPath.match(node, expression, namespaces).to_a
           else
