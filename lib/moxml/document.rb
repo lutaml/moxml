@@ -227,7 +227,21 @@ module Moxml
       self
     end
 
+    # Relative name-test paths on the document resolve laxly, as
+    # descendant-or-self anchored at the root — Nokogiri's own
+    # Document#at/#search semantics (moxml#393; its #xpath/#at_xpath are
+    # strict document-context, where the only element child is the root,
+    # and the adapters disagree there anyway: leptris's engine returns []
+    # for every relative path — leptris-ruby#502 — while Nokogiri's
+    # #at/#xpath disagree with each other). Every strict match survives
+    # the lax rewrite (the only strict-matchable first step is the root
+    # itself), so this is purely additive. Non-name-test expressions
+    # (axes, node types, ".", "..") keep document context.
+    RELATIVE_NAME_TEST = /\A\s*(\*|[A-Za-z_][\w.-]*)(\s*\[|\s*\||\z|\/)/
+
     def xpath(expression, namespaces = nil)
+      expression = lax_document_path(expression) if relative_name_test?(expression)
+
       result = adapter.xpath(@native, expression, namespaces)
 
       # Handle different result types:
@@ -246,6 +260,8 @@ module Moxml
     end
 
     def at_xpath(expression, namespaces = nil)
+      expression = lax_document_path(expression) if relative_name_test?(expression)
+
       if (native_node = adapter.at_xpath(@native, expression, namespaces))
         Moxml::Node.wrap(native_node, context)
       end
@@ -267,6 +283,45 @@ module Moxml
 
     def find_all(xpath)
       xpath(xpath).to_a
+    end
+
+    private
+
+    def relative_name_test?(expression)
+      expression.match?(RELATIVE_NAME_TEST)
+    end
+
+    # Anchor every top-level union branch at the document root
+    # ("//"= descendant-or-self): "a/b | c" -> "//a/b | //c" — one
+    # adapter call, engine document order preserved, and the
+    # attribute-terminal idiom (pinned below) stays intact, which the
+    # ".//" form does not (libxml2 rejects .//r/a/@id).
+    def lax_document_path(expression)
+      split_top_level_unions(expression)
+        .map { |branch| "//#{branch.strip}" }
+        .join(" | ")
+    end
+
+    def split_top_level_unions(expression)
+      branches = [+""]
+      depth = 0
+      quote = nil
+      expression.each_char do |ch|
+        if quote
+          quote = nil if ch == quote
+        elsif ["'", '"'].include?(ch)
+          quote = ch
+        elsif ["(", "["].include?(ch)
+          depth += 1
+        elsif [")", "]"].include?(ch)
+          depth -= 1
+        elsif ch == "|" && depth.zero?
+          branches << +""
+          next
+        end
+        branches.last << ch
+      end
+      branches
     end
   end
 end

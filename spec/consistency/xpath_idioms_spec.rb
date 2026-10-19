@@ -53,9 +53,28 @@ RSpec.describe "XPath idioms across adapters" do
         expect(doc.xpath("//a/@id").first&.value).to eq("x")
         expect(doc.xpath("//@id").first&.value).to eq("x")
         expect(doc.xpath("r/a/@id").first&.value).to eq("x")
-        expect(
-          doc.xpath("//*[local-name()='a']/@id").first&.value,
-        ).to eq("x")
+        expect(doc.xpath("//*[local-name()='a']/@id").first&.value).to eq("x")
+      end
+
+      # moxml#393: a relative name-test path on the DOCUMENT resolves
+      # laxly, descendant-anchored at the root — Nokogiri's own
+      # Document#at/#search semantics, now pinned for every adapter.
+      # Axes, node types and "." keep strict document context.
+      it "resolves document-context relative name-test paths from the root" do
+        doc = ctx.parse(plain_xml)
+        expect(doc.at("a/b")&.name).to eq("b")
+        expect(doc.at_xpath("a/b")&.name).to eq("b")
+        expect(doc.xpath("a/b").map(&:name)).to eq(["b"])
+        expect(doc.xpath("a | r").map(&:name).sort).to eq(%w(a r))
+        expect(doc.xpath("missing").map(&:name)).to eq([])
+        expect(doc.at_xpath("missing")).to be_nil
+      end
+
+      it "keeps non-name-test expressions in document context" do
+        doc = ctx.parse(plain_xml)
+        expect(doc.at_xpath(".")).to be_truthy
+        expect(doc.at_xpath("/*")&.name).to eq("r")
+        expect(doc.at_xpath("/r")&.name).to eq("r")
       end
     end
   end
