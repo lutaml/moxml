@@ -624,6 +624,31 @@ module Moxml
               end
               TEXT.include(TextContractReads)
             end
+
+            # leptris-ruby#507: children_read joins the alias set. The
+            # generation-checked memo STAYS — re-walks of the same
+            # document are the common harness/consumer shape and the
+            # memo serves them allocation-free (dropping it regressed
+            # the walk 2x in GC). Only the MISS gets cheaper: the
+            # klass-children face plain-dispatches and returns the
+            # already-minted wrappers, so the adapter crossing
+            # (bind_call + to_a + keep-refs probe) drops out, and
+            # entity-marker documents take super for the split.
+            if NN.method_defined?(:children_read)
+              module ChildReads
+                def children
+                  @children = nil if @children_gen != context.children_generation
+                  @children_gen = context.children_generation
+                  @children ||= if doc_entity_bearing?
+                                  super
+                                else
+                                  NodeSet.new(children_read, context, self)
+                                end
+                end
+              end
+              ELEMENT.include(ChildReads)
+              TEXT.include(ChildReads)
+            end
           end
 
           # leptris-ruby#246 klass-propagating reads: the read
