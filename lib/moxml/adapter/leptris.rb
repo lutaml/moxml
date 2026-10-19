@@ -537,6 +537,46 @@ module Moxml
             end
             ELEMENT.include(Reads)
             TEXT.include(Reads)
+
+            # leptris-ruby#503: name_read joins attr_read/text_read as
+            # the unshadowed contract faces. With them, the hot reads
+            # plain-dispatch the C faces (one Ruby frame over the
+            # ~45ns native call) instead of the adapter bind_call
+            # crossing. Face-probed — older bindings keep the
+            # adapter paths. The memos ride the existing
+            # invalidation: name= and clear_native_memo! clear
+            # @name, content= clears @content.
+            if NN.method_defined?(:name_read)
+              module ContractReads
+                def name
+                  @name ||= name_read
+                end
+              end
+              ELEMENT.include(ContractReads)
+            end
+
+            if NN.method_defined?(:text_read)
+              module TextContractReads
+                # The stamp fast path is inlined (same ivar protocol
+                # as Reads#doc_entity_bearing?, which stays the
+                # single writer on recompute) — the two frames it
+                # saves are ~20% of the cold read.
+                def content
+                  value = @content
+                  return value if value
+
+                  value = text_read
+                  stamp = @doc_entity_stamp
+                  if stamp && (stamp >> 1) == ::Moxml::Adapter::Leptris.serialize_generation
+                    value = ::Moxml::Adapter::Leptris.restore_entities(value) if stamp.allbits?(1)
+                  elsif doc_entity_bearing?
+                    value = ::Moxml::Adapter::Leptris.restore_entities(value)
+                  end
+                  @content = value
+                end
+              end
+              TEXT.include(TextContractReads)
+            end
           end
 
           # leptris-ruby#246 klass-propagating reads: the read
