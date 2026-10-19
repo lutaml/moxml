@@ -105,6 +105,9 @@ module Moxml
         ::Leptris::XML::Document.method(:parse)
           .parameters.any? { |_, key| key == :strict }
 
+      ADD_CHILD_NATIVE =
+        NATIVE_READ_LAYER && NN.method_defined?(:add_child_native)
+
       if NATIVE_READ_LAYER
         NN_ATTRIBUTE = NN.instance_method(:attribute)
         NN_NAME = NN.instance_method(:name)
@@ -2521,6 +2524,27 @@ module Moxml
         end
 
         def add_child(parent, child)
+          # Same-document Identity append — the builder hot path. One
+          # document pair decides the verdict: the pin, the absorb
+          # checks and the binding bridges only exist for
+          # cross-document work, and the plain C append (version bump
+          # inside) is the whole job. bind_call, not dispatch — the
+          # contract modules shadow add_child on Identity receivers
+          # (moxml#2560 note below).
+          if NATIVE_MUTATIONS_COHERENT && parent.is_a?(NN) && child.is_a?(NN) &&
+              !child.is_a?(CustomizedLeptris::EntityReference)
+            parent_doc = NN_DOCUMENT.bind_call(parent)
+            if parent_doc
+              child_doc = NN_DOCUMENT.bind_call(child)
+              if child_doc && parent_doc.equal?(child_doc)
+                # add_child_native (leptris-ruby#509) plain-dispatches
+                # on Identity receivers — one frame, no bind_call.
+                return parent.add_child_native(child) if ADD_CHILD_NATIVE
+
+                return NN_ADD_CHILD.bind_call(parent, child)
+              end
+            end
+          end
           # 1.9.311: binding-family children (created PIs, texts...) —
           # a DIRECT absorb makes the binding add below move the node
           # by reference. A source already owned elsewhere would need
