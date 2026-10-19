@@ -130,4 +130,33 @@ RSpec.describe "leptris Identity contract reads" do
       expect(el.text).to eq("v")
     end
   end
+
+  describe "children" do
+    it "answers without the adapter children crossing (children_read)" do
+      unless Leptris::XML::NativeNode.method_defined?(:children_read)
+        skip "binding #{Leptris::VERSION} has no children_read face"
+      end
+      doc = ctx.parse("<root><item>v</item></root>")
+      el = doc.root.children.first
+
+      singleton = Moxml::Adapter::Leptris.singleton_class
+      singleton.send(:alias_method, :children_without_walk, :children)
+      singleton.send(:define_method, :children) { |*| raise "adapter children crossing" }
+      begin
+        kids = el.children
+        expect(kids.to_a.map(&:name)).to eq(["text"])
+      ensure
+        singleton.send(:alias_method, :children, :children_without_walk)
+        singleton.send(:remove_method, :children_without_walk)
+      end
+    end
+
+    it "returns a NodeSet carrying the contract wrappers" do
+      doc = ctx.parse("<root><item>v</item></root>")
+      kids = doc.root.children.first.children
+      expect(kids).to be_a(Moxml::NodeSet)
+      expect(kids.to_a.first.name).to eq("text")
+      expect(kids.to_a.first.content).to eq("v")
+    end
+  end
 end
