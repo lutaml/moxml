@@ -87,4 +87,51 @@ attribute-value predicates, namespace/default-namespace tests,
 `position()`/`count()`, `text()`, boolean expressions, `child::`/
 `descendant::` axes, or unions. Pinned in
 `spec/moxml/xpath_capabilities_spec.rb` and `spec/moxml/node_spec.rb`.
+
+| D-13
+| ox, headed_ox
+| Inter-element whitespace-only text nodes are dropped at parse
+(node counts and leading/trailing text differ from the other
+adapters). Surfaced by the taxonomy differential. Pinned in
+`spec/consistency/differential_taxonomy_spec.rb`.
+
+| D-14
+| oga
+| Processing-instruction content leaks into text reads (oga's own
+`text` folds PIs; the model says only text nodes contribute).
+Surfaced by the taxonomy differential. Pinned in
+`spec/consistency/differential_taxonomy_spec.rb`.
+
+| D-15
+| rexml
+| The whitespace text node between a pre-root PI and the root is
+retained (other adapters drop it). Surfaced by the taxonomy
+differential. Pinned in `spec/consistency/differential_taxonomy_spec.rb`.
+
+| D-16
+| rexml
+| Entity-expansion guard caps huge documents (~10k expansions) and
+raised a bare engine error — the facade now names it a ParseError;
+the cap itself remains (nokogiri's HUGE lane has no such cap).
+Surfaced by the taxonomy differential. Pinned in
+`spec/consistency/differential_taxonomy_spec.rb`.
+
+| D-17
+| oga
+| The strict parse lane does not validate nesting well-formedness
+(oga's strict is lexer-strict, not well-formedness-strict); bad
+nesting parses where other adapters raise. Surfaced by the taxonomy
+differential. Pinned in
+`spec/consistency/differential_taxonomy_spec.rb`.
+
+| D-18
+| leptris, oga, ox, headed_ox
+| Strict parse accepts invalid UTF-8 byte sequences (no encoding
+validation at parse; the bytes flow through as binary). The
+validating adapters (nokogiri, rexml, libxml) raise the named
+ParseError. On leptris the facade raises the named ParseError in the
+strict lane (default-UTF-8 rule; prolog-declared non-UTF-8 encodings
+own their validity) pending engine-side validation —
+leptris-ruby#514. Surfaced by the taxonomy differential. Pinned in
+`spec/consistency/differential_taxonomy_spec.rb`.
 |===

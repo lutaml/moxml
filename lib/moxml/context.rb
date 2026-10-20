@@ -119,7 +119,11 @@ module Moxml
                    end
       # Allocation-free declaration sniff: String#strip would copy the
       # whole buffer just to test its prefix.
-      has_declaration = xml_string.match?(/\A[ \t\r\n\f\v\0]*<\?xml/)
+      # Invalid byte sequences would raise from the regex before any
+      # adapter sees them; the adapters' named parse errors own
+      # malformed input (taxonomy differential, malformed class).
+      has_declaration = xml_string.valid_encoding? &&
+        xml_string.match?(/\A[ \t\r\n\f\v\0]*<\?xml/)
 
       # Parse with adapter, passing self (context) so adapter can use our config
       parsed_options = default_options.merge(options)

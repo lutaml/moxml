@@ -61,6 +61,10 @@ listings or serialization child walks.
 * Walks (`each_node`, `materialize`) visit depth-first, pre-order.
 * `Document#children` and `#root` never include the declaration;
   doctype exposure follows the Nokogiri contract.
+* Document-level parts (`Declaration`, `Doctype`) are state, not
+  nodes: walks (`traverse`, `each_node`, `materialize`) never yield
+  them, and walks over a DOCTYPE-bearing document are well-defined on
+  every adapter.
 * `NodeSet` preserves document order for axis results; unions preserve
   first-encounter document order.
 

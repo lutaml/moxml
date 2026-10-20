@@ -46,6 +46,29 @@ module Moxml
               )
             end
             create_document
+          rescue ::RuntimeError => e
+            # REXML's entity-expansion cap (and any engine-level
+            # guard) surfaces as a bare RuntimeError; the facade
+            # names it (issue: taxonomy differential, huge-entity
+            # class; the cap itself is D-16).
+            raise Moxml::ParseError.new(
+              e.message,
+              source: xml.is_a?(String) ? xml[0..100] : nil,
+            )
+          end
+
+          # Rootless parses (empty or declaration-only input) are
+          # malformed: XML requires exactly one root. Nokogiri and
+          # leptris raise at the engine; rexml returns a bare
+          # document — the facade names it instead (loudness
+          # differential, TODO.sota/01). Recover mode keeps the
+          # rootless-document fallback with its diagnostics (#147).
+          if options[:strict] && native_doc.respond_to?(:root) &&
+              native_doc.root.nil?
+            raise Moxml::ParseError.new(
+              "document has no root element",
+              source: xml.is_a?(String) ? xml[0..100] : nil,
+            )
           end
 
           ctx = _context || Context.new(:rexml)
@@ -458,17 +481,26 @@ module Moxml
           return "" unless element
 
           text = ""
-          element.children.each do |child|
-            case child
-            when ::REXML::Text
-              # Preserve original spacing from text nodes exactly including newlines and all whitespace
-              text += child.value
-            when ::REXML::Element
-              # Extract text recursively from child element
-              child_text = extract_text_recursively(child)
-              # Concatenate directly like other adapters - NO SPACE INSERTION
-              text += child_text
+          begin
+            element.children.each do |child|
+              case child
+              when ::REXML::Text
+                # Preserve original spacing from text nodes exactly including newlines and all whitespace
+                text += child.value
+              when ::REXML::Element
+                # Extract text recursively from child element
+                child_text = extract_text_recursively(child)
+                # Concatenate directly like other adapters - NO SPACE INSERTION
+                text += child_text
+              end
             end
+          rescue ::RuntimeError => e
+            # rexml expands entities lazily: the parse accepts, the
+            # read hits the expansion guard (D-16). The facade names
+            # it instead of leaking the bare RuntimeError.
+            raise Moxml::Error,
+                  "entity expansion limit exceeded (rexml guard, D-16): " \
+                  "#{e.message}"
           end
           # Don't strip - preserve original spacing including newlines
           text
