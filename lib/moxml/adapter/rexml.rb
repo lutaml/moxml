@@ -644,11 +644,20 @@ module Moxml
           # namespaced elements never match (issue #395).
           namespaces = namespaces.transform_keys(&:to_s) if
             namespaces.is_a?(Hash)
-          if namespaces && !namespaces.empty?
-            ::REXML::XPath.match(node, expression, namespaces).to_a
-          else
-            ::REXML::XPath.match(node, expression).to_a
-          end
+          results = if namespaces && !namespaces.empty?
+                      ::REXML::XPath.match(node, expression, namespaces).to_a
+                    else
+                      ::REXML::XPath.match(node, expression).to_a
+                    end
+          # REXML answers unions in expression order (//a | //b on
+          # <r><b/><a/></r> answers a,a,b); path results are
+          # document-ordered by the model (TODO.sota/02, M3) —
+          # re-order here, the oga lane's pattern.
+          return results if results.empty?
+
+          ctx = Context.new(:rexml)
+          wrapped = results.map { |n| Moxml::Node.wrap(n, ctx) }
+          Moxml::XPath::Ordering.document_order(wrapped).map(&:native)
         rescue ::REXML::ParseException => e
           raise Moxml::XPathError.new(
             e.message,
