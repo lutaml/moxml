@@ -60,9 +60,24 @@ module Moxml
               assign_parents(doc)
               doc
             end
-          rescue ::Ox::ParseError => e
+          rescue ::Ox::ParseError, ::RuntimeError => e
+            # Ox leaks raw RuntimeErrors from some malformed shapes
+            # (e.g. declaration-only input reaches Element#<<); the
+            # facade names every parse-time engine failure.
             raise Moxml::ParseError.new(
               e.message,
+              source: xml.is_a?(String) ? xml[0..100] : nil,
+            )
+          end
+
+          # Rootless parses (empty or declaration-only input) are
+          # malformed: XML requires exactly one root. Ox answers a
+          # bare document — the facade names it (uniform with the
+          # rexml/oga arms; loudness differential, TODO.sota/01).
+          if options[:strict] && native_doc.is_a?(::Ox::Document) &&
+              native_doc.nodes.none?(::Ox::Element)
+            raise Moxml::ParseError.new(
+              "document has no root element",
               source: xml.is_a?(String) ? xml[0..100] : nil,
             )
           end

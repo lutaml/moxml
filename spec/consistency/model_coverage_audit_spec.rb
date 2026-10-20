@@ -12,47 +12,60 @@ require "spec_helper"
 RSpec.describe "model coverage matrix" do
   MODEL_MATRIX = { # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
     "document order and children listing" => {
+      section: "Document order and traversal",
       pin: "spec/consistency/adapter_parity_spec.rb",
     },
     "name resolution" => {
+      section: "Names and namespaces",
       pin: "spec/consistency/xpath_idioms_spec.rb",
     },
     "namespace resolution and bindings normalization" => {
+      section: "Names and namespaces",
       pin: "spec/consistency/xpath_idioms_spec.rb",
     },
     "attribute access" => {
+      section: "Access semantics",
       pin: "spec/moxml/attribute_resolver_spec.rb",
     },
     "text/content/raw_content" => {
+      section: "Access semantics",
       pin: "spec/moxml/text_spec.rb",
     },
     "parsing modes and diagnostics" => {
+      section: "Parsing",
       pin: "spec/moxml/document_parse_diagnostics_spec.rb",
     },
     "EOL normalization" => {
+      section: "Parsing",
       pin: "spec/consistency/eol_normalization_spec.rb",
       exempt: { oga: "D-02", ox: "D-03" },
     },
     "entity modes" => {
+      section: "Parsing",
       pin: "spec/moxml/entity_spec.rb",
     },
     "XPath evaluation and declared idioms" => {
+      section: "XPath evaluation",
       pin: "spec/consistency/xpath_idioms_spec.rb",
       exempt: { oga: "D-01" },
     },
     "serialization shapes (xml/html/xhtml)" => {
+      section: "Serialization",
       pin: "spec/moxml/xhtml_output_spec.rb",
     },
     "indentation knobs" => {
+      section: "Serialization",
       pin: "spec/moxml/to_html_spec.rb",
       exempt: { oga: "D-09", ox: "D-09", headed_ox: "D-09",
                 libxml: "D-09", leptris: "D-09" },
     },
     "canonicalization" => {
+      section: "Canonicalization",
       pin: "spec/moxml/c14n/adapter_delegation_spec.rb",
       exempt: { oga: "D-04", ox: "D-05", headed_ox: "D-05" },
     },
     "XSLT" => {
+      section: "XSLT",
       pin: "spec/consistency/xslt_spec.rb",
       loud: { oga: "Moxml::NotImplementedError",
               ox: "Moxml::NotImplementedError",
@@ -61,12 +74,15 @@ RSpec.describe "model coverage matrix" do
               libxml: "Moxml::NotImplementedError" },
     },
     "SAX" => {
+      section: "SAX",
       pin: "spec/moxml/sax_spec.rb",
     },
     "materialization" => {
+      section: "Materialization",
       pin: "spec/moxml/plan_conformance_spec.rb",
     },
     "loud capability contracts" => {
+      section: "Errors and loud degradation",
       pin: "spec/consistency/loud_degradation_spec.rb",
     },
   }.freeze
@@ -109,5 +125,53 @@ RSpec.describe "model coverage matrix" do
     end
     expect(bad).to be_empty,
                    "loud cells must name Moxml errors: #{bad.join('; ')}"
+  end
+
+  # Model-derived governance: the matrix is generated FROM the model
+  # doc's section headings, in both directions. A new section in
+  # processing-model.adoc without a matrix citation (or an explicit
+  # non-face declaration) fails this audit; a matrix citation whose
+  # section vanished fails too.
+  MODEL_DOC = "docs/_references/processing-model.adoc" # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+
+  NON_FACE_SECTIONS = [ # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+    "Status and precedence",
+    "Mission and invariant",
+    "Object model",
+    "Performance: a declared, non-semantic channel",
+  ].freeze
+
+  def model_sections
+    File.readlines(MODEL_DOC).filter_map do |line|
+      line[/\A=== (\S.*)$/, 1]&.strip
+    end.uniq
+  end
+
+  it "cites an existing model section for every face family" do
+    sections = model_sections
+    unknown = MODEL_MATRIX.filter_map do |family, cell|
+      section = cell[:section]
+      next "#{family}: nil" if section.nil?
+
+      "#{family}: #{section.inspect}" unless sections.include?(section)
+    end
+    expect(unknown).to be_empty,
+                       "matrix families citing missing model sections: #{unknown.join('; ')}"
+  end
+
+  it "covers or declares every model section" do
+    cited = MODEL_MATRIX.values.filter_map { |cell| cell[:section] }
+    uncovered = model_sections.reject do |section|
+      cited.include?(section) || NON_FACE_SECTIONS.include?(section)
+    end
+    expect(uncovered).to be_empty,
+                         "model sections with no coverage matrix family " \
+                         "(add a family or declare non-face): #{uncovered.join('; ')}"
+  end
+
+  it "declares non-face sections that actually exist in the model doc" do
+    stale = NON_FACE_SECTIONS.reject { |s| model_sections.include?(s) }
+    expect(stale).to be_empty,
+                     "non-face declarations citing missing sections: #{stale.join('; ')}"
   end
 end

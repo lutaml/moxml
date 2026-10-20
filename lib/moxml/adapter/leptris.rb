@@ -1178,8 +1178,36 @@ module Moxml
           true
         end
 
+        # UTF-8 is the default effective encoding; a prolog declaring
+        # another encoding hands byte validity to that encoding's lane.
+        DECLARED_ENCODING_RE =
+          /<\?xml\s[^>]*?encoding\s*=\s*["']([^"']+)["']/i
+        private_constant :DECLARED_ENCODING_RE
+
+        def encoding_lane_owns_validity?(xml_string)
+          # Binary-tagged head: the prolog is ASCII, and matching
+          # never raises on binary-tagged bytes (invalid-UTF-8 input
+          # is exactly the case this check exists for).
+          declared = xml_string.b[0, 256].match(DECLARED_ENCODING_RE)
+          declared &&
+            !declared[1].match?(/\A(?:utf-?8|us-ascii|ascii)\z/i)
+        end
+
         def parse(xml, options = {}, _context = nil)
           xml_string = xml.is_a?(IO) || xml.is_a?(StringIO) ? xml.read : xml.to_s
+          # Strict parse raises on bytes invalid in the effective
+          # encoding (default UTF-8; declared non-UTF-8 encodings own
+          # their validity) — the validating engines do this at load
+          # (libxml2: "Invalid bytes in character encoding"), the
+          # leptris engine lane does not yet (leptris-ruby#514), so
+          # the facade names it (taxonomy differential, D-18).
+          if options[:strict] && !xml_string.valid_encoding? &&
+              !encoding_lane_owns_validity?(xml_string)
+            raise Moxml::ParseError.new(
+              "Invalid bytes in character encoding (#{xml_string.encoding})",
+              source: xml_string[0, 100],
+            )
+          end
           # The marker flag rides preprocess's own `&` scan — no
           # second full-buffer probe (issue #132 parse-side note).
           entity_mode_keep =
@@ -1217,7 +1245,11 @@ module Moxml
               options: parse_flags(options, recover: recover,
                                             context: _context),
             )
-          rescue ::Leptris::XML::ParseError => e
+          rescue ::Leptris::XML::Error => e
+            # Invalid encoding bytes surface as the base engine
+            # error class, not ParseError — parse failures are all
+            # named by the facade (taxonomy differential, malformed
+            # class).
             raise Moxml::ParseError.new(e.message) if options[:strict]
 
             # Engines below the 1.9.344 recover floor (or the
@@ -1387,7 +1419,11 @@ module Moxml
             else
               ::Leptris::XML.parse_html(html_string)
             end
-          rescue ::Leptris::XML::ParseError => e
+          rescue ::Leptris::XML::Error => e
+            # ParseError is the common class; other engine errors
+            # (invalid encoding bytes surface as the base class) are
+            # parse failures too — the facade names them all
+            # (taxonomy differential, malformed class).
             raise Moxml::ParseError.new(e.message)
           end
           attachments.set(native_doc, :entity_markers, false)
@@ -3370,13 +3406,12 @@ module Moxml
 
         def record_source_declaration(native_doc, xml_string)
           head = xml_string[0, 256]
-          had = if head.match?(SOURCE_DECLARATION_RE)
-                  true
-                elsif head.match?(/\A\s*\z/)
-                  xml_string.match?(SOURCE_DECLARATION_RE)
-                else
-                  false
-                end
+          # invalid bytes never reach regexes: named parse errors own
+          # malformed input (taxonomy differential, malformed class)
+          had = xml_string.valid_encoding? &&
+            (head.match?(SOURCE_DECLARATION_RE) ||
+             (head.match?(/\A\s*\z/) &&
+              xml_string.match?(SOURCE_DECLARATION_RE)))
           attachments.set(native_doc, :had_source_declaration, had)
         end
       end

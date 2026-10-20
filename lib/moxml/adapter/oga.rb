@@ -40,6 +40,18 @@ module Moxml
             )
           end
 
+          # Rootless parses (empty or declaration-only input) are
+          # malformed: XML requires exactly one root. Oga returns a
+          # bare document where nokogiri/leptris raise — the facade
+          # names it instead (loudness differential, TODO.sota/01).
+          if options[:strict] && native_doc.respond_to?(:root_node) &&
+              native_doc.children.none?(::Oga::XML::Element)
+            raise Moxml::ParseError.new(
+              "document has no root element",
+              source: xml.is_a?(String) ? xml[0..100] : nil,
+            )
+          end
+
           # Oga parses multiple root elements leniently; the moxml
           # contract requires a single root. to_a because the vendored
           # fork's NodeSet#count ignores its block.

@@ -112,6 +112,15 @@ module Moxml
             # Handle both string and file inputs
             parser = ::LibXML::XML::Parser.string(xml_string)
             parser.parse
+          rescue ::ArgumentError => e
+            # Invalid byte sequences raise ArgumentError from Ruby's
+            # encoding checks before libxml sees the bytes; the
+            # facade names them (taxonomy differential, malformed
+            # class).
+            raise Moxml::ParseError.new(
+              e.message,
+              source: xml.is_a?(String) ? xml[0..100] : nil,
+            )
           rescue ::LibXML::XML::Error => e
             if options[:strict]
               line = e.line

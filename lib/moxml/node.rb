@@ -410,9 +410,15 @@ module Moxml
     end
 
     # Nokogiri-compatible depth-first traversal: yields self, then
-    # children recursively (document-order visitor).
+    # children recursively (document-order visitor). Document-level
+    # parts (Declaration, Doctype) are state, not nodes: they are
+    # never yielded, and their (adapter-specific, sometimes missing)
+    # child faces are never consulted (issue-free by the model's
+    # object-model rule; found by the taxonomy differential).
     def traverse(&block)
       return to_enum(:traverse) unless block
+
+      return self if is_a?(Moxml::Declaration) || is_a?(Moxml::Doctype)
 
       yield self
       children.each { |child| child.traverse(&block) }

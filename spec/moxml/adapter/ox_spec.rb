@@ -94,7 +94,7 @@ RSpec.describe Moxml::Adapter::Ox do
 
       it "fails loudly on ox_mode: :hash (the adapter walks a tree, not a Hash)" do
         expect { described_class.parse("<r><t> x </t></r>", ox_mode: :hash) }
-          .to raise_error(RuntimeError, /must be a String or Ox::Node/)
+          .to raise_error(Moxml::ParseError, /must be a String or Ox::Node/)
       end
 
       it "surfaces an invalid ox_skip as Moxml::ParseError" do
