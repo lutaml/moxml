@@ -312,6 +312,30 @@ module Moxml
         # validator raise; leptris gates on >= 1.9.321.0.
         XSD_SUPPORTED = false
 
+        # RELAX NG validation (moxml RelaxNG contract): the same
+        # loud-capability rule.
+        RELAXNG_SUPPORTED = false
+
+        def relaxng_compile(_schema_source)
+          raise Moxml::NotImplementedError,
+                "RELAX NG validation requires an adapter with an RNG engine"
+        end
+
+        def relaxng_compile_file(_path)
+          raise Moxml::NotImplementedError,
+                "RELAX NG validation requires an adapter with an RNG engine"
+        end
+
+        def relaxng_validate_errors(_handle, _native_document)
+          raise Moxml::NotImplementedError,
+                "RELAX NG validation requires an adapter with an RNG engine"
+        end
+
+        def relaxng_valid?(_handle, _native_document)
+          raise Moxml::NotImplementedError,
+                "RELAX NG validation requires an adapter with an RNG engine"
+        end
+
         # Issue #384: schema handles are adapter-native objects — a
         # handle compiled through one adapter must not dispatch
         # through another. Adapters with an XSD engine answer their

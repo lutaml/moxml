@@ -105,6 +105,7 @@ module Moxml
   autoload :Reference, "moxml/reference"
   autoload :XSLT, "moxml/xslt"
   autoload :XSD, "moxml/xsd"
+  autoload :RelaxNG, "moxml/relaxng"
 
   # Error hierarchy — each subclass autoloads from the same file
   autoload :Error, "moxml/error"

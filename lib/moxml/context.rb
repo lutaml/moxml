@@ -198,6 +198,19 @@ module Moxml
       Moxml::XSD::Schema.new(handle, self)
     end
 
+    # Compile a RELAX NG schema from source or from a file path (the
+    # engine resolves relative includes against the file's directory).
+    # Adapters without an RNG engine raise Moxml::NotImplementedError.
+    def relaxng(schema_source)
+      handle = config.adapter.relaxng_compile(schema_source.to_s)
+      Moxml::RelaxNG::Schema.new(handle, self)
+    end
+
+    def relaxng_file(path)
+      handle = config.adapter.relaxng_compile_file(path.to_s)
+      Moxml::RelaxNG::Schema.new(handle, self)
+    end
+
     def xslt(stylesheet)
       source = case stylesheet
                when Moxml::Document then stylesheet.to_xml
