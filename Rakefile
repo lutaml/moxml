@@ -284,6 +284,22 @@ namespace :benchmark do
   task :report do
     ruby "benchmarks/generate_report.rb"
   end
+
+  # Published scoreboard (TODO.sota/04): CPU medians, interleaved A/B,
+  # load-gated; see benchmark/README.md for the protocol and rows.
+  desc "Published performance scoreboard (CPU medians, interleaved A/B)"
+  task :scoreboard do
+    sh "bundle exec ruby benchmark/scoreboard.rb"
+  end
+
+  # CI lock: parity rows must be >= 1.0x and no row may fall more than
+  # 10% below the committed baseline.
+  desc "Scoreboard regression lock (parity + 10% baseline tolerance)"
+  task :lock do
+    sh({ "SCORE_LOCK" => "1",
+         "SCORE_BASELINE" => "benchmark/scoreboard.json" },
+       "bundle exec ruby benchmark/scoreboard.rb")
+  end
 end
 
 namespace :opal do

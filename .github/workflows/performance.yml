@@ -1,0 +1,59 @@
+name: performance
+
+# The published scoreboard lock (TODO.sota/04). Runs on a quiet
+# weekly schedule (and on demand); PRs do not run it — measurement
+# noise is a release concern, not a change-gating one.
+on:
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: "recursive"
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          # bundler-cache is disabled because the path-source oga and
+          # ruby-ll forks need generated outputs before their C
+          # extensions can compile.
+          bundler-cache: false
+
+      - name: Install ragel
+        run: sudo apt-get update && sudo apt-get install -y ragel
+
+      - name: Install ruby-ll (for rake vendor:prepare)
+        run: gem install ruby-ll --no-document
+
+      - name: Generate ragel / ruby-ll outputs in vendored forks
+        run: rake vendor:prepare
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Compile liboga / libll native extensions
+        run: rake vendor:compile
+
+      - name: Scoreboard lock (parity rows + 10% regression tolerance)
+        run: bundle exec rake benchmark:lock
+
+      - name: Upload the measured scoreboard
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scoreboard
+          path: benchmark/scoreboard.json
+          if-no-files-found: ignore
