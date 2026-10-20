@@ -11,6 +11,8 @@ module Moxml
       # over hostile prolog text backtracks polynomially on inputs
       # with repeated <!DOCTYPE prefixes or unterminated subsets
       # (CodeQL rb/polynomial-redos). See doctype_parts.
+      DOCTYPE_OPEN_SIZE = 9
+      QUOTES = ['"', "'"].freeze
 
       autoload :EntityRefRegistry, "moxml/adapter/libxml/entity_ref_registry"
 
@@ -93,10 +95,10 @@ module Moxml
           start = source.index("<!DOCTYPE", from)
           return unless start
 
-          pos = skip_doctype_space(source, start + "<!DOCTYPE".length)
+          pos = skip_doctype_space(source, start + DOCTYPE_OPEN_SIZE)
           name_start = pos
           pos += 1 while pos < source.length &&
-            !" \t\r\n>".include?(source[pos])
+              !" \t\r\n>".include?(source[pos])
           name = source[name_start...pos]
           return if name.empty?
 
@@ -147,13 +149,13 @@ module Moxml
 
         def skip_doctype_space(source, pos)
           pos += 1 while pos < source.length &&
-            " \t\r\n".include?(source[pos])
+              " \t\r\n".include?(source[pos])
           pos
         end
 
         def scan_doctype_quoted(source, pos)
           quote = source[pos]
-          return unless quote == '"' || quote == "'"
+          return unless QUOTES.include?(quote)
 
           stop = source.index(quote, pos + 1)
           return unless stop
@@ -170,7 +172,7 @@ module Moxml
             char = source[pos]
             if quote
               quote = nil if char == quote
-            elsif char == '"' || char == "'"
+            elsif QUOTES.include?(char)
               quote = char
             elsif char == "["
               depth += 1
