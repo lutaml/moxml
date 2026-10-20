@@ -115,6 +115,14 @@ module Moxml
           seen_root = false
           idx = 0
           document.children.each do |child|
+            # Whitespace between document-level nodes is not part of
+            # the canonical form (C14N §2.1 renders the document
+            # element and the PIs/comments outside it only). rexml
+            # retains such text nodes at parse (D-15); every engine's
+            # form must still exclude them.
+            next if child.is_a?(::Moxml::Text) ||
+              child.is_a?(::Moxml::Cdata)
+
             if child.is_a?(::Moxml::Element)
               next if seen_root
 
