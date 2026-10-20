@@ -163,11 +163,21 @@ module Moxml
     end
 
     def create_element(name)
-      Wrappers::Element.new(adapter.create_element(name, owner_doc: @native), context)
+      native = adapter.create_element(name, owner_doc: @native)
+      # leptris-ruby#508 mints registered klasses at create: the node
+      # IS a contract-carrying identity (@native is self) — prime it
+      # in place instead of shelling a second wrapper (a raw mint
+      # reaching ==/adapter dies on the nil @context).
+      return native.prime_contract(native, context, adapter) if native.is_a?(Moxml::Node)
+
+      Wrappers::Element.new(native, context)
     end
 
     def create_text(content)
-      Wrappers::Text.new(adapter.create_text(content, owner_doc: @native), context)
+      native = adapter.create_text(content, owner_doc: @native)
+      return native.prime_contract(native, context, adapter) if native.is_a?(Moxml::Node)
+
+      Wrappers::Text.new(native, context)
     end
 
     def create_cdata(content)

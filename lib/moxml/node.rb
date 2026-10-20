@@ -851,7 +851,13 @@ module Moxml
       # @native is self, so canonicalization, the cache probes and
       # the re-mint below all answer the receiver. One native ivar
       # read decides; shells (@native != self) take the full path.
-      return node if node.is_a?(Node) && node.instance_variable_get(:@native).equal?(node)
+      # The C mint leaves the node un-primed (@context unset) — prime
+      # on first wrap. Conditionally: an already-primed identity (a
+      # walked node) must not lose @parent_node to a re-prime.
+      if node.is_a?(Node) && node.instance_variable_get(:@native).equal?(node)
+        node.prime_contract(node, context, adapter) unless node.instance_variable_defined?(:@context)
+        return node
+      end
 
       # One C node may have several Ruby representations (leptris
       # native/binding duality, moxml#311); every wrap resolves to
