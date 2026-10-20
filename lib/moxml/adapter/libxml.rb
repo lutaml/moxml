@@ -87,6 +87,10 @@ module Moxml
           false
         end
 
+        def add_sibling_returns_inserted?
+          true
+        end
+
         # Linear DOCTYPE prolog scanner. Returns
         # {name:, external_id:, system_id:, internal_subset:} or nil.
         # Single pass, quote- and bracket-aware: no backtracking, so
@@ -780,7 +784,8 @@ module Moxml
           return unless node && sibling
 
           native_node = unpatch_node(node)
-          native_sibling = unpatch_node(sibling)
+          native_sibling = import_for_attachment(native_node,
+                                                 unpatch_node(sibling))
 
           # Special handling for document-level processing instructions
           # When adding a PI as sibling to root element, store it on document
@@ -794,14 +799,35 @@ module Moxml
           end
 
           native_node.prev = native_sibling
+          native_sibling
         end
 
         def add_next_sibling(node, sibling)
           return unless node && sibling
 
           native_node = unpatch_node(node)
-          native_sibling = unpatch_node(sibling)
+          native_sibling = import_for_attachment(native_node,
+                                                 unpatch_node(sibling))
           native_node.next = native_sibling
+          native_sibling
+        end
+
+        # A markup fragment parsed by the facade lives in its own
+        # document; libxml refuses cross-document attachment. Import
+        # (deep-copy) into the target document and hand back the copy —
+        # the caller refreshes its wrapper to this native.
+        def import_for_attachment(native_node, native_sibling)
+          return native_sibling unless
+            native_node.is_a?(::LibXML::XML::Node) &&
+              native_sibling.is_a?(::LibXML::XML::Node)
+
+          target = native_node.doc
+          return native_sibling if target.nil?
+
+          source = native_sibling.doc
+          return native_sibling if source.equal?(target)
+
+          target.import(native_sibling)
         end
 
         def remove(node)

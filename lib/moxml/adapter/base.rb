@@ -499,6 +499,23 @@ namespace_validation_mode: :strict)
           node
         end
 
+        # Whether add_next_sibling/add_previous_sibling answer the
+        # native actually installed (libxml imports cross-document
+        # fragments and answers the copy) — the facade then refreshes
+        # the caller's wrapper to it.
+        def add_sibling_returns_inserted?
+          false
+        end
+
+        # Whether adapter.at_xpath is safe as the primary first-node
+        # lane. leptris: its at_xpath falls back to the model's Ruby
+        # engine when the native lane answers nothing (an engine index
+        # left stale by sibling insertion), so it reflects the live
+        # tree where the node-set lane does not.
+        def native_at_xpath?
+          false
+        end
+
         # Whether children() results need per-child patch_node
         # rewriting. Adapters whose natives arrive pre-wrapped (all but
         # ox and libxml) answer false so the wrapper layer can skip

@@ -1126,6 +1126,35 @@ module Moxml
           @attachments ||= Moxml::NativeAttachment.new
         end
 
+        # --- engine XPath index guard ---------------------------------
+        # Sibling insertions do not invalidate the engine's document
+        # index that the node-set XPath lane uses, so after one the
+        # lane answers stale results (the tree and the first-only
+        # entry are correct; upstream bug filed). Track the state per
+        # binding document and route XPath to the reference Ruby
+        # engine until a child insertion rebuilds the engine index.
+        XPATH_INDEX_STALE = :xpath_index_stale
+
+        def mark_xpath_index_stale(node)
+          doc = xpath_index_document(node)
+          attachments.set(doc, XPATH_INDEX_STALE, true) if doc
+        end
+
+        def clear_xpath_index_stale(node)
+          doc = xpath_index_document(node)
+          attachments.set(doc, XPATH_INDEX_STALE, false) if doc
+        end
+
+        def xpath_index_stale?(doc)
+          doc && attachments.get(doc, XPATH_INDEX_STALE)
+        end
+
+        def xpath_index_document(node)
+          return node if node.is_a?(::Leptris::XML::Document)
+
+          node.document
+        end
+
         def set_root(doc, element)
           to_binding(doc).root = to_binding(element)
         end
@@ -1192,6 +1221,14 @@ module Moxml
         end
 
         def native_identity_stable?
+          true
+        end
+
+        # Our at_xpath falls back to the model's Ruby engine when the
+        # native lane answers nothing — the engine's node-set XPath
+        # index is stale after sibling insertion, so `at` must not be
+        # routed through the node-set lane.
+        def native_at_xpath?
           true
         end
 
@@ -2611,6 +2648,15 @@ module Moxml
         end
 
         def add_child(parent, child)
+          result = add_child_impl(parent, child)
+          # A successful child insertion rebuilds the engine's
+          # document index; the upstream sibling-insert bug leaves it
+          # stale (see native_xpath), so a rebuild clears the guard.
+          clear_xpath_index_stale(parent) if result
+          result
+        end
+
+        def add_child_impl(parent, child)
           # Same-document Identity append — the builder hot path. One
           # document pair decides the verdict: the pin, the absorb
           # checks and the binding bridges only exist for
@@ -2723,6 +2769,12 @@ module Moxml
         end
 
         def add_previous_sibling(node, new_node)
+          result = add_previous_sibling_impl(node, new_node)
+          mark_xpath_index_stale(node)
+          result
+        end
+
+        def add_previous_sibling_impl(node, new_node)
           if NATIVE_READ_LAYER
             node = to_binding(node)
             new_node = to_binding(new_node)
@@ -2763,6 +2815,12 @@ module Moxml
         end
 
         def add_next_sibling(node, new_node)
+          result = add_next_sibling_impl(node, new_node)
+          mark_xpath_index_stale(node)
+          result
+        end
+
+        def add_next_sibling_impl(node, new_node)
           if NATIVE_READ_LAYER
             node = to_binding(node)
             new_node = to_binding(new_node)
@@ -3208,6 +3266,9 @@ module Moxml
             ::Leptris::XML::XPath.compile(expression)
           end
           document = node.is_a?(::Leptris::XML::Document) ? node : node.document
+          # A sibling insertion left the engine index stale; the
+          # reference engine walks the live tree (see the guard above).
+          return nil if xpath_index_stale?(document)
 
           if namespaces && !namespaces.empty?
             # Namespace-bound evaluation has no raw-pointer entry —

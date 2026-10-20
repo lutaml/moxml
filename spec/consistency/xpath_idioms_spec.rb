@@ -118,6 +118,21 @@ RSpec.describe "XPath idioms across adapters" do
         expect(doc.xpath("boolean(//b)")).to be(true)
         expect(doc.at_xpath("count(//a)")).to eq(1.0)
       end
+
+      # The live-tree contract: a sibling inserted after an XPath
+      # evaluation must be visible to at_xpath and xpath. leptris's
+      # node-set lane caches a document index that sibling insertions
+      # do not rebuild (engine bug, tracked upstream); the adapter
+      # routes such documents to the reference engine until a child
+      # insertion rebuilds the index.
+      it "answers at_xpath and xpath from the live tree after a sibling insertion" do
+        doc = ctx.parse("<r><a><b/></a></r>")
+        doc.xpath("//a")
+        doc.at("//a").next = "<c/>"
+        expect(doc.at("//c")&.name).to eq("c")
+        expect(doc.xpath("//c").map(&:name)).to eq(["c"])
+        expect(doc.at_xpath("count(//c)")).to eq(1.0)
+      end
     end
   end
 end

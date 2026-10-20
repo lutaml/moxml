@@ -282,12 +282,26 @@ module Moxml
       end
     end
 
-    # Sugar over xpath: the first node of a node-set; scalar results
-    # (count(), string(), boolean()) pass through unwrapped and
-    # uniform across adapters.
+    # The first node of a node-set; scalar results (count(), string(),
+    # boolean()) pass through unwrapped and uniform across adapters.
+    # Adapters whose at_xpath lane falls back to the reference engine
+    # when the native answer is empty (leptris, whose node-set index
+    # is stale after sibling insertion) use it.
     def at_xpath(expression, namespaces = nil)
+      if adapter.native_at_xpath?
+        expression = lax_document_path(expression) if relative_name_test?(expression)
+        result = adapter.at_xpath(@native, expression, namespaces)
+        return result if scalar_result?(result)
+
+        return Moxml::Node.wrap(result, context)
+      end
       result = xpath(expression, namespaces)
       result.is_a?(NodeSet) ? result.first : result
+    end
+
+    def scalar_result?(result)
+      result.is_a?(Numeric) || result.is_a?(String) ||
+        result == true || result == false || result.nil?
     end
 
     # Quick element creation and addition

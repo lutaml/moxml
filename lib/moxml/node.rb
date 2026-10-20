@@ -226,7 +226,8 @@ module Moxml
     def attach_previous_sibling(node)
       context.bump_children_generation
       node = prepare_node(node)
-      adapter.add_previous_sibling(@native, node.native)
+      inserted = adapter.add_previous_sibling(@native, node.native)
+      refresh_inserted_native(node, inserted)
       # Invalidate the parent's memoized children list. The wrapper-side
       # @parent_node link is only set when this node was yielded through a
       # parent-aware NodeSet; nodes obtained via at()/xpath() carry no such
@@ -239,10 +240,18 @@ module Moxml
     def attach_next_sibling_to(anchor, node)
       context.bump_children_generation
       node = prepare_node(node)
-      adapter.add_next_sibling(anchor.native, node.native)
+      inserted = adapter.add_next_sibling(anchor.native, node.native)
+      refresh_inserted_native(node, inserted)
       anchor.parent&.invalidate_children_cache!
       anchor.invalidate_parent_children_cache!
       self
+    end
+
+    def refresh_inserted_native(node, inserted)
+      return unless adapter.add_sibling_returns_inserted?
+      return if inserted.nil? || inserted.equal?(node.native)
+
+      node.refresh_native!(inserted)
     end
 
     def remove
@@ -367,12 +376,24 @@ module Moxml
       Materializer.materialize_fields(self, &block)
     end
 
-    # Sugar over xpath: the first node of a node-set; scalar results
-    # (count(), string(), boolean()) pass through unwrapped and
-    # uniform across adapters.
+    # The first node of a node-set; scalar results (count(), string(),
+    # boolean()) pass through unwrapped and uniform across adapters.
+    # Adapters with a native first-only face use it (see
+    # Document#at_xpath).
     def at_xpath(expression, namespaces = {})
+      if adapter.native_at_xpath?
+        result = adapter.at_xpath(@native, expression, namespaces)
+        return result if scalar_result?(result)
+
+        return Moxml::Node.wrap(result, context)
+      end
       result = xpath(expression, namespaces)
       result.is_a?(NodeSet) ? result.first : result
+    end
+
+    def scalar_result?(result)
+      result.is_a?(Numeric) || result.is_a?(String) ||
+        result == true || result == false || result.nil?
     end
 
     # Nokogiri-compatible sugar: at/search/at_css/css. Nokogiri's
