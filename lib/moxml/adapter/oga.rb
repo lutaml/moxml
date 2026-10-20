@@ -203,7 +203,15 @@ module Moxml
 
         def namespace(element)
           case element
-          when ::Oga::XML::Element, ::Oga::XML::Attribute
+          when ::Oga::XML::Attribute
+            # Unprefixed attributes are in no namespace, always
+            # (Namespaces 1.0 §5.2). Oga resolves them against the
+            # element's default namespace, which is wrong and makes
+            # bare-name reads miss under a default namespace.
+            return nil if element.namespace_name.nil?
+
+            element.namespace
+          when ::Oga::XML::Element
             element.namespace
           end
         rescue NoMethodError
