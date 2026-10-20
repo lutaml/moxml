@@ -7,10 +7,10 @@ require "libxml-ruby"
 module Moxml
   module Adapter
     class Libxml < Base
-      # DOCTYPE prolog sniffer; see parse for the index-then-match
-      # strategy that keeps this off the hot path.
-      DOCTYPE_RE = /<!DOCTYPE\s+([^\s>\[]+)(?:\s+PUBLIC\s+"([^"]+)"\s+"([^"]+)"|\s+SYSTEM\s+"([^"]+)")?\s*(?:\[(.*?)\])?\s*>/im
-      private_constant :DOCTYPE_RE
+      # DOCTYPE prolog scanning is manual (index/char scan): a regex
+      # over hostile prolog text backtracks polynomially on inputs
+      # with repeated <!DOCTYPE prefixes or unterminated subsets
+      # (CodeQL rb/polynomial-redos). See doctype_parts.
 
       autoload :EntityRefRegistry, "moxml/adapter/libxml/entity_ref_registry"
 
@@ -85,6 +85,104 @@ module Moxml
           false
         end
 
+        # Linear DOCTYPE prolog scanner. Returns
+        # {name:, external_id:, system_id:, internal_subset:} or nil.
+        # Single pass, quote- and bracket-aware: no backtracking, so
+        # hostile prolog text cannot make parsing superlinear.
+        def doctype_parts(source, from = 0)
+          start = source.index("<!DOCTYPE", from)
+          return unless start
+
+          pos = skip_doctype_space(source, start + "<!DOCTYPE".length)
+          name_start = pos
+          pos += 1 while pos < source.length &&
+            !" \t\r\n>".include?(source[pos])
+          name = source[name_start...pos]
+          return if name.empty?
+
+          pos = skip_doctype_space(source, pos)
+          external_id = nil
+          system_id = nil
+          keyword = source[pos, 6].to_s.upcase
+          if keyword == "PUBLIC"
+            pos = skip_doctype_space(source, pos + 6)
+            pair = scan_doctype_quoted(source, pos)
+            return unless pair
+
+            external_id, pos = pair
+            pos = skip_doctype_space(source, pos)
+            pair = scan_doctype_quoted(source, pos)
+            return unless pair
+
+            system_id, pos = pair
+          elsif keyword == "SYSTEM"
+            pos = skip_doctype_space(source, pos + 6)
+            pair = scan_doctype_quoted(source, pos)
+            return unless pair
+
+            system_id, pos = pair
+          end
+
+          pos = skip_doctype_space(source, pos)
+          internal_subset = nil
+          if source[pos] == "["
+            subset_start = pos + 1
+            pos = matching_subset_end(source, pos + 1)
+            return unless pos
+
+            internal_subset = source[subset_start...pos]
+            pos += 1
+          end
+
+          pos = skip_doctype_space(source, pos)
+          return unless source[pos] == ">"
+
+          {
+            name: name,
+            external_id: external_id,
+            system_id: system_id,
+            internal_subset: internal_subset,
+          }
+        end
+
+        def skip_doctype_space(source, pos)
+          pos += 1 while pos < source.length &&
+            " \t\r\n".include?(source[pos])
+          pos
+        end
+
+        def scan_doctype_quoted(source, pos)
+          quote = source[pos]
+          return unless quote == '"' || quote == "'"
+
+          stop = source.index(quote, pos + 1)
+          return unless stop
+
+          [source[(pos + 1)...stop], stop + 1]
+        end
+
+        # Index just past the closing bracket at nesting depth zero,
+        # or nil when the subset is unterminated.
+        def matching_subset_end(source, pos)
+          depth = 1
+          quote = nil
+          while pos < source.length
+            char = source[pos]
+            if quote
+              quote = nil if char == quote
+            elsif char == '"' || char == "'"
+              quote = char
+            elsif char == "["
+              depth += 1
+            elsif char == "]"
+              depth -= 1
+              return pos if depth.zero?
+            end
+            pos += 1
+          end
+          nil
+        end
+
         def parse(xml, options = {}, _context = nil)
           # LibXML doesn't preserve DOCTYPE during parsing, so we need to extract it manually
           xml_string = if xml.is_a?(String)
@@ -101,14 +199,10 @@ module Moxml
           xml_string = preprocess_entities(xml_string)
 
           # Extract DOCTYPE before parsing. Locate the literal first:
-          # a plain memscan is ~2x cheaper than the regex's literal
-          # prefix scan on doctype-less documents (the common case),
-          # and matching from the found offset keeps captures
-          # identical.
+          # a plain memscan keeps doctype-less documents (the common
+          # case) off the scanner path; the scan itself is linear.
           doctype_idx = xml_string.index("<!DOCTYPE")
-          doctype_match = if doctype_idx
-                            xml_string.match(DOCTYPE_RE, doctype_idx)
-                          end
+          doctype = doctype_idx && doctype_parts(xml_string, doctype_idx)
 
           native_doc = begin
             # Handle both string and file inputs
@@ -138,17 +232,17 @@ module Moxml
           end
 
           # Store DOCTYPE if found
-          if doctype_match
-            name = doctype_match[1]
-            external_id = doctype_match[2]
-            system_id = doctype_match[3] || doctype_match[4]
+          if doctype
+            name = doctype[:name]
+            external_id = doctype[:external_id]
+            system_id = doctype[:system_id]
 
             doctype_wrapper = DoctypeWrapper.new(
               native_doc,
               name,
               external_id,
               system_id,
-              doctype_match[5],
+              doctype[:internal_subset],
             )
             attachments.set(native_doc, :doctype, doctype_wrapper)
           end
@@ -949,12 +1043,12 @@ module Moxml
 
         # libxml-ruby 5.x exposes no external/system ID accessor on
         # the DTD node — the DOCTYPE source text is the only source,
-        # so re-derive from it (same DOCTYPE_RE as the parse path).
+        # so re-derive from it (same linear scanner as the parse path).
         def doctype_external_id(native)
           if native.is_a?(DoctypeWrapper)
             native.external_id
           else
-            native.to_s[DOCTYPE_RE, 2]
+            Libxml.doctype_parts(native.to_s)&.dig(:external_id)
           end
         end
 
@@ -962,7 +1056,7 @@ module Moxml
           if native.is_a?(DoctypeWrapper)
             native.system_id
           else
-            native.to_s[DOCTYPE_RE, 3] || native.to_s[DOCTYPE_RE, 4]
+            Libxml.doctype_parts(native.to_s)&.dig(:system_id)
           end
         end
 
