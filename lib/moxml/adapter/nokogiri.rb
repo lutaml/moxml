@@ -58,6 +58,10 @@ module Moxml
           true
         end
 
+        def element_indent_supported?
+          true
+        end
+
         # --- XSLT (Moxml::XSLT contract, libxslt-backed) ---
 
         def xslt_compile(sheet_source)

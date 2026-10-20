@@ -196,6 +196,12 @@ with an unambiguous local name.
 * Native delegations (leptris engine, libxml2) answer **byte-identical**
   output to the Ruby reference path (byte-safety probed before
   engagement).
+* Document-level comments and PIs render in document order, separated
+  from adjacent nodes by exactly one line feed; the form starts and
+  ends with its first/last node (no leading or trailing line feed).
+  The XML declaration is document state and never part of the form.
+* PI data excludes the separating whitespace after the target; the
+  canonical form joins target and non-empty data with a single space.
 * `Moxml::C14n.equivalent?` is the algorithm-aware comparison.
 
 === XSLT

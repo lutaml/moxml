@@ -191,6 +191,13 @@ module Moxml
       def on_warning(message)
         @handlers[:warning]&.call(message)
       end
+
+      # A block handler subscribes to a family only when its DSL block
+      # was registered — it overrides every callback, so method
+      # ownership cannot answer interest here.
+      def handles?(family)
+        @handlers.key?(family)
+      end
     end
   end
 end

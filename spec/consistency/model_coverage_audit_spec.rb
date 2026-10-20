@@ -47,7 +47,6 @@ RSpec.describe "model coverage matrix" do
     "XPath evaluation and declared idioms" => {
       section: "XPath evaluation",
       pin: "spec/consistency/xpath_idioms_spec.rb",
-      exempt: { oga: "D-01" },
     },
     "serialization shapes (xml/html/xhtml)" => {
       section: "Serialization",
@@ -62,7 +61,7 @@ RSpec.describe "model coverage matrix" do
     "canonicalization" => {
       section: "Canonicalization",
       pin: "spec/moxml/c14n/adapter_delegation_spec.rb",
-      exempt: { oga: "D-04", ox: "D-05", headed_ox: "D-05" },
+      exempt: { ox: "D-05", headed_ox: "D-05" },
     },
     "XSLT" => {
       section: "XSLT",

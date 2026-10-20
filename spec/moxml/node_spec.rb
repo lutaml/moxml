@@ -156,9 +156,6 @@ RSpec.describe Moxml::Node do
         end
 
         it "locates the node via its path" do
-          # Ox translates only a limited XPath subset (no positional predicates)
-          skip "D-12: ox xpath translation does not support positional predicates" if adapter_name == :ox
-
           expect(doc.at_xpath(title.path)).to eq(title)
         end
 

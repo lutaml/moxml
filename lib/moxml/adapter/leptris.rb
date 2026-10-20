@@ -1219,13 +1219,23 @@ module Moxml
           true
         end
 
+        # Canonical XML excludes the initial whitespace of PI data;
+        # the C canonicalizer keeps the raw separator when the source
+        # used more than one whitespace character, so collapse it to
+        # the single canonical space (libxml2 oracle). In canonical
+        # output a literal "<?" can only start a PI: "<" is escaped in
+        # text and attribute values, and comments/DTD are not emitted
+        # on this lane.
+        NATIVE_C14N_PI_SEPARATOR = /<\?([^\s?]+)[ \t\r\n]+/
+
         def native_inclusive10(native)
           return nil unless native_c14n_byte_safe?
 
-          to_binding(native).canonicalize(
+          canonical = to_binding(native).canonicalize(
             ::Leptris::XML::FFI::C14N_1_0, nil,
             mode: ::Leptris::XML::FFI::C14N_MODE_CANONICAL
           )
+          canonical.gsub(NATIVE_C14N_PI_SEPARATOR, '<?\1 ')
         end
 
         def expanded_attr_value(element, uri, local)

@@ -247,10 +247,10 @@ module Moxml
         def children(node, **_entity_bearing)
           all_children = []
 
-          if node.is_a?(::Oga::XML::Document)
-            all_children += [node.xml_declaration,
-                             node.doctype].compact
-          end
+          # The XML declaration is document state, not a child node
+          # (model, Object model): it never appears in children listings.
+          # The doctype follows the Nokogiri contract and is listed.
+          all_children << node.doctype if node.is_a?(::Oga::XML::Document) && node.doctype
 
           return all_children unless node.is_a?(::Oga::XML::Node) || node.is_a?(::Oga::XML::Document)
 
@@ -513,7 +513,7 @@ module Moxml
         def processing_instruction_content(node)
           # Oga keeps the target/content separator space inside the
           # PI's text; the model's content is the data AFTER the
-          # separator (D-04). Separator whitespace is parser syntax, and
+          # separator. Separator whitespace is parser syntax, and
           # leaving it in makes canonicalization non-idempotent (the
           # serializer re-adds the separator each round — TODO.sota/02,
           # M2).
@@ -565,6 +565,15 @@ module Moxml
         end
 
         def xpath(node, expression, namespaces = nil)
+          # oga's engine has no xmlns: default-namespace idiom
+          # (D-01); the reference engine implements it (model,
+          # Names and namespaces).
+          if expression.include?("xmlns:")
+            return Moxml::XPath.evaluate_natives(
+              node, expression, namespaces || {}, adapter: :oga
+            )
+          end
+
           result = node.xpath(expression, {},
                               namespaces: namespaces&.transform_keys(&:to_s))
           # Adapter contract: Array<native> | scalar. Oga's engine
