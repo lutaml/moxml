@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Processing model §Parsing (normative): pinned here.
+
 require "spec_helper"
 
 # XML 1.0 §2.11 End-of-Line Handling: literal CRLF and lone CR

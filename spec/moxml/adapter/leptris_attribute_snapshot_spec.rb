@@ -5,10 +5,13 @@ require "spec_helper"
 # moxml#375 — element hydration through the binding's
 # attributes_snapshot face (libleptris 1.9.353, engine
 # leptris#1689): one crossing for every attribute instead of one
-# per attribute. The output contract is stride-identical to the
-# binding's per-attribute face: qualified names, document order,
-# fresh values.
+# per attribute. The facade listing face is bare names (uniform with
+# every adapter, and with Attribute#name), document order, fresh
+# values.
 RSpec.describe "leptris element-attribute snapshot hydration" do
+  def bare(pairs)
+    pairs.map { |(name, value)| [name.split(":", 2).last, value] }
+  end
   let(:ctx) { Moxml.new(:leptris) }
 
   context "when the snapshot face is armed (>= 1.9.353.0)" do
@@ -23,11 +26,11 @@ RSpec.describe "leptris element-attribute snapshot hydration" do
         '<root a="1" xml:lang="en" xmlns:ns="urn:u" ns:p="v"/>',
       )
       binding_element = Moxml::Adapter::Leptris.to_binding(doc.root)
-      expected = binding_element.attribute_pairs
+      expected = bare(binding_element.attribute_pairs)
 
       expect(doc.root.attribute_pairs).to eq(expected)
       expect(doc.root.attribute_pairs).to eq(
-        [["a", "1"], ["xml:lang", "en"], ["ns:p", "v"]],
+        [["a", "1"], ["lang", "en"], ["p", "v"]],
       )
     end
 
@@ -36,7 +39,7 @@ RSpec.describe "leptris element-attribute snapshot hydration" do
         '<root z="9" xmlns:m="urn:m" m:x="8" k="7"/>',
       )
       expect(doc.root.attribute_pairs.map(&:first)).to eq(
-        %w[z m:x k],
+        %w[z x k],
       )
     end
 
@@ -71,7 +74,7 @@ RSpec.describe "leptris element-attribute snapshot hydration" do
       )
       binding_element = Moxml::Adapter::Leptris.to_binding(doc.root)
       expect(doc.root.attribute_pairs).to eq(
-        binding_element.attribute_pairs,
+        bare(binding_element.attribute_pairs),
       )
     end
   end

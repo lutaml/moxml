@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Processing model §Errors and loud degradation (normative): pinned here.
+
 require "spec_helper"
 
 # Loud degradation (processing model, "Errors and loud degradation"):

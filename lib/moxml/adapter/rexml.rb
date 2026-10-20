@@ -655,6 +655,15 @@ module Moxml
           # re-order here, the oga lane's pattern.
           return results if results.empty?
 
+          # Scalar arm: count()/string()/boolean()/arithmetic answer a
+          # one-element array holding the value; the adapter contract
+          # passes scalars through unwrapped (numbers as Float,
+          # uniform with the other adapters).
+          unless results.first.is_a?(::REXML::Node)
+            value = results.first
+            return value.is_a?(Numeric) ? value.to_f : value
+          end
+
           ctx = Context.new(:rexml)
           wrapped = results.map { |n| Moxml::Node.wrap(n, ctx) }
           Moxml::XPath::Ordering.document_order(wrapped).map(&:native)

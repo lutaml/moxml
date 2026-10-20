@@ -727,6 +727,11 @@ module Moxml
             end)
           when NodeSet
             dedupe_natives(result.to_a.map(&:native))
+          when Moxml::Node
+            # The engine answers a lone node for the context node
+            # (`.`); the adapter contract is a node-set for node
+            # results.
+            [result.native]
           else
             result
           end

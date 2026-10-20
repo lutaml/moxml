@@ -9,7 +9,7 @@ module Moxml
     class Libxml < Base
       # DOCTYPE prolog sniffer; see parse for the index-then-match
       # strategy that keeps this off the hot path.
-      DOCTYPE_RE = /<!DOCTYPE\s+([^\s>]+)(?:\s+PUBLIC\s+"([^"]+)"\s+"([^"]+)"|\s+SYSTEM\s+"([^"]+)")?\s*>/i
+      DOCTYPE_RE = /<!DOCTYPE\s+([^\s>\[]+)(?:\s+PUBLIC\s+"([^"]+)"\s+"([^"]+)"|\s+SYSTEM\s+"([^"]+)")?\s*(?:\[(.*?)\])?\s*>/im
       private_constant :DOCTYPE_RE
 
       autoload :EntityRefRegistry, "moxml/adapter/libxml/entity_ref_registry"
@@ -17,13 +17,14 @@ module Moxml
       # Wrapper class to store DOCTYPE information
       class DoctypeWrapper
         attr_reader :native_doc
-        attr_accessor :name, :external_id, :system_id
+        attr_accessor :name, :external_id, :system_id, :internal_subset
 
-        def initialize(doc, name, external_id, system_id)
+        def initialize(doc, name, external_id, system_id, internal_subset = nil)
           @native_doc = doc
           @name = name
           @external_id = external_id
           @system_id = system_id
+          @internal_subset = internal_subset
         end
 
         # Provide native method to match adapter pattern
@@ -32,7 +33,8 @@ module Moxml
         end
 
         def to_xml
-          XmlEmitter.doctype_xml(@name, @external_id, @system_id)
+          XmlEmitter.doctype_xml(@name, @external_id, @system_id,
+                                 @internal_subset)
         end
       end
 
@@ -146,6 +148,7 @@ module Moxml
               name,
               external_id,
               system_id,
+              doctype_match[5],
             )
             attachments.set(native_doc, :doctype, doctype_wrapper)
           end
@@ -972,8 +975,10 @@ module Moxml
           # expression from the document node is equivalent to the
           # absolute form — the document's only name-testable child
           # is the root — so rewrite instead of losing the match.
+          # Function calls and unions are not name-test paths: a
+          # "/count(...)" rewrite is invalid XPath (scalar arm).
           if native_node.is_a?(::LibXML::XML::Document) &&
-              expression.match?(/\A[A-Za-z_*@]/)
+              relative_name_path?(expression)
             expression = "/#{expression}"
           end
 
@@ -1007,6 +1012,16 @@ module Moxml
           results&.first
         end
 
+        # A relative name-test path (the only shape the document-context
+        # rewrite is for): a name/`*`/`@` start, no function call (the
+        # scalar arm), no union.
+        def relative_name_path?(expression)
+          return false unless expression.match?(/\A[A-Za-z_*@]/)
+          return false if expression.match?(/\A[A-Za-z][\w.-]*\s*\(/)
+
+          !expression.include?("|")
+        end
+
         # Shallow duplication: copies the node itself (name, attrs, namespaces)
         # but NOT its descendants (deep duplication composes this).
         # walks the source tree and re-adds children one at a time via
@@ -1029,6 +1044,7 @@ module Moxml
                 node.name,
                 node.external_id,
                 node.system_id,
+                node.internal_subset,
               )
             else
               node

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Processing model §Materialization (normative): pinned here.
+
 require "spec_helper"
 
 # Moxml::Plan adapter-contract conformance (leptris follow-up to

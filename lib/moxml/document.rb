@@ -272,7 +272,7 @@ module Moxml
       # - NodeSet: already wrapped, return directly
       # - Array / LazyNodeSet: wrap in NodeSet
       case result
-      when NodeSet, Float, String, TrueClass, FalseClass, NilClass
+      when NodeSet, Numeric, String, TrueClass, FalseClass, NilClass
         result
       when Array, LazyNodeSet
         NodeSet.new(result, context)
@@ -282,12 +282,12 @@ module Moxml
       end
     end
 
+    # Sugar over xpath: the first node of a node-set; scalar results
+    # (count(), string(), boolean()) pass through unwrapped and
+    # uniform across adapters.
     def at_xpath(expression, namespaces = nil)
-      expression = lax_document_path(expression) if relative_name_test?(expression)
-
-      if (native_node = adapter.at_xpath(@native, expression, namespaces))
-        Moxml::Node.wrap(native_node, context)
-      end
+      result = xpath(expression, namespaces)
+      result.is_a?(NodeSet) ? result.first : result
     end
 
     # Quick element creation and addition

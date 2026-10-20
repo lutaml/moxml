@@ -50,18 +50,37 @@ module InputTaxonomy
       nodes: { ox: "D-13", headed_ox: "D-13" },
       text: { ox: "D-13", headed_ox: "D-13" },
     },
+    "mixed content: CRLF text normalizes to LF" => {
+      text: { oga: "D-02" },
+    },
+    "mixed content: bare CR text normalizes to LF" => {
+      text: { oga: "D-02" },
+    },
+    "mixed content: character-ref CR survives" => {
+      text: { oga: "D-02", ox: "D-03", headed_ox: "D-03" },
+    },
     "pi/comment/cdata: pi inside content" => {
       text: { oga: "D-14" },
+      pi_content: { ox: "D-05", headed_ox: "D-05" },
     },
     "pi/comment/cdata: pi multi-space separator" => {
       text: { oga: "D-14" },
+      pi_content: { ox: "D-05", headed_ox: "D-05" },
     },
     "huge text with entities" => {
       text: { rexml: "D-16" },
+      serialize: { rexml: "D-16" },
     },
     "pi/comment/cdata: pi before root" => {
       nodes: { rexml: "D-15" },
       text: { rexml: "D-15" },
+      pi_content: { ox: "D-05", headed_ox: "D-05" },
+    },
+    "pi/comment/cdata: comment before and after root" => {
+      comment_content: { ox: "D-06", headed_ox: "D-06" },
+    },
+    "pi/comment/cdata: comment inside content" => {
+      comment_content: { ox: "D-06", headed_ox: "D-06" },
     },
   }.freeze
 
@@ -148,6 +167,12 @@ module InputTaxonomy
                 "<r>\n  <b>x</b>\n  <b>y</b>\n</r>", true, nil),
       Input.new("mixed content: attribute entities in text", "mixed content",
                 '<r a="&lt;&amp;">&lt;tag&gt;</r>', true, nil),
+      Input.new("mixed content: CRLF text normalizes to LF", "mixed content",
+                "<r>a\r\nb</r>", true, "XML 1.0 §2.11"),
+      Input.new("mixed content: bare CR text normalizes to LF", "mixed content",
+                "<r>a\rb</r>", true, "XML 1.0 §2.11"),
+      Input.new("mixed content: character-ref CR survives", "mixed content",
+                "<r>a&#xD;b</r>", true, "&#xD; is not normalized"),
 
       # -- pi/comment/cdata edges --
       Input.new("pi/comment/cdata: pi before root", "pi/comment/cdata edges",

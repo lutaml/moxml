@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# Processing model §Names and namespaces (normative): pinned here.
+# Processing model §XPath evaluation (normative): pinned here.
+
 require "spec_helper"
 
 # Cross-adapter XPath idioms that nokogiri consumers rely on:
@@ -106,6 +109,14 @@ RSpec.describe "XPath idioms across adapters" do
         expect(doc.at_xpath(".")).to be_truthy
         expect(doc.at_xpath("/*")&.name).to eq("r")
         expect(doc.at_xpath("/r")&.name).to eq("r")
+      end
+
+      it "answers scalar XPath functions unwrapped and uniform" do
+        doc = ctx.parse(plain_xml)
+        expect(doc.xpath("count(//a)")).to eq(1.0)
+        expect(doc.xpath("string(//a/@id)")).to eq("x")
+        expect(doc.xpath("boolean(//b)")).to be(true)
+        expect(doc.at_xpath("count(//a)")).to eq(1.0)
       end
     end
   end

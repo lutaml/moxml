@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Processing model §Document order and traversal (normative): pinned here.
+
 RSpec.describe "Adapter Examples" do
   let(:xml) { "<root><child>text</child></root>" }
 

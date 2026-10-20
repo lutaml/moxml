@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Processing model §Serialization (normative): pinned here.
+
 require "spec_helper"
 
 # Issue #390: XHTML-shaped serialization — void elements self-closed

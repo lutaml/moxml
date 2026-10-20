@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Processing model §Serialization (normative): pinned here.
+
 require "spec_helper"
 
 # Document#to_html (issue #354): HTML-method serialization with the
