@@ -12,10 +12,9 @@ RSpec.describe "divergence citations" do
   def offenses(paths)
     paths.flat_map do |path|
       File.readlines(path).each_with_index.filter_map do |line, idx|
-        next unless line.match?(CITATION_PHRASE)
-        next if line.match?(/D-\d+/)
-
-        "#{path}:#{idx + 1}: #{line.strip}"
+        claim = line.match?(CITATION_PHRASE)
+        cited = line.match?(/D-\d+/)
+        "#{path}:#{idx + 1}: #{line.strip}" if claim && !cited
       end
     end
   end
