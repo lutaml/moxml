@@ -264,7 +264,7 @@ All adapters now use expanded format (`<empty></empty>`) for consistency, contro
 
 === Whitespace handling
 
-Minor differences in whitespace preservation between adapters are documented and expected.
+Minor differences in whitespace preservation between adapters are registered where they are observable — see link:divergences.html[the divergence register].
 
 == Pending tests summary
 
@@ -337,7 +337,7 @@ Minor differences in whitespace preservation between adapters are documented and
 * Prefer pure Ruby XPath implementation for debugging
 * Need more XPath capabilities than standard Ox provides
 * Memory efficiency important but XPath features required
-* Can work within documented limitations (99.20% compatibility)
+* Can work within the known limitations (99.20% compatibility)
 
 == Test strategy
 
@@ -370,7 +370,7 @@ This ensures consistent behavior regardless of underlying adapter's validation s
 The pending tests represent either:
 
 * Optional features (benchmarks)
-* Known adapter limitations (documented)
+* Known adapter limitations (see link:divergences.html[the register])
 * Platform-specific behavior differences (acceptable)
 
 **No action required - library is in excellent production-ready state.**

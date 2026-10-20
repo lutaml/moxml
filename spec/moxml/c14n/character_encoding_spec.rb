@@ -12,25 +12,19 @@ LATIN1_XML = (+"<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><r>caf\xE9</r>").
 BOM_XML = (+"\xEF\xBB\xBF<r/>").force_encoding("UTF-8")
 NFC_XML = (+"<r>caf\xC3\xA9</r>").force_encoding("UTF-8")
 
-# oga's parse layer leaks the declaration as a PI node and the BOM as
-# text (pre-existing, documented in the W3C examples spec).
-OGA_LEAK = %i[oga].freeze
-
 RSpec.describe "Moxml character encoding at the parse boundary" do
   Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
     context "with the #{adapter_name} adapter" do
       let(:ctx) { Moxml.new(adapter_name) }
 
-      unless OGA_LEAK.include?(adapter_name)
-        it "transcodes declared Latin-1 to UTF-8 bytes" do
-          doc = ctx.parse(LATIN1_XML.dup)
-          expect(Moxml::C14n.canonicalize(doc).bytes).to eq(CAF_E_UTF8)
-        end
+      it "transcodes declared Latin-1 to UTF-8 bytes" do
+        doc = ctx.parse(LATIN1_XML.dup)
+        expect(Moxml::C14n.canonicalize(doc).bytes).to eq(CAF_E_UTF8)
+      end
 
-        it "strips a leading UTF-8 BOM" do
-          doc = ctx.parse(BOM_XML.dup)
-          expect(Moxml::C14n.canonicalize(doc)).to eq("<r></r>")
-        end
+      it "strips a leading UTF-8 BOM" do
+        doc = ctx.parse(BOM_XML.dup)
+        expect(Moxml::C14n.canonicalize(doc)).to eq("<r></r>")
       end
 
       it "passes NFC content through without normalization" do

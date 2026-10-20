@@ -8,6 +8,10 @@ nav_order: 1
 This section covers the fundamental concepts and essential information for
 working with Moxml.
 
+Start with link:why-moxml[Why Moxml] for the invariant and the evidence
+apparatus, then link:model-coverage[Model coverage] for the
+adapter-by-adapter proof.
+
 === Topics covered
 
 link:installation[Installation]::

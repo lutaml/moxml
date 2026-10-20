@@ -559,6 +559,19 @@ namespace_validation_mode: :strict)
           false
         end
 
+        # libxml2 (nokogiri and libxml-ruby alike) rejects an empty
+        # namespace URI in an XPath binding context, but the model's
+        # `xmlns:` idiom must be able to address the no-namespace
+        # default. Adapters route such expressions through the
+        # reference engine.
+        def empty_default_namespace_binding?(namespaces)
+          return false unless namespaces
+
+          namespaces.any? do |prefix, uri|
+            prefix.to_s == "xmlns" && uri.to_s.empty?
+          end
+        end
+
         # Whether children() results need per-child patch_node
         # rewriting. Adapters whose natives arrive pre-wrapped (all but
         # ox and libxml) answer false so the wrapper layer can skip

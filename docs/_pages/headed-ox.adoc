@@ -658,7 +658,7 @@ following = items[current_index + 1..-1]
 ----
 Total Tests:    2,008
 Passing:        1,992 (99.20%)
-Skipped:        16 (0.80% - documented Ox limitations)
+Skipped:        16 (0.80% - known Ox limitations; see link:divergences.html[the register])
 Failures:       0
 
 Test Categories:
@@ -686,7 +686,7 @@ Production Use:    Ready
 
 === Known limitations with test status
 
-All 16 limitations are comprehensively documented:
+All 16 limitations are catalogued below:
 
 . **Attribute wildcards** (3 tests) - Ox `locate()` doesn't support `@*`
 . **Namespace introspection** (4 tests) - Ox doesn't expose namespace data

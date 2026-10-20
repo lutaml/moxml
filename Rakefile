@@ -340,4 +340,11 @@ namespace :opal do
   end
 end
 
+namespace :docs do
+  desc "Regenerate the published model-coverage page from the matrix"
+  task :coverage do
+    sh "bundle exec ruby -I spec bin/generate-model-coverage"
+  end
+end
+
 task default: :spec

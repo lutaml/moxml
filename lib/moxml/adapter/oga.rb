@@ -28,8 +28,23 @@ module Moxml
           doc.children << element
         end
 
+        # The UTF-8 BOM is an encoding signature, not content (model,
+        # Parsing); Oga otherwise leaves it in the tree as a
+        # document-level text node.
+        def strip_bom(xml)
+          return xml unless xml.is_a?(String)
+
+          if defined?(Encoding) && xml.encoding == Encoding::BINARY
+            xml.byteslice(0, 3) == "\xEF\xBB\xBF".b ? xml.byteslice(3..) : xml
+          elsif xml.start_with?("﻿")
+            xml[1..]
+          else
+            xml
+          end
+        end
+
         def parse(xml, options = {}, _context = nil)
-          processed_xml = preprocess_entities(xml)
+          processed_xml = strip_bom(preprocess_entities(xml))
 
           native_doc = begin
             ::Oga.parse_xml(processed_xml, strict: options[:strict])

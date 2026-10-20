@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "support/model_coverage"
 
 # Model coverage matrix (TODO.model/03): every face family of the
 # processing model is governed for every adapter — covered by a pin
@@ -8,83 +9,13 @@ require "spec_helper"
 # a registered divergence (adapter => D-ID), or loud (adapter =>
 # the named error class). An unpinned family is an ungoverned cell:
 # this audit fails until it has one of the three.
-# See docs/_references/processing-model.adoc for the model itself.
+#
+# The matrix itself lives in spec/support/model_coverage.rb: the same
+# data drives this audit, the model document's pin lists, and the
+# published coverage page. See docs/_references/processing-model.adoc
+# for the model itself.
 RSpec.describe "model coverage matrix" do
-  MODEL_MATRIX = { # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
-    "document order and children listing" => {
-      section: "Document order and traversal",
-      pin: "spec/consistency/adapter_parity_spec.rb",
-    },
-    "name resolution" => {
-      section: "Names and namespaces",
-      pin: "spec/consistency/xpath_idioms_spec.rb",
-    },
-    "namespace resolution and bindings normalization" => {
-      section: "Names and namespaces",
-      pin: "spec/consistency/xpath_idioms_spec.rb",
-    },
-    "attribute access" => {
-      section: "Access semantics",
-      pin: "spec/moxml/attribute_resolver_spec.rb",
-    },
-    "text/content/raw_content" => {
-      section: "Access semantics",
-      pin: "spec/moxml/text_spec.rb",
-    },
-    "parsing modes and diagnostics" => {
-      section: "Parsing",
-      pin: "spec/moxml/document_parse_diagnostics_spec.rb",
-    },
-    "EOL normalization" => {
-      section: "Parsing",
-      pin: "spec/consistency/eol_normalization_spec.rb",
-      exempt: { oga: "D-02", ox: "D-03" },
-    },
-    "entity modes" => {
-      section: "Parsing",
-      pin: "spec/moxml/entity_spec.rb",
-    },
-    "XPath evaluation and declared idioms" => {
-      section: "XPath evaluation",
-      pin: "spec/consistency/xpath_idioms_spec.rb",
-    },
-    "serialization shapes (xml/html/xhtml)" => {
-      section: "Serialization",
-      pin: "spec/moxml/xhtml_output_spec.rb",
-    },
-    "indentation knobs" => {
-      section: "Serialization",
-      pin: "spec/moxml/to_html_spec.rb",
-      exempt: { oga: "D-09", ox: "D-09", headed_ox: "D-09",
-                libxml: "D-09", leptris: "D-09" },
-    },
-    "canonicalization" => {
-      section: "Canonicalization",
-      pin: "spec/moxml/c14n/adapter_delegation_spec.rb",
-      exempt: { ox: "D-05", headed_ox: "D-05" },
-    },
-    "XSLT" => {
-      section: "XSLT",
-      pin: "spec/consistency/xslt_spec.rb",
-      loud: { oga: "Moxml::NotImplementedError",
-              ox: "Moxml::NotImplementedError",
-              headed_ox: "Moxml::NotImplementedError",
-              rexml: "Moxml::NotImplementedError",
-              libxml: "Moxml::NotImplementedError" },
-    },
-    "SAX" => {
-      section: "SAX",
-      pin: "spec/moxml/sax_spec.rb",
-    },
-    "materialization" => {
-      section: "Materialization",
-      pin: "spec/moxml/plan_conformance_spec.rb",
-    },
-    "loud capability contracts" => {
-      section: "Errors and loud degradation",
-      pin: "spec/consistency/loud_degradation_spec.rb",
-    },
-  }.freeze
+  MODEL_MATRIX = ModelCoverage::MATRIX # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
   def register_ids
     File.readlines("docs/_pages/divergences.adoc")
@@ -133,17 +64,30 @@ RSpec.describe "model coverage matrix" do
   # section vanished fails too.
   MODEL_DOC = "docs/_references/processing-model.adoc" # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
-  NON_FACE_SECTIONS = [ # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
-    "Status and precedence",
-    "Mission and invariant",
-    "Object model",
-    "Performance: a declared, non-semantic channel",
-  ].freeze
+  NON_FACE_SECTIONS = ModelCoverage::NON_FACE_SECTIONS # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
   def model_sections
     File.readlines(MODEL_DOC).filter_map do |line|
       line[/\A=== (\S.*)$/, 1]&.strip
     end.uniq
+  end
+
+  # Document-side pin lists (TODO.sota/07): every section carries a
+  # `Pins::` line naming the specs that enforce it (`Pins:: none` for
+  # non-face sections). Parsed as section => [paths] or nil when the
+  # line is missing.
+  def model_pin_lists
+    lists = {}
+    current = nil
+    File.readlines(MODEL_DOC).each do |line|
+      if (heading = line[/\A=== (\S.*)$/, 1])
+        current = heading.strip
+        lists[current] = nil
+      elsif current && (entry = line[/\APins:: (.*)$/, 1])
+        lists[current] = entry.scan(/`([^`]+)`/).flatten
+      end
+    end
+    lists
   end
 
   it "cites an existing model section for every face family" do
@@ -172,6 +116,38 @@ RSpec.describe "model coverage matrix" do
     stale = NON_FACE_SECTIONS.reject { |s| model_sections.include?(s) }
     expect(stale).to be_empty,
                      "non-face declarations citing missing sections: #{stale.join('; ')}"
+  end
+
+  it "gives every model section a Pins line" do
+    missing = model_pin_lists.select { |_, pins| pins.nil? }.keys
+    expect(missing).to be_empty,
+                       "model sections without a Pins line: #{missing.join('; ')}"
+  end
+
+  it "matches the model doc's face-section pin lists to the matrix" do
+    lists = model_pin_lists
+    drift = ModelCoverage.sections.filter_map do |section|
+      expected = ModelCoverage.pins_for(section)
+      got = lists[section]
+      "#{section}: doc #{got.inspect} vs matrix #{expected.inspect}" if got != expected
+    end
+    expect(drift).to be_empty,
+                     "model-doc pin lists drift from the matrix: #{drift.join('; ')}"
+  end
+
+  it "leaves non-face sections without pins" do
+    lists = model_pin_lists
+    pinned = NON_FACE_SECTIONS.select { |section| lists[section]&.any? }
+    expect(pinned).to be_empty,
+                      "non-face sections must declare Pins:: none: #{pinned.join('; ')}"
+  end
+
+  it "points every model-doc pin at an existing spec" do
+    missing = model_pin_lists.values.compact.flatten.uniq.reject do |path|
+      File.exist?(path)
+    end
+    expect(missing).to be_empty,
+                       "model-doc pins missing on disk: #{missing.join(', ')}"
   end
 
   # Bidirectional linkage (TODO.sota/03): the model doc, the pins, and
