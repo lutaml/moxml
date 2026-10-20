@@ -141,4 +141,42 @@ RSpec.describe Moxml::XSD do
         .to eq(Moxml::Adapter::Leptris::NATIVE_XSD)
     end
   end
+
+  describe "content_valid? with C-minted identity children (moxml#410)",
+           if: Moxml::Adapter::Leptris::XSD_SUPPORTED do
+    let(:ctx) { Moxml.new(:leptris) }
+    let(:schema_text) do
+      <<~XML
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+          <xs:element name="person">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element name="name" type="xs:string"/>
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:schema>
+      XML
+    end
+
+    it "answers for identity wrappers minted at create (1.9.374+)" do
+      schema = ctx.xsd(schema_text)
+      doc = ctx.create_document
+      root = doc.create_element("person")
+      doc.root = root
+      name = doc.create_element("name")
+      name.text = "A"
+      root.add_child(name)
+
+      expect(root.native.class.name).to include("Identity")
+      expect(schema.content_valid?("person", root.children.to_a)).to be(true)
+    end
+
+    it "answers for identity children from parse" do
+      schema = ctx.xsd(schema_text)
+      root = ctx.parse("<person><name>A</name></person>").root
+      expect(schema.content_valid?("person", root.children.to_a)).to be(true)
+      expect(schema.content_valid?("person", [])).to be(false)
+    end
+  end
 end
