@@ -847,6 +847,12 @@ module Moxml
     def self.wrap_with(node, context, adapter)
       return nil if node.nil?
 
+      # Identity natives ARE the canonical wrapper (leptris C-mint):
+      # @native is self, so canonicalization, the cache probes and
+      # the re-mint below all answer the receiver. One native ivar
+      # read decides; shells (@native != self) take the full path.
+      return node if node.is_a?(Node) && node.instance_variable_get(:@native).equal?(node)
+
       # One C node may have several Ruby representations (leptris
       # native/binding duality, moxml#311); every wrap resolves to
       # the canonical one so memo holders share one invalidation
