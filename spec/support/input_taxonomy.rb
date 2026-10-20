@@ -41,6 +41,39 @@ module InputTaxonomy
     "malformed",
   ].freeze
 
+  # Registered per-input exemptions for the cross-adapter
+  # differential: input id => { face => { adapter => D-NN } }. The
+  # values are register IDs (docs/_pages/divergences.adoc) enforced
+  # by the coverage audit.
+  EXEMPT = {
+    "mixed content: whitespace runs" => {
+      nodes: { ox: "D-13", headed_ox: "D-13" },
+      text: { ox: "D-13", headed_ox: "D-13" },
+    },
+    "pi/comment/cdata: pi inside content" => {
+      text: { oga: "D-14" },
+    },
+    "huge text with entities" => {
+      text: { rexml: "D-16" },
+    },
+    "pi/comment/cdata: pi before root" => {
+      nodes: { rexml: "D-15" },
+      text: { rexml: "D-15" },
+    },
+  }.freeze
+
+  # Engines whose strict lane cannot see a class of malformedness are
+  # registered: oga's strict is lexer-strict, not well-formedness-
+  # strict (D-17). leptris raises through the facade guard (D-18,
+  # leptris-ruby#514) and is therefore verified, not exempt; entity
+  # and prefix classes are engine-variant by design (entity modes,
+  # namespace validation).
+  STRICT_EXEMPT = {
+    "malformed: bad nesting" => { oga: "D-17" },
+    "malformed: invalid utf-8 byte" => { oga: "D-18", ox: "D-18",
+                                         headed_ox: "D-18" },
+  }.freeze
+
   def self.inputs
     [
       # -- empty/minimal --

@@ -10,25 +10,8 @@ require "support/input_taxonomy"
 # round-trip) per adapter over every well-formed input. Nothing is
 # exempt without a D-ID: this is the generated-evidence face of the
 # conformance relation.
-RSpec.describe "cross-adapter taxonomy differential" do
-  # input id => { face => { adapter => D-NN } }
-  EXEMPT = {
-    "mixed content: whitespace runs" => {
-      nodes: { ox: "D-13", headed_ox: "D-13" },
-      text: { ox: "D-13", headed_ox: "D-13" },
-    },
-    "pi/comment/cdata: pi inside content" => {
-      text: { oga: "D-14" },
-    },
-    "huge text with entities" => {
-      text: { rexml: "D-16" },
-    },
-    "pi/comment/cdata: pi before root" => {
-      nodes: { rexml: "D-15" },
-      text: { rexml: "D-15" },
-    },
-  }.freeze
 
+RSpec.describe "cross-adapter taxonomy differential" do
   def snapshot(doc)
     {
       nodes: doc.traverse.to_a.grep_v(Moxml::Document).count,
@@ -56,7 +39,7 @@ RSpec.describe "cross-adapter taxonomy differential" do
       base = per[base_name]
       per.each do |name, got|
         base.except(:text).each_key do |face|
-          exempt = EXEMPT.dig(input.id, face, name)
+          exempt = InputTaxonomy::EXEMPT.dig(input.id, face, name)
           next if exempt
 
           expect(got[face]).to eq(base[face]),
@@ -65,7 +48,7 @@ RSpec.describe "cross-adapter taxonomy differential" do
                                "#{base[face].inspect} — fix it or register " \
                                "a divergence and exempt the cell"
         end
-        text_exempt = EXEMPT.dig(input.id, :text, name)
+        text_exempt = InputTaxonomy::EXEMPT.dig(input.id, :text, name)
         next if text_exempt
 
         expect(got[:text]).to eq(base[:text]),
@@ -77,7 +60,7 @@ RSpec.describe "cross-adapter taxonomy differential" do
     end
   end
 
-  it "keeps the round trip stable per adapter (M1: parse∘serialize)" do
+  it "keeps the round trip stable per adapter (M1: parse∘serialize)" do # rubocop:disable RSpec/NoExpectationExample
     InputTaxonomy.well_formed.each do |input|
       Moxml::Adapter::AVAILABLE_ADAPTERS.each do |name|
         begin
@@ -109,35 +92,25 @@ RSpec.describe "cross-adapter taxonomy differential" do
   end
 
   it "raises the named parse error on strict malformed input, everywhere" do
-    # Engines whose strict lane cannot see a class of malformedness
-    # are registered: oga's strict is lexer-strict, not
-    # well-formedness-strict (D-17); entity/prefix classes are
-    # engine-variant by design (entity modes, namespace validation).
-    STRICT_EXEMPT = {
-      "malformed: bad nesting" => { oga: "D-17" },
-      "malformed: invalid utf-8 byte" => { leptris: "D-18", oga: "D-18",
-                                           ox: "D-18",
-                                           headed_ox: "D-18" },
-    }.freeze
+    # Entity/reference and namespace-validation classes are
+    # engine-variant by design — moxml governs them with config
+    # (entity modes, namespace validation), not with a registered
+    # divergence.
+    engine_variant = %w[undefined reference undeclared prefix].freeze
+    inputs = InputTaxonomy.malformed.reject do |input|
+      engine_variant.any? { |term| input.id.include?(term) }
+    end
 
-    InputTaxonomy.malformed.each do |input|
-      next if input.id.include?("undefined reference") ||
-        input.id.include?("undeclared prefix") # engine-variant classes
-
+    inputs.each do |input|
       Moxml::Adapter::AVAILABLE_ADAPTERS.each do |name|
-        next if STRICT_EXEMPT.dig(input.id, name)
+        next if InputTaxonomy::STRICT_EXEMPT.dig(input.id, name)
 
-        begin
-          # The strict lane, named: the model's default posture for
-          # malformed input is a named raise on every adapter.
-          Moxml.new(name).parse(input.xml, strict: true)
-        rescue Moxml::ParseError
-          next # the contract answer
-        rescue Moxml::Error => e
-          raise "#{input.id}/#{name}: wrong error class " \
-                "#{e.class}: #{e.message[0, 60]}"
-        end
-        raise "#{input.id}/#{name}: strict parse accepted malformed input"
+        # The strict lane, named: the model's default posture for
+        # malformed input is a named raise on every adapter.
+        expect { Moxml.new(name).parse(input.xml, strict: true) }
+          .to raise_error(Moxml::ParseError),
+              "#{input.id}/#{name}: strict parse accepted malformed " \
+              "input or raised outside the named ParseError contract"
       end
     end
   end

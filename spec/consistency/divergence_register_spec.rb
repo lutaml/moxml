@@ -9,7 +9,7 @@ require "spec_helper"
 # no spec cites an unregistered ID.
 RSpec.describe "divergence register linkage" do
   REGISTER_PATH = "docs/_pages/divergences.adoc" # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
-  SCAN_GLOBS = %w[spec/consistency/**/*.rb spec/moxml/**/*.rb].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+  SCAN_GLOBS = %w[spec/consistency/**/*.rb spec/moxml/**/*.rb spec/support/*.rb].freeze # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
   NEXT_GATE = [ # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
     /same engine as/, # engine dedup, not a divergence
     /source_adapter == target_adapter/, # self round-trip
