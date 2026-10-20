@@ -241,6 +241,16 @@ module Moxml
 
       XSD_SUPPORTED = NATIVE_XSD
 
+      # RELAX NG (moxml RelaxNG contract): the binding ships the RNG
+      # facade over the engine's Jing-compatible validator.
+      RELAXNG_SUPPORTED = begin
+        require "leptris/xml/relaxng"
+        defined?(::Leptris::XML::RelaxNG) &&
+          ::Leptris::XML::RelaxNG.respond_to?(:parse_file)
+      rescue LoadError
+        false
+      end
+
       # Schema#release (moxml#362.3, binding 1.9.342+): the
       # deterministic drop face — disarms the AutoPointer's GC
       # finalizer and frees now. Face-probed with the version
@@ -324,6 +334,40 @@ module Moxml
           end
 
           ::Leptris::XML::XSD.compile_file(path)
+        end
+
+        def relaxng_compile(schema_source)
+          unless RELAXNG_SUPPORTED
+            raise Moxml::NotImplementedError,
+                  "RELAX NG validation requires a leptris binding with the RNG face"
+          end
+
+          ::Leptris::XML::RelaxNG.parse(schema_source)
+        rescue ::Leptris::XML::Error => e
+          raise Moxml::ValidationError.new(
+            "RELAX NG schema parse failed: #{e.message}",
+          )
+        end
+
+        def relaxng_compile_file(path)
+          unless RELAXNG_SUPPORTED
+            raise Moxml::NotImplementedError,
+                  "RELAX NG validation requires a leptris binding with the RNG face"
+          end
+
+          ::Leptris::XML::RelaxNG.parse_file(path)
+        rescue ::Leptris::XML::Error => e
+          raise Moxml::ValidationError.new(
+            "RELAX NG schema parse failed: #{e.message}",
+          )
+        end
+
+        def relaxng_validate_errors(handle, document)
+          handle.validate_errors(to_binding(document))
+        end
+
+        def relaxng_valid?(handle, document)
+          handle.valid?(to_binding(document))
         end
 
         def xsd_builtin_valid?(builtin, lexical)
