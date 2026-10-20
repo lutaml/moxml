@@ -10,13 +10,20 @@ require "spec_helper"
 RSpec.describe "detached text content= names the cause" do
   let(:ctx) { Moxml.new(:leptris) }
 
-  it "raises a named Moxml error for a removed text node" do
+  it "answers removed text nodes: mutable on fixed engines (1.9.374+), named error before" do
     doc = ctx.parse("<r><a>x</a><b>y</b></r>")
     text = doc.root.children[0].children[0]
     text.remove
 
-    expect { text.content = "z" }
-      .to raise_error(Moxml::Error, /detached \(parentless\).*issue #401/)
+    if Gem::Version.new(Leptris::VERSION) >= Gem::Version.new("1.9.374")
+      # leptris/leptris#1785 fixed the engine root cause: detached
+      # text resolves its owning document, so the mutation succeeds.
+      text.content = "z"
+      expect(text.content).to eq("z")
+    else
+      expect { text.content = "z" }
+        .to raise_error(Moxml::Error, /detached \(parentless\).*issue #401/)
+    end
   end
 
   it "keeps created-unattached nodes mutable" do
