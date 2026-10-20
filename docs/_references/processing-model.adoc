@@ -151,9 +151,12 @@ with an unambiguous local name.
   `xmlns:` default-namespace matching; attribute terminals in every
   position (`//a/@id`, `//@id`, `r/a/@id`); symbol- and string-keyed
   bindings resolve identically.
-* `at_xpath` is sugar over `xpath`: it answers the first node of a
-  node-set and passes scalar results (`count()`, `string()`,
-  `boolean()`) through unwrapped, uniformly across adapters.
+* `at_xpath` answers the first node of a node-set and passes scalar
+  results (`count()`, `string()`, `boolean()`) through unwrapped,
+  uniformly across adapters. Adapters whose at_xpath lane falls back
+  to the reference engine when the native answer is empty (leptris)
+  use it; the rest evaluate `xpath` and take the first node. Both
+  lanes answer the same model.
 
 === Serialization
 
