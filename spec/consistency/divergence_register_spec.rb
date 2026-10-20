@@ -19,6 +19,8 @@ RSpec.describe "divergence register linkage" do
     /leptris_fixed\?/,          # version gate
     /source_elements/,          # data-presence guard
     /next unless match/,        # scanner-internal guard
+    /well_formed|voids\.empty\?|default_ns|per\.size/, # property-scope
+    # and availability guards (input scoping, not adapter exemptions)
     /exempt/i, # value-routed exemption table: the
     # table's VALUES are D-IDs, enforced by
     # the coverage audit's exempt rule
