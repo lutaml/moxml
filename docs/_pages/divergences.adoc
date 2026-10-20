@@ -134,4 +134,15 @@ strict lane (default-UTF-8 rule; prolog-declared non-UTF-8 encodings
 own their validity) pending engine-side validation —
 leptris-ruby#514. Surfaced by the taxonomy differential. Pinned in
 `spec/consistency/differential_taxonomy_spec.rb`.
+
+| D-19
+| nokogiri, libxml
+| Adjacent text-like leaves (CDATA next to CDATA or text) coalesce
+into a single text node on the libxml2 lane; oga, rexml, ox,
+headed_ox, and leptris keep them as distinct nodes. The `text`
+answer is identical — the node count and kinds differ. The model is
+silent on text-node coalescing (an open decision). Surfaced by the
+generated metamorphic differential (M5). Pinned in
+`spec/consistency/metamorphic_properties_spec.rb` through
+`InputGenerator::FEATURE_EXEMPT`.
 |===

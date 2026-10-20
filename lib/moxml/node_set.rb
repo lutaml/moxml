@@ -119,6 +119,17 @@ module Moxml
 
     # Nokogiri-compatible: Array#flatten and multiple-assignment
     # treat a NodeSet as its wrapped-element array via to_ary.
+    # The same node-set in document order (XPath path results are
+    # conventionally document-ordered; the compiler batches multi-step
+    # evaluation and must re-order). Wrappers are ordered, then the
+    # internal natives are re-paired — no re-wrapping.
+    def document_order
+      return self if native_nodes.size < 2
+
+      ordered = Moxml::XPath::Ordering.document_order(to_a)
+      NodeSet.new(ordered.map(&:native), @context, @parent_node)
+    end
+
     def to_ary
       to_a
     end

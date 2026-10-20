@@ -511,7 +511,13 @@ module Moxml
         end
 
         def processing_instruction_content(node)
-          node.text
+          # Oga keeps the target/content separator space inside the
+          # PI's text; the model's content is the data AFTER the
+          # separator (D-04). Separator whitespace is parser syntax, and
+          # leaving it in makes canonicalization non-idempotent (the
+          # serializer re-adds the separator each round — TODO.sota/02,
+          # M2).
+          node.text.sub(/\A\s+/, "")
         end
 
         def set_processing_instruction_content(node, content)
@@ -561,8 +567,20 @@ module Moxml
         def xpath(node, expression, namespaces = nil)
           result = node.xpath(expression, {},
                               namespaces: namespaces&.transform_keys(&:to_s))
-          # Adapter contract: Array<native> | scalar
-          result.is_a?(Enumerable) ? result.to_a : result
+          # Adapter contract: Array<native> | scalar. Oga's engine
+          # answers node-sets in evaluation order, not document order
+          # (//* on <r><a><b/></a><c/></r> answers a,c,b); path results
+          # are document-ordered by the model — re-order here
+          # (TODO.sota/02, M3).
+          if result.is_a?(Enumerable)
+            nodes = result.to_a
+            ctx = Context.new(:oga)
+            wrapped = nodes.map { |n| Moxml::Node.wrap(n, ctx) }
+            ordered = Moxml::XPath::Ordering.document_order(wrapped)
+            ordered.map(&:native)
+          else
+            result
+          end
         rescue ::LL::ParserError => e
           raise Moxml::XPathError.new(
             e.message,

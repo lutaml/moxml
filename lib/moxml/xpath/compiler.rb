@@ -30,9 +30,12 @@ module Moxml
       # Wildcard for node names/namespace prefixes
       STAR = "*"
 
-      # Node types that require a NodeSet to push nodes into
+      # Node types that require a NodeSet to push nodes into.
+      # :union belongs here: a top-level union built its own NodeSet
+      # in on_pipe and bypassed the document-order wrapper — union
+      # results answered in expression order (M3).
       RETURN_NODESET = %i[path absolute_path relative_path axis
-                          predicate].freeze
+                          predicate union].freeze
 
       # Compiles and caches an AST
       #
@@ -94,8 +97,14 @@ module Moxml
                                          [nodeset_class, "new", empty_array,
                                           context_var])
 
+            # Multi-step paths batch step N over every step-(N-1)
+            # node, concatenating subtree results after sibling
+            # results (//* answered a,c,b on <r><a><b/></a><c/></r>);
+            # XPath path results are conventionally document-ordered.
+            ordered = Ruby::Node.new(:send, [matched, "document_order"])
             body = matched.assign(nodeset_new)
               .followed_by(ruby_ast)
+              .followed_by(matched.assign(ordered))
               .followed_by(matched)
           else
             body = ruby_ast
@@ -293,6 +302,12 @@ module Moxml
                 end
               end
             end
+
+          # Multi-step evaluation batches step N over every step-(N-1)
+          # node, so subtree results concatenate after sibling
+          # results (//* on <r><a><b/></a><c/></r> answered a,c,b).
+          # Path results are conventionally document-ordered: re-sort
+          # the union when the caller takes the node-set form.
         end
       end
 

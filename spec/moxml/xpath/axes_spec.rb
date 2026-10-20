@@ -217,11 +217,11 @@ RSpec.describe "XPath Axes" do
       end
 
       it "selects ancestors with ancestor::" do
-        expect(select("//c/ancestor::*")).to eq(%w[parent root])
+        expect(select("//c/ancestor::*")).to eq(%w[root parent])
       end
 
       it "includes the context node with ancestor-or-self::" do
-        expect(select("//c/ancestor-or-self::*")).to eq(%w[c parent root])
+        expect(select("//c/ancestor-or-self::*")).to eq(%w[root parent c])
       end
 
       it "selects following siblings" do

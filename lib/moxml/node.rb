@@ -688,9 +688,16 @@ module Moxml
       end
     end
 
-    # The adapter's type probe is an FFI call per invocation; the
-    # type is fixed for a node's lifetime, so the first answer is
-    # memoized on the wrapper.
+    # The node's kind (the model's Kind face): :document, :element,
+    # :text, :comment, :cdata, :processing_instruction, :doctype,
+    # :declaration, :entity_reference, :namespace, :attribute. The
+    # adapter's type probe is an FFI call per invocation; the type is
+    # fixed for a node's lifetime, so the first answer is memoized on
+    # the wrapper.
+    def node_type
+      node_type_cached
+    end
+
     def node_type_cached
       @node_type_cached ||= adapter.node_type(@native)
     end

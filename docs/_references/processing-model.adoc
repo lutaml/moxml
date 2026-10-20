@@ -48,6 +48,12 @@ the same underlying node; node identity is a property of the
 underlying tree, not of wrapper object identity. Comparisons use node
 equality semantics, never `equal?` on wrappers.
 
+Kind:: Every node answers `node_type` — one of `:document`,
+`:element`, `:attribute`, `:text`, `:comment`, `:cdata`,
+`:processing_instruction`, `:doctype`, `:declaration`,
+`:entity_reference`, `:namespace` — the predicates (`element?`,
+`text?`, …) are its derivatives.
+
 Ownership:: The `Document` owns the tree's lifetime; nodes are valid
 within it. Deterministic release is available via `Document#free`.
 
@@ -90,7 +96,9 @@ content; entity references restored when the document is
 entity-bearing.
 
 `content`:: The node's content per its kind; on text-like nodes, with
-entity-marker restoration; memoized against mutation.
+entity-marker restoration; memoized against mutation. A processing
+instruction's content is its data **without** the separating
+whitespace after the target (uniform across adapters).
 
 `raw_content`:: The backing text **without** entity restoration.
 
