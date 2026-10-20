@@ -15,7 +15,7 @@ require "support/model_coverage"
 # published coverage page. See docs/_references/processing-model.adoc
 # for the model itself.
 RSpec.describe "model coverage matrix" do
-  MODEL_MATRIX = ModelCoverage::MATRIX # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+  MODEL_MATRIX = ModelCoverage::MODEL_COVERAGE_MATRIX # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
   def register_ids
     File.readlines("docs/_pages/divergences.adoc")
@@ -64,7 +64,7 @@ RSpec.describe "model coverage matrix" do
   # section vanished fails too.
   MODEL_DOC = "docs/_references/processing-model.adoc" # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
-  NON_FACE_SECTIONS = ModelCoverage::NON_FACE_SECTIONS # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+  NON_FACE = ModelCoverage::MODEL_COVERAGE_NON_FACE # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
 
   def model_sections
     File.readlines(MODEL_DOC).filter_map do |line|
@@ -105,7 +105,7 @@ RSpec.describe "model coverage matrix" do
   it "covers or declares every model section" do
     cited = MODEL_MATRIX.values.filter_map { |cell| cell[:section] }
     uncovered = model_sections.reject do |section|
-      cited.include?(section) || NON_FACE_SECTIONS.include?(section)
+      cited.include?(section) || NON_FACE.include?(section)
     end
     expect(uncovered).to be_empty,
                          "model sections with no coverage matrix family " \
@@ -113,7 +113,7 @@ RSpec.describe "model coverage matrix" do
   end
 
   it "declares non-face sections that actually exist in the model doc" do
-    stale = NON_FACE_SECTIONS.reject { |s| model_sections.include?(s) }
+    stale = NON_FACE.reject { |s| model_sections.include?(s) }
     expect(stale).to be_empty,
                      "non-face declarations citing missing sections: #{stale.join('; ')}"
   end
@@ -137,7 +137,7 @@ RSpec.describe "model coverage matrix" do
 
   it "leaves non-face sections without pins" do
     lists = model_pin_lists
-    pinned = NON_FACE_SECTIONS.select { |section| lists[section]&.any? }
+    pinned = NON_FACE.select { |section| lists[section]&.any? }
     expect(pinned).to be_empty,
                       "non-face sections must declare Pins:: none: #{pinned.join('; ')}"
   end
@@ -188,7 +188,7 @@ RSpec.describe "model coverage matrix" do
       File.exist?(path) ? pin_citations(path) : []
     end
     uncovered = model_sections.reject do |section|
-      cited.include?(section) || NON_FACE_SECTIONS.include?(section)
+      cited.include?(section) || NON_FACE.include?(section)
     end
     expect(uncovered).to be_empty,
                          "model sections no pin cites: #{uncovered.join('; ')}"

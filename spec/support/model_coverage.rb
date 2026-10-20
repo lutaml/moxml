@@ -7,7 +7,7 @@
 # the audit, the model-document pin lists, and the published coverage
 # page.
 module ModelCoverage
-  MATRIX = {
+  MODEL_COVERAGE_MATRIX = {
     "document order and children listing" => {
       section: "Document order and traversal",
       pin: "spec/consistency/adapter_parity_spec.rb",
@@ -84,34 +84,32 @@ module ModelCoverage
   }.freeze
 
   # Normative sections that are not face families (meta/apparatus).
-  NON_FACE_SECTIONS = [
+  MODEL_COVERAGE_NON_FACE = [
     "Status and precedence",
     "Mission and invariant",
     "Object model",
     "Performance: a declared, non-semantic channel",
   ].freeze
 
-  ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml leptris].freeze
-
-  UNGOVERNED = "ungoverned"
+  MODEL_COVERAGE_ADAPTERS = %i[nokogiri oga rexml ox headed_ox libxml leptris].freeze
 
   module_function
 
   def families
-    MATRIX.keys
+    MODEL_COVERAGE_MATRIX.keys
   end
 
   def sections
-    MATRIX.values.map { |cell| cell[:section] }.uniq
+    MODEL_COVERAGE_MATRIX.values.map { |cell| cell[:section] }.uniq
   end
 
   def pins_for(section)
-    MATRIX.values.select { |cell| cell[:section] == section }
+    MODEL_COVERAGE_MATRIX.values.select { |cell| cell[:section] == section }
       .filter_map { |cell| cell[:pin] }.uniq.sort
   end
 
   def disposition(family, adapter)
-    cell = MATRIX.fetch(family)
+    cell = MODEL_COVERAGE_MATRIX.fetch(family)
     if (id = (cell[:exempt] || {})[adapter])
       [:specd, id]
     elsif (error = (cell[:loud] || {})[adapter])
@@ -140,13 +138,13 @@ module ModelCoverage
              "by hand: `spec/consistency/published_docs_spec.rb` fails " \
              "when this block is stale."
     lines << ""
-    lines << %([cols="4#{',1' * ADAPTERS.size}",options="header"])
+    lines << %([cols="4#{',1' * MODEL_COVERAGE_ADAPTERS.size}",options="header"])
     lines << "|==="
     lines << "| Face family | " \
-             "#{ADAPTERS.map { |adapter| adapter.to_s.tr('_', ' ') }.join(' | ')}"
+             "#{MODEL_COVERAGE_ADAPTERS.map { |adapter| adapter.to_s.tr('_', ' ') }.join(' | ')}"
     families.each do |family|
       lines << "| #{family} | " \
-               "#{ADAPTERS.map { |adapter| cell_text(family, adapter) }.join(' | ')}"
+               "#{MODEL_COVERAGE_ADAPTERS.map { |adapter| cell_text(family, adapter) }.join(' | ')}"
     end
     lines << "|==="
     lines << ""
