@@ -23,7 +23,7 @@ validation target, never a stand-in.
 
 | `lutaml/canon` | — | 2573 examples, 0 failures
 
-| `metanorma/metanorma-standoc` | ghostscript | 627 examples; 4 environment-sensitive failures reproduce identically on the released moxml (generated-asset prerequisites)
+| `metanorma/metanorma-standoc` | ghostscript | 627 examples; one boilerplate-fixture example fails on all three CI platforms (`boilerplate_spec.rb:1294`, a structural diff in the feedback statement) and reproduces identically on the released moxml; additional environment-sensitive failures locally need generated assets
 
 | `metanorma/metanorma-ietf` | xml2rfc | 405 examples, 0 failures
 
@@ -42,7 +42,7 @@ a declared, decided lane.
 |===
 | Consumer | Use | Disposition
 
-| canon | HTML5 parse-lint (`parse_html(collect_errors:)`) | **Retired** (canon#281): `Moxml::Context#parse_html` forwards `collect_errors` and `Document#parse_diagnostics` answers the §13.2.5 token stream with code/line/column.
+| canon | HTML5 parse-lint (`parse_html(collect_errors:)`) | **Facade capability shipped**: `Moxml::Context#parse_html` forwards `collect_errors` and `Document#parse_diagnostics` answers the §13.2.5 token stream with code/line/column. canon adopts it in canon#281, which is owner-held (moxml does not merge canon PRs).
 
 | canon | c14n native delegation (`doc.native.c14n`) | **Decided lane**: canon owns the c14n reference implementation and byte-probes the engine against its Ruby path; it is the backend behind moxml's own native delegation.
 
