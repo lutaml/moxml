@@ -21,6 +21,15 @@ RSpec.describe Moxml::ProcessingInstruction do
       expect(pi.content).to include("type=")
       expect(pi.content).to include("href=")
     end
+
+    it "answers the empty string for a PI with no data on every adapter" do
+      Moxml::Adapter::AVAILABLE_ADAPTERS.each do |name|
+        parsed = Moxml.new(name).parse("<r><?pi?></r>")
+        pi = parsed.children.first.children
+          .find { |n| n.is_a?(described_class) }
+        expect(pi.content).to eq(""), "empty PI content on #{name}"
+      end
+    end
   end
 
   describe "creation" do

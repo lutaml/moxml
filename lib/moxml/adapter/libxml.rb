@@ -864,7 +864,8 @@ module Moxml
 
         def processing_instruction_content(node)
           # XML 1.0 §2.6: PI content is verbatim — no entity resolution.
-          unpatch_node(node)&.content
+          # Empty data is the empty string, never nil (uniform Kind face).
+          unpatch_node(node)&.content.to_s
         end
 
         def set_processing_instruction_content(node, content)

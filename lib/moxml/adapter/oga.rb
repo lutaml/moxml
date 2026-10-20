@@ -517,7 +517,7 @@ module Moxml
           # leaving it in makes canonicalization non-idempotent (the
           # serializer re-adds the separator each round — TODO.sota/02,
           # M2).
-          node.text.sub(/\A\s+/, "")
+          node.text.to_s.sub(/\A\s+/, "")
         end
 
         def set_processing_instruction_content(node, content)
