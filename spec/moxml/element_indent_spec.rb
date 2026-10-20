@@ -11,7 +11,7 @@ RSpec.describe "element-level serialization indentation" do
     %i[nokogiri rexml].each do |name|
       doc = Moxml.new(name).parse("<r><a/></r>")
       expect(doc.root.to_xml(indent: 2)).to include("\n"),
-                                          "#{name}: indent not honored"
+                                            "#{name}: indent not honored"
     end
   end
 
