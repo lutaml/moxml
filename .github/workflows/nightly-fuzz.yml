@@ -1,0 +1,80 @@
+name: nightly fuzz
+
+# TODO.sota/02's nightly leg: the property suites swept at random
+# seeds and larger case counts, with findings filed as issues carrying
+# a minimal repro. PR legs run the same suites at a fixed, bounded
+# seed (MOXML_FUZZ/CI defaults in the spec); this leg is the breadth
+# pass, not a gate.
+
+on:
+  schedule:
+    - cron: "23 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: "recursive"
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: false
+
+      - name: Install ragel
+        run: sudo apt-get update && sudo apt-get install -y ragel
+
+      - name: Install ruby-ll (for rake vendor:prepare)
+        run: gem install ruby-ll --no-document
+
+      - name: Generate ragel / ruby-ll outputs in vendored forks
+        run: rake vendor:prepare
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Compile liboga / libll native extensions
+        run: rake vendor:compile
+
+      - name: Pick fuzz seeds
+        run: |
+          SEEDS=$(ruby -e 'srand; puts Array.new(3) { rand(1_000_000) }.join(",")')
+          echo "SOTA_FUZZ_SEEDS=$SEEDS" >> "$GITHUB_ENV"
+          echo "SOTA_FUZZ_CASES=1000" >> "$GITHUB_ENV"
+
+      - name: Fuzz (properties + structural suite)
+        run: |
+          bundle exec rspec \
+            spec/consistency/metamorphic_properties_spec.rb \
+            spec/consistency/metamorphic_spec.rb 2>&1 | tee fuzz.log
+
+      - name: File an issue on findings
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "The nightly fuzz leg found findings at seeds \`$SOTA_FUZZ_SEEDS\` (\`SOTA_FUZZ_CASES=$SOTA_FUZZ_CASES\`)."
+            echo
+            echo "Reproduce:"
+            echo
+            echo '```'
+            echo "SOTA_FUZZ_SEEDS=$SOTA_FUZZ_SEEDS SOTA_FUZZ_CASES=$SOTA_FUZZ_CASES \\"
+            echo "  bundle exec rspec spec/consistency/metamorphic_properties_spec.rb spec/consistency/metamorphic_spec.rb"
+            echo '```'
+            echo
+            echo '```'
+            grep -E "Failure/Error|gen [0-9]+/|rspec \./" fuzz.log | head -40
+            echo '```'
+          } > fuzz-issue.md
+          gh issue create \
+            --title "nightly fuzz findings (seeds $SOTA_FUZZ_SEEDS)" \
+            --body-file fuzz-issue.md
