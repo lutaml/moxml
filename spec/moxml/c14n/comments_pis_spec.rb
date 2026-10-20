@@ -60,6 +60,16 @@ RSpec.describe "C14N comments and PIs" do
         .to eq(%(<?pi a?>\n<?pi b?>\n<root></root>\n<?pi c?>))
     end
 
+    it "ignores whitespace between document-level nodes" do
+      # rexml retains the text node (D-15); the canonical form never
+      # includes whitespace outside the document element.
+      Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
+        doc = Moxml.new(adapter_name).parse(%(<?pi?>\n<root/>\n<!--c-->))
+        expect(Moxml::C14n.canonicalize(doc, with_comments: true))
+          .to eq(%(<?pi?>\n<root></root>\n<!--c-->)), adapter_name.to_s
+      end
+    end
+
     it "omits the XML declaration from the canonical form" do
       doc = ctx.parse(%(<?xml version="1.0" encoding="UTF-8"?><root/>))
       expect(Moxml::C14n.canonicalize(doc)).to eq("<root></root>")
