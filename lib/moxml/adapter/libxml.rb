@@ -1092,6 +1092,12 @@ module Moxml
           native_node = unpatch_node(node)
           return [] unless native_node
 
+          if empty_default_namespace_binding?(namespaces)
+            return Moxml::XPath.evaluate_natives(native_node, expression,
+                                                namespaces,
+                                                adapter: :libxml)
+          end
+
           # libxml-ruby's Document#find returns EMPTY for relative
           # paths (nokogiri/libxml2 evaluate them fine): a relative
           # expression from the document node is equivalent to the

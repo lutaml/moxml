@@ -57,6 +57,14 @@ RSpec.describe "XPath idioms across adapters" do
         expect(targets).to be_empty
       end
 
+      it "addresses the no-namespace default with an empty xmlns binding" do
+        doc = ctx.parse(
+          '<root xmlns="urn:a"><child xmlns="urn:b"><leaf xmlns=""/></child></root>',
+        )
+        leaf = doc.at_xpath("//xmlns:leaf", "xmlns" => "")
+        expect(leaf&.name).to eq("leaf")
+      end
+
       it "resolves attribute-terminal steps in every path position" do
         doc = ctx.parse(plain_xml)
         expect(doc.xpath("//a/@id").first&.value).to eq("x")

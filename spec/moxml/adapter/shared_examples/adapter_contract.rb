@@ -457,10 +457,6 @@ RSpec.shared_examples "xml adapter" do
       end
 
       it "preserves and correctly handles multiple namespaces" do
-        if described_class.name.include?("Ox")
-          skip("Ox does not support namespace-aware XPath queries (documented limitation)")
-        end
-
         # Parse original XML
         doc = described_class.parse(xml).native
 
@@ -513,10 +509,6 @@ RSpec.shared_examples "xml adapter" do
       end
 
       it "preserves and correctly handles multiple namespaces" do
-        if described_class.name.include?("Ox")
-          skip("Ox does not support namespace-aware XPath queries (documented limitation)")
-        end
-
         # Parse original XML
         doc = described_class.parse(xml).native
 

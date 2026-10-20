@@ -571,4 +571,4 @@ HeadedOx v1.2 successfully delivers on its core promise: **fast XML parsing with
 - Heavy DOM modifications required
 - 100% feature parity is critical
 
-The documented limitations are transparent, well-understood, and unlikely to affect most XML processing workflows. HeadedOx fills an important niche in the Ruby XML ecosystem as the "fast XPath" option.
+The known limitations are transparent, well-understood, and unlikely to affect most XML processing workflows. HeadedOx fills an important niche in the Ruby XML ecosystem as the "fast XPath" option.

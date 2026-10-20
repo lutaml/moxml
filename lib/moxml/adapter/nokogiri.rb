@@ -650,6 +650,12 @@ module Moxml
         end
 
         def xpath(node, expression, namespaces = nil)
+          if empty_default_namespace_binding?(namespaces)
+            return Moxml::XPath.evaluate_natives(node, expression,
+                                                 namespaces,
+                                                 adapter: :nokogiri)
+          end
+
           # An explicit bindings hash — even EMPTY — makes nokogiri
           # register a prefix context, which disables libxml2's
           # literal xmlns: default-namespace handling. Only pass the

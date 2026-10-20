@@ -1,0 +1,87 @@
+---
+title: Why Moxml
+nav_order: 2
+---
+
+== Why Moxml
+
+Moxml exists to make **"which XML engine am I running?" a deployment
+decision instead of an API decision**.
+
+Ruby's XML engines — Nokogiri, Oga, REXML, Ox, LibXML, Leptris — each
+carry their own object model, namespace resolution, XPath coverage,
+entity policy, serialization shapes, and error surfaces. An application
+that starts on one cannot move to another without a rewrite; a library
+that supports several accumulates adapter-specific branches and tests.
+Moxml replaces that with a single processing model, specified once and
+enforced on every adapter.
+
+== The invariant
+
+**Engine-choice invariance:** any program written against the Moxml
+facade produces the same observable outcome on every adapter.
+Performance may vary across engines — semantics may not.
+
+Three clauses govern every change:
+
+. **Equivalence is to the model, not merely adapter-to-adapter.** Two
+  engines can agree and both be wrong; the normative document is the
+  reference.
+. **Loud degradation, never silent divergence.** An unsupported
+  capability raises a named error. A different answer is a bug.
+. **A divergence is fixed, promoted to specification, or registered.**
+  The register names it, explains it, and pins the tests that observe
+  it. An undocumented divergence is a bug.
+
+== How the claim is proved
+
+The proof apparatus is itself part of the project, and every link is
+checked in CI:
+
+[cols="1,3"]
+|===
+| Link | What it establishes
+
+| link:../_references/processing-model[Processing model]
+| The single normative statement of every semantic decision, with a
+  `Pins::` line naming the specs that enforce each section.
+
+| link:model-coverage.html[Model coverage]
+| The face-family × adapter matrix: equivalent, loud, or a registered
+  divergence. Generated from the same data the consistency audit
+  enforces.
+
+| link:divergences.html[Divergence register]
+| Every known difference, with its engine cause, its scope, and its
+  pin. Entries are fixed, loud, or decided permanent trades.
+
+| link:performance.html[Performance]
+| The published scoreboard: parity rows are commitments; structural
+  gaps are measured and trend-locked, never hidden.
+
+|===
+
+Behind the pages, the consistency suite runs an engine-free
+**executable reference** (a pure-Ruby reader, writer, and normalizer)
+against every adapter; a seeded **generator** checks metamorphic
+properties over generated documents; and a whole-class **taxonomy
+differential** compares every adapter on every input class the model
+touches. The reference is itself transpiled to JavaScript and runs on
+the Opal lane.
+
+== What Moxml is not
+
+Moxml is not a new XML parser and does not replace the engines — it
+makes them interchangeable. It is not a performance claims contest
+either: performance is a declared, non-semantic channel, and the
+scoreboard reports below-parity rows as plainly as parity rows.
+
+== The consumer commitment
+
+- Upgrading an engine version never changes your program's semantics.
+- Capabilities that an engine lacks raise a named error at the call
+  site, not a surprising result.
+- Every difference you can observe has a register ID and a test.
+- The same program runs on Nokogiri, Oga, REXML, Ox, LibXML, and
+  Leptris — and on a future engine that adopts the model with zero
+  code changes.

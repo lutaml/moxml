@@ -80,15 +80,6 @@ RSpec.shared_examples "Moxml Edge Cases" do
 
   describe "namespace edge cases" do
     it "handles default namespace changes" do
-      if context.config.adapter_name == :headed_ox
-        skip "HeadedOx limitation: Namespace methods not implemented in adapter. Requires Ox namespace API enhancement. See docs/_pages/headed-ox-limitations.adoc"
-      end
-      if context.config.adapter_name == :libxml
-        skip "LibXML cannot query empty default namespace with XPath (documented limitation)"
-      end
-      if context.config.adapter_name == :nokogiri
-        skip "Nokogiri XPath does not support querying empty namespace with xmlns prefix mapping"
-      end
       xml = <<~XML
         <root xmlns="http://default1.org">
           <child xmlns="http://default2.org">
@@ -103,10 +94,6 @@ RSpec.shared_examples "Moxml Edge Cases" do
     end
 
     it "handles recursive namespace definitions" do
-      if context.config.adapter_name == :headed_ox
-        skip "HeadedOx limitation: Namespace methods not implemented in adapter. Requires Ox namespace API enhancement. See docs/_pages/headed-ox-limitations.adoc"
-      end
-
       xml = <<~XML
         <root xmlns:a="http://a.org">
           <a:child xmlns:a="http://b.org">

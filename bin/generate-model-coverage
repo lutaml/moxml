@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Regenerate the published model-coverage page block from the coverage
+# matrix (spec/support/model_coverage.rb). Deterministic: no clock, no
+# engine probes — the page is a view of committed data.
+require "support/model_coverage"
+
+PAGE = "docs/_pages/model-coverage.adoc"
+BEGIN_MARK = "// MODEL-COVERAGE:BEGIN"
+END_MARK = "// MODEL-COVERAGE:END"
+
+text = File.read(PAGE)
+pattern = /#{Regexp.escape(BEGIN_MARK)}.*?#{Regexp.escape(END_MARK)}/mo
+unless text.match?(pattern)
+  abort "#{PAGE} has no coverage markers (#{BEGIN_MARK} / #{END_MARK})"
+end
+
+block = "#{BEGIN_MARK}\n#{ModelCoverage.render_page_block}\n#{END_MARK}"
+File.write(PAGE, text.sub(pattern, block))
+warn "model coverage: published #{PAGE}"

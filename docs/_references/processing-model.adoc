@@ -17,6 +17,8 @@ skip with their entry ID — an undocumented divergence is a bug.
 
 === Status and precedence
 
+Pins:: none
+
 1. This document — the model.
 2. `spec/consistency/` — the model pinned as executable expectations,
    with `lib/moxml/reference/` as the **engine-free executable
@@ -37,6 +39,8 @@ A semantics change amends this document first (see
 
 === Mission and invariant
 
+Pins:: none
+
 Moxml exists to make "which XML engine am I running?" a **deployment
 decision instead of an API decision**. The invariant that enables it:
 any program written against the facade produces the same observable
@@ -49,6 +53,8 @@ divergences, and performance.
   equivalence is not (a different answer).
 
 === Object model
+
+Pins:: none
 
 Node kinds:: `Document`, `Element`, `Attribute`, `Text`, `Comment`,
 `Cdata`, `Declaration`, `Doctype`, `ProcessingInstruction`,
@@ -74,6 +80,8 @@ listings or serialization child walks.
 
 === Document order and traversal
 
+Pins:: `spec/consistency/adapter_parity_spec.rb`
+
 * `children` lists nodes in document order.
 * Walks (`each_node`, `materialize`) visit depth-first, pre-order.
 * `Document#children` and `#root` never include the declaration;
@@ -86,6 +94,8 @@ listings or serialization child walks.
   first-encounter document order.
 
 === Names and namespaces
+
+Pins:: `spec/consistency/xpath_idioms_spec.rb`
 
 * Names are **expanded names**: a name test matches by namespace *URI*,
   never by prefix spelling.
@@ -101,6 +111,8 @@ listings or serialization child walks.
   `"text"` / `"comment"`; a PI's name is its target.
 
 === Access semantics
+
+Pins:: `spec/moxml/attribute_resolver_spec.rb`, `spec/moxml/text_spec.rb`
 
 `text`:: Concatenated descendant text (elements); a text node's own
 content; entity references restored when the document is
@@ -126,6 +138,8 @@ with an unambiguous local name.
 
 === Parsing
 
+Pins:: `spec/consistency/eol_normalization_spec.rb`, `spec/moxml/document_parse_diagnostics_spec.rb`, `spec/moxml/entity_spec.rb`
+
 * Modes: strict (errors raise) and recover (errors surface via
   `parse_diagnostics` / `parse_errors`, both `[{kind:, message:}]`).
 * HUGE mode: over-cap text (> 10 MB) parses completely.
@@ -138,6 +152,8 @@ with an unambiguous local name.
   values is marker-driven and generation-stamped.
 
 === XPath evaluation
+
+Pins:: `spec/consistency/xpath_idioms_spec.rb`
 
 * XPath 1.0 semantics on every adapter. Engines without an evaluator
   (Ox, HeadedOx; leptris for shapes its engine cannot evaluate) run
@@ -159,6 +175,8 @@ with an unambiguous local name.
   lanes answer the same model.
 
 === Serialization
+
+Pins:: `spec/moxml/to_html_spec.rb`, `spec/moxml/xhtml_output_spec.rb`
 
 [cols="1,3"]
 |===
@@ -191,6 +209,8 @@ with an unambiguous local name.
 
 === Canonicalization
 
+Pins:: `spec/moxml/c14n/adapter_delegation_spec.rb`
+
 * Algorithms: Inclusive 1.0, Exclusive 1.0, Inclusive 1.1, plus
   XPath-driven subset canonicalization (enveloped-signature oracle).
 * Native delegations (leptris engine, libxml2) answer **byte-identical**
@@ -206,12 +226,16 @@ with an unambiguous local name.
 
 === XSLT
 
+Pins:: `spec/consistency/xslt_spec.rb`
+
 XSLT 1.0 through engines that ship a processor (libxslt; leptris
 1.0–3.0). Compilation and transform failures raise named
 `Moxml::XsltError`s. Engines without a processor raise
 `Moxml::NotImplementedError` — the face is never silently absent.
 
 === SAX
+
+Pins:: `spec/moxml/sax_spec.rb`
 
 * The callback stream (`on_start_element`, `on_characters`, `on_error`,
   …) is the authoritative event sequence.
@@ -222,12 +246,16 @@ XSLT 1.0 through engines that ship a processor (libxslt; leptris
 
 === Materialization
 
+Pins:: `spec/moxml/plan_conformance_spec.rb`
+
 `materialize`, `materialize_fields`, `Plan`, and `StructPlan` produce
 **identical records across all adapters** (conformance spec). Plan name
 matching is global; unmatched subtrees are dropped per the pinned
 semantics.
 
 === Errors and loud degradation
+
+Pins:: `spec/consistency/loud_degradation_spec.rb`
 
 * `Moxml::Error` hierarchy; `Moxml::XPathError`, `Moxml::XsltError`,
   `Moxml::AdapterError` (e.g. schema-handle/adapter misroute),
@@ -239,6 +267,8 @@ semantics.
   a call.
 
 === Performance: a declared, non-semantic channel
+
+Pins:: none
 
 Acceleration (native read layers, C minting, record drains, plan
 streams) always lands behind version + face gates and degrades to the
