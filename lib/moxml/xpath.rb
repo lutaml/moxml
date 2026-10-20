@@ -9,6 +9,7 @@ module Moxml
     autoload :Lexer, "moxml/xpath/lexer"
     autoload :Parser, "moxml/xpath/parser"
     autoload :Compiler, "moxml/xpath/compiler"
+    autoload :Ordering, "moxml/xpath/ordering"
 
     autoload :Error, "moxml/xpath/errors"
     autoload :SyntaxError, "moxml/xpath/errors"

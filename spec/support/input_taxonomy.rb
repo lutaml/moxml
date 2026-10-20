@@ -53,6 +53,9 @@ module InputTaxonomy
     "pi/comment/cdata: pi inside content" => {
       text: { oga: "D-14" },
     },
+    "pi/comment/cdata: pi multi-space separator" => {
+      text: { oga: "D-14" },
+    },
     "huge text with entities" => {
       text: { rexml: "D-16" },
     },
@@ -160,6 +163,9 @@ module InputTaxonomy
       Input.new("pi/comment/cdata: pi inside content", "pi/comment/cdata edges",
                 "<r>a<?pi data?>b</r>", true,
                 "PI content must not contribute to text (D-14 on oga)"),
+      Input.new("pi/comment/cdata: pi multi-space separator", "pi/comment/cdata edges",
+                "<r><?pi   data?></r>", true,
+                "separator whitespace is not PI content (uniform)"),
 
       # -- malformed: unclosed --
       Input.new("malformed: unclosed element", "malformed", "<r><c>", false, nil),

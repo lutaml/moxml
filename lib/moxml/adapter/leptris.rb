@@ -529,12 +529,18 @@ module Moxml
               include ::Moxml::Node
               include ::Moxml::ProcessingInstruction
 
-              # Same nil bridge as Comment (leptris-ruby#344).
+              # Same nil bridge as Comment (leptris-ruby#344); the
+              # separating whitespace after the target is not content
+              # (uniform PI semantics, TODO.sota/02).
               def content
                 content = native_content
-                return ::Moxml::Adapter::Leptris.to_binding(self).content if content.nil?
+                if content.nil?
+                  return ::Moxml::Adapter::Leptris.to_binding(self)
+                      .content.to_s
+                      .sub(/\A\s+/, "")
+                end
 
-                content
+                content.sub(/\A\s+/, "")
               end
             end
 
@@ -2999,16 +3005,20 @@ module Moxml
         end
 
         def processing_instruction_content(node)
+          # The model's PI content excludes the separating whitespace
+          # after the target (Nokogiri semantics; uniform across
+          # adapters — TODO.sota/02).
           if NATIVE_READ_LAYER && node.is_a?(NN)
             content = NN_CONTENT.bind_call(node)
             # NativeNode#content answers nil for PI-kind nodes too
             # (leptris-ruby#344 covers comments); bridge for the data.
-            return to_binding(node).content if content.nil?
+            return to_binding(node).content.to_s.sub(/\A\s+/, "") if
+              content.nil?
 
-            return content
+            return content.sub(/\A\s+/, "")
           end
 
-          node.content
+          node.content.to_s.sub(/\A\s+/, "")
         end
 
         def set_processing_instruction_content(node, content)
@@ -3144,6 +3154,12 @@ module Moxml
           # namespace-bound queries to the Ruby engine until the
           # engine grows correct prefix resolution.
           return nil if namespaces && !namespaces.empty?
+          # Reverse axes answer reverse-ordered from the native
+          # engine; route them to the Ruby engine (document order).
+          return nil if REVERSE_AXIS_CACHE.get_or_set(expression) do
+            expression_uses_reverse_axis?(expression)
+          end
+
           # The binding reports the root element parentless while moxml
           # roots it at the document, so parent-axis queries from the
           # root element keep the Ruby engine.
@@ -3230,11 +3246,37 @@ module Moxml
             node.is_a?(::Leptris::XML::Element)
         end
 
+        # Reverse axes answer in reverse document order from the
+        # native engine; XPath path results are document-ordered (the
+        # model's order contract — TODO.sota/02, M3), so these
+        # expressions route to the Ruby engine, which orders them.
+        REVERSE_AXES = %w[ancestor ancestor-or-self preceding
+                          preceding-sibling parent].freeze
+        REVERSE_AXIS_CACHE = XPath::Cache.new(200)
+
         def expression_uses_parent_axis?(expression)
           ast = XPath::Parser.parse_with_cache(expression)
           contains_parent_axis?(ast)
         rescue XPath::SyntaxError
           true
+        end
+
+        def expression_uses_reverse_axis?(expression)
+          ast = XPath::Parser.parse_with_cache(expression)
+          contains_reverse_axis?(ast)
+        rescue XPath::SyntaxError
+          false
+        end
+
+        def contains_reverse_axis?(ast)
+          return true if ast.type == :parent
+          if ast.type == :axis && REVERSE_AXES.include?(ast.children.first)
+            return true
+          end
+
+          ast.children.any? do |child|
+            child.is_a?(XPath::AST::Node) && contains_reverse_axis?(child)
+          end
         end
 
         def contains_parent_axis?(ast)

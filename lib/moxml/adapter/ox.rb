@@ -642,7 +642,11 @@ module Moxml
         end
 
         def processing_instruction_content(node)
-          node.content.to_s
+          # Ox keeps the target/content separator space inside the
+          # PI content; the model's content is the data AFTER the
+          # separator. Leaving it in makes canonicalization
+          # non-idempotent (TODO.sota/02, M2).
+          node.content.to_s.sub(/\A\s+/, "")
         end
 
         def set_processing_instruction_content(node, content)
