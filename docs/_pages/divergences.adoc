@@ -19,74 +19,58 @@ here. Contract:
 |===
 | ID | Adapter(s) | Divergence
 
-| D-01
-| oga
-| The `xmlns:` default-namespace XPath idiom is unsupported by oga's
-own engine (explicit bindings work). Pinned in
-`spec/consistency/xpath_idioms_spec.rb`.
-
 | D-02
 | oga
 | Raw CR preserved in text content — §2.11 EOL normalization not
-applied at parse. Pinned in `spec/consistency/eol_normalization_spec.rb`.
+applied at parse. Decided permanent: normalization belongs at the
+engine's parse layer; a facade read arm would only cover the read
+verbs it touches and change content/source-position consistency.
+Pinned in `spec/consistency/eol_normalization_spec.rb`.
 
 | D-03
 | ox, headed_ox
-| `&#13;` character references collapse to LF. Pinned in
+| `&#13;` character references collapse to LF. Decided permanent:
+the reference-vs-literal distinction is lost at parse, so no facade
+read can recover it. Pinned in
 `spec/consistency/eol_normalization_spec.rb`.
-
-| D-04
-| oga
-| The XML declaration surfaces as a `<?xml?>` PI; PI content keeps its
-separator space. Pinned in `spec/moxml/c14n/adapter_delegation_spec.rb`.
 
 | D-05
 | ox, headed_ox
-| PI content dropped at parse. Pinned in
-`spec/moxml/c14n/adapter_delegation_spec.rb`.
+| PI content is dropped on parse for element-child PIs, XPath-minted
+wrappers, and quoted data (some document-level shapes retain it).
+Pinned in `spec/moxml/c14n/adapter_delegation_spec.rb` and the
+taxonomy differential.
 
 | D-06
 | ox, headed_ox
 | Comment content padding stripped at parse. Pinned in
 `spec/moxml/c14n/subset_spec.rb`.
 
-| D-07
-| rexml
-| `text()` node tests return no text nodes (adapter XPath capability
-gap, both axes). Pinned in `spec/moxml/c14n/subset_spec.rb`.
-
-| D-08
-| c14n subsystem
-| Document-level PI/comment rendering not yet implemented (all
-adapters; a subsystem TODO, not an engine divergence). Tracked in
-`TODO.c14n/09-comments-pis-tests.md`.
-
 | D-09
 | oga, ox, headed_ox, libxml, leptris
-| Element-level `to_xml(indent:)` silently ignored (libxml emits a
-partial, unindented newline form). Document-level HTML/XHTML
-indentation is honored on leptris/nokogiri and raises on incapable
-engines. Pinned in
+| Element-level `to_xml(indent:)` is not supported by these engines:
+the facade raises the named `Moxml::AdapterError` instead of
+answering unindented output; `indent: 0` and the no-option path stay
+common. The engine-level `serialize(indent:)` lane (direct
+`Adapter.serialize`) still ignores or partially applies the knob.
+Pinned in `spec/moxml/element_indent_spec.rb` and
 `spec/moxml/adapter/shared_examples/adapter_contract.rb`.
 
 | D-10
 | ox, headed_ox
-| SAX emits no separate CDATA/comment/processing-instruction events
-(sequences fold into text or are dropped). Pinned in
+| SAX reports no separate CDATA/comment/processing-instruction
+events. A handler that subscribes to one of those families gets the
+named `Moxml::NotImplementedError` — loud, never a silently
+incomplete stream. Text-only handlers still receive CDATA folded
+into character data as the engine delivers it. Pinned in
 `spec/moxml/sax_spec.rb`.
 
 | D-11
 | oga
 | SAX parse is more lenient with malformed input than the model's
-error authority. Pinned in `spec/moxml/sax_spec.rb`.
-
-| D-12
-| ox, headed_ox
-| The XPath translation covers a subset: no positional predicates,
-attribute-value predicates, namespace/default-namespace tests,
-`position()`/`count()`, `text()`, boolean expressions, `child::`/
-`descendant::` axes, or unions. Pinned in
-`spec/moxml/xpath_capabilities_spec.rb` and `spec/moxml/node_spec.rb`.
+error authority. Decided permanent: the engine owns error reporting,
+and pre-validating with a strict parse would defeat the streaming
+lane. Pinned in `spec/moxml/sax_spec.rb`.
 
 | D-13
 | ox, headed_ox
@@ -145,4 +129,11 @@ silent on text-node coalescing (an open decision). Surfaced by the
 generated metamorphic differential (M5). Pinned in
 `spec/consistency/metamorphic_properties_spec.rb` through
 `InputGenerator::FEATURE_EXEMPT`.
+
+| D-20
+| rexml
+| Trailing whitespace in processing-instruction data is dropped at
+parse (the engine's instruction content is trimmed); leading
+separator runs collapse per the model. Pinned in the taxonomy
+differential (`pi trailing whitespace`, face `pi_content`).
 |===

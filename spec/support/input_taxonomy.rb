@@ -67,6 +67,10 @@ module InputTaxonomy
       text: { oga: "D-14" },
       pi_content: { ox: "D-05", headed_ox: "D-05" },
     },
+    "pi/comment/cdata: pi trailing whitespace" => {
+      text: { oga: "D-14" },
+      pi_content: { ox: "D-05", headed_ox: "D-05", rexml: "D-20" },
+    },
     "huge text with entities" => {
       text: { rexml: "D-16" },
       serialize: { rexml: "D-16" },
@@ -191,6 +195,9 @@ module InputTaxonomy
       Input.new("pi/comment/cdata: pi multi-space separator", "pi/comment/cdata edges",
                 "<r><?pi   data?></r>", true,
                 "separator whitespace is not PI content (uniform)"),
+      Input.new("pi/comment/cdata: pi trailing whitespace", "pi/comment/cdata edges",
+                "<r><?pi data   ?></r>", true,
+                "trailing whitespace is PI data (D-20 on rexml)"),
       Input.new("pi/comment/cdata: empty pi", "pi/comment/cdata edges",
                 "<r><?pi?></r>", true, nil),
 

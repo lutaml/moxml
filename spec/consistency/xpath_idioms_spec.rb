@@ -42,11 +42,6 @@ RSpec.describe "XPath idioms across adapters" do
             Gem::Version.new(Leptris::VERSION) < Gem::Version.new("1.9.359.0")
           skip "binding #{Leptris::VERSION} predates the xmlns: fix (1.9.359)"
         end
-        if adapter_name == :oga
-          # oga's own Ruby XPath engine has no xmlns: default-ns
-          # support (third-party; explicit bindings work).
-          skip "D-01: oga's XPath engine does not implement the xmlns: idiom"
-        end
       end
 
       it "matches default-namespaced elements via the xmlns: prefix" do

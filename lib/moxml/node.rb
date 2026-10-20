@@ -305,6 +305,21 @@ module Moxml
     end
 
     def to_xml(options = {})
+      # Element-level indentation is a declared capability: engines
+      # that ignore it must not answer unindented output silently
+      # (D-09). indent: 0 and the no-option path stay common.
+      indent = options[:indent]
+      if !is_a?(Document) && indent.is_a?(Integer) && indent.positive? &&
+          !adapter.element_indent_supported?
+        raise Moxml::AdapterError.new(
+          "element-level indentation is not supported by the " \
+          "#{adapter.name.split('::').last} adapter; serialize the " \
+          "document or use indent: 0",
+          adapter: adapter.name,
+          operation: "serialize",
+        )
+      end
+
       # Determine if we should include XML declaration
       # For Document nodes: check native then wrapper, unless explicitly overridden
       # For other nodes: default to no declaration unless explicitly set

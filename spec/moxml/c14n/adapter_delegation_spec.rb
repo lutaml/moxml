@@ -59,18 +59,45 @@ RSpec.describe "Moxml::C14n cross-adapter canonicalization" do
   end
 
   describe "document-level nodes keep document order" do
-    # oga surfaces the XML declaration as a <?xml?> PI and keeps the
-    # separator space in PI content (D-04); ox/headed_ox drop PI
-    # content on parse (D-05). Both are pre-existing parse-layer
-    # divergences, out of scope here.
-    let(:adapters) { Moxml::Adapter::AVAILABLE_ADAPTERS - %i[oga ox headed_ox] }
+    # ox/headed_ox drop PI content at parse (D-05), so content-bearing
+    # document-level PIs are pinned on the remaining adapters; the
+    # separator/newline rule itself is pinned on every adapter below
+    # (comments and empty-data PIs are common across all of them).
+    let(:content_adapters) do
+      Moxml::Adapter::AVAILABLE_ADAPTERS - %i[ox headed_ox]
+    end
 
     it "canonicalizes a leading PI before the root element" do
-      adapters.each do |adapter_name|
+      content_adapters.each do |adapter_name|
         doc = Moxml.new(adapter_name)
           .parse(%(<?xml version="1.0"?><?render mode="x"?><doc><e/></doc>))
         expect(Moxml::C14n.canonicalize(doc))
           .to eq(%(<?render mode="x"?>\n<doc><e></e></doc>))
+      end
+    end
+
+    it "uses exactly one newline between document-level nodes" do
+      Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
+        doc = Moxml.new(adapter_name)
+          .parse(%(<?pi?><?pi2?><!--a--><doc/><!--b--><?pi3?>))
+        expect(Moxml::C14n.canonicalize(doc, with_comments: true))
+          .to eq(%(<?pi?>\n<?pi2?>\n<!--a-->\n<doc></doc>\n<!--b-->\n<?pi3?>))
+      end
+    end
+
+    it "never emits the XML declaration" do
+      Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
+        doc = Moxml.new(adapter_name)
+          .parse(%(<?xml version="1.0" encoding="UTF-8"?><doc/>))
+        expect(Moxml::C14n.canonicalize(doc)).to eq("<doc></doc>")
+      end
+    end
+
+    it "collapses PI separator whitespace to one space" do
+      Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
+        doc = Moxml.new(adapter_name).parse(%(<?pi  a  b?><doc/>))
+        expect(Moxml::C14n.canonicalize(doc))
+          .to eq(%(<?pi a  b?>\n<doc></doc>))
       end
     end
   end

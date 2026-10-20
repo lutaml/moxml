@@ -21,6 +21,11 @@ module Moxml
       def process(root_node)
         output = (+"")
         process_node(root_node, output)
+        # Document-level PI/comment rendering uses a newline as a
+        # SEPARATOR between nodes (and around the root), not as a
+        # leading/trailing pad: the canonical form starts and ends
+        # with the first/last node itself (libxml2 oracle).
+        output.chomp! if root_node.node_type == :root
         output
       end
 
@@ -93,25 +98,29 @@ module Moxml
         return unless with_comments
         return unless node.in_node_set?
 
-        # Comment outside the document element gets a line break before/after
-        # to keep canonical output readable.
-        if parent_element.nil? && output.length.positive?
-          output << "\n"
-        end
+        ensure_separator(output) if parent_element.nil?
         output << "<!--" << node.value << "-->"
         output << "\n" if parent_element.nil?
       end
 
       def process_pi_node(node, output, parent_element)
         return unless node.in_node_set?
+        # C14N never emits the XML declaration; the "xml" target is
+        # reserved and cannot appear as a PI in a well-formed document.
+        return if node.target.to_s.casecmp("xml").zero?
 
-        if parent_element.nil? && output.length.positive?
-          output << "\n"
-        end
+        ensure_separator(output) if parent_element.nil?
         output << "<?" << node.target
         output << " " << node.data unless node.data.to_s.empty?
         output << "?>"
         output << "\n" if parent_element.nil?
+      end
+
+      # One newline between document-level nodes, never a doubled
+      # separator (a PI's trailing newline already starts the next
+      # node's line).
+      def ensure_separator(output)
+        output << "\n" if output.length.positive? && !output.end_with?("\n")
       end
     end
   end

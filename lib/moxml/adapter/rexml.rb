@@ -22,6 +22,10 @@ module Moxml
           true
         end
 
+        def element_indent_supported?
+          true
+        end
+
         def parse(xml, options = {}, _context = nil)
           xml = "" if xml.nil?
 
@@ -215,8 +219,10 @@ module Moxml
         def children(node, **_entity_bearing)
           return [] unless node.is_a?(::REXML::Parent)
 
-          # Return all children preserving whitespace text nodes
-          result = node.children.dup
+          # Return all children preserving whitespace text nodes. The XML
+          # declaration is document state, not a child node (model,
+          # Object model), so it is never listed.
+          result = node.children.grep_v(::REXML::XMLDecl)
 
           # Include any EntityReference wrappers stored alongside native
           # children. Native children are identity-unique; only this
@@ -636,6 +642,15 @@ module Moxml
         end
 
         def xpath(node, expression, namespaces = {})
+          # REXML's engine answers no text nodes for text() node
+          # tests (D-07, both axes); the reference engine does
+          # (model, XPath evaluation).
+          if expression.match?(/\btext\s*\(/)
+            return Moxml::XPath.evaluate_natives(
+              node, expression, namespaces || {}, adapter: :rexml
+            )
+          end
+
           # XPath.match for every expression: get_elements only
           # handles simple child-name paths — attribute terminals,
           # absolute paths and predicates silently degrade there.

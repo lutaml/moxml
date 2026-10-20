@@ -412,50 +412,39 @@ RSpec.describe Moxml::SAX do
       expect(handler.error_message).to match(/invalid|unclosed|premature|mismatch|not closed/i)
     end
 
-    it "documents CDATA limitation" do
-      # Ox SAX does not have separate CDATA events
-      # All CDATA content is delivered as text() events
-      skip "D-10: Ox SAX does not support separate CDATA events"
-
-      xml_with_cdata = "<root><![CDATA[special content]]></root>"
-
-      cdata_found = false
-      context.sax_parse(xml_with_cdata) do
-        cdata { |_text| cdata_found = true }
-      end
-
-      # This will fail because Ox doesn't support separate CDATA events
-      expect(cdata_found).to be true
+    it "declares CDATA event subscriptions loudly (D-10)" do
+      # Ox SAX has no separate CDATA events; a subscriber gets the
+      # named error rather than an incomplete stream.
+      expect do
+        context.sax_parse("<root><![CDATA[special content]]></root>") do
+          cdata { |_text| nil }
+        end
+      end.to raise_error(Moxml::NotImplementedError, /cdata/)
     end
 
-    it "documents comment limitation" do
-      # Ox SAX does not have separate comment events
-      skip "D-10: Ox SAX does not support separate comment events"
-
-      xml_with_comment = "<root><!-- comment --><data>content</data></root>"
-
-      comment_found = false
-      context.sax_parse(xml_with_comment) do
-        comment { |_text| comment_found = true }
-      end
-
-      # This will fail because Ox doesn't support comment events
-      expect(comment_found).to be true
+    it "declares comment event subscriptions loudly (D-10)" do
+      expect do
+        context.sax_parse("<root><!-- comment --><data>content</data></root>") do
+          comment { |_text| nil }
+        end
+      end.to raise_error(Moxml::NotImplementedError, /comment/)
     end
 
-    it "documents processing instruction limitation" do
-      # Ox SAX does not have separate PI events
-      skip "D-10: Ox SAX does not support separate processing instruction events"
+    it "declares PI event subscriptions loudly (D-10)" do
+      expect do
+        context.sax_parse('<?xml-stylesheet type="text/xsl" href="style.xsl"?><root/>') do
+          processing_instruction { |_target, _data| nil }
+        end
+      end.to raise_error(Moxml::NotImplementedError, /processing_instruction/)
+    end
 
-      xml_with_pi = '<?xml-stylesheet type="text/xsl" href="style.xsl"?><root/>'
+    it "declares unsupported families loudly for class handlers too" do
+      handler = Class.new(Moxml::SAX::Handler) do
+        def on_cdata(_text); end
+      end.new
 
-      pi_found = false
-      context.sax_parse(xml_with_pi) do
-        processing_instruction { |_target, _data| pi_found = true }
-      end
-
-      # This will fail because Ox doesn't support PI events
-      expect(pi_found).to be true
+      expect { context.sax_parse("<root/>", handler) }
+        .to raise_error(Moxml::NotImplementedError, /cdata/)
     end
   end
 
@@ -1024,46 +1013,28 @@ RSpec.describe Moxml::SAX do
       expect(handler.error_message).to match(/invalid|unclosed|premature|mismatch|not closed/i)
     end
 
-    it "documents CDATA limitation (inherited from Ox)" do
-      # HeadedOx inherits Ox's SAX implementation, which does not have separate CDATA events
-      skip "D-10: HeadedOx SAX (inherited from Ox) does not support separate CDATA events"
-
-      xml_with_cdata = "<root><![CDATA[special content]]></root>"
-
-      cdata_found = false
-      context.sax_parse(xml_with_cdata) do
-        cdata { |_text| cdata_found = true }
-      end
-
-      expect(cdata_found).to be true
+    it "declares CDATA event subscriptions loudly (inherited from Ox, D-10)" do
+      expect do
+        context.sax_parse("<root><![CDATA[special content]]></root>") do
+          cdata { |_text| nil }
+        end
+      end.to raise_error(Moxml::NotImplementedError, /cdata/)
     end
 
-    it "documents comment limitation (inherited from Ox)" do
-      # HeadedOx inherits Ox's SAX implementation, which does not have separate comment events
-      skip "D-10: HeadedOx SAX (inherited from Ox) does not support separate comment events"
-
-      xml_with_comment = "<root><!-- comment --><data>content</data></root>"
-
-      comment_found = false
-      context.sax_parse(xml_with_comment) do
-        comment { |_text| comment_found = true }
-      end
-
-      expect(comment_found).to be true
+    it "declares comment event subscriptions loudly (inherited from Ox, D-10)" do
+      expect do
+        context.sax_parse("<root><!-- comment --><data>content</data></root>") do
+          comment { |_text| nil }
+        end
+      end.to raise_error(Moxml::NotImplementedError, /comment/)
     end
 
-    it "documents processing instruction limitation (inherited from Ox)" do
-      # HeadedOx inherits Ox's SAX implementation, which does not have separate PI events
-      skip "D-10: HeadedOx SAX (inherited from Ox) does not support separate processing instruction events"
-
-      xml_with_pi = '<?xml-stylesheet type="text/xsl" href="style.xsl"?><root/>'
-
-      pi_found = false
-      context.sax_parse(xml_with_pi) do
-        processing_instruction { |_target, _data| pi_found = true }
-      end
-
-      expect(pi_found).to be true
+    it "declares PI event subscriptions loudly (inherited from Ox, D-10)" do
+      expect do
+        context.sax_parse('<?xml-stylesheet type="text/xsl" href="style.xsl"?><root/>') do
+          processing_instruction { |_target, _data| nil }
+        end
+      end.to raise_error(Moxml::NotImplementedError, /processing_instruction/)
     end
   end
 end

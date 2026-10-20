@@ -13,7 +13,6 @@ require "moxml/c14n"
 # Documented parse-layer divergences (skipped rows):
 # - ox/headed_ox expand &#xD; to LF, strip inter-element whitespace
 #   and comment padding at parse (out of scope here)
-# - oga keeps the target/content separator space in PI data
 W3C_FULL_FORMS = [
   ["attribute-value whitespace collapses to single spaces",
    "<doc>\n   <e   attr1=\"v1\"\n        attr2   =   \"v2\"\n    >   content   </e>\n</doc>",
@@ -55,11 +54,9 @@ RSpec.describe "Moxml::C14n W3C REC-xml-c14n examples" do
 
       W3C_FULL_FORMS.each_with_index do |(label, xml, expected), idx|
         # ox/headed_ox strip inter-element whitespace, expand &#xD;
-        # and pad comments at parse (D-05, D-06); oga keeps the PI
-        # separator space (D-04).
+        # and pad comments at parse (D-05, D-06).
         skip_shapes = { ox: [0, CR_SHAPE, PI_SHAPE],
-                        headed_ox: [0, CR_SHAPE, PI_SHAPE],
-                        oga: [PI_SHAPE] }[adapter_name] || []
+                        headed_ox: [0, CR_SHAPE, PI_SHAPE] }[adapter_name] || []
         next if skip_shapes.include?(idx)
 
         it "canonicalizes #{label}" do

@@ -108,6 +108,14 @@ module Moxml
           end
         end
 
+        # Ox's SAX parser reports text only: CDATA, comments and PIs
+        # are folded into text or dropped (D-10). Subscribing to those
+        # families raises the named error instead of silently answering
+        # an incomplete stream.
+        def sax_event_family_supported?(family)
+          !%i[cdata comment processing_instruction].include?(family)
+        end
+
         def create_document(native_doc = nil)
           attrs = native_doc&.attributes || {}
           ::Ox::Document.new(**attrs)

@@ -48,18 +48,35 @@ RSpec.describe "C14N comments and PIs" do
   end
 
   describe "PIs at document level" do
-    # TODO.c14n/09: Document-level PIs (outside the document element) are
-    # not yet rendered correctly. The moxml PI parser mis-parses document-level
-    # PIs, and the DataModel.from_document path drops them. Fixing requires
-    # adapter-level work and is tracked separately.
-    it "renders PIs outside the document element (KNOWN LIMITATION)" do
-      skip "D-08: document-level PI rendering not yet implemented"
+    it "renders PIs outside the document element in document order" do
+      doc = ctx.parse(%(<?pi before?><root><?pi inner?></root><?pi after?>))
+      expect(Moxml::C14n.canonicalize(doc))
+        .to eq(%(<?pi before?>\n<root><?pi inner?></root>\n<?pi after?>))
+    end
+
+    it "uses exactly one newline between document-level nodes" do
+      doc = ctx.parse(%(<?pi a?><?pi b?><root/><?pi c?>))
+      expect(Moxml::C14n.canonicalize(doc))
+        .to eq(%(<?pi a?>\n<?pi b?>\n<root></root>\n<?pi c?>))
+    end
+
+    it "omits the XML declaration from the canonical form" do
+      doc = ctx.parse(%(<?xml version="1.0" encoding="UTF-8"?><root/>))
+      expect(Moxml::C14n.canonicalize(doc)).to eq("<root></root>")
     end
   end
 
   describe "comments at document level" do
-    it "renders document-level comments when with_comments: true (KNOWN LIMITATION)" do
-      skip "D-08: document-level comment rendering not yet implemented"
+    it "renders document-level comments when with_comments: true" do
+      doc = ctx.parse(%(<!--lead--><root><!--inner--></root><!--trail-->))
+      expect(Moxml::C14n.canonicalize(doc, with_comments: true))
+        .to eq(%(<!--lead-->\n<root><!--inner--></root>\n<!--trail-->))
+    end
+
+    it "keeps exactly one newline between a document-level PI and comment" do
+      doc = ctx.parse(%(<?pi x?><!--lead--><root/>))
+      expect(Moxml::C14n.canonicalize(doc, with_comments: true))
+        .to eq(%(<?pi x?>\n<!--lead-->\n<root></root>))
     end
   end
 end

@@ -178,6 +178,18 @@ module Moxml
           method(:sax_parse).owner != Moxml::Adapter::Base.singleton_class
         end
 
+        # Whether the SAX engine reports an event family as distinct
+        # events. Engines that cannot must raise the named error when
+        # the handler subscribes (model, SAX: the callback stream is
+        # authoritative; absence is loud, never a silent fold).
+        #
+        # @param family [Symbol] :cdata, :comment, or
+        #   :processing_instruction
+        # @return [Boolean]
+        def sax_event_family_supported?(_family)
+          true
+        end
+
         def create_document(_native_doc = nil)
           raise Moxml::NotImplementedError.new(
             "create_document not implemented",
@@ -528,6 +540,13 @@ namespace_validation_mode: :strict)
         # fragments and answers the copy) — the facade then refreshes
         # the caller's wrapper to it.
         def add_sibling_returns_inserted?
+          false
+        end
+
+        # Whether element-level to_xml(indent:) is honored. The
+        # facade raises a named AdapterError on incapable engines
+        # instead of returning unindented output silently (D-09).
+        def element_indent_supported?
           false
         end
 

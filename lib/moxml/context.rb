@@ -295,6 +295,21 @@ module Moxml
         raise ArgumentError, "Handler must inherit from Moxml::SAX::Handler"
       end
 
+      # Loud degradation: an engine that cannot report an event family
+      # raises the named error when the handler subscribes, rather than
+      # answering a silently incomplete stream (model, SAX).
+      SAX::Handler::EVENT_METHODS.each_key do |family|
+        next unless handler.handles?(family)
+        next if config.adapter.sax_event_family_supported?(family)
+
+        raise Moxml::NotImplementedError.new(
+          "SAX #{family} events are not supported by the " \
+          "#{config.adapter.name.split('::').last} adapter",
+          feature: "sax_#{family}",
+          adapter: config.adapter.name,
+        )
+      end
+
       # Delegate to adapter
       config.adapter.sax_parse(xml, handler)
     end

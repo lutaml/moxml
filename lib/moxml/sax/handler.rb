@@ -98,6 +98,26 @@ module Moxml
         raise error
       end
 
+      # SAX event families that engines may or may not report as
+      # distinct events, with their handler methods. An engine that
+      # cannot report a family must raise the named error when the
+      # handler subscribes — never fold the events silently.
+      EVENT_METHODS = {
+        cdata: :on_cdata,
+        comment: :on_comment,
+        processing_instruction: :on_processing_instruction,
+      }.freeze
+
+      # Whether this handler subscribes to an event family: the
+      # callback was overridden (class handlers) or registered (block
+      # handlers).
+      #
+      # @param family [Symbol] one of EVENT_METHODS keys
+      # @return [Boolean]
+      def handles?(family)
+        method(EVENT_METHODS.fetch(family)).owner != Moxml::SAX::Handler
+      end
+
       # Called when a non-fatal warning occurs
       #
       # Default implementation ignores warnings.

@@ -43,9 +43,6 @@ COMMENTS_EXCLUDED_CASE = [
 ].freeze
 
 COMMENTS_PADDING_LOSS = %i[ox headed_ox].freeze
-# rexml's adapter xpath does not return comment()/text() node results
-# (pre-existing capability gap, same family for both axes).
-COMMENT_SELECTION_GAP = %i[rexml].freeze
 
 RSpec.describe "Moxml::C14n subset canonicalization" do
   # Node-set semantics follow the enveloped-signature interop
@@ -60,11 +57,6 @@ RSpec.describe "Moxml::C14n subset canonicalization" do
         let(:ctx) { Moxml.new(adapter_name) }
 
         C14N_SUBSET_CORPUS.each do |label, xml, xpath, expected|
-          next if label == "text selection" && adapter_name == :rexml
-
-          # rexml's adapter xpath does not return text nodes for
-          # text() node tests (D-07, pre-existing capability gap).
-
           it "canonicalizes #{label}" do
             doc = ctx.parse(xml)
             expect(Moxml::C14n.canonicalize_subset(doc, xpath)).to eq(expected)
@@ -73,10 +65,8 @@ RSpec.describe "Moxml::C14n subset canonicalization" do
 
         # ox/headed_ox strip comment content padding at the parse
         # layer (D-06, pre-existing, same family as their PI content
-        # loss); only the rendered-comment case depends on it. rexml's
-        # comment() selection gap (D-07) also only affects this case.
-        unless COMMENTS_PADDING_LOSS.include?(adapter_name) ||
-            COMMENT_SELECTION_GAP.include?(adapter_name)
+        # loss); only the rendered-comment case depends on it.
+        unless COMMENTS_PADDING_LOSS.include?(adapter_name)
           it COMMENTS_CASE[0] do
             doc = ctx.parse(COMMENTS_CASE[1])
             expect(Moxml::C14n.canonicalize_subset(doc, COMMENTS_CASE[2],
