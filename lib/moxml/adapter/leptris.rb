@@ -1492,6 +1492,14 @@ module Moxml
           count = ffi.leptris_document_parse_diag_count(doc)
           return [] if count.zero?
 
+          # leptris#1771: one face carries the diag's machine-readable
+          # code plus line/column with the entry (nil when the engine
+          # has no token code — pre-#1771 records). The face probe
+          # keeps older bindings on kind+message (issue #408).
+          lint_code = if ffi.respond_to?(:leptris_document_parse_diag_code)
+                        ffi.method(:leptris_document_parse_diag_code)
+                      end
+
           kind_ptr = ::FFI::MemoryPointer.new(:int)
           diagnostics = []
           count.times do |i|
@@ -1501,7 +1509,19 @@ module Moxml
             ) == 1
 
             kind = DIAG_KINDS[kind_ptr.read_int] || :unknown
-            diagnostics << { kind: kind, message: buffer.read_string }
+            diag = { kind: kind, message: buffer.read_string }
+            if lint_code
+              code_buf = ::FFI::MemoryPointer.new(:char, 128)
+              line_ptr = ::FFI::MemoryPointer.new(:int)
+              column_ptr = ::FFI::MemoryPointer.new(:int)
+              lint_code.call(doc, i, code_buf, 128, line_ptr, column_ptr)
+              code = code_buf.read_string
+              diag[:code] = code.empty? ? nil : code
+              diag[:line] = line_ptr.read_int.zero? ? nil : line_ptr.read_int
+              diag[:column] =
+                column_ptr.read_int.zero? ? nil : column_ptr.read_int
+            end
+            diagnostics << diag
           end
           diagnostics
         end

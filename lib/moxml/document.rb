@@ -237,9 +237,13 @@ module Moxml
         raise Error, "Document already has a root element"
       else
         adapter.add_child(@native, node.native)
-        # Refresh native for adapters where identity changes (e.g., LibXML doc.root=)
+        # Refresh native for adapters where identity changes (e.g., LibXML doc.root=).
+        # Native equality via the adapter, not wrapper !=: re-mints can
+        # arrive without context primed (1.9.373 actual_native), and
+        # wrapper == dispatches through the adapter (issue #409-class).
         refreshed = adapter.actual_native(node.native, @native)
-        node.refresh_native!(refreshed) if refreshed && refreshed != node.native
+        node.refresh_native!(refreshed) if refreshed &&
+          !adapter.same_node?(refreshed, node.native)
       end
       node.parent_node = self
       invalidate_children_cache!

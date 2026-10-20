@@ -23,6 +23,18 @@ RSpec.describe "parse_html collect_errors forwarding" do
     expect(diags.first).to have_key(:message)
   end
 
+  # Issue #408: the #1771 reader fields ride the diag hash — the
+  # token code and position canon's HtmlValidator maps onto
+  # validation errors (nil where the engine has no token code).
+  it "carries the token code and position (issue #408)" do
+    doc = ctx.parse_html(src, collect_errors: true)
+    eof = doc.parse_diagnostics.find { |d| d[:message].include?("EOF") }
+    expect(eof).not_to be_nil
+    expect(eof[:code]).to eq("eof-in-tag")
+    expect(eof[:line]).to eq(1)
+    expect(eof[:column]).to eq(1)
+  end
+
   it "keeps the default lane silent (no option, no diagnostics)" do
     doc = ctx.parse_html(src)
     expect(doc.parse_diagnostics).to be_empty
