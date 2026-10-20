@@ -458,7 +458,7 @@ module Moxml
         end
 
         def processing_instruction_content(node)
-          node.content
+          node.content.to_s
         end
 
         def set_processing_instruction_content(node, content)

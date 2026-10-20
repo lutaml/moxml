@@ -166,6 +166,8 @@ module InputTaxonomy
       Input.new("pi/comment/cdata: pi multi-space separator", "pi/comment/cdata edges",
                 "<r><?pi   data?></r>", true,
                 "separator whitespace is not PI content (uniform)"),
+      Input.new("pi/comment/cdata: empty pi", "pi/comment/cdata edges",
+                "<r><?pi?></r>", true, nil),
 
       # -- malformed: unclosed --
       Input.new("malformed: unclosed element", "malformed", "<r><c>", false, nil),
