@@ -31,6 +31,39 @@ RSpec.describe Moxml::AttributeResolver do
       expect(described_class.resolve(element, "z:type")).to be_nil
       expect(described_class.resolve(element, "xmlns:q")).to be_nil
     end
+
+    # Namespaces 1.0 §5.2: the default namespace never applies to
+    # attributes. Engines that resolve unprefixed attributes against
+    # the default namespace must answer nil for it, or bare-name reads
+    # miss on every element under a default namespace.
+    it "never treats bare attributes as default-namespace members" do
+      Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
+        d = Moxml.new(adapter_name).parse(%(<r xmlns="urn:a"><e id="1"/></r>))
+        e = d.root.children.find(&:element?)
+        expect(e["id"]).to eq("1"), "#{adapter_name}: bare read"
+        expect(e.attribute("id")&.value).to eq("1"),
+                                            "#{adapter_name}: resolver"
+        expect(e.attribute("id")&.namespace).to be_nil,
+                                                "#{adapter_name}: attribute namespace"
+      end
+    end
+
+    it "keeps bare reads on programmatically built default-namespaced trees" do
+      Moxml::Adapter::AVAILABLE_ADAPTERS.each do |adapter_name|
+        ctx = Moxml.new(adapter_name)
+        d = ctx.create_document
+        root = d.create_element("root")
+        root.add_namespace(nil, "urn:a")
+        d.add_child(root)
+        e = d.create_element("item")
+        e["id"] = "123"
+        root.add_child(e)
+
+        expect(e["id"]).to eq("123"), "#{adapter_name}: bare read"
+        expect(d.xpath('//xmlns:item[@id="123"]').to_a.size).to eq(1),
+                                                                "#{adapter_name}: xmlns predicate"
+      end
+    end
   end
 
   describe ".assign" do
