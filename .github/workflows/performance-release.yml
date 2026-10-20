@@ -1,0 +1,79 @@
+name: performance-release
+
+# Every release re-measures the scoreboard and appends the table to
+# the release notes (TODO.sota/04). Triggered by the release
+# workflow's completion; idempotent — a re-run replaces the marked
+# section instead of stacking it.
+on:
+  workflow_run:
+    workflows: ["release"]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  report:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          submodules: "recursive"
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: false
+
+      - name: Install ragel
+        run: sudo apt-get update && sudo apt-get install -y ragel
+
+      - name: Install ruby-ll (for rake vendor:prepare)
+        run: gem install ruby-ll --no-document
+
+      - name: Generate ragel / ruby-ll outputs in vendored forks
+        run: rake vendor:prepare
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Compile liboga / libll native extensions
+        run: rake vendor:compile
+
+      - name: Measure the scoreboard
+        run: |
+          SCORE_MARKDOWN=/tmp/section.md \
+            bundle exec ruby benchmark/scoreboard.rb
+
+      - name: Append the scoreboard to the latest release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(gh release view --json tagName --jq .tagName)
+          gh release view "$TAG" --json body --jq .body > /tmp/body.md
+          ruby -e '
+            body = File.read("/tmp/body.md")
+            section = File.read("/tmp/section.md")
+            block = "<!-- PERFORMANCE:BEGIN -->\n#{section}" \
+                    "<!-- PERFORMANCE:END -->"
+            if body.include?("<!-- PERFORMANCE:BEGIN -->")
+              body = body.sub(
+                /<!-- PERFORMANCE:BEGIN -->.*<!-- PERFORMANCE:END -->/m,
+                block,
+              )
+            else
+              body = body.chomp + "\n\n" + block
+            end
+            File.write("/tmp/new_body.md", body)
+          '
+          gh release edit "$TAG" --notes-file /tmp/new_body.md

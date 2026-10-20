@@ -906,6 +906,16 @@ module Moxml
       # input native keeps its registration so later wraps of the
       # same base object hit the cache instead of re-minting.
       if (extended = adapter.wrap_native(node, type, context))
+        # A native that already carries the contract IS the wrapper
+        # (leptris C mint): prime it in place and skip the WeakMap
+        # round trip — the primed @native-identity answers every
+        # later wrap through the fast path above.
+        if extended.equal?(node) && extended.is_a?(Node)
+          extended.prime_contract(extended, context, adapter, type) unless
+            extended.instance_variable_defined?(:@context)
+          return extended
+        end
+
         extended.prime_contract(extended, context, adapter, type)
         context.register_wrapper(node, extended)
         context.register_wrapper(extended, extended) unless extended.equal?(node)

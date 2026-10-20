@@ -71,6 +71,13 @@ module Moxml
         defined?(::Leptris::XML::NativeNode) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.162.6")
 
+      # leptris-ruby#460: set-text by document+address, kind-dispatched
+      # in C — no binding twin mint per write. Face-probed, not
+      # version-gated (the floor admits bindings without it).
+      NATIVE_SET_BINDING_TEXT =
+        defined?(::Leptris::XML::Native) &&
+        ::Leptris::XML::Native.respond_to?(:set_binding_text)
+
       # 1.9.163.2's native layer returns UTF-8, unfrozen strings
       # (1.9.162.x answered ASCII-8BIT — the reads retagged with a
       # dup+force_encoding per call).
@@ -650,12 +657,16 @@ module Moxml
             if NN.method_defined?(:children_read)
               module ChildReads
                 def children
-                  @children = nil if @children_gen != context.children_generation
-                  @children_gen = context.children_generation
+                  ctx = @context || context
+                  generation = ctx.children_generation
+                  if @children_gen != generation
+                    @children = nil
+                    @children_gen = generation
+                  end
                   @children ||= if doc_entity_bearing?
                                   super
                                 else
-                                  NodeSet.new(children_read, context, self)
+                                  NodeSet.new(children_read, ctx, self)
                                 end
                 end
               end
@@ -2966,6 +2977,18 @@ module Moxml
         end
 
         def set_text_content(node, content)
+          # Native-layer fast path (leptris-ruby#460): the C setter
+          # takes document+address directly — no binding twin mint
+          # per write. The Identity wrapper's own content= would
+          # re-enter the facade, so call the module face.
+          if NATIVE_SET_BINDING_TEXT && node.is_a?(::Leptris::XML::NativeNode) &&
+              (doc = doc_for(node))
+            ::Leptris::XML::Native.set_binding_text(
+              doc, node.address, content.to_s
+            )
+            return
+          end
+
           node = to_binding(node) if NATIVE_READ_LAYER
           case node
           when ::Leptris::XML::Document

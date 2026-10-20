@@ -1,0 +1,115 @@
+{
+  "protocol": {
+    "measured": "2026-10-20T14:53:54Z",
+    "ruby": "3.4.8",
+    "adapter": "leptris",
+    "adapter_version": "1.9.374.0",
+    "nokogiri": "1.19.4",
+    "reps": 9,
+    "warmup": 2,
+    "clock": "CLOCK_PROCESS_CPUTIME_ID",
+    "load": 34.01
+  },
+  "rows": [
+    {
+      "row": "parse",
+      "kind": "parity",
+      "parity": true,
+      "baseline_us": 677.0,
+      "candidate_us": 261.0,
+      "ratio": 2.594,
+      "baseline_allocs": 6,
+      "candidate_allocs": 18
+    },
+    {
+      "row": "serialize",
+      "kind": "parity",
+      "parity": true,
+      "baseline_us": 474.0,
+      "candidate_us": 351.0,
+      "ratio": 1.35,
+      "baseline_allocs": 30,
+      "candidate_allocs": 13
+    },
+    {
+      "row": "xpath //field (count)",
+      "kind": "parity",
+      "parity": true,
+      "baseline_us": 132.0,
+      "candidate_us": 110.0,
+      "ratio": 1.2,
+      "baseline_allocs": 12,
+      "candidate_allocs": 9
+    },
+    {
+      "row": "xpath //field (each)",
+      "kind": "structural",
+      "parity": false,
+      "baseline_us": 276.0,
+      "candidate_us": 800.0,
+      "ratio": 0.345,
+      "baseline_allocs": 1212,
+      "candidate_allocs": 12
+    },
+    {
+      "row": "attr pairs listing",
+      "kind": "parity",
+      "parity": true,
+      "baseline_us": 310.0,
+      "candidate_us": 38.0,
+      "ratio": 8.158,
+      "baseline_allocs": 3300,
+      "candidate_allocs": 0
+    },
+    {
+      "row": "build add_element",
+      "kind": "structural",
+      "parity": false,
+      "baseline_us": 3434.0,
+      "candidate_us": 5744.0,
+      "ratio": 0.598,
+      "baseline_allocs": 20358,
+      "candidate_allocs": 11062
+    },
+    {
+      "row": "walk+read (warm)",
+      "kind": "structural",
+      "parity": false,
+      "baseline_us": 1101.0,
+      "candidate_us": 1431.0,
+      "ratio": 0.769,
+      "baseline_allocs": 4503,
+      "candidate_allocs": 2
+    },
+    {
+      "row": "walk+read (cold)",
+      "kind": "structural",
+      "parity": false,
+      "baseline_us": 1915.0,
+      "candidate_us": 8590.0,
+      "ratio": 0.223,
+      "baseline_allocs": 6010,
+      "candidate_allocs": 8730
+    },
+    {
+      "row": "children recursion (cold)",
+      "kind": "structural",
+      "parity": false,
+      "baseline_us": 2293.0,
+      "candidate_us": 8595.0,
+      "ratio": 0.267,
+      "baseline_allocs": 5710,
+      "candidate_allocs": 7230
+    },
+    {
+      "row": "plan records (typed)",
+      "kind": "data",
+      "parity": false,
+      "baseline_us": 2401.0,
+      "candidate_us": 3038.0,
+      "ratio": 0.79,
+      "baseline_allocs": 8111,
+      "candidate_allocs": 13231
+    }
+  ]
+}
