@@ -1,5 +1,10 @@
 {
   "repo": [
-    "lutaml/lutaml-model"
+    "lutaml/lutaml-model",
+    "lutaml/canon",
+    "metanorma/metanorma-standoc",
+    "metanorma/metanorma-ietf",
+    "lutaml/expressir",
+    "metanorma/svg_conform"
   ]
 }

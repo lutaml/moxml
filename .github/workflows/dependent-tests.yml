@@ -25,3 +25,6 @@ jobs:
     uses: metanorma/ci/.github/workflows/dependent-rake.yml@main
     with:
       command: bundle exec rspec
+      # metanorma-ietf needs xml2rfc; metanorma-standoc needs
+      # ghostscript. Both are harmless for the other consumers.
+      setup-tools: xml2rfc,ghostscript
