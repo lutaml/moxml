@@ -1,0 +1,62 @@
+---
+title: Ecosystem
+nav_order: 12
+---
+
+== Ecosystem closure
+
+Moxml's consumer test: **no consumer needs to know which engine is
+running, and every consumer suite runs against moxml main in this
+repository's CI.** The dependent matrix
+(`.github/workflows/dependent-tests.yml`, repo list in
+`dependent-repos.json`) binds each consumer to the checkout at the
+workflow's ref and runs its own suite — the consumer's suite is the
+validation target, never a stand-in.
+
+=== Dependent matrix
+
+[cols="2,1,3",options="header"]
+|===
+| Repository | Tools | Suite (validated 2026-10-21)
+
+| `lutaml/lutaml-model` | — | 6213+ examples green on the released pair
+
+| `lutaml/canon` | — | 2573 examples, 0 failures
+
+| `metanorma/metanorma-standoc` | ghostscript | 627 examples; 4 environment-sensitive failures reproduce identically on the released moxml (generated-asset prerequisites)
+
+| `metanorma/metanorma-ietf` | xml2rfc | 405 examples, 0 failures
+
+| `lutaml/expressir` | — | 2026 examples, 0 failures
+
+| `metanorma/svg_conform` | — | 350 examples, 0 failures
+|===
+
+=== Seam audit
+
+An *engine-direct seam* is consumer code that reaches past the facade
+into the engine. Each is retired with a facade capability, or kept as
+a declared, decided lane.
+
+[cols="1,2,3",options="header"]
+|===
+| Consumer | Use | Disposition
+
+| canon | HTML5 parse-lint (`parse_html(collect_errors:)`) | **Retired** (canon#281): `Moxml::Context#parse_html` forwards `collect_errors` and `Document#parse_diagnostics` answers the §13.2.5 token stream with code/line/column.
+
+| canon | c14n native delegation (`doc.native.c14n`) | **Decided lane**: canon owns the c14n reference implementation and byte-probes the engine against its Ruby path; it is the backend behind moxml's own native delegation.
+
+| metanorma-standoc | RELAX NG validation (`Leptris::XML::RelaxNG`) | **Facade capability added**: `Moxml::RelaxNG` (`Context#relaxng` / `#relaxng_file`, `valid?` / `validate` / `validate_errors`), loud `NotImplementedError` on engines without an RNG validator. Consumer migration tracked in standoc.
+
+| svg_conform | engine parsing and SAX (`Leptris::XML.parse`, `Leptris::XML::SAX`) | **Consumer work**: moxml's `Context#parse` and `Moxml::SAX` cover both; tracked for the migration.
+
+| standoc / svg_conform | hard adapter selection (`Moxml.new(:leptris)`) | **Supported**: adapter selection is the deployment decision the facade exists for.
+|===
+
+=== Cap policy
+
+A consumer pin (for example `moxml ~> 0.5.84`) is a dependency
+constraint, not a knowledge of the engine. Caps move only after the
+consumer's own suite runs green against the released pair — the
+relaton-only lesson: evidence from one dependent suite does not
+transfer to another.
