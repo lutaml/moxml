@@ -367,9 +367,12 @@ module Moxml
       Materializer.materialize_fields(self, &block)
     end
 
+    # Sugar over xpath: the first node of a node-set; scalar results
+    # (count(), string(), boolean()) pass through unwrapped and
+    # uniform across adapters.
     def at_xpath(expression, namespaces = {})
-      Moxml::Node.wrap(adapter.at_xpath(@native, expression, namespaces),
-                       context)
+      result = xpath(expression, namespaces)
+      result.is_a?(NodeSet) ? result.first : result
     end
 
     # Nokogiri-compatible sugar: at/search/at_css/css. Nokogiri's

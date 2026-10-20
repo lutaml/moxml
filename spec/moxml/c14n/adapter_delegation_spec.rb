@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Processing model §Canonicalization (normative): pinned here.
+
 require "spec_helper"
 require "moxml/c14n"
 

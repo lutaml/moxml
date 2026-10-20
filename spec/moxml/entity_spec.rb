@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Processing model §Parsing (normative): pinned here.
+
 require "spec_helper"
 
 RSpec.describe Moxml::Entity do

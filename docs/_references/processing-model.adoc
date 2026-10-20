@@ -18,8 +18,19 @@ skip with their entry ID — an undocumented divergence is a bug.
 === Status and precedence
 
 1. This document — the model.
-2. `spec/consistency/` — the model pinned as executable expectations.
+2. `spec/consistency/` — the model pinned as executable expectations,
+   with `lib/moxml/reference/` as the **engine-free executable
+   reference** (a pure-Ruby reader, writer, and normalizer). Adapters
+   are differentially tested against the reference
+   (`spec/consistency/reference_differential_spec.rb`), not only
+   against each other; the reference is pure Ruby and transpiles to
+   the Opal lane.
 3. Adapter implementations and capability gates — representations.
+
+A pin cites the model section it enforces
+(`# Processing model §<section> (normative)`); the coverage audit
+asserts both directions of that linkage, so removing any of the
+document, a pin, or the reference fails CI.
 
 A semantics change amends this document first (see
 `TODO.model/05-model-evolution-protocol.md`).
@@ -140,6 +151,9 @@ with an unambiguous local name.
   `xmlns:` default-namespace matching; attribute terminals in every
   position (`//a/@id`, `//@id`, `r/a/@id`); symbol- and string-keyed
   bindings resolve identically.
+* `at_xpath` is sugar over `xpath`: it answers the first node of a
+  node-set and passes scalar results (`count()`, `string()`,
+  `boolean()`) through unwrapped, uniformly across adapters.
 
 === Serialization
 
@@ -149,7 +163,8 @@ with an unambiguous local name.
 
 | `to_xml`
 | Declaration per configuration; empty elements per `expand_empty`;
-  namespace declarations preserved.
+  namespace declarations preserved; a parsed DOCTYPE is emitted with
+  its external identifiers and internal subset.
 
 | `to_html`
 | HTML method: void elements unclosed (`<br>`), raw text

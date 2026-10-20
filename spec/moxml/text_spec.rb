@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Processing model §Access semantics (normative): pinned here.
+
 require "spec_helper"
 
 RSpec.describe Moxml::Text do

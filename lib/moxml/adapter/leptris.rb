@@ -2311,9 +2311,19 @@ module Moxml
         def attribute_pairs(element)
           binding_element = to_binding(element)
           return super unless binding_element.respond_to?(:attribute_pairs)
-          return binding_element.attributes_snapshot.to_a if ELEMENT_ATTR_SNAPSHOT
 
-          binding_element.attribute_pairs
+          pairs = if ELEMENT_ATTR_SNAPSHOT
+                    binding_element.attributes_snapshot.to_a
+                  else
+                    binding_element.attribute_pairs
+                  end
+          # The engine exposes qualified names; the facade's listing
+          # face is bare (Attribute#name), uniform with every adapter.
+          pairs.map { |(name, value)| [local_name(name), value] }
+        end
+
+        def local_name(name)
+          name.include?(":") ? name.split(":", 2)[1] : name
         end
 
         def attribute_element(attr)

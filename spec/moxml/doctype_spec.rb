@@ -84,6 +84,13 @@ RSpec.describe Moxml::Doctype do
           expect(doctype.external_id).to be_nil
           expect(doctype.system_id).to be_nil
         end
+
+        it "preserves a DOCTYPE internal subset on serialization" do
+          xml = '<!DOCTYPE r [<!ENTITY x "v">]><r>&x;</r>'
+          parsed = ctx.parse(xml)
+
+          expect(parsed.to_xml(indent: 0)).to include('<!ENTITY x "v">')
+        end
       end
     end
   end

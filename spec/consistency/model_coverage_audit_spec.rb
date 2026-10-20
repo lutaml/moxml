@@ -174,4 +174,48 @@ RSpec.describe "model coverage matrix" do
     expect(stale).to be_empty,
                      "non-face declarations citing missing sections: #{stale.join('; ')}"
   end
+
+  # Bidirectional linkage (TODO.sota/03): the model doc, the pins, and
+  # the reference form one checkable triangle. Every pin cites the
+  # section it enforces; every citation names a section that exists.
+  PIN_CITATION = /Processing model §(.+?) \(normative\)/ # rubocop:disable Lint/ConstantDefinitionInBlock, RSpec/LeakyConstantDeclaration
+
+  def pin_citations(path)
+    File.readlines(path).filter_map { |line| line[PIN_CITATION, 1]&.strip }
+  end
+
+  it "has every pin cite the model section it enforces" do
+    missing = MODEL_MATRIX.filter_map do |family, cell|
+      next unless cell[:pin] && File.exist?(cell[:pin])
+
+      "#{family}: #{cell[:pin]}" unless pin_citations(cell[:pin])
+        .include?(cell[:section])
+    end
+    expect(missing).to be_empty,
+                       "pins must cite their model section " \
+                       "(# Processing model §<section>): #{missing.join('; ')}"
+  end
+
+  it "never cites a model section that does not exist" do
+    sections = model_sections
+    orphans = MODEL_MATRIX.filter_map { |_, cell| cell[:pin] }.uniq.flat_map do |path|
+      next [] unless File.exist?(path)
+
+      pin_citations(path).reject { |section| sections.include?(section) }
+        .map { |section| "#{path}: #{section}" }
+    end
+    expect(orphans).to be_empty,
+                       "pin citations naming missing sections: #{orphans.join('; ')}"
+  end
+
+  it "cites every face section from at least one pin" do
+    cited = MODEL_MATRIX.filter_map { |_, cell| cell[:pin] }.uniq.flat_map do |path|
+      File.exist?(path) ? pin_citations(path) : []
+    end
+    uncovered = model_sections.reject do |section|
+      cited.include?(section) || NON_FACE_SECTIONS.include?(section)
+    end
+    expect(uncovered).to be_empty,
+                         "model sections no pin cites: #{uncovered.join('; ')}"
+  end
 end

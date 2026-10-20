@@ -102,6 +102,7 @@ module Moxml
   autoload :SAX, "moxml/sax"
   autoload :Signature, "moxml/signature"
   autoload :C14n, "moxml/c14n"
+  autoload :Reference, "moxml/reference"
   autoload :XSLT, "moxml/xslt"
   autoload :XSD, "moxml/xsd"
 

@@ -18,6 +18,9 @@ RSpec.describe "divergence register linkage" do
     /skip_shapes/,              # shape routing (IDs cited above)
     /leptris_fixed\?/,          # version gate
     /source_elements/,          # data-presence guard
+    /next unless doc/,          # adapter-availability guard (not a
+    # divergence: the adapter is not installed in this environment)
+    /next unless cell\[:pin\]/, # matrix data-presence guard
     /next unless match/,        # scanner-internal guard
     /well_formed|voids\.empty\?|default_ns|per\.size/, # property-scope
     # and availability guards (input scoping, not adapter exemptions)

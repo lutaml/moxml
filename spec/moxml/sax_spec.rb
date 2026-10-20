@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Processing model §SAX (normative): pinned here.
+
 require "spec_helper"
 
 RSpec.describe Moxml::SAX do
