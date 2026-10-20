@@ -348,9 +348,13 @@ module Moxml
 
         def xsd_content_valid?(xsd_handle, element_name, children)
           # The binding reads each child's name + effective
-          # namespace through its own node API — pass the natives.
+          # namespace through its own node API (c_ptr) — bridge to
+          # the binding's nodes. 1.9.374+ mints registered klasses
+          # at create, so children arrive as Identity wrappers whose
+          # .native is self (no c_ptr); to_binding hands back the
+          # binding node whatever the wrapper flavor.
           xsd_handle.content_valid?(
-            element_name, children.map(&:native)
+            element_name, children.map { |c| to_binding(c.native) }
           )
         end
 
