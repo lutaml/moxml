@@ -3066,7 +3066,21 @@ module Moxml
           end.join
         end
 
+        # SET_TEXT_NATIVE: bindings with the unshadowed C alias
+        # (the add_child_native pattern — set_text_native aliases
+        # content= on the TypedData self) take the one-frame write:
+        # no doc_for climb, no address read, no module dispatch.
+        # Self-gating by respond_to? — older exts fall through to
+        # the set_binding_text face.
+        SET_TEXT_NATIVE = defined?(::Leptris::XML::NativeNode) &&
+          ::Leptris::XML::NativeNode.method_defined?(:set_text_native)
+
         def set_text_content(node, content)
+          if SET_TEXT_NATIVE && node.is_a?(::Leptris::XML::NativeNode)
+            node.set_text_native(content.to_s)
+            return
+          end
+
           # Native-layer fast path (leptris-ruby#460): the C setter
           # takes document+address directly — no binding twin mint
           # per write. The Identity wrapper's own content= would
