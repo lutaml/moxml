@@ -42,7 +42,7 @@ a declared, decided lane.
 |===
 | Consumer | Use | Disposition
 
-| canon | HTML5 parse-lint (`parse_html(collect_errors:)`) | **Facade capability shipped**: `Moxml::Context#parse_html` forwards `collect_errors` and `Document#parse_diagnostics` answers the §13.2.5 token stream with code/line/column. canon adopts it in canon#281, which is owner-held (moxml does not merge canon PRs).
+| canon | HTML5 parse-lint (`parse_html(collect_errors:)`) | **Retired** (canon#281, merged): `Moxml::Context#parse_html` forwards `collect_errors` and `Document#parse_diagnostics` answers the §13.2.5 token stream with code/line/column; canon rides the facade.
 
 | canon | c14n native delegation (`doc.native.c14n`) | **Decided lane**: canon owns the c14n reference implementation and byte-probes the engine against its Ruby path; it is the backend behind moxml's own native delegation.
 
