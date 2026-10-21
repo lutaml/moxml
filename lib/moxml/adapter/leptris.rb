@@ -3168,8 +3168,19 @@ module Moxml
 
         def set_text_content(node, content)
           if SET_TEXT_NATIVE && node.is_a?(::Leptris::XML::NativeNode)
-            node.set_text_native(content.to_s)
-            return
+            begin
+              node.set_text_native(content.to_s)
+              return
+            rescue ::Leptris::XML::Error => e
+              # Same #401 contract as the fallback below: a detached
+              # (parentless) node re-raises as the named Moxml::Error.
+              raise if node.parent
+
+              raise Moxml::Error,
+                    "cannot set text content on a detached " \
+                    "(parentless) node — attach it to a document " \
+                    "first (issue #401): #{e.message}"
+            end
           end
 
           # Native-layer fast path (leptris-ruby#460): the C setter
