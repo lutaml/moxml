@@ -1687,11 +1687,9 @@ module Moxml
         # optional (context, adapter) and pre-writes the contract
         # ivars in C — arity -1 vs the old 2. Self-gating: no
         # version floor, the probe reads the loaded ext.
-        MINT_PRIMED = begin
-          defined?(::Leptris::XML::NativeNode) &&
-            ::Leptris::XML::NativeNode
-              .method(:create_element).arity == -1
-        end
+        MINT_PRIMED = defined?(::Leptris::XML::NativeNode) &&
+          ::Leptris::XML::NativeNode
+            .method(:create_element).arity == -1
 
         def mints_primed?
           MINT_PRIMED

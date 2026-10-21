@@ -169,8 +169,8 @@ module Moxml
       # prime pass disappears from the build path.
       native = if adapter.mints_primed?
                  adapter.create_primed_element(name, owner_doc: @native,
-                                               context: context,
-                                               adapter: adapter)
+                                                     context: context,
+                                                     adapter: adapter)
                else
                  adapter.create_element(name, owner_doc: @native)
                end
