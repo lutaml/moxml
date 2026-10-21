@@ -773,7 +773,10 @@ module Moxml
     protected
 
     def invalidate_children_cache!
-      @children = nil
+      # Only nil an EXISTING memo: nil-assignment materializes an
+      # unset ivar (object-shape transition), and the builder hot
+      # path invalidates parents whose children memo was never read.
+      @children = nil unless @children.nil?
     end
 
     # Invalidate parent's cached children when this node
