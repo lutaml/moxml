@@ -853,7 +853,7 @@ RSpec.describe Moxml::Adapter::Leptris do
     let(:ctx) { Moxml.new(:leptris) }
 
     it "auto-retires the guard when the engine invalidates its index" do
-      skip "engine still routes post-insert node-sets stale" unless described_class.native_xpath_index_fixed?
+      skip "requires an engine whose node-set index survives sibling insertion (leptris-ruby#519)" unless described_class.native_xpath_index_fixed?
 
       doc = ctx.parse("<r><a/><b/></r>")
       root = doc.root
