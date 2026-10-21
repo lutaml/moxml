@@ -846,6 +846,7 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(first.next_sibling.parent).to eq(doc.root)
     end
   end
+
   describe "engine XPath index guard retirement" do
     let(:ctx) { Moxml.new(:leptris) }
 
@@ -856,7 +857,7 @@ RSpec.describe Moxml::Adapter::Leptris do
     it "bypasses the guard when the engine invalidates on splice" do
       expect(
         described_class.singleton_class
-          .const_get(:XPATH_INDEX_INVALIDATION_SUPPORTED)
+          .const_get(:XPATH_INDEX_INVALIDATION_SUPPORTED),
       ).to be(true)
 
       doc = ctx.parse("<root><anchor/></root>")
@@ -867,11 +868,12 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(
         described_class.attachments.get(
           described_class.xpath_index_document(doc.root.native),
-          described_class.singleton_class.const_get(:XPATH_INDEX_STALE)
-        )
+          described_class.singleton_class.const_get(:XPATH_INDEX_STALE),
+        ),
       ).to be_nil
     end
   end
+
   describe "namespace scope-generation gate" do
     let(:ctx) { Moxml.new(:leptris) }
 
