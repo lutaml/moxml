@@ -881,6 +881,7 @@ RSpec.describe Moxml::Adapter::Leptris do
       ).to be_nil
     end
   end
+
   describe "namespace scope-generation gate" do
     let(:ctx) { Moxml.new(:leptris) }
 
