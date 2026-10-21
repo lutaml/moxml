@@ -109,6 +109,10 @@ module Moxml
       # over-invalidate (global bump instead of local) — a no-op
       # for correctness.
       if name.start_with?("xmlns")
+        # Introducing (or rewriting) a namespace declaration: mark the
+        # context BEFORE the invalidation, so this write's generation
+        # bump fans out to every wrapper's memoized scope reads.
+        element.context.mark_namespaces_active!
         adapter.set_attribute(element.native, name, value)
         element.invalidate_attribute_cache!
         return value
