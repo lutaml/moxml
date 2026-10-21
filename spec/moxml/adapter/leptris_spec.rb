@@ -877,7 +877,7 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(
         described_class.attachments.get(
           described_class.xpath_index_document(doc.root.native),
-          described_class::XPATH_INDEX_STALE,
+          described_class.singleton_class.const_get(:XPATH_INDEX_STALE),
         ),
       ).to be_nil
     end
