@@ -30,9 +30,11 @@ module Moxml
     def prime_contract(native, context, adapter = nil, node_type = nil)
       @context = context
       @native = native
-      @parent_node = nil
-      @adapter = adapter
-      @node_type_cached = node_type
+      # @parent_node and @node_type_cached stay UNSET when empty —
+      # every reader is nil-tolerant, and a nil write materializes the
+      # ivar (object-shape transition) on every created node.
+      @adapter = adapter unless adapter.nil?
+      @node_type_cached = node_type unless node_type.nil?
       self
     end
 
@@ -214,7 +216,8 @@ module Moxml
     def attach_child(node)
       context.bump_children_generation
       node = prepare_node(node)
-      absorb_namespace_activity(node)
+      oc = node.context
+      context.mark_namespaces_active! if !oc.nil? && !oc.equal?(context) && oc.namespace_scopes_active?
       a = adapter
       a.add_child(@native, node.native)
       # Refresh native in case adapter changed identity (e.g., LibXML
