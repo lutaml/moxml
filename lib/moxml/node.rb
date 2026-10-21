@@ -209,10 +209,12 @@ module Moxml
     def attach_child(node)
       context.bump_children_generation
       node = prepare_node(node)
-      adapter.add_child(@native, node.native)
+      absorb_namespace_activity(node)
+      a = adapter
+      a.add_child(@native, node.native)
       # Refresh native in case adapter changed identity (e.g., LibXML
       # doc.root=); stable-identity adapters skip the round trip.
-      unless adapter.native_identity_stable?
+      unless a.native_identity_stable?
         refreshed = adapter.actual_native(node.native, @native)
         node.refresh_native!(refreshed) if refreshed && refreshed != node.native
       end
@@ -226,6 +228,7 @@ module Moxml
     def attach_previous_sibling(node)
       context.bump_children_generation
       node = prepare_node(node)
+      absorb_namespace_activity(node)
       inserted = adapter.add_previous_sibling(@native, node.native)
       refresh_inserted_native(node, inserted)
       # Invalidate the parent's memoized children list. The wrapper-side
@@ -240,11 +243,22 @@ module Moxml
     def attach_next_sibling_to(anchor, node)
       context.bump_children_generation
       node = prepare_node(node)
+      absorb_namespace_activity(node)
       inserted = adapter.add_next_sibling(anchor.native, node.native)
       refresh_inserted_native(node, inserted)
       anchor.parent&.invalidate_children_cache!
       anchor.invalidate_parent_children_cache!
       self
+    end
+
+    # A node adopted from ANOTHER context can carry namespaces this
+    # context's own faces (parse, xmlns writes) never saw; import the
+    # source context's activity flag so the gated scope-generation
+    # bump stays armed here too.
+    def absorb_namespace_activity(node)
+      oc = node.context
+      return if oc.nil? || oc.equal?(context)
+      context.mark_namespaces_active! if oc.namespace_scopes_active?
     end
 
     def refresh_inserted_native(node, inserted)

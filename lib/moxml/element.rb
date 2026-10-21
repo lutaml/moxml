@@ -276,6 +276,7 @@ module Moxml
     def add_namespace(prefix, uri)
       adapter.create_namespace(@native, prefix, uri,
                                namespace_validation_mode: context.config.namespace_validation_mode)
+      context.mark_namespaces_active!
       invalidate_namespace_cache!
       self
     rescue ValidationError => e
@@ -530,8 +531,19 @@ module Moxml
 
     # Clear the namespace caches and bump the context's scope
     # generation so every wrapper — including ones not reachable from
-    # any children cache — recomputes on next read.
+    # any children cache — recomputes on next read. While namespaces
+    # cannot exist (context.namespace_scopes_active? is false) the
+    # memos can only hold namespace-free reads, so skipping the whole
+    # body is exact — and the nil-assignment form would MATERIALIZE
+    # three unset ivars per attached node, which is the cost this
+    # gate exists to remove. Every introduction route — parse faces
+    # and the xmlns write face — marks the context BEFORE its own
+    # invalidation, so the introducing mutation still clears and
+    # bumps; in-scope reads are generation-keyed, so other wrappers
+    # recompute on the bump.
     def invalidate_namespace_cache!
+      return unless context.namespace_scopes_active?
+
       @namespaces = nil
       @namespace_definitions = nil
       @in_scope_namespaces = nil

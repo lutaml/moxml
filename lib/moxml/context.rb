@@ -101,6 +101,22 @@ module Moxml
       @namespace_scope_generation += 1
     end
 
+    # Namespace scopes only need the per-mutation generation bump
+    # while namespaces can exist. A builder-only document (no parse,
+    # no xmlns write) never has one, and the bump sat on the attach
+    # hot path (deletion experiment: build row 2.128x -> 1.923x).
+    # Every namespace introduction route marks the context active
+    # first — parse faces and the xmlns attribute-write face — so
+    # the sticky flag never misses an introduction.
+    def namespace_scopes_active?
+      @namespace_scopes_active = false if @namespace_scopes_active.nil?
+      @namespace_scopes_active
+    end
+
+    def mark_namespaces_active!
+      @namespace_scopes_active = true
+    end
+
     def entity_registry
       @entity_registry ||= build_entity_registry
     end
@@ -128,6 +144,7 @@ module Moxml
       # Parse with adapter, passing self (context) so adapter can use our config
       parsed_options = default_options.merge(options)
       doc = config.adapter.parse(xml_string, parsed_options, self)
+      mark_namespaces_active!
 
       # Set declaration flag on Document wrapper (proper OOP)
       doc.has_xml_declaration = has_declaration if doc.is_a?(Document)
@@ -220,7 +237,9 @@ module Moxml
     # are the result either way.
     def parse_fragment(xml)
       adapter = config.adapter
-      adapter.parse_fragment(xml, self).map do |node|
+      nodes = adapter.parse_fragment(xml, self)
+      mark_namespaces_active!
+      nodes.map do |node|
         # Adapters that tie a parent_node lifetime chain (#245)
         # return wrapped nodes — pass them through untouched;
         # re-wrapping would race the weak wrapper map.
@@ -229,6 +248,7 @@ module Moxml
     end
 
     def iterparse(xml, mode: :top_level, &block)
+      mark_namespaces_active!
       config.adapter.iterparse(xml, mode, self, &block)
     end
 
