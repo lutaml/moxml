@@ -210,7 +210,20 @@ module Moxml
 
     def attach_child(node)
       context.bump_children_generation
-      node = prepare_node(node)
+      # Inlined prepare_node: the per-attach dispatch frame measured
+      # ~4.4% on the builder hot path (deletion experiment). Same
+      # contract — String operands mint literal text nodes, foreign
+      # types raise.
+      node = case node
+             when Node then node
+             when String then Moxml::Node.wrap(adapter.create_text(node), context)
+             else
+               raise Moxml::DocumentStructureError.new(
+                 "Invalid node type: #{node.class}. Expected String or Moxml::Node",
+                 operation: "attach_child",
+                 state: "node_type: #{node.class}",
+               )
+             end
       oc = node.context
       if !oc.nil? && !oc.equal?(context) &&
           oc.namespace_scopes_active?
