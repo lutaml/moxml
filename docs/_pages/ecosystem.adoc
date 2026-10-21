@@ -21,7 +21,7 @@ validation target, never a stand-in.
 
 | `lutaml/lutaml-model` | — | 6213+ examples green on the released pair
 
-| `lutaml/canon` | — | 2573 examples, 0 failures locally; in CI the Windows leg fails one JSON-engine parity example (`yaml_engine_parity_spec.rb:123`, the resolved json gem's duplicate-key verdict) — unrelated to XML processing, owner-held in canon
+| `lutaml/canon` | — | 2573 examples, 0 failures (a transient Windows failure of one JSON-engine parity example — yeptris 0.6.34.2's undefined `MARSHAL_STRICT_DUP_KEYS` under json 3 — cleared with yeptris 0.6.34.3)
 
 | `metanorma/metanorma-standoc` | ghostscript | 627 examples green in CI on main (the boilerplate-fixture failure seen during the 04/05 validation was resolved by the 06 adapter fixes; a few local-only failures still need generated assets)
 
