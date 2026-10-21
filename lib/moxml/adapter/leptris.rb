@@ -2533,7 +2533,22 @@ module Moxml
           attr.name.to_s.dup.force_encoding("UTF-8")
         end
 
+        # Self-gating by method_defined? — older exts fall through to
+        # the to_binding bridge below.
+        SET_ATTRIBUTE_NATIVE =
+          NATIVE_READ_LAYER && NN.method_defined?(:set_attribute)
+
         def set_attribute(element, name, value)
+          # Native write face (leptris-ruby#204's nn_set_attribute):
+          # gates + version bump + engine set in one C frame on the
+          # TypedData self — the builder hot path skips the to_binding
+          # bridge (FFI::Pointer + wrapper mint + registry) entirely.
+          # Cache coherence stays at the resolver: callers invalidate
+          # after this returns, exactly as for the bridge.
+          if SET_ATTRIBUTE_NATIVE && element.is_a?(::Leptris::XML::NativeNode)
+            return element.set_attribute(name.to_s, value.to_s)
+          end
+
           element = to_binding(element) if NATIVE_READ_LAYER
           element[name.to_s] = value.to_s
         end
