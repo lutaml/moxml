@@ -1133,19 +1133,35 @@ module Moxml
         # entry are correct; upstream bug filed). Track the state per
         # binding document and route XPath to the reference Ruby
         # engine until a child insertion rebuilds the engine index.
+        #
+        # FIXED upstream in libleptris 1.9.378 (leptris/leptris#1802):
+        # every splice path invalidates the index, so the guard is
+        # dead weight on modern engines — and it sat on the builder
+        # hot path (one Monitor-synchronized attachment set plus a
+        # document hop per add_child). Below 1.9.378 the guard stays
+        # armed.
         XPATH_INDEX_STALE = :xpath_index_stale
 
+        XPATH_INDEX_INVALIDATION_SUPPORTED =
+          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.378")
+
         def mark_xpath_index_stale(node)
+          return if XPATH_INDEX_INVALIDATION_SUPPORTED
+
           doc = xpath_index_document(node)
           attachments.set(doc, XPATH_INDEX_STALE, true) if doc
         end
 
         def clear_xpath_index_stale(node)
+          return if XPATH_INDEX_INVALIDATION_SUPPORTED
+
           doc = xpath_index_document(node)
           attachments.set(doc, XPATH_INDEX_STALE, false) if doc
         end
 
         def xpath_index_stale?(doc)
+          return false if XPATH_INDEX_INVALIDATION_SUPPORTED
+
           doc && attachments.get(doc, XPATH_INDEX_STALE)
         end
 

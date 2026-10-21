@@ -846,4 +846,30 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(first.next_sibling.parent).to eq(doc.root)
     end
   end
+  describe "engine XPath index guard retirement" do
+    let(:ctx) { Moxml.new(:leptris) }
+
+    # The guard exists for engines < 1.9.378 (leptris-ruby#519).
+    # On engines that invalidate the index themselves it is bypassed:
+    # arming it costs one Monitor-synchronized attachment set plus a
+    # document hop per add_child on the builder hot path.
+    it "bypasses the guard when the engine invalidates on splice" do
+      expect(
+        described_class.singleton_class
+          .const_get(:XPATH_INDEX_INVALIDATION_SUPPORTED)
+      ).to be(true)
+
+      doc = ctx.parse("<root><anchor/></root>")
+      doc.xpath("//ext") # prime the engine index
+      doc.root.add_child(doc.create_element("ext"))
+      expect(doc.xpath("//ext").size).to eq(1)
+
+      expect(
+        described_class.attachments.get(
+          described_class.xpath_index_document(doc.root.native),
+          described_class.singleton_class.const_get(:XPATH_INDEX_STALE)
+        )
+      ).to be_nil
+    end
+  end
 end
