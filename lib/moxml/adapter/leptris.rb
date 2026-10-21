@@ -71,6 +71,18 @@ module Moxml
         defined?(::Leptris::XML::NativeNode) &&
         Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.162.6")
 
+      # leptris-ruby#529: the whole XPath node-set result as an Array
+      # of registered natives in ONE C crossing (Document#
+      # xpath_result_rows_bulk). The eager lane below crosses once and
+      # mints one wrapper per row on iterate-every-result. Probed on
+      # the Document binding class (the class-level respond_to? for
+      # instance surfaces) AND on the compiled ext face — a fresh
+      # native_layer over a stale ext would NoMethodError mid-query.
+      BULK_XPATH_ROWS =
+        defined?(::Leptris::XML::Native) &&
+        ::Leptris::XML::Native.respond_to?(:xpath_result_rows_bulk) &&
+        ::Leptris::XML::Document.method_defined?(:xpath_result_rows_bulk)
+
       # leptris-ruby#460: set-text by document+address, kind-dispatched
       # in C — no binding twin mint per write. Face-probed, not
       # version-gated (the floor admits bindings without it).
@@ -3371,6 +3383,22 @@ module Moxml
             return ::Leptris::XML::Searchable.wrap_xpath_first_result(
               document, result_ptr
             )
+          end
+
+          # leptris-ruby#529 bulk face: the whole nodeset as an Array
+          # of registered natives in ONE crossing — the eager lane
+          # below crosses once per row (the scoreboard's iterate-
+          # every-result row). Real rows mint through the registered
+          # klasses with native-cache identity; attr/sequence rows
+          # arrive as the ResultAttr/ResultText wrappers the eager
+          # mint produces, so NodeSet's per-row wrap sees one shape
+          # and the result contract is unchanged. The face CONSUMES
+          # the pointer for nodesets; a non-nodeset result answers
+          # nil and leaves the pointer — fall through to the scalar
+          # wrap, whose free owns it.
+          if BULK_XPATH_ROWS
+            rows = document.xpath_result_rows_bulk(result_ptr)
+            return rows unless rows.nil?
           end
 
           # The binding's #to_a mints one Ruby wrapper per result
