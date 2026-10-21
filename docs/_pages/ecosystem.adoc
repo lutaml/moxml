@@ -21,9 +21,9 @@ validation target, never a stand-in.
 
 | `lutaml/lutaml-model` | — | 6213+ examples green on the released pair
 
-| `lutaml/canon` | — | 2573 examples, 0 failures
+| `lutaml/canon` | — | 2573 examples, 0 failures locally; in CI the Windows leg fails one JSON-engine parity example (`yaml_engine_parity_spec.rb:123`, the resolved json gem's duplicate-key verdict) — unrelated to XML processing, owner-held in canon
 
-| `metanorma/metanorma-standoc` | ghostscript | 627 examples; one boilerplate-fixture example fails on all three CI platforms (`boilerplate_spec.rb:1294`, a structural diff in the feedback statement) and reproduces identically on the released moxml; additional environment-sensitive failures locally need generated assets
+| `metanorma/metanorma-standoc` | ghostscript | 627 examples green in CI on main (the boilerplate-fixture failure seen during the 04/05 validation was resolved by the 06 adapter fixes; a few local-only failures still need generated assets)
 
 | `metanorma/metanorma-ietf` | xml2rfc | 405 examples, 0 failures
 
