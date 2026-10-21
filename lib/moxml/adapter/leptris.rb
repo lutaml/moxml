@@ -1206,7 +1206,32 @@ module Moxml
         end
 
         def xpath_index_stale?(doc)
+          # leptris-ruby#519 is fixed upstream: on builds whose
+          # node-set index survives sibling insertion the stale mark
+          # is moot, and post-insert XPath stays on the native lane.
+          return false if native_xpath_index_fixed?
+
           doc && attachments.get(doc, XPATH_INDEX_STALE)
+        end
+
+        # Runs the #519 repro once at the binding level: populate the
+        # node-set index, insert a sibling, and require the re-query
+        # to see the inserted element. True on fixed builds, so the
+        # guard auto-retires without a moxml release.
+        def native_xpath_index_fixed?
+          return @native_xpath_index_fixed unless @native_xpath_index_fixed.nil?
+
+          @native_xpath_index_fixed = begin
+            native_doc = ::Leptris::XML::Document.parse("<r><a/><b/></r>")
+            root = native_doc.root
+            root.xpath("child::*")
+            b = root.children.to_a[1]
+            b.add_previous_sibling(native_doc.create_element("c"))
+            names = root.xpath("child::*").to_a.map { |n| n.name.to_s }
+            names == %w[a c b]
+          rescue StandardError
+            false
+          end
         end
 
         def xpath_index_document(node)

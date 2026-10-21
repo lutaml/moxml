@@ -848,4 +848,22 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(first.next_sibling.parent).to eq(doc.root)
     end
   end
+
+  describe "stale-index guard retirement (leptris-ruby#519)" do
+    let(:ctx) { Moxml.new(:leptris) }
+
+    it "auto-retires the guard when the engine invalidates its index" do
+      skip "engine still routes post-insert node-sets stale" unless described_class.native_xpath_index_fixed?
+
+      doc = ctx.parse("<r><a/><b/></r>")
+      root = doc.root
+      _ = root.xpath("child::*") # populate the engine node-set index
+      b = root.children.to_a[1]
+      b.add_previous_sibling(doc.create_element("c"))
+
+      native = described_class.native_xpath(root.native, "child::*", nil)
+      expect(native).not_to be_nil
+      expect(native.to_a.map { |n| n.name.to_s }).to eq(%w[a c b])
+    end
+  end
 end
