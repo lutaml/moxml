@@ -580,6 +580,13 @@ namespace_validation_mode: :strict)
           false
         end
 
+        # Whether the mint pre-writes the consumer's contract ivars
+        # in C (create_primed_element), letting Document#create_element
+        # skip its Ruby prime pass. Base: never.
+        def mints_primed?
+          false
+        end
+
         # Whether add_child can keep tracking the same native —
         # adapters that may recreate the node on attach (libxml's
         # doc.root=) override to false so the wrapper refresh path
