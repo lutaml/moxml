@@ -927,4 +927,32 @@ RSpec.describe Moxml::Adapter::Leptris do
         .to include("urn:x")
     end
   end
+
+  # The README error-handling contract: an invalid element name must
+  # raise Moxml::ValidationError at CREATE time. The adapter's native
+  # fast paths (create_primed_element, create_element_with_attrs) mint
+  # from a name without passing through Base#create_element, where
+  # validate_element_name lives — the failure then surfaced late, at
+  # add_child, as Moxml::Error "Document already has a root element".
+  describe "element name validation on the create seam" do
+    let(:ctx) { Moxml.new(:leptris) }
+
+    it "raises ValidationError when create_element mints an invalid name" do
+      doc = ctx.parse("<root/>")
+      expect { doc.create_element("wrong,name") }
+        .to raise_error(Moxml::ValidationError, /Invalid XML element name/)
+    end
+
+    it "raises ValidationError when add_element mints an invalid name" do
+      doc = ctx.create_document
+      expect { doc.add_element("bad,name", id: "1") }
+        .to raise_error(Moxml::ValidationError, /Invalid XML element name/)
+    end
+
+    it "still mints valid names with punctuation allowed in XML Names" do
+      doc = ctx.parse("<root/>")
+      element = doc.create_element("ns:my-element.v2")
+      expect(element).to be_a(Moxml::Element)
+    end
+  end
 end

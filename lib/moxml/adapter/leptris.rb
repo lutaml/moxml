@@ -1787,6 +1787,7 @@ module Moxml
         end
 
         def create_primed_element(name, owner_doc:, context:, adapter:)
+          validate_element_name(name)
           owner_doc.native_create_element(name.to_s, context, adapter)
         end
 
@@ -2436,6 +2437,7 @@ module Moxml
         # callers fall back to create_element + set_attribute +
         # add_child when absent.
         def create_element_with_attrs(parent, name, attrs)
+          validate_element_name(name)
           binding_parent = to_binding(parent)
           doc = binding_parent.document or return nil
           return nil unless ::Leptris::XML::Native.respond_to?(:create_element_with_attrs)
