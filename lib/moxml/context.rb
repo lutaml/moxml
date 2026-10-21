@@ -90,7 +90,10 @@ module Moxml
     end
 
     def bump_children_generation
-      @children_generation = children_generation + 1
+      # One dispatch, not two: children_generation re-dispatched just
+      # to default nil. Shared counter — node wrappers' children memos
+      # key on it.
+      @children_generation = @children_generation.to_i + 1
     end
 
     def namespace_scope_generation
