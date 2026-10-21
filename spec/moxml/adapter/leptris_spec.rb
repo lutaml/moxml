@@ -881,4 +881,49 @@ RSpec.describe Moxml::Adapter::Leptris do
       ).to be_nil
     end
   end
+  describe "namespace scope-generation gate" do
+    let(:ctx) { Moxml.new(:leptris) }
+
+    # The per-attach scope-generation bump only matters once
+    # namespaces exist; the builder hot path must not pay it.
+    it "does not bump the scope generation while namespaces are absent" do
+      doc = ctx.create_document
+      root = doc.create_element("r")
+      doc.root = root
+      gen = ctx.namespace_scope_generation
+      root.add_child(doc.create_element("a"))
+      root.add_child(doc.create_element("b"))
+      expect(ctx.namespace_scope_generation).to eq(gen)
+      expect(ctx.namespace_scopes_active?).to be(false)
+    end
+
+    it "arms the gate when a write introduces a namespace" do
+      doc = ctx.create_document
+      root = doc.create_element("r")
+      doc.root = root
+      root["xmlns:foo"] = "urn:x"
+      expect(ctx.namespace_scopes_active?).to be(true)
+      expect(root.namespaces.map { |n| [n.prefix, n.uri] })
+        .to include(%w[foo urn:x])
+    end
+
+    it "is armed by parsed documents" do
+      doc = ctx.parse("<r xmlns:foo='urn:x'><foo:a/></r>")
+      expect(ctx.namespace_scopes_active?).to be(true)
+      expect(doc.xpath("//foo:a", "foo" => "urn:x").size).to eq(1)
+    end
+
+    it "imports the flag from a foreign context on adoption" do
+      donor_ctx = Moxml.new(:leptris)
+      donor = donor_ctx.parse("<x xmlns:foo='urn:x'/>")
+      doc = ctx.create_document
+      root = doc.create_element("r")
+      doc.root = root
+      expect(ctx.namespace_scopes_active?).to be(false)
+      root.add_child(donor.root)
+      expect(ctx.namespace_scopes_active?).to be(true)
+      expect(root.children.first.namespaces.map(&:uri))
+        .to include("urn:x")
+    end
+  end
 end
