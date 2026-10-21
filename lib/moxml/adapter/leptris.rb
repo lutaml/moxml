@@ -1800,7 +1800,11 @@ module Moxml
 
         def create_primed_element(name, owner_doc:, context:, adapter:)
           validate_element_name(name)
-          owner_doc.native_create_element(name.to_s, context, adapter)
+          # One dispatch: the compiled mint IS the wrapper factory.
+          # The binding's native_create_element hop added a Ruby frame
+          # (plus a redundant to_s and nil-branch) around a C call
+          # that takes the same four arguments.
+          ::Leptris::XML::NativeNode.create_element(owner_doc, name.to_s, context, adapter)
         end
 
         def create_native_text(content, owner_doc = nil)
