@@ -163,11 +163,22 @@ module Moxml
     end
 
     def create_element(name)
-      native = adapter.create_element(name, owner_doc: @native)
+      # The preprimed mint (leptris binding with the C-primed
+      # create_element): the mint already wrote @context/@adapter in
+      # C, so the returned node IS the finished wrapper and the Ruby
+      # prime pass disappears from the build path.
+      native = if adapter.mints_primed?
+                 adapter.create_primed_element(name, owner_doc: @native,
+                                               context: context,
+                                               adapter: adapter)
+               else
+                 adapter.create_element(name, owner_doc: @native)
+               end
       # leptris-ruby#508 mints registered klasses at create: the node
       # IS a contract-carrying identity (@native is self) — prime it
       # in place instead of shelling a second wrapper (a raw mint
       # reaching ==/adapter dies on the nil @context).
+      return native if native.is_a?(Moxml::Node) && adapter.mints_primed?
       return native.prime_contract(native, context, adapter) if native.is_a?(Moxml::Node)
 
       Wrappers::Element.new(native, context)

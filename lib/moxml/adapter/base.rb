@@ -532,6 +532,13 @@ namespace_validation_mode: :strict)
           false
         end
 
+        # Whether the mint pre-writes the consumer's contract ivars
+        # in C (create_primed_element), letting Document#create_element
+        # skip its Ruby prime pass. Base: never.
+        def mints_primed?
+          false
+        end
+
         # Whether a BARE-name attribute READ addresses only the
         # no-namespace attribute (qualified-name semantics) — the
         # gate for Element#[]'s fast path (bare_attr_value).

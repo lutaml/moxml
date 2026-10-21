@@ -1683,6 +1683,24 @@ module Moxml
           (owner_doc || create_document).create_element(name.to_s)
         end
 
+        # MINT_PRIMED: the compiled ext's create_element takes
+        # optional (context, adapter) and pre-writes the contract
+        # ivars in C — arity -1 vs the old 2. Self-gating: no
+        # version floor, the probe reads the loaded ext.
+        MINT_PRIMED = begin
+          defined?(::Leptris::XML::NativeNode) &&
+            ::Leptris::XML::NativeNode
+              .method(:create_element).arity == -1
+        end
+
+        def mints_primed?
+          MINT_PRIMED
+        end
+
+        def create_primed_element(name, owner_doc:, context:, adapter:)
+          owner_doc.native_create_element(name.to_s, context, adapter)
+        end
+
         def create_native_text(content, owner_doc = nil)
           if NATIVE_MUTATIONS_COHERENT && owner_doc
             return owner_doc.native_create_text(content)
