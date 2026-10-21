@@ -36,6 +36,11 @@ module Moxml
       self
     end
 
+    # Document-derived wrapper state (the entity-marker verdict) flows
+    # parent -> child during prewrapped traversal; adapters that keep
+    # no per-wrapper document state carry nothing.
+    def inherit_document_state(_parent); end
+
     def refresh_native!(new_native)
       unless new_native.equal?(@native)
         # Cache-stable binding nodes carry the wrapper in an ivar

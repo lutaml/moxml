@@ -630,6 +630,21 @@ module Moxml
                 bearing
               end
 
+              # The resolved verdict plus its generation stamp; the
+              # prewrapped traversal hands it down the tree so a fresh
+              # child skips its own document climb.
+              def doc_entity_stamp
+                doc_entity_bearing?
+                @doc_entity_stamp
+              end
+
+              def inherit_document_state(parent)
+                # The parent's own children call resolved the
+                # document-level verdict for this generation, and
+                # parent and child share the document.
+                @doc_entity_stamp = parent.doc_entity_stamp
+              end
+
               def [](key)
                 if key.is_a?(String) && !key.include?(":")
                   value = attr_read(key)
@@ -710,7 +725,8 @@ module Moxml
                   @children ||= if doc_entity_bearing?
                                   super
                                 else
-                                  NodeSet.new(children_read, ctx, self)
+                                  NodeSet.new(children_read, ctx, self,
+                                              prewrapped: true)
                                 end
                 end
               end

@@ -39,12 +39,18 @@ module Moxml
     # nodes: Array of natives, or an adapter's LazyNodeSet — the
     # native set is held unmaterialized until an operation needs an
     # Array (#+, #<<, #delete, Range slices).
-    def initialize(nodes, context, parent_node = nil)
+    #
+    # prewrapped: the adapter vouches the entries are already
+    # contract-carrying wrappers (the leptris C-mint children face),
+    # so the walk path skips the wrapped-buffer allocation and the
+    # per-child wrap dispatch.
+    def initialize(nodes, context, parent_node = nil, prewrapped: false)
       @nodes = nodes.is_a?(Array) ? nodes : nil
       @lazy = @nodes ? nil : nodes
       @context = context
       @wrapped = nil
       @parent_node = parent_node
+      @prewrapped = prewrapped
     end
 
     # The raw native nodes — adapter-internal work only (issue #26).
@@ -58,6 +64,13 @@ module Moxml
 
     def each
       return to_enum(:each) unless block_given?
+
+      if @prewrapped
+        (@nodes || @lazy).each do |node|
+          yield adopt_prewrapped(node)
+        end
+        return self
+      end
 
       wrapped = wrapped_buffer
       index = 0
@@ -226,6 +239,23 @@ module Moxml
         wrapped.parent_node = @parent_node
       end
       wrapped
+    end
+
+    # The prewrapped entry path: prime a not-yet-primed C-minted
+    # wrapper in place (one ivar check), attach the traversal parent,
+    # and hand the document's marker verdict down the tree.
+    def adopt_prewrapped(node)
+      unless node.is_a?(Moxml::Node)
+        node = Moxml::Node.wrap(node, @context)
+      end
+      unless node.instance_variable_defined?(:@context)
+        node.prime_contract(node, @context, Moxml::Node.adapter(@context))
+      end
+      if @parent_node
+        node.parent_node = @parent_node
+        node.inherit_document_state(@parent_node)
+      end
+      node
     end
   end
 end
