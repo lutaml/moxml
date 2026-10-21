@@ -848,7 +848,6 @@ RSpec.describe Moxml::Adapter::Leptris do
       expect(first.next_sibling.parent).to eq(doc.root)
     end
   end
-
   describe "stale-index guard retirement (leptris-ruby#519)" do
     let(:ctx) { Moxml.new(:leptris) }
 
@@ -864,6 +863,22 @@ RSpec.describe Moxml::Adapter::Leptris do
       native = described_class.native_xpath(root.native, "child::*", nil)
       expect(native).not_to be_nil
       expect(native.to_a.map { |n| n.name.to_s }).to eq(%w[a c b])
+    end
+
+    it "never arms the guard on engines that invalidate on splice" do
+      skip "requires an engine whose node-set index survives sibling insertion (leptris-ruby#519)" unless described_class.native_xpath_index_fixed?
+
+      doc = ctx.parse("<root><anchor/></root>")
+      doc.xpath("//ext") # prime the engine index
+      doc.root.add_child(doc.create_element("ext"))
+      expect(doc.xpath("//ext").size).to eq(1)
+
+      expect(
+        described_class.attachments.get(
+          described_class.xpath_index_document(doc.root.native),
+          described_class::XPATH_INDEX_STALE
+        )
+      ).to be_nil
     end
   end
 end
