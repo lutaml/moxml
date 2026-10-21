@@ -217,7 +217,10 @@ module Moxml
       context.bump_children_generation
       node = prepare_node(node)
       oc = node.context
-      context.mark_namespaces_active! if !oc.nil? && !oc.equal?(context) && oc.namespace_scopes_active?
+      if !oc.nil? && !oc.equal?(context) &&
+          oc.namespace_scopes_active?
+        context.mark_namespaces_active!
+      end
       a = adapter
       a.add_child(@native, node.native)
       # Refresh native in case adapter changed identity (e.g., LibXML
