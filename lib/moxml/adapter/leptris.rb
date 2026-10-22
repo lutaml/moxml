@@ -90,6 +90,21 @@ module Moxml
         defined?(::Leptris::XML::Native) &&
         ::Leptris::XML::Native.respond_to?(:set_binding_text)
 
+        # leptris-ruby#532 (engine ride 1.9.379.x): Native.walk_columnar —
+        # a whole subtree's walk data ([names, handles, depths]; preorder,
+        # receiver at depth 0 — document/doctype receivers walk their
+        # children at depth 0) in ONE C crossing. The children face primes
+        # a per-document {native => children} map from that single call,
+        # so a consumer walk pays one crossing per cold subtree instead of
+        # one per node (leptris-ruby#527 measured the per-node
+        # children+name crossing at ~23% of cold-walk samples). Handles
+        # mint through the document's native-cache identity, so cached
+        # entries ARE the children_read wrappers. Face-probed, not
+        # version-gated.
+        COLUMNAR_WALK =
+          defined?(::Leptris::XML::Native) &&
+          ::Leptris::XML::Native.respond_to?(:walk_columnar)
+
       # 1.9.163.2's native layer returns UTF-8, unfrozen strings
       # (1.9.162.x answered ASCII-8BIT — the reads retagged with a
       # dup+force_encoding per call).
@@ -1154,6 +1169,9 @@ module Moxml
         # armed.
         XPATH_INDEX_STALE = :xpath_index_stale
 
+        # Attachment key for the columnar children map (COLUMNAR_WALK).
+        COLUMNAR_CHILDREN = :columnar_children_map
+
         XPATH_INDEX_INVALIDATION_SUPPORTED =
           Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.378")
 
@@ -1184,6 +1202,8 @@ module Moxml
         end
 
         def set_root(doc, element)
+        drop_columnar_children(doc)
+        drop_columnar_children(element)
           to_binding(doc).root = to_binding(element)
         end
 
@@ -1573,6 +1593,7 @@ module Moxml
         # re-indented). Raw-pointer walk over the root subtree — the
         # same batch child-pointer pattern the materializer uses.
         def strip_blank_text_nodes!(doc)
+        drop_columnar_children(doc)
           binding_ffi = ::Leptris::XML::FFI
           root = binding_ffi.leptris_document_root(doc.c_ptr)
           return unless root && !root.null?
@@ -2070,6 +2091,8 @@ module Moxml
         # source. Answer the installed binding element; callers re-point
         # wrappers at it.
         def adopt_root(doc, element)
+        drop_columnar_children(doc)
+        drop_columnar_children(element)
           return nil unless NATIVE_ROOT_ADOPT
 
           binding_doc = to_binding(doc)
@@ -2108,6 +2131,18 @@ module Moxml
             # TextSegment reconstruction reads binding text nodes;
             # the wrapper's memo supplies the flag, so deriving it
             # here costs no C parent climb per call.
+            # Plain children-of-node read (no entity-marker split): the
+            # columnar map answers from the last cold-subtree crossing —
+            # one walk_columnar primes every child list under the asked
+            # node, so a top-down consumer walk pays one crossing at the
+            # root and none below it (COLUMNAR_WALK above).
+            if COLUMNAR_WALK && !entity_bearing
+              hit = columnar_children_hit(node)
+              return hit if hit
+
+              return prime_columnar_children(node)
+            end
+
             natives = if NATIVE_BULK_FIXED
                         NN_CHILDREN.bind_call(node).to_a
                       else
@@ -2160,6 +2195,80 @@ module Moxml
           else
             node.children.to_a
           end
+        end
+
+        # Map hit for a primed node (see COLUMNAR_WALK). Served dup'd so
+        # no consumer can mutate the cached list in place.
+        def columnar_children_hit(node)
+          doc = doc_for(node)
+          return nil unless doc
+
+          map = attachments.get(doc, COLUMNAR_CHILDREN)
+          return nil unless map&.key?(node)
+
+          map[node].dup
+        end
+
+        # One walk_columnar crossing over node's subtree; stores a
+        # children list for every visited node and returns node's own
+        # list. Preorder + depths rebuild the parent chain on a stack;
+        # the receiver's child depth is read off the first row (the
+        # binding walks document/doctype receivers' children at depth
+        # 0). Docless detached subtrees answer the receiver's list
+        # unprimed.
+        def prime_columnar_children(node)
+          _names, handles, depths =
+            ::Leptris::XML::Native.walk_columnar(node)
+          return [] if handles.empty?
+
+          child_depth =
+            if handles[0].equal?(node)
+              depths[0] + 1
+            else
+              depths[0]
+            end
+          doc = doc_for(node)
+          map = doc ? {} : nil
+          mine = []
+          stack = []
+          handles.each_with_index do |handle, i|
+            depth = depths[i]
+            stack[depth] = handle
+            map[handle] = [] if map
+            if depth >= child_depth && map
+              parent = stack[depth - 1]
+              map[parent] << handle if map.key?(parent)
+            end
+            mine << handle if depth == child_depth
+          end
+          attachments.set(doc, COLUMNAR_CHILDREN, map) if map
+          mine
+        end
+
+        # Structural seams drop the columnar map wholesale; the next
+        # children read re-primes it (see COLUMNAR_WALK). Cheap no-op
+        # when no map is live: one lock-free attachment probe.
+        def drop_columnar_children(node)
+          return unless COLUMNAR_WALK
+
+          doc =
+            case node
+            when ::Leptris::XML::NativeNode
+              doc_for(node)
+            when ::Leptris::XML::Document
+              node
+            else
+              begin
+                node.document
+              rescue StandardError
+                nil
+              end
+            end
+          return if doc.nil?
+
+          return if attachments.get(doc, COLUMNAR_CHILDREN).nil?
+
+          attachments.delete(doc, COLUMNAR_CHILDREN)
         end
 
         def native_keep_entity_refs?(node)
@@ -2375,6 +2484,7 @@ module Moxml
         # callers fall back to create_element + set_attribute +
         # add_child when absent.
         def create_element_with_attrs(parent, name, attrs)
+        drop_columnar_children(parent)
           validate_element_name(name)
           binding_parent = to_binding(parent)
           doc = binding_parent.document or return nil
@@ -2681,6 +2791,8 @@ module Moxml
         # on the source, so a living source can never outlive the
         # memory its reads still touch.
         def absorb_source_document(dest, owner)
+        drop_columnar_children(dest)
+        drop_columnar_children(owner)
           return nil unless NATIVE_DOC_ABSORB
           return :direct if attachments.get(dest, :absorbed_sources)&.include?(owner)
 
@@ -2726,6 +2838,8 @@ module Moxml
         end
 
         def add_child(parent, child)
+        drop_columnar_children(parent)
+        drop_columnar_children(child)
           result = add_child_impl(parent, child)
           # A successful child insertion rebuilds the engine's
           # document index; the upstream sibling-insert bug leaves it
@@ -2847,6 +2961,8 @@ module Moxml
         end
 
         def add_previous_sibling(node, new_node)
+        drop_columnar_children(node)
+        drop_columnar_children(new_node)
           result = add_previous_sibling_impl(node, new_node)
           mark_xpath_index_stale(node)
           result
@@ -2893,6 +3009,8 @@ module Moxml
         end
 
         def add_next_sibling(node, new_node)
+        drop_columnar_children(node)
+        drop_columnar_children(new_node)
           result = add_next_sibling_impl(node, new_node)
           mark_xpath_index_stale(node)
           result
@@ -2946,6 +3064,7 @@ module Moxml
         end
 
         def remove(node)
+        drop_columnar_children(node)
           node = to_binding(node) if NATIVE_READ_LAYER
           case node
           when CustomizedLeptris::Declaration
@@ -2977,6 +3096,8 @@ module Moxml
         end
 
         def replace(node, new_node)
+        drop_columnar_children(node)
+        drop_columnar_children(new_node)
           if NATIVE_READ_LAYER
             node = to_binding(node)
             new_node = to_binding(new_node)
@@ -3033,6 +3154,7 @@ module Moxml
           Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.290.0")
 
         def replace_children(node, new_children)
+        drop_columnar_children(node)
           # Cross-pool children: the binding's bulk face adopts per
           # node and fails on mixed kinds (inner_xml= with
           # text+elements died with Memory allocation failed —
@@ -3122,6 +3244,7 @@ module Moxml
           ::Leptris::XML::NativeNode.method_defined?(:set_text_native)
 
         def set_text_content(node, content)
+        drop_columnar_children(node)
           if SET_TEXT_NATIVE && node.is_a?(::Leptris::XML::NativeNode)
             begin
               node.set_text_native(content.to_s)
