@@ -3644,9 +3644,13 @@ module Moxml
           # the pointer for nodesets; a non-nodeset result answers
           # nil and leaves the pointer — fall through to the scalar
           # wrap, whose free owns it.
-          if BULK_XPATH_ROWS
-            rows = document.xpath_result_rows_bulk(result_ptr)
-            return rows unless rows.nil?
+          if BULK_XPATH_ROWS &&
+             ::Leptris::XML::FFI.leptris_xpath_result_type(result_ptr) ==
+               ::Leptris::XML::FFI::XPATH_NODESET
+            # The one-crossing mint is deferred: a caller that only
+            # asks #size never pays for the rows (#527). The holder
+            # runs Document#xpath_result_rows_bulk on first read.
+            return Moxml::LazyBulkRows.new(document, result_ptr)
           end
 
           # The binding's #to_a mints one Ruby wrapper per result

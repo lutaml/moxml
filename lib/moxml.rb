@@ -70,6 +70,7 @@ module Moxml
   autoload :Wrappers, "moxml/wrappers"
   autoload :NodeSet, "moxml/node_set"
   autoload :LazyNodeSet, "moxml/lazy_node_set"
+  autoload :LazyBulkRows, "moxml/lazy_bulk_rows"
   autoload :Document, "moxml/document"
   autoload :Element, "moxml/element"
   autoload :Text, "moxml/text"
