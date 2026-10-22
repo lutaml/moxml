@@ -49,6 +49,20 @@ jobs:
       - name: Compile liboga / libll native extensions
         run: rake vendor:compile
 
+      - name: Let the runner settle after the build
+        run: |
+          # The compile steps above push the 1-minute load past the
+          # scoreboard's gate budget (half the vCPUs) right before the
+          # measurement; wait (bounded) for the runner's own build
+          # burst to decay so the gate judges steady-state load.
+          for i in $(seq 1 60); do
+            load=$(awk '{print $1}' /proc/loadavg)
+            ncpu=$(nproc)
+            awk -v l="$load" -v n="$ncpu" 'BEGIN { exit !(l <= n * 0.5) }' && break
+            sleep 5
+          done
+          echo "1-minute load at measure time: $(awk '{print $1}' /proc/loadavg)"
+
       - name: Scoreboard lock (parity rows + 10% regression tolerance)
         run: bundle exec rake benchmark:lock
 
