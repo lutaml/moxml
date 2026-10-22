@@ -187,10 +187,14 @@ module Scoreboard
                         -> { baseline_doc.to_xml },
                         -> { moxml_doc.to_xml }],
         # Count only: the node-set cardinality without materializing
-        # wrapper objects on either side. Tracked (not parity) while
-        # the 1.9.380 engine line regresses the evaluator below the
-        # 0.95 floor (leptris-ruby#527: 1.20x on 1.9.374 -> 0.70x on
-        # 1.9.380.1); returns to parity when the engine line recovers.
+        # wrapper objects on either side. The 0.70x reading that
+        # opened leptris-ruby#527 was the adapter minting every row
+        # before the caller asked (leptris-ruby#527 verification:
+        # engine eval + count is ~0.75us and flat across the
+        # 1.9.374->1.9.380 line). The bulk mint is now deferred, so
+        # size answers from the result handle. Tracked here until a
+        # measured run confirms the row above the parity floor, then
+        # promote to :parity.
         "xpath //field (count)" => [:structural,
                                     -> { baseline_doc.xpath("//field").size },
                                     -> { moxml_doc.xpath("//field").size }],
