@@ -159,4 +159,70 @@ RSpec.describe "leptris Identity contract reads" do
       expect(kids.to_a.first.content).to eq("v")
     end
   end
+
+  describe "element#text walk memo" do
+    def content_c_calls
+      calls = 0
+      tp = TracePoint.new(:c_call) do |t|
+        calls += 1 if t.method_id == :content
+      end
+      tp.enable
+      yield
+      tp.disable
+      calls
+    end
+
+    it "stops crossing content on warm reads" do
+      unless Leptris::XML::NativeNode.method_defined?(:text_read)
+        skip "binding #{Leptris::VERSION} has no text_read face"
+      end
+      doc = ctx.parse("<root><item>v</item></root>")
+      el = doc.root.children.first
+      expect(el.text).to eq("v") # cold fill
+
+      expect(content_c_calls { el.text }).to eq(0)
+      expect(el.text).to eq("v")
+    end
+
+    it "re-reads after text=" do
+      doc = ctx.parse("<root><item>v</item></root>")
+      el = doc.root.children.first
+      expect(el.text).to eq("v")
+      el.text = "changed"
+      expect(el.text).to eq("changed")
+    end
+
+    it "sees a text wrapper's content= through the memo" do
+      doc = ctx.parse("<root><item>v</item></root>")
+      el = doc.root.children.first
+      tx = el.children.first
+      expect(el.text).to eq("v")
+      tx.content = "changed"
+      expect(el.text).to eq("changed")
+    end
+
+    it "restores entities once at memo fill" do
+      ctx2 = Moxml.new(:leptris) { |c| c.restore_entities = true }
+      doc = ctx2.parse("<root><item>a &amp; b</item></root>")
+      el = doc.root.children.first
+      expect(el.text).to eq("a & b")
+      expect(el.text).to eq("a & b")
+    end
+  end
+
+  describe "text#text (alias parity with content)" do
+    it "rides the same memoized read" do
+      doc = ctx.parse("<root><item>v</item></root>")
+      tx = doc.root.children.first.children.first
+      expect(tx.text).to eq("v")
+      expect(tx.text).to equal(tx.content)
+    end
+
+    it "re-reads after content=" do
+      doc = ctx.parse("<root><item>v</item></root>")
+      tx = doc.root.children.first.children.first
+      tx.content = "changed"
+      expect(tx.text).to eq("changed")
+    end
+  end
 end

@@ -693,6 +693,24 @@ module Moxml
                   end
                   @content = value
                 end
+
+                # Moxml::Text aliases text -> content (the walk-hot
+                # read pays one frame over the memo); the Reads
+                # include above shadows that alias on these wrappers,
+                # re-paying the C content face per call — the walk
+                # row's only warm crossing. Re-establish it so .text
+                # rides the same memo and the same content= clear.
+                alias_method :text, :content
+
+                # The element text memo (below) keys on the children
+                # generation; a direct payload write through a text
+                # wrapper is a text change under its parent, so it
+                # bumps the same counter the parent's memo watches.
+                def content=(value)
+                  @content = nil
+                  (@context || context).bump_children_generation
+                  super
+                end
               end
               TEXT.include(TextContractReads)
             end
@@ -725,6 +743,31 @@ module Moxml
               ELEMENT.include(ChildReads)
               TEXT.include(ChildReads)
             end
+
+            # The walk row's element text read: Reads#text pays the C
+            # content face plus the entity-stamp protocol on EVERY
+            # warm step. The wrapper Element#text (element.rb, #321)
+            # has carried a generation-gated memo for the same
+            # reason; the identity element rides the same discipline
+            # — element text changes through children mutations
+            # (text=, children=, attach, and the identity text
+            # wrappers' content=, all of which bump the children
+            # generation), and the bump retires the memo.
+            module ElementContractText
+              def text
+                ctx = @context || context
+                gen = ctx.children_generation
+                if @text_gen != gen
+                  @text = nil
+                  @text_gen = gen
+                end
+                @text ||= begin
+                  value = text_read
+                  value.is_a?(String) && doc_entity_bearing? ? ::Moxml::Adapter::Leptris.restore_entities(value) : value
+                end
+              end
+            end
+            ELEMENT.include(ElementContractText)
           end
 
           # leptris-ruby#246 klass-propagating reads: the read
