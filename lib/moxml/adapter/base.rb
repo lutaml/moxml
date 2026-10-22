@@ -595,6 +595,15 @@ namespace_validation_mode: :strict)
           false
         end
 
+        # Whether attach_child records the wrapper-side parent link
+        # (@parent_node) on the attached node. Adapters whose natives
+        # cannot resolve a parent through the adapter layer (raw-text
+        # natives, re-mints) need the link for remove/replace to find
+        # the tree — leave it on unless the adapter proves otherwise.
+        def attach_sets_parent_link?
+          true
+        end
+
         # Whether a BARE-name attribute READ addresses only the
         # no-namespace attribute (qualified-name semantics) — the
         # gate for Element#[]'s fast path (bare_attr_value).
