@@ -45,6 +45,15 @@ module Scoreboard
   # Measurement tolerance for the absolute parity gate: ratios move a
   # few percent run to run; a row must stay at or above this floor.
   PARITY_FLOOR = 0.95
+  # Rows under a known upstream regression stay measured and
+  # published, but are paused from the lock's fail decision until the
+  # tracked issue closes — otherwise the 10% trend tolerance flaps on
+  # the regressed value and the lock signal is lost. Remove an entry
+  # when its issue lands.
+  KNOWN_REGRESSIONS = {
+    "children recursion (cold)" =>
+      "leptris-ruby#527 (1.9.380 crossing regression)",
+  }.freeze
 
   Field = Struct.new(:name, :unit, :value)
   Record = Struct.new(:id, :kind, :fields)
@@ -542,6 +551,19 @@ module Scoreboard
                           "#{format('%.2f', floor)}x (10% below baseline " \
                           "#{format('%.2f', old['ratio'])}x)",
         )
+      end
+    end
+    # A row whose upstream cause is tracked stays published but does
+    # not fail the lock; it is named in the log with its issue.
+    paused, failures = failures.partition do |row|
+      KNOWN_REGRESSIONS.key?(row["row"])
+    end
+    unless paused.empty?
+      warn "scoreboard lock: paused rows (tracked upstream, still measured):"
+      paused.each do |row|
+        warn format("  %-28<row>s %6.2<ratio>fx paused: %<ref>s",
+                    row: row["row"], ratio: row["ratio"],
+                    ref: KNOWN_REGRESSIONS[row["row"]])
       end
     end
     return if failures.empty?
