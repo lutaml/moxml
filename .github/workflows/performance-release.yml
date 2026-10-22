@@ -26,7 +26,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: main
+          # Pin to the exact tree the release run published, so the
+          # measured scoreboard describes the released code even when
+          # main moves between the release and this report.
+          ref: ${{ github.event.workflow_run.head_sha || 'main' }}
           submodules: "recursive"
 
       - name: Set up Ruby
@@ -55,11 +58,16 @@ jobs:
           SCORE_MARKDOWN=/tmp/section.md \
             bundle exec ruby benchmark/scoreboard.rb
 
-      - name: Append the scoreboard to the latest release notes
+      - name: Append the scoreboard to the release notes of the measured version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG=$(gh release view --json tagName --jq .tagName)
+          # The released version is the gemspec's at the pinned tree —
+          # NOT "latest": back-to-back releases would otherwise aim a
+          # back-aimed rerun at the newer notes.
+          VERSION=$(ruby -e 'print Gem::Specification.load("moxml.gemspec").version')
+          TAG="v${VERSION}"
+          echo "Reporting against $TAG"
           gh release view "$TAG" --json body --jq .body > /tmp/body.md
           ruby -e '
             body = File.read("/tmp/body.md")
