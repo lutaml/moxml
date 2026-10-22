@@ -3668,8 +3668,8 @@ module Moxml
           # nil and leaves the pointer — fall through to the scalar
           # wrap, whose free owns it.
           if BULK_XPATH_ROWS &&
-             ::Leptris::XML::FFI.leptris_xpath_result_type(result_ptr) ==
-               ::Leptris::XML::FFI::XPATH_NODESET
+              ::Leptris::XML::FFI.leptris_xpath_result_type(result_ptr) ==
+                  ::Leptris::XML::FFI::XPATH_NODESET
             # The one-crossing mint is deferred: a caller that only
             # asks #size never pays for the rows (#527). The holder
             # runs Document#xpath_result_rows_bulk on first read.
