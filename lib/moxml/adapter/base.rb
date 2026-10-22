@@ -532,6 +532,15 @@ namespace_validation_mode: :strict)
           false
         end
 
+        # Whether attach_child records the wrapper-side parent link
+        # (@parent_node) on the attached node. Adapters whose natives
+        # cannot resolve a parent through the adapter layer (raw-text
+        # natives, re-mints) need the link for remove/replace to find
+        # the tree — leave it on unless the adapter proves otherwise.
+        def attach_sets_parent_link?
+          true
+        end
+
         # Whether the mint pre-writes the consumer's contract ivars
         # in C (create_primed_element), letting Document#create_element
         # skip its Ruby prime pass. Base: never.

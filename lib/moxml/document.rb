@@ -163,23 +163,26 @@ module Moxml
     end
 
     def create_element(name)
-      # The preprimed mint (leptris binding with the C-primed
-      # create_element): the mint already wrote @context/@adapter in
-      # C, so the returned node IS the finished wrapper and the Ruby
-      # prime pass disappears from the build path.
-      native = if adapter.mints_primed?
-                 adapter.create_primed_element(name, owner_doc: @native,
-                                                     context: context,
-                                                     adapter: adapter)
+      # The mint path dereferenced `adapter` three times and re-probed
+      # `mints_primed?` twice per element; the probe reads a class
+      # constant, so its verdict is fixed for the context's lifetime —
+      # deref once into a local and memoize the probe (the accessor's
+      # context hop ran on every mint otherwise).
+      a = @adapter || (@adapter = context.config.adapter)
+      primed = @mints_primed
+      primed = (@mints_primed = a.mints_primed?) if primed.nil?
+      native = if primed
+                 a.create_primed_element(name, owner_doc: @native,
+                                               context: context, adapter: a)
                else
-                 adapter.create_element(name, owner_doc: @native)
+                 a.create_element(name, owner_doc: @native)
                end
       # leptris-ruby#508 mints registered klasses at create: the node
       # IS a contract-carrying identity (@native is self) — prime it
       # in place instead of shelling a second wrapper (a raw mint
       # reaching ==/adapter dies on the nil @context).
-      return native if native.is_a?(Moxml::Node) && adapter.mints_primed?
-      return native.prime_contract(native, context, adapter) if native.is_a?(Moxml::Node)
+      return native if primed && native.is_a?(Moxml::Node)
+      return native.prime_contract(native, context, a) if native.is_a?(Moxml::Node)
 
       Wrappers::Element.new(native, context)
     end
