@@ -27,7 +27,7 @@ with raw nokogiri on the same operation?**
 | --- | --------- | ---- |
 | `parse` | `Nokogiri::XML` vs `ctx.parse` on the catalog document | parity |
 | `serialize` | `doc.to_xml` | parity |
-| `xpath //field (count)` | node-set cardinality, nothing materialized | parity |
+| `xpath //field (count)` | node-set cardinality, nothing materialized | structural (parity paused; 1.9.380 evaluator regression, leptris-ruby#527) |
 | `xpath //field (each)` | iterate every result (wrapper materialization) | structural |
 | `attr pairs listing` | collect `[name, value]` for every record | parity |
 | `build add_element` | create + attach 300 records x 4 fields with attrs and text | structural |
@@ -77,16 +77,16 @@ rewrites this block and `docs/_pages/performance.adoc`):
 <!-- SCOREBOARD:BEGIN -->
 | Row | Ratio | Kind | Status |
 | --- | ----- | ---- | ------ |
-| `parse` | 2.59x | parity | met |
-| `serialize` | 1.35x | parity | met |
-| `xpath //field (count)` | 1.20x | parity | met |
-| `xpath //field (each)` | 0.34x | structural | tracked (below parity) |
-| `attr pairs listing` | 8.16x | parity | met |
+| `parse` | 4.62x | parity | met |
+| `serialize` | 1.72x | parity | met |
+| `xpath //field (count)` | 0.70x | structural | tracked (below parity) |
+| `xpath //field (each)` | 0.36x | structural | tracked (below parity) |
+| `attr pairs listing` | 7.92x | parity | met |
 | `build add_element` | 0.60x | structural | tracked (below parity) |
-| `walk+read (warm)` | 0.77x | structural | tracked (below parity) |
-| `walk+read (cold)` | 0.22x | structural | tracked (below parity) |
-| `children recursion (cold)` | 0.27x | structural | tracked (below parity) |
-| `plan records (typed)` | 0.79x | data | informational |
+| `walk+read (warm)` | 0.54x | structural | tracked (below parity) |
+| `walk+read (cold)` | 0.21x | structural | tracked (below parity) |
+| `children recursion (cold)` | 0.18x | structural | tracked (below parity) |
+| `plan records (typed)` | 1.13x | data | informational |
 <!-- SCOREBOARD:END -->
 
 The open rows are the known structural gap: every node the facade
