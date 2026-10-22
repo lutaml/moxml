@@ -3092,6 +3092,11 @@ module Moxml
 
           # Non-element receivers: raw-FFI anchor (issue #245, same
           # shape as add_next_sibling).
+          # leptris-ruby#543: the raw-FFI splice is a wrapper-visible
+          # mutation — advance the binding document's version or the
+          # walk-read memos warmed before it serve stale children.
+          node.document&.advance_version if
+            node.document.respond_to?(:advance_version)
           adopt_for_sibling_insert(new_node, node)
           advance_mutation_version(node)
           ::Leptris::XML::FFI.check_status(
@@ -3137,6 +3142,11 @@ module Moxml
           # node — route through the FFI entry directly, keeping the
           # binding's namespace-lift adoption for element inserts
           # (issue #245).
+          # leptris-ruby#543: the raw-FFI splice is a wrapper-visible
+          # mutation — advance the binding document's version or the
+          # walk-read memos warmed before it serve stale children.
+          node.document&.advance_version if
+            node.document.respond_to?(:advance_version)
           adopt_for_sibling_insert(new_node, node)
           advance_mutation_version(node)
           ::Leptris::XML::FFI.check_status(
