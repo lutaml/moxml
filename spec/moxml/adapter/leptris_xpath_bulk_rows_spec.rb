@@ -68,4 +68,32 @@ RSpec.describe "leptris xpath bulk rows routing" do
     again = doc.xpath("//item").first
     expect(again).to be(first)
   end
+
+  # leptris-ruby#527: the count row is one evaluation plus a size
+  # read — it must not pay the per-row mint.
+  describe "row materialization is deferred" do
+    def bulk_calls
+      calls = 0
+      tp = TracePoint.new(:c_call) do |t|
+        calls += 1 if t.method_id == :xpath_result_rows_bulk
+      end
+      tp.enable { yield }
+      calls
+    end
+
+    it "answers size without minting rows, minting on first iteration" do
+      set = nil
+      expect(bulk_calls { set = doc.xpath("//item") }).to eq(0)
+      expect(bulk_calls { set.size }).to eq(0)
+      expect(bulk_calls { set.empty? }).to eq(0)
+      expect(bulk_calls { set.to_a }).to eq(1)
+      expect(set.map(&:name)).to eq(%w[item item])
+    end
+
+    it "keeps row identity and order through the deferred mint" do
+      set = doc.xpath("//item")
+      expect(set.map(&:text)).to eq(%w[alpha beta])
+      expect(set.first).to be(doc.xpath("//item").first)
+    end
+  end
 end
