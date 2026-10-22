@@ -22,7 +22,9 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
+    # Pinned: runner-image drift (ubuntu-latest -> 26) and vCPU count
+        # move the walk-row ratios; the lock compares like against like.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
         with:
