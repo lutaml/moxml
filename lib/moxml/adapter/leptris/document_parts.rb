@@ -53,7 +53,9 @@ module Moxml
           # it (the declaration is a preamble part, not a child node)
           # — filtered at the listing seam.
           children.concat(
-            doc.children.to_a.grep_v(*DECLARATION_KINDS),
+            doc.children.to_a.reject do |child|
+              DECLARATION_KINDS.any? { |kind| child.is_a?(kind) }
+            end,
           )
 
           texts = attachments.get(doc, :document_text)
