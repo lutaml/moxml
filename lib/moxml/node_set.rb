@@ -56,18 +56,63 @@ module Moxml
       @nodes = @lazy.to_a
     end
 
-    def each
-      return to_enum(:each) unless block_given?
+    def each(&block)
+      return to_enum(:each) unless block
 
-      wrapped = wrapped_buffer
-      index = 0
-      (@nodes || @lazy).each do |node|
-        wrapper = wrapped[index]
-        unless wrapper
-          wrapper = wrap_with_parent(node)
-          wrapped[index] = wrapper
+      unless @parent_node.nil?
+        # Parent-carrying sets (the children faces): the wrapper's
+        # @parent_node backlink is the walk invalidation chain, so
+        # every row takes the wrapping path.
+        wrapped = wrapped_buffer
+        index = 0
+        (@nodes || @lazy).each do |node|
+          wrapper = wrapped[index]
+          unless wrapper
+            wrapper = wrap_with_parent(node)
+            wrapped[index] = wrapper
+          end
+          yield wrapper
+          index += 1
         end
-        yield wrapper
+        return self
+      end
+
+      # Parentless sets (the xpath-result shape): bulk-minted identity
+      # natives ARE their wrappers — @native is self, so Node.wrap
+      # answers the row itself and per-row wrapping collapses to the
+      # first-touch @context prime. The binding's native cache keeps
+      # one Ruby object per address, so cross-access and cross-query
+      # identity hold without a wrapper buffer. Non-identity rows
+      # (binding twins, synthetic attribute rows) keep the wrapping
+      # path, memoized by index as before.
+      nodes = @nodes || @lazy
+      # Born-primed identity rows (the binding's BulkIdentityRows
+      # certificate): every row is a registered-klass native whose
+      # @native/@context/@adapter the mint already wrote — wrap()
+      # would answer the row itself, so the loop yields in place.
+      if nodes.respond_to?(:bulk_identity_rows?) && nodes.bulk_identity_rows?
+        return nodes.each(&block)
+      end
+
+      wrapped = nil
+      index = 0
+      context = @context
+      nodes.each do |node|
+        if node.is_a?(Node) &&
+            node.instance_variable_get(:@native).equal?(node)
+          unless node.instance_variable_defined?(:@context)
+            node.prime_contract(node, context)
+          end
+          yield node
+        else
+          wrapped ||= wrapped_buffer
+          wrapper = wrapped[index]
+          unless wrapper
+            wrapper = wrap_with_parent(node)
+            wrapped[index] = wrapper
+          end
+          yield wrapper
+        end
         index += 1
       end
       self

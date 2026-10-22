@@ -83,6 +83,20 @@ module Moxml
         ::Leptris::XML::Native.respond_to?(:xpath_result_rows_bulk) &&
         ::Leptris::XML::Document.method_defined?(:xpath_result_rows_bulk)
 
+      # The primed bulk rows face: the face accepts (context, adapter),
+      # births registered-klass rows with the contract ivars already
+      # set, and marks an all-native result with BulkIdentityRows.
+      # Probed on both faces (variadic Native arity, optional Document
+      # params) plus the mark module — a fresh native_layer over a
+      # stale ext must not NoMethodError mid-query.
+      PRIMED_BULK_ROWS =
+        BULK_XPATH_ROWS &&
+        defined?(::Leptris::XML::BulkIdentityRows) &&
+        ::Leptris::XML::Native.method(:xpath_result_rows_bulk).arity == -1 &&
+        ::Leptris::XML::Document
+          .instance_method(:xpath_result_rows_bulk)
+          .parameters.count { |kind, _| kind == :opt } >= 2
+
       # leptris-ruby#460: set-text by document+address, kind-dispatched
       # in C — no binding twin mint per write. Face-probed, not
       # version-gated (the floor admits bindings without it).
@@ -484,6 +498,17 @@ module Moxml
                             else
                               {}.compare_by_identity
                             end
+        # The moxml Context per binding document. Context#parse passes
+        # self into the adapter's parse crossing — the one place the
+        # adapter sees the consumer's contract state. The primed bulk
+        # rows face recovers it to birth-prime rows with that state;
+        # a miss (direct binding parses) keeps rows unprimed and the
+        # result unmarked.
+        @native_doc_contexts = if Context::WEAK_WRAPPERS
+                                 ObjectSpace::WeakMap.new
+                               else
+                                 {}.compare_by_identity
+                               end
         # Same strong-mode valve, keyed per document root (tiny).
         NATIVE_DOC_ROOTS_CAP = 1_024
 
@@ -1388,6 +1413,7 @@ module Moxml
           end
 
           register_mint_klasses!(native_doc)
+          register_doc_context!(native_doc, _context)
           ctx = _context || Context.new(:leptris)
           doc = Wrappers::Document.new(native_doc, ctx)
 
@@ -1714,6 +1740,23 @@ module Moxml
 
           binding_doc.register_wrapper_klasses(MINT_KIND_CLASSES)
           binding_doc
+        end
+
+        # The parse crossing records which moxml Context owns a
+        # binding document — Context#parse passes self as _context;
+        # direct adapter parses answer their own fresh Context, which
+        # is then the document's canonical context exactly as the
+        # wrapper below carries it.
+        def register_doc_context!(binding_doc, context)
+          return binding_doc unless PRIMED_BULK_ROWS && binding_doc
+
+          @native_doc_contexts[binding_doc] =
+            context || Context.new(:leptris)
+          binding_doc
+        end
+
+        def native_doc_context(binding_doc)
+          @native_doc_contexts[binding_doc]
         end
 
         # Native builder factories: one C call and a TypedData wrap.
@@ -3554,7 +3597,20 @@ module Moxml
           # nil and leaves the pointer — fall through to the scalar
           # wrap, whose free owns it.
           if BULK_XPATH_ROWS
-            rows = document.xpath_result_rows_bulk(result_ptr)
+            # Primed face: rows mint born-primed with THIS context's
+            # contract state and an all-native result carries the
+            # BulkIdentityRows mark — NodeSet's row loop yields in
+            # place with no per-row wrap. Older bindings (or a
+            # document the adapter never parsed) take the unprimed
+            # face; the mark is absent and the loop wraps per row.
+            mx_ctx = PRIMED_BULK_ROWS && native_doc_context(document)
+            rows = if mx_ctx
+                     document.xpath_result_rows_bulk(
+                       result_ptr, mx_ctx, mx_ctx.config.adapter
+                     )
+                   else
+                     document.xpath_result_rows_bulk(result_ptr)
+                   end
             return rows unless rows.nil?
           end
 
