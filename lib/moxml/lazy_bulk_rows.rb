@@ -37,10 +37,10 @@ module Moxml
       materialize[index]
     end
 
-    def each
-      return enum_for(:each) unless block_given?
+    def each(&block)
+      return enum_for(:each) unless block
 
-      materialize.each { |row| yield row }
+      materialize.each(&block)
       self
     end
 
@@ -51,7 +51,7 @@ module Moxml
     def self.finalizer(address)
       proc do
         ::Leptris::XML::FFI.leptris_xpath_result_free(
-          ::FFI::Pointer.new(address)
+          ::FFI::Pointer.new(address),
         )
       end
     end
