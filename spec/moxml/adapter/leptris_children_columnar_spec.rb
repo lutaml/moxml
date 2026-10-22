@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 begin
   require "leptris"
 rescue LoadError
@@ -10,7 +11,8 @@ return unless Leptris::XML::Document.respond_to?(:create)
 # (leptris-ruby#527/#532); older bindings keep the per-node children
 # crossing, so the routing cannot be pinned there.
 return unless defined?(Leptris::XML::Native) &&
-              Leptris::XML::Native.respond_to?(:walk_columnar)
+  Leptris::XML::Native.respond_to?(:walk_columnar)
+
 require "moxml/adapter/leptris"
 
 RSpec.describe "Moxml::Adapter::Leptris columnar children (SOTA B2 walk row)" do
@@ -53,10 +55,10 @@ RSpec.describe "Moxml::Adapter::Leptris columnar children (SOTA B2 walk row)" do
     it "answer natives identical to the native children face" do
       got = Moxml::Adapter::Leptris.children(root_native)
       expected = Leptris::XML::NativeNode
-                 .instance_method(:children).bind_call(root_native).to_a
+        .instance_method(:children).bind_call(root_native).to_a
       expect(got.size).to eq(expected.size)
       expect(got.map { |n| Moxml::Adapter::Leptris.node_name(n) })
-             .to eq(expected.map(&:name))
+        .to eq(expected.map(&:name))
       got.each_with_index do |native, i|
         # native-cache identity: cached handles ARE the children_read
         # wrappers, so the NodeSet contract holds.
@@ -92,7 +94,7 @@ RSpec.describe "Moxml::Adapter::Leptris columnar children (SOTA B2 walk row)" do
       end
       expect(calls2).to eq(0)
       expect(second.map { |n| Moxml::Adapter::Leptris.node_name(n) })
-             .to eq(first_names)
+        .to eq(first_names)
     end
   end
 
@@ -101,7 +103,7 @@ RSpec.describe "Moxml::Adapter::Leptris columnar children (SOTA B2 walk row)" do
     # list a mutation has invalidated.
     def face_children_names
       Moxml::Adapter::Leptris.children(root_native)
-                             .map { |n| Moxml::Adapter::Leptris.node_name(n) }
+        .map { |n| Moxml::Adapter::Leptris.node_name(n) }
     end
 
     it "sees children added after the map was primed" do
@@ -138,7 +140,7 @@ RSpec.describe "Moxml::Adapter::Leptris columnar children (SOTA B2 walk row)" do
       names = face_children_names
       expect(names).to include("a")
       expect(root.children.to_a.find { |n| n.name == "a" }.text)
-             .to eq("rewritten")
+        .to eq("rewritten")
     end
   end
 end
