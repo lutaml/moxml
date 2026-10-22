@@ -72,12 +72,12 @@ RSpec.describe "leptris xpath bulk rows routing" do
   # leptris-ruby#527: the count row is one evaluation plus a size
   # read — it must not pay the per-row mint.
   describe "row materialization is deferred" do
-    def bulk_calls
+    def bulk_calls(&block)
       calls = 0
       tp = TracePoint.new(:c_call) do |t|
         calls += 1 if t.method_id == :xpath_result_rows_bulk
       end
-      tp.enable { yield }
+      tp.enable(&block)
       calls
     end
 
