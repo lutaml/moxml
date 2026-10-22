@@ -14,6 +14,18 @@ module Moxml
           had_source_declaration document_text
         ].freeze
 
+        # The XML declaration kind is not stable across leptris
+        # releases: 1.9.345-era builds lack Leptris::XML::Declaration
+        # entirely (the pure-Ruby CustomizedLeptris twin carries the
+        # declaration then), later builds expose it again (and list it
+        # among the document children, leptris-ruby#459). Resolve the
+        # kind set once, by feature detection, and filter both kinds —
+        # the shim twin is never a listing node either way.
+        DECLARATION_KINDS = [
+          ::Moxml::Adapter::CustomizedLeptris::Declaration,
+          (::Leptris::XML::Declaration if ::Leptris::XML.const_defined?(:Declaration)),
+        ].compact.freeze
+
         def free_document(native)
           DOCUMENT_ATTACHMENT_KEYS.each { |key| attachments.delete(native, key) }
           native.free
@@ -41,7 +53,7 @@ module Moxml
           # it (the declaration is a preamble part, not a child node)
           # — filtered at the listing seam.
           children.concat(
-            doc.children.to_a.grep_v(::Leptris::XML::Declaration),
+            doc.children.to_a.grep_v(*DECLARATION_KINDS),
           )
 
           texts = attachments.get(doc, :document_text)
@@ -167,7 +179,7 @@ module Moxml
             # emission (a second line here duplicates it — and the
             # 1.9.360 0-arity Declaration#to_xml raises under the
             # options-passing call).
-            next if child.is_a?(::Leptris::XML::Declaration)
+            next if DECLARATION_KINDS.any? { |kind| child.is_a?(kind) }
 
             parts << raw_serialize(child, options) << "\n"
           end
