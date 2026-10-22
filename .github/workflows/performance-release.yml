@@ -78,11 +78,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # The released version is the gemspec's at the pinned tree —
-          # NOT "latest": back-to-back releases would otherwise aim a
-          # back-aimed rerun at the newer notes.
-          VERSION=$(ruby -e 'print Gem::Specification.load("moxml.gemspec").version')
-          TAG="v${VERSION}"
+          # The notes target is the release created by the triggering
+          # run — NOT "latest" (a rerun of an old run would mis-aim)
+          # and NOT the gemspec at the pinned tree (the checkout is
+          # the pre-bump tree; the bump lands on main during the
+          # release run itself).
+          TRIGGERED_AT="${{ github.event.workflow_run.created_at }}"
+          TAG=$(gh api "repos/${GITHUB_REPOSITORY}/releases" \
+            --jq "map(select(.created_at >= \"${TRIGGERED_AT}\")) | sort_by(.created_at) | last | .tag_name")
+          TAG=${TAG:-$(gh release view --json tagName --jq .tagName)}
           echo "Reporting against $TAG"
           gh release view "$TAG" --json body --jq .body > /tmp/body.md
           ruby -e '
