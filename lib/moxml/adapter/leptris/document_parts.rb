@@ -39,9 +39,17 @@ module Moxml
           # leptris-ruby#459 lists the declaration among the binding
           # children; the Nokogiri-shaped facade contract never lists
           # it (the declaration is a preamble part, not a child node)
-          # — filtered at the listing seam.
+          # — filtered at the listing seam. The constant is resolved
+          # conditionally: leptris releases before the declaration
+          # node class landed (e.g. 1.9.345) carry no Declaration at
+          # all, and referencing the constant unconditionally raises
+          # NameError on every document-children listing.
+          declaration_class =
+            if ::Leptris::XML.const_defined?(:Declaration, false)
+              ::Leptris::XML::Declaration
+            end
           children.concat(
-            doc.children.to_a.grep_v(::Leptris::XML::Declaration),
+            doc.children.to_a.grep_v(declaration_class),
           )
 
           texts = attachments.get(doc, :document_text)
