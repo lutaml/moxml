@@ -51,6 +51,8 @@ module Scoreboard
   # the regressed value and the lock signal is lost. Remove an entry
   # when its issue lands.
   KNOWN_REGRESSIONS = {
+    "walk+read (warm)" => "leptris-ruby#527 (1.9.380 crossing regression)",
+    "walk+read (cold)" => "leptris-ruby#527 (1.9.380 crossing regression)",
     "children recursion (cold)" =>
       "leptris-ruby#527 (1.9.380 crossing regression)",
   }.freeze
