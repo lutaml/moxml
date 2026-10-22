@@ -293,11 +293,14 @@ namespace :benchmark do
   end
 
   # CI lock: parity rows must be >= 1.0x and no row may fall more than
-  # 10% below the committed baseline.
+  # 10% below the committed baseline. SCORE_JSON rides along so a
+  # failed lock still uploads the measurement that failed it — the
+  # artifact is the evidence, not the stale committed baseline.
   desc "Scoreboard regression lock (parity + 10% baseline tolerance)"
   task :lock do
     sh({ "SCORE_LOCK" => "1",
-         "SCORE_BASELINE" => "benchmark/scoreboard.json" },
+         "SCORE_BASELINE" => "benchmark/scoreboard.json",
+         "SCORE_JSON" => "/tmp/measured-scoreboard.json" },
        "bundle exec ruby benchmark/scoreboard.rb")
   end
 end
