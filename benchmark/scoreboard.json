@@ -1,63 +1,63 @@
 {
   "protocol": {
-    "measured": "2026-10-20T14:53:54Z",
-    "ruby": "3.4.8",
+    "measured": "2026-10-22T09:33:49Z",
+    "ruby": "3.3.12",
     "adapter": "leptris",
-    "adapter_version": "1.9.374.0",
+    "adapter_version": "1.9.380.1",
     "nokogiri": "1.19.4",
     "reps": 9,
     "warmup": 2,
     "clock": "CLOCK_PROCESS_CPUTIME_ID",
-    "load": 34.01
+    "load": 1.81
   },
   "rows": [
     {
       "row": "parse",
       "kind": "parity",
       "parity": true,
-      "baseline_us": 677.0,
-      "candidate_us": 261.0,
-      "ratio": 2.594,
-      "baseline_allocs": 6,
+      "baseline_us": 1051.8,
+      "candidate_us": 227.7,
+      "ratio": 4.619,
+      "baseline_allocs": 7,
       "candidate_allocs": 18
     },
     {
       "row": "serialize",
       "kind": "parity",
       "parity": true,
-      "baseline_us": 474.0,
-      "candidate_us": 351.0,
-      "ratio": 1.35,
+      "baseline_us": 469.2,
+      "candidate_us": 272.1,
+      "ratio": 1.724,
       "baseline_allocs": 30,
-      "candidate_allocs": 13
+      "candidate_allocs": 14
     },
     {
       "row": "xpath //field (count)",
-      "kind": "parity",
-      "parity": true,
-      "baseline_us": 132.0,
-      "candidate_us": 110.0,
-      "ratio": 1.2,
-      "baseline_allocs": 12,
-      "candidate_allocs": 9
+      "kind": "structural",
+      "parity": false,
+      "baseline_us": 69.1,
+      "candidate_us": 98.0,
+      "ratio": 0.705,
+      "baseline_allocs": 13,
+      "candidate_allocs": 3
     },
     {
       "row": "xpath //field (each)",
       "kind": "structural",
       "parity": false,
-      "baseline_us": 276.0,
-      "candidate_us": 800.0,
-      "ratio": 0.345,
-      "baseline_allocs": 1212,
-      "candidate_allocs": 12
+      "baseline_us": 263.3,
+      "candidate_us": 734.3,
+      "ratio": 0.359,
+      "baseline_allocs": 1213,
+      "candidate_allocs": 4
     },
     {
       "row": "attr pairs listing",
       "kind": "parity",
       "parity": true,
-      "baseline_us": 310.0,
-      "candidate_us": 38.0,
-      "ratio": 8.158,
+      "baseline_us": 488.8,
+      "candidate_us": 61.7,
+      "ratio": 7.92,
       "baseline_allocs": 3300,
       "candidate_allocs": 0
     },
@@ -65,19 +65,19 @@
       "row": "build add_element",
       "kind": "structural",
       "parity": false,
-      "baseline_us": 3434.0,
-      "candidate_us": 5744.0,
-      "ratio": 0.598,
+      "baseline_us": 5572.7,
+      "candidate_us": 9372.9,
+      "ratio": 0.595,
       "baseline_allocs": 20358,
-      "candidate_allocs": 11062
+      "candidate_allocs": 11363
     },
     {
       "row": "walk+read (warm)",
       "kind": "structural",
       "parity": false,
-      "baseline_us": 1101.0,
-      "candidate_us": 1431.0,
-      "ratio": 0.769,
+      "baseline_us": 1548.6,
+      "candidate_us": 2867.0,
+      "ratio": 0.54,
       "baseline_allocs": 4503,
       "candidate_allocs": 2
     },
@@ -85,31 +85,31 @@
       "row": "walk+read (cold)",
       "kind": "structural",
       "parity": false,
-      "baseline_us": 1915.0,
-      "candidate_us": 8590.0,
-      "ratio": 0.223,
-      "baseline_allocs": 6010,
-      "candidate_allocs": 8730
+      "baseline_us": 2913.9,
+      "candidate_us": 13771.8,
+      "ratio": 0.212,
+      "baseline_allocs": 6011,
+      "candidate_allocs": 10232
     },
     {
       "row": "children recursion (cold)",
       "kind": "structural",
       "parity": false,
-      "baseline_us": 2293.0,
-      "candidate_us": 8595.0,
-      "ratio": 0.267,
-      "baseline_allocs": 5710,
-      "candidate_allocs": 7230
+      "baseline_us": 3381.3,
+      "candidate_us": 18658.1,
+      "ratio": 0.181,
+      "baseline_allocs": 5711,
+      "candidate_allocs": 8732
     },
     {
       "row": "plan records (typed)",
       "kind": "data",
       "parity": false,
-      "baseline_us": 2401.0,
-      "candidate_us": 3038.0,
-      "ratio": 0.79,
-      "baseline_allocs": 8111,
-      "candidate_allocs": 13231
+      "baseline_us": 3063.0,
+      "candidate_us": 2721.5,
+      "ratio": 1.126,
+      "baseline_allocs": 8112,
+      "candidate_allocs": 13232
     }
   ]
 }

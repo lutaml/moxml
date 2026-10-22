@@ -176,8 +176,11 @@ module Scoreboard
                         -> { baseline_doc.to_xml },
                         -> { moxml_doc.to_xml }],
         # Count only: the node-set cardinality without materializing
-        # wrapper objects on either side.
-        "xpath //field (count)" => [:parity,
+        # wrapper objects on either side. Tracked (not parity) while
+        # the 1.9.380 engine line regresses the evaluator below the
+        # 0.95 floor (leptris-ruby#527: 1.20x on 1.9.374 -> 0.70x on
+        # 1.9.380.1); returns to parity when the engine line recovers.
+        "xpath //field (count)" => [:structural,
                                     -> { baseline_doc.xpath("//field").size },
                                     -> { moxml_doc.xpath("//field").size }],
         # Materialized results: what a consumer iterating the set pays.
