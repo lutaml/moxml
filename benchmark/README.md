@@ -66,8 +66,9 @@ SCORE_LOCK=1 SCORE_BASELINE=benchmark/scoreboard.json \
 Rows with a tracked upstream regression are logged as paused and do not
 fail the lock (`KNOWN_REGRESSIONS` in `scoreboard.rb`); they stay
 measured and published, and the entry is removed when its issue lands.
-The current entry is `children recursion (cold)` under
-leptris-ruby#527 (the 1.9.380 crossing regression).
+The current entries are the three crossing-bound walk rows
+(`walk+read (warm)`, `walk+read (cold)`, `children recursion (cold)`)
+under leptris-ruby#527 (the 1.9.380 crossing regression).
 
 A smoke run on a loaded machine:
 
