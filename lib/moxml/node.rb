@@ -237,7 +237,15 @@ module Moxml
         refreshed = adapter.actual_native(node.native, @native)
         node.refresh_native!(refreshed) if refreshed && refreshed != node.native
       end
-      node.parent_node = self
+      # The wrapper-side parent link rides the adapter's capability
+      # gate: adapters whose natives cannot resolve a parent through
+      # the adapter layer need it for remove/replace to find the tree
+      # (ox's raw-text natives, for one); identity-stable adapters
+      # skip the write, which otherwise materializes a fourth ivar on
+      # every attached node (object-shape transition per attach).
+      # Wrappers that need the link anyway get it where they are
+      # minted with one — NodeSet#each re-points them.
+      node.parent_node = self if a.attach_sets_parent_link?
       # The adopted subtree's in-scope namespaces changed
       node.invalidate_namespace_cache!
       invalidate_children_cache!

@@ -1252,6 +1252,19 @@ module Moxml
           true
         end
 
+        # Identity-stable natives resolve their parent through the
+        # adapter (remove/replace fall back to that resolution when
+        # the wrapper-side link is unset), and every mutation bumps
+        # the children generation — so recording the link on attach
+        # only materializes a fourth ivar per attached node
+        # (object-shape transition, ~6% of the build row). Adapters
+        # whose natives cannot self-resolve keep the link via
+        # Base#attach_sets_parent_link?; parse_fragment mints its own
+        # lifetime chain (#245) either way.
+        def attach_sets_parent_link?
+          false
+        end
+
         # Our at_xpath falls back to the model's Ruby engine when the
         # native lane answers nothing — the engine's node-set XPath
         # index is stale after sibling insertion, so `at` must not be
