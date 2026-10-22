@@ -2719,6 +2719,7 @@ module Moxml
           doc = NN_DOCUMENT.bind_call(parent_nn)
           src = to_binding(child_nn)
           installed = copy_binding_subtree(doc, src)
+          advance_mutation_version(parent_nn)
           ::Leptris::XML::FFI.check_status(
             ::Leptris::XML::FFI.leptris_element_append_child(
               ::FFI::Pointer.new(parent_nn.address), installed.c_ptr
@@ -2767,6 +2768,7 @@ module Moxml
             end
           # The raw engine add rejects binding-family children —
           # append through the FFI face like structural_adopt.
+          advance_mutation_version(parent_nn)
           ::Leptris::XML::FFI.check_status(
             ::Leptris::XML::FFI.leptris_element_append_child(
               ::FFI::Pointer.new(parent_nn.address), rebuilt.c_ptr
@@ -3091,6 +3093,7 @@ module Moxml
           # Non-element receivers: raw-FFI anchor (issue #245, same
           # shape as add_next_sibling).
           adopt_for_sibling_insert(new_node, node)
+          advance_mutation_version(node)
           ::Leptris::XML::FFI.check_status(
             ::Leptris::XML::FFI.leptris_element_insert_before(
               node.c_ptr, new_node.c_ptr
@@ -3135,6 +3138,7 @@ module Moxml
           # binding's namespace-lift adoption for element inserts
           # (issue #245).
           adopt_for_sibling_insert(new_node, node)
+          advance_mutation_version(node)
           ::Leptris::XML::FFI.check_status(
             ::Leptris::XML::FFI.leptris_element_insert_after(
               node.c_ptr, new_node.c_ptr
@@ -3152,6 +3156,23 @@ module Moxml
 
           scope = anchor.parent.is_a?(::Leptris::XML::Element) ? anchor.parent.namespaces : {}
           ::Leptris::XML::Element.lift_namespaces_for_adoption(new_node, scope)
+        end
+
+        # The binding's version-stamped read memos (the #530
+        # walk-reads, the C content/attribute memos) key their
+        # validity on the owning Document's mutation version. The
+        # gated Ruby faces advance it (Node#ensure_writable!) and
+        # the C-bound faces bump in C — a RAW FFI write bypasses
+        # both, so every raw write in this adapter bumps here,
+        # before the call, mirroring ensure_writable!'s
+        # conservative discipline (a failed write merely discards
+        # memos). Without it, a children memo warmed before the
+        # insert serves the pre-insert tree forever.
+        def advance_mutation_version(node)
+          doc = node.respond_to?(:document) ? node.document : nil
+          doc.advance_version if doc.respond_to?(:advance_version)
+        rescue ::Leptris::XML::Error
+          nil
         end
 
         def remove(node)
@@ -3225,12 +3246,14 @@ module Moxml
           prev = node.previous_sibling
           node.unlink
           if prev.is_a?(::Leptris::XML::Element)
+            advance_mutation_version(prev)
             ::Leptris::XML::FFI.check_status(
               ::Leptris::XML::FFI.leptris_element_insert_after(
                 prev.c_ptr, new_node.c_ptr
               ),
             )
           else
+            advance_mutation_version(parent)
             ::Leptris::XML::FFI.check_status(
               ::Leptris::XML::FFI.leptris_element_append_child(
                 parent.c_ptr, new_node.c_ptr
