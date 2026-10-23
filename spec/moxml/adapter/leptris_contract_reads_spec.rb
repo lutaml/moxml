@@ -136,6 +136,9 @@ RSpec.describe "leptris Identity contract reads" do
       unless Leptris::XML::NativeNode.method_defined?(:children_read)
         skip "binding #{Leptris::VERSION} has no children_read face"
       end
+      unless Moxml::Adapter::Leptris.children_read_splice_safe?
+        skip "binding #{Leptris::VERSION} is splice-unsafe for children_read (leptris-ruby#545) — the crossing is the correctness path there"
+      end
       doc = ctx.parse("<root><item>v</item></root>")
       el = doc.root.children.first
 
