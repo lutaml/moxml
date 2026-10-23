@@ -73,6 +73,7 @@ jobs:
         run: |
           SCORE_MARKDOWN=/tmp/section.md \
             SCORE_JSON=/tmp/measured-scoreboard.json \
+            SCORE_PUBLISH=1 \
             bundle exec ruby benchmark/scoreboard.rb
 
       - name: Upload the measured scoreboard
@@ -80,9 +81,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: scoreboard-${{ github.event.workflow_run.id || 'dispatch' }}
-          # The measurement behind the published notes section: the
-          # committed baseline/blocks are refreshed from this artifact.
-          path: /tmp/measured-scoreboard.json
+          # The measurement behind the published notes section plus the
+          # regenerated baseline + blocks: the data commit back to main
+          # rides a PR from these files (never a direct push).
+          path: |
+            /tmp/measured-scoreboard.json
+            benchmark/scoreboard.json
+            docs/_pages/performance.adoc
+            benchmark/README.md
           if-no-files-found: ignore
 
       - name: Append the scoreboard to the release notes of the measured version
