@@ -555,6 +555,11 @@ module Moxml
             # face is a C method at 50-84ns).
             ELEMENT = Class.new(::Leptris::XML::NativeNode) do
               alias_method :native_name, :name
+              # The C nn_document (the BINDING document handle) is
+              # captured before Moxml::Node#document shadows it —
+              # the construction fast path needs the binding doc,
+              # not a facade wrapper (TODO.sota/04 bridge tax).
+              alias_method :native_document, :document
               include ::Moxml::Node
               include ::Moxml::Element
 
@@ -2623,6 +2628,35 @@ module Moxml
         def create_element_with_attrs(parent, name, attrs)
           drop_columnar_children(parent)
           validate_element_name(name)
+          # NativeNode parents need NO FFI twin (TODO.sota/04 bridge
+          # tax): the bridge existed only to obtain c_address +
+          # document, and the NativeNode answers both natively
+          # (address / document). The twin mint per building parent
+          # (FFI::Pointer + binding Node.wrap + registry insert) is
+          # pure construction overhead.
+          if parent.is_a?(::Leptris::XML::NativeNode)
+            doc = parent.respond_to?(:native_document) &&
+              parent.native_document or return nil
+            return nil unless ::Leptris::XML::Native.respond_to?(:create_element_with_attrs)
+
+            flat = attrs.flatten
+            if NATIVE_C_MINT &&
+                ::Leptris::XML::Native.respond_to?(:create_element_with_attrs_wrapped)
+              minted = ::Leptris::XML::Native.create_element_with_attrs_wrapped(
+                doc, parent.address, name.to_s, flat
+              )
+              return minted unless minted.nil?
+            end
+
+            addr = ::Leptris::XML::Native.create_element_with_attrs(
+              doc.c_address, parent.address, name.to_s, flat
+            )
+            return nil if addr.nil? || addr.zero?
+
+            return native_twin(
+              doc, ::Leptris::XML::Node.wrap(::FFI::Pointer.new(addr), doc)
+            )
+          end
           binding_parent = to_binding(parent)
           doc = binding_parent.document or return nil
           return nil unless ::Leptris::XML::Native.respond_to?(:create_element_with_attrs)
