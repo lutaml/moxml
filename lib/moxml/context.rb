@@ -207,15 +207,19 @@ module Moxml
     # @raise [Moxml::NotImplementedError] on adapters without a validator
     def xsd(schema_source)
       handle = config.adapter.xsd_compile(schema_source.to_s)
-      Moxml::XSD::Schema.new(handle, self)
+      Moxml::XSD::Schema.new(handle, self, schema_source.to_s)
     end
 
     # Compile an XSD schema from a file path — <xs:include href>
     # resolves relative to the file's directory (the engine
     # resolves it; reading the file into #xsd would lose that).
+    # The #452 rule index reads this document only; included
+    # schema parts stay engine-validated (the index can only
+    # under-report).
     def xsd_file(path)
       handle = config.adapter.xsd_compile_file(path.to_s)
-      Moxml::XSD::Schema.new(handle, self)
+      source = File.read(path.to_s)
+      Moxml::XSD::Schema.new(handle, self, source)
     end
 
     # Compile a RELAX NG schema from source or from a file path (the

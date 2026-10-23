@@ -28,6 +28,8 @@ module Moxml
   module XSD
     SUPPORTED_ADAPTERS = %i[leptris nokogiri].freeze
 
+    autoload :SchemaRules, "moxml/xsd/schema_rules"
+
     # One validation finding, harmonized across adapters (#362.2):
     # +message+ always present; +line+ / +column+ when the engine
     # reports them; +path+ (the element path) when the engine
@@ -89,9 +91,11 @@ module Moxml
               "schema released (deterministic drop); compile a new one"
       end
 
-      def initialize(handle, context)
+      def initialize(handle, context, schema_source = nil)
         @handle = handle
         @context = context
+        @rules_index =
+          schema_source && SchemaRules.index(schema_source, context)
         assert_adapter_matches_handle!
       end
 
@@ -143,7 +147,16 @@ module Moxml
                   parsed
                 end
               end
-        @context.config.adapter.xsd_validate(@handle, doc.native)
+        engine_errors = @context.config.adapter.xsd_validate(
+          @handle, doc.native
+        )
+        return engine_errors unless @rules_index
+
+        # The #452 post-validation rules only ever add findings for
+        # documents the engine accepted; exact duplicates are
+        # dropped for engines that already detect them.
+        (engine_errors +
+          SchemaRules.findings(doc, @rules_index)).uniq
       end
 
       def valid?(node_or_xml)
