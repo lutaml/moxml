@@ -51,7 +51,6 @@ module Scoreboard
   # the regressed value and the lock signal is lost. Remove an entry
   # when its issue lands.
   KNOWN_REGRESSIONS = {
-    "walk+read (warm)" => "leptris-ruby#527 (1.9.380 crossing regression)",
     "walk+read (cold)" => "leptris-ruby#527 (1.9.380 crossing regression)",
     "children recursion (cold)" =>
       "leptris-ruby#527 (1.9.380 crossing regression)",
@@ -191,11 +190,11 @@ module Scoreboard
         # opened leptris-ruby#527 was the adapter minting every row
         # before the caller asked (leptris-ruby#527 verification:
         # engine eval + count is ~0.75us and flat across the
-        # 1.9.374->1.9.380 line). The bulk mint is now deferred, so
-        # size answers from the result handle. Tracked here until a
-        # measured run confirms the row above the parity floor, then
-        # promote to :parity.
-        "xpath //field (count)" => [:structural,
+        # 1.9.374->1.9.380 line). The bulk mint is deferred (#444
+        # LazyBulkRows), so size answers from the result handle:
+        # the released tree measures 3.50x on both release runs
+        # (v0.5.155, v0.5.156) — the promotion condition above.
+        "xpath //field (count)" => [:parity,
                                     -> { baseline_doc.xpath("//field").size },
                                     -> { moxml_doc.xpath("//field").size }],
         # Materialized results: what a consumer iterating the set pays.
@@ -421,7 +420,14 @@ module Scoreboard
     when "parity"
       row["ratio"] >= PARITY_FLOOR ? "met" : "open (below parity)"
     when "structural"
-      "tracked (below parity)"
+      status =
+        if row["ratio"] >= PARITY_FLOOR
+          "tracked (at parity)"
+        else
+          "tracked (below parity)"
+        end
+      ref = KNOWN_REGRESSIONS[row["row"]]
+      ref ? "#{status}, paused: #{ref}" : status
     else
       "informational"
     end

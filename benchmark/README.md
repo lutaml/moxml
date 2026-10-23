@@ -27,7 +27,7 @@ with raw nokogiri on the same operation?**
 | --- | --------- | ---- |
 | `parse` | `Nokogiri::XML` vs `ctx.parse` on the catalog document | parity |
 | `serialize` | `doc.to_xml` | parity |
-| `xpath //field (count)` | node-set cardinality, nothing materialized | structural (parity paused; 1.9.380 evaluator regression, leptris-ruby#527) |
+| `xpath //field (count)` | node-set cardinality, nothing materialized | parity |
 | `xpath //field (each)` | iterate every result (wrapper materialization) | structural |
 | `attr pairs listing` | collect `[name, value]` for every record | parity |
 | `build add_element` | create + attach 300 records x 4 fields with attrs and text | structural |
@@ -66,9 +66,17 @@ SCORE_LOCK=1 SCORE_BASELINE=benchmark/scoreboard.json \
 Rows with a tracked upstream regression are logged as paused and do not
 fail the lock (`KNOWN_REGRESSIONS` in `scoreboard.rb`); they stay
 measured and published, and the entry is removed when its issue lands.
-The current entries are the three crossing-bound walk rows
-(`walk+read (warm)`, `walk+read (cold)`, `children recursion (cold)`)
-under leptris-ruby#527 (the 1.9.380 crossing regression).
+The current entries are the two cold crossing-bound walk rows
+(`walk+read (cold)`, `children recursion (cold)`) under
+leptris-ruby#527 (the per-element crossings of the 1.9.380+ line —
+facade-side, not evaluator-side: the engine's own eval and walk
+measured flat across 1.9.374→1.9.380). `walk+read (warm)` recovered
+above parity (1.15-1.17x on the release runs) and left the pause
+list — a future dip now fails the lock again. The count row's
+0.70x reading that opened #527 was the adapter minting every row
+before the caller asked (fixed by the deferred bulk mint); it
+measures 3.50x on the released tree and is promoted back to a
+parity row.
 
 A smoke run on a loaded machine:
 
