@@ -1285,27 +1285,41 @@ module Moxml
           end
         end
 
-        # 1.9.381.0: the children_read face stopped reflecting
-        # post-splice state — Element#add_next_sibling lands the node
-        # in the tree (native bulk reads and walk_columnar see it) but
-        # leaves the face's child list stale. Probe the exact repro
-        # once: prime the face, splice, and require children_read to
-        # see the inserted node. Unsafe builds take the adapter
-        # children path; fixed builds restore the fast path
-        # automatically.
+        # 1.9.381.0: the children_read face served a version-stamped
+        # child memo (leptris-ruby#530) that raw-FFI writes did not
+        # advance (leptris-ruby#545) — the adapter bumps the version at
+        # every raw site (leptris-ruby#543), and the binding's own
+        # element splice bumps it in C, so the memo observes splices.
+        # Probe that contract once with a live splice through the same
+        # faces the adapter uses: prime the memo, splice via the
+        # binding's Element face (NativeNode has no add_*_ sibling
+        # method), and require children_read to see the inserted node.
+        # Unsafe builds take the adapter children path; fixed builds
+        # restore the fast path automatically. Bindings without the
+        # memo faces have nothing to go stale.
         def children_read_splice_safe?
           return @children_read_splice_safe unless @children_read_splice_safe.nil?
 
-          @children_read_splice_safe = begin
-            native_doc = ::Leptris::XML::Document.parse("<r><a/>\n<b/></r>")
-            root = native_doc.root
-            root.children_read.to_a # prime the face's child list
-            a = root.children.to_a.first
-            a.add_next_sibling(native_doc.create_element("x"))
-            root.children_read.to_a.map { |n| n.name.to_s } == %w[a x b]
-          rescue StandardError
-            false
-          end
+          @children_read_splice_safe =
+            if !NN.method_defined?(:children_read) ||
+                !::Leptris::XML::Document.method_defined?(:native_node)
+              true
+            else
+              begin
+                native_doc = ::Leptris::XML::Document.parse("<r><a/>\n<b/></r>")
+                root = native_doc.native_node
+                root.children_read.to_a # prime the version-stamped memo
+                a = root.children.to_a.first
+                bridged = ::Leptris::XML::Node.wrap(
+                  ::FFI::Pointer.new(a.address), native_doc
+                )
+                bridged.add_next_sibling(native_doc.create_element("x"))
+                names = root.children_read.to_a.map { |n| n.name.to_s }
+                names[0] == "a" && names[1] == "x"
+              rescue StandardError
+                false
+              end
+            end
         end
 
         def xpath_index_document(node)
