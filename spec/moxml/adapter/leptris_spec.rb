@@ -490,6 +490,12 @@ RSpec.describe Moxml::Adapter::Leptris do
       # The identity map must hold wrappers weakly: parse-and-drop
       # workloads otherwise pin wrappers, natives, and (via the
       # binding finalizer never running) the C subtrees.
+      # Splice-unsafe builds (leptris-ruby#545) walk through the
+      # adapter crossing, whose wrappers ride the strong registry —
+      # the weak-release contract is probed off there.
+      unless described_class.children_read_splice_safe?
+        skip "binding #{Leptris::VERSION} is splice-unsafe for children_read (leptris-ruby#545)"
+      end
       xml = %(<r>#{Array.new(50) { |i| "<e id=\"i#{i}\">x</e>" }.join}</r>)
       ctx = Moxml.new(:leptris)
       count = -> {

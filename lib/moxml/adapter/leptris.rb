@@ -749,7 +749,16 @@ module Moxml
                     @children = nil
                     @children_gen = generation
                   end
-                  @children ||= if doc_entity_bearing?
+                  @children ||= if doc_entity_bearing? ||
+                      !::Moxml::Adapter::Leptris
+                          .children_read_splice_safe?
+                                  # Splice-unsafe builds (1.9.381.0,
+                                  # leptris-ruby#545): the cached face's
+                                  # child list no longer reflects
+                                  # splices — the adapter crossing is
+                                  # the correctness path, and the
+                                  # no-crossing contract is probed off
+                                  # for those builds.
                                   super
                                 else
                                   NodeSet.new(children_read, ctx, self,
@@ -1271,6 +1280,29 @@ module Moxml
             b.add_previous_sibling(native_doc.create_element("c"))
             names = root.xpath("child::*").to_a.map { |n| n.name.to_s }
             names == %w[a c b]
+          rescue StandardError
+            false
+          end
+        end
+
+        # 1.9.381.0: the children_read face stopped reflecting
+        # post-splice state — Element#add_next_sibling lands the node
+        # in the tree (native bulk reads and walk_columnar see it) but
+        # leaves the face's child list stale. Probe the exact repro
+        # once: prime the face, splice, and require children_read to
+        # see the inserted node. Unsafe builds take the adapter
+        # children path; fixed builds restore the fast path
+        # automatically.
+        def children_read_splice_safe?
+          return @children_read_splice_safe unless @children_read_splice_safe.nil?
+
+          @children_read_splice_safe = begin
+            native_doc = ::Leptris::XML::Document.parse("<r><a/>\n<b/></r>")
+            root = native_doc.root
+            root.children_read.to_a # prime the face's child list
+            a = root.children.to_a.first
+            a.add_next_sibling(native_doc.create_element("x"))
+            root.children_read.to_a.map { |n| n.name.to_s } == %w[a x b]
           rescue StandardError
             false
           end
