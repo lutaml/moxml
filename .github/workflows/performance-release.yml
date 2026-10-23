@@ -3,12 +3,23 @@ name: performance-release
 # Every release re-measures the scoreboard and appends the table to
 # the release notes (TODO.sota/04). Triggered by the release
 # workflow's completion; idempotent — a re-run replaces the marked
-# section instead of stacking it.
+# section instead of stacking it. Manual dispatch can backfill any
+# release: `ref` pins the measured tree, `tag` pins the notes
+# target (both default to the automatic release-run behavior).
 on:
   workflow_run:
     workflows: ["release"]
     types: [completed]
   workflow_dispatch:
+    inputs:
+      ref:
+        description: "Tree to measure (branch/tag/SHA); default: the released tree"
+        required: false
+        type: string
+      tag:
+        description: "Release whose notes receive the section; default: the triggering release"
+        required: false
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}
@@ -30,8 +41,9 @@ jobs:
         with:
           # Pin to the exact tree the release run published, so the
           # measured scoreboard describes the released code even when
-          # main moves between the release and this report.
-          ref: ${{ github.event.workflow_run.head_sha || 'main' }}
+          # main moves between the release and this report. A manual
+          # dispatch may pin any tree (backfills).
+          ref: ${{ inputs.ref || github.event.workflow_run.head_sha || 'main' }}
           submodules: "recursive"
 
       - name: Set up Ruby
@@ -99,11 +111,15 @@ jobs:
           # run — NOT "latest" (a rerun of an old run would mis-aim)
           # and NOT the gemspec at the pinned tree (the checkout is
           # the pre-bump tree; the bump lands on main during the
-          # release run itself).
-          TRIGGERED_AT="${{ github.event.workflow_run.created_at }}"
-          TAG=$(gh api "repos/${GITHUB_REPOSITORY}/releases" \
-            --jq "map(select(.created_at >= \"${TRIGGERED_AT}\")) | sort_by(.created_at) | last | .tag_name")
-          TAG=${TAG:-$(gh release view --json tagName --jq .tagName)}
+          # release run itself). A manual dispatch may pin the tag
+          # directly (backfills).
+          TAG="${{ inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            TRIGGERED_AT="${{ github.event.workflow_run.created_at }}"
+            TAG=$(gh api "repos/${GITHUB_REPOSITORY}/releases" \
+              --jq "map(select(.created_at >= \"${TRIGGERED_AT}\")) | sort_by(.created_at) | last | .tag_name")
+            TAG=${TAG:-$(gh release view --json tagName --jq .tagName)}
+          fi
           echo "Reporting against $TAG"
           gh release view "$TAG" --json body --jq .body > /tmp/body.md
           ruby -e '
