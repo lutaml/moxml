@@ -14,7 +14,7 @@ RSpec.describe "Moxml::XSD tier-1 under-detections (#452)" do
       let(:ctx) { Moxml.new(adapter_name) }
 
       before do
-        skip "#{adapter_name} adapter ships no XSD validator" unless
+        skip "#{adapter_name} requires an XSD-capable engine" unless
           Moxml::XSD.supported?(ctx)
       end
 
