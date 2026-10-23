@@ -137,3 +137,12 @@ parse (the engine's instruction content is trimmed); leading
 separator runs collapse per the model. Pinned in the taxonomy
 differential (`pi trailing whitespace`, face `pi_content`).
 |===
+
+| D-21
+| leptris (bindings before 1.9.360)
+| The binding exposes no `Leptris::XML::Declaration` class, so the
+document-children declaration filter resolves conditionally and is a
+no-op there (declaration nodes cannot occur). On such bindings the
+class is also absent for consumers. Pinned in
+`spec/moxml/adapter/leptris_document_children_older_binding_spec.rb`.
+|===
