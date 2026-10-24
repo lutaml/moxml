@@ -81,6 +81,10 @@ module ModelCoverage
       section: "Validation",
       pin: "spec/moxml/xsd_spec.rb",
     },
+    "validation under-detections" => {
+      section: "Validation",
+      pin: "spec/moxml/xsd_underdetection_spec.rb",
+    },
     "loud capability contracts" => {
       section: "Errors and loud degradation",
       pin: "spec/consistency/loud_degradation_spec.rb",
