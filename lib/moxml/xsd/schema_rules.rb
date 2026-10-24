@@ -67,7 +67,11 @@ module Moxml
                                 :declared_attributes, :any_attribute)
       SchemaIndex = Struct.new(:target_namespace, :element_default,
                                :attribute_default, :elements,
-                               :attributes, :contents)
+                               :attributes, :contents, :version)
+
+      # The XSD 1.1 version-tagging namespace (Structures §C.3):
+      # vc:minVersion / vc:maxVersion gate 1.1 constructs.
+      VC_NS = "http://www.w3.org/2001/XMLSchema-versioning"
 
       class << self
         # Index one schema document. Returns nil when the source
@@ -81,7 +85,7 @@ module Moxml
             root["targetNamespace"].to_s,
             root["elementFormDefault"] == "qualified",
             root["attributeFormDefault"] == "qualified",
-            {}, {}, {}
+            {}, {}, {}, schema_version(root)
           )
           child_elements(root).each do |decl|
             case decl.name
@@ -92,6 +96,20 @@ module Moxml
           index
         rescue StandardError
           nil
+        end
+
+        # The effective schema version declared at the root
+        # (#460 item 2): vc:minVersion="1.1" on <xs:schema> scopes
+        # the document to 1.1 semantics; anything else reports
+        # 1.0. Conditional (subtree-level) vc: evaluation is the
+        # engine's conditional-assignment work — the facade reports
+        # the root declaration only.
+        def schema_version(root)
+          declared = root.attributes.find do |attribute|
+            attribute.namespace&.uri == VC_NS &&
+              attribute.name == "minVersion"
+          end&.value
+          declared.to_s.start_with?("1.1") ? "1.1" : "1.0"
         end
 
         # Post-validation findings for one instance document.

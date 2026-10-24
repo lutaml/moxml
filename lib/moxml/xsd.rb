@@ -175,6 +175,15 @@ module Moxml
         @context.config.adapter.xsd_declarations(@handle)
       end
 
+      # The effective schema version the source declares (#460 item
+      # 2): "1.1" when the root carries vc:minVersion="1.1", else
+      # "1.0". Consumers (lutaml-xsd) scope 1.0-only checks with
+      # it; the engine's application of 1.1 semantics is the
+      # engine-side program.
+      def version
+        @rules_index ? @rules_index.version : "1.0"
+      end
+
       # Deterministic drop (#362.3): true when the adapter freed
       # the engine-side schema NOW; false when the adapter can only
       # wait for GC (documented per adapter). After a true release
