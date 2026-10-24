@@ -83,6 +83,15 @@ module Moxml
         ::Leptris::XML::Native.respond_to?(:xpath_result_rows_bulk) &&
         ::Leptris::XML::Document.method_defined?(:xpath_result_rows_bulk)
 
+      # TODO.sota/04 (build row): ONE-crossing construction —
+      # create + attrs + attach (+ optional text) + version bump +
+      # consumer mint, all in C off the parent wrapper's struct
+      # (leptris-ruby perf/add-element-full). Probed on the class:
+      # older exts take the existing two-crossing path.
+      ADD_ELEMENT_FULL =
+        defined?(::Leptris::XML::NativeNode) &&
+        ::Leptris::XML::NativeNode.method_defined?(:add_element_full)
+
       # leptris-ruby#460: set-text by document+address, kind-dispatched
       # in C — no binding twin mint per write. Face-probed, not
       # version-gated (the floor admits bindings without it).
@@ -2625,6 +2634,18 @@ module Moxml
         # loop is C->C dlsym). Requires parent binding + the face;
         # callers fall back to create_element + set_attribute +
         # add_child when absent.
+        # TODO.sota/04: the ONE-crossing build face. Returns the
+        # contract-carrying row, or nil when this binding cannot
+        # serve it (caller takes the legacy path).
+        def add_element_full(parent, name, attrs)
+          return nil unless NATIVE_C_MINT && ADD_ELEMENT_FULL &&
+            parent.is_a?(::Leptris::XML::NativeNode)
+
+          drop_columnar_children(parent)
+          validate_element_name(name)
+          parent.add_element_full(name.to_s, attrs.flatten, nil)
+        end
+
         def create_element_with_attrs(parent, name, attrs)
           drop_columnar_children(parent)
           validate_element_name(name)
