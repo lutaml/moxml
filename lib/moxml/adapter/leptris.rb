@@ -2398,7 +2398,6 @@ module Moxml
           mine
         end
 
-
         def native_keep_entity_refs?(node)
           return false unless NATIVE_READ_LAYER &&
             node.is_a?(::Leptris::XML::NativeNode)
