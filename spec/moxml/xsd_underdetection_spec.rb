@@ -2,6 +2,7 @@
 
 require "spec_helper"
 
+# Processing model §Validation (normative): pinned here.
 # #452: tier-1 engines can accept, inside their recognized scope,
 # instances that violate strict wildcards or xsi:nil. The
 # Ruby-side SchemaRules post-validation closes those gaps from the

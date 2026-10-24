@@ -2,6 +2,7 @@
 
 require "spec_helper"
 
+# Processing model §Validation (normative): pinned here.
 # Moxml::XSD contract (leptris tier-1 faces): compile + validate
 # with accumulated errors; unsupported adapters raise
 # NotImplementedError at compile.
