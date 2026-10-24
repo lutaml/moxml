@@ -139,6 +139,12 @@ module Moxml
     # wrapper. Equivalent to create_element + attribute writes +
     # add_child, minus two crossings and the intermediate churn.
     def add_element(name, attrs = {})
+      # TODO.sota/04: one crossing when the binding serves it.
+      native_child = adapter.add_element_full(@native, name, attrs)
+      if native_child
+        native_child.parent_node = self
+        return Moxml::Node.wrap_with(native_child, context, adapter)
+      end
       native_child = adapter.create_element_with_attrs(
         @native, name, attrs
       )
