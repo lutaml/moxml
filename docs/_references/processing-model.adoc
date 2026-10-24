@@ -253,6 +253,23 @@ Pins:: `spec/moxml/plan_conformance_spec.rb`
 matching is global; unmatched subtrees are dropped per the pinned
 semantics.
 
+=== Validation
+
+Pins:: `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`
+
+XSD validation through engines that ship a validator (libxml2;
+leptris tier-1: recognized roots, one-level content descent, lexical
+checks). `validate` returns accumulated `ValidationError` entries —
+message always; line/column/path where the engine reports them, nil
+where it does not; `[]` means valid. Documents outside the engine's
+scope validate laxly, except that strict `xs:any` /
+`xs:anyAttribute` wildcard matches and `xsi:nil` are re-checked from
+the schema source on every adapter — the re-check can only
+under-report, never false-report. Unsupported adapters raise
+`Moxml::NotImplementedError` at compile; `Moxml::XSD.supported?`
+answers without raising. RELAX NG rides engines with an RNG face
+(the same shapes).
+
 === Errors and loud degradation
 
 Pins:: `spec/consistency/loud_degradation_spec.rb`

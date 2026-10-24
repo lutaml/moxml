@@ -5,7 +5,10 @@ module Moxml
   # an XSD validator (currently leptris, tier-1: named+typed
   # top-level elements, one-level content-model descent, lexical
   # builtin/simpleType checks — see docs/c14n for the sibling
-  # pattern).
+  # pattern). Beside the engine, SchemaRules re-checks strict
+  # wildcards and xsi:nil from the schema source on every adapter —
+  # engines that miss those shapes stay model-conformant, and
+  # engines that already detect them get no duplicate findings.
   #
   #     ctx    = Moxml.new(:leptris)
   #     schema = ctx.xsd(<<~XSD)
@@ -24,7 +27,8 @@ module Moxml
   # Adapters without an engine raise Moxml::NotImplementedError at
   # compile; Moxml::XSD.supported?(context) answers without
   # raising. The tier-1 scope is the engine's: documents outside it
-  # validate laxly (see the binding's xsd_validate_spec).
+  # validate laxly, except for the re-checked shapes above (which
+  # can only under-report, never false-report).
   module XSD
     SUPPORTED_ADAPTERS = %i[leptris nokogiri].freeze
 
