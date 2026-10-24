@@ -1,6 +1,6 @@
 {
   "protocol": {
-    "measured": "2026-10-23T15:54:45Z",
+    "measured": "2026-10-24T05:26:53Z",
     "ruby": "3.3.13",
     "adapter": "leptris",
     "adapter_version": "1.9.381.0",
@@ -8,16 +8,16 @@
     "reps": 9,
     "warmup": 2,
     "clock": "CLOCK_PROCESS_CPUTIME_ID",
-    "load": 1.87
+    "load": 1.74
   },
   "rows": [
     {
       "row": "parse",
       "kind": "parity",
       "parity": true,
-      "baseline_us": 1027.8,
-      "candidate_us": 286.6,
-      "ratio": 3.586,
+      "baseline_us": 1075.7,
+      "candidate_us": 233.6,
+      "ratio": 4.606,
       "baseline_allocs": 7,
       "candidate_allocs": 18
     },
@@ -25,9 +25,9 @@
       "row": "serialize",
       "kind": "parity",
       "parity": true,
-      "baseline_us": 517.0,
-      "candidate_us": 281.9,
-      "ratio": 1.834,
+      "baseline_us": 457.0,
+      "candidate_us": 277.6,
+      "ratio": 1.646,
       "baseline_allocs": 30,
       "candidate_allocs": 14
     },
@@ -35,9 +35,9 @@
       "row": "xpath //field (count)",
       "kind": "parity",
       "parity": true,
-      "baseline_us": 121.9,
-      "candidate_us": 25.4,
-      "ratio": 4.791,
+      "baseline_us": 64.4,
+      "candidate_us": 19.0,
+      "ratio": 3.387,
       "baseline_allocs": 13,
       "candidate_allocs": 8
     },
@@ -45,9 +45,9 @@
       "row": "xpath //field (each)",
       "kind": "structural",
       "parity": false,
-      "baseline_us": 361.9,
-      "candidate_us": 822.7,
-      "ratio": 0.44,
+      "baseline_us": 256.4,
+      "candidate_us": 744.4,
+      "ratio": 0.344,
       "baseline_allocs": 1213,
       "candidate_allocs": 10
     },
@@ -55,9 +55,9 @@
       "row": "attr pairs listing",
       "kind": "parity",
       "parity": true,
-      "baseline_us": 502.0,
-      "candidate_us": 67.3,
-      "ratio": 7.458,
+      "baseline_us": 503.6,
+      "candidate_us": 59.4,
+      "ratio": 8.484,
       "baseline_allocs": 3300,
       "candidate_allocs": 0
     },
@@ -65,19 +65,19 @@
       "row": "build add_element",
       "kind": "structural",
       "parity": false,
-      "baseline_us": 5532.8,
-      "candidate_us": 9658.2,
-      "ratio": 0.573,
+      "baseline_us": 5607.1,
+      "candidate_us": 7620.4,
+      "ratio": 0.736,
       "baseline_allocs": 20358,
-      "candidate_allocs": 11363
+      "candidate_allocs": 10163
     },
     {
       "row": "walk+read (warm)",
       "kind": "structural",
       "parity": false,
-      "baseline_us": 1805.4,
-      "candidate_us": 2797.9,
-      "ratio": 0.645,
+      "baseline_us": 1631.1,
+      "candidate_us": 3005.5,
+      "ratio": 0.543,
       "baseline_allocs": 4503,
       "candidate_allocs": 2
     },
@@ -85,9 +85,9 @@
       "row": "walk+read (cold)",
       "kind": "structural",
       "parity": false,
-      "baseline_us": 2938.6,
-      "candidate_us": 17354.2,
-      "ratio": 0.169,
+      "baseline_us": 3094.4,
+      "candidate_us": 8308.1,
+      "ratio": 0.372,
       "baseline_allocs": 6011,
       "candidate_allocs": 10232
     },
@@ -95,9 +95,9 @@
       "row": "children recursion (cold)",
       "kind": "structural",
       "parity": false,
-      "baseline_us": 3346.5,
-      "candidate_us": 25949.4,
-      "ratio": 0.129,
+      "baseline_us": 3414.5,
+      "candidate_us": 7574.2,
+      "ratio": 0.451,
       "baseline_allocs": 5711,
       "candidate_allocs": 8732
     },
@@ -105,9 +105,9 @@
       "row": "plan records (typed)",
       "kind": "data",
       "parity": false,
-      "baseline_us": 2901.1,
-      "candidate_us": 2554.9,
-      "ratio": 1.136,
+      "baseline_us": 3056.3,
+      "candidate_us": 2700.7,
+      "ratio": 1.132,
       "baseline_allocs": 8112,
       "candidate_allocs": 13232
     }
