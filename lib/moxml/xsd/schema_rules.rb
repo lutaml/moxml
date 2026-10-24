@@ -8,7 +8,11 @@ module Moxml
     #
     #   * a strict `xs:any` wildcard with an undeclared element,
     #   * a strict `xs:anyAttribute` with an undeclared attribute,
-    #   * `xsi:nil` on an element whose declaration is not nillable.
+    #   * `xsi:nil` on an element whose declaration is not nillable,
+    #   * the XSD 1.1 negative wildcards — `notQName` /
+    #     `notNamespace` on `xs:any` / `xs:anyAttribute` (#460):
+    #     engines that compile them without enforcing them absorb
+    #     excluded items the content model cannot accept.
     #
     # The rules run from an index of the schema SOURCE (this gem's
     # own XML machinery — no engine involvement) and merge with the
@@ -20,22 +24,18 @@ module Moxml
     module SchemaRules
       XSI_NS = "http://www.w3.org/2001/XMLSchema-instance"
 
-      # A wildcard's namespace attribute, per XML Schema
-      # Structures §3.10.2 (##any default; processContents default
-      # strict). :tns / :local are resolved against the indexed
-      # schema at check time.
+      # A wildcard's namespace constraint and disallowed names, per
+      # XML Schema Structures §3.10.1–3.10.2 (##any default;
+      # processContents default strict; notNamespace / notQName are
+      # XSD 1.1). :tns / :local are resolved against the indexed
+      # schema at check time; notQName QNames are resolved against
+      # the schema element's in-scope bindings at index time.
       class Wildcard
-        def initialize(value, process)
+        def initialize(value, process, not_namespace: nil, not_qname: nil,
+                       element: nil)
           @process = (process || "strict").to_sym
-          case value
-          when nil, "##any", ""
-            @mode = :any
-          when "##other"
-            @mode = :other
-          else
-            @mode = :list
-            @namespaces = value.split(/\s+/).reject(&:empty?).freeze
-          end
+          @mode, @namespaces = namespace_constraint(value, not_namespace)
+          @disallowed = disallowed_names(not_qname, element).freeze
         end
 
         def strict?
@@ -47,12 +47,88 @@ module Moxml
           when :any then true
           when :other
             namespace != :local && namespace != :tns
+          when :not
+            @namespaces.none? { |entry| entry_covers?(entry, namespace) }
           else
             @namespaces.any? { |entry| entry_covers?(entry, namespace) }
           end
         end
 
+        # Why the wildcard refuses an item outright (Structures
+        # §3.10.4.1 Item Valid): a refusal is a match-level failure,
+        # so it applies at every processContents — the content model
+        # has no particle for the item and cannot accept it. 1.0
+        # namespace lists stay the engine's enforcement and never
+        # name an exclusion here.
+        def negative_exclusion(qname, namespace, defined:,
+                               sibling_names: [])
+          @disallowed.each do |entry|
+            case entry
+            when :defined
+              return :not_qname if defined
+            when :sibling
+              return :not_qname if sibling_names.include?(qname)
+            else
+              return :not_qname if entry == qname
+            end
+          end
+          return :not_namespace if @mode == :not &&
+            @namespaces.any? { |entry| entry_covers?(entry, namespace) }
+
+          nil
+        end
+
         private
+
+        def namespace_constraint(value, not_namespace)
+          if not_namespace
+            [:not, not_namespace.split(/\s+/).reject(&:empty?)]
+          elsif value.nil? || value == "##any" || value == ""
+            [:any, []]
+          elsif value == "##other"
+            [:other, []]
+          else
+            [:list, value.split(/\s+/).reject(&:empty?)]
+          end
+        end
+
+        # notQName entries (§3.10.2): QName | ##defined |
+        # ##definedSibling (xs:any; ##defined only on
+        # xs:anyAttribute). Prefixed QNames resolve against the
+        # wildcard element's in-scope bindings; unprefixed QNames
+        # carry no namespace — XSD QName values take no default
+        # namespace. Unresolvable prefixes are dropped: the index
+        # under-reports, never false-reports.
+        def disallowed_names(not_qname, element)
+          not_qname.to_s.split(/\s+/).reject(&:empty?).filter_map do |token|
+            case token
+            when "##defined" then :defined
+            when "##definedSibling" then :sibling
+            when /\A([^:]+):(.+)\z/
+              uri = prefix_uri(Regexp.last_match(1), element)
+              "{#{uri}}#{Regexp.last_match(2)}" unless uri.empty?
+            else
+              "{}#{token}"
+            end
+          end
+        end
+
+        # node.namespaces is adapter-divergent (some engines return
+        # in-scope bindings, others own-node declarations only), so
+        # the in-scope map is walked out by hand — per-node
+        # definitions merged along the ancestor axis, deeper
+        # overriding shallower, identically on every adapter.
+        def prefix_uri(prefix, element)
+          bindings = {}
+          node = element
+          while node
+            node.namespaces.each do |namespace|
+              bindings[namespace.prefix] = namespace.uri
+            end
+            node = node.parent&.element? ? node.parent : nil
+          end
+          bindings[prefix].to_s
+        end
 
         def entry_covers?(entry, namespace)
           namespace == case entry
@@ -193,12 +269,9 @@ module Moxml
               add_particle(child, index, model,
                            model.declared_attributes)
             when "any"
-              model.any ||= Wildcard.new(child["namespace"],
-                                         child["processContents"])
+              model.any ||= wildcard_from(child)
             when "anyAttribute"
-              model.any_attribute ||=
-                Wildcard.new(child["namespace"],
-                             child["processContents"])
+              model.any_attribute ||= wildcard_from(child)
             else
               collect_model(child, index, model)
             end
@@ -234,19 +307,25 @@ module Moxml
           end
         end
 
+        def wildcard_from(node)
+          Wildcard.new(
+            node["namespace"], node["processContents"],
+            not_namespace: node["notNamespace"],
+            not_qname: node["notQName"],
+            element: node
+          )
+        end
+
         def child_findings(child, model, index)
           qname = qname(child)
           findings = []
           if model.declared_children.include?(qname)
             declaration = index.elements[qname]
             findings << nil_finding(child, declaration) if declaration
-          elsif undeclared_strict_wildcard_match?(child, model, index,
-                                                  qname)
-            findings << Moxml::XSD::ValidationError.new(
-              message: "element <#{local(qname)}> matches a strict " \
-                       "wildcard but is not declared",
-              path: path_of(child),
-            )
+          elsif model.any &&
+              (finding = wildcard_child_finding(child, model, index,
+                                                qname))
+            findings << finding
           end
           findings.concat(
             attribute_findings(child, index.contents[qname], index),
@@ -254,13 +333,34 @@ module Moxml
           findings
         end
 
-        def undeclared_strict_wildcard_match?(_child, model, index, qname)
+        def wildcard_child_finding(child, model, index, qname)
           wildcard = model.any
-          return false unless wildcard&.strict?
-          return false if index.elements.key?(qname)
-
           namespace = resolve_namespace(qname, index)
-          wildcard.covers?(namespace) && !index.elements.key?(qname)
+          exclusion = wildcard.negative_exclusion(
+            qname, namespace,
+            defined: index.elements.key?(qname),
+            sibling_names: model.declared_children
+          )
+          return excluded_child_finding(child, qname, exclusion) if exclusion
+
+          return unless wildcard.covers?(namespace) && wildcard.strict?
+          return if index.elements.key?(qname)
+
+          Moxml::XSD::ValidationError.new(
+            message: "element <#{local(qname)}> matches a strict " \
+                     "wildcard but is not declared",
+            path: path_of(child),
+          )
+        end
+
+        def excluded_child_finding(child, qname, exclusion)
+          reason = exclusion == :not_namespace ? "notNamespace" : "notQName"
+          Moxml::XSD::ValidationError.new(
+            message: "element <#{local(qname)}> is disallowed by a " \
+                     "wildcard (#{reason}) and is not declared in the " \
+                     "content model",
+            path: path_of(child),
+          )
         end
 
         def attribute_findings(element, model, index)
@@ -271,14 +371,19 @@ module Moxml
             next if attribute.namespace&.uri == XSI_NS
 
             qname = attribute_qname(attribute)
-            declared = model.declared_attributes.include?(qname) ||
-              index.attributes.key?(qname)
-            next if declared
-            next unless any_attribute&.strict?
-            next if index.attributes.key?(qname)
-            next unless any_attribute.covers?(
-              resolve_namespace(qname, index),
+            next if model.declared_attributes.include?(qname)
+            next unless any_attribute
+
+            namespace = resolve_namespace(qname, index)
+            exclusion = any_attribute.negative_exclusion(
+              qname, namespace,
+              defined: index.attributes.key?(qname)
             )
+            next excluded_attribute_finding(element, qname, exclusion) if exclusion
+
+            next unless any_attribute.covers?(namespace)
+            next unless any_attribute.strict?
+            next if index.attributes.key?(qname)
 
             Moxml::XSD::ValidationError.new(
               message: "attribute #{local(qname)} matches a strict " \
@@ -286,6 +391,16 @@ module Moxml
               path: path_of(element),
             )
           end
+        end
+
+        def excluded_attribute_finding(element, qname, exclusion)
+          reason = exclusion == :not_namespace ? "notNamespace" : "notQName"
+          Moxml::XSD::ValidationError.new(
+            message: "attribute #{local(qname)} is disallowed by a " \
+                     "wildcard (#{reason}) and is not declared in the " \
+                     "content model",
+            path: path_of(element),
+          )
         end
 
         def nil_finding(element, declaration)
