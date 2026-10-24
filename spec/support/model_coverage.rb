@@ -77,6 +77,10 @@ module ModelCoverage
       section: "Materialization",
       pin: "spec/moxml/plan_conformance_spec.rb",
     },
+    "validation" => {
+      section: "Validation",
+      pin: "spec/moxml/xsd_spec.rb",
+    },
     "loud capability contracts" => {
       section: "Errors and loud degradation",
       pin: "spec/consistency/loud_degradation_spec.rb",
