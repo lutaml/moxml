@@ -255,7 +255,7 @@ semantics.
 
 === Validation
 
-Pins:: `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`
+Pins:: `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`, `spec/moxml/xsd_version_spec.rb`
 
 XSD validation through engines that ship a validator (libxml2;
 leptris tier-1: recognized roots, one-level content descent, lexical
@@ -265,7 +265,11 @@ where it does not; `[]` means valid. Documents outside the engine's
 scope validate laxly, except that strict `xs:any` /
 `xs:anyAttribute` wildcard matches and `xsi:nil` are re-checked from
 the schema source on every adapter — the re-check can only
-under-report, never false-report. Unsupported adapters raise
+under-report, never false-report. A compiled schema reports the
+version its source declares: root `vc:minVersion="1.1"` scopes the
+document to 1.1, anything else is 1.0 (consumers scope 1.0-only
+checks with it; applying 1.1 semantics is the engine-side program).
+Unsupported adapters raise
 `Moxml::NotImplementedError` at compile; `Moxml::XSD.supported?`
 answers without raising. RELAX NG rides engines with an RNG face
 (the same shapes).
