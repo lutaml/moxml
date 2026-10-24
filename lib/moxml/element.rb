@@ -142,13 +142,14 @@ module Moxml
       # TODO.sota/04: one crossing when the binding serves it.
       native_child = adapter.add_element_full(@native, name, attrs)
       if native_child
-        native_child.parent_node = self
+        attach_built_child(native_child)
         return Moxml::Node.wrap_with(native_child, context, adapter)
       end
       native_child = adapter.create_element_with_attrs(
         @native, name, attrs
       )
       if native_child
+        attach_built_child(native_child)
         Moxml::Node.wrap_with(native_child, context, adapter)
       else
         fallback = Moxml::Node.wrap_with(
@@ -158,6 +159,16 @@ module Moxml
         add_child(fallback)
         fallback
       end
+    end
+
+    # The construction fast paths bypass add_child, so they owe the
+    # same invalidation contract: the ctx children clock retires every
+    # wrapper's generation-checked memo (the receiver's own included —
+    # the read re-checks the generation before serving).
+    def attach_built_child(native_child)
+      context.bump_children_generation
+      native_child.parent_node = self
+      native_child
     end
 
     def attributes
