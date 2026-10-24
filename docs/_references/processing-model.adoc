@@ -263,9 +263,11 @@ checks). `validate` returns accumulated `ValidationError` entries —
 message always; line/column/path where the engine reports them, nil
 where it does not; `[]` means valid. Documents outside the engine's
 scope validate laxly, except that strict `xs:any` /
-`xs:anyAttribute` wildcard matches and `xsi:nil` are re-checked from
-the schema source on every adapter — the re-check can only
-under-report, never false-report. A compiled schema reports the
+`xs:anyAttribute` wildcard matches, `xsi:nil`, and the XSD 1.1
+negative wildcards (`notQName` / `notNamespace` — an item excluded
+by them has no particle and the content model cannot accept it) are
+re-checked from the schema source on every adapter — the re-check
+can only under-report, never false-report. A compiled schema reports the
 version its source declares: root `vc:minVersion="1.1"` scopes the
 document to 1.1, anything else is 1.0 (consumers scope 1.0-only
 checks with it; applying 1.1 semantics is the engine-side program).
