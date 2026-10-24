@@ -92,16 +92,16 @@ rewrites this block and `docs/_pages/performance.adoc`):
 <!-- SCOREBOARD:BEGIN -->
 | Row | Ratio | Kind | Status |
 | --- | ----- | ---- | ------ |
-| `parse` | 3.59x | parity | met |
-| `serialize` | 1.83x | parity | met |
-| `xpath //field (count)` | 4.79x | parity | met |
-| `xpath //field (each)` | 0.44x | structural | tracked (below parity) |
-| `attr pairs listing` | 7.46x | parity | met |
-| `build add_element` | 0.57x | structural | tracked (below parity) |
-| `walk+read (warm)` | 0.64x | structural | tracked (below parity) |
-| `walk+read (cold)` | 0.17x | structural | tracked (below parity), paused: leptris-ruby#527 (1.9.380 crossing regression) |
-| `children recursion (cold)` | 0.13x | structural | tracked (below parity), paused: leptris-ruby#527 (1.9.380 crossing regression) |
-| `plan records (typed)` | 1.14x | data | informational |
+| `parse` | 4.61x | parity | met |
+| `serialize` | 1.65x | parity | met |
+| `xpath //field (count)` | 3.39x | parity | met |
+| `xpath //field (each)` | 0.34x | structural | tracked (below parity) |
+| `attr pairs listing` | 8.48x | parity | met |
+| `build add_element` | 0.74x | structural | tracked (below parity) |
+| `walk+read (warm)` | 0.54x | structural | tracked (below parity) |
+| `walk+read (cold)` | 0.37x | structural | tracked (below parity), paused: leptris-ruby#527 (1.9.380 crossing regression) |
+| `children recursion (cold)` | 0.45x | structural | tracked (below parity), paused: leptris-ruby#527 (1.9.380 crossing regression) |
+| `plan records (typed)` | 1.13x | data | informational |
 <!-- SCOREBOARD:END -->
 
 The open rows are the known structural gap: every node the facade
