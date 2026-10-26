@@ -143,11 +143,93 @@ module Moxml
                                 :declared_attributes, :any_attribute)
       SchemaIndex = Struct.new(:target_namespace, :element_default,
                                :attribute_default, :elements,
-                               :attributes, :contents, :version)
+                               :attributes, :contents, :version,
+                               :element_patterns, :attribute_patterns)
 
       # The XSD 1.1 version-tagging namespace (Structures §C.3):
       # vc:minVersion / vc:maxVersion gate 1.1 constructs.
       VC_NS = "http://www.w3.org/2001/XMLSchema-versioning"
+
+      # XSD pattern-facet dialect → Ruby regex, bounded to the
+      # subset the facade vouches for (Datatypes Appendix F). Block
+      # escapes \p{Is…}/\P{Is…} map to Ruby's In-prefixed blocks
+      # (a few Unicode-renamed blocks carry an alias); general
+      # categories and the single-character escapes pass through;
+      # \i, \c and class subtraction are NOT translated. Anything
+      # unrecognized — or a translation Ruby itself rejects —
+      # returns nil: the engine's answer then stands.
+      module XsdRegex
+        BLOCK_ALIASES = {
+          "Greek" => "GreekandCoptic",
+          "CombiningMarksforSymbols" =>
+            "CombiningDiacriticalMarksforSymbols",
+          "Turkish" => "Latin-1Supplement",
+        }.freeze
+
+        PASS_THROUGH_ESCAPES = %w[
+          n r t \\ . | ? * + ( ) [ ] { } ^ $ -
+        ].freeze
+
+        module_function
+
+        def translate(pattern)
+          translated = scan(pattern.to_s)
+          return nil unless translated
+
+          Regexp.new("\\A(?:#{translated})\\z")
+        rescue RegexpError
+          nil
+        end
+
+        def scan(pattern)
+          out = +""
+          index = 0
+          while index < pattern.length
+            char = pattern[index]
+            if char == "\\"
+              consumed = escape(pattern, index, out)
+              return nil unless consumed
+
+              index += consumed
+            else
+              return nil if char == "-" && pattern[index + 1] == "["
+
+              out << char
+              index += 1
+            end
+          end
+          out
+        end
+
+        # Appends the translation of the escape at index to out and
+        # returns the chars consumed, or nil when unrecognized.
+        def escape(pattern, index, out)
+          kind = pattern[index + 1]
+          case kind
+          when "p", "P"
+            close = pattern.index("}", index)
+            return nil unless close
+
+            body = pattern[index + 3, close - index - 3]
+            if body&.start_with?("Is")
+              mapped = body.delete_prefix("Is")
+              mapped = BLOCK_ALIASES.fetch(mapped, mapped)
+              begin
+                Regexp.new("\\p{In#{mapped}}")
+              rescue RegexpError
+                return nil
+              end
+              out << "\\#{kind}{In#{mapped}}"
+            else
+              out << pattern[index..close]
+            end
+            close - index + 1
+          when *PASS_THROUGH_ESCAPES
+            out << pattern[index, 2]
+            2
+          end
+        end
+      end
 
       class << self
         # Index one schema document. Returns nil when the source
@@ -161,7 +243,7 @@ module Moxml
             root["targetNamespace"].to_s,
             root["elementFormDefault"] == "qualified",
             root["attributeFormDefault"] == "qualified",
-            {}, {}, {}, schema_version(root)
+            {}, {}, {}, schema_version(root), {}, {}
           )
           child_elements(root).each do |decl|
             case decl.name
@@ -169,6 +251,7 @@ module Moxml
             when "attribute" then index_global_attribute(decl, index)
             end
           end
+          index_patterns(root, index)
           index
         rescue StandardError
           nil
@@ -186,6 +269,142 @@ module Moxml
               attribute.name == "minVersion"
           end&.value
           declared.to_s.start_with?("1.1") ? "1.1" : "1.0"
+        end
+
+        # Index the pattern facets the dismissal may vouch with
+        # (#464): named simpleTypes resolve through one type-ref
+        # hop, inline simpleTypes directly; keys are local names.
+        # A name declared twice with different pattern sets is
+        # ambiguous for name-based matching and is removed — an
+        # ambiguous vouch could mask a real violation.
+        def index_patterns(root, index)
+          named = {}
+          collect_named_patterns(root, named)
+          collect_decl_patterns(root, index, named)
+        end
+
+        def collect_named_patterns(node, named)
+          child_elements(node).each do |child|
+            if child.name == "simpleType" && child["name"] &&
+                (patterns = restriction_patterns(child))
+              named[child["name"]] = patterns
+            else
+              collect_named_patterns(child, named)
+            end
+          end
+        end
+
+        def collect_decl_patterns(node, index, named)
+          child_elements(node).each do |child|
+            case child.name
+            when "element"
+              register_pattern(index.element_patterns, child["name"],
+                               decl_patterns(child, named))
+            when "attribute"
+              register_pattern(index.attribute_patterns, child["name"],
+                               decl_patterns(child, named))
+            end
+            collect_decl_patterns(child, index, named)
+          end
+        end
+
+        def decl_patterns(decl, named)
+          inline = child_elements(decl).find do |child|
+            child.name == "simpleType"
+          end
+          if inline
+            restriction_patterns(inline)
+          elsif decl["type"]
+            named[decl["type"].split(":").last]
+          end
+        end
+
+        def restriction_patterns(simple_type)
+          restriction = child_elements(simple_type).find do |child|
+            child.name == "restriction"
+          end
+          return nil unless restriction
+
+          patterns = child_elements(restriction)
+            .select { |facet| facet.name == "pattern" }
+            .map { |facet| XsdRegex.translate(facet["value"].to_s) }
+          return nil if patterns.any?(&:nil?)
+
+          patterns
+        end
+
+        def register_pattern(sink, name, patterns)
+          return unless name && patterns && !patterns.empty?
+
+          sink[name] = sink.key?(name) ? nil : patterns
+        end
+
+        # Dismisses engine lexical findings the source's own
+        # pattern facets refute (#464): an engine that cannot
+        # evaluate a dialect construct rejects every occurrence of
+        # the facet — including values the facet accepts. A
+        # finding is dropped only when every same-named instance
+        # in the document matches; one non-matching value keeps
+        # the engine's answer, so a dismissal can only remove
+        # false rejections, never create false acceptances.
+        def dismiss(engine_errors, doc, index)
+          return engine_errors unless index
+
+          vouched = vouch_table(doc, index)
+          engine_errors.reject do |error|
+            subject = lexical_subject(error.message)
+            subject && vouched[subject]
+          end
+        end
+
+        LEXICAL_MESSAGE = /\A(?:element|attribute) '([^']+)' @\d+:\d+: (element|attribute) '([^']+)': lexical value does not match its type\z/
+
+        private_constant :LEXICAL_MESSAGE
+
+        def lexical_subject(message)
+          match = LEXICAL_MESSAGE.match(message.to_s)
+          return unless match
+
+          [match[2], match[3]]
+        end
+
+        def vouch_table(doc, index)
+          root = doc.root
+          return {} unless root
+
+          elements = Hash.new { |hash, key| hash[key] = [] }
+          attributes = Hash.new { |hash, key| hash[key] = [] }
+          collect_witnesses(root, index, elements, attributes)
+          vouched = {}
+          elements.each do |name, matches|
+            vouched[["element", name]] = !matches.empty? && matches.all?
+          end
+          attributes.each do |name, matches|
+            vouched[["attribute", name]] = !matches.empty? && matches.all?
+          end
+          vouched
+        end
+
+        def collect_witnesses(node, index, elements, attributes)
+          child_elements(node).each do |child|
+            if (patterns = index.element_patterns[child.name])
+              elements[child.name] << (text_only?(child) &&
+                patterns.any? { |regex| regex.match?(child.text.to_s) })
+            end
+            child.attributes.each do |attribute|
+              next if attribute.namespace&.uri == XSI_NS
+
+              if (patterns = index.attribute_patterns[attribute.name])
+                attributes[attribute.name] <<
+                  patterns.any? { |regex| regex.match?(attribute.value.to_s) }
+              end
+            end
+            collect_witnesses(child, index, elements, attributes)
+          end
+        end
+
+        def text_only?(element)
+          child_elements(element).empty?
         end
 
         # Post-validation findings for one instance document.

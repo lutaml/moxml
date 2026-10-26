@@ -157,9 +157,11 @@ module Moxml
         return engine_errors unless @rules_index
 
         # The #452 post-validation rules only ever add findings for
-        # documents the engine accepted; exact duplicates are
-        # dropped for engines that already detect them.
-        (engine_errors +
+        # documents the engine accepted; the #464 dismissal removes
+        # only engine lexical findings the source's own pattern
+        # facets refute. Exact duplicates are dropped for engines
+        # that already detect them.
+        (SchemaRules.dismiss(engine_errors, doc, @rules_index) +
           SchemaRules.findings(doc, @rules_index)).uniq
       end
 
