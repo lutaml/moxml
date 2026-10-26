@@ -425,6 +425,34 @@ module Moxml
           xsd_handle.release
         end
 
+        # moxml#460 item 2: the ENGINE's effective version (the
+        # authoritative source — it gates the 1.1 semantics). Nil
+        # when the binding predates the face (fall back to the
+        # rules heuristic on the facade side).
+        def xsd_version(xsd_handle)
+          return nil unless defined?(::Leptris::XML::XSD::Schema) &&
+            xsd_handle.is_a?(::Leptris::XML::XSD::Schema) &&
+            xsd_handle.respond_to?(:version)
+
+          xsd_handle.version
+        rescue ::Leptris::XML::Error
+          nil
+        end
+
+        # moxml#460/#1841: the engine's structured report — one
+        # {kind:, component:, line:, column:, message:} hash per
+        # finding. Nil when the binding predates the face.
+        def xsd_structured_errors(xsd_handle, doc)
+          return nil unless defined?(::Leptris::XML::XSD::Schema) &&
+            xsd_handle.is_a?(::Leptris::XML::XSD::Schema) &&
+            (xsd_handle.respond_to?(:structured_errors) ||
+             xsd_handle.respond_to?(:structured_errors, true))
+
+          xsd_handle.structured_errors(doc)
+        rescue ::Leptris::XML::Error
+          nil
+        end
+
         def xsd_compile_error(xsd_handle)
           xsd_handle.error
         end
