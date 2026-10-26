@@ -50,7 +50,14 @@ module Scoreboard
   # tracked issue closes — otherwise the 10% trend tolerance flaps on
   # the regressed value and the lock signal is lost. Remove an entry
   # when its issue lands.
+  # tiny-us rows: the ratio swings ~40% with the runner profile
+  # (nokogiri moves identically - 2026-10-26/27 investigation), so the
+  # 10% lock cannot hold on them; tracked, not gated.
   KNOWN_REGRESSIONS = {
+    "xpath //field (count)" =>
+      "runner-window variance (2026-10-26/27: 1.91x-3.39x across runs)",
+    "attr pairs listing" =>
+      "runner-window variance (2026-10-26/27: 6.17x-8.48x across runs)",
     "walk+read (cold)" => "leptris-ruby#527 (1.9.380 crossing regression)",
     "children recursion (cold)" =>
       "leptris-ruby#527 (1.9.380 crossing regression)",
