@@ -255,7 +255,7 @@ semantics.
 
 === Validation
 
-Pins:: `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`, `spec/moxml/xsd_version_spec.rb`
+Pins:: `spec/moxml/xsd_regex_spec.rb`, `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`, `spec/moxml/xsd_version_spec.rb`
 
 XSD validation through engines that ship a validator (libxml2;
 leptris tier-1: recognized roots, one-level content descent, lexical
@@ -267,7 +267,18 @@ scope validate laxly, except that strict `xs:any` /
 negative wildcards (`notQName` / `notNamespace` — an item excluded
 by them has no particle and the content model cannot accept it) are
 re-checked from the schema source on every adapter — the re-check
-can only under-report, never false-report. A compiled schema reports the
+can only under-report, never false-report. Engine lexical findings
+that the source's own `pattern` facets refute are dismissed: an
+engine that cannot evaluate a dialect construct (e.g. the
+`\p{Is...}` block escapes) rejects every occurrence of the facet,
+so the facade re-checks the value against the facet translated to
+the host regex dialect — only whitelisted constructs translate
+(block escapes with Unicode-rename aliases, general categories,
+single-character escapes; subtraction, `\i`, `\c` do not), an
+engine finding is dropped only when every same-named instance
+matches the facet, and anything untranslatable keeps the engine's
+answer, so a dismissal can only remove false rejections, never
+create false acceptances. A compiled schema reports the
 version its source declares: root `vc:minVersion="1.1"` scopes the
 document to 1.1, anything else is 1.0 (consumers scope 1.0-only
 checks with it; applying 1.1 semantics is the engine-side program).
