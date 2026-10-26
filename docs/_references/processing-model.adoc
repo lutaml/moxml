@@ -255,7 +255,7 @@ semantics.
 
 === Validation
 
-Pins:: `spec/moxml/xsd_regex_spec.rb`, `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`, `spec/moxml/xsd_version_spec.rb`
+Pins:: `spec/moxml/xsd_regex_spec.rb`, `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_substitution_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`, `spec/moxml/xsd_version_spec.rb`
 
 XSD validation through engines that ship a validator (libxml2;
 leptris tier-1: recognized roots, one-level content descent, lexical
@@ -278,7 +278,13 @@ single-character escapes; subtraction, `\i`, `\c` do not), an
 engine finding is dropped only when every same-named instance
 matches the facet, and anything untranslatable keeps the engine's
 answer, so a dismissal can only remove false rejections, never
-create false acceptances. A compiled schema reports the
+create false acceptances. Engine content-model findings that reject
+a substitution-group member are dismissed likewise: the parent's
+model must be a pure sequence, the child sequence must match it
+position-for-position with every particle exactly-once, and a
+registered member must realize a position — any choice/all,
+cardinality violation, or unknown name keeps the engine's answer.
+A compiled schema reports the
 version its source declares: root `vc:minVersion="1.1"` scopes the
 document to 1.1, anything else is 1.0 (consumers scope 1.0-only
 checks with it; applying 1.1 semantics is the engine-side program).

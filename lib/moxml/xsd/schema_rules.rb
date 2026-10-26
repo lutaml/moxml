@@ -105,29 +105,14 @@ module Moxml
             when "##defined" then :defined
             when "##definedSibling" then :sibling
             when /\A([^:]+):(.+)\z/
-              uri = prefix_uri(Regexp.last_match(1), element)
+              uri = ::Moxml::XSD::SchemaRules.prefix_uri(
+                Regexp.last_match(1), element
+              )
               "{#{uri}}#{Regexp.last_match(2)}" unless uri.empty?
             else
               "{}#{token}"
             end
           end
-        end
-
-        # node.namespaces is adapter-divergent (some engines return
-        # in-scope bindings, others own-node declarations only), so
-        # the in-scope map is walked out by hand — per-node
-        # definitions merged along the ancestor axis, deeper
-        # overriding shallower, identically on every adapter.
-        def prefix_uri(prefix, element)
-          bindings = {}
-          node = element
-          while node
-            node.namespaces.each do |namespace|
-              bindings[namespace.prefix] = namespace.uri
-            end
-            node = node.parent&.element? ? node.parent : nil
-          end
-          bindings[prefix].to_s
         end
 
         def entry_covers?(entry, namespace)
@@ -140,11 +125,34 @@ module Moxml
       end
 
       ContentModel = Struct.new(:declared_children, :any,
-                                :declared_attributes, :any_attribute)
+                                :declared_attributes, :any_attribute,
+                                :particles, :pure_sequence)
       SchemaIndex = Struct.new(:target_namespace, :element_default,
                                :attribute_default, :elements,
                                :attributes, :contents, :version,
-                               :element_patterns, :attribute_patterns)
+                               :element_patterns, :attribute_patterns,
+                               :substitution_members)
+
+      # Resolves a QName token against an element's in-scope
+      # bindings. node.namespaces is adapter-divergent (some
+      # engines return in-scope bindings, others own-node
+      # declarations only), so the in-scope map is walked out by
+      # hand — per-node definitions merged along the ancestor
+      # axis, deeper overriding shallower, identically on every
+      # adapter. Unresolvable prefixes yield "".
+      module_function
+
+      def prefix_uri(prefix, element)
+        bindings = {}
+        node = element
+        while node
+          node.namespaces.each do |namespace|
+            bindings[namespace.prefix] = namespace.uri
+          end
+          node = node.parent&.element? ? node.parent : nil
+        end
+        bindings[prefix].to_s
+      end
 
       # The XSD 1.1 version-tagging namespace (Structures §C.3):
       # vc:minVersion / vc:maxVersion gate 1.1 constructs.
@@ -243,7 +251,7 @@ module Moxml
             root["targetNamespace"].to_s,
             root["elementFormDefault"] == "qualified",
             root["attributeFormDefault"] == "qualified",
-            {}, {}, {}, schema_version(root), {}, {}
+            {}, {}, {}, schema_version(root), {}, {}, {}
           )
           child_elements(root).each do |decl|
             case decl.name
@@ -339,33 +347,117 @@ module Moxml
           sink[name] = sink.key?(name) ? nil : patterns
         end
 
-        # Dismisses engine lexical findings the source's own
-        # pattern facets refute (#464): an engine that cannot
-        # evaluate a dialect construct rejects every occurrence of
-        # the facet — including values the facet accepts. A
-        # finding is dropped only when every same-named instance
-        # in the document matches; one non-matching value keeps
-        # the engine's answer, so a dismissal can only remove
-        # false rejections, never create false acceptances.
+        # Dismisses engine findings the schema source refutes:
+        #
+        # * lexical findings pattern facets accept (#464) — dropped
+        #   only when every same-named instance matches the facet;
+        # * content-model findings that reject a substitution-group
+        #   member (#466 class 1) — dropped only when the parent's
+        #   content model is a pure sequence, the child sequence
+        #   matches it position-for-position with every particle
+        #   exactly-once, and a substitution member resolves a
+        #   position. One non-vouching instance — or any real
+        #   mismatch — keeps the engine's answer, so a dismissal
+        #   can only remove false rejections, never create false
+        #   acceptances.
         def dismiss(engine_errors, doc, index)
           return engine_errors unless index
 
           vouched = vouch_table(doc, index)
           engine_errors.reject do |error|
-            subject = lexical_subject(error.message)
-            subject && vouched[subject]
+            if (subject = lexical_subject(error.message))
+              vouched[subject]
+            elsif (sequence = content_model_subject(error.message))
+              sequence_vouched?(doc, index, *sequence)
+            end
           end
         end
 
         LEXICAL_MESSAGE = /\A(?:element|attribute) '([^']+)' @\d+:\d+: (element|attribute) '([^']+)': lexical value does not match its type\z/
+        CONTENT_MODEL_MESSAGE = /\Aelement '([^']+)' @\d+:\d+: element '([^']+)': children do not match the content model \(at '([^']+)'\)\z/
 
-        private_constant :LEXICAL_MESSAGE
+        private_constant :LEXICAL_MESSAGE, :CONTENT_MODEL_MESSAGE
 
         def lexical_subject(message)
           match = LEXICAL_MESSAGE.match(message.to_s)
           return unless match
 
           [match[2], match[3]]
+        end
+
+        def content_model_subject(message)
+          match = CONTENT_MODEL_MESSAGE.match(message.to_s)
+          return unless match
+
+          [match[2], match[3]]
+        end
+
+        # Every same-named element in the document must vouch: a
+        # sequence the finding names could be valid while another
+        # same-named one is not. The root is included — the
+        # engine's finding can name it.
+        def sequence_vouched?(doc, index, name, offender)
+          root = doc.root
+          return false unless root
+
+          witnesses = []
+          yield_self = root.name == name
+          witnesses << sequence_valid?(root, index, offender) if yield_self
+          each_named_element(root, name) do |element|
+            witnesses << sequence_valid?(element, index, offender)
+          end
+          !witnesses.empty? && witnesses.all?
+        end
+
+        def each_named_element(node, name, &block)
+          child_elements(node).each do |child|
+            yield child if child.name == name
+            each_named_element(child, name, &block)
+          end
+        end
+
+        # The airtight witness: child count equals particle count,
+        # every position resolves to its particle's name or a
+        # registered member of it, every particle occurs exactly
+        # once, and the reported offender is a substitution member
+        # realized at some position. Anything else leaves the
+        # engine's answer standing.
+        def sequence_valid?(element, index, offender)
+          model = index.contents[qname(element)]
+          return false unless model&.pure_sequence
+
+          particles = model.particles
+          children = child_elements(element)
+          return false if children.empty? || children.size != particles.size
+
+          resolved = false
+          children.each_with_index do |child, position|
+            particle_name, min, max = particles[position]
+            child_qname = qname(child)
+            return false unless exactly_once?(min, max)
+
+            if child_qname == particle_name
+              next
+            elsif index.substitution_members.fetch(particle_name, [])
+                .include?(child_qname)
+              resolved = true
+            else
+              return false
+            end
+          end
+          resolved && offender_realized?(children, offender, index)
+        end
+
+        def exactly_once?(min, max)
+          min <= 1 && (max == :unbounded || max >= 1)
+        end
+
+        def offender_realized?(children, offender, index)
+          members = index.substitution_members.values.flatten
+          children.any? do |child|
+            child.name == offender &&
+              members.include?(qname(child))
+          end
         end
 
         def vouch_table(doc, index)
@@ -434,6 +526,9 @@ module Moxml
           name = decl["name"] or return
           qname = "{#{index.target_namespace}}#{name}"
           index.elements[qname] = { nillable: decl["nillable"] == "true" }
+          if (head = decl["substitutionGroup"])
+            register_substitution(head, decl, qname, index)
+          end
           type_attr = decl.attribute("type")
           model = if type_attr.nil? || type_attr.value.empty?
                     inline_model(decl, index)
@@ -441,6 +536,23 @@ module Moxml
                     named_model(decl, index)
                   end
           index.contents[qname] = model if model
+        end
+
+        # substitutionGroup is a QName resolved against the global
+        # declaration's in-scope bindings (#466 class 1); the
+        # member's own qname is target-namespace-qualified — global
+        # declarations always are.
+        def register_substitution(head, decl, member_qname, index)
+          if head.include?(":")
+            prefix, _, local = head.partition(":")
+            uri = prefix_uri(prefix, decl)
+            return if uri.empty?
+
+            head_qname = "{#{uri}}#{local}"
+          else
+            head_qname = "{}#{head}"
+          end
+          (index.substitution_members[head_qname] ||= []) << member_qname
         end
 
         def index_global_attribute(decl, index)
@@ -468,7 +580,7 @@ module Moxml
         end
 
         def content_model(type_node, index)
-          model = ContentModel.new([], nil, [], nil)
+          model = ContentModel.new([], nil, [], nil, [], true)
           collect_model(type_node, index, model)
           model
         end
@@ -477,36 +589,58 @@ module Moxml
         # choice / all / complexContent wrappers flattened): we only
         # ADD findings for strict-wildcard matches, so flattening
         # can only under-report, never over-report. Cardinality and
-        # order stay the engine's job.
+        # order stay the engine's job — EXCEPT for the substitution
+        # dismissal (#466 class 1), which vouches only for pure
+        # sequences: any choice/all marks the model impure and the
+        # flattened order is then not a validity witness.
         def collect_model(node, index, model)
           child_elements(node).each do |child|
             case child.name
             when "element"
-              add_particle(child, index, model,
-                           model.declared_children)
+              if (qname = particle_qname(child, index))
+                model.declared_children << qname
+                model.particles << [
+                  qname,
+                  occur_value(child, "minOccurs", 1),
+                  occur_value(child, "maxOccurs", 1),
+                ]
+              end
             when "attribute"
-              add_particle(child, index, model,
-                           model.declared_attributes)
+              if (qname = particle_qname(child, index))
+                model.declared_attributes << qname
+              end
             when "any"
               model.any ||= wildcard_from(child)
             when "anyAttribute"
               model.any_attribute ||= wildcard_from(child)
+            when "choice", "all"
+              model.pure_sequence = false
+              collect_model(child, index, model)
             else
               collect_model(child, index, model)
             end
           end
         end
 
-        def add_particle(particle, index, _model, sink)
+        def particle_qname(particle, index)
           ref = particle["ref"]
           name = ref&.split(":")&.last || particle["name"]
           return unless name
 
-          sink << if ref
-                    "{#{index.target_namespace}}#{name}"
-                  else
-                    "{#{form_namespace(particle, index)}}#{name}"
-                  end
+          if ref
+            "{#{index.target_namespace}}#{name}"
+          else
+            "{#{form_namespace(particle, index)}}#{name}"
+          end
+        end
+
+        def occur_value(particle, attribute, default)
+          value = particle[attribute]
+          return :unbounded if value == "unbounded"
+
+          Integer(value || default)
+        rescue ArgumentError
+          default
         end
 
         # Particles declare with form="qualified"/"unqualified",
