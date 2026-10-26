@@ -177,13 +177,45 @@ module Moxml
         @context.config.adapter.xsd_declarations(@handle)
       end
 
-      # The effective schema version the source declares (#460 item
-      # 2): "1.1" when the root carries vc:minVersion="1.1", else
-      # "1.0". Consumers (lutaml-xsd) scope 1.0-only checks with
-      # it; the engine's application of 1.1 semantics is the
-      # engine-side program.
+      # The effective schema version (#460 item 2): "1.1" or
+      # "1.0". The engine's answer (root @version) can only
+      # UPGRADE to 1.1 — it never downgrades the source-derived
+      # answer, because vc:minVersion="1.1" selects 1.1 semantics
+      # even when @version is absent, and @version="1.1" alongside
+      # vc:minVersion="1.0" is an authoring contradiction the
+      # source annotation wins.
       def version
+        adapter = @context.config.adapter
+        engine = adapter.respond_to?(:xsd_version) &&
+          adapter.xsd_version(@handle)
+        return "1.1" if engine == "1.1"
+
         @rules_index ? @rules_index.version : "1.0"
+      end
+
+      # One row per engine finding with the structured fields the
+      # #1843 report carries (moxml#460): kind, component, line,
+      # column, message. Nil when the binding predates the face —
+      # callers keep using #validate/#errors for the flat shape.
+      EngineFinding = Struct.new(:kind, :component, :line, :column,
+                                 :message)
+
+      def structured_errors(node_or_xml)
+        check_released!
+        doc = case node_or_xml
+              when Moxml::Document then node_or_xml
+              when Moxml::Node then node_or_xml.document
+              else @context.parse(node_or_xml.to_s)
+              end
+        adapter = @context.config.adapter
+        rows = adapter.respond_to?(:xsd_structured_errors) &&
+          adapter.xsd_structured_errors(@handle, doc.native)
+        return nil if rows.nil?
+
+        rows.map do |r|
+          EngineFinding.new(r.kind, r.component, r.line, r.column,
+                            r.message)
+        end
       end
 
       # Deterministic drop (#362.3): true when the adapter freed
