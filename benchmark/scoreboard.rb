@@ -56,8 +56,12 @@ module Scoreboard
   KNOWN_REGRESSIONS = {
     "xpath //field (count)" =>
       "runner-window variance (2026-10-26/27: 1.91x-3.39x across runs)",
+    "xpath //field (each)" =>
+      "runner-window variance (2026-10-26/27: 0.34x-0.59x across runs)",
     "attr pairs listing" =>
       "runner-window variance (2026-10-26/27: 6.17x-8.48x across runs)",
+    "walk+read (warm)" =>
+      "runner-window variance (2026-10-26/27: 0.54x-0.76x across runs)",
     "walk+read (cold)" => "leptris-ruby#527 (1.9.380 crossing regression)",
     "children recursion (cold)" =>
       "leptris-ruby#527 (1.9.380 crossing regression)",
