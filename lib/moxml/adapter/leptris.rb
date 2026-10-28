@@ -406,15 +406,6 @@ module Moxml
           handle.valid?(to_binding(document))
         end
 
-        def xsd_builtin_valid?(builtin, lexical)
-          unless XSD_SUPPORTED
-            raise Moxml::NotImplementedError,
-                  "XSD validation requires an adapter with an XSD engine"
-          end
-
-          ::Leptris::XML::XSD.builtin_valid?(builtin, lexical)
-        end
-
         def xsd_declarations(xsd_handle)
           xsd_handle.declaration_count
         end

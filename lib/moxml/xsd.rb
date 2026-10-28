@@ -33,6 +33,7 @@ module Moxml
     SUPPORTED_ADAPTERS = %i[leptris nokogiri].freeze
 
     autoload :SchemaRules, "moxml/xsd/schema_rules"
+    autoload :BuiltinLexical, "moxml/xsd/builtin_lexical"
 
     # One validation finding, harmonized across adapters (#362.2):
     # +message+ always present; +line+ / +column+ when the engine
@@ -76,12 +77,12 @@ module Moxml
           adapter.const_get(:XSD_SUPPORTED)
       end
 
-      # Lexical validation against the built-in type table (the
-      # "xs:NAME" reference spelling). Raises ArgumentError when the
-      # name is not in the table; NotImplementedError on adapters
-      # without an engine.
-      def builtin_valid?(context, builtin, lexical)
-        context.config.adapter.xsd_builtin_valid?(builtin, lexical)
+      # Lexical validation against the facade-owned built-in type
+      # table (the "xs:NAME" reference spelling). One committed
+      # answer on every adapter (#482); raises ArgumentError when
+      # the name is not in the table.
+      def builtin_valid?(_context, builtin, lexical)
+        BuiltinLexical.valid?(builtin, lexical)
       end
     end
 
