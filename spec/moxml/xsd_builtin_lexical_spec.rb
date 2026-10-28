@@ -135,5 +135,29 @@ RSpec.describe Moxml::XSD do
       expect(valid_lexical?("xs:Name", "a:b")).to be(true)
       expect(valid_lexical?("xs:NCName", "a:b")).to be(false)
     end
+
+    # lutaml-xsd's engine context pins strict booleans on this face:
+    # a grammar-invalid calendar lexical must answer false, never nil
+    # (the with_date_fields short-circuit used to leak nil).
+    it "answers a strict boolean for every supported name" do
+      garbage = ["not-a-date", "", "   ", "12x", "9999-99-99Tzz"]
+
+      Moxml::XSD::BuiltinLexical.names.each do |name|
+        garbage.each do |lexical|
+          answer = valid_lexical?(name, lexical)
+          expect(answer.eql?(true) || answer.eql?(false)).to be(true),
+                                                             "#{name} #{lexical.inspect} answered " \
+                                                             "#{answer.inspect}, want a boolean"
+        end
+      end
+    end
+
+    it "answers false for the calendar faces the engine context pins" do
+      expect(valid_lexical?("xs:date", "not-a-date")).to be(false)
+      expect(valid_lexical?("xs:dateTime", "not-a-date")).to be(false)
+      expect(valid_lexical?("xs:dateTimeStamp", "not-a-date")).to be(false)
+      expect(valid_lexical?("xs:dateTimeStamp", "2024-02-29T00:00:00")).to be(false)
+      expect(valid_lexical?("xs:dateTimeStamp", "2024-02-29T00:00:00Z")).to be(true)
+    end
   end
 end

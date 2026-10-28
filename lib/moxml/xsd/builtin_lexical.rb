@@ -144,9 +144,19 @@ module Moxml
         match.captures.map { |field| Integer(field) }
       end
 
+      # The answer is total: a lexical whose date part does not
+      # parse is invalid (false), never nil — consumers pin strict
+      # booleans on this face (#485 follow-up).
       def with_date_fields(lexical)
         year, month, day = date_fields(lexical)
-        year && yield(year, month, day)
+        return false unless year
+
+        yield(year, month, day)
+      end
+
+      # The supported "xs:NAME" spellings (the CHECKERS keys).
+      def names
+        CHECKERS.keys
       end
 
       def integer?(lexical, range: nil)
