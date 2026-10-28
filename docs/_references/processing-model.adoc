@@ -255,7 +255,7 @@ semantics.
 
 === Validation
 
-Pins:: `spec/moxml/xsd_regex_spec.rb`, `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_substitution_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`, `spec/moxml/xsd_version_spec.rb`
+Pins:: `spec/moxml/xsd_engine_meta_spec.rb`, `spec/moxml/xsd_regex_spec.rb`, `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_substitution_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`, `spec/moxml/xsd_version_spec.rb`
 
 XSD validation through engines that ship a validator (libxml2;
 leptris tier-1: recognized roots, one-level content descent, lexical
@@ -286,8 +286,14 @@ registered member must realize a position — any choice/all,
 cardinality violation, or unknown name keeps the engine's answer.
 A compiled schema reports the
 version its source declares: root `vc:minVersion="1.1"` scopes the
-document to 1.1, anything else is 1.0 (consumers scope 1.0-only
-checks with it; applying 1.1 semantics is the engine-side program).
+document to 1.1, anything else is 1.0 — on engines that serve their
+own effective version the engine's answer can only UPGRADE the
+reported value to 1.1, never downgrade the source annotation
+(consumers scope 1.0-only checks with it; applying 1.1 semantics is
+the engine-side program). Engines that expose a structured report
+surface `Schema#structured_errors` — one row per finding with
+kind/component/line/column/message; the face answers nil on
+bindings without it and #validate keeps the flat shape.
 Unsupported adapters raise
 `Moxml::NotImplementedError` at compile; `Moxml::XSD.supported?`
 answers without raising. RELAX NG rides engines with an RNG face

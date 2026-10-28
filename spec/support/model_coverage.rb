@@ -89,6 +89,10 @@ module ModelCoverage
       section: "Validation",
       pin: "spec/moxml/xsd_version_spec.rb",
     },
+    "validation engine metadata" => {
+      section: "Validation",
+      pin: "spec/moxml/xsd_engine_meta_spec.rb",
+    },
     "validation regex dismissal" => {
       section: "Validation",
       pin: "spec/moxml/xsd_regex_spec.rb",
