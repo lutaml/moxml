@@ -149,6 +149,34 @@ RSpec.describe "XPath idioms across adapters" do
         expect(doc.xpath("//c").map(&:name)).to eq(["c"])
         expect(doc.at_xpath("count(//c)")).to eq(1.0)
       end
+
+      # Attribute wrappers participate in node equality and document
+      # ordering: standoc's svg cleanup compares and sorts result
+      # sets that carry parent-wired attributes. Equality across an
+      # attribute and a node must answer (false), never raise, and
+      # two wrappers over one attribute are the same node.
+      it "compares attribute identity and orders attribute results" do
+        doc = ctx.parse("<r><svg id='a'><p>x</p></svg><svg id='b'/></r>")
+
+        attr_a = doc.xpath("//*[@id='a']").first.attributes.to_a.first
+        attr_b = doc.xpath("//*[@id='b']").first.attributes.to_a.first
+        expect(doc.root.children.to_a.first == attr_a).to be(false)
+        expect(
+          attr_a == doc.xpath("//*[@id='a']").first.attributes.to_a.first,
+        ).to be(true)
+        expect(attr_a == attr_b).to be(false)
+
+        expect(doc.xpath("//@id").map(&:value)).to eq(%w[a b])
+
+        # XPath document order: an attribute sorts after its owner
+        # element and before the element's children.
+        svg = doc.xpath("//*[@id='a']").first
+        expect(
+          svg.xpath("./@* | ./p").map do |node|
+            node.is_a?(Moxml::Attribute) ? "@#{node.name}" : node.name
+          end,
+        ).to eq(%w[@id p])
+      end
     end
   end
 end

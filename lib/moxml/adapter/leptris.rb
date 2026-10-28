@@ -939,8 +939,19 @@ module Moxml
           # Protocol-level node equality: one engine can hand out
           # two wrapper classes over the same C node (native layer +
           # binding), so raw == is not identity across the seam.
+          # Attributes are (name, value, element) triples without a
+          # node pointer; identity is the owning element plus the
+          # attribute name.
           def same_node?(one, other)
             return true if one.equal?(other)
+
+            if one.is_a?(::Leptris::XML::Attr) ||
+                other.is_a?(::Leptris::XML::Attr)
+              return one.is_a?(::Leptris::XML::Attr) &&
+                  other.is_a?(::Leptris::XML::Attr) &&
+                  one.name == other.name &&
+                  same_node?(one.element, other.element)
+            end
 
             if NATIVE_READ_LAYER
               native_one = one.is_a?(::Leptris::XML::NativeNode)
