@@ -75,7 +75,18 @@ module Moxml
         [kind_rank, ancestry_path(node)]
       end
 
+      # Attributes are not children of their element, so their
+      # document position is the parent's; same-parent attributes
+      # keep their relative order (stable sort). A parentless
+      # attribute stays unplaceable.
       def ancestry_path(node)
+        if node.is_a?(Moxml::Attribute)
+          parent = node.parent
+          return [2_000_000] unless parent
+
+          return ancestry_path(parent)
+        end
+
         path = []
         current = node
         while current && !current.is_a?(Moxml::Document)
