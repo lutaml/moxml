@@ -3687,8 +3687,16 @@ module Moxml
           return nil if namespaces && !namespaces.empty?
           # Reverse axes answer reverse-ordered from the native
           # engine; route them to the Ruby engine (document order).
-          return nil if REVERSE_AXIS_CACHE.get_or_set(expression) do
+          # The parent step is the exception on fixed bindings
+          # (PARENT_AXIS_NATIVE): it answers the owner element and
+          # the hot consumers are element-context paths (#474).
+          if REVERSE_AXIS_CACHE.get_or_set(expression) do
             expression_uses_reverse_axis?(expression)
+          end && !(PARENT_AXIS_NATIVE &&
+              !NON_PARENT_REVERSE_CACHE.get_or_set(expression) do
+                expression_uses_non_parent_reverse_axis?(expression)
+              end)
+            return nil
           end
 
           # The binding reports the root element parentless while moxml
@@ -3806,7 +3814,19 @@ module Moxml
         # expressions route to the Ruby engine, which orders them.
         REVERSE_AXES = %w[ancestor ancestor-or-self preceding
                           preceding-sibling parent].freeze
+        # Reverse axes answer reverse-ordered from the native engine
+        # (document order is the model's contract), so they route to
+        # the Ruby engine — EXCEPT the parent step on bindings
+        # serving the fixed engine: 1.9.385 carries leptris#1869
+        # (parent-of-attribute names the OWNER element) plus the
+        # cross-doc adopt attribute-chain fix, and standoc's svg
+        # id cleanup rides `./@id/..` hot (moxml#474).
+        PARENT_AXIS_NATIVE =
+          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.385")
+        NON_PARENT_REVERSE_AXES = %w[ancestor ancestor-or-self
+                                     preceding preceding-sibling].freeze
         REVERSE_AXIS_CACHE = XPath::Cache.new(200)
+        NON_PARENT_REVERSE_CACHE = XPath::Cache.new(200)
 
         def expression_uses_parent_axis?(expression)
           ast = XPath::Parser.parse_with_cache(expression)
@@ -3830,6 +3850,25 @@ module Moxml
 
           ast.children.any? do |child|
             child.is_a?(XPath::AST::Node) && contains_reverse_axis?(child)
+          end
+        end
+
+        def expression_uses_non_parent_reverse_axis?(expression)
+          ast = XPath::Parser.parse_with_cache(expression)
+          contains_non_parent_reverse_axis?(ast)
+        rescue XPath::SyntaxError
+          true
+        end
+
+        def contains_non_parent_reverse_axis?(ast)
+          if ast.type == :axis && NON_PARENT_REVERSE_AXES.include?(ast.children.first)
+            return true
+          end
+          return false if ast.type == :parent
+
+          ast.children.any? do |child|
+            child.is_a?(XPath::AST::Node) &&
+              contains_non_parent_reverse_axis?(child)
           end
         end
 
