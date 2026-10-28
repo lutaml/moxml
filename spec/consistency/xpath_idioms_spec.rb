@@ -122,6 +122,19 @@ RSpec.describe "XPath idioms across adapters" do
         expect(doc.at_xpath("count(//a)")).to eq(1.0)
       end
 
+      # The parent of an attribute node is its OWNER element
+      # (XPath 1.0 section 2.2) — the load-bearing arm of standoc's
+      # svg id disambiguation (#474).
+      it "answers the parent-of-attribute step with the owner element" do
+        doc = ctx.parse("<r><svg id='s'><use id='u'/></svg></r>")
+        svg = doc.xpath("//*[local-name()='svg']").first
+        expect(svg.xpath("./@id/..").map(&:name)).to eq(["svg"])
+        expect(svg.xpath("./@id/parent::*").map(&:name)).to eq(["svg"])
+        expect(
+          svg.xpath(".//*[@id] | ./@id/..").map(&:name).sort,
+        ).to eq(%w[svg use])
+      end
+
       # The live-tree contract: a sibling inserted after an XPath
       # evaluation must be visible to at_xpath and xpath. leptris's
       # node-set lane caches a document index that sibling insertions

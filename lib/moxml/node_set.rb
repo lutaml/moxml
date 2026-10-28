@@ -165,7 +165,12 @@ module Moxml
       native_node = node.is_a?(Node) ? node.native : node
       # Materialize the buffer first so it allocates at the pre-append
       # size and stays in lockstep with the natives.
-      wrapped_buffer << nil
+      # A pushed wrapper is kept: stripping it to the native and
+      # re-wrapping on iteration loses wrapper state — an attribute
+      # step's results carry their owner wiring (@parent_node), and
+      # the fresh wrap answers nil for it, so a following parent step
+      # (`./@id/..`) lost the owner element (#474).
+      wrapped_buffer << (node.is_a?(Node) ? node : nil)
       native_nodes << native_node
       self
     end
