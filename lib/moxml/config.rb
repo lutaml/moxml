@@ -92,7 +92,12 @@ module Moxml
 
         @leptris_preferred_available =
           begin
-            require "leptris"
+            # Route the require through a non-literal send: Opal::Builder
+            # resolves literal requires statically and dies on native-only
+            # gems (leptris is FFI; lutaml/moxml#475) before this rescue
+            # can degrade the adapter. The runtime require still raises
+            # LoadError under Opal, which the rescue below handles.
+            __send__(:require, "leptris")
             Moxml::Adapter.load(:leptris)
             Gem::Version.new(::Leptris::VERSION) >=
               Gem::Version.new(Moxml::Adapter::Leptris::MINIMUM_BINDING_VERSION)
