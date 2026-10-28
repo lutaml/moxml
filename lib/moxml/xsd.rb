@@ -186,8 +186,9 @@ module Moxml
       # source annotation wins.
       def version
         adapter = @context.config.adapter
-        engine = adapter.respond_to?(:xsd_version) &&
-          adapter.xsd_version(@handle)
+        engine = if adapter.respond_to?(:xsd_version)
+                   adapter.xsd_version(@handle)
+                 end
         return "1.1" if engine == "1.1"
 
         @rules_index ? @rules_index.version : "1.0"
@@ -208,9 +209,10 @@ module Moxml
               else @context.parse(node_or_xml.to_s)
               end
         adapter = @context.config.adapter
-        rows = adapter.respond_to?(:xsd_structured_errors) &&
-          adapter.xsd_structured_errors(@handle, doc.native)
-        return nil if rows.nil?
+        rows = if adapter.respond_to?(:xsd_structured_errors)
+                 adapter.xsd_structured_errors(@handle, doc.native)
+               end
+        return nil unless rows
 
         rows.map do |r|
           EngineFinding.new(r.kind, r.component, r.line, r.column,
