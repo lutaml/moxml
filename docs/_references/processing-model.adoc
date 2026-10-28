@@ -255,11 +255,18 @@ semantics.
 
 === Validation
 
-Pins:: `spec/moxml/xsd_engine_meta_spec.rb`, `spec/moxml/xsd_regex_spec.rb`, `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_substitution_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`, `spec/moxml/xsd_version_spec.rb`
+Pins:: `spec/moxml/xsd_builtin_lexical_spec.rb`, `spec/moxml/xsd_engine_meta_spec.rb`, `spec/moxml/xsd_regex_spec.rb`, `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_substitution_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`, `spec/moxml/xsd_version_spec.rb`
 
 XSD validation through engines that ship a validator (libxml2;
 leptris tier-1: recognized roots, one-level content descent, lexical
-checks). `validate` returns accumulated `ValidationError` entries —
+checks). The built-in lexical answer is facade-owned:
+`Moxml::XSD.builtin_valid?` evaluates the Datatypes Part 2 lexical
+spaces (collapse for the token family, the unbounded integer family
+with bignum bounds, calendar and duration grammars, binary, QName
+with the reserved `xmlns` prefix) from the facade's own table on
+every adapter — an engine table converges to it, never the reverse;
+an unknown name raises `ArgumentError`. `validate` returns
+accumulated `ValidationError` entries —
 message always; line/column/path where the engine reports them, nil
 where it does not; `[]` means valid. Documents outside the engine's
 scope validate laxly, except that strict `xs:any` /

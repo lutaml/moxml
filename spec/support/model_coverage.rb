@@ -97,6 +97,10 @@ module ModelCoverage
       section: "Validation",
       pin: "spec/moxml/xsd_regex_spec.rb",
     },
+    "validation builtin lexical table" => {
+      section: "Validation",
+      pin: "spec/moxml/xsd_builtin_lexical_spec.rb",
+    },
     "validation substitution dismissal" => {
       section: "Validation",
       pin: "spec/moxml/xsd_substitution_spec.rb",

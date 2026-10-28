@@ -373,11 +373,6 @@ module Moxml
                 "XSD validation requires an adapter with an XSD engine"
         end
 
-        def xsd_builtin_valid?(_builtin, _lexical)
-          raise Moxml::NotImplementedError,
-                "XSD validation requires an adapter with an XSD engine"
-        end
-
         def xsd_declarations(_xsd_handle); end
 
         def xsd_compile_error(_xsd_handle); end
