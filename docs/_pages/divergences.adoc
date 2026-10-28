@@ -146,3 +146,13 @@ no-op there (declaration nodes cannot occur). On such bindings the
 class is also absent for consumers. Pinned in
 `spec/moxml/adapter/leptris_document_children_older_binding_spec.rb`.
 |===
+
+| D-22
+| leptris (materialized-wrapper lane)
+| A cross-document replace on a materialized wrapper keeps only the
+installed copy — the UNREPLACED siblings of the replaced node are
+dropped from the serialized tree. Reproduced on the stock adapter
+before leptris#1866's fix (the fix itself is not the cause); not a
+regression of the fix. Noted in
+`spec/moxml/adapter/leptris_crossdoc_replace_spec.rb`.
+|===

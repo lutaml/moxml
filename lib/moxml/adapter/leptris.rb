@@ -3135,6 +3135,14 @@ module Moxml
             node = to_binding(node)
             new_node = to_binding(new_node)
           end
+          # anchor the BINDING document: its handle owns the engine
+          # pool — while it lives, no retained address can dangle
+          if node.respond_to?(:document) && new_node.respond_to?(:document)
+            target = node.document
+            bsrc = new_node.document
+            target.retain_document!(bsrc) if target.respond_to?(:retain_document!) &&
+              bsrc.respond_to?(:freed?)
+          end
           pin_foreign_owner_document(node, new_node)
           # A PI inserted before the root lives at document level in
           # libleptris's model, not in the element tree.
@@ -3284,6 +3292,27 @@ module Moxml
         end
 
         def replace(node, new_node)
+          # leptris#1866: keep a cross-document source (a scratch doc
+          # parsed only to build the replacement) anchored on the
+          # target — wrapper caches on the target side may hold
+          # references the engine copy cannot see. STRICTLY
+          # best-effort: bare adapter-contract nodes carry no
+          # context/document, and retention must never break a
+          # replace.
+          begin
+            target = node.document if node.respond_to?(:document)
+            source = new_node.document if new_node.respond_to?(:document)
+            if target.respond_to?(:retain_document!) &&
+                source.respond_to?(:retain_document!)
+              target.retain_document!(source)
+              # the scratch CONTEXT (config + adapter) is part of the
+              # retained object graph — its death frees the native
+              # registrations even when the document wrapper survives
+              target.retain_document!(new_node.context)
+            end
+          rescue StandardError
+            # context/document unreadable on some wrapper flavors
+          end
           if NATIVE_READ_LAYER
             node = to_binding(node)
             new_node = to_binding(new_node)
@@ -3297,9 +3326,16 @@ module Moxml
             # tree cycles (standoc term cleanup does
             # t << n.replace(t2)). Insert + unlink instead: the unlink
             # path clears the sibling links.
-            node.add_next_sibling(new_node)
+            # leptris#1866: return the INSTALLED sibling, not
+            # new_node — a cross-document new_node belongs to its
+            # scratch document's arena (the insert deep-copies), and
+            # the temp wrapper returned here used to be stored in the
+            # parent's children memo; once the scratch was collected
+            # the memo handed out freed addresses (serializer
+            # segfault + empty attribute names in the output).
+            installed = node.add_next_sibling(new_node)
             node.unlink
-            return new_node
+            return installed || new_node
           end
 
           # libleptris only offers element-anchored insertion, so a
@@ -3326,6 +3362,9 @@ module Moxml
                 prev.c_ptr, new_node.c_ptr
               ),
             )
+            # leptris#1866: the raw face deep-copies; the caller must
+            # never keep the scratch wrapper (see the element branch).
+            prev.next_sibling || new_node
           else
             advance_mutation_version(parent)
             ::Leptris::XML::FFI.check_status(
@@ -3333,8 +3372,8 @@ module Moxml
                 parent.c_ptr, new_node.c_ptr
               ),
             )
+            parent.children.last || new_node
           end
-          new_node
         end
 
         NATIVE_APPEND_CHILDREN =

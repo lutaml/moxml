@@ -9,6 +9,23 @@ module Moxml
     def initialize(native, context, adapter = nil, node_type = nil)
       super
       @has_xml_declaration = false
+      @retained_documents = nil
+    end
+
+    # leptris#1866: cross-document adoption lifetime anchor. An
+    # adopted subtree is deep-copied by the native engine, but
+    # adapter-level wrapper caches can retain references into the
+    # SOURCE document's scratch arena (standoc svg cleanup: a
+    # per-replacement scratch doc was collected and the host's
+    # serializer then segfaulted / emitted empty attribute names).
+    # Retaining the source Moxml document keeps every layer of the
+    # scratch alive for as long as the target lives; the cost is
+    # bounded by the number of cross-document adoptions.
+    def retain_document!(other)
+      return if other.nil? || other.equal?(self)
+
+      (@retained_documents ||= []) << other
+      other
     end
 
     def document
