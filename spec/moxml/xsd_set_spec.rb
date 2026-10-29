@@ -48,7 +48,18 @@ RSpec.describe "Schema-set compilation" do
     [File.join(dir, "f.xsd"), File.join(dir, "g.xsd")]
   end
 
+  # The binding carries the face from 1.9.386.0 (engine 1.9.387);
+  # published bindings below it loud-fail by contract, so the live
+  # examples skip until the ride lands.
+  def set_capable?
+    defined?(Leptris::XML::XSD::Schema) &&
+      Leptris::XML::XSD::Schema.respond_to?(:compile_set)
+  end
+
   it "admits substitution members declared in importing documents" do
+    skip "requires the leptris compile_set face (binding 1.9.386.0+)" unless
+      set_capable?
+
     Dir.mktmpdir do |dir|
       paths = write_set(dir)
       schema = ctx.xsd_set(*paths)
@@ -61,6 +72,9 @@ RSpec.describe "Schema-set compilation" do
   end
 
   it "accepts the paths as an array or as arguments" do
+    skip "requires the leptris compile_set face (binding 1.9.386.0+)" unless
+      set_capable?
+
     Dir.mktmpdir do |dir|
       paths = write_set(dir)
       expect(ctx.xsd_set(paths)).to be_a(Moxml::XSD::Schema)
