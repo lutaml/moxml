@@ -15,16 +15,18 @@ require "spec_helper"
 # the RSpec/* cops that forbid local-variable use inside examples.
 module SaxEntityParityFixtures
   class CaptureHandler < Moxml::SAX::ElementHandler
-    attr_reader :first_attrs, :text
+    attr_reader :first_attrs, :first_namespaces, :text
 
     def initialize
       super
       @first_attrs = nil
+      @first_namespaces = nil
       @text = +""
     end
 
-    def on_start_element(_name, attrs = {}, _namespaces = {})
+    def on_start_element(_name, attrs = {}, namespaces = {})
       @first_attrs = attrs.dup if @first_attrs.nil?
+      @first_namespaces = namespaces.dup if @first_namespaces.nil?
     end
 
     def on_characters(chunk)
@@ -49,6 +51,19 @@ module SaxEntityParityFixtures
     "plain hex ref" => ['<doc x="&#x26;"/>', "&", "&amp;"],
     "high codepoint" => ['<doc x="&#169;"/>', "©", "©"],
     "no entities" => ['<doc x="plain"/>', "plain", "plain"],
+  }.freeze
+
+  # Adapters whose SAX bridge reports namespace declarations in the
+  # handler's namespaces hash with the URI decoded exactly once.
+  SAX_NAMESPACE_ADAPTERS = %i[nokogiri ox rexml headed_ox].freeze
+
+  # Each row: [input XML, decoded namespace URI]. The parser decodes a
+  # declaration's URI exactly once; a decoded "&#38;" is data and must
+  # reach the handler as-is.
+  NAMESPACE_CASES = {
+    "wrapped amp + decimal ref" => ['<f:doc xmlns:f="http://f/?x=1&amp;#38;y"/>', "http://f/?x=1&#38;y"],
+    "wrapped amp + amp" => ['<f:doc xmlns:f="http://f/?x=&amp;amp;"/>', "http://f/?x=&amp;"],
+    "plain amp" => ['<f:doc xmlns:f="http://f/?x=1&amp;y=2"/>', "http://f/?x=1&y=2"],
   }.freeze
 
   # Each row: [input XML, decoded text, expected text as it appears in
@@ -135,6 +150,16 @@ RSpec.describe "SAX/DOM entity parity" do
           first = ctx.parse(xml).to_xml.sub(/\A<\?[^>]*\?>\s*/, "")
           second = ctx.parse(first).to_xml.sub(/\A<\?[^>]*\?>\s*/, "")
           expect(second).to eq(first)
+        end
+      end
+
+      if SaxEntityParityFixtures::SAX_NAMESPACE_ADAPTERS.include?(adapter)
+        SaxEntityParityFixtures::NAMESPACE_CASES.each do |label, (xml, expected)|
+          it "decodes namespace URI once via SAX: #{label}" do
+            handler = SaxEntityParityFixtures::CaptureHandler.new
+            ctx.sax_parse(xml, handler)
+            expect(handler.first_namespaces["f"]).to eq(expected)
+          end
         end
       end
 
