@@ -255,7 +255,7 @@ semantics.
 
 === Validation
 
-Pins:: `spec/moxml/xsd_builtin_lexical_spec.rb`, `spec/moxml/xsd_engine_meta_spec.rb`, `spec/moxml/xsd_regex_spec.rb`, `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_substitution_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`, `spec/moxml/xsd_version_spec.rb`
+Pins:: `spec/moxml/xsd_builtin_lexical_spec.rb`, `spec/moxml/xsd_engine_meta_spec.rb`, `spec/moxml/xsd_regex_spec.rb`, `spec/moxml/xsd_set_spec.rb`, `spec/moxml/xsd_spec.rb`, `spec/moxml/xsd_substitution_spec.rb`, `spec/moxml/xsd_underdetection_spec.rb`, `spec/moxml/xsd_version_spec.rb`
 
 XSD validation through engines that ship a validator (libxml2;
 leptris tier-1: recognized roots, one-level content descent, lexical
@@ -265,7 +265,13 @@ spaces (collapse for the token family, the unbounded integer family
 with bignum bounds, calendar and duration grammars, binary, QName
 with the reserved `xmlns` prefix) from the facade's own table on
 every adapter — an engine table converges to it, never the reverse;
-an unknown name raises `ArgumentError`. `validate` returns
+an unknown name raises `ArgumentError`. Schema-set compilation
+compiles a LIST of documents into one schema (`Context#xsd_set`):
+imports resolve across the whole set, so components declared in
+importing documents — substitution-group members, derived types —
+are visible to the head's content models; the single-document
+faces cannot see them. Adapters without a set-capable engine raise
+`Moxml::NotImplementedError`. `validate` returns
 accumulated `ValidationError` entries —
 message always; line/column/path where the engine reports them, nil
 where it does not; `[]` means valid. Documents outside the engine's

@@ -372,6 +372,23 @@ module Moxml
           ::Leptris::XML::XSD.compile_file(path)
         end
 
+        # Schema-set compilation (leptris 1.9.387, moxml#483 item 4):
+        # every document compiles into one schema, so imports resolve
+        # across the set and substitution-group members declared in
+        # importing documents are visible to the head's content
+        # models. Path-sourced only — the engine face reads files.
+        def xsd_compile_set(paths)
+          unless XSD_SUPPORTED &&
+              defined?(::Leptris::XML::XSD::Schema) &&
+              ::Leptris::XML::XSD::Schema.respond_to?(:compile_set)
+            raise Moxml::NotImplementedError,
+                  "Schema-set compilation requires the leptris 1.9.387+ " \
+                  "engine (the compile_set face)"
+          end
+
+          ::Leptris::XML::XSD.compile_set(paths)
+        end
+
         def relaxng_compile(schema_source)
           unless RELAXNG_SUPPORTED
             raise Moxml::NotImplementedError,
