@@ -222,6 +222,24 @@ module Moxml
       Moxml::XSD::Schema.new(handle, self, source)
     end
 
+    # Compile a SET of schema documents (paths) into one schema:
+    # imports resolve across the whole set, so components declared
+    # in importing documents (substitution-group members, derived
+    # types) are visible to the head's content models — the
+    # single-document faces cannot see them (#483 item 4). The
+    # Schema's #version / SchemaRules index read the HEAD document
+    # (the first path); engine-set semantics cover the rest.
+    # Adapters without a set-capable engine raise
+    # Moxml::NotImplementedError.
+    def xsd_set(*paths)
+      paths = paths.first if paths.size == 1 && paths.first.is_a?(Array)
+      raise ArgumentError, "schema set needs at least one path" if paths.empty?
+
+      handle = config.adapter.xsd_compile_set(paths.map(&:to_s))
+      source = File.read(paths.first.to_s)
+      Moxml::XSD::Schema.new(handle, self, source)
+    end
+
     # Compile a RELAX NG schema from source or from a file path (the
     # engine resolves relative includes against the file's directory).
     # Adapters without an RNG engine raise Moxml::NotImplementedError.

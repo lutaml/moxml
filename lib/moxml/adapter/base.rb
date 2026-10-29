@@ -373,6 +373,12 @@ module Moxml
                 "XSD validation requires an adapter with an XSD engine"
         end
 
+        def xsd_compile_set(_paths)
+          raise Moxml::NotImplementedError,
+                "Schema-set compilation requires an XSD engine with the " \
+                "compile_set face"
+        end
+
         def xsd_declarations(_xsd_handle); end
 
         def xsd_compile_error(_xsd_handle); end
