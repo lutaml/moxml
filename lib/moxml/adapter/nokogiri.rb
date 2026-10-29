@@ -800,11 +800,19 @@ module Moxml
           @handler.on_end_document
         end
 
-        def start_element(name, attributes = [])
-          attr_hash, ns_hash = split_attributes_and_namespaces(attributes) do |v|
-            Moxml::Adapter::Base.decode_entities(v)
+        # libxml hands over namespace declaration URIs already decoded,
+        # while attribute values still carry their entity references;
+        # decoding the URIs again corrupts "&amp;#38;" into "&".
+        def start_element_namespace(name, attrs = [], prefix = nil, _uri = nil,
+                                    namespaces = [])
+          attr_hash = {}
+          attrs.each do |attr|
+            key = attr.prefix ? "#{attr.prefix}:#{attr.localname}" : attr.localname
+            attr_hash[key] = Moxml::Adapter::Base.decode_entities(attr.value)
           end
-          @handler.on_start_element(name, attr_hash, ns_hash)
+          ns_hash = namespaces.empty? ? EMPTY_NAMESPACES : namespaces.to_h
+          qualified = prefix ? "#{prefix}:#{name}" : name
+          @handler.on_start_element(qualified, attr_hash, ns_hash)
         end
 
         def end_element(name)
