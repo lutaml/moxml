@@ -30,6 +30,58 @@ module Moxml
     # Standard XML predefined entities (XML spec §4.6)
     STANDARD_CODEPOINTS = Set[0x26, 0x3C, 0x3E, 0x22, 0x27].freeze
 
+    # The entity-registry conformance dataset (#496): lookup and
+    # restoration answers as data, pinned BY the Ruby suite
+    # (spec/moxml/entity_registry_conformance_spec.rb) and exported
+    # for the Rust/TS runners. Row shape: [seed, qname, qcp,
+    # restore_entities, restoration_mode, declared, codepoint, names,
+    # primary, standard, restore]. Each row seeds a fresh :custom
+    # registry through the public provider path — so the seed values
+    # are LEXICAL forms (raw characters, multi-character sequences,
+    # "\\uXXXX" escapes), exercising parse_codepoint exactly as a
+    # custom provider does — then queries one name and one codepoint
+    # and pins every face answer:
+    #
+    #   * declared?/codepoint_for_name on qname
+    #   * names_for_codepoint/primary_name_for_codepoint on qcp
+    #   * standard_entity?/should_restore? on qcp under the row's config
+    #
+    # The committed semantics the rows pin: a multi-character lexical
+    # (an entity naming a sequence, e.g. "fjlig" -> "fj") maps to its
+    # FIRST character's codepoint; an empty lexical is dropped; the
+    # reverse map keeps insertion order with the lowercase name
+    # preferred as primary (falling back to the first name); the five
+    # predefined entities restore regardless of config; every other
+    # known codepoint restores only with restore_entities on (the
+    # strict mode answers as lenient until DTD parsing exists); an
+    # unknown codepoint never restores.
+    ENTITY_CONFORMANCE_CASES = [
+      [{ "amp" => "&" }, "amp", 38, false, "lenient",
+       true, 38, ["amp"], "amp", true, true],
+      [{ "NonBreakingSpace" => "\u00A0", "nbsp" => "\u00A0" },
+       "nbsp", 160, true, "lenient",
+       true, 160, ["NonBreakingSpace", "nbsp"], "nbsp", false, true],
+      [{ "nbsp" => "\u00A0" }, "nbsp", 160, false, "lenient",
+       true, 160, ["nbsp"], "nbsp", false, false],
+      [{ "nbsp" => "\u00A0" }, "nbsp", 160, true, "strict",
+       true, 160, ["nbsp"], "nbsp", false, true],
+      [{ "AElig" => "Æ" }, "AElig", 198, true, "lenient",
+       true, 198, ["AElig"], "AElig", false, true],
+      [{ "fjlig" => "fj" }, "fjlig", 102, true, "lenient",
+       true, 102, ["fjlig"], "fjlig", false, true],
+      [{ "DotDot" => "\u0020\u20DC" }, "DotDot", 32, true, "lenient",
+       true, 32, ["DotDot"], "DotDot", false, true],
+      [{ "NotEqualTilde" => "≂̸" }, "NotEqualTilde", 8770, true,
+       "lenient",
+       true, 8770, ["NotEqualTilde"], "NotEqualTilde", false, true],
+      [{ "esc" => "\\u00A0" }, "esc", 160, true, "lenient",
+       true, 160, ["esc"], "esc", false, true],
+      [{ "bad" => "" }, "bad", 0, true, "lenient",
+       false, nil, [], nil, false, false],
+      [{ "nbsp" => "\u00A0" }, "nope", 9999, true, "lenient",
+       false, nil, [], nil, false, false],
+    ].map(&:freeze).freeze
+
     class << self
       # Get the raw entity data from the bundled JSON source
       # @return [Hash{String => String}] entity name to character mapping
