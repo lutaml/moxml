@@ -72,7 +72,7 @@ https://github.com/leptris/leptris-ruby[leptris-ruby] FFI binding
 every measured bulk operation — parse, XPath, serialization, SAX, and
 the compiled Moxml::Plan / Moxml::StructPlan materialization paths
 (StructPlan runs 2.3-2.6x raw Nokogiri on the benchmark shape);
-requires leptris >= 1.9.32 (see version table below).
+requires leptris >= 1.9.386.0 (see version table below).
 
 === Underlying library versions
 
@@ -111,32 +111,18 @@ same libxml2 engine, governed by the consistency suite). Removal
 after the deprecation cycle.
 
 |Leptris (leptris-ruby)
-|>= 1.9.194.1
-|Hard floor — `MINIMUM_BINDING_VERSION`; older bindings do not load.
-Raised from 1.9.32 (2026-09-20): every known consumer resolves a
-modern binding, and the sub-1.9.194 accommodation paths are deleted.
-Newer bindings unlock more native surface automatically:
-1.9.194.1+ hot-read aliases, 1.9.201.1+ the C struct
-executor (`Moxml::StructPlan`; the floor is the varargs-mint fix),
-1.9.204+ native document-level parts (created DOCTYPEs as native
-nodes, document-PI removal, declaration clear), 1.9.240+ the bulk
-SAX record drain (`Handler#on_sax_records`) — and 1.9.242+ is
-REQUIRED for that drain to be CORRECT: 1.9.240/241 drain documents
-containing duplicate attributes without surfacing the fatal error
-(moxml#281), so the drain arms only on 1.9.242+, where such
-documents fall back to the callback path and the error fires.
-1.9.255.2+ C-minted walk/build wrappers (construction identity
-without the Ruby mint); 1.9.273.1+ opt-in parse-skip flags
-(`skip_dup_detection`, `skip_source_positions`); 1.9.290.0+ XSLT
-top-level params threading and the bulk child-list append
-(one crossing for N children); 1.9.292.0+ native cross-document
-root adoption (the engine deep-copies a foreign root in C).
-Current recommendation: 1.9.292+ (the native-adoption train;
-carries the plan-ABI surface, the 1.9.290 XSLT-params and
-bulk-append faces, and the 1.9.292 engine deep-copy root install).
+|>= 1.9.386.0
+|ENFORCED hard floor — `MINIMUM_BINDING_VERSION`; the adapter refuses
+to load below it. Raised 1.9.32 → 1.9.194.1 (2026-09-20) → 1.9.386.0
+(2026-10-30, the tested pair): every accommodation path below it is
+deleted and all native faces through the 1.9.385 parent-axis train
+are unconditional. The capability report
+(`Moxml::Adapter::Leptris.capabilities`) answers what the installed
+pair serves; cross-import schema sets (`Context#xsd_set`) ride the
+compile_set face (1.9.386.0 ✓).
 |===
 
-NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.321` (the tested pair; the gemspec itself has zero runtime dependencies). Consumers of the leptris adapter should run leptris 1.9.320+ — earlier engines carry silent wrong-answer plan-path defects (moxml#344); moxml gates degrade to the always-correct slower paths below it.
+NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.386` (the tested pair; the gemspec itself has zero runtime dependencies). The adapter enforces the floor at load.
 `ox ~> 2.14`, `libxml-ruby >= 5.0`, and the vendored oga fork — the CI
 matrix tests exactly those floors.
 
@@ -147,7 +133,7 @@ the runtime environment:
 
 . If running on Opal (`RUBY_ENGINE == "opal"`), Oga is used (pure Ruby, no C extensions)
 . Otherwise, if the installed leptris gem supports programmatic document
-  construction (`Leptris::XML::Document.create`, leptris >= 1.9.32), Leptris is used
+  construction (`Leptris::XML::Document.create`, leptris >= 1.9.386.0), Leptris is used
 . Otherwise, Moxml detects already-loaded XML libraries in this order:
   .. Nokogiri
   .. Ox
@@ -158,7 +144,7 @@ the runtime environment:
 ----
 # Automatic detection — picks the best available adapter
 ctx = Moxml.new
-ctx.config.adapter_name  # => :leptris (leptris >= 1.9.32), :nokogiri otherwise, :oga on Opal
+ctx.config.adapter_name  # => :leptris (leptris >= 1.9.386.0), :nokogiri otherwise, :oga on Opal
 
 # Explicit override — always takes precedence
 ctx = Moxml.new(:ox)

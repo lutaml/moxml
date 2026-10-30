@@ -29,7 +29,22 @@ module Moxml
       # Raised 1.9.32 -> 1.9.194.1 (2026-09-20): every known consumer
       # resolves a modern binding (canon itself pins ~> 1.9.193), and
       # the sub-1.9.194 accommodation paths are deleted.
-      MINIMUM_BINDING_VERSION = "1.9.194.1"
+      # Raised 1.9.194.1 -> 1.9.386.0 (2026-10-30, owner directive
+      # "raise all floors"): the tested pair — every gate below it
+      # unwound, and the floor is ENFORCED (the load refuses below it;
+      # the README's "older bindings do not load" claim is now true).
+      MINIMUM_BINDING_VERSION = "1.9.386.0"
+
+      if Gem::Version.new(::Leptris::VERSION.to_s) <
+          Gem::Version.new(MINIMUM_BINDING_VERSION)
+        raise Moxml::AdapterError.new(
+          "the leptris binding is #{::Leptris::VERSION}; moxml requires " \
+          ">= #{MINIMUM_BINDING_VERSION} (the tested floor — older " \
+          "bindings are untested and their accommodation paths are deleted)",
+          adapter: :leptris,
+          operation: "load",
+        )
+      end
 
       # leptris_parse_html_string shipped in bindings 1.9.80
       # (libleptris 1.9.75, engine #659) as Leptris::XML.parse_html.
@@ -193,8 +208,7 @@ module Moxml
       # so the gate names the first release where the drain is
       # CORRECT, not merely present. Dev floor pins ~> 1.9.238;
       # older bindings take the callback Parser below.
-      NATIVE_SAX_RECORDS =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.242")
+      NATIVE_SAX_RECORDS = true
 
       # Document#absorb (engine #1548): one call transfers a source
       # document's pool ownership into the destination, so
@@ -208,8 +222,7 @@ module Moxml
       # lesson).
       NATIVE_DOC_ABSORB =
         defined?(::Leptris::XML::Document) &&
-        ::Leptris::XML::Document.method_defined?(:absorb) &&
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.311.3")
+        ::Leptris::XML::Document.method_defined?(:absorb)
 
       # Document#to_html indent kwargs (issue #354, engine
       # leptris#1637 via leptris-ruby#421): the nested HTML layout
@@ -218,7 +231,6 @@ module Moxml
       # to_html takes no kwargs and would raise ArgumentError from
       # the pass-through.
       HTML_SERIALIZE_INDENT =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.338.0") &&
         defined?(::Leptris::XML::Document) &&
         ::Leptris::XML::Document.method_defined?(:to_html) &&
         ::Leptris::XML::Document.instance_method(:to_html)
@@ -240,7 +252,6 @@ module Moxml
       # the rescue-to-empty fallback. The kwarg probe pairs the
       # floor (a binding without the kwarg cannot arm).
       RECOVER_MODE =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.344.0") &&
         ::Leptris::XML::ParseOptions.instance_method(:initialize)
           .parameters.any? { |_, key| key == :recover }
 
@@ -250,7 +261,6 @@ module Moxml
       # per-attribute reads behind ::Leptris::XML::Element
       # #attribute_pairs.
       ELEMENT_ATTR_SNAPSHOT =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.353.0") &&
         ::Leptris::XML::Element.method_defined?(:attributes_snapshot)
 
       # Markup-accumulating builder face (leptris-ruby#374 lever 2,
@@ -263,7 +273,6 @@ module Moxml
       # pairs the gate (misrelease races — NATIVE_PLAN_STRUCTS
       # lesson).
       NATIVE_XSD =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.321.0") &&
         defined?(::Leptris::XML::XSD) &&
         ::Leptris::XML::FFI.respond_to?(:leptris_xsd_validate)
 
@@ -284,15 +293,13 @@ module Moxml
       # finalizer and frees now. Face-probed with the version
       # floor (the NATIVE_DOC_ABSORB pairing).
       XSD_RELEASE =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.342.0") &&
         defined?(::Leptris::XML::XSD::Schema) &&
         ::Leptris::XML::XSD::Schema.method_defined?(:release)
 
       NATIVE_BUILDER =
         defined?(::Leptris::XML::Builder) &&
         defined?(::Leptris::XML::Document) &&
-        ::Leptris::XML::Document.method_defined?(:build) &&
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.313.0")
+        ::Leptris::XML::Document.method_defined?(:build)
 
       # XSLT 1.0/2.0/3.0 through the engine's compiled-stylesheet
       # faces (Moxml::XSLT contract). Top-level parameters are not
@@ -339,9 +346,6 @@ module Moxml
             native_mutations_coherent: !NATIVE_MUTATIONS_COHERENT.nil?,
             native_entity_refs: !NATIVE_ENTITY_REFS.nil?,
             native_bulk_fixed: !NATIVE_BULK_FIXED.nil?,
-            native_bulk_sax_records: NATIVE_SAX_RECORDS,
-            native_document_parts: NATIVE_DOC_PARTS,
-            native_plan_rows: NATIVE_PLAN_ROWS,
             native_plan_structs: NATIVE_PLAN_STRUCTS,
             native_plan_typed: NATIVE_PLAN_TYPED,
             digest: DIGEST_SUPPORTED,
@@ -577,9 +581,7 @@ module Moxml
         # there.
         NATIVE_IDENTITY = NATIVE_MUTATIONS_COHERENT
 
-        NATIVE_C_MINT =
-          NATIVE_IDENTITY &&
-          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.255.2")
+        NATIVE_C_MINT = NATIVE_IDENTITY
 
         NATIVE_KLASS_CHILDREN = NATIVE_IDENTITY
       end
@@ -1038,7 +1040,6 @@ module Moxml
       # of NoMethodError-ing — the 1.9.199.0 lesson).
       NATIVE_XSLT_PARAMS =
         NATIVE_READ_LAYER &&
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.290.0") &&
         ::Leptris::XML::XSLT::Stylesheet.instance_method(:apply_to)
           .parameters.size > 1
 
@@ -1208,8 +1209,7 @@ module Moxml
       # SILENT wrong answers, so the gate names the fixed engine:
       # below 1.9.320.0 the plan faces degrade to the
       # always-correct generic wrapper walk.
-      NATIVE_PLAN_ROWS =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.320.0")
+      NATIVE_PLAN_ROWS = true
 
       # leptris-ruby#272 (binding 1.9.201.1): Native.plan_structs —
       # the C struct executor behind Moxml::StructPlan. The floor
@@ -1224,9 +1224,8 @@ module Moxml
       # captures) — the struct executor degrades to the Ruby Plan
       # fallback below the fix, same as the varargs-mint floor.
       NATIVE_PLAN_STRUCTS =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.320.0") &&
-        (!defined?(::Leptris::XML::Native) ||
-         ::Leptris::XML::Native.respond_to?(:plan_structs))
+        !defined?(::Leptris::XML::Native) ||
+        ::Leptris::XML::Native.respond_to?(:plan_structs)
 
       # leptris-ruby#275 (binding 1.9.204, the remove half of the
       # document-level surfaces): remove_pi, clear_declaration,
@@ -1242,7 +1241,6 @@ module Moxml
         ::Leptris::XML::Native.respond_to?(:plan_structs_typed?)
 
       NATIVE_DOC_PARTS =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.204.0") &&
         ::Leptris::XML::Document.method_defined?(:remove_doctype) &&
         ::Leptris::XML::Document.method_defined?(:clear_declaration)
 
@@ -2290,9 +2288,7 @@ module Moxml
           end
         end
 
-        NATIVE_ROOT_ADOPT =
-          NATIVE_READ_LAYER &&
-          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.292.0")
+        NATIVE_ROOT_ADOPT = NATIVE_READ_LAYER
 
         # The engine deep-copies the foreign subtree into the target
         # document's pool (leptris#1495) and the binding memoizes the
@@ -3437,9 +3433,7 @@ module Moxml
           end
         end
 
-        NATIVE_APPEND_CHILDREN =
-          NATIVE_READ_LAYER &&
-          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.290.0")
+        NATIVE_APPEND_CHILDREN = NATIVE_READ_LAYER
 
         def replace_children(node, new_children)
           # Cross-pool children: the binding's bulk face adopts per
@@ -3893,8 +3887,7 @@ module Moxml
         # (parent-of-attribute names the OWNER element) plus the
         # cross-doc adopt attribute-chain fix, and standoc's svg
         # id cleanup rides `./@id/..` hot (moxml#474).
-        PARENT_AXIS_NATIVE =
-          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.385")
+        PARENT_AXIS_NATIVE = true
         NON_PARENT_REVERSE_AXES = %w[ancestor ancestor-or-self
                                      preceding preceding-sibling].freeze
         REVERSE_AXIS_CACHE = XPath::Cache.new(200)

@@ -15,8 +15,8 @@ RSpec.describe "engine capability report" do
     expect(caps).to be_frozen
     expect(caps[:engine_version]).to match(/\A1\.\d+\.\d+/)
     expect(caps.keys).to include(
-      :native_read_layer, :native_plan_structs, :native_bulk_sax_records,
-      :native_document_parts, :xsd, :relaxng, :xslt, :digest
+      :native_read_layer, :native_plan_structs, :native_plan_typed,
+      :xsd, :relaxng, :xslt, :digest
     )
   end
 
@@ -31,7 +31,8 @@ RSpec.describe "engine capability report" do
     caps = Moxml::Adapter::Leptris.capabilities
     expect(caps.keys).not_to include(
       :prefixed_attr_predicates_native, :libxml2_layout_parity,
-      :indent_unit_supported, :element_unit_comments
+      :indent_unit_supported, :element_unit_comments,
+      :native_bulk_sax_records, :native_document_parts, :native_plan_rows
     )
     expect(caps[:xsd]).to be(true)
     expect(caps[:xslt]).to be(true)
