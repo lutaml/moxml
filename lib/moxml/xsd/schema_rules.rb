@@ -197,7 +197,7 @@ module Moxml
                                :attribute_default, :elements,
                                :attributes, :contents, :version,
                                :element_patterns, :attribute_patterns,
-                               :substitution_members)
+                               :substitution_members, :self_contained)
 
       # Resolves a QName token against an element's in-scope
       # bindings. node.namespaces is adapter-divergent (some
@@ -338,7 +338,7 @@ module Moxml
         # Index one schema document. Returns nil when the source
         # cannot be indexed — the engine's answer then stands alone
         # (today's behavior).
-        def index(schema_source, context)
+        def index(schema_source, context, self_contained: nil)
           root = context.parse(schema_source).root
           return nil unless root&.name == "schema"
 
@@ -346,7 +346,8 @@ module Moxml
             root["targetNamespace"].to_s,
             root["elementFormDefault"] == "qualified",
             root["attributeFormDefault"] == "qualified",
-            {}, {}, {}, schema_version(root), {}, {}, {}
+            {}, {}, {}, schema_version(root), {}, {}, {},
+            self_contained.nil? ? composition_free?(root) : self_contained
           )
           child_elements(root).each do |decl|
             case decl.name
@@ -358,6 +359,24 @@ module Moxml
           index
         rescue StandardError
           nil
+        end
+
+        COMPOSITION_ELEMENTS = %w[include import redefine override].freeze
+
+        # A schema document that composes other documents
+        # (include/import/redefine/override) declares only part of
+        # the compiled declaration surface in its own source — the
+        # engine resolves the members, and a strict re-check run
+        # against this index alone would answer "not declared" for
+        # components that live in a member (#510): a false report,
+        # which the one-directional contract forbids. Composition
+        # therefore turns the strict re-checks off — the index
+        # under-reports instead. Schema sets (xsd_set) are always
+        # composition-shaped: any member may carry declarations.
+        def composition_free?(root)
+          child_elements(root).none? do |decl|
+            COMPOSITION_ELEMENTS.include?(decl.name)
+          end
         end
 
         # The effective schema version declared at the root
@@ -606,11 +625,17 @@ module Moxml
           model = index.contents[root_qname]
           findings = []
           findings << nil_finding(root, declaration) if declaration
-          findings.concat(attribute_findings(root, model, index))
-          if model
+          # The strict wildcard/attribute re-checks answer "not
+          # declared" against this index's declaration sets — they
+          # vouch only when the index saw the whole declaration
+          # surface (no composition, #510).
+          if model && index.self_contained
             child_elements(root).each do |child|
               findings.concat(child_findings(child, model, index))
             end
+          end
+          if index.self_contained
+            findings.concat(attribute_findings(root, model, index))
           end
           findings.compact
         end

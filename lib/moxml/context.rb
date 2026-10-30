@@ -214,9 +214,10 @@ module Moxml
     # Compile an XSD schema from a file path — <xs:include href>
     # resolves relative to the file's directory (the engine
     # resolves it; reading the file into #xsd would lose that).
-    # The #452 rule index reads this document only; included
-    # schema parts stay engine-validated (the index can only
-    # under-report).
+    # The #452 rule index reads this document only; a document
+    # that composes others (include/import/redefine/override)
+    # turns the strict re-checks off (#510) — included parts stay
+    # engine-validated and the index can only under-report.
     def xsd_file(path)
       handle = config.adapter.xsd_compile_file(path.to_s)
       source = File.read(path.to_s)
@@ -229,7 +230,10 @@ module Moxml
     # types) are visible to the head's content models — the
     # single-document faces cannot see them (#483 item 4). The
     # Schema's #version / SchemaRules index read the HEAD document
-    # (the first path); engine-set semantics cover the rest.
+    # (the first path); engine-set semantics cover the rest. A set
+    # is composition-shaped by contract, so the strict re-checks
+    # stay off (#510): the index under-reports instead of
+    # false-reporting components that live in a member.
     # Adapters without a set-capable engine raise
     # Moxml::NotImplementedError.
     def xsd_set(*paths)
@@ -238,7 +242,7 @@ module Moxml
 
       handle = config.adapter.xsd_compile_set(paths.map(&:to_s))
       source = File.read(paths.first.to_s)
-      Moxml::XSD::Schema.new(handle, self, source)
+      Moxml::XSD::Schema.new(handle, self, source, self_contained: false)
     end
 
     # Compile a RELAX NG schema from source or from a file path (the
