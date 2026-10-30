@@ -1,5 +1,5 @@
 {
-  "schema": 2,
+  "schema": 3,
   "generator": "moxml 0.5.175",
   "cases": {
     "builtin_lexical": [
@@ -845,6 +845,193 @@
         "sibling_names": [],
         "covers": false,
         "exclusion": "not_namespace"
+      }
+    ],
+    "entity_registry": [
+      {
+        "seed": {
+          "amp": "&"
+        },
+        "qname": "amp",
+        "qcp": 38,
+        "restore_entities": false,
+        "mode": "lenient",
+        "declared": true,
+        "codepoint": 38,
+        "names": [
+          "amp"
+        ],
+        "primary": "amp",
+        "standard": true,
+        "restore": true
+      },
+      {
+        "seed": {
+          "NonBreakingSpace": " ",
+          "nbsp": " "
+        },
+        "qname": "nbsp",
+        "qcp": 160,
+        "restore_entities": true,
+        "mode": "lenient",
+        "declared": true,
+        "codepoint": 160,
+        "names": [
+          "NonBreakingSpace",
+          "nbsp"
+        ],
+        "primary": "nbsp",
+        "standard": false,
+        "restore": true
+      },
+      {
+        "seed": {
+          "nbsp": " "
+        },
+        "qname": "nbsp",
+        "qcp": 160,
+        "restore_entities": false,
+        "mode": "lenient",
+        "declared": true,
+        "codepoint": 160,
+        "names": [
+          "nbsp"
+        ],
+        "primary": "nbsp",
+        "standard": false,
+        "restore": false
+      },
+      {
+        "seed": {
+          "nbsp": " "
+        },
+        "qname": "nbsp",
+        "qcp": 160,
+        "restore_entities": true,
+        "mode": "strict",
+        "declared": true,
+        "codepoint": 160,
+        "names": [
+          "nbsp"
+        ],
+        "primary": "nbsp",
+        "standard": false,
+        "restore": true
+      },
+      {
+        "seed": {
+          "AElig": "Æ"
+        },
+        "qname": "AElig",
+        "qcp": 198,
+        "restore_entities": true,
+        "mode": "lenient",
+        "declared": true,
+        "codepoint": 198,
+        "names": [
+          "AElig"
+        ],
+        "primary": "AElig",
+        "standard": false,
+        "restore": true
+      },
+      {
+        "seed": {
+          "fjlig": "fj"
+        },
+        "qname": "fjlig",
+        "qcp": 102,
+        "restore_entities": true,
+        "mode": "lenient",
+        "declared": true,
+        "codepoint": 102,
+        "names": [
+          "fjlig"
+        ],
+        "primary": "fjlig",
+        "standard": false,
+        "restore": true
+      },
+      {
+        "seed": {
+          "DotDot": " ⃜"
+        },
+        "qname": "DotDot",
+        "qcp": 32,
+        "restore_entities": true,
+        "mode": "lenient",
+        "declared": true,
+        "codepoint": 32,
+        "names": [
+          "DotDot"
+        ],
+        "primary": "DotDot",
+        "standard": false,
+        "restore": true
+      },
+      {
+        "seed": {
+          "NotEqualTilde": "≂̸"
+        },
+        "qname": "NotEqualTilde",
+        "qcp": 8770,
+        "restore_entities": true,
+        "mode": "lenient",
+        "declared": true,
+        "codepoint": 8770,
+        "names": [
+          "NotEqualTilde"
+        ],
+        "primary": "NotEqualTilde",
+        "standard": false,
+        "restore": true
+      },
+      {
+        "seed": {
+          "esc": "\\u00A0"
+        },
+        "qname": "esc",
+        "qcp": 160,
+        "restore_entities": true,
+        "mode": "lenient",
+        "declared": true,
+        "codepoint": 160,
+        "names": [
+          "esc"
+        ],
+        "primary": "esc",
+        "standard": false,
+        "restore": true
+      },
+      {
+        "seed": {
+          "bad": ""
+        },
+        "qname": "bad",
+        "qcp": 0,
+        "restore_entities": true,
+        "mode": "lenient",
+        "declared": false,
+        "codepoint": null,
+        "names": [],
+        "primary": null,
+        "standard": false,
+        "restore": false
+      },
+      {
+        "seed": {
+          "nbsp": " "
+        },
+        "qname": "nope",
+        "qcp": 9999,
+        "restore_entities": true,
+        "mode": "lenient",
+        "declared": false,
+        "codepoint": null,
+        "names": [],
+        "primary": null,
+        "standard": false,
+        "restore": false
       }
     ]
   }
