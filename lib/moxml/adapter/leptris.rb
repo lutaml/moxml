@@ -335,9 +335,18 @@ module Moxml
         # consumers ask for them by name; the internal routing gates
         # the floor made constant are absent by design. Frozen; the
         # keys are the model's capability names.
+        #
+        # Two versions, never conflated (the binding vendors the
+        # engine; the numbers differ): +binding_version+ is the gem's
+        # (Leptris::VERSION), +engine_version+ is libleptris's own
+        # (the leptris_version() C face, face-probed — nil on a
+        # binding without it).
         def capabilities
           @capabilities ||= {
-            engine_version: ::Leptris::VERSION,
+            binding_version: ::Leptris::VERSION,
+            engine_version:
+              (::Leptris::XML::FFI.leptris_version if
+                ::Leptris::XML::FFI.respond_to?(:leptris_version)),
             native_read_layer: !NATIVE_READ_LAYER.nil?,
             native_xpath_seams: !NATIVE_XPATH_SEAMS.nil?,
             bulk_xpath_rows: BULK_XPATH_ROWS,
