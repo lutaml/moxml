@@ -96,11 +96,15 @@ module Moxml
               "schema released (deterministic drop); compile a new one"
       end
 
-      def initialize(handle, context, schema_source = nil)
+      def initialize(handle, context, schema_source = nil,
+                     self_contained: nil)
         @handle = handle
         @context = context
         @rules_index =
-          schema_source && SchemaRules.index(schema_source, context)
+          if schema_source
+            SchemaRules.index(schema_source, context,
+                              self_contained: self_contained)
+          end
         assert_adapter_matches_handle!
       end
 

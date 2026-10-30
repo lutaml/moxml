@@ -82,6 +82,84 @@ RSpec.describe "Schema-set compilation" do
     end
   end
 
+  # #510: the strict re-check answers "not declared" against the
+  # head document's own declaration index; composition (a set, or a
+  # single document carrying include/import/redefine/override)
+  # means declarations may live in a member the index never saw —
+  # the re-check must stay silent (under-report, never
+  # false-report) and let the engine's set-wide answer stand.
+  describe "strict re-check across composed schemas (#510)" do
+    def write_wildcard_set(dir)
+      File.write(File.join(dir, "headw.xsd"), <<~XSD)
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                   xmlns="urn:W" targetNamespace="urn:W">
+          <xs:import namespace="urn:D" schemaLocation="decl.xsd"/>
+          <xs:element name="foo">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:any namespace="##other" processContents="strict"/>
+              </xs:sequence>
+            </xs:complexType>
+          </xs:element>
+        </xs:schema>
+      XSD
+      File.write(File.join(dir, "decl.xsd"), <<~XSD)
+        <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                   xmlns="urn:D" targetNamespace="urn:D">
+          <xs:element name="bar" type="xs:string"/>
+        </xs:schema>
+      XSD
+      [File.join(dir, "headw.xsd"), File.join(dir, "decl.xsd")]
+    end
+
+    def wildcard_instance
+      '<foo xmlns="urn:W" xmlns:d="urn:D"><d:bar>hi</d:bar></foo>'
+    end
+
+    it "does not false-report a member-declared admission on a set" do
+      skip "requires the leptris compile_set face (binding 1.9.386.0+)" unless
+        set_capable?
+
+      Dir.mktmpdir do |dir|
+        paths = write_wildcard_set(dir)
+        schema = ctx.xsd_set(*paths)
+        expect(schema.validate(wildcard_instance)).to be_empty
+      end
+    end
+
+    it "does not false-report on a single composing document" do
+      Dir.mktmpdir do |dir|
+        write_wildcard_set(dir)
+        schema = ctx.xsd_file(File.join(dir, "headw.xsd"))
+        expect(schema.validate(wildcard_instance)).to be_empty
+      end
+    end
+
+    it "keeps the re-check on a self-contained schema" do
+      Dir.mktmpdir do |dir|
+        path = File.join(dir, "solo.xsd")
+        File.write(path, <<~XSD)
+          <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                     xmlns="urn:S" targetNamespace="urn:S">
+            <xs:element name="solo">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:any namespace="##other" processContents="strict"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:schema>
+        XSD
+        schema = ctx.xsd_file(path)
+        errors = schema.validate(
+          '<solo xmlns="urn:S"><u:x xmlns:u="urn:U"/></solo>',
+        )
+        expect(errors.first.message)
+          .to include("matches a strict wildcard but is not declared")
+      end
+    end
+  end
+
   it "raises on an empty set" do
     expect { ctx.xsd_set }.to raise_error(ArgumentError)
   end
