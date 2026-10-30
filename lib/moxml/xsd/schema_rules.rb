@@ -78,17 +78,83 @@ module Moxml
           nil
         end
 
+        # The wildcard-face conformance dataset (#496): admission and
+        # negative-exclusion answers as data, pinned BY the Ruby suite
+        # (spec/moxml/wildcard_conformance_spec.rb) and exported for
+        # the Rust/TS runners. Row shape: [constraint, process,
+        # not_namespace, not_qname tokens, item_namespace, item_qname,
+        # defined, sibling_names, covers, exclusion]. Disallowed
+        # entries keep the pre-resolution token forms the constructor
+        # receives; item qnames are in the Clark form the face
+        # receives; item namespaces use the face's spellings
+        # ("local", "tns", or the URI).
+        WILDCARD_CASES = [
+          ["##any", "strict", nil, [], "local", "{}x", false, [], true, nil],
+          ["##any", "strict", nil, [], "tns", "{}x", false, [], true, nil],
+          ["##other", "strict", nil, [], "local", "{}x", false, [], false, nil],
+          ["##other", "strict", nil, [], "tns", "{}x", false, [], false, nil],
+          ["##other", "strict", nil, [], "urn:other", "{}x", false, [], true, nil],
+          ["##local", "strict", nil, [], "local", "{}x", false, [], true, nil],
+          ["##local", "strict", nil, [], "urn:b", "{}x", false, [], false, nil],
+          ["##targetNamespace urn:b", "strict", nil, [], "tns", "{}x", false, [],
+           true, nil],
+          ["##targetNamespace urn:b", "strict", nil, [], "local", "{}x", false,
+           [], false, nil],
+          ["urn:a urn:b", "strict", nil, [], "urn:a", "{}x", false, [], true,
+           nil],
+          ["urn:a urn:b", "strict", nil, [], "urn:c", "{}x", false, [], false,
+           nil],
+          ["urn:a", "lax", nil, [], "urn:a", "{}x", false, [], true, nil],
+          ["urn:a", "skip", nil, [], "urn:a", "{}x", false, [], true, nil],
+          ["##any", "strict", nil, ["x"], "local", "{}x", false, [], true,
+           "not_qname"],
+          ["##any", "strict", nil, ["x"], "local", "{}y", false, [], true, nil],
+          ["##any", "lax", nil, ["x"], "local", "{}x", true, [], true,
+           "not_qname"],
+          ["##any", "skip", nil, ["x"], "local", "{}x", true, [], true,
+           "not_qname"],
+          ["##any", "strict", nil, ["##defined"], "local", "{}x", false, [],
+           true, nil],
+          ["##any", "strict", nil, ["##defined"], "local", "{}x", true, [],
+           true, "not_qname"],
+          ["##any", "strict", nil, ["##definedSibling"], "local", "{}x", false,
+           ["{}y"], true, nil],
+          ["##any", "strict", nil, ["##definedSibling"], "local", "{}x", false,
+           ["{}x"], true, "not_qname"],
+          ["urn:a", "strict", "urn:z", [], "urn:a", "{}x", false, [], true,
+           nil],
+          ["urn:a", "strict", "urn:z", [], "urn:z", "{}x", false, [], false,
+           "not_namespace"],
+          ["urn:a", "lax", "urn:z", [], "urn:z", "{}x", false, [], false,
+           "not_namespace"],
+        ].map(&:freeze).freeze
+
         private
 
         def namespace_constraint(value, not_namespace)
           if not_namespace
-            [:not, not_namespace.split(/\s+/).reject(&:empty?)]
+            [:not, namespace_entries(not_namespace)]
           elsif value.nil? || value == "##any" || value == ""
             [:any, []]
           elsif value == "##other"
             [:other, []]
           else
-            [:list, value.split(/\s+/).reject(&:empty?)]
+            [:list, namespace_entries(value)]
+          end
+        end
+
+        # Namespace entries carry one internal convention: the
+        # special tokens keep their string spellings (entry_covers?
+        # maps them to :tns/:local); real URIs become Symbols, the
+        # same shape covers? receives. A String entry would never
+        # equal a Symbol namespace — the comparison would silently
+        # under-report on every :list and :not wildcard.
+        def namespace_entries(value)
+          value.to_s.split(/\s+/).reject(&:empty?).map do |entry|
+            case entry
+            when "##targetNamespace", "##local" then entry
+            else entry.to_sym
+            end
           end
         end
 

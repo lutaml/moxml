@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "generator": "moxml 0.5.175",
   "cases": {
     "builtin_lexical": [
@@ -535,6 +535,316 @@
         "value": "a",
         "matches": false,
         "translatable": false
+      }
+    ],
+    "schema_wildcards": [
+      {
+        "constraint": "##any",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "local",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "##any",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "tns",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "##other",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "local",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": false,
+        "exclusion": null
+      },
+      {
+        "constraint": "##other",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "tns",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": false,
+        "exclusion": null
+      },
+      {
+        "constraint": "##other",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "urn:other",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "##local",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "local",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "##local",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "urn:b",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": false,
+        "exclusion": null
+      },
+      {
+        "constraint": "##targetNamespace urn:b",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "tns",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "##targetNamespace urn:b",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "local",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": false,
+        "exclusion": null
+      },
+      {
+        "constraint": "urn:a urn:b",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "urn:a",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "urn:a urn:b",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "urn:c",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": false,
+        "exclusion": null
+      },
+      {
+        "constraint": "urn:a",
+        "process": "lax",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "urn:a",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "urn:a",
+        "process": "skip",
+        "not_namespace": null,
+        "not_qname": [],
+        "item_namespace": "urn:a",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "##any",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [
+          "x"
+        ],
+        "item_namespace": "local",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": "not_qname"
+      },
+      {
+        "constraint": "##any",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [
+          "x"
+        ],
+        "item_namespace": "local",
+        "item_qname": "{}y",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "##any",
+        "process": "lax",
+        "not_namespace": null,
+        "not_qname": [
+          "x"
+        ],
+        "item_namespace": "local",
+        "item_qname": "{}x",
+        "defined": true,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": "not_qname"
+      },
+      {
+        "constraint": "##any",
+        "process": "skip",
+        "not_namespace": null,
+        "not_qname": [
+          "x"
+        ],
+        "item_namespace": "local",
+        "item_qname": "{}x",
+        "defined": true,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": "not_qname"
+      },
+      {
+        "constraint": "##any",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [
+          "##defined"
+        ],
+        "item_namespace": "local",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "##any",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [
+          "##defined"
+        ],
+        "item_namespace": "local",
+        "item_qname": "{}x",
+        "defined": true,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": "not_qname"
+      },
+      {
+        "constraint": "##any",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [
+          "##definedSibling"
+        ],
+        "item_namespace": "local",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [
+          "{}y"
+        ],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "##any",
+        "process": "strict",
+        "not_namespace": null,
+        "not_qname": [
+          "##definedSibling"
+        ],
+        "item_namespace": "local",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [
+          "{}x"
+        ],
+        "covers": true,
+        "exclusion": "not_qname"
+      },
+      {
+        "constraint": "urn:a",
+        "process": "strict",
+        "not_namespace": "urn:z",
+        "not_qname": [],
+        "item_namespace": "urn:a",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": true,
+        "exclusion": null
+      },
+      {
+        "constraint": "urn:a",
+        "process": "strict",
+        "not_namespace": "urn:z",
+        "not_qname": [],
+        "item_namespace": "urn:z",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": false,
+        "exclusion": "not_namespace"
+      },
+      {
+        "constraint": "urn:a",
+        "process": "lax",
+        "not_namespace": "urn:z",
+        "not_qname": [],
+        "item_namespace": "urn:z",
+        "item_qname": "{}x",
+        "defined": false,
+        "sibling_names": [],
+        "covers": false,
+        "exclusion": "not_namespace"
       }
     ]
   }

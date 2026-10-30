@@ -357,8 +357,9 @@ namespace :conformance do
     require_relative "lib/moxml"
     lexical = Moxml::XSD::BuiltinLexical::CONFORMANCE_CASES
     regex = Moxml::XSD::SchemaRules::XsdRegex::CONFORMANCE_CASES
+    wildcards = Moxml::XSD::SchemaRules::Wildcard::WILDCARD_CASES
     payload = {
-      schema: 1,
+      schema: 2,
       generator: "moxml #{Moxml::VERSION}",
       cases: {
         "builtin_lexical" => lexical.map do |type, lexical_value, expected|
@@ -370,13 +371,25 @@ namespace :conformance do
             "matches" => matches, "translatable" => translatable
           }
         end,
+        "schema_wildcards" => wildcards.map do |row|
+          constraint, process, not_namespace, not_qname, item_ns, item_qname,
+            defined, sibling_names, covers, exclusion = row
+          {
+            "constraint" => constraint, "process" => process,
+            "not_namespace" => not_namespace, "not_qname" => not_qname,
+            "item_namespace" => item_ns, "item_qname" => item_qname,
+            "defined" => defined, "sibling_names" => sibling_names,
+            "covers" => covers, "exclusion" => exclusion
+          }
+        end,
       },
     }
     dir = File.expand_path("conformance", __dir__)
     FileUtils.mkdir_p(dir)
     target = File.join(dir, "moxml-conformance.json")
     File.write(target, "#{JSON.pretty_generate(payload)}\n")
-    puts "conformance: exported #{lexical.size + regex.size} cases to #{target}"
+    puts "conformance: exported #{lexical.size + regex.size + wildcards.size} " \
+         "cases to #{target}"
   end
 end
 
