@@ -1,0 +1,413 @@
+{
+  "schema": 1,
+  "generator": "moxml 0.5.171",
+  "cases": {
+    "builtin_lexical": [
+      {
+        "type": "xs:token",
+        "lexical": "a  b",
+        "valid": true
+      },
+      {
+        "type": "xs:ID",
+        "lexical": " id ",
+        "valid": true
+      },
+      {
+        "type": "xs:NMTOKEN",
+        "lexical": "\tx ",
+        "valid": true
+      },
+      {
+        "type": "xs:ID",
+        "lexical": "1d",
+        "valid": false
+      },
+      {
+        "type": "xs:integer",
+        "lexical": "11111111111111111111111111111",
+        "valid": true
+      },
+      {
+        "type": "xs:positiveInteger",
+        "lexical": "11111111111111111111111111111",
+        "valid": true
+      },
+      {
+        "type": "xs:nonNegativeInteger",
+        "lexical": "11111111111111111111111111111",
+        "valid": true
+      },
+      {
+        "type": "xs:negativeInteger",
+        "lexical": "-100000000000000000000",
+        "valid": true
+      },
+      {
+        "type": "xs:nonPositiveInteger",
+        "lexical": "0",
+        "valid": true
+      },
+      {
+        "type": "xs:nonPositiveInteger",
+        "lexical": "-0",
+        "valid": true
+      },
+      {
+        "type": "xs:long",
+        "lexical": "9223372036854775807",
+        "valid": true
+      },
+      {
+        "type": "xs:long",
+        "lexical": "9223372036854775808",
+        "valid": false
+      },
+      {
+        "type": "xs:unsignedLong",
+        "lexical": "18446744073709551615",
+        "valid": true
+      },
+      {
+        "type": "xs:unsignedLong",
+        "lexical": "18446744073709551616",
+        "valid": false
+      },
+      {
+        "type": "xs:byte",
+        "lexical": "128",
+        "valid": false
+      },
+      {
+        "type": "xs:unsignedByte",
+        "lexical": "256",
+        "valid": false
+      },
+      {
+        "type": "xs:float",
+        "lexical": "+INF",
+        "valid": true
+      },
+      {
+        "type": "xs:double",
+        "lexical": "-INF",
+        "valid": true
+      },
+      {
+        "type": "xs:float",
+        "lexical": "NaN",
+        "valid": true
+      },
+      {
+        "type": "xs:float",
+        "lexical": "1.5E-3",
+        "valid": true
+      },
+      {
+        "type": "xs:decimal",
+        "lexical": "5.",
+        "valid": true
+      },
+      {
+        "type": "xs:decimal",
+        "lexical": ".5",
+        "valid": true
+      },
+      {
+        "type": "xs:decimal",
+        "lexical": "1e3",
+        "valid": false
+      },
+      {
+        "type": "xs:date",
+        "lexical": "2024-02-29",
+        "valid": true
+      },
+      {
+        "type": "xs:date",
+        "lexical": "1999-02-29",
+        "valid": false
+      },
+      {
+        "type": "xs:date",
+        "lexical": "2024-04-31",
+        "valid": false
+      },
+      {
+        "type": "xs:date",
+        "lexical": "2024-13-01",
+        "valid": false
+      },
+      {
+        "type": "xs:date",
+        "lexical": "not-a-date",
+        "valid": false
+      },
+      {
+        "type": "xs:dateTime",
+        "lexical": "2024-02-29T23:59:59Z",
+        "valid": true
+      },
+      {
+        "type": "xs:dateTime",
+        "lexical": "1999-02-29T00:00:00",
+        "valid": false
+      },
+      {
+        "type": "xs:dateTime",
+        "lexical": "not-a-date",
+        "valid": false
+      },
+      {
+        "type": "xs:dateTimeStamp",
+        "lexical": "2024-02-29T00:00:00Z",
+        "valid": true
+      },
+      {
+        "type": "xs:dateTimeStamp",
+        "lexical": "2024-02-29T00:00:00",
+        "valid": false
+      },
+      {
+        "type": "xs:time",
+        "lexical": "23:59:59.999+05:30",
+        "valid": true
+      },
+      {
+        "type": "xs:time",
+        "lexical": "24:00:00",
+        "valid": false
+      },
+      {
+        "type": "xs:time",
+        "lexical": "25:20:00",
+        "valid": false
+      },
+      {
+        "type": "xs:time",
+        "lexical": "13:20:60",
+        "valid": false
+      },
+      {
+        "type": "xs:gYearMonth",
+        "lexical": "2024-02Z",
+        "valid": true
+      },
+      {
+        "type": "xs:gYearMonth",
+        "lexical": "2024-13",
+        "valid": false
+      },
+      {
+        "type": "xs:gMonthDay",
+        "lexical": "--02-29",
+        "valid": true
+      },
+      {
+        "type": "xs:gMonthDay",
+        "lexical": "--02-30",
+        "valid": false
+      },
+      {
+        "type": "xs:gDay",
+        "lexical": "---31",
+        "valid": true
+      },
+      {
+        "type": "xs:gDay",
+        "lexical": "---32",
+        "valid": false
+      },
+      {
+        "type": "xs:duration",
+        "lexical": "P1Y2M3DT4H5M6.5S",
+        "valid": true
+      },
+      {
+        "type": "xs:duration",
+        "lexical": "PT0S",
+        "valid": true
+      },
+      {
+        "type": "xs:duration",
+        "lexical": "-P1D",
+        "valid": true
+      },
+      {
+        "type": "xs:duration",
+        "lexical": "P",
+        "valid": false
+      },
+      {
+        "type": "xs:duration",
+        "lexical": "PT",
+        "valid": false
+      },
+      {
+        "type": "xs:duration",
+        "lexical": "P1Y2MT",
+        "valid": false
+      },
+      {
+        "type": "xs:duration",
+        "lexical": "P200.5Y",
+        "valid": false
+      },
+      {
+        "type": "xs:dayTimeDuration",
+        "lexical": "P1DT2H",
+        "valid": true
+      },
+      {
+        "type": "xs:dayTimeDuration",
+        "lexical": "P1Y",
+        "valid": false
+      },
+      {
+        "type": "xs:yearMonthDuration",
+        "lexical": "P1Y2M",
+        "valid": true
+      },
+      {
+        "type": "xs:yearMonthDuration",
+        "lexical": "P1D",
+        "valid": false
+      },
+      {
+        "type": "xs:yearMonthDuration",
+        "lexical": "P1YT1H",
+        "valid": false
+      },
+      {
+        "type": "xs:base64Binary",
+        "lexical": "aGVsbG8=",
+        "valid": true
+      },
+      {
+        "type": "xs:base64Binary",
+        "lexical": "abcd",
+        "valid": true
+      },
+      {
+        "type": "xs:base64Binary",
+        "lexical": "abcde",
+        "valid": false
+      },
+      {
+        "type": "xs:base64Binary",
+        "lexical": "a b",
+        "valid": false
+      },
+      {
+        "type": "xs:hexBinary",
+        "lexical": "0A",
+        "valid": true
+      },
+      {
+        "type": "xs:hexBinary",
+        "lexical": "0AB",
+        "valid": false
+      },
+      {
+        "type": "xs:QName",
+        "lexical": "foo",
+        "valid": true
+      },
+      {
+        "type": "xs:QName",
+        "lexical": "ns:foo",
+        "valid": true
+      },
+      {
+        "type": "xs:QName",
+        "lexical": "xmlns:xsi",
+        "valid": false
+      },
+      {
+        "type": "xs:QName",
+        "lexical": ":foo",
+        "valid": false
+      },
+      {
+        "type": "xs:QName",
+        "lexical": "a:b:c",
+        "valid": false
+      },
+      {
+        "type": "xs:NOTATION",
+        "lexical": "foo",
+        "valid": true
+      },
+      {
+        "type": "xs:IDREFS",
+        "lexical": "a b",
+        "valid": true
+      },
+      {
+        "type": "xs:IDREFS",
+        "lexical": "a",
+        "valid": true
+      },
+      {
+        "type": "xs:IDREFS",
+        "lexical": "",
+        "valid": false
+      },
+      {
+        "type": "xs:NMTOKENS",
+        "lexical": "a.b-c:d e",
+        "valid": true
+      },
+      {
+        "type": "xs:ENTITIES",
+        "lexical": "a 1",
+        "valid": false
+      },
+      {
+        "type": "xs:string",
+        "lexical": "anything <>&",
+        "valid": true
+      },
+      {
+        "type": "xs:anyURI",
+        "lexical": "http://example.com/a b",
+        "valid": true
+      },
+      {
+        "type": "xs:boolean",
+        "lexical": "true",
+        "valid": true
+      },
+      {
+        "type": "xs:boolean",
+        "lexical": "0",
+        "valid": true
+      },
+      {
+        "type": "xs:boolean",
+        "lexical": "TRUE",
+        "valid": false
+      },
+      {
+        "type": "xs:language",
+        "lexical": "en-US",
+        "valid": true
+      },
+      {
+        "type": "xs:language",
+        "lexical": "en_US",
+        "valid": false
+      },
+      {
+        "type": "xs:Name",
+        "lexical": "a:b",
+        "valid": true
+      },
+      {
+        "type": "xs:NCName",
+        "lexical": "a:b",
+        "valid": false
+      }
+    ]
+  }
+}

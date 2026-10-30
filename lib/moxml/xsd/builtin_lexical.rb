@@ -255,6 +255,106 @@ module Moxml
         "xs:NOTATION" => ->(lexical) { qname?(collapsed(lexical)) },
       }.freeze
 
+      # The cross-language conformance dataset (#496): the model's
+      # builtin-lexical answers as data, pinned BY the Ruby suite
+      # (spec/moxml/xsd_conformance_cases_spec.rb) and exported to
+      # conformance/moxml-conformance.json by `rake conformance:export`
+      # — moxml-rs and moxml-ts run the same rows. Each row:
+      # [type, lexical, expected].
+      CONFORMANCE_CASES = [
+        # token family / collapse
+        ["xs:token", "a  b", true],
+        ["xs:ID", " id ", true],
+        ["xs:NMTOKEN", "\tx ", true],
+        ["xs:ID", "1d", false],
+        # unbounded integers
+        ["xs:integer", "1" * 29, true],
+        ["xs:positiveInteger", "1" * 29, true],
+        ["xs:nonNegativeInteger", "1" * 29, true],
+        ["xs:negativeInteger", "-1#{'0' * 20}", true],
+        ["xs:nonPositiveInteger", "0", true],
+        ["xs:nonPositiveInteger", "-0", true],
+        # bounded integers
+        ["xs:long", "9223372036854775807", true],
+        ["xs:long", "9223372036854775808", false],
+        ["xs:unsignedLong", "18446744073709551615", true],
+        ["xs:unsignedLong", "18446744073709551616", false],
+        ["xs:byte", "128", false],
+        ["xs:unsignedByte", "256", false],
+        # float/decimal spellings
+        ["xs:float", "+INF", true],
+        ["xs:double", "-INF", true],
+        ["xs:float", "NaN", true],
+        ["xs:float", "1.5E-3", true],
+        ["xs:decimal", "5.", true],
+        ["xs:decimal", ".5", true],
+        ["xs:decimal", "1e3", false],
+        # calendar
+        ["xs:date", "2024-02-29", true],
+        ["xs:date", "1999-02-29", false],
+        ["xs:date", "2024-04-31", false],
+        ["xs:date", "2024-13-01", false],
+        ["xs:date", "not-a-date", false],
+        ["xs:dateTime", "2024-02-29T23:59:59Z", true],
+        ["xs:dateTime", "1999-02-29T00:00:00", false],
+        ["xs:dateTime", "not-a-date", false],
+        ["xs:dateTimeStamp", "2024-02-29T00:00:00Z", true],
+        ["xs:dateTimeStamp", "2024-02-29T00:00:00", false],
+        ["xs:time", "23:59:59.999+05:30", true],
+        ["xs:time", "24:00:00", false],
+        ["xs:time", "25:20:00", false],
+        ["xs:time", "13:20:60", false],
+        ["xs:gYearMonth", "2024-02Z", true],
+        ["xs:gYearMonth", "2024-13", false],
+        ["xs:gMonthDay", "--02-29", true],
+        ["xs:gMonthDay", "--02-30", false],
+        ["xs:gDay", "---31", true],
+        ["xs:gDay", "---32", false],
+        # duration
+        ["xs:duration", "P1Y2M3DT4H5M6.5S", true],
+        ["xs:duration", "PT0S", true],
+        ["xs:duration", "-P1D", true],
+        ["xs:duration", "P", false],
+        ["xs:duration", "PT", false],
+        ["xs:duration", "P1Y2MT", false],
+        ["xs:duration", "P200.5Y", false],
+        ["xs:dayTimeDuration", "P1DT2H", true],
+        ["xs:dayTimeDuration", "P1Y", false],
+        ["xs:yearMonthDuration", "P1Y2M", true],
+        ["xs:yearMonthDuration", "P1D", false],
+        ["xs:yearMonthDuration", "P1YT1H", false],
+        # binary
+        ["xs:base64Binary", "aGVsbG8=", true],
+        ["xs:base64Binary", "abcd", true],
+        ["xs:base64Binary", "abcde", false],
+        ["xs:base64Binary", "a b", false],
+        ["xs:hexBinary", "0A", true],
+        ["xs:hexBinary", "0AB", false],
+        # QName family
+        ["xs:QName", "foo", true],
+        ["xs:QName", "ns:foo", true],
+        ["xs:QName", "xmlns:xsi", false],
+        ["xs:QName", ":foo", false],
+        ["xs:QName", "a:b:c", false],
+        ["xs:NOTATION", "foo", true],
+        # lists: items, not characters
+        ["xs:IDREFS", "a b", true],
+        ["xs:IDREFS", "a", true],
+        ["xs:IDREFS", "", false],
+        ["xs:NMTOKENS", "a.b-c:d e", true],
+        ["xs:ENTITIES", "a 1", false],
+        # open lexical spaces
+        ["xs:string", "anything <>&", true],
+        ["xs:anyURI", "http://example.com/a b", true],
+        ["xs:boolean", "true", true],
+        ["xs:boolean", "0", true],
+        ["xs:boolean", "TRUE", false],
+        ["xs:language", "en-US", true],
+        ["xs:language", "en_US", false],
+        ["xs:Name", "a:b", true],
+        ["xs:NCName", "a:b", false],
+      ].map(&:freeze).freeze
+
       private_constant :CHECKERS
     end
   end

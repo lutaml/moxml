@@ -350,4 +350,27 @@ namespace :docs do
   end
 end
 
+namespace :conformance do
+  desc "Export the cross-language conformance dataset to JSON (#496)"
+  task :export do
+    require "json"
+    require_relative "lib/moxml"
+    dataset = Moxml::XSD::BuiltinLexical::CONFORMANCE_CASES
+    payload = {
+      schema: 1,
+      generator: "moxml #{Moxml::VERSION}",
+      cases: {
+        "builtin_lexical" => dataset.map do |type, lexical, expected|
+          { "type" => type, "lexical" => lexical, "valid" => expected }
+        end,
+      },
+    }
+    dir = File.expand_path("conformance", __dir__)
+    FileUtils.mkdir_p(dir)
+    target = File.join(dir, "moxml-conformance.json")
+    File.write(target, "#{JSON.pretty_generate(payload)}\n")
+    puts "conformance: exported #{dataset.size} cases to #{target}"
+  end
+end
+
 task default: :spec
