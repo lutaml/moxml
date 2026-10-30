@@ -698,6 +698,15 @@ namespace_validation_mode: :strict)
           nil
         end
 
+        # The engine capability report (#493): a frozen hash of the
+        # runtime-variable faces this adapter serves, plus its engine
+        # version — queried once at attach, never version-gate
+        # constants. Adapters without a capability story answer nil
+        # (documented last resort, plan_rows-style).
+        def capabilities
+          nil
+        end
+
         # Struct-plan executor (Moxml::StructPlan): +spec+ compiles
         # the consumer's shape as {name => [Struct class, attrs
         # Hash (name => slot Symbol), text slot, children slot]}.
