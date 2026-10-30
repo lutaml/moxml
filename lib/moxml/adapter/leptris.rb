@@ -41,8 +41,7 @@ module Moxml
       # leptris_node_digest shipped in bindings 1.9.99 (libleptris
       # 1.9.99, engine #869): on-demand Merkle subtree hash, zero
       # cost when unused. Below it, Node#digest answers nil.
-      DIGEST_SUPPORTED =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.99")
+      DIGEST_SUPPORTED = true
 
       # 1.9.163.7 added the XPath seams (TODO.perf/15+16):
       # Searchable#at_xpath materializes nodeset entry 0 and frees
@@ -52,8 +51,7 @@ module Moxml
       # raw pointers, skipping the per-call EvaluationContext
       # (~2us on every multi-result query).
       NATIVE_XPATH_SEAMS =
-        defined?(::Leptris::XML::Native) &&
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.7")
+        defined?(::Leptris::XML::Native)
 
       # Opt-in native read layer (leptris-ruby#185, bindings >= 1.9.162.6):
       # TypedData node wrappers with C-bound hot reads and bulk
@@ -68,8 +66,7 @@ module Moxml
         nil
       end
       NATIVE_READ_LAYER =
-        defined?(::Leptris::XML::NativeNode) &&
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.162.6")
+        defined?(::Leptris::XML::NativeNode)
 
       # leptris-ruby#529: the whole XPath node-set result as an Array
       # of registered natives in ONE C crossing (Document#
@@ -118,8 +115,7 @@ module Moxml
       # (1.9.162.x answered ASCII-8BIT — the reads retagged with a
       # dup+force_encoding per call).
       NATIVE_STRINGS_UTF8 =
-        defined?(::Leptris::XML::NativeNode) &&
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.2")
+        defined?(::Leptris::XML::NativeNode)
 
       # 1.9.163.5 (leptris-ruby#204/#208): native mutations are
       # version-coherent with the binding (both surfaces' memos
@@ -127,8 +123,7 @@ module Moxml
       # add_child are adoptable end-to-end; NativeNode grew a
       # document accessor and line numbers.
       NATIVE_MUTATIONS_COHERENT =
-        defined?(::Leptris::XML::NativeNode) &&
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.5")
+        defined?(::Leptris::XML::NativeNode)
 
       # Identity mode (#230 stage 2): the contract modules extended
       # onto natives shadow the C surface (Element#[] over
@@ -170,16 +165,14 @@ module Moxml
       # 1.9.181 (lockstep): Node#source_position — {line, col_start,
       # col_end} from the engine's source-position API (upstream
       # #1124); created nodes report zeros.
-      NATIVE_SOURCE_POSITION =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.181")
+      NATIVE_SOURCE_POSITION = true
 
       # Entity-reference preservation (leptris-ruby#212 / upstream
       # #1094): 1.9.177 ships ParseOptions.keep_entity_refs plus
       # first-class EntityReference nodes — the marker machinery
       # becomes bypassable when the Context's entity_mode is :keep.
       NATIVE_ENTITY_REFS =
-        defined?(::Leptris::XML::EntityReference) &&
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.177")
+        defined?(::Leptris::XML::EntityReference)
 
       # 1.9.163.2 moved the native bulk children into C
       # (Native.bulk_children) and fixed the 512 truncation
@@ -189,8 +182,7 @@ module Moxml
       # C bulk path (version-memoized, cheaper than a per-call
       # count+copy).
       NATIVE_BULK_FIXED =
-        defined?(::Leptris::XML::NativeNode) &&
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.163.2")
+        defined?(::Leptris::XML::NativeNode)
 
       # Bulk SAX record drain (leptris#1298): leptris_sax_records_parse
       # + Leptris::XML::SAX::Records — one crossing per document,
@@ -552,17 +544,13 @@ module Moxml
         # classes do not exist. NATIVE_MUTATIONS_COHERENT is false
         # without the native layer, so all three evaluate false
         # there.
-        NATIVE_IDENTITY =
-          NATIVE_MUTATIONS_COHERENT &&
-          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.174.4")
+        NATIVE_IDENTITY = NATIVE_MUTATIONS_COHERENT
 
         NATIVE_C_MINT =
           NATIVE_IDENTITY &&
           Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.255.2")
 
-        NATIVE_KLASS_CHILDREN =
-          NATIVE_IDENTITY &&
-          Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.193.2")
+        NATIVE_KLASS_CHILDREN = NATIVE_IDENTITY
       end
 
       if NATIVE_READ_LAYER
@@ -870,8 +858,7 @@ module Moxml
           end
 
           NATIVE_C_WALK =
-            defined?(::Leptris::XML::NativeNode) &&
-            Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.174.6")
+            defined?(::Leptris::XML::NativeNode)
 
           # One C visit walk (TODO.perf/27: post-order/abort state in
           # the C callback, rb_yield direct — no FFI closure per
@@ -1109,8 +1096,7 @@ module Moxml
       # on released 1.9.37–1.9.39; 1.9.40 (engine 1.9.14+) restored
       # the fallback. Older bindings keep the Ruby-engine routing in
       # native_expression?.
-      PREFIXED_ATTR_PREDICATES_NATIVE =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.40")
+      PREFIXED_ATTR_PREDICATES_NATIVE = true
 
       # leptris/leptris#636 (leptris-ruby 1.9.42): libxml2-compatible
       # pretty-print — child-PI lines, DOCTYPE internal-subset layout,
@@ -1118,8 +1104,7 @@ module Moxml
       # unit (`to_xml`'s indent_text takes the unit string). Older
       # floor bindings treat indent_text as a display-form boolean, so
       # the passthrough and the parity pins gate on this.
-      LIBXML2_LAYOUT_PARITY =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.42")
+      LIBXML2_LAYOUT_PARITY = true
 
       # leptris-ruby#109 (1.9.45): Element#to_xml takes the
       # indent-unit string, so moxml's per-child document composition
@@ -1127,13 +1112,11 @@ module Moxml
       # emit spaces until the engine fix (leptris/leptris#658); the
       # boolean display form stays document-level and is never
       # forwarded (the element face raises on it).
-      INDENT_UNIT_SUPPORTED =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.45")
+      INDENT_UNIT_SUPPORTED = true
 
       # leptris-ruby#115 (fixed 1.9.50): the element unit path keeps
       # child comments.
-      ELEMENT_UNIT_COMMENTS =
-        Gem::Version.new(::Leptris::VERSION) >= Gem::Version.new("1.9.50")
+      ELEMENT_UNIT_COMMENTS = true
 
       # leptris/leptris#677: the engine's DROP_WS_TEXT trims boundary
       # whitespace of non-blank text nodes. Probed at load rather

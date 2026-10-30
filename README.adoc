@@ -114,10 +114,7 @@ moxml's customized generator and decoder overrides.
 Raised from 1.9.32 (2026-09-20): every known consumer resolves a
 modern binding, and the sub-1.9.194 accommodation paths are deleted.
 Newer bindings unlock more native surface automatically:
-1.9.163.7+ single-result XPath seams, 1.9.174.4+ C-minted identity
-wrappers, 1.9.174.6+ one-dispatch subtree walks, 1.9.177+ first-class
-entity references (`entity_mode: :keep`), 1.9.193.4+ native plan rows
-(`Moxml::Plan`), 1.9.194.1+ hot-read aliases, 1.9.201.1+ the C struct
+1.9.194.1+ hot-read aliases, 1.9.201.1+ the C struct
 executor (`Moxml::StructPlan`; the floor is the varargs-mint fix),
 1.9.204+ native document-level parts (created DOCTYPEs as native
 nodes, document-PI removal, declaration clear), 1.9.240+ the bulk
