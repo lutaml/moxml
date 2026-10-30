@@ -320,6 +320,37 @@ module Moxml
       BINDING_OF_CAP = 8_192
 
       class << self
+        # The engine capability report (#493): one structured face
+        # answering what THIS installed binding+engine serves, queried
+        # once at attach — the replacement for the version-gate-
+        # constant class. The support faces (xsd, relaxng, xslt,
+        # digest) answer even when the floor makes them unconditional —
+        # consumers ask for them by name; the internal routing gates
+        # the floor made constant are absent by design. Frozen; the
+        # keys are the model's capability names.
+        def capabilities
+          @capabilities ||= {
+            engine_version: ::Leptris::VERSION,
+            native_read_layer: !NATIVE_READ_LAYER.nil?,
+            native_xpath_seams: !NATIVE_XPATH_SEAMS.nil?,
+            bulk_xpath_rows: BULK_XPATH_ROWS,
+            add_element_full: ADD_ELEMENT_FULL,
+            native_strings_utf8: !NATIVE_STRINGS_UTF8.nil?,
+            native_mutations_coherent: !NATIVE_MUTATIONS_COHERENT.nil?,
+            native_entity_refs: !NATIVE_ENTITY_REFS.nil?,
+            native_bulk_fixed: !NATIVE_BULK_FIXED.nil?,
+            native_bulk_sax_records: NATIVE_SAX_RECORDS,
+            native_document_parts: NATIVE_DOC_PARTS,
+            native_plan_rows: NATIVE_PLAN_ROWS,
+            native_plan_structs: NATIVE_PLAN_STRUCTS,
+            native_plan_typed: NATIVE_PLAN_TYPED,
+            digest: DIGEST_SUPPORTED,
+            xsd: XSD_SUPPORTED,
+            relaxng: RELAXNG_SUPPORTED,
+            xslt: XSLT_SUPPORTED,
+          }.freeze
+        end
+
         # WeakMap has no #clear — 0.5.100's valve crashed every parse
         # crossing the cap on 3.4+ (NoMethodError). Replace the
         # registry wholesale, type-preserving: the WeakMap flavor

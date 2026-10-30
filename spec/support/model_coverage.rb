@@ -113,6 +113,10 @@ module ModelCoverage
       section: "Errors and loud degradation",
       pin: "spec/consistency/loud_degradation_spec.rb",
     },
+    "engine capability report" => {
+      section: "Errors and loud degradation",
+      pin: "spec/moxml/adapter_capabilities_spec.rb",
+    },
   }.freeze
 
   # Normative sections that are not face families (meta/apparatus).

@@ -314,7 +314,7 @@ answers without raising. RELAX NG rides engines with an RNG face
 
 === Errors and loud degradation
 
-Pins:: `spec/consistency/loud_degradation_spec.rb`
+Pins:: `spec/consistency/loud_degradation_spec.rb`, `spec/moxml/adapter_capabilities_spec.rb`
 
 * `Moxml::Error` hierarchy; `Moxml::XPathError`, `Moxml::XsltError`,
   `Moxml::AdapterError` (e.g. schema-handle/adapter misroute),
@@ -324,6 +324,12 @@ Pins:: `spec/consistency/loud_degradation_spec.rb`
 * Adapter degradation is loud: a present-but-unusable preferred adapter
   warns at configuration and misroutes fail at the wrap, not deep in
   a call.
+* Engines with a capability story answer `Adapter.capabilities` — one
+  frozen report of the runtime-variable faces they serve plus their
+  engine version, queried once at attach. The support faces (xsd,
+  relaxng, xslt, digest) answer even when unconditional; internal
+  routing gates the floor made constant are absent by design.
+  Adapters without a capability story answer nil.
 
 === Performance: a declared, non-semantic channel
 
