@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+# Engine gap (upstream ox): Ox uses Strings for text content, but a
+# String cannot carry a @parent back-reference; this ::Ox::Node subclass
+# gives text nodes node identity. NOTE: an ::Ox::Node subclass that is
+# neither ::Ox::Element nor ::Ox::Document changes Ox's dump behavior.
+# Upstream tracker: https://github.com/ohler55/ox
+
 module Moxml
   module Adapter
     module CustomizedOx

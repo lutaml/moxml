@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Engine gap (upstream ox): ox has no Namespace node class — prefixes
+# live as attribute spellings — so the facade's namespace node contract
+# needs this value object. Upstream tracker:
+# https://github.com/ohler55/ox
+
 module Moxml
   module Adapter
     module CustomizedOx

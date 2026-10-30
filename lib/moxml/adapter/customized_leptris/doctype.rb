@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+# Wrapper for a programmatic DOCTYPE.
+#
+# Lifecycle record: set shipped (leptris#212, binding 1.9.176) and unset
+# shipped (leptris#1229, binding 1.9.204.0 remove_doctype), but there is
+# still no first-class DOCTYPE NODE — the facade keeps this value object
+# as the node stand-in in the document's attachments. Dissolves with
+# declaration node identity (see customized_leptris/declaration.rb).
+
 module Moxml
   module Adapter
     module CustomizedLeptris

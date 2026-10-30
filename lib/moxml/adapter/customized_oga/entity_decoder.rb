@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+# Override Oga::EntityDecoder.decode for XML inputs.
+#
+# Engine gap (upstream oga): Oga 3.4's stock Oga::XML::Entities.decode
+# runs multiple passes, turning the well-formed "&amp;#38;" into "&"
+# rather than the correct "&#38;". Upstream tracker:
+# https://github.com/yorickpeterse/oga — the override stays until oga
+# fixes the decoder or the adapter is retired.
+
 require "oga"
 
 module Moxml

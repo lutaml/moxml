@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# Lifecycle record: the :libxml adapter is deprecated (#491); this wrapper dies with it.
+
 module Moxml
   module Adapter
     module CustomizedLibxml
