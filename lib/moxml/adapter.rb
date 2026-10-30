@@ -25,7 +25,27 @@ module Moxml
       headed_ox: "HeadedOx",
     }.freeze
 
+    # Adapters in their deprecation cycle (#491): warned once per
+    # process at configuration, removed after the cycle. The value is
+    # the migration guidance shown in the warning.
+    DEPRECATED_ADAPTERS = {
+      headed_ox: "use :leptris (primary) or :nokogiri; headed_ox is a pure alias of :ox",
+      libxml: "use :nokogiri — the same libxml2 engine, governed by the consistency suite",
+      ox: "use :leptris (primary) or :nokogiri",
+    }.freeze
+
     class << self
+      # One-time deprecation notice per adapter per process (#491).
+      def warn_deprecated!(name)
+        guidance = DEPRECATED_ADAPTERS[name.to_sym]
+        return unless guidance
+        return if (@deprecation_warned ||= {})[name.to_sym]
+
+        @deprecation_warned[name.to_sym] = true
+        warn "moxml: the :#{name} adapter is deprecated and will be " \
+             "removed; #{guidance}"
+      end
+
       def load(name)
         validate_platform!(name)
         require_adapter(name)

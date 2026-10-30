@@ -26,6 +26,7 @@ module Moxml
     attr_reader :config
 
     def initialize(adapter = nil)
+      Adapter.warn_deprecated!(adapter) if adapter
       @config = Config.new(adapter)
       # Bumped on any namespace-scope mutation; Element scope caches
       # compare against it so every wrapper sees changes without
