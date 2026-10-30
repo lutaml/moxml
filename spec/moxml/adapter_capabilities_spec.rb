@@ -8,11 +8,13 @@ require "spec_helper"
 # what the installed binding+engine serves — queried once at attach,
 # the replacement for the version-gate-constant class. Only
 # runtime-variable faces appear; anything the floor makes
-# unconditional is absent by design.
+# unconditional is absent by design. The two versions are never
+# conflated: the binding vendors the engine, and the numbers differ.
 RSpec.describe "engine capability report" do
-  it "answers for leptris with the engine version and known faces" do
+  it "answers for leptris with both versions and known faces" do
     caps = Moxml::Adapter::Leptris.capabilities
     expect(caps).to be_frozen
+    expect(caps[:binding_version]).to eq(Leptris::VERSION)
     expect(caps[:engine_version]).to match(/\A1\.\d+\.\d+/)
     expect(caps.keys).to include(
       :native_read_layer, :native_plan_structs, :native_plan_typed,
@@ -20,9 +22,21 @@ RSpec.describe "engine capability report" do
     )
   end
 
-  it "reports only booleans beyond the version" do
+  it "answers the ENGINE's version under engine_version, not the binding's" do
     caps = Moxml::Adapter::Leptris.capabilities
-    caps.except(:engine_version).each_value do |value|
+    engine = Leptris::XML::FFI.leptris_version
+    expect(caps[:engine_version]).to eq(engine)
+    if Gem::Version.new(Leptris::VERSION) != Gem::Version.new(engine)
+      expect(caps[:binding_version]).not_to eq(caps[:engine_version]),
+                                            "binding and engine versions are " \
+                                            "different numbers; the report must " \
+                                            "never conflate them"
+    end
+  end
+
+  it "reports only booleans beyond the versions" do
+    caps = Moxml::Adapter::Leptris.capabilities
+    caps.except(:binding_version, :engine_version).each_value do |value|
       expect(value).to eql(true).or eql(false)
     end
   end
