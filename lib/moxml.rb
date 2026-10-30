@@ -101,7 +101,7 @@ module Moxml
   autoload :Adapter, "moxml/adapter"
   autoload :XPath, "moxml/xpath"
   autoload :SAX, "moxml/sax"
-  autoload :Signature, "moxml/signature"
+  autoload :Signature, "moxml/signature" unless RUBY_ENGINE == "opal"
   autoload :C14n, "moxml/c14n"
   autoload :Reference, "moxml/reference"
   autoload :XSLT, "moxml/xslt"
