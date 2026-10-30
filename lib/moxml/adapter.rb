@@ -2,6 +2,19 @@
 
 module Moxml
   module Adapter
+    # Extension contract (#494): adding an adapter is exactly the trio
+    # below — nothing else, anywhere. The dispatch is open for
+    # extension and closed against edit: registration is data, the
+    # load path is generic, and spec/moxml/adapter_registry_spec.rb
+    # walks the registry mechanically so a skipped leg fails there.
+    #
+    #   1. one entry in AVAILABLE_ADAPTERS,
+    #   2. a requireable file at moxml/adapter/<name> (a
+    #      `Customized<Name>` namespace module is optional),
+    #   3. a subclass of Adapter::Base in that file.
+    #
+    # Deprecated adapters live in DEPRECATED_ADAPTERS (still fully
+    # registered and loadable) until their removal milestone.
     autoload :Base, "moxml/adapter/base"
     autoload :CustomizedOga, "moxml/adapter/customized_oga"
     autoload :CustomizedOx, "moxml/adapter/customized_ox"
