@@ -2,6 +2,9 @@
 
 module Moxml
   module Adapter
+    # Lifecycle record (#495): engine-gap shims for the :libxml
+    # adapter, deprecated in moxml#491 -- removed with it after the
+    # cycle. No separate upstream ask; the adapter's fate governs.
     module CustomizedLibxml
       autoload :Cdata, "moxml/adapter/customized_libxml/cdata"
       autoload :Comment, "moxml/adapter/customized_libxml/comment"
