@@ -189,6 +189,35 @@ module Moxml
           nil
         end
 
+        # The cross-language conformance dataset (#496): the
+        # translator's answers as data, pinned BY the Ruby suite
+        # (spec/moxml/xsd_regex_conformance_spec.rb) and exported to
+        # conformance/moxml-conformance.json for the Rust/TS runners.
+        # Each row: [pattern, value, matches, translatable].
+        CONFORMANCE_CASES = [
+          ["\\p{IsBasicLatin}+", "abc", true, true],
+          ["\\p{IsBasicLatin}+", "", false, true],
+          ["\\P{IsLatin-1Supplement}", "a", true, true],
+          ["\\P{IsLatin-1Supplement}", "é", false, true],
+          ["\\p{IsGreek}", "α", true, true],
+          ["\\p{IsGreek}", "a", false, true],
+          ["\\p{L}", "a", true, true],
+          ["\\p{L}", "1", false, true],
+          ["\\p{Nd}{1,3}", "5", true, true],
+          ["\\p{Nd}{1,3}", "abc", false, true],
+          ["\\d{1,3}", "5", false, false],
+          ["\\d{1,3}", "abc", false, false],
+          ["[0-9]{1,3}", "42", true, true],
+          ["[a-z]*", "", true, true],
+          ["a|b", "b", true, true],
+          ["a|b", "c", false, true],
+          ["a.c", "abc", true, true],
+          ["a\\.c", "a.c", true, true],
+          ["\\i\\c*", "x", false, false],
+          ["[\\p{IsBasicLatin}-[abc]]+", "a", false, false],
+          ["\\p{IsNoSuchBlock}", "a", false, false],
+        ].map(&:freeze).freeze
+
         def scan(pattern)
           out = +""
           index = 0

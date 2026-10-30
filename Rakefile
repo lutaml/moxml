@@ -355,13 +355,20 @@ namespace :conformance do
   task :export do
     require "json"
     require_relative "lib/moxml"
-    dataset = Moxml::XSD::BuiltinLexical::CONFORMANCE_CASES
+    lexical = Moxml::XSD::BuiltinLexical::CONFORMANCE_CASES
+    regex = Moxml::XSD::SchemaRules::XsdRegex::CONFORMANCE_CASES
     payload = {
       schema: 1,
       generator: "moxml #{Moxml::VERSION}",
       cases: {
-        "builtin_lexical" => dataset.map do |type, lexical, expected|
-          { "type" => type, "lexical" => lexical, "valid" => expected }
+        "builtin_lexical" => lexical.map do |type, lexical_value, expected|
+          { "type" => type, "lexical" => lexical_value, "valid" => expected }
+        end,
+        "xsd_regex_translation" => regex.map do |pattern, value, matches, translatable|
+          {
+            "pattern" => pattern, "value" => value,
+            "matches" => matches, "translatable" => translatable
+          }
         end,
       },
     }
@@ -369,7 +376,7 @@ namespace :conformance do
     FileUtils.mkdir_p(dir)
     target = File.join(dir, "moxml-conformance.json")
     File.write(target, "#{JSON.pretty_generate(payload)}\n")
-    puts "conformance: exported #{dataset.size} cases to #{target}"
+    puts "conformance: exported #{lexical.size + regex.size} cases to #{target}"
   end
 end
 
