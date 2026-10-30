@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generator": "moxml 0.5.171",
+  "generator": "moxml 0.5.175",
   "cases": {
     "builtin_lexical": [
       {
@@ -407,6 +407,134 @@
         "type": "xs:NCName",
         "lexical": "a:b",
         "valid": false
+      }
+    ],
+    "xsd_regex_translation": [
+      {
+        "pattern": "\\p{IsBasicLatin}+",
+        "value": "abc",
+        "matches": true,
+        "translatable": true
+      },
+      {
+        "pattern": "\\p{IsBasicLatin}+",
+        "value": "",
+        "matches": false,
+        "translatable": true
+      },
+      {
+        "pattern": "\\P{IsLatin-1Supplement}",
+        "value": "a",
+        "matches": true,
+        "translatable": true
+      },
+      {
+        "pattern": "\\P{IsLatin-1Supplement}",
+        "value": "é",
+        "matches": false,
+        "translatable": true
+      },
+      {
+        "pattern": "\\p{IsGreek}",
+        "value": "α",
+        "matches": true,
+        "translatable": true
+      },
+      {
+        "pattern": "\\p{IsGreek}",
+        "value": "a",
+        "matches": false,
+        "translatable": true
+      },
+      {
+        "pattern": "\\p{L}",
+        "value": "a",
+        "matches": true,
+        "translatable": true
+      },
+      {
+        "pattern": "\\p{L}",
+        "value": "1",
+        "matches": false,
+        "translatable": true
+      },
+      {
+        "pattern": "\\p{Nd}{1,3}",
+        "value": "5",
+        "matches": true,
+        "translatable": true
+      },
+      {
+        "pattern": "\\p{Nd}{1,3}",
+        "value": "abc",
+        "matches": false,
+        "translatable": true
+      },
+      {
+        "pattern": "\\d{1,3}",
+        "value": "5",
+        "matches": false,
+        "translatable": false
+      },
+      {
+        "pattern": "\\d{1,3}",
+        "value": "abc",
+        "matches": false,
+        "translatable": false
+      },
+      {
+        "pattern": "[0-9]{1,3}",
+        "value": "42",
+        "matches": true,
+        "translatable": true
+      },
+      {
+        "pattern": "[a-z]*",
+        "value": "",
+        "matches": true,
+        "translatable": true
+      },
+      {
+        "pattern": "a|b",
+        "value": "b",
+        "matches": true,
+        "translatable": true
+      },
+      {
+        "pattern": "a|b",
+        "value": "c",
+        "matches": false,
+        "translatable": true
+      },
+      {
+        "pattern": "a.c",
+        "value": "abc",
+        "matches": true,
+        "translatable": true
+      },
+      {
+        "pattern": "a\\.c",
+        "value": "a.c",
+        "matches": true,
+        "translatable": true
+      },
+      {
+        "pattern": "\\i\\c*",
+        "value": "x",
+        "matches": false,
+        "translatable": false
+      },
+      {
+        "pattern": "[\\p{IsBasicLatin}-[abc]]+",
+        "value": "a",
+        "matches": false,
+        "translatable": false
+      },
+      {
+        "pattern": "\\p{IsNoSuchBlock}",
+        "value": "a",
+        "matches": false,
+        "translatable": false
       }
     ]
   }
