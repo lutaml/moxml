@@ -17,22 +17,18 @@ RSpec.describe "Moxml::XSD pattern-facet dismissal (#464)" do
   describe "bounded dialect translator" do
     let(:translator) { Moxml::XSD::SchemaRules::XsdRegex }
 
-    it "translates block escapes and categories" do
-      expect(translator.translate('\p{IsBasicLatin}+').source)
-        .to eq("\\A(?:\\p{InBasicLatin}+)\\z")
-      expect(translator.translate('\P{IsLatin-1Supplement}').source)
-        .to eq("\\A(?:\\P{InLatin-1Supplement})\\z")
-      expect(translator.translate('\p{IsGreek}').source)
-        .to eq("\\A(?:\\p{InGreekandCoptic})\\z")
-      expect(translator.translate('\p{L}').source)
-        .to eq("\\A(?:\\p{L})\\z")
-    end
+    # The translation rows are conformance data (#496): single source in
+    # spec/support/conformance_cases.rb, exported by rake conformance:export.
+    ConformanceCases::REGEX_CASES.each do |case_|
+      it "[#{case_[:id]}] translates #{case_[:pattern].inspect} within the dialect" do
+        translated = translator.translate(case_[:pattern])
 
-    it "refuses constructs outside the translated subset" do
-      expect(translator.translate('\i\c*')).to be_nil
-      expect(translator.translate('[\p{IsBasicLatin}-[abc]]+'))
-        .to be_nil
-      expect(translator.translate('\p{IsNoSuchBlock}')).to be_nil
+        if case_[:ruby]
+          expect(translated.source).to eq(case_[:ruby])
+        else
+          expect(translated).to be_nil
+        end
+      end
     end
   end
 

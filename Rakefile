@@ -350,4 +350,30 @@ namespace :docs do
   end
 end
 
+namespace :conformance do
+  desc "Export the conformance fixture JSON from the Ruby pins (#496)"
+  task :export do
+    require "json"
+    require "fileutils"
+    require "moxml"
+    require_relative "spec/support/conformance_cases"
+
+    payload = {
+      format: 1,
+      generator: "rake conformance:export",
+      moxml_version: Moxml::VERSION,
+      # The Ruby suite is the authoring surface; runners that lack a
+      # case FAIL — coverage is part of conformance, no silent subset.
+      coverage_contract: "runners must answer every case in every face",
+      faces: ConformanceCases.faces.transform_values do |face|
+        face.merge(case_count: face[:cases].size)
+      end,
+    }
+    target = "fixtures/conformance/moxml-conformance.json"
+    FileUtils.mkdir_p(File.dirname(target))
+    File.write(target, JSON.pretty_generate(payload) + "\n")
+    puts "Exported #{target} (#{payload[:faces].values.sum { |f| f[:case_count] }} cases)"
+  end
+end
+
 task default: :spec

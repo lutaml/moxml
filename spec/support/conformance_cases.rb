@@ -1,0 +1,124 @@
+# frozen_string_literal: true
+
+# The conformance case data (#496): the Ruby pins are the authoring
+# surface, and this module is the single source the specs iterate and
+# `rake conformance:export` serializes. Each case names its model-doc
+# section and its source pin, so the exported JSON is the model,
+# executable — moxml-rs and moxml-ts runners consume the same file.
+module ConformanceCases
+  LEXICAL_SECTION = "Processing model §Validation (normative)"
+  LEXICAL_PIN = "spec/moxml/xsd_builtin_lexical_spec.rb"
+  REGEX_SECTION = "Processing model §Validation (normative) — pattern-facet dialect (#464)"
+  REGEX_PIN = "spec/moxml/xsd_regex_spec.rb"
+
+  LEXICAL_CASES = [
+    { id: "lexical/integer/plain", type: "xs:integer", lexical: "3", valid: true },
+    { id: "lexical/integer/non-lexical", type: "xs:integer", lexical: "x", valid: false },
+    { id: "lexical/token/white-space-collapse", type: "xs:token", lexical: "a  b", valid: true },
+    { id: "lexical/id/white-space-collapse", type: "xs:ID", lexical: " id ", valid: true },
+    { id: "lexical/nmtoken/white-space-collapse", type: "xs:NMTOKEN", lexical: "\tx ", valid: true },
+    { id: "lexical/id/leading-digit", type: "xs:ID", lexical: "1d", valid: false },
+    { id: "lexical/integer/unbounded-29-digit", type: "xs:integer", lexical: "1#{'0' * 28}", valid: true },
+    { id: "lexical/positive-integer/unbounded", type: "xs:positiveInteger", lexical: "1#{'0' * 28}", valid: true },
+    { id: "lexical/non-negative-integer/unbounded", type: "xs:nonNegativeInteger", lexical: "1#{'0' * 28}", valid: true },
+    { id: "lexical/negative-integer/unbounded", type: "xs:negativeInteger", lexical: "-1#{'0' * 20}", valid: true },
+    { id: "lexical/non-positive-integer/zero", type: "xs:nonPositiveInteger", lexical: "0", valid: true },
+    { id: "lexical/non-positive-integer/negative-zero", type: "xs:nonPositiveInteger", lexical: "-0", valid: true },
+    { id: "lexical/long/max", type: "xs:long", lexical: "9223372036854775807", valid: true },
+    { id: "lexical/long/over-max", type: "xs:long", lexical: "9223372036854775808", valid: false },
+    { id: "lexical/unsigned-long/max", type: "xs:unsignedLong", lexical: "18446744073709551615", valid: true },
+    { id: "lexical/unsigned-long/over-max", type: "xs:unsignedLong", lexical: "18446744073709551616", valid: false },
+    { id: "lexical/byte/over-max", type: "xs:byte", lexical: "128", valid: false },
+    { id: "lexical/unsigned-byte/over-max", type: "xs:unsignedByte", lexical: "256", valid: false },
+    { id: "lexical/float/plus-inf", type: "xs:float", lexical: "+INF", valid: true },
+    { id: "lexical/double/minus-inf", type: "xs:double", lexical: "-INF", valid: true },
+    { id: "lexical/float/nan", type: "xs:float", lexical: "NaN", valid: true },
+    { id: "lexical/float/exponent", type: "xs:float", lexical: "1.5E-3", valid: true },
+    { id: "lexical/decimal/trailing-dot", type: "xs:decimal", lexical: "5.", valid: true },
+    { id: "lexical/decimal/leading-dot", type: "xs:decimal", lexical: ".5", valid: true },
+    { id: "lexical/decimal/exponent-rejected", type: "xs:decimal", lexical: "1e3", valid: false },
+    { id: "lexical/date/leap-day", type: "xs:date", lexical: "2024-02-29", valid: true },
+    { id: "lexical/date/non-leap-day", type: "xs:date", lexical: "1999-02-29", valid: false },
+    { id: "lexical/date/april-31", type: "xs:date", lexical: "2024-04-31", valid: false },
+    { id: "lexical/date/month-13", type: "xs:date", lexical: "2024-13-01", valid: false },
+    { id: "lexical/date/strict-garbage", type: "xs:date", lexical: "not-a-date", valid: false },
+    { id: "lexical/date-time/utc-leap-day", type: "xs:dateTime", lexical: "2024-02-29T23:59:59Z", valid: true },
+    { id: "lexical/date-time/non-leap-day", type: "xs:dateTime", lexical: "1999-02-29T00:00:00", valid: false },
+    { id: "lexical/date-time/strict-garbage", type: "xs:dateTime", lexical: "not-a-date", valid: false },
+    { id: "lexical/date-time-stamp/strict-garbage", type: "xs:dateTimeStamp", lexical: "not-a-date", valid: false },
+    { id: "lexical/date-time-stamp/missing-zone", type: "xs:dateTimeStamp", lexical: "2024-02-29T00:00:00", valid: false },
+    { id: "lexical/date-time-stamp/zoned", type: "xs:dateTimeStamp", lexical: "2024-02-29T00:00:00Z", valid: true },
+    { id: "lexical/time/offset-fraction", type: "xs:time", lexical: "23:59:59.999+05:30", valid: true },
+    { id: "lexical/time/hour-24", type: "xs:time", lexical: "24:00:00", valid: false },
+    { id: "lexical/time/hour-25", type: "xs:time", lexical: "25:20:00", valid: false },
+    { id: "lexical/time/second-60", type: "xs:time", lexical: "13:20:60", valid: false },
+    { id: "lexical/g-year-month/zulu", type: "xs:gYearMonth", lexical: "2024-02Z", valid: true },
+    { id: "lexical/g-year-month/month-13", type: "xs:gYearMonth", lexical: "2024-13", valid: false },
+    { id: "lexical/g-month-day/leap-day", type: "xs:gMonthDay", lexical: "--02-29", valid: true },
+    { id: "lexical/g-month-day/day-30", type: "xs:gMonthDay", lexical: "--02-30", valid: false },
+    { id: "lexical/g-day/day-31", type: "xs:gDay", lexical: "---31", valid: true },
+    { id: "lexical/g-day/day-32", type: "xs:gDay", lexical: "---32", valid: false },
+    { id: "lexical/duration/full", type: "xs:duration", lexical: "P1Y2M3DT4H5M6.5S", valid: true },
+    { id: "lexical/duration/zero", type: "xs:duration", lexical: "PT0S", valid: true },
+    { id: "lexical/duration/negative", type: "xs:duration", lexical: "-P1D", valid: true },
+    { id: "lexical/duration/designator-only", type: "xs:duration", lexical: "P", valid: false },
+    { id: "lexical/duration/time-designator-only", type: "xs:duration", lexical: "PT", valid: false },
+    { id: "lexical/duration/dangling-time-designator", type: "xs:duration", lexical: "P1Y2MT", valid: false },
+    { id: "lexical/duration/fractional-years", type: "xs:duration", lexical: "P200.5Y", valid: false },
+    { id: "lexical/day-time-duration/with-time", type: "xs:dayTimeDuration", lexical: "P1DT2H", valid: true },
+    { id: "lexical/day-time-duration/year-rejected", type: "xs:dayTimeDuration", lexical: "P1Y", valid: false },
+    { id: "lexical/year-month-duration/plain", type: "xs:yearMonthDuration", lexical: "P1Y2M", valid: true },
+    { id: "lexical/year-month-duration/day-rejected", type: "xs:yearMonthDuration", lexical: "P1D", valid: false },
+    { id: "lexical/year-month-duration/time-rejected", type: "xs:yearMonthDuration", lexical: "P1YT1H", valid: false },
+    { id: "lexical/base64-binary/padded", type: "xs:base64Binary", lexical: "aGVsbG8=", valid: true },
+    { id: "lexical/base64-binary/unpadded-multiple-of-4", type: "xs:base64Binary", lexical: "abcd", valid: true },
+    { id: "lexical/base64-binary/bad-length", type: "xs:base64Binary", lexical: "abcde", valid: false },
+    { id: "lexical/base64-binary/space-rejected", type: "xs:base64Binary", lexical: "a b", valid: false },
+    { id: "lexical/hex-binary/upper", type: "xs:hexBinary", lexical: "0A", valid: true },
+    { id: "lexical/hex-binary/odd-length", type: "xs:hexBinary", lexical: "0AB", valid: false },
+    { id: "lexical/qname/unqualified", type: "xs:QName", lexical: "foo", valid: true },
+    { id: "lexical/qname/qualified", type: "xs:QName", lexical: "ns:foo", valid: true },
+    { id: "lexical/qname/xmlns-prefix-rejected", type: "xs:QName", lexical: "xmlns:xsi", valid: false },
+    { id: "lexical/qname/empty-prefix-rejected", type: "xs:QName", lexical: ":foo", valid: false },
+    { id: "lexical/qname/two-colons-rejected", type: "xs:QName", lexical: "a:b:c", valid: false },
+    { id: "lexical/notation/unqualified", type: "xs:NOTATION", lexical: "foo", valid: true },
+    { id: "lexical/idrefs/list", type: "xs:IDREFS", lexical: "a b", valid: true },
+    { id: "lexical/idrefs/single", type: "xs:IDREFS", lexical: "a", valid: true },
+    { id: "lexical/idrefs/empty-rejected", type: "xs:IDREFS", lexical: "", valid: false },
+    { id: "lexical/nmtokens/punctuated", type: "xs:NMTOKENS", lexical: "a.b-c:d e", valid: true },
+    { id: "lexical/entities/numeric-token-rejected", type: "xs:ENTITIES", lexical: "a 1", valid: false },
+    { id: "lexical/string/open", type: "xs:string", lexical: "anything <>&", valid: true },
+    { id: "lexical/any-uri/open", type: "xs:anyURI", lexical: "http://example.com/a b", valid: true },
+    { id: "lexical/boolean/lowercase", type: "xs:boolean", lexical: "true", valid: true },
+    { id: "lexical/boolean/uppercase-rejected", type: "xs:boolean", lexical: "TRUE", valid: false },
+    { id: "lexical/language/tag", type: "xs:language", lexical: "en-US", valid: true },
+    { id: "lexical/language/underscore-rejected", type: "xs:language", lexical: "en_US", valid: false },
+    { id: "lexical/name/qualified", type: "xs:Name", lexical: "a:b", valid: true },
+    { id: "lexical/ncname/colon-rejected", type: "xs:NCName", lexical: "a:b", valid: false },
+  ].freeze
+
+  REGEX_CASES = [
+    { id: "regex/block-escape", pattern: "\\p{IsBasicLatin}+", ruby: "\\A(?:\\p{InBasicLatin}+)\\z" },
+    { id: "regex/negated-block-escape", pattern: "\\P{IsLatin-1Supplement}", ruby: "\\A(?:\\P{InLatin-1Supplement})\\z" },
+    { id: "regex/greek-block", pattern: "\\p{IsGreek}", ruby: "\\A(?:\\p{InGreekandCoptic})\\z" },
+    { id: "regex/category", pattern: "\\p{L}", ruby: "\\A(?:\\p{L})\\z" },
+    { id: "regex/name-chars-outside-subset", pattern: "\\i\\c*", ruby: nil },
+    { id: "regex/subtraction-outside-subset", pattern: "[\\p{IsBasicLatin}-[abc]]+", ruby: nil },
+    { id: "regex/unknown-block-refused", pattern: "\\p{IsNoSuchBlock}", ruby: nil },
+  ].freeze
+
+  def self.faces
+    {
+      "xsd_builtin_lexical" => {
+        model_section: LEXICAL_SECTION,
+        source_pin: LEXICAL_PIN,
+        cases: LEXICAL_CASES,
+      },
+      "xsd_regex_translation" => {
+        model_section: REGEX_SECTION,
+        source_pin: REGEX_PIN,
+        cases: REGEX_CASES,
+      },
+    }
+  end
+end
