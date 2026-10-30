@@ -1,5 +1,14 @@
 # frozen_string_literal: true
 
+# Wrapper for an XML declaration.
+#
+# Lifecycle record: libleptris models the declaration as document-state
+# flags — setters shipped (leptris#1094) and clear shipped
+# (leptris#1229, binding 1.9.204.0) — but there is still no first-class
+# declaration NODE, so the facade keeps this mutable, removable value
+# object as the node stand-in. Dissolves when libleptris exposes
+# declaration node identity (leptris#1904's successor surface).
+
 module Moxml
   module Adapter
     module CustomizedLeptris

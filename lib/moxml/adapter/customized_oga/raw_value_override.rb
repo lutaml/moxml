@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+# Bypass Oga's lazy decoder for user-authored values.
+#
+# Engine gap (upstream oga): Oga::XML::Attribute#value and
+# Oga::XML::Text#text decode @value/@text on first read via
+# Oga::EntityDecoder; EntityDecoderOverride (this directory) must hold
+# user-authored raw values. Upstream tracker:
+# https://github.com/yorickpeterse/oga
+
 require "oga"
 
 module Moxml

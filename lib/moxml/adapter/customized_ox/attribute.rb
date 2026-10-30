@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# Engine gap (upstream ox): an ::Ox::Attribute carries no parent
+# back-reference and no prefix slots, so the facade's attribute node
+# contract needs this Node subclass. Upstream tracker:
+# https://github.com/ohler55/ox
+
 module Moxml
   module Adapter
     module CustomizedOx

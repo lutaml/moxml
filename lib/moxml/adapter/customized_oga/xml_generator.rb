@@ -1,6 +1,6 @@
 # rubocop:disable Style/FrozenStringLiteralComment
 
-require "oga"
+# Lifecycle record: engine gap (upstream oga); see the patched-class URL below.require "oga"
 
 # monkey patch the Oga generator because it's not configurable
 # https://github.com/yorickpeterse/oga/blob/main/lib/oga/xml/generator.rb

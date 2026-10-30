@@ -1,5 +1,11 @@
 # frozen_string_literal: true
 
+# Custom REXML formatter that fixes indentation and wrapping issues.
+# Engine gap (upstream rexml): REXML's Formatters::Pretty cannot be
+# configured to the facade's whitespace contract. Third-party engine,
+# no upstream ask; the :rexml adapter is Opal-only and dies with the
+# Opal surface (#489 phase 4).
+
 require "rexml/formatters/pretty"
 
 module Moxml

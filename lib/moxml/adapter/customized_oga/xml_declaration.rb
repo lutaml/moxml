@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+# Stand-in XML declaration node.
+#
+# Engine gap (upstream oga): Oga::XML::XmlDeclaration is not writable —
+# version/encoding/standalone cannot be set on an instance the way the
+# facade contract requires, so this subclass owns the state and renders
+# the declaration itself. Upstream tracker:
+# https://github.com/yorickpeterse/oga
+
 require "oga"
 
 module Moxml
