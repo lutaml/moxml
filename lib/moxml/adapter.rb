@@ -1,5 +1,13 @@
 # frozen_string_literal: true
 
+# The adapter registry (#494). Extension contract: adding an adapter is
+# exactly one line here — an `AVAILABLE_ADAPTERS` entry — plus its adapter
+# file (`moxml/adapter/<name>.rb`, a `Base` subclass named per
+# `CONST_NAME_MAP`). Nothing else, anywhere: the engine gem the adapter
+# needs is declared once in `ENGINE_GEMS` (only when it differs from the
+# adapter name), platform policy lives in `opal_runtime?`, and the
+# mechanical contract test (spec/moxml/adapter_registry_spec.rb) walks
+# `AVAILABLE_ADAPTERS` and fails if any of the trio is missing.
 module Moxml
   module Adapter
     autoload :Base, "moxml/adapter/base"
@@ -25,6 +33,14 @@ module Moxml
       headed_ox: "HeadedOx",
     }.freeze
 
+    # The engine gem each adapter drives, declared only when the name
+    # differs from the adapter name (#494): one explicit declaration
+    # replaces the old require-guessing fallback.
+    ENGINE_GEMS = {
+      headed_ox: "ox",
+      libxml: "libxml-ruby",
+    }.freeze
+
     # Adapters in their deprecation cycle (#491): warned once per
     # process at configuration, removed after the cycle. The value is
     # the migration guidance shown in the warning.
@@ -35,6 +51,16 @@ module Moxml
     }.freeze
 
     class << self
+      # The single Opal-runtime probe for the whole adapter surface
+      # (#494): registry selection, require skipping, and the
+      # per-adapter file guards all read this one predicate, so the
+      # RUBY_ENGINE string exists in exactly one place. When the Opal
+      # surface is deleted (#489 phase 4), this predicate and its
+      # callers go with it.
+      def opal_runtime?
+        RUBY_ENGINE == "opal"
+      end
+
       # One-time deprecation notice per adapter per process (#491).
       def warn_deprecated!(name)
         guidance = DEPRECATED_ADAPTERS[name.to_sym]
@@ -53,7 +79,7 @@ module Moxml
         const_get(const_name)
       rescue LoadError => e
         raise Moxml::AdapterError.new(
-          "Could not load #{name} adapter. Please ensure the #{name} gem is installed",
+          "Could not load #{name} adapter. Please ensure the #{ENGINE_GEMS[name.to_sym] || name} gem is installed",
           adapter: name,
           operation: "load",
           native_error: e,
@@ -65,7 +91,7 @@ module Moxml
       end
 
       def platform_adapters
-        RUBY_ENGINE == "opal" ? OPAL_AVAILABLE_ADAPTERS : AVAILABLE_ADAPTERS
+        opal_runtime? ? OPAL_AVAILABLE_ADAPTERS : AVAILABLE_ADAPTERS
       end
 
       private
@@ -87,22 +113,20 @@ module Moxml
 
       def require_adapter(name)
         # Opal pre-loads all dependencies via the Rakefile; skip runtime require.
-        return if RUBY_ENGINE == "opal"
+        return if opal_runtime?
 
         require "moxml/adapter/base"
+        # Explicit engine-gem declaration (#494): no require-guessing
+        # fallback — an adapter names its gem once in ENGINE_GEMS.
+        require ENGINE_GEMS[name.to_sym] || name.to_s
         require "moxml/adapter/#{name}"
-      rescue LoadError
-        begin
-          require name.to_s
-          require "moxml/adapter/#{name}"
-        rescue LoadError => e
-          raise Moxml::AdapterError.new(
-            "Failed to load #{name} adapter",
-            adapter: name,
-            operation: "require",
-            native_error: e,
-          )
-        end
+      rescue LoadError => e
+        raise Moxml::AdapterError.new(
+          "Failed to load #{name} adapter",
+          adapter: name,
+          operation: "require",
+          native_error: e,
+        )
       end
     end
   end

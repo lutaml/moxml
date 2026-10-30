@@ -2,7 +2,7 @@
 
 require "ffi"
 
-return if RUBY_ENGINE == "opal"
+return if Moxml::Adapter.opal_runtime?
 
 require "stringio"
 require "leptris"
