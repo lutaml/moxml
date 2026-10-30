@@ -95,7 +95,8 @@ adapter refuses to load below its floor.
 
 |Ox
 |>= 2.14
-|Tested against the 2.14 line.
+|DEPRECATED (#491) — warned at configuration; use :leptris (primary)
+or :nokogiri. Removal after the deprecation cycle.
 
 |Oga
 |3.4 / 3.5
@@ -105,8 +106,9 @@ moxml's customized generator and decoder overrides.
 
 |LibXML (libxml-ruby)
 |>= 5.0
-|6.x works and is the installed default on Ruby >= 3.2 (libxml-ruby
-6.0 itself requires Ruby >= 3.2); Ruby 3.1 resolves 5.x.
+|DEPRECATED (#491) — warned at configuration; use :nokogiri (the
+same libxml2 engine, governed by the consistency suite). Removal
+after the deprecation cycle.
 
 |Leptris (leptris-ruby)
 |>= 1.9.194.1
