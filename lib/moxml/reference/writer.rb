@@ -9,8 +9,8 @@ module Moxml
     # declaration).
     #
     # Output is assembled as an array of parts and joined: the
-    # reference must run under Opal, where mutable String#<< is
-    # unsupported.
+    # reference stays off mutable String#<< by design (cheap total
+    # behavior, no per-call buffer semantics).
     class Writer
       VOID_ELEMENTS = %w[
         area base br col embed hr img input link meta param source

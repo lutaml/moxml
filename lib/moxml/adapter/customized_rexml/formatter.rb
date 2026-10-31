@@ -3,8 +3,8 @@
 # Custom REXML formatter that fixes indentation and wrapping issues.
 # Engine gap (upstream rexml): REXML's Formatters::Pretty cannot be
 # configured to the facade's whitespace contract. Third-party engine,
-# no upstream ask; the :rexml adapter is Opal-only and dies with the
-# Opal surface (#489 phase 4).
+# no upstream ask; the :rexml adapter's fate governs this file (its
+# historical Opal role ended with #489 phase 4).
 
 require "rexml/formatters/pretty"
 

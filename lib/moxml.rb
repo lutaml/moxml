@@ -89,8 +89,6 @@ module Moxml
   autoload :Builder, "moxml/builder"
   autoload :Entity, "moxml/entity"
   autoload :EntityRegistry, "moxml/entity_registry"
-  # Opal has no autoload; the compat boot file requires this eagerly
-  # alongside the registry.
   autoload :NativeAttachment, "moxml/native_attachment"
   autoload :XmlUtils, "moxml/xml_utils"
   autoload :XmlEmitter, "moxml/xml_emitter"

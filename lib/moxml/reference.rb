@@ -5,7 +5,7 @@ module Moxml
   # reader, writer, and normalizer that answer the processing model
   # without any native engine. Adapters are differentially tested
   # against these answers; the reference is also the lane for
-  # engine-free environments (the Opal line generalized).
+  # engine-free environments.
   #
   # The reference is deliberately small and total over the model's
   # declared input taxonomy — every well-formed document the model
