@@ -3,8 +3,7 @@
 require "rexml/document"
 require "rexml/xpath"
 require "rexml/streamlistener"
-require "set" unless RUBY_ENGINE == "opal"
-require "stringio" if RUBY_ENGINE == "opal"
+require "set"
 
 module Moxml
   module Adapter
@@ -697,7 +696,6 @@ module Moxml
         end
 
         def serialize(node, options = {})
-          output = StringIO.new("") if RUBY_ENGINE == "opal"
           output ||= +""
 
           if node.is_a?(::REXML::Document)

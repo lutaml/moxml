@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "json" unless RUBY_ENGINE == "opal"
+require "json"
 require "set"
 
 module Moxml
@@ -107,10 +107,6 @@ module Moxml
       # Load entity data from bundled gem data or local file
       # @return [Hash{String => String}]
       def load_entity_data
-        if RUBY_ENGINE == "opal"
-          return OPAL_ENTITY_DATA
-        end
-
         # Try multiple paths in order of priority
         paths_to_try = []
 

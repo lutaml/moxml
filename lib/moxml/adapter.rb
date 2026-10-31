@@ -29,8 +29,6 @@ module Moxml
     # canonical XML parser for the JavaScript runtime. REXML is also pure Ruby
     # but requires extensive runtime compat shims (regex features like /n,
     # \u{...}, (?-mix:...) don't transpile cleanly), so it is opt-in only.
-    OPAL_AVAILABLE_ADAPTERS = %i[oga rexml].freeze
-
     # Registry mapping adapter names to their class name suffixes.
     # Special cases (like :headed_ox → "HeadedOx") live here instead of
     # a case statement, keeping the dispatch open for extension.
@@ -78,7 +76,7 @@ module Moxml
       end
 
       def platform_adapters
-        RUBY_ENGINE == "opal" ? OPAL_AVAILABLE_ADAPTERS : AVAILABLE_ADAPTERS
+        AVAILABLE_ADAPTERS
       end
 
       private
@@ -99,9 +97,6 @@ module Moxml
       end
 
       def require_adapter(name)
-        # Opal pre-loads all dependencies via the Rakefile; skip runtime require.
-        return if RUBY_ENGINE == "opal"
-
         require "moxml/adapter/base"
         require "moxml/adapter/#{name}"
       rescue LoadError

@@ -91,7 +91,6 @@ module Moxml
   autoload :EntityRegistry, "moxml/entity_registry"
   # Opal has no autoload; the compat boot file requires this eagerly
   # alongside the registry.
-  autoload :EntityRegistryOpalData, "moxml/entity_registry_opal_data"
   autoload :NativeAttachment, "moxml/native_attachment"
   autoload :XmlUtils, "moxml/xml_utils"
   autoload :XmlEmitter, "moxml/xml_emitter"
@@ -101,7 +100,7 @@ module Moxml
   autoload :Adapter, "moxml/adapter"
   autoload :XPath, "moxml/xpath"
   autoload :SAX, "moxml/sax"
-  autoload :Signature, "moxml/signature" unless RUBY_ENGINE == "opal"
+  autoload :Signature, "moxml/signature"
   autoload :C14n, "moxml/c14n"
   autoload :Reference, "moxml/reference"
   autoload :XSLT, "moxml/xslt"

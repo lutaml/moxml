@@ -5,6 +5,9 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in moxml.gemspec
 gemspec
 
+# base64 is a bundled gem on Ruby 3.4+; the signature module requires
+# it (the opal dev deps used to carry it transitively).
+gem "base64"
 # Provides iteration per second benchmarking for Ruby
 gem "benchmark"
 gem "benchmark-ips"
@@ -12,18 +15,11 @@ gem "get_process_mem"
 gem "leptris", "~> 1.9.386"
 gem "libxml-ruby", ">= 5.0"
 gem "nokogiri", "~> 1.18"
+gem "oga"
 gem "openssl", "~> 3.0"
 gem "ox", "~> 2.14"
 gem "rake"
 gem "rexml"
-
-# Opal-compatible forks of oga and ruby-ll. The forks add pure-Ruby lexer
-# and driver fallbacks (under ext/pureruby/) plus an Opal-aware conditional
-# in lib/oga.rb / lib/ll/setup.rb that selects the pure-Ruby implementation
-# when RUBY_PLATFORM == 'opal'. Under CRuby/JRuby the forks behave
-# identically to upstream (the conditional falls through to liboga/libll).
-gem "oga", path: "vendor/opal-oga"
-gem "ruby-ll", path: "vendor/opal-ruby-ll"
 
 gem "rspec"
 gem "rubocop"
@@ -37,9 +33,3 @@ gem "tempfile"
 
 # Needed by get_process_mem on Windows
 gem "sys-proctable" if Gem.win_platform?
-
-group :opal do
-  gem "opal", "~> 1.8"
-  gem "opal-rspec", "~> 1.0"
-  gem "opal-sprockets"
-end

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-return if RUBY_ENGINE == "opal"
-
 require "libxml-ruby"
 
 module Moxml
