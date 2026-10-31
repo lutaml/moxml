@@ -16,8 +16,6 @@ module Moxml
     # its C extension and cannot load there; otherwise rexml.
     PREFERRED_ADAPTER = :leptris
     FALLBACK_ADAPTER = :nokogiri
-    OPAL_DEFAULT_ADAPTER = :oga
-    OPAL_FALLBACK_ADAPTER = :rexml
 
     # Entity loading modes:
     # - :required - Must load entities, raise error if unavailable (default)
@@ -45,8 +43,6 @@ module Moxml
       end
 
       def runtime_default_adapter
-        return opal_runtime_adapter if RUBY_ENGINE == "opal"
-
         preferred = leptris_preferred_available?
         return PREFERRED_ADAPTER if preferred == true
 
@@ -66,19 +62,6 @@ module Moxml
         end
 
         detect_loaded_adapter || FALLBACK_ADAPTER
-      end
-
-      # Stock oga requires its C extension, so under Opal the oga
-      # adapter can only come from the vendored pure-Ruby fork — a
-      # repo-only artifact the released gem does not ship. Bundles
-      # that compiled it in (moxml's own harness) keep oga; everyone
-      # else gets the rexml adapter, whose Opal compat ships in-gem.
-      # `defined?` is safe here: this branch never runs under MRI,
-      # where it would trigger autoload resolution.
-      def opal_runtime_adapter
-        return OPAL_DEFAULT_ADAPTER if defined?(Moxml::Adapter::Oga)
-
-        OPAL_FALLBACK_ADAPTER
       end
 
       # True when the leptris gem is installed AND meets the adapter's

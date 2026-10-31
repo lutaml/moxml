@@ -2,42 +2,12 @@
 
 require "bundler/gem_tasks"
 
-# vendor:prepare must be runnable before `bundle install` (CI runs it
-# first so the path-source oga/ruby-ll forks' gitignored lexer/parser
-# outputs exist before their extconf.rb runs). Guard the rspec/opal
-# requires so the file loads with only `rake` + `bundler` available.
+# Guard the rspec requires so the file loads with only `rake` +
+# `bundler` available.
 begin
   require "rspec/core/rake_task"
   RSpec::Core::RakeTask.new(:spec)
 rescue LoadError
-end
-
-begin
-  require "opal/rspec/rake_task"
-
-  # REXML is a bundled gem since Ruby 3.4; its source must be on Opal's
-  # global load path so the compiler can follow `require "rexml/document"`.
-  # Opal-compatible overrides go first so they shadow the gem originals.
-  if defined?(Opal)
-    Opal.append_path File.expand_path("lib/compat/opal", __dir__)
-    rexml_lib = $LOAD_PATH.find do |p|
-      File.exist?(File.join(p, "rexml", "document.rb"))
-    end
-    Opal.append_path rexml_lib if rexml_lib
-
-    # The Opal-compatible oga and ruby-ll forks (vendored as submodules)
-    # expose pure-Ruby implementations under ext/pureruby/. Their top-level
-    # lib/oga.rb and lib/ll/setup.rb conditionally require them when
-    # RUBY_PLATFORM == 'opal'. Both lib/ and ext/pureruby/ must be on
-    # Opal's load path so the conditional resolves correctly.
-    %w[opal-oga opal-ruby-ll].each do |fork_name|
-      fork_path = File.expand_path("vendor/#{fork_name}", __dir__)
-      Opal.append_path File.join(fork_path, "lib")
-      Opal.append_path File.join(fork_path, "ext/pureruby")
-    end
-  end
-rescue LoadError
-  # Opal not available or incompatible with current Ruby version
 end
 
 begin
@@ -46,117 +16,8 @@ begin
 rescue LoadError
 end
 
-# Regenerate the ragel / ruby-ll outputs that the Opal-compatible forks
-# (vendored as submodules under vendor/) gitignore. The forks ship the
-# grammar sources (.rl / .rll) but not the generated .rb / .c, since
-# those are large and version-controllable upstream. Both ragel and
-# ruby-ll must be on PATH; the upstream ruby-ll gem is sufficient for
-# generation (the fork is only needed at runtime).
-namespace :vendor do
-  desc "Generate ragel / ruby-ll outputs in vendored opal-oga and opal-ruby-ll"
-  task :prepare do
-    require "fileutils"
-
-    oga = File.expand_path("vendor/opal-oga", __dir__)
-    ruby_ll = File.expand_path("vendor/opal-ruby-ll", __dir__)
-
-    generators = [
-      # oga: ruby-ll grammar → Ruby parser
-      ["ruby-ll #{oga}/lib/oga/xml/parser.rll -o #{oga}/lib/oga/xml/parser.rb",
-       "#{oga}/lib/oga/xml/parser.rb",
-       "#{oga}/lib/oga/xml/parser.rll"],
-      ["ruby-ll #{oga}/lib/oga/xpath/parser.rll -o #{oga}/lib/oga/xpath/parser.rb",
-       "#{oga}/lib/oga/xpath/parser.rb",
-       "#{oga}/lib/oga/xpath/parser.rll"],
-      ["ruby-ll #{oga}/lib/oga/css/parser.rll -o #{oga}/lib/oga/css/parser.rb",
-       "#{oga}/lib/oga/css/parser.rb",
-       "#{oga}/lib/oga/css/parser.rll"],
-      # oga: ragel Ruby lexer
-      ["ragel -R -F1 #{oga}/lib/oga/xpath/lexer.rl -o #{oga}/lib/oga/xpath/lexer.rb",
-       "#{oga}/lib/oga/xpath/lexer.rb",
-       "#{oga}/lib/oga/xpath/lexer.rl"],
-      ["ragel -R -F1 #{oga}/lib/oga/css/lexer.rl -o #{oga}/lib/oga/css/lexer.rb",
-       "#{oga}/lib/oga/css/lexer.rb",
-       "#{oga}/lib/oga/css/lexer.rl"],
-      # oga: ragel C lexer for liboga
-      ["ragel -C -I #{oga}/ext/ragel -G2 #{oga}/ext/c/lexer.rl -o #{oga}/ext/c/lexer.c",
-       "#{oga}/ext/c/lexer.c",
-       "#{oga}/ext/c/lexer.rl"],
-      # ruby-ll: ruby-ll grammar → Ruby parser
-      ["ruby-ll #{ruby_ll}/lib/ll/parser.rll -o #{ruby_ll}/lib/ll/parser.rb --no-requires",
-       "#{ruby_ll}/lib/ll/parser.rb",
-       "#{ruby_ll}/lib/ll/parser.rll"],
-    ]
-
-    # Under bundle exec, ruby-ll resolves to the vendored opal-ruby-ll
-    # binstub, which needs the not-yet-compiled libll.
-    Bundler.with_unbundled_env do
-      generators.each do |cmd, output, source|
-        if File.exist?(output) && File.mtime(output) >= File.mtime(source)
-          next
-        end
-
-        FileUtils.mkdir_p(File.dirname(output))
-        sh cmd
-      end
-    end
-  end
-
-  # Bundler does not reliably compile native extensions for path-source
-  # gems. Build liboga/libll explicitly so `require "oga"` resolves.
-  desc "Compile liboga / libll native extensions for vendored forks"
-  task :compile do
-    require "fileutils"
-    require "rbconfig"
-
-    dlext = RbConfig::CONFIG["DLEXT"]
-
-    {
-      "vendor/opal-ruby-ll" => "libll",
-      "vendor/opal-oga" => "liboga",
-    }.each do |fork_path, ext_name|
-      abs_fork = File.expand_path(fork_path, __dir__)
-      lib_bundle = File.join(abs_fork, "lib", "#{ext_name}.#{dlext}")
-      ext_dir = File.join(abs_fork, "ext", "c")
-      extconf = File.join(ext_dir, "extconf.rb")
-      lib_dir = File.join(abs_fork, "lib")
-      next if File.exist?(lib_bundle)
-
-      Dir.chdir(ext_dir) do
-        sh "ruby #{extconf}"
-        sh "make"
-        FileUtils.cp("#{ext_name}.#{dlext}", lib_dir)
-      end
-    end
-  end
-end
-
 if defined?(RSpec)
 namespace :spec do
-  if defined?(Opal::RSpec::RakeTask)
-    desc "Run Opal (JavaScript) tests"
-    Opal::RSpec::RakeTask.new(:opal) do |server, runner|
-      server.append_path "lib"
-      server.append_path "spec"
-
-      runner.default_path = "spec"
-      # `oga` and `ll/setup` must be required before moxml_boot so that
-      # the forks' Opal-aware conditional requires fire (lib/oga.rb calls
-      # `require 'oga/native/lexer'` when RUBY_PLATFORM == 'opal'; that
-      # resolves against vendor/opal-oga/ext/pureruby/, which the global
-      # Opal.append_path calls above add to the load path).
-      runner.requires = %w[rexml_compat rexml/document rexml/xpath
-                           oga ll/setup
-                           moxml_boot spec_helper support/opal]
-      runner.files = Dir.glob("spec/moxml/*opal*_spec.rb") +
-        Dir.glob("spec/moxml/native_attachment/opal_spec.rb") +
-        Dir.glob("spec/moxml/adapter/shared_examples/*.rb")
-    end
-
-    desc "Alias for spec:opal that also runs vendor:prepare"
-    task opal: "vendor:prepare"
-  end
-
   desc "Validate XML fixtures are well-formed (requires xmllint)"
   task :validate_fixtures do
     fixtures = Dir.glob("spec/fixtures/**/*.xml")
@@ -302,44 +163,6 @@ namespace :benchmark do
          "SCORE_BASELINE" => "benchmark/scoreboard.json",
          "SCORE_JSON" => "/tmp/measured-scoreboard.json" },
        "bundle exec ruby benchmark/scoreboard.rb")
-  end
-end
-
-namespace :opal do
-  desc "Regenerate entity data for Opal from w3c_entities.json"
-  task :generate_entity_data do
-    require "json"
-
-    source = File.join(__dir__, "data", "w3c_entities.json")
-    target = File.join(__dir__, "lib", "moxml", "entity_registry_opal_data.rb")
-
-    data = JSON.parse(File.read(source))
-    chars = data["characters"]
-
-    lines = []
-    lines << "# frozen_string_literal: true"
-    lines << "#"
-    lines << "# Auto-generated entity data for Opal runtime."
-    lines << "# Source: data/w3c_entities.json (#{chars.size} entities)"
-    lines << "# Regenerate with: rake opal:generate_entity_data"
-    lines << ""
-    lines << "module Moxml"
-    lines << "  class EntityRegistry"
-    lines << "    OPAL_ENTITY_DATA = {"
-    chars.each do |name, char|
-      codepoint = if char.start_with?("\\u")
-                    char.unicode_normalize(:nfc)[2..].to_i(16)
-                  else
-                    char.ord
-                  end
-      lines << "      #{name.inspect} => #{codepoint},"
-    end
-    lines << "    }.freeze"
-    lines << "  end"
-    lines << "end"
-
-    File.write(target, "#{lines.join("\n")}\n")
-    puts "Generated #{target} (#{chars.size} entities, #{lines.size} lines)"
   end
 end
 

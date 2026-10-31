@@ -44,7 +44,6 @@ jobs:
           # main moves between the release and this report. A manual
           # dispatch may pin any tree (backfills).
           ref: ${{ inputs.ref || github.event.workflow_run.head_sha || 'main' }}
-          submodules: "recursive"
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -52,20 +51,8 @@ jobs:
           ruby-version: "3.3"
           bundler-cache: false
 
-      - name: Install ragel
-        run: sudo apt-get update && sudo apt-get install -y ragel
-
-      - name: Install ruby-ll (for rake vendor:prepare)
-        run: gem install ruby-ll --no-document
-
-      - name: Generate ragel / ruby-ll outputs in vendored forks
-        run: rake vendor:prepare
-
       - name: Install dependencies
         run: bundle install
-
-      - name: Compile liboga / libll native extensions
-        run: rake vendor:compile
 
       - name: Let the runner settle after the build
         run: |

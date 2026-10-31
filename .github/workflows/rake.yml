@@ -21,39 +21,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          submodules: "recursive"
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
-          # bundler-cache is disabled because the path-source oga
-          # and ruby-ll forks need ragel + ruby-ll outputs generated
-          # (rake vendor:prepare) before their C extensions can compile.
           bundler-cache: false
-
-      - name: Install ragel
-        run: sudo apt-get update && sudo apt-get install -y ragel
-
-      - name: Install ruby-ll (for rake vendor:prepare)
-        run: gem install ruby-ll --no-document
-
-      - name: Generate ragel / ruby-ll outputs in vendored forks
-        # Run before `bundle install`: the path-source oga/ruby-ll forks
-        # gitignore their generated .rb/.c files (parser.rb, lexer.rb,
-        # ext/c/lexer.c). bundle install compiles the C extensions via
-        # each fork's extconf.rb, which requires ext/c/lexer.c to exist.
-        run: rake vendor:prepare
 
       - name: Install dependencies
         run: bundle install
-
-      - name: Compile liboga / libll native extensions
-        # Bundler does not reliably build path-source gems' native
-        # extensions; compile them explicitly so `require "oga"` (which
-        # requires libll) resolves under CRuby.
-        run: rake vendor:compile
 
       - name: Run fast tests (unit + adapter + integration)
         run: bundle exec rake spec:fast
@@ -80,8 +56,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          submodules: "recursive"
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -89,20 +63,8 @@ jobs:
           ruby-version: "3.4"
           bundler-cache: false
 
-      - name: Install ragel
-        run: sudo apt-get update && sudo apt-get install -y ragel
-
-      - name: Install ruby-ll (for rake vendor:prepare)
-        run: gem install ruby-ll --no-document
-
-      - name: Generate ragel / ruby-ll outputs in vendored forks
-        run: rake vendor:prepare
-
       - name: Install dependencies
         run: bundle install
-
-      - name: Compile liboga / libll native extensions
-        run: rake vendor:compile
 
       - name: Full battery at the fixed seed
         run: bundle exec rspec --order rand:424242

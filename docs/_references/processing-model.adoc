@@ -25,8 +25,9 @@ Pins:: none
    reference** (a pure-Ruby reader, writer, and normalizer). Adapters
    are differentially tested against the reference
    (`spec/consistency/reference_differential_spec.rb`), not only
-   against each other; the reference is pure Ruby and transpiles to
-   the Opal lane.
+   against each other; the reference is pure Ruby. (The Opal
+   transpile lane was removed in #489 phase 4 — the JS surface is
+   the moxml-ts wasm binding.)
 3. Adapter implementations and capability gates — representations.
 
 A pin cites the model section it enforces

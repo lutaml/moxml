@@ -253,7 +253,6 @@ RSpec.describe "Moxml::Signature edge cases and defense" do
   end
 
   describe "adapter portability" do
-    # Skip on Opal — adapter switching is the whole point of moxml.
     it "verifies a signature produced under one adapter with another", :adapter_portability do
       skip "Only Nokogiri available in CI" unless defined?(Nokogiri)
 
