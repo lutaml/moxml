@@ -87,7 +87,7 @@ module Moxml
       if defined?(URI::RFC3986_PARSER)
         URI::RFC3986_PARSER.split(uri)
       elsif uri.match?(/\A[a-zA-Z][a-zA-Z0-9+\-.]*:[^\x00-\x20]*\z/)
-        # Minimal URI validation for Opal (no RFC3986_PARSER available)
+        # Minimal validation where URI::RFC3986_PARSER is unavailable
       else
         # Accept relative references and bare paths
         return unless uri.match?(/[\x00-\x08\x0B\x0C\x0E-\x1F]/)

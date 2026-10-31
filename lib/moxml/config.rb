@@ -11,9 +11,7 @@ module Moxml
     # when the installed leptris supports programmatic document
     # construction (Leptris::XML::Document.create); otherwise moxml
     # falls back to FALLBACK_ADAPTER so released-gem environments keep
-    # working. Under Opal the default is oga only when the vendored
-    # pure-Ruby fork was compiled into the bundle — stock oga requires
-    # its C extension and cannot load there; otherwise rexml.
+    # working.
     PREFERRED_ADAPTER = :leptris
     FALLBACK_ADAPTER = :nokogiri
 
@@ -75,12 +73,7 @@ module Moxml
 
         @leptris_preferred_available =
           begin
-            # Route the require through a non-literal send: Opal::Builder
-            # resolves literal requires statically and dies on native-only
-            # gems (leptris is FFI; lutaml/moxml#475) before this rescue
-            # can degrade the adapter. The runtime require still raises
-            # LoadError under Opal, which the rescue below handles.
-            __send__(:require, "leptris")
+            require "leptris"
             Moxml::Adapter.load(:leptris)
             Gem::Version.new(::Leptris::VERSION) >=
               Gem::Version.new(Moxml::Adapter::Leptris::MINIMUM_BINDING_VERSION)

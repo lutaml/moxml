@@ -4,8 +4,7 @@ module Moxml
   module Reference
     # A small, total XML reader for the model's input taxonomy. No
     # recovery: malformed input raises a named ParseError. The only
-    # dependencies are Ruby's String and Regexp, so the reference
-    # transpiles to the Opal lane.
+    # dependencies are Ruby's String and Regexp alone.
     class Parser
       NAME = /[A-Za-z_:][-A-Za-z0-9_:.]*/
       XML_WHITESPACE = /[ \t\n\r]/
