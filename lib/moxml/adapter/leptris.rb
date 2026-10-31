@@ -341,6 +341,17 @@ module Moxml
         # (Leptris::VERSION), +engine_version+ is libleptris's own
         # (the leptris_version() C face, face-probed — nil on a
         # binding without it).
+        #
+        # Support faces are DESCRIPTOR-AUTHORITATIVE (leptris-ruby#572
+        # bridge, engine leptris#1905): a face answers true only when
+        # the ENGINE's capability bitset serves it AND the binding
+        # exposes it — a face the engine serves but the binding has
+        # not bridged is indistinguishable from absent without the
+        # bitset. On a binding without the bridge the probe answer
+        # stands alone (never narrowed by missing data). The bit
+        # values decode the engine's LEPTRIS_CAP_* layout (bits
+        # append per the engine's contract; the binding re-encodes
+        # nothing, the model names them).
         def capabilities
           @capabilities ||= {
             binding_version: ::Leptris::VERSION,
@@ -353,15 +364,42 @@ module Moxml
             add_element_full: ADD_ELEMENT_FULL,
             native_strings_utf8: !NATIVE_STRINGS_UTF8.nil?,
             native_mutations_coherent: !NATIVE_MUTATIONS_COHERENT.nil?,
-            native_entity_refs: !NATIVE_ENTITY_REFS.nil?,
+            native_entity_refs:
+              !NATIVE_ENTITY_REFS.nil? && engine_serves?(:entity_ref_nodes),
             native_bulk_fixed: !NATIVE_BULK_FIXED.nil?,
             native_plan_structs: NATIVE_PLAN_STRUCTS,
             native_plan_typed: NATIVE_PLAN_TYPED,
-            digest: DIGEST_SUPPORTED,
-            xsd: XSD_SUPPORTED,
-            relaxng: RELAXNG_SUPPORTED,
-            xslt: XSLT_SUPPORTED,
+            digest: DIGEST_SUPPORTED && engine_serves?(:digest),
+            xsd: XSD_SUPPORTED && engine_serves?(:xsd),
+            relaxng: RELAXNG_SUPPORTED && engine_serves?(:relaxng),
+            xslt: XSLT_SUPPORTED && engine_serves?(:xslt),
           }.freeze
+        end
+
+        # The engine's capability descriptor (raw bitset), or nil on
+        # a binding without the bridge. The bit values are the
+        # engine's LEPTRIS_CAP_* layout at descriptor version 1 —
+        # bits append, so the decode stays valid on later sets.
+        ENGINE_CAPS_BITS = {
+          digest: 1 << 9,
+          xsd: 1 << 10,
+          relaxng: 1 << 12,
+          xslt: 1 << 14,
+          entity_ref_nodes: 1 << 24,
+        }.freeze
+
+        def engine_serves?(face)
+          descriptor = engine_descriptor
+          return true unless descriptor
+
+          descriptor[:caps].anybits?(ENGINE_CAPS_BITS.fetch(face))
+        end
+
+        def engine_descriptor
+          @engine_descriptor ||=
+            if defined?(::Leptris::XML.capabilities)
+              ::Leptris::XML.capabilities
+            end
         end
 
         # WeakMap has no #clear — 0.5.100's valve crashed every parse

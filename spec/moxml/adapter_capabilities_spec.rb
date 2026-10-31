@@ -52,6 +52,31 @@ RSpec.describe "engine capability report" do
     expect(caps[:xslt]).to be(true)
   end
 
+  # leptris-ruby#572: the binding bridges the engine's capability
+  # descriptor, and the support faces answer its verdict ANDed with
+  # the binding probe — a face the engine serves but the binding has
+  # not bridged is not "true" (the half-face trap the version-gate
+  # class could not see).
+  it "answers the support faces from the engine descriptor bitset" do
+    skip "requires the binding's descriptor bridge (leptris 1.9.396+)" unless
+      defined?(Leptris::XML.capabilities)
+
+    caps = Moxml::Adapter::Leptris.capabilities
+    descriptor = Leptris::XML.capabilities
+    expect(descriptor[:descriptor_version]).to be(1)
+    {
+      digest: 1 << 9,
+      xsd: 1 << 10,
+      relaxng: 1 << 12,
+      xslt: 1 << 14,
+    }.each do |face, bit|
+      served = descriptor[:caps].anybits?(bit)
+      expect(caps[face]).to eql(served),
+                            "#{face} must answer the engine bitset's verdict " \
+                            "(ANDed with the binding probe)"
+    end
+  end
+
   it "is memoized — repeated queries answer the same frozen object" do
     expect(Moxml::Adapter::Leptris.capabilities)
       .to equal(Moxml::Adapter::Leptris.capabilities)
