@@ -180,7 +180,8 @@ RSpec.describe Moxml::Config do
         [RbConfig.ruby, "-e", script],
         err: ["/dev/null", "w"],
         "RUBYOPT" => "-rbundler/setup",
-      ) { |io| io.read }
+        &:read
+      )
       expect(out.strip).to eq("OK")
     end
   end
