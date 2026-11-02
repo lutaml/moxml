@@ -197,7 +197,12 @@ module Moxml
       end
 
       @adapter_name = name
-      adapter
+      # Load lazily (the #adapter reader): assignment must not require
+      # the adapter's gem. Moxml.new(:rexml) on a nokogiri-less machine
+      # crashed here because Config#initialize consults Config.default,
+      # whose construction eagerly loaded the FALLBACK adapter. The
+      # load now happens at first use and raises the same AdapterError
+      # there.
     end
 
     def default_adapter=(name)
