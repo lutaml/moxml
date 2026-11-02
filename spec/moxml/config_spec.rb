@@ -131,15 +131,16 @@ RSpec.describe Moxml::Config do
       expect { config.adapter = :invalid }.to raise_error(Moxml::AdapterError)
     end
 
-    it "requires adapter gem" do
-      expect { config.adapter = :oga }.not_to raise_error
-
+    it "loads the adapter gem at first use" do
+      config.adapter = :oga
+      config.adapter
       expect(defined?(Oga)).to be_truthy
     end
 
-    it "handles missing gems" do
+    it "delays missing-gem errors from assignment to first use" do
       allow(Moxml::Adapter).to receive(:require).and_raise(LoadError)
-      expect { config.adapter = :nokogiri }.to raise_error(Moxml::AdapterError)
+      config.adapter = :nokogiri
+      expect { config.adapter }.to raise_error(Moxml::AdapterError)
     end
   end
 
@@ -157,6 +158,30 @@ RSpec.describe Moxml::Config do
       original = config.adapter
       config.adapter = :ox
       expect(config.adapter).not_to eq(original)
+    end
+  end
+
+  describe "non-default context construction (moxml#518)" do
+    it "does not load the fallback adapter when a named adapter is given" do
+      script = <<~'RUBY'
+        require "moxml"
+        ctx = Moxml.new(:rexml)
+        xml = ctx.parse('<person xmlns:x="urn:x" x:id="7"><name>A</name></person>').to_xml
+        loaded = $LOADED_FEATURES.map { |f| File.basename(f, ".rb") }
+        if loaded.include?("moxml/adapter/nokogiri")
+          abort "FAIL: fallback adapter (nokogiri) loaded for a :rexml context"
+        end
+        unless xml.include?("person")
+          abort "FAIL: rexml serialize produced no output: #{xml.inspect}"
+        end
+        puts "OK"
+      RUBY
+      out = IO.popen(
+        [RbConfig.ruby, "-e", script],
+        err: ["/dev/null", "w"],
+        "RUBYOPT" => "-rbundler/setup",
+      ) { |io| io.read }
+      expect(out.strip).to eq("OK")
     end
   end
 end
