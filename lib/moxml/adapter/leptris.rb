@@ -33,6 +33,46 @@ module Moxml
       # the README's "older bindings do not load" claim is now true).
       MINIMUM_BINDING_VERSION = "1.9.386.0"
 
+      # Snapshot-backed attribute listing native (moxml#520): the
+      # listing face serves reads from the binding's ONE-crossing
+      # attributes_snapshot hash — no Attr mint, no FFI::Pointer, no
+      # per-attribute C crossing on the read path (the hydration-walk
+      # shape). Mutations resolve the real binding Attr from the
+      # owning element on demand; reads never pay for it.
+      class SnapshotAttribute
+        attr_reader :name, :qualified_name, :element
+
+        def initialize(name, qualified_name, value, element)
+          @name = name
+          @qualified_name = qualified_name
+          @value = value
+          @element = element
+        end
+
+        def value
+          @value
+        end
+
+        def value=(new_value)
+          @value = new_value
+        end
+
+        # Adopt a real binding Attr for mutation-contract returns
+        # (name=/namespace= renames go through the element and yield
+        # a fresh native).
+        def resolve!
+          @element.attribute_nodes
+            .reverse.find { |candidate| candidate.name == @qualified_name }
+        end
+
+        # Shape parity with the binding Attr the snapshot stands for:
+        # consumers duck-check to_xml; delegate to the resolved Attr
+        # so the engine's own escaping defines the output.
+        def to_xml
+          resolve!&.to_xml
+        end
+      end
+
       if Gem::Version.new(::Leptris::VERSION.to_s) <
           Gem::Version.new(MINIMUM_BINDING_VERSION)
         raise Moxml::AdapterError.new(
@@ -1018,11 +1058,15 @@ module Moxml
           def same_node?(one, other)
             return true if one.equal?(other)
 
-            if one.is_a?(::Leptris::XML::Attr) ||
-                other.is_a?(::Leptris::XML::Attr)
-              return one.is_a?(::Leptris::XML::Attr) &&
-                  other.is_a?(::Leptris::XML::Attr) &&
-                  one.name == other.name &&
+            attr_like = ->(node) do
+              node.is_a?(::Leptris::XML::Attr) || node.is_a?(SnapshotAttribute)
+            end
+            if attr_like.call(one) || attr_like.call(other)
+              return false unless attr_like.call(one) && attr_like.call(other)
+
+              name_one = one.is_a?(SnapshotAttribute) ? one.qualified_name : one.name
+              name_other = other.is_a?(SnapshotAttribute) ? other.qualified_name : other.name
+              return name_one == name_other &&
                   same_node?(one.element, other.element)
             end
 
@@ -2081,7 +2125,9 @@ module Moxml
 
         def set_namespace(node, namespace)
           node = to_binding(node) if NATIVE_READ_LAYER
-          return set_attribute_namespace(node, namespace) if node.is_a?(::Leptris::XML::Attr)
+          if node.is_a?(::Leptris::XML::Attr) || node.is_a?(SnapshotAttribute)
+            return set_attribute_namespace(node, namespace)
+          end
 
           element = node
           if namespace.nil?
@@ -2139,7 +2185,8 @@ module Moxml
           element = attr.element
           local = attr.name.include?(":") ? attr.name.split(":", 2)[1] : attr.name
           value = attr.value
-          element.remove_attribute(attr.name)
+          qualified_old = attr.is_a?(SnapshotAttribute) ? attr.qualified_name : attr.name
+          element.remove_attribute(qualified_old)
           prefix = namespace.is_a?(String) ? nil : namespace.prefix
           uri = namespace.is_a?(String) ? namespace : namespace.href
           qualified = prefix.nil? || prefix.empty? ? local : "#{prefix}:#{local}"
@@ -2147,11 +2194,34 @@ module Moxml
           if prefix && !prefix.empty? && !uri.to_s.empty? && !resolve_prefix_ns(element, prefix)
             element.add_namespace_definition(prefix, uri.to_s)
           end
+          if attr.is_a?(SnapshotAttribute)
+            # Mutation-return contract: hand back the same native
+            # CLASS the caller tracks, refreshed for the new qname.
+            return SnapshotAttribute.new(local, qualified, value, element)
+          end
+
           element.attribute_nodes.reverse.find { |candidate| candidate.name == qualified }
         end
 
         def namespace(node)
           node = to_binding(node) if NATIVE_READ_LAYER
+
+          # SnapshotAttribute: resolve the prefix against the owning
+          # element's scope (same contract as the Attr branch below);
+          # unprefixed names (plain attributes, xmlns declarations)
+          # resolve the real binding Attr for the declaration walk.
+          if node.is_a?(SnapshotAttribute)
+            if (prefix = prefix_part(node.qualified_name))
+              resolved = resolve_prefix_ns(node.element, prefix)
+              return resolved if resolved
+              return implicit_xml_namespace(node) if prefix == "xml"
+
+              return nil
+            end
+
+            real = node.resolve!
+            return real && namespace(real)
+          end
 
           # The binding resolves Attr#namespace to the declaration but
           # without the prefix; when the qualified name carries one,
@@ -2218,7 +2288,12 @@ module Moxml
         end
 
         def implicit_xml_namespace(node)
-          owner = node.is_a?(::Leptris::XML::Attr) ? node.element : node
+          owner = if node.is_a?(::Leptris::XML::Attr) ||
+              node.is_a?(SnapshotAttribute)
+                    node.element
+                  else
+                    node
+                  end
           return nil unless owner.is_a?(::Leptris::XML::Element)
 
           ::Leptris::XML::Namespace.new(owner, RESERVED_XML_URI, prefix: "xml")
@@ -2788,8 +2863,21 @@ module Moxml
         end
 
         def attributes(element)
-          element = to_binding(element)
-          element.attribute_nodes
+          binding_element = to_binding(element)
+          unless binding_element.respond_to?(:attribute_pairs)
+            return binding_element.attribute_nodes
+          end
+
+          # moxml#520: serve the listing from the binding's one-crossing
+          # pairs face (leptris-ruby#278: interned names, fresh values,
+          # zero Attr objects). attribute_rows_native mints a binding
+          # Attr AND an FFI::Pointer per attribute — all retained by
+          # the binding's identity cache — and attributes_snapshot pays
+          # three crossings plus four FFI::MemoryPointers per element.
+          binding_element.attribute_pairs.map do |qualified, value|
+            SnapshotAttribute.new(local_name(qualified), qualified, value,
+                                  binding_element)
+          end
         end
 
         # One C crossing per element on bindings with the bulk face
@@ -2816,6 +2904,8 @@ module Moxml
         end
 
         def attribute_element(attr)
+          return attr.element if attr.is_a?(SnapshotAttribute)
+
           # XPath results mint ResultAttr (parent-backed); document
           # attributes are binding Attr (element-backed).
           if attr.is_a?(::Leptris::XML::ResultAttr)
@@ -2826,6 +2916,8 @@ module Moxml
         end
 
         def attribute_name(attr)
+          return attr.name if attr.is_a?(SnapshotAttribute)
+
           # leptris Attr names are qualified; the wrapper composes the
           # prefix, so expose the local part.
           return attr.name.split(":", 2)[1] if attr.name.include?(":")
@@ -2854,6 +2946,19 @@ module Moxml
         end
 
         def set_attribute_name(attr, name)
+          if attr.is_a?(SnapshotAttribute)
+            # Renames go through the owning element; the mutation
+            # return contract hands back the same native CLASS the
+            # caller tracks (a refreshed snapshot), not the binding
+            # Attr the rename minted.
+            element = attr.element
+            value = attr.value
+            element.remove_attribute(attr.qualified_name)
+            element[name.to_s] = value
+            return SnapshotAttribute.new(name.to_s, name.to_s, value,
+                                         element)
+          end
+
           # Attr is an immutable value object; renames go through the
           # element and yield a fresh native, which the wrapper adopts.
           element = attr.element
@@ -2864,13 +2969,31 @@ module Moxml
         end
 
         def set_attribute_value(attr, value)
+          if attr.is_a?(SnapshotAttribute)
+            # Write through the element (the engine mutates in place);
+            # refresh the snapshot so the wrapper's memo serves the
+            # new value without a crossing.
+            attr.element[attr.qualified_name] = value.to_s
+            attr.value = value.to_s
+            return attr
+          end
+
           attr.value = value.to_s
           attr
         end
 
         def get_attribute(element, name)
           element = to_binding(element)
-          element.attribute_nodes.find { |attr| attr.name == name.to_s }
+          return element.attribute_nodes.find { |attr| attr.name == name.to_s } unless
+            element.respond_to?(:attribute_pairs)
+
+          # moxml#520: locate through the one-crossing pairs face —
+          # attribute_nodes mints a binding Attr + FFI::Pointer per
+          # attribute just to find one.
+          pair = element.attribute_pairs.find { |qualified, _| qualified == name.to_s }
+          return nil unless pair
+
+          SnapshotAttribute.new(local_name(pair[0]), pair[0], pair[1], element)
         end
 
         def get_attribute_value(element, name)
@@ -2884,6 +3007,11 @@ module Moxml
         end
 
         def remove_attribute_native(attr)
+          if attr.is_a?(SnapshotAttribute)
+            attr.element.remove_attribute(attr.qualified_name)
+            return attr
+          end
+
           attr.element.remove_attribute(attr.name)
           attr
         end
