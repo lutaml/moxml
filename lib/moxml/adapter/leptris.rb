@@ -121,6 +121,15 @@ module Moxml
       NATIVE_READ_LAYER =
         defined?(::Leptris::XML::NativeNode)
 
+      # moxml#520: the native layer's flat packet face —
+      # Native.attribute_pairs(document, address) returns
+      # [name1, value1, name2, value2, ...] with interned names and
+      # fresh values: no per-element memo, no pair arrays, no Attr
+      # objects, no FFI::Pointer. Probed on the compiled ext.
+      ELEMENT_ATTR_PACKET =
+        NATIVE_READ_LAYER &&
+        ::Leptris::XML::Native.respond_to?(:attribute_pairs)
+
       # leptris-ruby#529: the whole XPath node-set result as an Array
       # of registered natives in ONE C crossing (Document#
       # xpath_result_rows_bulk). The eager lane below crosses once and
@@ -2868,16 +2877,37 @@ module Moxml
             return binding_element.attribute_nodes
           end
 
-          # moxml#520: serve the listing from the binding's one-crossing
-          # pairs face (leptris-ruby#278: interned names, fresh values,
-          # zero Attr objects). attribute_rows_native mints a binding
-          # Attr AND an FFI::Pointer per attribute — all retained by
-          # the binding's identity cache — and attributes_snapshot pays
-          # three crossings plus four FFI::MemoryPointers per element.
+          # moxml#520: serve the listing from the binding's flat packet
+          # face when the native layer exposes it — ONE flat array of
+          # interned names + fresh values, no per-element memo, no
+          # pair arrays, no Attr objects, no FFI::Pointer. Falls back
+          # to the memoizing binding face (leptris-ruby#278) and then
+          # to attribute_nodes.
+          if ELEMENT_ATTR_PACKET && binding_element.respond_to?(:c_address)
+            flat = ::Leptris::XML::Native.attribute_pairs(
+              binding_element.document, binding_element.c_address
+            )
+            return packet_attributes(flat, binding_element)
+          end
+
           binding_element.attribute_pairs.map do |qualified, value|
             SnapshotAttribute.new(local_name(qualified), qualified, value,
                                   binding_element)
           end
+        end
+
+        def packet_attributes(flat, binding_element)
+          result = Array.new(flat.size / 2)
+          i = 0
+          j = 0
+          while i < flat.size
+            qualified = flat[i]
+            result[j] = SnapshotAttribute.new(local_name(qualified), qualified,
+                                              flat[i + 1], binding_element)
+            i += 2
+            j += 1
+          end
+          result
         end
 
         # One C crossing per element on bindings with the bulk face
@@ -2899,8 +2929,28 @@ module Moxml
           pairs.map { |(name, value)| [local_name(name), value] }
         end
 
+        # moxml#520: local-name splits are interned — element/attribute
+        # vocabularies are bounded per document, so the same qualified
+        # names recur; one frozen local string per name instead of an
+        # allocation per read. Bounded so an adversarial document
+        # cannot grow the table without limit.
+        LOCAL_NAME_INTERN_MAX = 4096
+
+        def local_name_intern
+          @local_name_intern ||= {}
+        end
+
         def local_name(name)
-          name.include?(":") ? name.split(":", 2)[1] : name
+          return name unless name.include?(":")
+
+          cached = local_name_intern[name]
+          return cached if cached
+
+          local = name.split(":", 2)[1].freeze
+          if local_name_intern.size < LOCAL_NAME_INTERN_MAX
+            local_name_intern[name] = local
+          end
+          local
         end
 
         def attribute_element(attr)
