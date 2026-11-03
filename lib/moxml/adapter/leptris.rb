@@ -34,19 +34,20 @@ module Moxml
       MINIMUM_BINDING_VERSION = "1.9.386.0"
 
       # Snapshot-backed attribute listing native (moxml#520): the
-      # listing face serves reads from the binding's ONE-crossing
-      # attributes_snapshot hash — no Attr mint, no FFI::Pointer, no
-      # per-attribute C crossing on the read path (the hydration-walk
-      # shape). Mutations resolve the real binding Attr from the
-      # owning element on demand; reads never pay for it.
+      # listing face serves reads from the binding's flat packet face —
+      # no Attr mint, no FFI::Pointer, no per-attribute C crossing on
+      # the read path (the hydration-walk shape). The node held here is
+      # whatever the listing read (a native node on the native layer, a
+      # binding element otherwise); the binding element is resolved on
+      # demand for the mutation and namespace-scope faces.
       class SnapshotAttribute
-        attr_reader :name, :qualified_name, :element
+        attr_reader :name, :qualified_name
 
-        def initialize(name, qualified_name, value, element)
+        def initialize(name, qualified_name, value, node)
           @name = name
           @qualified_name = qualified_name
           @value = value
-          @element = element
+          @node = node
         end
 
         def value
@@ -57,11 +58,17 @@ module Moxml
           @value = new_value
         end
 
+        # Binding element for adapter faces that need binding-side APIs
+        # (mutations, namespace scope walks); reads never convert.
+        def element
+          @element ||= ::Moxml::Adapter::Leptris.to_binding(@node)
+        end
+
         # Adopt a real binding Attr for mutation-contract returns
         # (name=/namespace= renames go through the element and yield
         # a fresh native).
         def resolve!
-          @element.attribute_nodes
+          element.attribute_nodes
             .reverse.find { |candidate| candidate.name == @qualified_name }
         end
 
@@ -2872,22 +2879,25 @@ module Moxml
         end
 
         def attributes(element)
-          binding_element = to_binding(element)
-          unless binding_element.respond_to?(:attribute_pairs)
-            return binding_element.attribute_nodes
-          end
-
           # moxml#520: serve the listing from the binding's flat packet
           # face when the native layer exposes it — ONE flat array of
           # interned names + fresh values, no per-element memo, no
-          # pair arrays, no Attr objects, no FFI::Pointer. Falls back
-          # to the memoizing binding face (leptris-ruby#278) and then
-          # to attribute_nodes.
-          if ELEMENT_ATTR_PACKET && binding_element.respond_to?(:c_address)
-            flat = ::Leptris::XML::Native.attribute_pairs(
-              binding_element.document, binding_element.c_address
-            )
-            return packet_attributes(flat, binding_element)
+          # pair arrays, no Attr objects, no FFI::Pointer. The native
+          # node's own (document, address) serve directly: to_binding
+          # converts per call (a Node.wrap + registry hit, ~6s/3M
+          # allocations per million-element walk), and only mutation
+          # faces need the binding element.
+          if ELEMENT_ATTR_PACKET
+            doc, addr = attr_packet_target(element)
+            if doc
+              flat = ::Leptris::XML::Native.attribute_pairs(doc, addr)
+              return packet_attributes(flat, element)
+            end
+          end
+
+          binding_element = to_binding(element)
+          unless binding_element.respond_to?(:attribute_pairs)
+            return binding_element.attribute_nodes
           end
 
           binding_element.attribute_pairs.map do |qualified, value|
@@ -2896,14 +2906,22 @@ module Moxml
           end
         end
 
-        def packet_attributes(flat, binding_element)
+        def attr_packet_target(element)
+          if NATIVE_READ_LAYER && element.is_a?(NN)
+            [NN_DOCUMENT.bind_call(element), element.address]
+          elsif element.respond_to?(:c_address)
+            [element.document, element.c_address]
+          end
+        end
+
+        def packet_attributes(flat, node)
           result = Array.new(flat.size / 2)
           i = 0
           j = 0
           while i < flat.size
             qualified = flat[i]
             result[j] = SnapshotAttribute.new(local_name(qualified), qualified,
-                                              flat[i + 1], binding_element)
+                                              flat[i + 1], node)
             i += 2
             j += 1
           end
