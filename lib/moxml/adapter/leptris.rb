@@ -2332,6 +2332,12 @@ module Moxml
                               processing_instruction doctype].freeze
 
         def node_type(node)
+          # SnapshotAttribute natives are first-class attributes: the
+          # listing face and the pure-Ruby XPath engine's attribute
+          # steps both produce them; reads (name/value/element) are
+          # complete on the snapshot itself.
+          return :attribute if node.is_a?(SnapshotAttribute)
+
           if node.is_a?(::Leptris::XML::Node) &&
               node.instance_variable_defined?(:@node_type)
             kind = node.instance_variable_get(:@node_type)
