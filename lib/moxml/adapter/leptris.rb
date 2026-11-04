@@ -128,14 +128,20 @@ module Moxml
       NATIVE_READ_LAYER =
         defined?(::Leptris::XML::NativeNode)
 
-      # moxml#520: the native layer's flat packet face —
-      # Native.attribute_pairs(document, address) returns
-      # [name1, value1, name2, value2, ...] with interned names and
-      # fresh values: no per-element memo, no pair arrays, no Attr
-      # objects, no FFI::Pointer. Probed on the compiled ext.
+      # The flat packet face (leptris-ruby#586, binding 1.9.406.1):
+      # Native.attribute_packet(document, address) returns
+      # [name1, value1, name2, value2, ...] — interned names, fresh
+      # values, no per-element memo, no pair arrays, no Attr
+      # objects, no FFI::Pointer. Supersedes the snapshot face for
+      # the one-pass hydration walks the XMI lanes are (the binding
+      # memo is a retention penalty there). Probed on the compiled
+      # ext; the version floor pairs it (misrelease races — the
+      # NATIVE_PLAN_STRUCTS lesson).
       ELEMENT_ATTR_PACKET =
         NATIVE_READ_LAYER &&
-        ::Leptris::XML::Native.respond_to?(:attribute_pairs)
+        Gem::Version.new(::Leptris::VERSION) >=
+        Gem::Version.new("1.9.406.1") &&
+        ::Leptris::XML::Native.respond_to?(:attribute_packet)
 
       # leptris-ruby#529: the whole XPath node-set result as an Array
       # of registered natives in ONE C crossing (Document#
@@ -2938,12 +2944,19 @@ module Moxml
         # (leptris-ruby#278): interned names, fresh values, zero
         # Attr objects. Face-probed, not version-gated — the floor
         # (1.9.194.1) admits bindings without it, which take the
-        # base default over #attributes.
+        # base default over #attributes. The packet face
+        # (ELEMENT_ATTR_PACKET, 1.9.406.1) outranks the snapshot
+        # face: same stride, no binding-side memo retention.
         def attribute_pairs(element)
           binding_element = to_binding(element)
           return super unless binding_element.respond_to?(:attribute_pairs)
 
-          pairs = if ELEMENT_ATTR_SNAPSHOT
+          pairs = if ELEMENT_ATTR_PACKET
+                    ::Leptris::XML::Native
+                      .attribute_packet(binding_element.document,
+                                        binding_element.c_address)
+                      .each_slice(2).to_a
+                  elsif ELEMENT_ATTR_SNAPSHOT
                     binding_element.attributes_snapshot.to_a
                   else
                     binding_element.attribute_pairs
