@@ -51,7 +51,7 @@ RSpec.describe "composed-schema validation (moxml#522)" do
     FileUtils.remove_entry(dir) if dir
   end
 
-  context "through the composition-capable faces" do
+  context "with the composition-capable faces" do
     it "validates attributeGroup composition across an include" do
       with_schema_dir do |dir|
         schema = ctx.xsd_file(File.join(dir, "doc.xsd"))
@@ -102,7 +102,7 @@ RSpec.describe "composed-schema validation (moxml#522)" do
     end
   end
 
-  context "through the bare string face" do
+  context "with the bare string face" do
     it "refuses composition with actionable guidance" do
       source = <<~XSD
         <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
