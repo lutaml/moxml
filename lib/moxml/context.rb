@@ -26,8 +26,11 @@ module Moxml
     attr_reader :config
 
     def initialize(adapter = nil)
-      Adapter.warn_deprecated!(adapter) if adapter
-      @config = Config.new(adapter)
+      Adapter.warn_deprecated!(adapter) if adapter && !adapter.is_a?(Config)
+      # A Config instance is accepted as-is (moxml#523): the probe
+      # builds a fully-specified Config so selection is never
+      # re-entered through Config.default.
+      @config = adapter.is_a?(Config) ? adapter : Config.new(adapter)
       # Bumped on any namespace-scope mutation; Element scope caches
       # compare against it so every wrapper sees changes without
       # needing wrapper identity.
