@@ -62,28 +62,61 @@ module Moxml
         detect_loaded_adapter || FALLBACK_ADAPTER
       end
 
+      # Clears the memoized adapter-selection state (capability-probe
+      # verdict, resolved default name, default Config instance).
+      # Call after repointing default_adapter= at runtime; tests
+      # exercising selection from cold use it too (#523).
+      def reset_adapter_selection!
+        @leptris_preferred_available = nil
+        @default_adapter = nil
+        @default = nil
+      end
+
       # True when the leptris gem is installed AND meets the adapter's
-      # binding floor (issue #149; 1.9.32 — traverse bounding #89,
-      # built-docs parts #91, and every capability surface the adapter
-      # now assumes). Memoized: the probe runs once. Below the floor
-      # the default falls back to Nokogiri rather than driving a
-      # binding the adapter no longer accommodates.
+      # binding floor (issue #149) AND answers a one-shot native
+      # capability probe (moxml#523). Memoized: the probe runs once.
+      # Below the floor, or when the engine's native build fails at
+      # runtime (Ruby 4.0's ABI: every plan build answers status=-5,
+      # leptris#1966 — the poison-process analog of the yeptris gate,
+      # lutaml-model#978), the default falls back to Nokogiri rather
+      # than driving a lane that breaks on first serialize.
       def leptris_preferred_available?
-        return @leptris_preferred_available if defined?(@leptris_preferred_available)
+        return @leptris_preferred_available unless @leptris_preferred_available.nil?
 
         @leptris_preferred_available =
           begin
             require "leptris"
             Moxml::Adapter.load(:leptris)
-            Gem::Version.new(::Leptris::VERSION) >=
-              Gem::Version.new(Moxml::Adapter::Leptris::MINIMUM_BINDING_VERSION)
+            if Gem::Version.new(::Leptris::VERSION) >=
+                Gem::Version.new(Moxml::Adapter::Leptris::MINIMUM_BINDING_VERSION)
+              leptris_native_probe
+            else
+              false
+            end
           rescue LoadError
             # Not installed: a normal deployment shape, silent.
             false
-          rescue NameError, Moxml::AdapterError
-            # Installed but unusable (adapter load failure): loud.
+          rescue StandardError
+            # Installed but unusable — adapter load failure (NameError,
+            # AdapterError; #384) or the native probe answering with a
+            # failure status (Ruby 4.0 plan builds, leptris#1966): loud.
             :broken
           end
+      end
+
+      # One-shot native capability probe (moxml#523): parse + serialize
+      # a tiny document through the leptris lane — the smallest
+      # faithful walk of the plan-build path whose status=-5 failure
+      # poisons the whole lane under broken-ABI rubies (leptris#1966).
+      # The Config carries every knob explicitly so nothing here
+      # consults Config.default, which would re-enter selection
+      # (probe → default → probe). Runs once per process; the caller
+      # memoizes the outcome.
+      def leptris_native_probe
+        config = new(PREFERRED_ADAPTER, true, "UTF-8")
+        Moxml::Context.new(config)
+          .parse("<r><a t=\"1\">x</a></r>").to_xml
+        true
       end
 
       def detect_loaded_adapter
