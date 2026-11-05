@@ -80,6 +80,28 @@ module Moxml
         end
       end
 
+      # The address-native lane's native (leptris-ruby#587/#589/#591):
+      # a node as (binding document, raw C address, parent-reported
+      # kind). Plain Ruby — one allocation per node, no TypedData
+      # wrap, no binding identity-cache crossing. Reads resolve
+      # through the address-keyed C faces; writes bridge through
+      # #to_binding (address + document answer the bridge's
+      # questions). The per-document token cache (#address_native)
+      # hands the SAME token back per address while the document is
+      # unmutated, so wrapper identity rides the context registry
+      # unchanged. +kind+ is the children_addrs integer (0 element,
+      # 1 text, 2 comment, 3 cdata, 4 pi) — VISIT_NODE_TYPES'
+      # order.
+      class AddressNode
+        attr_reader :document, :address, :kind
+
+        def initialize(document, address, kind)
+          @document = document
+          @address = address
+          @kind = kind
+        end
+      end
+
       if Gem::Version.new(::Leptris::VERSION.to_s) <
           Gem::Version.new(MINIMUM_BINDING_VERSION)
         raise Moxml::AdapterError.new(
@@ -183,6 +205,20 @@ module Moxml
       COLUMNAR_WALK =
         defined?(::Leptris::XML::Native) &&
         ::Leptris::XML::Native.respond_to?(:walk_columnar)
+
+      # The address-keyed shadow faces (leptris-ruby#587/#589/#591):
+      # children_addrs(parent) => [addrs, kinds] accepts a raw
+      # address Integer, and the fast_* read faces (name, element
+      # text, comment/cdata/pi payloads) read by address. The
+      # address-native lane mints a plain AddressNode per node
+      # instead of the TypedData wrap + identity-cache crossing the
+      # columnar lane pays in C. Face-probed, not version-gated.
+      ADDRESS_NATIVE =
+        defined?(::Leptris::XML::Native) &&
+        ::Leptris::XML::Native.respond_to?(:children_addrs) &&
+        ::Leptris::XML::Native.respond_to?(:walk_addresses) &&
+        ::Leptris::XML::Native.respond_to?(:fast_name) &&
+        ::Leptris::XML::Native.respond_to?(:fast_text_content)
 
       # 1.9.163.2's native layer returns UTF-8, unfrozen strings
       # (1.9.162.x answered ASCII-8BIT — the reads retagged with a
@@ -660,12 +696,13 @@ module Moxml
 
         def to_binding(node)
           return node unless NATIVE_READ_LAYER &&
-            node.is_a?(::Leptris::XML::NativeNode)
+            (node.is_a?(::Leptris::XML::NativeNode) ||
+             node.is_a?(AddressNode))
 
           bridged = @binding_of[node]
           return bridged if bridged
 
-          doc = doc_for(node)
+          doc = node.is_a?(AddressNode) ? node.document : doc_for(node)
           ptr = ::FFI::Pointer.new(node.address)
           bridged = ::Leptris::XML::Node.wrap(ptr, doc)
           @binding_of = fresh_node_registry if @binding_of.size >= BINDING_OF_CAP
@@ -1089,8 +1126,10 @@ module Moxml
             end
 
             if NATIVE_READ_LAYER
-              native_one = one.is_a?(::Leptris::XML::NativeNode)
-              native_other = other.is_a?(::Leptris::XML::NativeNode)
+              native_one = one.is_a?(::Leptris::XML::NativeNode) ||
+                one.is_a?(AddressNode)
+              native_other = other.is_a?(::Leptris::XML::NativeNode) ||
+                other.is_a?(AddressNode)
               if native_one || native_other
                 address_one = native_one ? one.address : one.c_ptr.address
                 address_other = native_other ? other.address : other.c_ptr.address
@@ -1105,6 +1144,9 @@ module Moxml
           # to the root (C-bound reads) and look the doc up in the
           # root registry. Detached subtrees answer nil.
           def doc_for(node)
+            # Address tokens carry their document (set at mint).
+            return node.document if node.is_a?(AddressNode)
+
             # The 1.9.163.5 native layer exposes the owning document
             # directly; the root climb serves older bindings.
             return NN_DOCUMENT.bind_call(node) if NATIVE_MUTATIONS_COHERENT
@@ -1568,8 +1610,13 @@ module Moxml
         def bare_attr_value(element, name)
           # Exact-name C read: bare names target no-namespace
           # attributes (the documented contract — a bare "y" never
-          # resolves a "p:y" sibling).
-          value = if NATIVE_READ_LAYER && element.is_a?(NN)
+          # resolves a "p:y" sibling). Address tokens take the
+          # address-keyed attribute face.
+          value = if element.is_a?(AddressNode)
+                    ::Leptris::XML::Native.fast_attribute(
+                      element.address, name.to_s
+                    )
+                  elsif NATIVE_READ_LAYER && element.is_a?(NN)
                     NN_ATTRIBUTE.bind_call(element, name.to_s)
                   else
                     element[name.to_s]
@@ -2322,7 +2369,10 @@ module Moxml
         end
 
         def processing_instruction_target(node)
-          return to_binding(node).target if NATIVE_READ_LAYER && node.is_a?(NN)
+          if NATIVE_READ_LAYER &&
+              (node.is_a?(NN) || node.is_a?(AddressNode))
+            return to_binding(node).target
+          end
 
           node.target
         end
@@ -2339,6 +2389,12 @@ module Moxml
           # steps both produce them; reads (name/value/element) are
           # complete on the snapshot itself.
           return :attribute if node.is_a?(SnapshotAttribute)
+
+          # Address tokens carry the parent-reported WS kind.
+          if node.is_a?(AddressNode)
+            mapped = VISIT_NODE_TYPES[node.kind]
+            return mapped if mapped
+          end
 
           if node.is_a?(::Leptris::XML::Node) &&
               node.instance_variable_defined?(:@node_type)
@@ -2384,7 +2440,9 @@ module Moxml
         # wrappers (declarations, doctypes, entity markers) and the
         # lightweight Attr triples answer nil.
         def digest(node, drop_ws_text: false)
-          if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
+          if NATIVE_READ_LAYER &&
+              (node.is_a?(::Leptris::XML::NativeNode) ||
+               node.is_a?(AddressNode))
             return to_binding(node).digest(drop_ws: drop_ws_text)
           end
           return nil unless node.is_a?(::Leptris::XML::Node) &&
@@ -2395,6 +2453,18 @@ module Moxml
 
         def node_name(node)
           return node.root_name if node.is_a?(::Leptris::XML::DocType)
+
+          # Address tokens: the fast_name face is element-only (nil
+          # otherwise); PIs answer their target.
+          if node.is_a?(AddressNode)
+            if node.kind == 4
+              return ::Leptris::XML::Native.fast_pi_target(
+                node.address,
+              ).to_s
+            end
+
+            return ::Leptris::XML::Native.fast_name(node.address).to_s
+          end
 
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
             # PIs expose no name through the native layer.
@@ -2470,7 +2540,30 @@ module Moxml
             return to_binding(node).children.to_a
           end
 
+          # Address tokens: element receivers take the token arm;
+          # terminal kinds answer [] through the case chain below.
+          if NATIVE_READ_LAYER && node.is_a?(AddressNode)
+            doc = node.document
+            return address_children(doc, node) if doc && node.kind.zero?
+
+            return []
+          end
+
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
+            # The address-native arm outranks the columnar lane: the
+            # same child lists, but the tokens are plain
+            # (document, address, kind) AddressNodes — the columnar
+            # crossing mints a TypedData wrap + identity-cache write
+            # per node in C, this arm allocates one plain token per
+            # node in Ruby (ADDRESS_NATIVE above). Element receivers
+            # only: their children's kinds are the WS enum the token
+            # carries; document receivers keep the assembly path
+            # (declaration/doctype kinds are outside the enum).
+            if ADDRESS_NATIVE && !entity_bearing && element_native?(node)
+              doc = doc_for(node)
+              return address_children(doc, node) if doc
+            end
+
             # Bulk C children through moxml's own scratch (see
             # NATIVE_READ_LAYER note above). Entity-marker documents
             # bridge each child for the marker split — the
@@ -2534,13 +2627,65 @@ module Moxml
                CustomizedLeptris::EntityReference, CustomizedLeptris::TextSegment,
                # Terminal node kinds pay an FFI round trip for an empty
                # list; unfiltered recursions visit every text node.
+               # Address tokens of the terminal kinds (text, comment,
+               # cdata, pi) have no children either.
                ::Leptris::XML::Text, ::Leptris::XML::Comment,
                ::Leptris::XML::CDATA, ::Leptris::XML::ProcessingInstruction,
-               ::Leptris::XML::Attr
+               ::Leptris::XML::Attr, AddressNode
             []
           else
             node.children.to_a
           end
+        end
+
+        # The address-native arm's child list: one children_addrs
+        # crossing, one token per child (ADDRESS_NATIVES cache for
+        # identity stability).
+        ADDRESS_NATIVES = :address_natives
+
+        def address_children(doc, node)
+          addrs, kinds = ::Leptris::XML::Native.children_addrs(
+            node.is_a?(AddressNode) ? node.address : node,
+          )
+          children = Array.new(addrs.size)
+          i = 0
+          while i < addrs.size
+            children[i] = address_native(doc, addrs[i], kinds[i])
+            i += 1
+          end
+          children
+        end
+
+        # One address token per (document version, address): the
+        # context registry keys wrapper identity on the token, so a
+        # stable token per address keeps the children[0].equal?
+        # semantics across traversals. The document version stamps
+        # the map — any mutation invalidates wholesale, the same
+        # discipline as the columnar map and the binding's own
+        # children memo.
+        ADDRESS_NATIVES_CAP = 1_048_576
+
+        def address_native(doc, address, kind)
+          pair = attachments.get(doc, ADDRESS_NATIVES)
+          unless pair.is_a?(Array) && pair[0] == doc.version
+            pair = [doc.version, {}]
+            attachments.set(doc, ADDRESS_NATIVES, pair)
+          end
+          map = pair[1]
+          map.clear if map.size >= ADDRESS_NATIVES_CAP
+          token = map[address]
+          return token if token
+
+          token = AddressNode.new(doc, address, kind)
+          map[address] = token
+          token
+        end
+
+        # Element-ness of a native receiver, for the address arm's
+        # gate (one kind read; the token lane answers from the
+        # parent-reported kind without a crossing).
+        def element_native?(node)
+          NN_NODE_TYPE.bind_call(node) == :element
         end
 
         # Map hit for a primed node (see COLUMNAR_WALK). Served dup'd so
@@ -2732,6 +2877,24 @@ module Moxml
         def root_parent(node)
           return node.document if node.is_a?(::Leptris::XML::DocType)
 
+          # Address tokens carry no parent face: bridge once, then
+          # answer through the binding parent — as a document-cache
+          # twin so the answer stays in the native representation.
+          # The binding reports the root element and document-level
+          # parts parentless; the moxml contract roots them at the
+          # document (same rule as the binding arm below).
+          if node.is_a?(AddressNode)
+            doc = node.document
+            bound = to_binding(node)
+            parent = bound&.parent
+            return native_twin(doc, parent) if parent
+
+            return doc if doc && (doc.root&.c_address == node.address ||
+              bound.is_a?(::Leptris::XML::ProcessingInstruction))
+
+            return nil
+          end
+
           parent = node.parent
           return parent if parent
 
@@ -2745,6 +2908,8 @@ module Moxml
         end
 
         def next_sibling(node)
+          return next_sibling(to_binding(node)) if node.is_a?(AddressNode)
+
           return NN_NEXT_SIBLING.bind_call(node) if NATIVE_READ_LAYER &&
             node.is_a?(::Leptris::XML::NativeNode)
 
@@ -2761,6 +2926,8 @@ module Moxml
         end
 
         def document(node)
+          return node.document if node.is_a?(AddressNode)
+
           return doc_for(node) if NATIVE_READ_LAYER &&
             node.is_a?(::Leptris::XML::NativeNode)
 
@@ -2912,7 +3079,9 @@ module Moxml
         end
 
         def attr_packet_target(element)
-          if NATIVE_READ_LAYER && element.is_a?(NN)
+          if element.is_a?(AddressNode)
+            [element.document, element.address]
+          elsif NATIVE_READ_LAYER && element.is_a?(NN)
             [NN_DOCUMENT.bind_call(element), element.address]
           elsif element.respond_to?(:c_address)
             [element.document, element.c_address]
@@ -3731,6 +3900,22 @@ module Moxml
         end
 
         def text_content(node)
+          # Address tokens dispatch the same kind table the native
+          # layer's #content uses (elements aggregate via
+          # fast_element_text; text/comment/cdata/pi carry their
+          # payload faces).
+          if node.is_a?(AddressNode)
+            native = ::Leptris::XML::Native
+            content = case node.kind
+                      when 0 then native.fast_element_text(node.address)
+                      when 1 then native.fast_text_content(node.address)
+                      when 2 then native.fast_comment_content(node.address)
+                      when 3 then native.fast_cdata_content(node.address)
+                      when 4 then native.fast_pi_data(node.address)
+                      end
+            return content.to_s
+          end
+
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
             content = NN_CONTENT.bind_call(node)
             return content if NATIVE_STRINGS_UTF8
