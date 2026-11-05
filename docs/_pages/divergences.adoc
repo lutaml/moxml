@@ -156,3 +156,21 @@ before leptris#1866's fix (the fix itself is not the cause); not a
 regression of the fix. Noted in
 `spec/moxml/adapter/leptris_crossdoc_replace_spec.rb`.
 |===
+
+| D-23
+| leptris (XSD engine lane)
+| Strict wildcard/anyAttribute admission consults only the head
+unit's declaration table, so items declared in a NON-head unit of a
+composition (xsi:schemaLocation hint documents) get "not declared
+(strict)" rows. The facade owns the composition: Schema#validate
+resolves the instance's hints against the schema path and dismisses
+refutable rows (moxml#528). The remainders the facade cannot refute
+— processContents=skip admission (attgD027/031/033) and
+composed-group admission under the OccurrenceProductGuard
+(attgC035-038) — stay engine-side, tracked upstream as
+leptris/leptris#1964; until it lands the leptris lane answers
+INVALID where the model says VALID for those shapes. Verified
+through the lutaml-xsd conformance runner (locations registration
+lutaml/lutaml-xsd#234); pinned in
+`spec/moxml/xsd_composed_spec.rb`.
+|===
