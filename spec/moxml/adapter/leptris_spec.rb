@@ -53,10 +53,6 @@ RSpec.describe Moxml::Adapter::Leptris do
     end
 
     it "evaluates attribute-node queries with proper wrappers" do
-      # Native since 1.9.105 (leptris-ruby#153: ResultAttr with
-      # name/value); earlier bindings returned generic nodes whose
-      # #name raised, so the Ruby engine owned them.
-      skip "requires native attr results (leptris 1.9.105+)" unless described_class::ATTR_RESULT_NATIVE
       attrs = doc.xpath("//item/@id")
       expect(attrs.map(&:name)).to eq(%w[id id])
       expect(attrs.map(&:value)).to eq(%w[1 2])
@@ -759,8 +755,6 @@ RSpec.describe Moxml::Adapter::Leptris do
     let(:ctx) { Moxml.new(:leptris) }
 
     it "answers engine source positions for parsed nodes" do
-      skip "requires leptris 1.9.181" unless described_class::NATIVE_SOURCE_POSITION
-
       doc = ctx.parse("<root>\n  <child>text</child>\n</root>")
       expect(doc.root.source_position).to include(line: 1)
       expect(doc.root.source_position).to be_a(Hash)

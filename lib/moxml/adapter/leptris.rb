@@ -96,12 +96,10 @@ module Moxml
       # Attribute-node xpath results carry proper wrappers since
       # 1.9.105 (leptris-ruby#153: ResultAttr with name/value);
       # before that the native gate routed them to the Ruby engine.
-      ATTR_RESULT_NATIVE = true
 
       # leptris_node_digest shipped in bindings 1.9.99 (libleptris
       # 1.9.99, engine #869): on-demand Merkle subtree hash, zero
       # cost when unused. Below it, Node#digest answers nil.
-      DIGEST_SUPPORTED = true
 
       # 1.9.163.7 added the XPath seams (TODO.perf/15+16):
       # Searchable#at_xpath materializes nodeset entry 0 and frees
@@ -240,7 +238,6 @@ module Moxml
       # 1.9.181 (lockstep): Node#source_position — {line, col_start,
       # col_end} from the engine's source-position API (upstream
       # #1124); created nodes report zeros.
-      NATIVE_SOURCE_POSITION = true
 
       # Entity-reference preservation (leptris-ruby#212 / upstream
       # #1094): 1.9.177 ships ParseOptions.keep_entity_refs plus
@@ -268,7 +265,6 @@ module Moxml
       # so the gate names the first release where the drain is
       # CORRECT, not merely present. Dev floor pins ~> 1.9.238;
       # older bindings take the callback Parser below.
-      NATIVE_SAX_RECORDS = true
 
       # Document#absorb (engine #1548): one call transfers a source
       # document's pool ownership into the destination, so
@@ -429,7 +425,7 @@ module Moxml
             native_bulk_fixed: !NATIVE_BULK_FIXED.nil?,
             native_plan_structs: NATIVE_PLAN_STRUCTS,
             native_plan_typed: NATIVE_PLAN_TYPED,
-            digest: DIGEST_SUPPORTED && engine_serves?(:digest),
+            digest: engine_serves?(:digest),
             xsd: XSD_SUPPORTED && engine_serves?(:xsd),
             relaxng: RELAXNG_SUPPORTED && engine_serves?(:relaxng),
             xslt: XSLT_SUPPORTED && engine_serves?(:xslt),
@@ -2388,7 +2384,6 @@ module Moxml
         # wrappers (declarations, doctypes, entity markers) and the
         # lightweight Attr triples answer nil.
         def digest(node, drop_ws_text: false)
-          return nil unless DIGEST_SUPPORTED
           if NATIVE_READ_LAYER && node.is_a?(::Leptris::XML::NativeNode)
             return to_binding(node).digest(drop_ws: drop_ws_text)
           end
@@ -2792,8 +2787,6 @@ module Moxml
         end
 
         def source_position(node)
-          return nil unless NATIVE_SOURCE_POSITION
-
           to_binding(node).source_position
         end
 
@@ -4220,7 +4213,7 @@ module Moxml
             # (leptris-ruby#153: ResultAttr wrappers with name/value);
             # older bindings returned generic Node wrappers whose
             # #name raised, so the Ruby engine owned them.
-            next true if selects_attribute_results?(ast) && ATTR_RESULT_NATIVE
+            next true if selects_attribute_results?(ast)
 
             !selects_attribute_results?(ast)
           end
@@ -4331,14 +4324,14 @@ module Moxml
         def sax_parse(xml, handler)
           bridge = LeptrisSAXBridge.new(handler)
           xml_string = xml.is_a?(IO) || xml.is_a?(::StringIO) ? xml.read : xml.to_s
-          # Bulk record drain (leptris#1298, NATIVE_SAX_RECORDS):
+          # Bulk record drain (leptris#1298):
           # one crossing per document. The handler decides the shape
           # polymorphically — Handler#on_sax_records answers
           # :unhandled, so classic handlers get the exact callback
           # stream replayed from the table; hot loops override and
           # walk the records (nil table = outside the drain subset
           # or pre-1.9.238 binding — callback path).
-          table = NATIVE_SAX_RECORDS ? ::Leptris::XML::SAX::Records.open(xml_string) : nil
+          table = ::Leptris::XML::SAX::Records.open(xml_string)
           if table
             begin
               return if handler.on_sax_records(table) != :unhandled
