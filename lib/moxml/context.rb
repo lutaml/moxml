@@ -237,14 +237,13 @@ module Moxml
     # Compile an XSD schema from a file path — <xs:include href>
     # resolves relative to the file's directory (the engine
     # resolves it; reading the file into #xsd would lose that).
-    # The #452 rule index reads this document only; a document
-    # that composes others (include/import/redefine/override)
-    # turns the strict re-checks off (#510) — included parts stay
-    # engine-validated and the index can only under-report.
+    # The path is kept on the Schema (moxml#522): #validate resolves
+    # the instance's xsi:schemaLocation hints against it and unions
+    # the hinted documents into the compiled set.
     def xsd_file(path)
       handle = config.adapter.xsd_compile_file(path.to_s)
       source = File.read(path.to_s)
-      Moxml::XSD::Schema.new(handle, self, source)
+      Moxml::XSD::Schema.new(handle, self, source, path: path.to_s)
     end
 
     # Compile a SET of schema documents (paths) into one schema:

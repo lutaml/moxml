@@ -97,9 +97,10 @@ module Moxml
       end
 
       def initialize(handle, context, schema_source = nil,
-                     self_contained: nil)
+                     self_contained: nil, path: nil)
         @handle = handle
         @context = context
+        @schema_path = path
         @rules_index =
           if schema_source
             SchemaRules.index(schema_source, context,
@@ -157,8 +158,9 @@ module Moxml
                 end
               end
         engine_errors = @context.config.adapter.xsd_validate(
-          @handle, doc.native
+          validation_handle(doc), doc.native
         )
+        engine_errors = dismiss_refuted_not_declared(engine_errors, doc)
         return engine_errors unless @rules_index
 
         # The #452 post-validation rules only ever add findings for
@@ -169,6 +171,176 @@ module Moxml
         (SchemaRules.dismiss(engine_errors, doc, @rules_index) +
           SchemaRules.findings(doc, @rules_index)).uniq
       end
+
+      # Validations run against the compile-time handle. The
+      # composition fix (#522) is dismissal-side: the facade indexes
+      # every unit of the composition (the schema + the instance's
+      # xsi:schemaLocation hints) and drops engine strict-admission
+      # rows the index refutes — engines whose admission consults
+      # only the head unit's declarations never see the aux units,
+      # and recompiling a mixed-targetNamespace union would swap one
+      # false answer for another.
+      def validation_handle(_doc)
+        @handle
+      end
+
+      XSI_NS = "http://www.w3.org/2001/XMLSchema-instance"
+
+      # xsi:schemaLocation (namespace/path pairs) and
+      # xsi:noNamespaceSchemaLocation paths from the validated
+      # instance's root, resolved against this schema's directory
+      # and filtered to files that exist. Empty when this schema was
+      # compiled from a string (no base to resolve against).
+      def instance_schema_hints(doc)
+        return [].freeze unless @schema_path
+        return [].freeze unless doc&.root
+
+        base = File.dirname(@schema_path)
+        root = doc.root
+        hints = []
+        root.attributes.each do |attribute|
+          next unless attribute.namespace&.uri == XSI_NS
+
+          value = attribute.value.to_s
+          case attribute.name
+          when "noNamespaceSchemaLocation"
+            hints << value
+          when "schemaLocation"
+            hints.concat(value.split(/\s+/).reject(&:empty?)
+              .each_slice(2).map(&:last))
+          end
+        end
+        hints.uniq
+          .map { |hint| File.expand_path(hint, base) }
+          .select do |p|
+            File.file?(p) && p != File.expand_path(@schema_path)
+          end.freeze
+      end
+
+      # Engine strict-admission rows the composed unit set REFUTES:
+      # engines whose wildcard admission consults only the head
+      # unit's declaration table report "attribute 'x': not declared
+      # (strict)" for attributes declared in another unit of the
+      # same compiled composition, and the mixed-tns fresh union
+      # compile itself can mis-admit a root element the same way
+      # (leptris#1964 family, moxml#522). The facade owns the
+      # composition, so it can refute a row when the named item, as
+      # it appears in THIS instance, is a global declaration of any
+      # unit (namespace + local name). Only exact "not declared
+      # (strict)" rows are ever dropped; every other engine finding
+      # passes through untouched.
+      def dismiss_refuted_not_declared(engine_errors, doc)
+        return engine_errors if engine_errors.empty? || !@schema_path
+
+        hints = instance_schema_hints(doc)
+        units = [@schema_path, *hints].uniq
+        declared = composed_declarations(units)
+        return engine_errors if declared.empty?
+
+        attr_index = {}
+        element_ns = {}
+        stack = [doc.root]
+        while (element = stack.pop)
+          element_ns[(element.namespace&.uri || "")] ||= true
+          stack.concat(element.children.grep(Moxml::Element))
+          element.attributes.each do |attribute|
+            attr_uri = attribute.namespace&.uri || ""
+            ((attr_index[[attr_uri, attribute.name]] ||= []) <<
+              element.name)
+          end
+        end
+        engine_errors.reject do |finding|
+          match = NOT_DECLARED_ROW.match(finding.message)
+          next false unless match
+
+          element_name = match[1]
+          attribute_name = match[2]
+          if attribute_name
+            attr_index.any? do |(uri, attr_name), holders|
+              attr_name == attribute_name &&
+                holders.include?(element_name) &&
+                declared.key?([uri, attribute_name])
+            end
+          else
+            declared.key?(["", element_name]) ||
+              (element_ns[element_name] &&
+                declared.key?([element_ns[element_name], element_name]))
+          end
+        end
+      end
+
+      # {uri, local} => true for every global xs:attribute and
+      # xs:element declared across the unit set: a global
+      # declaration always takes its unit's targetNamespace.
+      # Parsed with REXML when available: the engine's component
+      # tables are process-global and can be poisoned by later
+      # parses between compile and validate (moxml#522) — a
+      # declaration index must be poison-immune. Falls back to the
+      # context parse when REXML is unavailable.
+      def composed_declarations(units)
+        @composed_declarations ||= {}
+        cached = @composed_declarations[units]
+        return cached if cached
+
+        declared = {}
+        parser = begin
+          require "rexml"
+          :rexml
+        rescue LoadError
+          :context
+        end
+        units.each do |unit|
+          tns, decls = unit_declarations(unit, parser)
+          next unless decls
+
+          decls.each do |name|
+            declared[[tns, name]] = true
+          end
+        end
+        @composed_declarations[units] = declared
+      end
+
+      # [targetNamespace, [global attribute/element names]] for one
+      # schema unit, per the parser flavor. REXML's read is
+      # poison-immune; the context parse is the fallback.
+      def unit_declarations(unit, parser)
+        text = File.read(unit)
+        if parser == :rexml
+          require "rexml/document"
+          root = REXML::Document.new(text).root
+          return nil unless root&.name == "schema"
+
+          tns = root.attributes["targetNamespace"].to_s
+          decls = root.elements.filter_map do |decl|
+            next unless %w[attribute element].include?(decl.name)
+
+            decl.attributes["name"]
+          end
+        else
+          root = @context.parse(text).root
+          return nil unless root&.name == "schema"
+
+          tns = root.attributes.find { |a| a.name == "targetNamespace" }
+            &.value.to_s
+          decls = root.children
+            .grep(Moxml::Element)
+            .filter_map do |decl|
+              next unless %w[attribute element].include?(decl.name)
+
+              decl.attributes.find { |a| a.name == "name" }&.value
+            end
+        end
+        [tns, decls]
+      rescue StandardError
+        nil
+      end
+
+      # Matches both row shapes the strict admission emits — with and
+      # without the attribute segment:
+      #   element 'doc' @2:144: element 'doc': not declared (strict)
+      #   element 'elem' @3:46: attribute 'foo': not declared (strict)
+      NOT_DECLARED_ROW =
+        /\Aelement '([^']+)'(?: @\S+)? (?:(?:element|attribute) '([^']+)': )?not declared \(strict\)\z/
 
       def valid?(node_or_xml)
         check_released!
