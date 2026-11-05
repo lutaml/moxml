@@ -158,19 +158,28 @@ regression of the fix. Noted in
 |===
 
 | D-23
-| leptris (XSD engine lane)
-| Strict wildcard/anyAttribute admission consults only the head
+| leptris (XSD engine lane, before 1.9.409)
+| Strict wildcard/anyAttribute admission consulted only the head
 unit's declaration table, so items declared in a NON-head unit of a
-composition (xsi:schemaLocation hint documents) get "not declared
+composition (xsi:schemaLocation hint documents) got "not declared
 (strict)" rows. The facade owns the composition: Schema#validate
-resolves the instance's hints against the schema path and dismisses
-refutable rows (moxml#528). The remainders the facade cannot refute
-— processContents=skip admission (attgD027/031/033) and
-composed-group admission under the OccurrenceProductGuard
-(attgC035-038) — stay engine-side, tracked upstream as
-leptris/leptris#1964; until it lands the leptris lane answers
-INVALID where the model says VALID for those shapes. Verified
-through the lutaml-xsd conformance runner (locations registration
-lutaml/lutaml-xsd#234); pinned in
-`spec/moxml/xsd_composed_spec.rb`.
+resolves the instance's hints against the schema path, walks the
+schema graph (include/import/redefine) for the unit closure, and
+dismisses refutable rows — global declarations AND group members
+(moxml#528; group admission this entry's companion). RESOLVED
+engine-side by leptris/leptris#1964 (v1.9.409, namespace-aware
+particle typing): the 16-case W3C set (attgD019-034, attgC035-038,
+addB114) answers VALID through the facade. Verified through the
+lutaml-xsd conformance runner (locations registration
+lutaml/lutaml-xsd#234); pinned in `spec/moxml/xsd_composed_spec.rb`.
+
+| D-24
+| leptris (XSD engine lane, 1.9.409)
+| The 1.9.409 namespace-aware particle typing regresses the W3C
+schG2 composition (A imports no-ns B; expected valid): the engine
+emits lexical-mismatch rows for elements it did not type this
+strictly before, so the lane answers INVALID where the model says
+VALID. Tracked upstream as leptris/leptris#1976; until it lands,
+the lexical rows pass through the facade untouched (they are not
+admission rows and are never dismissible).
 |===
