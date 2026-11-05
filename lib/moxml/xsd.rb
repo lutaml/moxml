@@ -311,8 +311,9 @@ module Moxml
           return nil unless root&.name == "schema"
 
           tns = root.attributes["targetNamespace"].to_s
+          names = %w[attribute element].freeze
           decls = root.elements.filter_map do |decl|
-            next unless %w[attribute element].include?(decl.name)
+            next unless names.include?(decl.name)
 
             decl.attributes["name"]
           end
@@ -322,10 +323,11 @@ module Moxml
 
           tns = root.attributes.find { |a| a.name == "targetNamespace" }
             &.value.to_s
+          names = %w[attribute element].freeze
           decls = root.children
             .grep(Moxml::Element)
             .filter_map do |decl|
-              next unless %w[attribute element].include?(decl.name)
+              next unless names.include?(decl.name)
 
               decl.attributes.find { |a| a.name == "name" }&.value
             end
