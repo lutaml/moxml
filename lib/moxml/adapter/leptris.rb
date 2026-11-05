@@ -951,6 +951,15 @@ module Moxml
             # already-minted wrappers, so the adapter crossing
             # (bind_call + to_a + keep-refs probe) drops out, and
             # entity-marker documents take super for the split.
+            # NOTE (address-lane verdict, #531): the token arm was
+            # tried HERE and measured — tokens cannot serve the
+            # wrapper walk without breaking the klass-propagating
+            # identity contract (children vs element_children mint
+            # different wrapper classes for the same C node) and the
+            # wrapper lifecycle (tokens pin the binding document, so
+            # dropped documents stop releasing wrappers). The C-side
+            # klass-injected native cache is the walk lane; the
+            # address faces serve direct adapter consumers.
             if NN.method_defined?(:children_read)
               module ChildReads
                 def children
@@ -4011,6 +4020,10 @@ module Moxml
         end
 
         def cdata_content(node)
+          if node.is_a?(AddressNode)
+            return ::Leptris::XML::Native.fast_cdata_content(node.address)
+          end
+
           return NN_CONTENT.bind_call(node) if NATIVE_READ_LAYER && node.is_a?(NN)
 
           node.content
@@ -4022,6 +4035,10 @@ module Moxml
         end
 
         def comment_content(node)
+          if node.is_a?(AddressNode)
+            return ::Leptris::XML::Native.fast_comment_content(node.address)
+          end
+
           if NATIVE_READ_LAYER && node.is_a?(NN)
             content = NN_CONTENT.bind_call(node)
             # NativeNode#content answers nil for comment-kind nodes
