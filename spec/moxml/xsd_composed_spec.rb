@@ -39,17 +39,24 @@ RSpec.describe "Moxml::XSD::Schema composed-schema validation (#522)" do
     XSD
   end
 
-  around do |example|
-    Dir.mktmpdir("moxml522") do |dir|
-      @dir = dir
-      File.write(File.join(dir, "main.xsd"), main_xsd)
-      File.write(File.join(dir, "aux.xsd"), aux_xsd)
-      example.run
-    end
+  # Per-example fixture tempdir: created by the let, removed in the
+  # after hook. Plain lets + methods keep the suite ivar-free
+  # (house law).
+  let(:dir) { Dir.mktmpdir("moxml522") }
+
+  after { FileUtils.remove_entry(dir) }
+
+  def unit(name)
+    File.join(dir, name)
+  end
+
+  before do
+    File.write(unit("main.xsd"), main_xsd)
+    File.write(unit("aux.xsd"), aux_xsd)
   end
 
   it "unions the instance's hint documents into the validation" do
-    schema = ctx.xsd_file(File.join(@dir, "main.xsd"))
+    schema = ctx.xsd_file(unit("main.xsd"))
     doc = ctx.parse(
       '<doc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' \
       'xmlns:e="http://aux" xsi:noNamespaceSchemaLocation="main.xsd" ' \
@@ -64,7 +71,7 @@ RSpec.describe "Moxml::XSD::Schema composed-schema validation (#522)" do
     # the row. The engine may carry either the attribute-level row
     # or the element-level root row (mixed-tns mis-admission) —
     # both are refutable.
-    schema = ctx.xsd_file(File.join(@dir, "main.xsd"))
+    schema = ctx.xsd_file(unit("main.xsd"))
     doc = ctx.parse(
       '<doc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' \
       'xmlns:e="http://aux" xsi:noNamespaceSchemaLocation="main.xsd" ' \
@@ -77,7 +84,7 @@ RSpec.describe "Moxml::XSD::Schema composed-schema validation (#522)" do
   end
 
   it "keeps genuinely undeclared attribute rows" do
-    schema = ctx.xsd_file(File.join(@dir, "main.xsd"))
+    schema = ctx.xsd_file(unit("main.xsd"))
     doc = ctx.parse(
       '<doc xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' \
       'xsi:noNamespaceSchemaLocation="main.xsd" att1="x" ghost="z"/>',
