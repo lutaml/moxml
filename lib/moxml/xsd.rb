@@ -233,9 +233,10 @@ module Moxml
         return engine_errors if engine_errors.empty? || !@schema_path
 
         hints = instance_schema_hints(doc)
-        units = [@schema_path, *hints].uniq
+        units = composed_unit_set([@schema_path, *hints])
         declared = composed_declarations(units)
-        return engine_errors if declared.empty?
+        admissible = element_admissibility(units)
+        return engine_errors if declared.empty? && admissible.empty?
 
         attr_index = {}
         element_ns = {}
@@ -257,9 +258,14 @@ module Moxml
           attribute_name = match[2]
           if attribute_name
             attr_index.any? do |(uri, attr_name), holders|
-              attr_name == attribute_name &&
-                holders.include?(element_name) &&
-                declared.key?([uri, attribute_name])
+              next false unless attr_name == attribute_name &&
+                holders.include?(element_name)
+
+              # A global declaration of some unit, or a group member
+              # the element's type admits (moxml#522 attgC class —
+              # exact (element, attribute, namespace) match).
+              declared.key?([uri, attribute_name]) ||
+                admissible.dig(element_name, attribute_name) == uri
             end
           else
             declared.key?(["", element_name]) ||
@@ -267,6 +273,260 @@ module Moxml
                 declared.key?([element_ns[element_name], element_name]))
           end
         end
+      end
+
+      # The composition closure of the unit set: every unit's
+      # xs:include / xs:import / xs:redefine schemaLocation targets
+      # (existing files), cycle-guarded, resolved relative to each
+      # unit. The engine compiles these documents as ONE composition;
+      # the facade's index must see the same set even when the
+      # instance carries no xsi hints (attgC035's redefined groups
+      # live in documents only the schema graph knows).
+      def composed_unit_set(units)
+        @composed_unit_set ||= {}
+        cached = @composed_unit_set[units]
+        return cached if cached
+
+        seen = {}
+        queue = units.dup
+        until queue.empty?
+          unit = queue.pop
+          next if seen.key?(unit)
+
+          seen[unit] = true
+          base = File.dirname(unit)
+          unit_schema_refs(unit).each do |ref|
+            target = File.expand_path(ref, base)
+            queue << target if File.file?(target) && !seen.key?(target)
+          end
+        end
+        closure = seen.keys.sort
+        @composed_unit_set[units] = closure
+        closure
+      end
+
+      # schemaLocation hrefs on the unit's own xs:include, xs:import
+      # and xs:redefine (poison-immune REXML read; the engine's
+      # component tables are process-global and a later parse can
+      # poison compiled handles, moxml#522).
+      def unit_schema_refs(unit)
+        require "rexml/document"
+        root = REXML::Document.new(File.read(unit)).root
+        return [].freeze unless root&.name == "schema"
+
+        refs = %w[include import redefine].map do |tag|
+          root.elements.each_with_object([]) do |node, out|
+            next unless node.name == tag
+
+            loc = node.attributes["schemaLocation"]
+            out << loc if loc.to_s.match?(/\S/)
+          end
+        end.flatten
+        refs.freeze
+      rescue StandardError
+        [].freeze
+      end
+
+      # {element name => {attribute name => namespace}}: every
+      # attribute the composition admits for each element — the
+      # element's type's attributeGroup members resolved transitively
+      # across units (import groups; an xs:redefine body's self-ref
+      # is the 4.2.2 hook to the ORIGINAL definition, so the
+      # effective group is body UNION original). Only exact members
+      # of the real composition land here, so a genuinely undeclared
+      # attribute never becomes refutable.
+      def element_admissibility(units)
+        @element_admissibility ||= {}
+        cached = @element_admissibility[units]
+        return cached if cached
+
+        facts = {}
+        units.each do |unit|
+          unit_facts = schema_unit_facts(unit)
+          facts[unit] = unit_facts if unit_facts
+        end
+
+        # Effective group definitions: redefining bodies merge the
+        # target unit's original when (and only when) the body hooks
+        # it with a self-ref. Keys: bare name AND {uri}name (refs
+        # resolve with the referencing unit's xmlns, bare-name
+        # fallback — same-name groups are composition-unique).
+        plain = {}
+        bodies = {}
+        facts.each_value do |unit|
+          unit[:redefines].each do |name, target_path|
+            body = unit[:groups][name]
+            original = facts[target_path]&.dig(:groups, name)
+            bodies[name] = merge_group_def(body, original, name)
+          end
+          unit[:groups].each do |name, defn|
+            plain[name] = defn unless unit[:redefines].key?(name)
+          end
+        end
+        # Redefine bodies are the EFFECTIVE definitions — they win
+        # over the plain originals.
+        groups = plain.merge(bodies)
+
+        resolved = {}
+        facts.each_value do |unit|
+          unit[:elements].each do |element_name, element|
+            attrs = {}
+            element[:groups].each do |qref|
+              resolve_group_ref(qref, unit, groups, attrs, {})
+            end
+            element[:attrs].each do |name, uri|
+              attrs[name] = uri
+            end
+            resolved[element_name] = attrs unless attrs.empty?
+          end
+        end
+        @element_admissibility[units] = resolved.freeze
+      end
+
+      # body UNION original when the body hooks the original with a
+      # self-ref; the body alone otherwise.
+      def merge_group_def(body, original, name)
+        return body unless body && original.is_a?(Hash) &&
+          body[:refs].include?(name)
+
+        {
+          attrs: body[:attrs] + original[:attrs],
+          refs: body[:refs] + original[:refs],
+        }
+      end
+
+      # Resolve one attributeGroup ref (raw QName string) into attrs
+      # {name => uri}, transitively; cycle-guarded by +seen+. Keys
+      # are bare names with qualified "{uri}name" fallbacks.
+      def resolve_group_ref(qref, from_unit, groups, attrs, seen)
+        return if seen.key?(qref)
+
+        seen[qref] = true
+        prefix, _, local = qref.rpartition(":")
+        xmlns = from_unit[:xmlns]
+        uri = if prefix.empty?
+                xmlns["xmlns"].to_s
+              else
+                xmlns["xmlns:#{prefix}"].to_s
+              end
+        defn = groups["{#{uri}}#{local}"] || groups[local]
+        return unless defn.is_a?(Hash)
+
+        defn[:attrs].each do |name, attr_uri|
+          attrs[name] = attr_uri
+        end
+        defn[:refs].each do |ref|
+          resolve_group_ref(ref, from_unit, groups, attrs, seen)
+        end
+      end
+
+      # Per-unit schema facts for the admissibility index:
+      # {tns, afd (attributeFormDefault qualified?), xmlns,
+      #  groups: {name => {attrs, refs}}, redefines: {name => target},
+      #  elements: {name => {groups, attrs}}} — poison-immune REXML.
+      # Attribute member URIs use the DEFINING unit's form rules;
+      # group refs stay raw QNames (resolved at chase time).
+      def schema_unit_facts(unit)
+        require "rexml/document"
+        root = REXML::Document.new(File.read(unit)).root
+        return nil unless root&.name == "schema"
+
+        xmlns = {}
+        root.attributes.each do |name, value|
+          xmlns[name] = value.to_s if name.start_with?("xmlns")
+        end
+        tns = root.attributes["targetNamespace"].to_s
+        afd = root.attributes["attributeFormDefault"] == "qualified"
+
+        member_uri = lambda do |node|
+          qualified = node.attributes["form"] == "qualified" || afd
+          qualified ? tns : ""
+        end
+
+        groups = {}
+        redefines = {}
+        root.elements.each do |node|
+          case node.name
+          when "attributeGroup"
+            name = node.attributes["name"]
+            next unless name
+
+            groups[name] = walk_group_members(node, member_uri)
+          when "redefine"
+            loc = node.attributes["schemaLocation"]
+            node.elements.each do |body|
+              next unless body.name == "attributeGroup"
+
+              name = body.attributes["name"]
+              next unless name
+
+              groups[name] = walk_group_members(body, member_uri)
+              redefines[name] = File.expand_path(loc, File.dirname(unit)) if
+                loc.to_s.match?(/\S/)
+            end
+          end
+        end
+
+        elements = {}
+        root.elements.each do |node|
+          next unless node.name == "element"
+          next unless (name = node.attributes["name"])
+
+          container = node.elements.find { |child| child.name == "complexType" }
+          type_name = node.attributes["type"].to_s
+          container ||= root.elements.find do |child|
+            child.name == "complexType" && child.attributes["name"] == type_name
+          end
+          next unless container.is_a?(REXML::Element)
+
+          groups_seen, attrs = walk_type_attributes(container, member_uri)
+          elements[name] = { groups: groups_seen, attrs: attrs }
+        end
+
+        {
+          tns: tns, afd: afd, xmlns: xmlns, groups: groups,
+          redefines: redefines, elements: elements
+        }
+      rescue StandardError
+        nil
+      end
+
+      # Refs and attribute members of one attributeGroup definition.
+      # Refs stay raw QNames — the chase resolves prefixes through
+      # the referencing unit's xmlns.
+      def walk_group_members(node, member_uri)
+        refs = []
+        attrs = []
+        node.elements.each do |child|
+          case child.name
+          when "attribute"
+            name = child.attributes["name"]
+            attrs << [name, member_uri.call(child)] if name
+          when "attributeGroup"
+            ref = child.attributes["ref"]
+            refs << ref if ref.to_s.match?(/\S/)
+          end
+        end
+        { attrs: attrs, refs: refs }
+      end
+
+      # attributeGroup refs + own attribute members of a complexType
+      # (one level; nested group-through-group chains resolve at
+      # chase time). Returns [raw refs, attrs].
+      def walk_type_attributes(container, member_uri)
+        refs = []
+        attrs = []
+        container.elements.each do |child|
+          case child.name
+          when "attributeGroup"
+            ref = child.attributes["ref"]
+            refs << ref if ref.to_s.match?(/\S/)
+          when "attribute"
+            name = child.attributes["name"]
+            attrs << [name, member_uri.call(child)] if name
+          end
+        end
+        [refs, attrs]
       end
 
       # {uri, local} => true for every global xs:attribute and
