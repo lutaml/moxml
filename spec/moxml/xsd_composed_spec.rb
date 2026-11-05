@@ -6,9 +6,12 @@ require "tmpdir"
 
 # moxml#522: composed-schema strict admission. The facade owns the
 # composition — it resolves the instance's xsi:schemaLocation hints
-# against the schema's own path, rebuilds the handle as a union at
-# first validate, and dismisses engine "not declared (strict)" rows
-# the composed declaration index refutes.
+# against the schema's own path and dismisses engine "not declared
+# (strict)" rows the composed declaration index refutes. The rows the
+# facade cannot refute (processContents=skip admission;
+# OccurrenceProductGuard-gated composed-group admission) stay
+# engine-side — tracked upstream as leptris#1964, registered as
+# divergence D-23.
 RSpec.describe "Moxml::XSD::Schema composed-schema validation (#522)" do
   let(:ctx) { Moxml.new(:leptris) }
   let(:main_xsd) do
