@@ -13,7 +13,7 @@ require "tmpdir"
 # engine admission gap itself is RESOLVED in leptris 1.9.409
 # (leptris#1964 — register entry D-23). The 1.9.409 namespace-aware
 # particle wave carries an upstream schG2 lexical regression
-# (leptris#1976 — register entry D-24); its rows are lexical, not
+# (leptris#1976, residual leptris#1979 — register entry D-24); its rows are lexical, not
 # admission rows, and pass through untouched here.
 RSpec.describe "Moxml::XSD::Schema composed-schema validation (#522)" do
   let(:ctx) { Moxml.new(:leptris) }
