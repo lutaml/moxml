@@ -186,4 +186,14 @@ remain: the child-typing branch still resolves the no-ns `e1`'s
 leptris/leptris#1979. Until it lands the lexical rows pass through
 the facade untouched (they are not admission rows and are never
 dismissable).
+
+| D-25
+| oga, rexml, ox, headed_ox, libxml
+| A `&#10;` character reference in an attribute value serializes as
+a LITERAL newline instead of the escaped form — round-trip lossy,
+since the next parse normalizes a literal attribute newline to a
+space (XML 1.0 §3.3.3). The committed answer is the escaped form
+(nokogiri, leptris emit it). Pinned in
+`spec/consistency/serialization_family_spec.rb` (the family pins
+the primary adapters).
 |===
