@@ -1,6 +1,6 @@
 {
-  "schema": 3,
-  "generator": "moxml 0.5.175",
+  "schema": 4,
+  "generator": "moxml 0.6.4",
   "cases": {
     "builtin_lexical": [
       {
@@ -1032,6 +1032,108 @@
         "primary": null,
         "standard": false,
         "restore": false
+      }
+    ],
+    "serialization": [
+      {
+        "id": "empty-root",
+        "input": "<r/>",
+        "output": "<r></r>"
+      },
+      {
+        "id": "simple-text",
+        "input": "<r>x</r>",
+        "output": "<r>x</r>"
+      },
+      {
+        "id": "attr-amp",
+        "input": "<r a=\"x &amp; y\"/>",
+        "output": "<r a=\"x &amp; y\"></r>"
+      },
+      {
+        "id": "attr-lt",
+        "input": "<r a=\"1 &lt; 2\"/>",
+        "output": "<r a=\"1 &lt; 2\"></r>"
+      },
+      {
+        "id": "attr-quote",
+        "input": "<r a='say \"hi\"'/>",
+        "output": "<r a=\"say &quot;hi&quot;\"></r>"
+      },
+      {
+        "id": "text-escape",
+        "input": "<r>1 &lt; 2 &amp; 3</r>",
+        "output": "<r>1 &lt; 2 &amp; 3</r>"
+      },
+      {
+        "id": "text-gt",
+        "input": "<r>1 &gt; 2</r>",
+        "output": "<r>1 &gt; 2</r>"
+      },
+      {
+        "id": "cdata",
+        "input": "<r><![CDATA[a]]><b/></r>",
+        "output": "<r><![CDATA[a]]><b></b></r>"
+      },
+      {
+        "id": "comment",
+        "input": "<r><!--c--></r>",
+        "output": "<r><!--c--></r>"
+      },
+      {
+        "id": "pi",
+        "input": "<r><?pi data?></r>",
+        "output": "<r><?pi data?></r>"
+      },
+      {
+        "id": "namespace-default",
+        "input": "<r xmlns=\"urn:x\"><a/></r>",
+        "output": "<r xmlns=\"urn:x\"><a></a></r>"
+      },
+      {
+        "id": "namespace-prefixed-attr",
+        "input": "<r xmlns:p=\"urn:p\" p:a=\"1\"/>",
+        "output": "<r xmlns:p=\"urn:p\" p:a=\"1\"></r>"
+      },
+      {
+        "id": "mixed-content",
+        "input": "<r>a<b/>c</r>",
+        "output": "<r>a<b></b>c</r>"
+      },
+      {
+        "id": "attr-newline",
+        "input": "<r a=\"x&#10;y\"/>",
+        "output": "<r a=\"x&#10;y\"></r>"
+      },
+      {
+        "id": "crlf-text",
+        "input": "<r>a\r\nb</r>",
+        "output": "<r>a\nb</r>"
+      },
+      {
+        "id": "combo",
+        "input": "<r a='1'>t&amp;t</r>",
+        "output": "<r a=\"1\">t&amp;t</r>"
+      },
+      {
+        "id": "nested-empty",
+        "input": "<r><a><b/></a></r>",
+        "output": "<r><a><b></b></a></r>"
+      },
+      {
+        "id": "text-apos",
+        "input": "<r>it&apos;s</r>",
+        "output": "<r>it's</r>"
+      },
+      {
+        "id": "numeric-ref",
+        "input": "<r>&#65;&#233;</r>",
+        "output": "<r>Aé</r>"
+      },
+      {
+        "id": "high-codepoint-attr",
+        "input": "<r a=\"é\"/>",
+        "output": "<r a=\"é\"></r>"
       }
     ]
   }
