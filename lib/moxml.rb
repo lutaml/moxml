@@ -90,6 +90,8 @@ module Moxml
   autoload :Entity, "moxml/entity"
   autoload :EntityRegistry, "moxml/entity_registry"
   autoload :SerializationCases, "moxml/serialization_cases"
+  autoload :C14nCases, "moxml/c14n_cases"
+  autoload :XsdStructuralCases, "moxml/xsd_structural_cases"
   autoload :NativeAttachment, "moxml/native_attachment"
   autoload :XmlUtils, "moxml/xml_utils"
   autoload :XmlEmitter, "moxml/xml_emitter"
