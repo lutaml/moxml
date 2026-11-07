@@ -1,5 +1,5 @@
 {
-  "schema": 4,
+  "schema": 5,
   "generator": "moxml 0.6.4",
   "cases": {
     "builtin_lexical": [
@@ -1134,6 +1134,116 @@
         "id": "high-codepoint-attr",
         "input": "<r a=\"é\"/>",
         "output": "<r a=\"é\"></r>"
+      }
+    ],
+    "c14n": [
+      {
+        "id": "attr-order",
+        "input": "<r b=\"2\" a=\"1\"/>",
+        "canonical": "<r a=\"1\" b=\"2\"></r>"
+      },
+      {
+        "id": "ns-rewrite",
+        "input": "<n:r xmlns:n=\"urn:n\" xmlns:m=\"urn:m\"><n:a m:k=\"v\"/></n:r>",
+        "canonical": "<n:r xmlns:m=\"urn:m\" xmlns:n=\"urn:n\"><n:a m:k=\"v\"></n:a></n:r>"
+      },
+      {
+        "id": "ns-hoist",
+        "input": "<r xmlns=\"urn:x\"><a xmlns=\"urn:y\"/></r>",
+        "canonical": "<r xmlns=\"urn:x\"><a xmlns=\"urn:y\"></a></r>"
+      },
+      {
+        "id": "text-escape",
+        "input": "<r>1 &lt; 2 &amp; 3</r>",
+        "canonical": "<r>1 &lt; 2 &amp; 3</r>"
+      },
+      {
+        "id": "cdata-to-text",
+        "input": "<r><![CDATA[raw data]]><b/></r>",
+        "canonical": "<r>raw data<b></b></r>"
+      },
+      {
+        "id": "comment-dropped",
+        "input": "<r><!--gone--><a/></r>",
+        "canonical": "<r><a></a></r>"
+      },
+      {
+        "id": "pi-kept",
+        "input": "<r><?pi data?><a/></r>",
+        "canonical": "<r><?pi data?><a></a></r>"
+      },
+      {
+        "id": "entity-expanded",
+        "input": "<r>a&lt;b&amp;c</r>",
+        "canonical": "<r>a&lt;b&amp;c</r>"
+      },
+      {
+        "id": "empty-elements",
+        "input": "<r><a/><b></b></r>",
+        "canonical": "<r><a></a><b></b></r>"
+      },
+      {
+        "id": "whitespace-preserved",
+        "input": "<r>  x  <a/>  y  </r>",
+        "canonical": "<r>  x  <a></a>  y  </r>"
+      },
+      {
+        "id": "attr-quote-norm",
+        "input": "<r a='single \"double\"'/>",
+        "canonical": "<r a=\"single &quot;double&quot;\"></r>"
+      },
+      {
+        "id": "utf8-high",
+        "input": "<r>café — naïve</r>",
+        "canonical": "<r>café — naïve</r>"
+      },
+      {
+        "id": "nested-ns-default",
+        "input": "<r xmlns=\"urn:a\"><c:b xmlns:c=\"urn:c\"><d xmlns=\"urn:d\"/></c:b></r>",
+        "canonical": "<r xmlns=\"urn:a\"><c:b xmlns:c=\"urn:c\"><d xmlns=\"urn:d\"></d></c:b></r>"
+      },
+      {
+        "id": "mixed-attrs-ns",
+        "input": "<r xmlns:p=\"urn:p\" p:a=\"1\" b=\"2\" xmlns:q=\"urn:q\" q:c=\"3\"/>",
+        "canonical": "<r xmlns:p=\"urn:p\" xmlns:q=\"urn:q\" b=\"2\" p:a=\"1\" q:c=\"3\"></r>"
+      }
+    ],
+    "xsd_structural": [
+      {
+        "id": "builtin-lexical-valid",
+        "schema": "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:t\" xmlns=\"urn:t\"><xs:element name=\"doc\"><xs:complexType><xs:sequence><xs:element name=\"n\" type=\"xs:int\"/><xs:element name=\"flag\" type=\"xs:boolean\"/></xs:sequence><xs:attribute name=\"a\" type=\"xs:string\"/><xs:anyAttribute namespace=\"##any\" processContents=\"strict\"/></xs:complexType></xs:element><xs:attribute name=\"ext\" type=\"xs:string\"/></xs:schema>",
+        "instance": "<d:doc xmlns:d=\"urn:t\" a=\"x\"><n>42</n><flag>true</flag></d:doc>",
+        "valid": true
+      },
+      {
+        "id": "builtin-lexical-invalid",
+        "schema": "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:t\" xmlns=\"urn:t\"><xs:element name=\"doc\"><xs:complexType><xs:sequence><xs:element name=\"n\" type=\"xs:int\"/><xs:element name=\"flag\" type=\"xs:boolean\"/></xs:sequence><xs:attribute name=\"a\" type=\"xs:string\"/><xs:anyAttribute namespace=\"##any\" processContents=\"strict\"/></xs:complexType></xs:element><xs:attribute name=\"ext\" type=\"xs:string\"/></xs:schema>",
+        "instance": "<d:doc xmlns:d=\"urn:t\" a=\"x\"><n>not-an-int</n><flag>true</flag></d:doc>",
+        "valid": false
+      },
+      {
+        "id": "strict-admission-declared",
+        "schema": "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:t\" xmlns=\"urn:t\"><xs:element name=\"doc\"><xs:complexType><xs:sequence><xs:element name=\"n\" type=\"xs:int\"/><xs:element name=\"flag\" type=\"xs:boolean\"/></xs:sequence><xs:attribute name=\"a\" type=\"xs:string\"/><xs:anyAttribute namespace=\"##any\" processContents=\"strict\"/></xs:complexType></xs:element><xs:attribute name=\"ext\" type=\"xs:string\"/></xs:schema>",
+        "instance": "<d:doc xmlns:d=\"urn:t\" xmlns:t=\"urn:t\" t:ext=\"y\" a=\"x\"><n>1</n><flag>false</flag></d:doc>",
+        "valid": true
+      },
+      {
+        "id": "strict-admission-undeclared",
+        "schema": "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:t\" xmlns=\"urn:t\"><xs:element name=\"doc\"><xs:complexType><xs:sequence><xs:element name=\"n\" type=\"xs:int\"/><xs:element name=\"flag\" type=\"xs:boolean\"/></xs:sequence><xs:attribute name=\"a\" type=\"xs:string\"/><xs:anyAttribute namespace=\"##any\" processContents=\"strict\"/></xs:complexType></xs:element><xs:attribute name=\"ext\" type=\"xs:string\"/></xs:schema>",
+        "instance": "<d:doc xmlns:d=\"urn:t\" ghost=\"z\" a=\"x\"><n>1</n><flag>false</flag></d:doc>",
+        "valid": false
+      },
+      {
+        "id": "substitution-member",
+        "schema": "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:s\" xmlns=\"urn:s\"><xs:element name=\"shape\" type=\"xs:string\" abstract=\"true\"/><xs:element name=\"circle\" type=\"xs:string\" substitutionGroup=\"shape\"/><xs:element name=\"canvas\"><xs:complexType><xs:sequence><xs:element ref=\"shape\" maxOccurs=\"unbounded\"/></xs:sequence></xs:complexType></xs:element></xs:schema>",
+        "instance": "<s:canvas xmlns:s=\"urn:s\"><s:circle>unit</s:circle></s:canvas>",
+        "valid": true
+      },
+      {
+        "id": "wildcard-lax-other-ns",
+        "schema": "<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"urn:t\" xmlns=\"urn:t\"><xs:element name=\"doc\"><xs:complexType><xs:sequence><xs:any processContents=\"lax\" namespace=\"##other\"/></xs:sequence></xs:complexType></xs:element></xs:schema>",
+        "instance": "<d:doc xmlns:d=\"urn:t\" xmlns:o=\"urn:o\"><o:kid/></d:doc>",
+        "valid": true
       }
     ]
   }
