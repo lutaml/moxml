@@ -174,18 +174,19 @@ lutaml-xsd conformance runner (locations registration
 lutaml/lutaml-xsd#234); pinned in `spec/moxml/xsd_composed_spec.rb`.
 
 | D-24
-| leptris (XSD engine lane, 1.9.409+)
-| The 1.9.409 namespace-aware particle typing regresses the W3C
-schG2 composition (A imports no-ns B; expected valid): the engine
-types the no-namespace `<e1>` variant's children against ns-a's
-same-name declarations, so the lane answers INVALID where the model
-says VALID. v1.9.410 (leptris/leptris#1976) fixed the element
-resolution — the false lexical rows for the import-RESOLVED compile
-remain: the child-typing branch still resolves the no-ns `e1`'s
-`<a1>` against ns-a's `ct-A`, tracked upstream as
-leptris/leptris#1979. Until it lands the lexical rows pass through
-the facade untouched (they are not admission rows and are never
-dismissable).
+| leptris (XSD engine lane, 1.9.409-1.9.410) + vendored corpus
+| The 1.9.409 namespace-aware particle typing regressed the W3C
+schG2 composition (A imports no-ns B imports ns-c C; expected
+valid). Two stacked causes, both RESOLVED: the engine's ns-blind
+child-typing branch (fixed v1.9.410 db4d860c, leptris/leptris#1979
+— the resolved-lane spec compiles the corpus case from its file
+path to zero errors) and the VENDORED corpus copy missing the
+`schG1_c.xsd` C unit, which starved the composition of the no-ns
+unit's types (upstream w3c/xsdtests carries it; the vendored
+snapshot does not). With binding >= 1.9.412.1 and the complete
+composition, schG2 answers VALID through the facade — the #522
+16-case set stands at 16/16. Lexical rows were never
+facade-dismissable; no moxml change was required.
 
 | D-25
 | oga, rexml, ox, headed_ox, libxml
