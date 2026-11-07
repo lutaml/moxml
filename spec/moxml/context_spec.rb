@@ -71,7 +71,15 @@ RSpec.describe Moxml::Context do
 
       refreshed = doc.root
       expect(refreshed.name).to eq("x")
-      expect(context.wrapper_for(refreshed.native)).to equal(refreshed)
+
+      # Exercise the swap explicitly: the map must answer the wrapper
+      # under its CURRENT native after refresh_native!. (Probing the
+      # pre-swap mint instead raced the wrap path — identity mints
+      # register the map only when the canonical fast path was not
+      # taken, which made the assertion order-sensitive.)
+      replacement = doc.create_element("y")
+      refreshed.refresh_native!(replacement.native)
+      expect(context.wrapper_for(replacement.native)).to equal(refreshed)
     end
   end
 end
