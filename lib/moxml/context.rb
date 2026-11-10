@@ -208,23 +208,42 @@ module Moxml
     # Moxml::NotImplementedError; Moxml::XSD.supported?(self)
     # answers without raising.
     #
+    # Composing sources — xs:include / xs:redefine / xs:override
+    # (moxml#522) — are REFUSED here with actionable guidance: the
+    # bare-string face cannot resolve their schemaLocation
+    # attributes, so the compile silently misses every included
+    # component and validation fails with misleading "not declared"
+    # findings. Use #xsd_file (the engine resolves schemaLocation
+    # against the file's directory) or #xsd_set (imports resolve
+    # across the whole set).
+    #
     # @raise [Moxml::NotImplementedError] on adapters without a validator
+    # @raise [ArgumentError] on a composing source (#522)
+    COMPOSITION_DIRECTIVE = /<(?:[\w.-]+:)?(?:include|redefine|override)[\s>]/
+
     def xsd(schema_source)
-      handle = config.adapter.xsd_compile(schema_source.to_s)
-      Moxml::XSD::Schema.new(handle, self, schema_source.to_s)
+      source = schema_source.to_s
+      if source.match?(COMPOSITION_DIRECTIVE)
+        raise ArgumentError,
+              "the schema composes other documents (include/redefine/" \
+              "override); the bare-string face cannot resolve their " \
+              "schemaLocation — use Context#xsd_file (per-file include " \
+              "resolution) or Context#xsd_set (multi-document compile)"
+      end
+      handle = config.adapter.xsd_compile(source)
+      Moxml::XSD::Schema.new(handle, self, source)
     end
 
     # Compile an XSD schema from a file path — <xs:include href>
     # resolves relative to the file's directory (the engine
     # resolves it; reading the file into #xsd would lose that).
-    # The #452 rule index reads this document only; a document
-    # that composes others (include/import/redefine/override)
-    # turns the strict re-checks off (#510) — included parts stay
-    # engine-validated and the index can only under-report.
+    # The path is kept on the Schema (moxml#522): #validate resolves
+    # the instance's xsi:schemaLocation hints against it and unions
+    # the hinted documents into the compiled set.
     def xsd_file(path)
       handle = config.adapter.xsd_compile_file(path.to_s)
       source = File.read(path.to_s)
-      Moxml::XSD::Schema.new(handle, self, source)
+      Moxml::XSD::Schema.new(handle, self, source, path: path.to_s)
     end
 
     # Compile a SET of schema documents (paths) into one schema:

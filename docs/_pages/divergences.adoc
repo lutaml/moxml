@@ -156,3 +156,45 @@ before leptris#1866's fix (the fix itself is not the cause); not a
 regression of the fix. Noted in
 `spec/moxml/adapter/leptris_crossdoc_replace_spec.rb`.
 |===
+
+| D-23
+| leptris (XSD engine lane, before 1.9.409)
+| Strict wildcard/anyAttribute admission consulted only the head
+unit's declaration table, so items declared in a NON-head unit of a
+composition (xsi:schemaLocation hint documents) got "not declared
+(strict)" rows. The facade owns the composition: Schema#validate
+resolves the instance's hints against the schema path, walks the
+schema graph (include/import/redefine) for the unit closure, and
+dismisses refutable rows — global declarations AND group members
+(moxml#528; group admission this entry's companion). RESOLVED
+engine-side by leptris/leptris#1964 (v1.9.409, namespace-aware
+particle typing): the 16-case W3C set (attgD019-034, attgC035-038,
+addB114) answers VALID through the facade. Verified through the
+lutaml-xsd conformance runner (locations registration
+lutaml/lutaml-xsd#234); pinned in `spec/moxml/xsd_composed_spec.rb`.
+
+| D-24
+| leptris (XSD engine lane, 1.9.409-1.9.410) + vendored corpus
+| The 1.9.409 namespace-aware particle typing regressed the W3C
+schG2 composition (A imports no-ns B imports ns-c C; expected
+valid). Two stacked causes, both RESOLVED: the engine's ns-blind
+child-typing branch (fixed v1.9.410 db4d860c, leptris/leptris#1979
+— the resolved-lane spec compiles the corpus case from its file
+path to zero errors) and the VENDORED corpus copy missing the
+`schG1_c.xsd` C unit, which starved the composition of the no-ns
+unit's types (upstream w3c/xsdtests carries it; the vendored
+snapshot does not). With binding >= 1.9.412.1 and the complete
+composition, schG2 answers VALID through the facade — the #522
+16-case set stands at 16/16. Lexical rows were never
+facade-dismissable; no moxml change was required.
+
+| D-25
+| oga, rexml, ox, headed_ox, libxml
+| A `&#10;` character reference in an attribute value serializes as
+a LITERAL newline instead of the escaped form — round-trip lossy,
+since the next parse normalizes a literal attribute newline to a
+space (XML 1.0 §3.3.3). The committed answer is the escaped form
+(nokogiri, leptris emit it). Pinned in
+`spec/consistency/serialization_family_spec.rb` (the family pins
+the primary adapters).
+|===

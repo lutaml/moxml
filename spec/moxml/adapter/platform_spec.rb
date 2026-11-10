@@ -46,11 +46,20 @@ RSpec.describe Moxml::Adapter do
     end
 
     it "prefers leptris only when the installed binding meets the floor" do
+      # Resolve under cold selection: the degradation specs may have
+      # left nokogiri pinned while the probe memo is warm-true (the
+      # #523 ordering contract) — the invariant tests the RESOLVED
+      # answer, not whichever ambient half-state a random order
+      # happens to leave.
+      ambient = Moxml::Config.default_adapter
+      Moxml::Config.reset_adapter_selection!
       if Moxml::Config.leptris_preferred_available?
         expect(Moxml::Config.runtime_default_adapter).to eq(:leptris)
       else
         expect(Moxml::Config.runtime_default_adapter).not_to eq(:leptris)
       end
+    ensure
+      Moxml::Config.default_adapter = ambient
     end
 
     it "pins the leptris binding floor at 1.9.386.0 (raised 2026-09-20, raised again 2026-10-30; enforced at load)" do
