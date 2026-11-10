@@ -31,7 +31,12 @@ module Moxml
       # "raise all floors"): the tested pair — every gate below it
       # unwound, and the floor is ENFORCED (the load refuses below it;
       # the README's "older bindings do not load" claim is now true).
-      MINIMUM_BINDING_VERSION = "1.9.386.0"
+      # Raised 1.9.386.0 -> 1.9.410.0 (2026-11-10, owner directive
+      # "update floors"): the namespace-aware strict admission
+      # (leptris#1964, 1.9.409) and the schG2 child-typing fix
+      # (leptris#1979, 1.9.410) - the XSD conformance answers the
+      # dataset and the suite now pin REQUIRE this wave.
+      MINIMUM_BINDING_VERSION = "1.9.410.0"
 
       # Snapshot-backed attribute listing native (moxml#520): the
       # listing face serves reads from the binding's flat packet face —

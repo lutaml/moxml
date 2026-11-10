@@ -71,7 +71,7 @@ https://github.com/leptris/leptris-ruby[leptris-ruby] FFI binding
 every measured bulk operation — parse, XPath, serialization, SAX, and
 the compiled Moxml::Plan / Moxml::StructPlan materialization paths
 (StructPlan runs 2.3-2.6x raw Nokogiri on the benchmark shape);
-requires leptris >= 1.9.386.0 (see version table below).
+requires leptris >= 1.9.410.0 (see version table below).
 
 === Underlying library versions
 
@@ -109,18 +109,18 @@ same libxml2 engine, governed by the consistency suite). Removal
 after the deprecation cycle.
 
 |Leptris (leptris-ruby)
-|>= 1.9.386.0
+|>= 1.9.410.0
 |ENFORCED hard floor — `MINIMUM_BINDING_VERSION`; the adapter refuses
-to load below it. Raised 1.9.32 → 1.9.194.1 (2026-09-20) → 1.9.386.0
+to load below it. Raised 1.9.32 → 1.9.194.1 (2026-09-20) → 1.9.386.0 (2026-10-30) → 1.9.410.0 (2026-11-10)
 (2026-10-30, the tested pair): every accommodation path below it is
 deleted and all native faces through the 1.9.385 parent-axis train
 are unconditional. The capability report
 (`Moxml::Adapter::Leptris.capabilities`) answers what the installed
 pair serves; cross-import schema sets (`Context#xsd_set`) ride the
-compile_set face (1.9.386.0 ✓).
+compile_set face (1.9.386.0 ✓, the floor now requires it).
 |===
 
-NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.386` (the tested pair; the gemspec itself has zero runtime dependencies). The adapter enforces the floor at load.
+NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.410` (the tested pair; the gemspec itself has zero runtime dependencies). The adapter enforces the floor at load.
 `ox ~> 2.14`, `libxml-ruby >= 5.0`, and the vendored oga fork — the CI
 matrix tests exactly those floors.
 
@@ -130,7 +130,7 @@ When no adapter is explicitly specified, Moxml selects one automatically based o
 the runtime environment:
 
 . If the installed leptris gem supports programmatic document
-  construction (`Leptris::XML::Document.create`, leptris >= 1.9.386.0), Leptris is used
+  construction (`Leptris::XML::Document.create`; the floor guarantees it), Leptris is used
 . Otherwise, Moxml detects already-loaded XML libraries in this order:
   .. Nokogiri
   .. Ox
@@ -141,7 +141,7 @@ the runtime environment:
 ----
 # Automatic detection — picks the best available adapter
 ctx = Moxml.new
-ctx.config.adapter_name  # => :leptris (leptris >= 1.9.386.0), :nokogiri otherwise
+ctx.config.adapter_name  # => :leptris (leptris >= 1.9.410.0), :nokogiri otherwise
 
 # Explicit override — always takes precedence
 ctx = Moxml.new(:ox)

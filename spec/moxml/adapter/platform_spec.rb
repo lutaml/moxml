@@ -62,11 +62,11 @@ RSpec.describe Moxml::Adapter do
       Moxml::Config.default_adapter = ambient
     end
 
-    it "pins the leptris binding floor at 1.9.386.0 (raised 2026-09-20, raised again 2026-10-30; enforced at load)" do
+    it "pins the leptris binding floor at 1.9.410.0 (raised 2026-09-20, 2026-10-30, and 2026-11-10; enforced at load)" do
       skip "leptris not installed" unless described_class.available?(:leptris)
 
       adapter = described_class.load(:leptris)
-      expect(adapter::MINIMUM_BINDING_VERSION).to eq("1.9.386.0")
+      expect(adapter::MINIMUM_BINDING_VERSION).to eq("1.9.410.0")
       expect(Gem::Version.new(Leptris::VERSION))
         .to be >= Gem::Version.new(adapter::MINIMUM_BINDING_VERSION)
     end
