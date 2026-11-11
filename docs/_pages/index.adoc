@@ -9,13 +9,18 @@ This section covers the fundamental concepts and essential information for
 working with Moxml.
 
 Start with link:why-moxml[Why Moxml] for the invariant and the evidence
-apparatus, then link:model-coverage[Model coverage] for the
-adapter-by-adapter proof.
+apparatus, link:model-coverage[Model coverage] for the
+adapter-by-adapter proof, and link:conformance[Conformance dataset]
+for the cross-language rows that pin it.
 
 === Topics covered
 
 link:installation[Installation]::
 How to install Moxml and select an XML adapter for your needs.
+
+link:conformance[Conformance dataset]::
+The 177-case dataset — the model's committed answers as data — and
+the Ruby, Rust, and TypeScript runners that enforce them.
 
 link:quick-start[Quick start]::
 Get up and running with Moxml in minutes with practical examples.
