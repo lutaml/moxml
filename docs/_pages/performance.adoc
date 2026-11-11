@@ -5,6 +5,26 @@ nav_order: 11
 
 == Performance considerations
 
+=== State of the art, honestly stated
+
+Moxml wins every parity row on the published scoreboard — parse
+3.05x, attr pairs listing 7.35x, xpath count 3.04x, serialize 1.62x
+of raw nokogiri — and loses exactly the structural rows, all at one
+known place: the per-node wrapper mint and the per-read Ruby frame
+(the facade's reads sit at ~331ns; the binding's own native read is
+71ns — the difference is one `bind_call` frame, the same cost every
+Ruby-level wrapper pays). The asks that remove the last frame are
+filed upstream with the floor tables (leptris-ruby#622: hot C reads
+parameterized by subclass or a hydrated columnar walk,
+klass-injected result mint, C set-attribute); adoption is
+face-probed and lands behind gates the day upstream ships, the same
+pattern as the six bulk-crossing surfaces already adopted.
+
+Speed is the declared non-semantic channel: none of it is bought
+with answers. The link:conformance.html[conformance dataset] runs
+the model's committed rows on every tier, so a faster moxml is also
+the same moxml.
+
 === Scoreboard (generated)
 
 `SCORE_PUBLISH=1 bundle exec ruby benchmark/scoreboard.rb` rewrites
@@ -31,7 +51,7 @@ Measurement: Ruby 3.3.13, leptris 1.9.383.0, nokogiri 1.19.4, 2026-10-26T23:05:1
 | `plan records (typed)` | 1.09x | data | informational
 |===
 
-*Parity rows* must stay at or above the 0.95 measurement floor. *Structural rows* are measured and trend-locked (10% regression tolerance) while their gaps remain open: per-node wrapper minting costs (#312 endgame) and engine construction. *Data API* rows are informational.
+*Parity rows* must stay at or above the 0.95 measurement floor. *Structural rows* are measured and trend-locked (10% regression tolerance) while their gaps remain open: the per-node wrapper mint and per-read Ruby frame (the wrapper floor; removal asks filed upstream as leptris-ruby#622) and engine construction. *Data API* rows are informational.
 // SCOREBOARD:END
 
 === Memory management

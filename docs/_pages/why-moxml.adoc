@@ -59,6 +59,12 @@ checked in CI:
 | The published scoreboard: parity rows are commitments; structural
   gaps are measured and trend-locked, never hidden.
 
+| link:conformance.html[Conformance dataset]
+| The model's committed answers as data — 177 cases across 7
+  families, run row-for-row by the Ruby, Rust, and TypeScript tiers.
+  A mismatch on any row is a model finding, not a dialect
+  difference.
+
 |===
 
 Behind the pages, the consistency suite runs an engine-free
@@ -66,9 +72,10 @@ Behind the pages, the consistency suite runs an engine-free
 against every adapter; a seeded **generator** checks metamorphic
 properties over generated documents; and a whole-class **taxonomy
 differential** compares every adapter on every input class the model
-touches. The reference is itself transpiled to JavaScript and runs on
-the Opal lane.
-
+touches. The same expectations export as the conformance dataset and
+run in Rust (moxml-rs) and TypeScript (moxml-ts over the wasm
+bundles) — one model implementation per language, all answering the
+same rows.
 == What Moxml is not
 
 Moxml is not a new XML parser and does not replace the engines — it
