@@ -28,6 +28,13 @@ Pins:: none
    against each other; the reference is pure Ruby. (The Opal
    transpile lane was removed in #489 phase 4 — the JS surface is
    the moxml-ts wasm binding.)
+   `rake conformance:export` distills the expectations into
+   `conformance/moxml-conformance.json` — the cross-language dataset
+   (7 families, 177 cases at schema 5) that the Rust
+   (link:https://github.com/lutaml/moxml-rs[moxml-rs]) and TypeScript
+   (link:https://github.com/lutaml/moxml-ts[@lutaml/moxml]) tiers run
+   row-for-row; a runner mismatch on any row is a model finding. See
+   the site's xref:conformance.adoc[conformance dataset] page.
 3. Adapter implementations and capability gates — representations.
 
 A pin cites the model section it enforces

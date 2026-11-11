@@ -31,7 +31,13 @@ specified normatively in the
 https://lutaml.github.io/moxml/_references/processing-model[Processing Model]
 document, pinned as executable expectations in the consistency suite, and its
 known engine differences are tracked in the
-https://lutaml.github.io/moxml/_pages/divergences[divergence register].
+https://lutaml.github.io/moxml/_pages/divergences[divergence register]. The
+expectations are also exported as data — the
+https://lutaml.github.io/moxml/_pages/conformance[conformance dataset]
+(7 families, 177 cases at schema 5), driven row-for-row by the Rust
+(https://github.com/lutaml/moxml-rs[moxml-rs]) and TypeScript
+(https://github.com/lutaml/moxml-ts[@lutaml/moxml]) tiers, so a runner
+mismatch on any row is a model finding, not a dialect difference.
 
 Key features:
 

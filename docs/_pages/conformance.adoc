@@ -1,0 +1,112 @@
+---
+title: Conformance dataset
+nav_order: 5.5
+---
+
+== One dataset, every tier
+
+The conformance dataset is the model's committed answers exported as
+data: 177 cases across 7 families, each row a question and the one
+answer every implementation must produce. It exists so that
+"engine-choice invariance" is not a prose claim but an executable
+expectation that runs on every tier — Ruby, Rust, and TypeScript.
+
+A runner mismatch on any row is a **real model finding**: report it
+and fix the tier (or, if the model itself is wrong, amend the model
+document first). Rows are never bent to match an implementation.
+
+== Families (schema 5)
+
+[cols="4,1,6"]
+|===
+|Family |Rows |What it pins
+
+|builtin_lexical
+|81
+|The lexical space of every XSD builtin type — which strings each
+type accepts.
+
+|xsd_regex_translation
+|21
+|How XSD `pattern` facets translate into host-regex semantics, and
+which patterns are translatable at all.
+
+|schema_wildcards
+|24
+|Namespace wildcard admission: `##any`/`##other`/namespace lists,
+`processContents`, `notNamespace`/`notQName` exclusions.
+
+|entity_registry
+|11
+|The entity name ↔ codepoint registry: declaration, resolution, and
+restore shapes per `entity_load_mode`.
+
+|serialization
+|20
+|Emitter shapes: long-form empty elements, attribute escaping
+(`&amp;`, `&lt;`, `&quot;`, numeric references for tab/newline),
+namespace declarations verbatim.
+
+|c14n
+|14
+|Canonical XML 1.0 vectors, byte-identical on every adapter — sorted
+attributes, expanded references, comments dropped.
+
+|xsd_structural
+|6
+|Single-file schema + instance pairs with the committed facade
+verdict (the engine verdict AND the strict wildcard admission
+re-check).
+|===
+
+== Where it lives
+
+The source of truth is the Ruby case tables
+(`lib/moxml/*_cases.rb` and the XSD rule tables). Export:
+
+[source,console]
+----
+rake conformance:export
+----
+
+writes `conformance/moxml-conformance.json` — `schema` records the
+dataset revision, `generator` the exporting moxml version. Every
+schema bump is a reviewed change: rows are added or amended through
+PRs that cite the model section they enforce.
+
+== The runners
+
+[cols="2,3"]
+|===
+|Tier |Runner
+
+|Ruby
+|`spec/consistency/conformance_families_spec.rb` and the family
+specs — pins every row through every available adapter.
+
+|Rust
+|link:https://github.com/lutaml/moxml-rs[moxml-rs] — the dataset
+vendored at its release pin, driven by `cargo test`.
+
+|TypeScript
+|link:https://github.com/lutaml/moxml-ts[@lutaml/moxml] — fetches the
+pinned wasm bundles (`scripts/fetch-wasm.sh`), drives the families
+through the engine and model faces with vitest.
+|===
+
+The vendored-pin chain moxml → moxml-rs → moxml-ts means every tier
+tests the same rows: a dataset revision ships as a moxml release, the
+Rust crate re-vendors it at its next release, and the TS package pins
+both bundles.
+
+== Why data, not prose
+
+The dataset has already caught a class of bug that prose cannot: the
+wasm32 build of one engine passed every native test while silently
+corrupting its output — attribute character references vanished on
+serialize and the canonicalizer emitted mangled bytes. Native suites
+were green because the defect lived in the engine's freestanding
+build, which only compiles under wasm32. Driving the dataset rows
+through the bundle caught both shapes immediately
+(leptris-rs#69). This is the standing argument for the runners: the
+same rows, executed in every environment the model promises.
