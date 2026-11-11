@@ -62,9 +62,10 @@ module Scoreboard
       "runner-window variance (2026-10-26/27: 6.17x-8.48x across runs)",
     "walk+read (warm)" =>
       "runner-window variance (2026-10-26/27: 0.54x-0.76x across runs)",
-    "walk+read (cold)" => "leptris-ruby#527 (1.9.380 crossing regression)",
+    "walk+read (cold)" =>
+      "wrapper-mint floor (leptris-ruby#527: engine flat 374->380; #622 asks)",
     "children recursion (cold)" =>
-      "leptris-ruby#527 (1.9.380 crossing regression)",
+      "wrapper-mint floor (leptris-ruby#527: engine flat 374->380; #622 asks)",
   }.freeze
 
   Field = Struct.new(:name, :unit, :value)
