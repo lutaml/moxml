@@ -3207,6 +3207,21 @@ module Moxml
         SET_ATTRIBUTE_NATIVE =
           NATIVE_READ_LAYER && NN.method_defined?(:set_attribute)
 
+        # TODO.perf/41 (leptris-ruby#622 ask 3): the module-level C
+        # entry Native.set_binding_attribute(document, addr, name,
+        # value) — free/readonly gates + binding-version bump + engine
+        # set in one crossing. It serves the (document, address) pairs
+        # the TypedData instance face cannot reach: AddressNode tokens
+        # on the address-native lane and native nodes on exts without
+        # the instance method. Semantically the bridge's twin: the
+        # version bump IS the binding-memo invalidation (both
+        # surfaces' memos drop on mutation), and callers invalidate
+        # the wrapper caches exactly as before.
+        SET_BINDING_ATTRIBUTE =
+          NATIVE_READ_LAYER &&
+          defined?(::Leptris::XML::Native) &&
+          ::Leptris::XML::Native.respond_to?(:set_binding_attribute)
+
         def set_attribute(element, name, value)
           # Native write face (leptris-ruby#204's nn_set_attribute):
           # gates + version bump + engine set in one C frame on the
@@ -3216,6 +3231,18 @@ module Moxml
           # after this returns, exactly as for the bridge.
           if SET_ATTRIBUTE_NATIVE && element.is_a?(::Leptris::XML::NativeNode)
             return element.set_attribute(name.to_s, value.to_s)
+          end
+
+          # TODO.perf/41: the module-level entry for the addressed
+          # lane — one crossing instead of to_binding's Pointer wrap
+          # + registry mint + memo'd hash write.
+          if SET_BINDING_ATTRIBUTE
+            doc, addr = attr_packet_target(element)
+            if doc
+              return ::Leptris::XML::Native.set_binding_attribute(
+                doc, addr, name.to_s, value.to_s
+              )
+            end
           end
 
           element = to_binding(element) if NATIVE_READ_LAYER
