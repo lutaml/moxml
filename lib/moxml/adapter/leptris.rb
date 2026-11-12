@@ -3073,10 +3073,21 @@ module Moxml
           # converts per call (a Node.wrap + registry hit, ~6s/3M
           # allocations per million-element walk), and only mutation
           # faces need the binding element.
+          # moxml#540: the bulk export serves RAW values (its engine
+          # loop skips the lazy entity-run decode the single getters
+          # apply). '&' cannot occur in a decoded value except through
+          # an undecoded reference, so any '&' in the bulk output
+          # re-serves the whole packet through attribute_packet, whose
+          # values ride the decoding getter. Idempotent after the
+          # engine gains the decode: the lazy decode replaced the
+          # attribute's view, so the re-read answers the same bytes.
           if ELEMENT_ATTR_PACKET
             doc, addr = attr_packet_target(element)
             if doc
               flat = ::Leptris::XML::Native.attribute_pairs(doc, addr)
+              if flat.any? { |v| v.is_a?(String) && v.include?("&") }
+                flat = ::Leptris::XML::Native.attribute_packet(doc, addr)
+              end
               return packet_attributes(flat, element)
             end
           end
@@ -3127,6 +3138,9 @@ module Moxml
           binding_element = to_binding(element)
           return super unless binding_element.respond_to?(:attribute_pairs)
 
+          # attribute_packet (leptris_attribute_get_value) decodes
+          # entity runs itself — moxml#540's guard applies only to the
+          # attribute_pairs export, which serves raw values.
           pairs = if ELEMENT_ATTR_PACKET
                     ::Leptris::XML::Native
                       .attribute_packet(binding_element.document,
