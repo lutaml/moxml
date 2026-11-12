@@ -4173,10 +4173,11 @@ module Moxml
         # AST walk is per-expression, so the verdict caches too.
         PARENT_AXIS_CACHE = XPath::Cache.new(100)
 
-        def xpath(node, expression, namespaces = {})
+        def xpath(node, expression, namespaces = {}, context: nil)
           namespaces = normalize_xpath_namespaces(namespaces)
           node = to_binding(node) if NATIVE_READ_LAYER
-          native = native_xpath(node, expression, namespaces)
+          native = native_xpath(node, expression, namespaces,
+                                context: context)
           return native unless native.nil?
 
           engine_xpath(node, expression, namespaces)
@@ -4205,9 +4206,10 @@ module Moxml
           hit.is_a?(::Moxml::Node) ? hit : node
         end
 
-        def at_xpath(node, expression, namespaces = {})
+        def at_xpath(node, expression, namespaces = {}, context: nil)
           namespaces = normalize_xpath_namespaces(namespaces)
-          native = native_xpath(node, expression, namespaces, first_only: true)
+          native = native_xpath(node, expression, namespaces,
+                                first_only: true, context: context)
           return native unless native.nil?
 
           result = engine_xpath(node, expression, namespaces)
@@ -4226,7 +4228,8 @@ module Moxml
 
         # @return [Array, Object, nil] native results, or nil when the
         #   query must run on the Ruby engine
-        def native_xpath(node, expression, namespaces, first_only: false)
+        def native_xpath(node, expression, namespaces, first_only: false,
+                         context: nil)
           # Canonical natives (the #219 unification) are bare TypedData
           # wrappers — no Searchable methods, no document handle for
           # the gates below. The memoized bridge recovers the binding
@@ -4348,7 +4351,8 @@ module Moxml
             # The one-crossing mint is deferred: a caller that only
             # asks #size never pays for the rows (#527). The holder
             # runs Document#xpath_result_rows_bulk on first read.
-            return Moxml::LazyBulkRows.new(document, result_ptr)
+            return Moxml::LazyBulkRows.new(document, result_ptr,
+                                           context, self)
           end
 
           # The binding's #to_a mints one Ruby wrapper per result

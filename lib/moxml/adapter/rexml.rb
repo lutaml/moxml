@@ -640,7 +640,10 @@ module Moxml
           ns
         end
 
-        def xpath(node, expression, namespaces = {})
+        # rubocop:disable Lint/UnusedMethodArgument -- the protocol passes the
+        # priming triple; engines without a bulk mint ignore it
+        def xpath(node, expression, namespaces = {}, context: nil)
+          # rubocop:enable Lint/UnusedMethodArgument
           # REXML's engine answers no text nodes for text() node
           # tests (D-07, both axes); the reference engine does
           # (model, XPath evaluation).

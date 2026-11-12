@@ -715,7 +715,10 @@ module Moxml
         # with HeadedOx and Leptris). Ox's locate() only covers a
         # small XPath subset; the engine provides all axes,
         # predicates, functions and variables.
-        def xpath(node, expression, namespaces = {})
+        # rubocop:disable Lint/UnusedMethodArgument -- the protocol passes the
+        # priming triple; engines without a bulk mint ignore it
+        def xpath(node, expression, namespaces = {}, context: nil)
+          # rubocop:enable Lint/UnusedMethodArgument
           wrapped = if node.is_a?(Moxml::Node)
                       node
                     else
