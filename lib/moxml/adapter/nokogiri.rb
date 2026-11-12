@@ -647,7 +647,10 @@ module Moxml
           native.system_id
         end
 
-        def xpath(node, expression, namespaces = nil)
+        # rubocop:disable Lint/UnusedMethodArgument -- the protocol passes the
+        # priming triple; engines without a bulk mint ignore it
+        def xpath(node, expression, namespaces = nil, context: nil)
+          # rubocop:enable Lint/UnusedMethodArgument
           if empty_default_namespace_binding?(namespaces)
             return Moxml::XPath.evaluate_natives(node, expression,
                                                  namespaces,

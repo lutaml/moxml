@@ -296,7 +296,8 @@ module Moxml
     def xpath(expression, namespaces = nil)
       expression = lax_document_path(expression) if relative_name_test?(expression)
 
-      result = adapter.xpath(@native, expression, namespaces)
+      result = adapter.xpath(@native, expression, namespaces,
+                             context: context)
 
       # Handle different result types:
       # - Scalar values (from functions): return directly

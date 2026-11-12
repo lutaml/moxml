@@ -16,9 +16,17 @@ module Moxml
   class LazyBulkRows
     include LazyNodeSet
 
-    def initialize(document, result_ptr)
+    # (context, adapter): the consumer contract triple for the primed
+    # mint (TODO.perf/40, leptris-ruby#622 ask 2) — the bulk face
+    # writes @mx_context/@mx_adapter in C and extends all-native
+    # results with BulkIdentityRows, so NodeSet's per-row wrap prime
+    # disappears from the iterate-every-result lane. nil (older
+    # bindings) keeps the unprimed mint.
+    def initialize(document, result_ptr, context = nil, adapter = nil)
       @document = document
       @ptr = result_ptr
+      @context = context
+      @adapter = adapter
       @rows = nil
       ObjectSpace.define_finalizer(
         self, self.class.finalizer(result_ptr.address)
@@ -62,7 +70,7 @@ module Moxml
       return @rows if @rows
 
       ObjectSpace.undefine_finalizer(self)
-      @rows = @document.xpath_result_rows_bulk(@ptr)
+      @rows = @document.xpath_result_rows_bulk(@ptr, @context, @adapter)
       @ptr = nil
       @rows
     end

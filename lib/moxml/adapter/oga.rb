@@ -587,7 +587,10 @@ module Moxml
           end
         end
 
-        def xpath(node, expression, namespaces = nil)
+        # rubocop:disable Lint/UnusedMethodArgument -- the protocol passes the
+        # priming triple; engines without a bulk mint ignore it
+        def xpath(node, expression, namespaces = nil, context: nil)
+          # rubocop:enable Lint/UnusedMethodArgument
           # oga's engine has no xmlns: default-namespace idiom
           # (D-01); the reference engine implements it (model,
           # Names and namespaces).

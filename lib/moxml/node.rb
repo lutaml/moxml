@@ -415,7 +415,8 @@ module Moxml
     end
 
     def xpath(expression, namespaces = {})
-      result = adapter.xpath(@native, expression, namespaces)
+      result = adapter.xpath(@native, expression, namespaces,
+                             context: context)
       # Adapter contract: Array<native> | LazyNodeSet | scalar.
       # Scalars (count(), string-length(), booleans) pass through
       # unwrapped; the set forms wrap lazily.
@@ -476,7 +477,8 @@ module Moxml
     def css(expression)
       NodeSet.new(
         adapter.xpath(@native, Css.to_xpath(expression,
-                                            absolute: document?)),
+                                            absolute: document?),
+                      context: context),
         context,
       )
     end
