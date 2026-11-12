@@ -1786,7 +1786,9 @@ module Moxml
                "(empty or whitespace-only input)"]
           end
 
-          register_mint_klasses!(native_doc)
+          register_mint_klasses!(
+            native_doc, hot: !entity_markers && !entity_mode_keep
+          )
           ctx = _context || Context.new(:leptris)
           doc = Wrappers::Document.new(native_doc, ctx)
 
@@ -2107,10 +2109,62 @@ module Moxml
                               [].freeze
                             end
 
-        def register_mint_klasses!(binding_doc)
+        # The hot klass variants (TODO.perf/39(a), leptris-ruby#627):
+        # define_hot_readers installs the C readers (name/content)
+        # directly on the subclass, so lookup answers in C with no
+        # contract-module shadow. The C bodies must not shadow
+        # contract semantics: `attribute` answers the value string
+        # (the contract returns the attribute object) and `name` is
+        # element-shaped (non-element contracts shape it), so those
+        # stay shadowed. Memoized lazily: the Native module can be
+        # defined after this file evaluates.
+        def hot_kind_classes
+          @hot_kind_classes ||=
+            if NATIVE_READ_LAYER &&
+                defined?(::Leptris::XML::Native) &&
+                ::Leptris::XML::Native.respond_to?(:define_hot_readers)
+              # Elements: name + content (the C bodies ARE the
+              # contract answers for clean documents). Text: content
+              # only (the text-payload read). Comment/cdata/PI keep
+              # the contract classes outright - their payload reads
+              # are contract-shaped (the reference differential pins
+              # them), so hot classes for those kinds answer wrongly.
+              hot_el = Class.new(Identity::ELEMENT)
+              ::Leptris::XML::Native.define_hot_readers(hot_el)
+              hot_el.remove_method(:attribute)
+              hot_tx = Class.new(Identity::TEXT)
+              ::Leptris::XML::Native.define_hot_readers(hot_tx)
+              hot_tx.remove_method(:attribute)
+              hot_tx.remove_method(:name)
+              hot_set = [hot_el, hot_tx, Identity::COMMENT,
+                         Identity::CDATA,
+                         Identity::PROCESSING_INSTRUCTION].freeze
+              # The klass-propagating reads (#246) mint through the
+              # RECEIVER class's child map - the hot classes need their
+              # own, or the C visit mint yields nil for their entries
+              # (the root-level XPath gather truncated at depth >= 2
+              # while the C children read stayed correct).
+              # Install ONLY on the hot classes: the contract kinds'
+              # maps are the load-time installation - overwriting them
+              # here would re-route the contract kinds' children mints.
+              if NATIVE_KLASS_CHILDREN
+                hot_set.first(2).each do |klass|
+                  klass.install_child_klasses(hot_set)
+                end
+              end
+              hot_set
+            end
+        end
+
+        def register_mint_klasses!(binding_doc, hot: false)
           return binding_doc unless NATIVE_C_MINT && binding_doc
 
-          binding_doc.register_wrapper_klasses(MINT_KIND_CLASSES)
+          klass_set = if hot && (klasses = hot_kind_classes)
+                        klasses
+                      else
+                        MINT_KIND_CLASSES
+                      end
+          binding_doc.register_wrapper_klasses(klass_set)
           binding_doc
         end
 
