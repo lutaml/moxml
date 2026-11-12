@@ -1097,8 +1097,31 @@ module Moxml
             # IS the wrapper. Prime in place with a self-marker
             # (never a shell, never the WeakMap round trip).
             if NATIVE_C_MINT && node.is_a?(::Moxml::Node)
+              # #340 admits ANY NativeNode subclass as a registered
+              # wrapper klass, and consumers register their own
+              # (define_hot_readers subclasses, leptris-ruby#629) —
+              # the exact-class hash answers only the Identity
+              # originals, so a subclass minted nil here and every
+              # walk-yielded node dropped from results (XPath
+              # answered zero rows with subclasses registered).
+              # Resolve the kind subclass-aware; the hash still
+              # serves the exact originals without the ladder.
               type = IDENTITY_WALK_TYPE[node.class]
-              return nil unless type
+              unless type
+                type = case node
+                       when Identity::ELEMENT
+                         :element
+                       when Identity::TEXT
+                         :text
+                       when Identity::CDATA
+                         :cdata
+                       when Identity::COMMENT
+                         :comment
+                       when Identity::PROCESSING_INSTRUCTION
+                         :processing_instruction
+                       end
+                return nil unless type
+              end
 
               node.prime_contract(node, context, self, type)
               node.instance_variable_set(:@moxml_wrapper, node)
