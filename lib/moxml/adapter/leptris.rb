@@ -31,12 +31,16 @@ module Moxml
       # "raise all floors"): the tested pair — every gate below it
       # unwound, and the floor is ENFORCED (the load refuses below it;
       # the README's "older bindings do not load" claim is now true).
+      # Raised 1.9.410.0 -> 1.9.420.2 (2026-11-14, owner directive):
+      # bind_consumer_contract (leptris-ruby#635) - the consumer
+      # contract's C-defined children/attribute shapes on the hot
+      # klasses; the face is floor-guaranteed instead of probe-gated.
       # Raised 1.9.386.0 -> 1.9.410.0 (2026-11-10, owner directive
       # "update floors"): the namespace-aware strict admission
       # (leptris#1964, 1.9.409) and the schG2 child-typing fix
       # (leptris#1979, 1.9.410) - the XSD conformance answers the
       # dataset and the suite now pin REQUIRE this wave.
-      MINIMUM_BINDING_VERSION = "1.9.410.0"
+      MINIMUM_BINDING_VERSION = "1.9.420.2"
 
       # Snapshot-backed attribute listing native (moxml#520): the
       # listing face serves reads from the binding's flat packet face —
@@ -175,12 +179,12 @@ module Moxml
       # objects, no FFI::Pointer. Supersedes the snapshot face for
       # the one-pass hydration walks the XMI lanes are (the binding
       # memo is a retention penalty there). Probed on the compiled
-      # ext; the version floor pairs it (misrelease races — the
-      # NATIVE_PLAN_STRUCTS lesson).
+      # ext alone: the 1.9.406.1 version pairing died with the
+      # 1.9.420.2 floor (every floor-passing binding carries the
+      # face); the probe gates the compiled bundle's presence, which
+      # no floor can.
       ELEMENT_ATTR_PACKET =
         NATIVE_READ_LAYER &&
-        Gem::Version.new(::Leptris::VERSION) >=
-        Gem::Version.new("1.9.406.1") &&
         ::Leptris::XML::Native.respond_to?(:attribute_packet)
 
       # leptris-ruby#529: the whole XPath node-set result as an Array
