@@ -107,6 +107,21 @@ module Moxml
         end
       end
 
+      # The consumer-contract lane's attribute object
+      # (leptris-ruby#635): the shape the bound C factory constructs -
+      # (name, value, owner). Covers the walk+read contract
+      # (.name/.value); full attribute-node faces stay on the contract
+      # classes.
+      class LaneAttribute
+        attr_reader :name, :value, :owner
+
+        def initialize(name, value, owner = nil)
+          @name = name
+          @value = value
+          @owner = owner
+        end
+      end
+
       if Gem::Version.new(::Leptris::VERSION.to_s) <
           Gem::Version.new(MINIMUM_BINDING_VERSION)
         raise Moxml::AdapterError.new(
@@ -2136,6 +2151,18 @@ module Moxml
               ::Leptris::XML::Native.define_hot_readers(hot_tx)
               hot_tx.remove_method(:attribute)
               hot_tx.remove_method(:name)
+              # The consumer-contract binding (leptris-ruby#635): the
+              # descent's shapes constructed in C - children serving
+              # the #530 memo'd list wrapped by the NodeSet factory,
+              # attribute serving the decode getter wrapped by the
+              # attribute factory. Bound on the hot element class
+              # only (the contract kinds keep the Ruby-mediated set).
+              if ::Leptris::XML::Native.respond_to?(:bind_consumer_contract)
+                ::Leptris::XML::Native.bind_consumer_contract(
+                  hot_el, Moxml::NodeSet,
+                  Moxml::Adapter::Leptris::LaneAttribute
+                )
+              end
               hot_set = [hot_el, hot_tx, Identity::COMMENT,
                          Identity::CDATA,
                          Identity::PROCESSING_INSTRUCTION].freeze
