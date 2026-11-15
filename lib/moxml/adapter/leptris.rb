@@ -40,7 +40,13 @@ module Moxml
       # (leptris#1964, 1.9.409) and the schG2 child-typing fix
       # (leptris#1979, 1.9.410) - the XSD conformance answers the
       # dataset and the suite now pin REQUIRE this wave.
-      MINIMUM_BINDING_VERSION = "1.9.420.2"
+      # Raised 1.9.420.2 -> 1.9.420.3 (2026-11-15, lutaml/moxml#551):
+      # the LaneAttribute namespace face (c1838b9) - 420.3's native
+      # factory supplies the 4-arg LaneAttribute call, and the released
+      # 0.6.10 adapter's 2..3 arity hard-fails against it ("wrong
+      # number of arguments (given 4, expected 2..3)"). The floor encodes
+      # the pairing so the load refuses the broken combination.
+      MINIMUM_BINDING_VERSION = "1.9.420.3"
 
       # Snapshot-backed attribute listing native (moxml#520): the
       # listing face serves reads from the binding's flat packet face —
