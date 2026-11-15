@@ -38,6 +38,11 @@ module Moxml
       headed_ox: "use :leptris (primary) or :nokogiri; headed_ox is a pure alias of :ox",
       libxml: "use :nokogiri — the same libxml2 engine, governed by the consistency suite",
       ox: "use :leptris (primary) or :nokogiri",
+      # #552 (2026-11-15): nothing in the metanorma stack selects Oga,
+      # and the gem is a source-only C extension with no Ruby 4.0
+      # build path — keeping it selectable invites a broken install
+      # for zero benefit.
+      oga: "use :leptris (primary) or :nokogiri; the oga gem has no precompiled builds and no Ruby 4.0 support path",
     }.freeze
 
     class << self

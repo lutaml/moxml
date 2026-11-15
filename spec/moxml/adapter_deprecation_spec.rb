@@ -21,6 +21,17 @@ RSpec.describe Moxml::Adapter do
       end.not_to output.to_stderr
     end
 
+    it "warns for :oga even when the oga gem cannot load (#552)" do
+      expect do
+        begin
+          Moxml.new(:oga)
+        rescue Moxml::AdapterError
+          # the oga gem may be absent here; the deprecation warning
+          # fires at configuration, before the adapter load
+        end
+      end.to output(%r{:oga adapter is deprecated}).to_stderr
+    end
+
     it "guides every deprecated adapter toward the governed matrix" do
       described_class::DEPRECATED_ADAPTERS.each_value do |guidance|
         expect(guidance).to match(/:nokogiri|:leptris/)
