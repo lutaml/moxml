@@ -111,7 +111,6 @@ module Moxml
         end
       end
 
-
       if Gem::Version.new(::Leptris::VERSION.to_s) <
           Gem::Version.new(MINIMUM_BINDING_VERSION)
         raise Moxml::AdapterError.new(
