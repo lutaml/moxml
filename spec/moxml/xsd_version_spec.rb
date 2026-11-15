@@ -23,7 +23,7 @@ RSpec.describe "Moxml::XSD::Schema#version (#460 item 2)" do
       it "reports 1.1 when the root declares vc:minVersion=1.1" do
         schema = ctx.xsd(<<~XSD)
           <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-              xmlns:vc="http://www.w3.org/2001/XMLSchema-versioning"
+              xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
               vc:minVersion="1.1">
             <xs:element name="note" type="xs:string"/>
           </xs:schema>
@@ -34,7 +34,7 @@ RSpec.describe "Moxml::XSD::Schema#version (#460 item 2)" do
       it "detects the versioning namespace, not the prefix" do
         schema = ctx.xsd(<<~XSD)
           <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-              xmlns:vcx="http://www.w3.org/2001/XMLSchema-versioning"
+              xmlns:vcx="http://www.w3.org/2007/XMLSchema-versioning"
               vcx:minVersion="1.1">
             <xs:element name="note" type="xs:string"/>
           </xs:schema>
@@ -54,7 +54,7 @@ RSpec.describe "Moxml::XSD::Schema#version (#460 item 2)" do
       it "reports 1.0 for an explicit root vc:minVersion=1.0" do
         schema = ctx.xsd(<<~XSD)
           <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-              xmlns:vc="http://www.w3.org/2001/XMLSchema-versioning"
+              xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
               vc:minVersion="1.0">
             <xs:element name="note" type="xs:string"/>
           </xs:schema>
@@ -65,7 +65,7 @@ RSpec.describe "Moxml::XSD::Schema#version (#460 item 2)" do
       it "reports 1.0 when only a construct carries vc:minVersion" do
         schema = ctx.xsd(<<~XSD)
           <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-              xmlns:vc="http://www.w3.org/2001/XMLSchema-versioning">
+              xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning">
             <xs:element name="note">
               <xs:complexType>
                 <xs:sequence vc:minVersion="1.1">
