@@ -1,0 +1,45 @@
+name: moxml-testsuite
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.adoc'
+  pull_request:
+    paths-ignore:
+      - '**.adoc'
+  workflow_dispatch:
+
+# The certifier runs against THIS checkout: the testsuite gem pins the
+# dataset rows, so a model answer change that stales the vendored
+# dataset (schema 5) goes red here — the same early warning the
+# moxml-rs/moxml-ts vendored pins provide.
+#
+# The dependent-rake shared workflow cannot carry this repo: its
+# gemspec line-filter drops every line containing the gem name, and
+# a gem named moxml-testsuite mentions "moxml" on nearly every line
+# (spec.name, the version require_relative, the homepage). The local
+# path override binds the checkout without touching the gemspec.
+
+jobs:
+  testsuite:
+    runs-on: ubuntu-latest
+    name: certify main (3.4)
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: lutaml/moxml-testsuite
+          path: testsuite
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+      - name: Bind the testsuite to this checkout
+        working-directory: testsuite
+        run: |
+          bundle config set --local local.moxml "$GITHUB_WORKSPACE"
+          rm -f Gemfile.lock
+          bundle install
+      - name: Certify
+        working-directory: testsuite
+        run: bundle exec rspec
