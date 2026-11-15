@@ -192,7 +192,7 @@ module Moxml
 
       ContentModel = Struct.new(:declared_children, :any,
                                 :declared_attributes, :any_attribute,
-                                :particles, :pure_sequence)
+                                :particles, :pure_sequence, :asserts)
       SchemaIndex = Struct.new(:target_namespace, :element_default,
                                :attribute_default, :elements,
                                :attributes, :contents, :version,
@@ -208,6 +208,22 @@ module Moxml
       # adapter. Unresolvable prefixes yield "".
       module_function
 
+      # The FULL in-scope bindings map for an element (the #246
+      # walk prefix_uri uses, returning the map instead of one
+      # answer): per-node definitions merged along the ancestor
+      # axis, deeper overriding shallower.
+      def in_scope_bindings(element)
+        bindings = {}
+        node = element
+        while node
+          node.namespaces.each do |namespace|
+            bindings[namespace.prefix] = namespace.uri
+          end
+          node = node.parent&.element? ? node.parent : nil
+        end
+        bindings
+      end
+
       def prefix_uri(prefix, element)
         bindings = {}
         node = element
@@ -222,7 +238,7 @@ module Moxml
 
       # The XSD 1.1 version-tagging namespace (Structures §C.3):
       # vc:minVersion / vc:maxVersion gate 1.1 constructs.
-      VC_NS = "http://www.w3.org/2001/XMLSchema-versioning"
+      VC_NS = "http://www.w3.org/2007/XMLSchema-versioning"
 
       # XSD pattern-facet dialect → Ruby regex, bounded to the
       # subset the facade vouches for (Datatypes Appendix F). Block
@@ -637,10 +653,59 @@ module Moxml
           if index.self_contained
             findings.concat(attribute_findings(root, model, index))
           end
+          if index.version == "1.1" && model && index.self_contained
+            findings.concat(assert_findings(root, model))
+          end
           findings.compact
         end
 
         private
+
+        # XSD 1.1 asserts (#556): each xs:assert test evaluates as an
+        # effective boolean over the element context; false/empty is a
+        # finding. The test's prefixes bind against the SCHEMA's
+        # in-scope namespaces (collected at index time), and the
+        # evaluation rides the pure-Ruby XPath compiler — the engine
+        # sees the 1.1 syntax but does not evaluate asserts (#556).
+        # An unevaluatable test (an XPath 2.0 construct the compiler
+        # does not carry) under-reports: the one-directional contract
+        # never false-reports, so a compile failure skips the row.
+        def assert_findings(element, model)
+          Array(model.asserts).flat_map do |assert|
+            begin
+              ast = Moxml::XPath::Parser.parse(assert["test"])
+              proc_ = Moxml::XPath::Compiler.compile_with_cache(
+                ast, namespaces: assert["ns"]
+              )
+              result = proc_.call(element)
+            rescue StandardError
+              next []
+            end
+            if effective_boolean(result)
+              []
+            else
+              [
+                Moxml::XSD::ValidationError.new(
+                  message: "element <#{element.name}> fails the " \
+                           "assertion #{assert['test'].inspect}",
+                  path: path_of(element),
+                ),
+              ]
+            end
+          end
+        end
+
+        # The XPath effective boolean (the 1.0 rules: a non-empty
+        # node-set, a non-zero number, a non-empty string, true).
+        def effective_boolean(value)
+          case value
+          when true, false then value
+          when Moxml::NodeSet, Array then !value.empty?
+          when Numeric then value != 0
+          when String, nil then !value.to_s.empty?
+          else !value.nil?
+          end
+        end
 
         def index_global_element(decl, index)
           name = decl["name"] or return
@@ -700,7 +765,7 @@ module Moxml
         end
 
         def content_model(type_node, index)
-          model = ContentModel.new([], nil, [], nil, [], true)
+          model = ContentModel.new([], nil, [], nil, [], true, [])
           collect_model(type_node, index, model)
           model
         end
@@ -729,6 +794,9 @@ module Moxml
               if (qname = particle_qname(child, index))
                 model.declared_attributes << qname
               end
+            when "assert"
+              model.asserts << { "test" => child["test"].to_s,
+                                 "ns" => in_scope_bindings(child) }
             when "any"
               model.any ||= wildcard_from(child)
             when "anyAttribute"
