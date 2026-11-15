@@ -21,14 +21,9 @@ RSpec.describe Moxml::Adapter do
       end.not_to output.to_stderr
     end
 
-    it "warns for :oga even when the oga gem cannot load (#552)" do
+    it "warns for :oga at configuration, before the adapter load (#552)" do
       expect do
-        begin
-          Moxml.new(:oga)
-        rescue Moxml::AdapterError
-          # the oga gem may be absent here; the deprecation warning
-          # fires at configuration, before the adapter load
-        end
+        Moxml.new(:oga)
       end.to output(%r{:oga adapter is deprecated}).to_stderr
     end
 
