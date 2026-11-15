@@ -92,12 +92,22 @@ vendored at its release pin, driven by `cargo test`.
 |link:https://github.com/lutaml/moxml-ts[@lutaml/moxml] — fetches the
 pinned wasm bundles (`scripts/fetch-wasm.sh`), drives the families
 through the engine and model faces with vitest.
+
+|Suite gem
+|link:https://github.com/lutaml/moxml-testsuite[moxml-testsuite] — the
+certification gem: the dataset vendored, the runner driving any object
+that implements the certification protocol (parse, serialize,
+canonicalize, XSD validation, and the decision faces). The bundled
+moxml-backed Reference certifies a moxml engine; a facade that cannot
+answer a family sees it SKIP, never a quiet pass.
 |===
 
 The vendored-pin chain moxml → moxml-rs → moxml-ts means every tier
 tests the same rows: a dataset revision ships as a moxml release, the
 Rust crate re-vendors it at its next release, and the TS package pins
-both bundles.
+both bundles. The suite gem vendors the same rows for third-party
+engines: certification is open — implement the protocol, run the
+families, publish the report.
 
 == Why data, not prose
 
