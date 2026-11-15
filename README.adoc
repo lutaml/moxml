@@ -105,8 +105,10 @@ or :nokogiri. Removal after the deprecation cycle.
 
 |Oga
 |3.4 / 3.5
-|Oga 4.x is not yet validated against moxml's customized generator
-and decoder overrides.
+|DEPRECATED (#552) — warned at configuration; use :leptris (primary)
+or :nokogiri. Nothing in the metanorma stack selects Oga, and the gem
+is a source-only C extension with no Ruby 4.0 build path. Removal
+after the deprecation cycle.
 
 |LibXML (libxml-ruby)
 |>= 5.0
