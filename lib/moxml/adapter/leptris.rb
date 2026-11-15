@@ -111,31 +111,6 @@ module Moxml
         end
       end
 
-      # The consumer-contract lane's attribute object
-      # (leptris-ruby#635): the shape the bound C factory constructs -
-      # (name, value, owner). Covers the walk+read contract
-      # (.name/.value); full attribute-node faces stay on the contract
-      # classes.
-      class LaneAttribute
-        attr_reader :name, :value, :owner, :ns_uri
-
-        # ns_uri: the attribute's in-scope namespace URI from the
-        # engine (nil for bare attributes). The lane builds its own
-        # Namespace struct - the full wrapper namespace stays on the
-        # contract classes.
-        LaneNamespace = Struct.new(:uri)
-
-        def initialize(name, value, owner = nil, ns_uri = nil)
-          @name = name
-          @value = value
-          @owner = owner
-          @ns_uri = ns_uri
-        end
-
-        def namespace
-          @ns_uri ? LaneNamespace.new(@ns_uri) : nil
-        end
-      end
 
       if Gem::Version.new(::Leptris::VERSION.to_s) <
           Gem::Version.new(MINIMUM_BINDING_VERSION)
@@ -2153,12 +2128,6 @@ module Moxml
             if NATIVE_READ_LAYER &&
                 defined?(::Leptris::XML::Native) &&
                 ::Leptris::XML::Native.respond_to?(:define_hot_readers)
-              # Elements: name + content (the C bodies ARE the
-              # contract answers for clean documents). Text: content
-              # only (the text-payload read). Comment/cdata/PI keep
-              # the contract classes outright - their payload reads
-              # are contract-shaped (the reference differential pins
-              # them), so hot classes for those kinds answer wrongly.
               hot_el = Class.new(Identity::ELEMENT)
               ::Leptris::XML::Native.define_hot_readers(hot_el)
               hot_el.remove_method(:attribute)
@@ -2166,29 +2135,24 @@ module Moxml
               ::Leptris::XML::Native.define_hot_readers(hot_tx)
               hot_tx.remove_method(:attribute)
               hot_tx.remove_method(:name)
-              # The consumer-contract binding (leptris-ruby#635): the
-              # descent's shapes constructed in C - children serving
-              # the #530 memo'd list wrapped by the NodeSet factory,
-              # attribute serving the decode getter wrapped by the
-              # attribute factory. Bound on the hot element class
-              # only (the contract kinds keep the Ruby-mediated set).
-              if ::Leptris::XML::Native.respond_to?(:bind_consumer_contract)
-                ::Leptris::XML::Native.bind_consumer_contract(
-                  hot_el, Moxml::NodeSet,
-                  Moxml::Adapter::Leptris::LaneAttribute
-                )
-              end
+              # REVERTED (measured, the pinned runner): the
+              # consumer-contract binding (leptris-ruby#635) was
+              # bound here in 0.6.10 - the C children/attribute
+              # SHADOWED the facade's tuned lanes (the address-token
+              # children and the attribute packet) and every
+              # structural row regressed: walk warm 0.67x -> 0.49x,
+              # attr pairs 8.18x -> 6.65x, xpath count 2.13x -> 1.48x.
+              # The faces remain available to row-shaped consumers
+              # via the moxml-rs data plane; the facade dispatch
+              # keeps its tuned lanes.
               hot_set = [hot_el, hot_tx, Identity::COMMENT,
                          Identity::CDATA,
                          Identity::PROCESSING_INSTRUCTION].freeze
               # The klass-propagating reads (#246) mint through the
-              # RECEIVER class's child map - the hot classes need their
-              # own, or the C visit mint yields nil for their entries
-              # (the root-level XPath gather truncated at depth >= 2
-              # while the C children read stayed correct).
-              # Install ONLY on the hot classes: the contract kinds'
-              # maps are the load-time installation - overwriting them
-              # here would re-route the contract kinds' children mints.
+              # RECEIVER class's child map - the hot classes need
+              # their own, or the C visit mint yields nil for their
+              # entries (the root-level // gather truncated at depth
+              # >= 2 while the C children read stayed correct).
               if NATIVE_KLASS_CHILDREN
                 hot_set.first(2).each do |klass|
                   klass.install_child_klasses(hot_set)
