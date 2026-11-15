@@ -113,12 +113,23 @@ module Moxml
       # (.name/.value); full attribute-node faces stay on the contract
       # classes.
       class LaneAttribute
-        attr_reader :name, :value, :owner
+        attr_reader :name, :value, :owner, :ns_uri
 
-        def initialize(name, value, owner = nil)
+        # ns_uri: the attribute's in-scope namespace URI from the
+        # engine (nil for bare attributes). The lane builds its own
+        # Namespace struct - the full wrapper namespace stays on the
+        # contract classes.
+        LaneNamespace = Struct.new(:uri)
+
+        def initialize(name, value, owner = nil, ns_uri = nil)
           @name = name
           @value = value
           @owner = owner
+          @ns_uri = ns_uri
+        end
+
+        def namespace
+          @ns_uri ? LaneNamespace.new(@ns_uri) : nil
         end
       end
 
