@@ -341,8 +341,7 @@ Pins:: `spec/consistency/loud_degradation_spec.rb`, `spec/moxml/adapter_capabili
 
 === The data plane (row contracts)
 
-Pins:: the `data_plane_rows` conformance family; the per-language
-row runners assert byte-identical tuples.
+Pins:: none
 
 The data plane is the batched-first public surface: cross a
 language boundary once per batch, never per node. A row contract is
@@ -372,6 +371,12 @@ The element-rows contract:
 * Unevaluable positions degrade one-directionally: an
   implementation that cannot produce a row stays silent; it never
   produces a differently-shaped row.
+
+The faces live in the cross-language tiers: the Rust reference
+emits the contract's dataset (`export_rows`), the testsuite vendors
+it (`tests/data-plane-rows.json` with its fail-closed structural
+gate), and every tier's row runner asserts byte-identical tuples
+against it — the boundary budget bench-gated in the Rust tier.
 
 === Performance: a declared, non-semantic channel
 
