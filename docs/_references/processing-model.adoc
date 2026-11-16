@@ -339,6 +339,40 @@ Pins:: `spec/consistency/loud_degradation_spec.rb`, `spec/moxml/adapter_capabili
   routing gates the floor made constant are absent by design.
   Adapters without a capability story answer nil.
 
+=== The data plane (row contracts)
+
+Pins:: the `data_plane_rows` conformance family; the per-language
+row runners assert byte-identical tuples.
+
+The data plane is the batched-first public surface: cross a
+language boundary once per batch, never per node. A row contract is
+committed per face — shape (columns), order (document order),
+encoding — and implementations answer it identically in every
+language. Node-object accessors are the convenience layer over the
+same answers, never the only path.
+
+The element-rows contract:
+
+* Columns, exactly: `[ordinal, parent, depth, qualified_name,
+  namespace_uri, attribute_pairs, text]` — `ordinal` is 0-based
+  document order over elements; `parent` is the containing element's
+  ordinal or null at the root; `depth` is 0 at the document element;
+  `qualified_name` is `prefix:local` or `local`;
+  `namespace_uri` is the element's namespace URI or null;
+  `attribute_pairs` is a flat name/value run in document order
+  (namespace declarations are not attributes — the engine's
+  namespace model carries them); `text` is the concatenation of the
+  element's character-data children (text + CDATA; comments and
+  processing instructions are not character data), whitespace runs
+  included.
+* The batched read must beat the per-node baseline across the
+  boundary on the canonical shapes — the boundary budget
+  (bench-gated in the Rust tier). A face that cannot hold its
+  rows/µs under the per-node baseline is not batched enough.
+* Unevaluable positions degrade one-directionally: an
+  implementation that cannot produce a row stays silent; it never
+  produces a differently-shaped row.
+
 === Performance: a declared, non-semantic channel
 
 Pins:: none
