@@ -124,6 +124,7 @@ module ModelCoverage
     "Status and precedence",
     "Mission and invariant",
     "Object model",
+    "The data plane (row contracts)",
     "Performance: a declared, non-semantic channel",
   ].freeze
 
