@@ -93,21 +93,20 @@ vendored at its release pin, driven by `cargo test`.
 pinned wasm bundles (`scripts/fetch-wasm.sh`), drives the families
 through the engine and model faces with vitest.
 
-|Suite gem
+|Data repository
 |link:https://github.com/lutaml/moxml-testsuite[moxml-testsuite] — the
-certification gem: the dataset vendored, the runner driving any object
-that implements the certification protocol (parse, serialize,
-canonicalize, XSD validation, and the decision faces). The bundled
-moxml-backed Reference certifies a moxml engine; a facade that cannot
-answer a family sees it SKIP, never a quiet pass.
+dataset's canonical home: the committed answers as data
+(`tests/moxml-conformance.json`), a JSON Schema for every row, and
+gem-free gates (structure + identity against this repo's export).
+Runners live in the implementations, not in the data.
 |===
 
 The vendored-pin chain moxml → moxml-rs → moxml-ts means every tier
 tests the same rows: a dataset revision ships as a moxml release, the
 Rust crate re-vendors it at its next release, and the TS package pins
-both bundles. The suite gem vendors the same rows for third-party
-engines: certification is open — implement the protocol, run the
-families, publish the report.
+both bundles. The dataset's canonical home (moxml-testsuite) proves
+its copy identical to this repo's export on every run — regeneration
+is `rake corpus:regen`, drift is a red identity gate.
 
 == Why data, not prose
 
