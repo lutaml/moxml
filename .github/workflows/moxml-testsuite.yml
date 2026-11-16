@@ -10,21 +10,18 @@ on:
       - '**.adoc'
   workflow_dispatch:
 
-# The certifier runs against THIS checkout: the testsuite gem pins the
-# dataset rows, so a model answer change that stales the vendored
-# dataset (schema 5) goes red here — the same early warning the
-# moxml-rs/moxml-ts vendored pins provide.
-#
-# The dependent-rake shared workflow cannot carry this repo: its
-# gemspec line-filter drops every line containing the gem name, and
-# a gem named moxml-testsuite mentions "moxml" on nearly every line
-# (spec.name, the version require_relative, the homepage). The local
-# path override binds the checkout without touching the gemspec.
+# The data gate runs against THIS checkout: lutaml/moxml-testsuite is
+# the data-definition repository — the canonical home of the
+# conformance dataset. Its identity gate regenerates the dataset from
+# THIS checkout's case tables (rake conformance:export) and fails when
+# the committed copy drifts — a model answer change that stales the
+# dataset goes red here, the same early warning the moxml-rs/moxml-ts
+# vendored pins provide.
 
 jobs:
   testsuite:
     runs-on: ubuntu-latest
-    name: certify main (3.4)
+    name: dataset gates (structure + identity)
     steps:
       - uses: actions/checkout@v6
       - uses: actions/checkout@v6
@@ -34,12 +31,18 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.4'
-      - name: Bind the testsuite to this checkout
+      - name: Bundle THIS checkout (the identity gate runs the export here)
+        run: bundle install --jobs 4
+      - name: Structure gate (gem-free)
+        working-directory: testsuite
+        run: ruby tools/validate_schema.rb
+      - name: Tool-guard specs
         working-directory: testsuite
         run: |
-          bundle config set --local local.moxml "$GITHUB_WORKSPACE"
-          rm -f Gemfile.lock
           bundle install
-      - name: Certify
+          bundle exec rspec
+      - name: Identity gate (this checkout is the reference)
         working-directory: testsuite
-        run: bundle exec rspec
+        env:
+          MOXML_PATH: ${{ github.workspace }}
+        run: ruby tools/validate.rb
