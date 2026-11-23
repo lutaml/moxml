@@ -149,7 +149,7 @@ the runtime environment:
 ----
 # Automatic detection — picks the best available adapter
 ctx = Moxml.new
-ctx.config.adapter_name  # => :leptris (leptris >= 1.9.420.2), :nokogiri otherwise
+ctx.config.adapter_name  # => :leptris (leptris >= 1.9.420.3), :nokogiri otherwise
 
 # Explicit override — always takes precedence
 ctx = Moxml.new(:ox)
