@@ -1387,6 +1387,7 @@ module Moxml
       autoload :Serialize, "moxml/adapter/leptris/serialize"
       autoload :LeptrisSAXBridge, "moxml/adapter/leptris/sax_bridge"
       autoload :SaxRecordReplay, "moxml/adapter/leptris/sax_record_replay"
+      autoload :ReaderRecordTable, "moxml/adapter/leptris/reader_record_table"
       extend Serialize
       extend DocumentParts
       extend Markers
@@ -4719,6 +4720,15 @@ module Moxml
           end
         rescue ::Leptris::XML::ParseError, ::Leptris::XML::Error => e
           handler.on_error(Moxml::ParseError.new(e.message))
+        end
+
+        # The Reader.s streaming face (#582 gap 4): one uniform record
+        # surface over the engine.s bulk drain table (leptris#1298) or
+        # the callback stream for documents outside the drain subset
+        # (nil table - e.g. declaration-bearing documents).
+        def reader_records(source)
+          xml_string = source.is_a?(IO) || source.is_a?(::StringIO) ? source.read : source.to_s
+          ReaderRecordTable.open(xml_string)
         end
 
         private
