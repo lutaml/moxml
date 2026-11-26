@@ -779,6 +779,19 @@ namespace_validation_mode: :strict)
           attr.name.to_s
         end
 
+        # The streaming record face behind Moxml::Reader (#582 gap 4):
+        # a table answering count/kind/parent/view/attr_* over the
+        # document's pre-order stream. Adapters without a streaming
+        # face raise loudly — the Reader never falls back to a
+        # materializing parse.
+        def reader_records(_source)
+          raise Moxml::NotImplementedError.new(
+            "#{name.split('::').last} does not provide a streaming " \
+            "Reader face",
+            adapter: name,
+          )
+        end
+
         # Return the actual native node after an add_child operation.
         # Override for adapters where node identity may change (e.g., LibXML doc.root=).
         def actual_native(child_native, _parent_native)
