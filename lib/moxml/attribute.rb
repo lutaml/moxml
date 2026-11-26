@@ -132,12 +132,10 @@ module Moxml
       # A qualified name renders as-is (detached xpath results carry
       # the prefix in the name itself, #582 bug 1); otherwise the
       # namespace composes the prefix.
-      if name.include?(":")
+      if name.include?(":") || namespace&.prefix.nil?
         "#{name}=\"#{value}\""
-      elsif namespace&.prefix
-        "#{namespace.prefix}:#{name}=\"#{value}\""
       else
-        "#{name}=\"#{value}\""
+        "#{namespace.prefix}:#{name}=\"#{value}\""
       end
     end
 

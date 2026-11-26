@@ -109,8 +109,8 @@ module Moxml
 
     # Array parity: the attributes surface used to be a bare Array,
     # and consumers (c14n's path keys) call #index on it (#582).
-    def index(*args, &block)
-      to_a.index(*args, &block)
+    def index(...)
+      to_a.index(...)
     end
 
     def first(n = nil)
