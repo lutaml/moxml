@@ -95,7 +95,22 @@ module Moxml
         wrapped_buffer[actual] ||= wrap_with_parent((@nodes || @lazy)[actual])
       when Range
         self.class.new(native_nodes[index], @context)
+      when String
+        # Nokogiri parity for the attributes surface (#582 bug 2):
+        # lookup by qualified name first, then by local name, so
+        # `node.attributes["xmi:idref"]` finds its attribute instead
+        # of tripping the Integer-only index.
+        find do |n|
+          n.name == index ||
+            (n.is_a?(Moxml::Attribute) && n.qualified_name == index)
+        end
       end
+    end
+
+    # Array parity: the attributes surface used to be a bare Array,
+    # and consumers (c14n's path keys) call #index on it (#582).
+    def index(*args, &block)
+      to_a.index(*args, &block)
     end
 
     def first(n = nil)

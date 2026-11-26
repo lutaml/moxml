@@ -772,6 +772,13 @@ namespace_validation_mode: :strict)
           attr.name
         end
 
+        # The native's own qualified spelling of an attribute name —
+        # the attributes surface's bracket lookup matches it (#582
+        # bug 2). Default: the native name is already qualified.
+        def attribute_qualified_name(attr)
+          attr.name.to_s
+        end
+
         # Return the actual native node after an add_child operation.
         # Override for adapters where node identity may change (e.g., LibXML doc.root=).
         def actual_native(child_native, _parent_native)

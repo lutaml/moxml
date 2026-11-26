@@ -172,14 +172,11 @@ module Moxml
     end
 
     def attributes
-      # Primed like Node.wrap: the adapter and type are known at
-      # mint, so the first name/value/attribute? access skips the
-      # context hop and the adapter's type probe.
-      @attributes ||= adapter.attributes(@native).map do |attr|
-        a = Wrappers::Attribute.new(attr, context, adapter, :attribute)
-        a.parent_node = self
-        a
-      end
+      # A NodeSet (not a bare Array) so the surface answers Nokogiri's
+      # hash-style lookup — `attributes["xmi:idref"]` (#582 bug 2).
+      # The RAW adapter output rides the lazy wrap path: Node.wrap
+      # mints properly-typed Attribute wrappers per item.
+      @attributes ||= NodeSet.new(adapter.attributes(@native), context, self)
     end
 
     # Nokogiri-compatible: delete(name) removes the attribute

@@ -2390,6 +2390,23 @@ module Moxml
             return real && namespace(real)
           end
 
+          # XPath results mint ResultAttr (parent-backed): the same
+          # prefix-against-owner contract as the Attr branch below,
+          # anchored on the parent element — ResultAttr carries no
+          # namespace/element faces of its own (#582 bug 1: the Attr
+          # branch's node.namespace crashed it).
+          if node.is_a?(::Leptris::XML::ResultAttr)
+            if (prefix = prefix_part(node.name))
+              resolved = resolve_prefix_ns(node.parent, prefix)
+              return resolved if resolved
+              return implicit_xml_namespace(node) if prefix == "xml"
+
+              return nil
+            end
+
+            return nil
+          end
+
           # The binding resolves Attr#namespace to the declaration but
           # without the prefix; when the qualified name carries one,
           # prefer the in-scope declaration that binds it so wrappers
@@ -2458,6 +2475,8 @@ module Moxml
           owner = if node.is_a?(::Leptris::XML::Attr) ||
               node.is_a?(SnapshotAttribute)
                     node.element
+                  elsif node.is_a?(::Leptris::XML::ResultAttr)
+                    node.parent
                   else
                     node
                   end
@@ -3283,9 +3302,24 @@ module Moxml
         def attribute_name(attr)
           return attr.name if attr.is_a?(SnapshotAttribute)
 
+          # XPath-result ResultAttr: detached (no owner scope to
+          # resolve against), so the qualified name IS the answer —
+          # the prefix has no other carrier (#582 bug 1: to_s must
+          # render `x:id="Y"` for //a/@x:id).
+          return attr.name.to_s.dup.force_encoding("UTF-8") if attr.is_a?(::Leptris::XML::ResultAttr)
+
           # leptris Attr names are qualified; the wrapper composes the
           # prefix, so expose the local part.
           return attr.name.split(":", 2)[1] if attr.name.include?(":")
+
+          attr.name.to_s.dup.force_encoding("UTF-8")
+        end
+
+        # The native's own qualified spelling — the snapshot's
+        # qualified_name, or the binding's already-qualified name
+        # (#582 bug 2: the attributes surface's bracket lookup).
+        def attribute_qualified_name(attr)
+          return attr.qualified_name if attr.is_a?(SnapshotAttribute)
 
           attr.name.to_s.dup.force_encoding("UTF-8")
         end

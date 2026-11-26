@@ -8,8 +8,16 @@ module Moxml
     alias_method :doc, :document
 
     def initialize(context, strict: nil)
-      @context = context
-      @current = @document = context.create_document
+      # A Document wrapper builds INTO it (#582 bug 3): the context
+      # rides the wrapper, the DSL attaches to the passed document.
+      # A Context mints a fresh document (the historical path).
+      if context.is_a?(Moxml::Context)
+        @context = context
+        @current = @document = context.create_document
+      else
+        @context = context.context
+        @current = @document = context
+      end
       @namespaces = {}
       # Markup-accumulating face (leptris 1.9.313, #374 lever 2):
       # leaf DSL ops write markup into one String and a single
@@ -17,7 +25,7 @@ module Moxml
       # Tree-only ops (declaration/doctype/PI/entity/namespace)
       # flush first and run on the document; the face retires after
       # its first flush.
-      @face = context.config.adapter.builder_face(@document.native)
+      @face = @context.config.adapter.builder_face(@document.native)
       @face_stack = []
       @face_counts = Hash.new(0)
       @face_deferred = []
@@ -26,7 +34,7 @@ module Moxml
       # silently becoming empty elements. Per-build override
       # (Context#build(strict:)), else the context's
       # config.builder_strict.
-      @strict = strict.nil? ? context.config.builder_strict : strict
+      @strict = strict.nil? ? @context.config.builder_strict : strict
     end
 
     def strict?

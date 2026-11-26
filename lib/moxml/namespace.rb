@@ -12,6 +12,12 @@ module Moxml
       adapter.namespace_uri(@native)
     end
 
+    # Nokogiri parity (#582 gap 5): the migration idiom reads
+    # node.namespace&.href — same value as #uri.
+    def href
+      uri
+    end
+
     def ==(other)
       other.is_a?(Namespace) && prefix == other.prefix && uri == other.uri
     end
