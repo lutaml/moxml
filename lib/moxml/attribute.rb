@@ -11,6 +11,15 @@ module Moxml
       @name ||= adapter.attribute_name(@native)
     end
 
+    # The namespace-qualified spelling of the attribute's name
+    # (#582 bug 2): the bracket lookup on the attributes surface
+    # matches Nokogiri's qualified keys — the native's own spelling
+    # (the snapshot's, the binding's), not a re-composition, so
+    # undeclared-prefix lenient documents still resolve.
+    def qualified_name
+      @qualified_name ||= adapter.attribute_qualified_name(@native)
+    end
+
     def name=(new_name)
       # Mutation return contract (Adapter::Base): returns the native
       # to keep tracking — same object for in-place adapters, fresh
@@ -120,7 +129,12 @@ module Moxml
     end
 
     def to_s
-      if namespace&.prefix
+      # A qualified name renders as-is (detached xpath results carry
+      # the prefix in the name itself, #582 bug 1); otherwise the
+      # namespace composes the prefix.
+      if name.include?(":")
+        "#{name}=\"#{value}\""
+      elsif namespace&.prefix
         "#{namespace.prefix}:#{name}=\"#{value}\""
       else
         "#{name}=\"#{value}\""
