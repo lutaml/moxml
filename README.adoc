@@ -128,7 +128,7 @@ pair serves; cross-import schema sets (`Context#xsd_set`) ride the
 compile_set face (1.9.386.0 ✓, the floor now requires it).
 |===
 
-NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.443` (the tested pair; the gemspec itself has zero runtime dependencies). The adapter enforces the floor at load.
+NOTE: moxml's dev Gemfile pins `leptris ~> 1.9.446` (the tested pair; the gemspec itself has zero runtime dependencies). The adapter enforces the floor at load.
 `ox ~> 2.14`, `libxml-ruby >= 5.0`, and the vendored oga fork — the CI
 matrix tests exactly those floors.
 
