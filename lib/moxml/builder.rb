@@ -7,9 +7,10 @@ module Moxml
     attr_reader :document
     alias_method :doc, :document
 
-    def initialize(context, strict: nil)
+    def initialize(context, strict: nil, fragment: nil)
       @context = context
-      @current = @document = context.create_document
+      @fragment = fragment
+      @current = @document = fragment || context.create_document
       @namespaces = {}
       # Markup-accumulating face (leptris 1.9.313, #374 lever 2):
       # leaf DSL ops write markup into one String and a single
@@ -17,7 +18,14 @@ module Moxml
       # Tree-only ops (declaration/doctype/PI/entity/namespace)
       # flush first and run on the document; the face retires after
       # its first flush.
-      @face = context.config.adapter.builder_face(@document.native)
+      # Fragment mode: the face accumulates into the fragment's scratch
+      # element — an element sink, so the flush appends every fragment
+      # child at once (multi-root; document sinks take exactly one root).
+      @face = if @fragment
+                context.config.adapter.builder_face(@fragment.native)
+              else
+                context.config.adapter.builder_face(@document.native)
+              end
       @face_stack = []
       @face_counts = Hash.new(0)
       @face_deferred = []
@@ -115,6 +123,9 @@ module Moxml
       args = [version, encoding, standalone]
       return face_defer(:declaration, args) if @face && @face_stack.any?
 
+      raise ArgumentError,
+            "a fragment has no XML declaration (#584)" if @fragment
+
       flush_face
       @current.add_child(
         @document.create_declaration(version, encoding, standalone),
@@ -195,6 +206,9 @@ module Moxml
     def doctype(name, external_id = nil, system_id = nil)
       args = [name, external_id, system_id]
       return face_defer(:doctype, args) if @face && @face_stack.any?
+
+      raise ArgumentError,
+            "a fragment has no doctype (#584)" if @fragment
 
       flush_face
       @current.add_child(
@@ -340,7 +354,8 @@ module Moxml
       @face = nil
       face.flush
       if @face_entity_markers
-        @context.config.adapter.mark_entity_markers(@document.native)
+        marker_native = @fragment ? @fragment.document.native : @document.native
+        @context.config.adapter.mark_entity_markers(marker_native)
       end
       apply_face_deferred
     end
@@ -350,7 +365,7 @@ module Moxml
     # elements, and the flushed tree preserves markup order.
     def apply_face_deferred
       @face_deferred.each do |op, args, stack|
-        target = @document.root
+        target = @fragment ? fragment_face_target : @document.root
         stack[1..].each do |ordinal|
           target = target.elements.to_a[ordinal]
         end
@@ -365,6 +380,13 @@ module Moxml
         end
       end
       @face_deferred = []
+    end
+
+    # Deferred tree-ops re-target through the scratch in fragment mode:
+    # its first element child plays the role the document root plays in
+    # document mode (the deferred stack ordinals are parent-relative).
+    def fragment_face_target
+      @fragment.scratch.children.to_a.find { |c| c.is_a?(Moxml::Element) }
     end
 
     # Single method for all element creation.

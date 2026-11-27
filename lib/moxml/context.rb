@@ -348,6 +348,22 @@ module Moxml
       Builder.new(self, strict: strict).build(&block)
     end
 
+    # Fragment building (#584): sibling roots accumulate without a
+    # wrapper element; returns the Fragment (serialize with #to_xml,
+    # walk with #children). XML declarations and doctypes are rejected.
+    def build_fragment(strict: nil, &block)
+      fragment = create_fragment
+      Builder.new(self, strict: strict, fragment: fragment).build(&block)
+      fragment
+    end
+
+    def create_fragment
+      document = create_document
+      scratch = document.create_element("moxml-fragment-scratch")
+      document.add_child(scratch)
+      Fragment.new(document, scratch: scratch)
+    end
+
     # Frozen serialization defaults, memoized per context — Node#to_xml
     # merged these from live config reads on every call (bulk element
     # serialization pays a hash build + 4 chain derefs per element).

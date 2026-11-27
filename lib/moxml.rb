@@ -72,6 +72,7 @@ module Moxml
   autoload :LazyNodeSet, "moxml/lazy_node_set"
   autoload :LazyBulkRows, "moxml/lazy_bulk_rows"
   autoload :Document, "moxml/document"
+  autoload :Fragment, "moxml/fragment"
   autoload :Element, "moxml/element"
   autoload :Text, "moxml/text"
   autoload :Cdata, "moxml/cdata"
