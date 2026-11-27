@@ -242,7 +242,17 @@ RSpec.describe Moxml::Builder do
       expect(builder.respond_to?(:to_ary)).to be false
       expect(builder.respond_to?(:to_hash)).to be false
       expect(builder.respond_to?(:to_str)).to be false
-      expect(builder.respond_to?(:to_xml)).to be false
+    end
+
+    # #584: to_xml is a REAL method now (the fragment serialization;
+    # nokogiri-builder API parity for #noko) — it cannot silently
+    # become a tag, which is the #371 law's intent. The
+    # method_missing guard for the reserved pattern stays: an
+    # unknown tag never materializes under a reserved name.
+    it "answers to_xml as the real serialization, never a tag" do
+      builder = described_class.new(context)
+      expect(builder.respond_to?(:to_xml)).to be true
+      expect { builder.create_tag("to_xml") }.not_to raise_error
     end
   end
 

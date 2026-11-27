@@ -12,6 +12,20 @@ module Moxml
       Context.new(adapter).parse(xml, options)
     end
 
+    # Fragment builder (#584): several sibling top-level nodes
+    # serializing as standalone concatenated markup — no root, no
+    # declaration. The metanorma #noko shape.
+    #
+    #   Moxml.fragment(:leptris) do
+    #     element("p") { text("a") }
+    #     element("p") { text("b") }
+    #   end.to_xml # => "<p>a</p><p>b</p>"
+    def fragment(adapter = nil, &block)
+      builder = Builder.new(Context.new(adapter), fragment: true)
+      builder.build(&block) if block
+      builder
+    end
+
     def configure
       yield Config.default if block_given?
     end
