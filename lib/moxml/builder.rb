@@ -7,7 +7,7 @@ module Moxml
     attr_reader :document
     alias_method :doc, :document
 
-    def initialize(context, strict: nil)
+    def initialize(context, strict: nil, fragment: false)
       # A Document wrapper builds INTO it (#582 bug 3): the context
       # rides the wrapper, the DSL attaches to the passed document.
       # A Context mints a fresh document (the historical path).
@@ -19,13 +19,28 @@ module Moxml
         @current = @document = context
       end
       @namespaces = {}
+      # Fragment mode (#584): multi-root builds serialize as
+      # concatenated markup. The markup-accumulating face flushes
+      # through a single-root document parse, and the document model
+      # guards one root — so fragments ride the tree path (face off)
+      # inside an invisible scaffold root; to_xml serializes the
+      # scaffold's children, which the scaffold never shows.
+      @fragment = fragment
+      @fragment_root = nil
       # Markup-accumulating face (leptris 1.9.313, #374 lever 2):
       # leaf DSL ops write markup into one String and a single
       # native crossing flushes the whole subtree at build end.
       # Tree-only ops (declaration/doctype/PI/entity/namespace)
       # flush first and run on the document; the face retires after
       # its first flush.
-      @face = @context.config.adapter.builder_face(@document.native)
+      if @fragment
+        @fragment_root = @document.create_element("moxml-fragment")
+        @document.root = @fragment_root
+        @current = @fragment_root
+        @face = nil
+      else
+        @face = @context.config.adapter.builder_face(@document.native)
+      end
       @face_stack = []
       @face_counts = Hash.new(0)
       @face_deferred = []
@@ -52,6 +67,22 @@ module Moxml
       instance_eval(&block)
       flush_face
       @document
+    end
+
+    # Fragment serialization (#584): every top-level node serialized
+    # and concatenated — no root, no declaration. Fragment mode
+    # only; document builds keep the document's own to_xml.
+    def to_xml
+      unless @fragment
+        raise Moxml::AdapterError.new(
+          "Builder#to_xml is the fragment-mode serialization; " \
+          "serialize the built document instead (builder.document.to_xml)",
+          adapter: @context.config.adapter.name,
+          operation: "serialize",
+        )
+      end
+
+      @fragment_root.children.map(&:to_xml).join
     end
 
     # Namespace-scoped tag syntax (#371, Nokogiri's xml["p"].tag
