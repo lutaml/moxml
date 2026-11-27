@@ -373,7 +373,16 @@ module Moxml
     end
 
     def run_builder_block(block, eval_block)
-      eval_block ? instance_eval(&block) : block.call
+      eval_block ? instance_eval(&block) : yield_scope(block)
+    end
+
+    # #598: a one-arg element block receives the Builder itself with
+    # its position on the new element - the face stack (face path)
+    # and the @current switch (tree path) already place writes there,
+    # so `n << val` appends and `n.child` nests, the nokogiri
+    # NodeBuilder contract the metanorma converters build through.
+    def yield_scope(block)
+      block.arity.zero? ? block.call : block.call(self)
     end
 
     def face_escape(value)
@@ -445,7 +454,7 @@ block: nil, eval_block: true)
         previous = @current
         @current = el
         begin
-          eval_block ? instance_eval(&block) : block.call
+          eval_block ? instance_eval(&block) : yield_scope(block)
         ensure
           @current = previous
         end

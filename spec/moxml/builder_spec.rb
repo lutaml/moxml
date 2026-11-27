@@ -318,16 +318,16 @@ RSpec.describe Moxml::Builder do
       expect(builder.document.root.name).to eq("root")
     end
   end
-end
 
-RSpec.describe "Builder#<<" do
-  it "appends escaped text inside an element block" do
-    builder = Moxml.fragment(:leptris)
-    builder.build do
-      element("p") do |n|
-        n << "A & B"
+  describe "Builder#<<" do
+    it "appends escaped text inside an element block" do
+      builder = Moxml.fragment(:leptris)
+      builder.build do
+        element("p") do |n|
+          n << "A & B"
+        end
       end
+      expect(builder.to_xml).to eq("<p>A &amp; B</p>")
     end
-    expect(builder.to_xml).to eq("<p>A &amp; B</p>")
   end
 end
