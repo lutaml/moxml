@@ -176,6 +176,14 @@ module Moxml
                                                      eval_block: true)
     end
 
+    # Nokogiri Builder parity: `n << "text"` inside an element block
+    # appends escaped text (the metanorma converter helpers use this
+    # shape through `node.send(name, **attrs) { |n| n << val }`).
+    def <<(content)
+      text(content)
+      self
+    end
+
     def text(content)
       return face_content { @face.text(content) } if @face
 
