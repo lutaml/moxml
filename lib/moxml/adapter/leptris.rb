@@ -3670,6 +3670,12 @@ module Moxml
         end
 
         def add_child_impl(parent, child)
+          # TextSegment value objects (the entity-retention split
+          # runs) are the adapter's own parse output - attaching one
+          # attaches its text content (#606): the raw value object
+          # would fall through to the binding, which rejects anything
+          # that is not a native Node or String.
+          child = child.content.to_s if child.is_a?(CustomizedLeptris::TextSegment)
           # Same-document Identity append — the builder hot path. One
           # document pair decides the verdict: the pin, the absorb
           # checks and the binding bridges only exist for
