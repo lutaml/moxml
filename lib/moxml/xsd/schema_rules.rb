@@ -504,7 +504,11 @@ module Moxml
         end
 
         LEXICAL_MESSAGE = /\A(?:element|attribute) '([^']+)' @\d+:\d+: (element|attribute) '([^']+)': lexical value does not match its type\z/
-        CONTENT_MODEL_MESSAGE = /\Aelement '([^']+)' @\d+:\d+: element '([^']+)': children do not match the content model \(at '([^']+)'\)\z/
+        # The engine emits the `(at '...')` particle anchor only when
+        # the walk names it; the same-named global/local collision
+        # (#594) rejects without one. The at-clause is optional; the
+        # witness walk carries the per-particle proof either way.
+        CONTENT_MODEL_MESSAGE = /\Aelement '([^']+)' @\d+:\d+: element '([^']+)': children do not match the content model(?: \(at '([^']+)'\))?\z/
 
         private_constant :LEXICAL_MESSAGE, :CONTENT_MODEL_MESSAGE
 
@@ -552,34 +556,42 @@ module Moxml
         # once, and the reported offender is a substitution member
         # realized at some position. Anything else leaves the
         # engine's answer standing.
+        # The occurrence-aware walk (#594): each particle consumes the
+        # children it binds, honoring its min/max; optional particles
+        # (the lax xs:any) skip. A same-named local particle binds its
+        # own position (XSD §3.3.3 shadowing) — the engine's
+        # same-named global collapse is exactly what this walk
+        # refutes. Only removes false rejections: every accepted
+        # document matches the local content model name-for-name.
         def sequence_valid?(element, index, offender)
           model = index.contents[qname(element)]
           return false unless model&.pure_sequence
 
           particles = model.particles
           children = child_elements(element)
-          return false if children.empty? || children.size != particles.size
 
           resolved = false
-          children.each_with_index do |child, position|
-            particle_name, min, max = particles[position]
-            child_qname = qname(child)
-            return false unless exactly_once?(min, max)
-
-            if child_qname == particle_name
-              next
-            elsif index.substitution_members.fetch(particle_name, [])
-                .include?(child_qname)
-              resolved = true
-            else
-              return false
+          cursor = 0
+          particles.each do |(particle_name, min, max)|
+            consumed = 0
+            while cursor < children.size &&
+                particle_binds?(children[cursor], particle_name, index) &&
+                (max == :unbounded || consumed < max)
+              consumed += 1
+              cursor += 1
             end
+            return false if consumed < min
+
+            resolved = true if consumed >= 1
           end
-          resolved && offender_realized?(children, offender, index)
+          return false if cursor != children.size
+
+          offender ? (resolved && offender_realized?(children, offender, index)) : true
         end
 
-        def exactly_once?(min, max)
-          min <= 1 && (max == :unbounded || max >= 1)
+        def particle_binds?(child, particle_name, index)
+          qname(child) == particle_name ||
+            index.substitution_members.fetch(particle_name, []).include?(qname(child))
         end
 
         def offender_realized?(children, offender, index)
