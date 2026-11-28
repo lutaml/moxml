@@ -3670,6 +3670,17 @@ module Moxml
         end
 
         def add_child_impl(parent, child)
+          # The parse-time retention lifecycle mints TextSegment value
+          # objects as native children (leptris#1904); the attach
+          # contract is a native Node or String — unwrap the segment
+          # through the document factory (moxml#606). The segment's
+          # content carries the restoration markers verbatim, so the
+          # serialize path reads them back unchanged.
+          if child.is_a?(CustomizedLeptris::TextSegment)
+            # The String form rides the fall-through's create_text_node
+            # (the parent's own document owns the minted node).
+            child = child.content.to_s
+          end
           # Same-document Identity append — the builder hot path. One
           # document pair decides the verdict: the pin, the absorb
           # checks and the binding bridges only exist for
