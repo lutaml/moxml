@@ -36,7 +36,7 @@ module Moxml
           processed_xml = xml.encode("UTF-8")
 
           # Preprocess entities to avoid double-escaping on output
-          processed_xml = preprocess_entities(processed_xml)
+          processed_xml = preprocess_for_parse(processed_xml)
 
           native_doc = begin
             ::REXML::Document.new(processed_xml)

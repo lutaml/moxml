@@ -44,7 +44,7 @@ module Moxml
         end
 
         def parse(xml, options = {}, _context = nil)
-          processed_xml = strip_bom(preprocess_entities(xml))
+          processed_xml = strip_bom(preprocess_for_parse(xml))
 
           native_doc = begin
             ::Oga.parse_xml(processed_xml, strict: options[:strict])
