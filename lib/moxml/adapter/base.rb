@@ -29,6 +29,12 @@ module Moxml
           Entity.preprocess_entities(xml)
         end
 
+        # The document-parse-entry variant (#604): adds the
+        # declared-encoding rewrite on top of the general path.
+        def preprocess_for_parse(xml)
+          Entity.preprocess_for_parse(xml)
+        end
+
         def decode_entities(text)
           Entity.decode_entities(text)
         end

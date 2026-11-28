@@ -35,7 +35,7 @@ module Moxml
         end
 
         def parse(xml, options = {}, _context = nil)
-          processed_xml = preprocess_entities(xml)
+          processed_xml = preprocess_for_parse(xml)
           native_doc = begin
             # ::Ox.parse has arity 1 and hardcodes skip: :skip_white;
             # ::Ox.load takes the policy (issue #189). Both knobs flow

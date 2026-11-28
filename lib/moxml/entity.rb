@@ -93,7 +93,13 @@ module Moxml
     # whether the result can contain markers: the flag rides the
     # same `&` scan, so callers needing it (leptris parse) avoid a
     # second full-buffer multibyte probe.
-    def preprocess_with_marker_flag(xml)
+    #
+    # rewrite_encoding: the declared-encoding rewrite is a
+    # document-parse-entry protection only (#604) - the general
+    # path serves text emitters whose payloads legitimately BEGIN
+    # with an XML declaration (verbatim data), and rewriting them
+    # is a content mutation.
+    def preprocess_with_marker_flag(xml, rewrite_encoding: false)
       return ["", false] if xml.nil?
 
       str = if xml.encoding == Encoding::BINARY
@@ -112,7 +118,7 @@ module Moxml
             else
               xml.encode("UTF-8")
             end
-      str = rewrite_declared_encoding(str)
+      str = rewrite_declared_encoding(str) if rewrite_encoding
       # Fast path: no `&` means no entity references to mark — skip
       # the regex scan and string allocation entirely. The vast
       # majority of XML payloads contain no entity references.
@@ -136,8 +142,21 @@ module Moxml
       [processed, marked]
     end
 
+    # The general path (#604): entity marking + UTF-8 normalization
+    # WITHOUT the declared-encoding rewrite - payloads that begin
+    # with an XML declaration are verbatim data here (text emitters),
+    # not parse payloads.
     def preprocess_entities(xml)
       preprocess_with_marker_flag(xml)[0]
+    end
+
+    # The document-parse-entry path: everything preprocess_entities
+    # does, plus the declared-encoding rewrite - moxml feeds engines
+    # UTF-8 bytes, so a declaration naming another encoding must be
+    # rewritten or the bytes decode twice into mojibake. Only the
+    # adapter parse entries call this.
+    def preprocess_for_parse(xml)
+      preprocess_with_marker_flag(xml, rewrite_encoding: true)[0]
     end
 
     # Engines honor the DECLARED encoding and re-decode the bytes they

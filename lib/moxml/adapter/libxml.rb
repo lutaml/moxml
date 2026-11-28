@@ -200,7 +200,7 @@ module Moxml
           # Preprocess entities before parsing.
           # This converts the string to UTF-8; LibXML will use the encoding
           # parameter or XML declaration for byte interpretation.
-          xml_string = preprocess_entities(xml_string)
+          xml_string = preprocess_for_parse(xml_string)
 
           # Extract DOCTYPE before parsing. Locate the literal first:
           # a plain memscan keeps doctype-less documents (the common
